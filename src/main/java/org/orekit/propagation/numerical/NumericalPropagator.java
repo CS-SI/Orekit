@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.commons.math.geometry.Vector3D;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
@@ -38,6 +39,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -195,9 +197,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     /** Counter for differential equations calls. */
     private int calls;
 
-    /** Gauss equations handler. */
-    private TimeDerivativesEquations adder;
-
     /** Mapper between spacecraft state and simple array. */
     private StateMapper mapper;
 
@@ -208,7 +207,10 @@ public class NumericalPropagator implements Propagator, EventObserver {
     private int mode;
 
     /** Propagation parameters type. */
-    private PropagationParametersType type;
+    private PropagationParametersType parametersType;
+
+    /** Position angle type. */
+    private PositionAngle angleType;
 
     /** Additional equations and associated data. */
     private List<AdditionalEquationsAndData> addEquationsAndData;
@@ -218,8 +220,10 @@ public class NumericalPropagator implements Propagator, EventObserver {
      * unspecified default law and there are no perturbing forces at all.
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
-     * evolution only. The default parameter type for propagation is {@link
-     * PropagationParametersType#EQUINOCTIAL}.
+     * evolution only. The defaults are {@link PropagationParametersType#EQUINOCTIAL}
+     * for {@link #setPropagationParametersType(PropagationParametersType) propagation
+     * parameters type} and {@link PositionAngle#TRUE} for {@link
+     * #setPositionAngleType(PositionAngle) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
@@ -229,7 +233,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
         startDate           = null;
         referenceDate       = null;
         currentState        = null;
-        adder               = null;
         addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
         attitudeProvider    = InertialProvider.EME2000_ALIGNED;
         stateVector         = new double[7];
@@ -237,6 +240,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
         setIntegrator(integrator);
         setSlaveMode();
         setPropagationParametersType(PropagationParametersType.EQUINOCTIAL);
+        setPositionAngleType(PositionAngle.TRUE);
     }
 
     /** Set the integrator.
@@ -401,14 +405,34 @@ public class NumericalPropagator implements Propagator, EventObserver {
      * @param propagationType parameters type to use for propagation
      */
     public void setPropagationParametersType(final PropagationParametersType propagationType) {
-        this.type = propagationType;
+        this.parametersType = propagationType;
     }
 
     /** Get propagation parameter type.
      * @return parameters type used for propagation
      */
     public PropagationParametersType getPropagationParametersType() {
-        return type;
+        return parametersType;
+    }
+
+    /** Set position angle type.
+     * <p>
+     * The position parameter type is meaningful only if {@link
+     * #getPropagationParametersType() propagation parameters}
+     * support it. As an example, it is not meaningful for propagation
+     * in {@link PropagationParametersType#CARTESIAN Cartesian} parameters.
+     * </p>
+     * @param positionAngleType angle type to use for propagation
+     */
+    public void setPositionAngleType(final PositionAngle positionAngleType) {
+        this.angleType = positionAngleType;
+    }
+
+    /** Get propagation parameter type.
+     * @return angle type to use for propagation
+     */
+    public PositionAngle getPositionAngleType() {
+        return angleType;
     }
 
     /** {@inheritDoc} */
@@ -576,20 +600,17 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
             // set propagation parameters type
             Orbit initialOrbit = null;
-            switch (type) {
+            switch (parametersType) {
             case CARTESIAN :
                 initialOrbit = new CartesianOrbit(initialState.getOrbit());
-                adder = new TimeDerivativesEquationsCartesian((CartesianOrbit) initialOrbit);
                 mapper = new StateMapperCartesian();
                 break;
             case KEPLERIAN :
                 initialOrbit = new KeplerianOrbit(initialState.getOrbit());
-                adder = new TimeDerivativesEquationsKeplerian((KeplerianOrbit) initialOrbit);
                 mapper = new StateMapperKeplerian();
                 break;
             case EQUINOCTIAL :
                 initialOrbit = new EquinoctialOrbit(initialState.getOrbit());
-                adder = new TimeDerivativesEquationsEquinoctial((EquinoctialOrbit) initialOrbit);
                 mapper = new StateMapperEquinoctial();
                 break;
             default :
@@ -810,14 +831,21 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** Internal class for differential equations representation. */
-    private class DifferentialEquations implements FirstOrderDifferentialEquations {
+    private class DifferentialEquations implements FirstOrderDifferentialEquations, TimeDerivativesEquations {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -1927530118454989452L;
 
+        /** Reference to the derivatives array to initialize. */
+        private double[] storedYDot;
+
+        /** Jacobian of the orbital parameters with respect to the cartesian parameters. */
+        private double[][] jacobian;
+
         /** Build a new instance. */
         public DifferentialEquations() {
             calls = 0;
+            jacobian = new double[6][6];
         }
 
         /** {@inheritDoc} */
@@ -837,16 +865,17 @@ public class NumericalPropagator implements Propagator, EventObserver {
                     throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
                                                    currentState.getMass());
                 }
+
                 // initialize derivatives
-                adder.initDerivatives(yDot, currentState.getOrbit());
+                initDerivatives(yDot, currentState.getOrbit());
 
                 // compute the contributions of all perturbing forces
                 for (final ForceModel forceModel : forceModels) {
-                    forceModel.addContribution(currentState, adder);
+                    forceModel.addContribution(currentState, this);
                 }
 
                 // finalize derivatives by adding the Kepler contribution
-                newtonianAttraction.addContribution(currentState, adder);
+                newtonianAttraction.addContribution(currentState, this);
 
                 // Add contribution for additional state
                 int index = 7;
@@ -858,7 +887,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
                     System.arraycopy(y, index, p, 0, p.length);
 
                     // compute additional derivatives
-                    stateAndEqu.getEquations().computeDerivatives(currentState, adder, p, pDot);
+                    stateAndEqu.getEquations().computeDerivatives(currentState, this, p, pDot);
 
                     // update each additional state contribution in global array
                     System.arraycopy(pDot, 0, yDot, index, p.length);
@@ -874,6 +903,41 @@ public class NumericalPropagator implements Propagator, EventObserver {
                 throw new DerivativeException(oe.getSpecifier(), oe.getParts());
             }
 
+        }
+
+        public void initDerivatives(double[] yDot, Orbit currentOrbit) throws PropagationException {
+            storedYDot = yDot;
+            Arrays.fill(storedYDot, 0.0);
+            currentOrbit.getJacobianWrtCartesian(angleType, jacobian);
+        }
+
+        /** {@inheritDoc} */
+        public void addKeplerContribution(final double mu) {
+            currentState.getOrbit().addKeplerContribution(angleType, mu, storedYDot);
+        }
+
+        /** {@inheritDoc} */
+        public void addXYZAcceleration(final double x, final double y, final double z) {
+            for (int i = 0; i < 6; ++i) {
+                final double[] jRow = jacobian[i];
+                storedYDot[i] += jRow[3] * x + jRow[4] * y + jRow[5] * z;
+            }
+        }
+
+        /** {@inheritDoc} */
+        public void addAcceleration(final Vector3D gamma, final Frame frame)
+            throws OrekitException {
+            final Transform t = frame.getTransformTo(currentState.getFrame(), currentState.getDate());
+            final Vector3D gammInRefFrame = t.transformVector(gamma);
+            addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
+        }
+
+        /** {@inheritDoc} */
+        public void addMassDerivative(final double q) {
+            if (q > 0) {
+                throw OrekitException.createIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
+            }
+            storedYDot[6] += q;
         }
 
     }

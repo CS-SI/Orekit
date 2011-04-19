@@ -1152,6 +1152,27 @@ public class KeplerianOrbit extends Orbit {
 
     }
 
+    /** {@inheritDoc} */
+    public void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot) {
+        final double absA  = FastMath.abs(a);
+        final double n     = FastMath.sqrt(mu / absA) / absA;
+        final double oMe2 = FastMath.abs(1 - e * e);
+        final double ksi  = 1 + e * FastMath.cos(v);
+        switch (type) {
+        case MEAN :
+            pDot[5] += n;
+            break;
+        case ECCENTRIC :
+            pDot[5] += n * ksi / oMe2;
+            break;
+        case TRUE :
+            pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
+            break;
+        default :
+            throw OrekitException.createInternalError(null);
+        }
+    }
+
     /**  Returns a string representation of this keplerian parameters object.
      * @return a string representation of this object
      */

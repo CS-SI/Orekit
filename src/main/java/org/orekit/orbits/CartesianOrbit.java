@@ -401,6 +401,27 @@ public class CartesianOrbit extends Orbit {
         return jacobian;
     }
 
+    /** {@inheritDoc} */
+    public void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot) {
+
+        final PVCoordinates pv = getPVCoordinates();
+
+        // position derivative is velocity
+        final Vector3D velocity = pv.getVelocity();
+        pDot[0] += velocity.getX();
+        pDot[1] += velocity.getY();
+        pDot[2] += velocity.getZ();
+
+        // velocity derivative is Newtonian acceleration
+        final Vector3D position = pv.getPosition();
+        final double r2         = position.getNormSq();
+        final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
+        pDot[3] += coeff * position.getX();
+        pDot[4] += coeff * position.getY();
+        pDot[5] += coeff * position.getZ();
+
+    }
+
     /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */

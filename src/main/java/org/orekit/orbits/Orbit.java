@@ -459,7 +459,20 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
      */
     protected abstract double[][] computeJacobianTrueWrtCartesian();
 
-    /** Fill a Jacobian half row with a single vector.
+    /** Add the contribution of the Keplerian motion to parameters derivatives
+     * <p>
+     * This method is used by numerical propagators to evaluate the part of Keplerrian
+     * motion to evolution of the orbital state.
+     * </p>
+     * @param type type of the position angle in the state
+     * @param mu attraction coefficient to use
+     * @param pDot array containing orbital state derivatives to update (the Keplerian
+     * part must be <em>added</em> to the array components, as the array may already
+     * contain some non-zero elements corresponding to non-Keplerian parts)
+     */
+    public abstract void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot);
+
+        /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector
      * @param v vector
      * @param row Jacobian matrix row

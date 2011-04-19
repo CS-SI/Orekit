@@ -205,7 +205,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
     }
 
     /** Internal class for retrieving accelerations. */
-    private static class AccelerationRetriever extends TimeDerivativesEquations {
+    private static class AccelerationRetriever implements TimeDerivativesEquations {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 6410400549499020323L;
@@ -245,10 +245,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
         }
 
         /** {@inheritDoc} */
-        void initDerivatives(final double[] yDot, final Orbit currentOrbit) {
-
-            // in fact, we won't really use this field from the base class
-            storedYDot      = yDot;
+        public void initDerivatives(final double[] yDot, final Orbit currentOrbit) {
 
             acceleration[0] = 0;
             acceleration[1] = 0;
@@ -283,7 +280,6 @@ class Jacobianizer implements AccelerationJacobiansProvider {
         }
 
         /** {@inheritDoc} */
-        @Override
         public void addMassDerivative(final double q) {
             // we don't compute (yet) the mass part of the Jacobian, we just ignore this
         }

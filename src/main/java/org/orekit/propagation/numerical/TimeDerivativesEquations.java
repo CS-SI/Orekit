@@ -20,7 +20,6 @@ import java.io.Serializable;
 
 import org.apache.commons.math.geometry.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -29,77 +28,27 @@ import org.orekit.orbits.Orbit;
  *
  * <p>The aim of this interface is to gather the contributions of various perturbing
  * forces expressed as accelerations into one set of time-derivatives of
- * {@link org.orekit.orbits.Orbit} plus one mass derivatives.
- * It implements Gauss equations for different kind of parameters.</p>
- *  <p>
- * The state vector handled internally has the form that follows:
- *   <pre>
- *     y[0] 
- *     y[1]
- *     y[2]
- *     y[3]
- *     y[4]
- *     y[5]
- *     y[6]
- *   </pre>
- * where the six firsts parameters stands for the chosen parameters and the 7th
- * for the mass (kg) at the current time.
+ * {@link org.orekit.orbits.Orbit} plus one mass derivatives. It implements Gauss
+ * equations for different kind of parameters.</p>
+ * <p>An implementation of this interface is automatically provided by {@link
+ * org.orekit.propagation.numerical.NumericalPropagator numerical propagators} to the
+ * various {@link org.orekit.forces.ForceModel force models}.
  * </p>
- * <p>The proper way to use this class is to have the object implementing the
- * FirstOrderDifferentialEquations interface do the following calls each time
- * the computeDerivatives method is called:
- * <ul>
- *   <li>
- *     reinitialize the instance using the
- *     {@link #initDerivatives(double[], Orbit)} method
- *   </li>
- *   <li>
- *     pass the instance to each force model in turn so that they can put their
- *     own contributions using the various AddXxxAcceleration methods
- *   </li>
- *   <li>
- *     finalize the derivatives by adding the Kepler natural evolution
- *     contribution
- *   </li>
- * </ul>
- * </p>
- * <p>
- * Note that all classes extending this abstract class <em>must</em> be consistent with the
- * implementation of the {@link org.orekit.orbits.Orbit#getJacobianWrtCartesian(
- * org.orekit.orbits.PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
- * method for the corresponding orbit type in terms of parameters order and meaning.
- * </p>
- * @see org.orekit.orbits.Orbit
+ * @see org.orekit.forces.ForceModel
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public abstract class TimeDerivativesEquations implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 4183908052500627555L;
-
-    // CHECKSTYLE: stop VisibilityModifierCheck
-
-    /** Reference to the derivatives array to initialize. */
-    protected double[] storedYDot;
-
-    //CHECKSTYLE: resume VisibilityModifierCheck
-
-    /** Create a new instance.
-     */
-    protected TimeDerivativesEquations() {
-    }
+public interface TimeDerivativesEquations extends Serializable {
 
     /** Initialize all derivatives to zero.
      * @param yDot reference to the array where to put the derivatives.
      * @param currentOrbit current orbit parameters
      * @exception PropagationException if the orbit evolve out of supported range
      */
-    abstract void initDerivatives(double[] yDot, Orbit currentOrbit)
-        throws PropagationException;
+    void initDerivatives(double[] yDot, Orbit currentOrbit) throws PropagationException;
 
     /** Add the contribution of the Kepler evolution.
      * <p>Since the Kepler evolution is the most important, it should
@@ -107,7 +56,7 @@ public abstract class TimeDerivativesEquations implements Serializable {
      * numerical accuracy.</p>
      * @param mu central body gravitational constant
      */
-    public abstract void addKeplerContribution(final double mu);
+    void addKeplerContribution(final double mu);
 
     /** Add the contribution of an acceleration expressed in the inertial frame
      *  (it is important to make sure this acceleration is defined in the
@@ -116,25 +65,20 @@ public abstract class TimeDerivativesEquations implements Serializable {
      * @param y acceleration along the Y axis (m/s<sup>2</sup>)
      * @param z acceleration along the Z axis (m/s<sup>2</sup>)
      */
-    public abstract void addXYZAcceleration(final double x, final double y, final double z);
+    void addXYZAcceleration(final double x, final double y, final double z);
 
     /** Add the contribution of an acceleration expressed in some inertial frame.
      * @param gamma acceleration vector (m/s<sup>2</sup>)
      * @param frame frame in which acceleration is defined (must be an inertial frame)
      * @exception OrekitException if frame transforms cannot be computed
      */
-    public abstract void addAcceleration(final Vector3D gamma, final Frame frame) throws OrekitException;
+    void addAcceleration(final Vector3D gamma, final Frame frame) throws OrekitException;
 
     /** Add the contribution of the flow rate (dm/dt).
      * @param q the flow rate, must be negative (dm/dt)
      * @exception IllegalArgumentException if flow-rate is positive
      */
-    public void addMassDerivative(final double q) {
-        if (q > 0) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
-        }
-        storedYDot[6] += q;
-    }
+    void addMassDerivative(final double q);
 
 
 }

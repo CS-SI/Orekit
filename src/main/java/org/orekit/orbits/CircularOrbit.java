@@ -725,6 +725,26 @@ public class CircularOrbit
 
     }
 
+    /** {@inheritDoc} */
+    public void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot) {
+        final double oMe2  = 1 - ex * ex - ey * ey;
+        final double n     = FastMath.sqrt(mu / a) / a;
+        final double ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
+        switch (type) {
+        case MEAN :
+            pDot[5] += n;
+            break;
+        case ECCENTRIC :
+            pDot[5] += n * ksi / oMe2;
+            break;
+        case TRUE :
+            pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
+            break;
+        default :
+            throw OrekitException.createInternalError(null);
+        }
+    }
+
     /**  Returns a string representation of this Orbit object.
      * @return a string representation of this object
      */
