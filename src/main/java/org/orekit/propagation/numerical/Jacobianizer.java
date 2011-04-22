@@ -40,19 +40,13 @@ import org.orekit.utils.PVCoordinates;
 class Jacobianizer implements AccelerationJacobiansProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -352915943197943037L;
+    private static final long serialVersionUID = 4392740517934778827L;
 
     /** Wrapped force model instance. */
     private final ForceModel forceModel;
 
     /** Step used for finite difference computation with respect to spacecraft position. */
     private double hPos;
-
-    /** Step used for finite difference computation with respect to spacecraft velocity. */
-    private double hVel;
-
-    /** Step used for finite difference computation with respect to spacecraft mass. */
-    private double hMass;
 
     /** Step used for finite difference computation with respect to parameters value. */
     private final Map<String, Double> hParam;
@@ -67,17 +61,13 @@ class Jacobianizer implements AccelerationJacobiansProvider {
      * @param forceModel force model instance to wrap
      * @param paramsAndSteps collection of parameters and their associated steps
      * @param hPos step used for finite difference computation with respect to spacecraft position (m)
-     * @param hVel step used for finite difference computation with respect to spacecraft velocity (m/s)
-     * @param hMass step used for finite difference computation with respect to spacecraft mass (kg)
      */
     public Jacobianizer(final ForceModel forceModel, final Collection<ParameterConfiguration> paramsAndSteps,
-                        final double hPos, final double hVel, final double hMass) {
+                        final double hPos) {
 
         this.forceModel = forceModel;
         this.hParam     = new HashMap<String, Double>();
         this.hPos       = hPos;
-        this.hVel       = hVel;
-        this.hMass      = hMass;
         this.nominal    = new AccelerationRetriever();
         this.shifted    = new AccelerationRetriever();
 
@@ -116,11 +106,19 @@ class Jacobianizer implements AccelerationJacobiansProvider {
                               final double[][] dAccdPos, final double[][] dAccdVel, final double[] dAccdM)
         throws OrekitException {
 
-        // compute df/dy where f is the ODE and y is the state array
+        // estimate the scalar velocity step, assuming energy conservation
+        // and hence differentiating equation V = sqrt(mu (2/r - 1/a))
+        final PVCoordinates pv    = s.getPVCoordinates();
+        final Vector3D      p0    = pv.getPosition();
+        final Vector3D      v0   = pv.getVelocity();
+        final double        r2    = p0.getNormSq();
+        final double        hVel  = s.getMu() * hPos / (v0.getNorm() * r2);
 
-        final Vector3D p0 = s.getPVCoordinates().getPosition();
-        final Vector3D v0 = s.getPVCoordinates().getVelocity();
+        // estimate mass step, applying the same relative value as position
         final double m0 = s.getMass();
+        final double hMass = m0 * hPos / FastMath.sqrt(r2);
+
+        // compute df/dy where f is the ODE and y is the CARTESIAN state array
         computeShiftedAcceleration(nominal, s, p0, v0, m0);
 
         // jacobian with respect to position
@@ -156,7 +154,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
         dAccdVel[2][2] += (shifted.getZ() - nominal.getZ()) / hPos;
 
         if (dAccdM != null) {
-            // jacobian with respect to mass
+            // Jacobian with respect to mass
             computeShiftedAcceleration(shifted, s, p0, v0, m0 + hMass);
             dAccdM[0] += (shifted.getX() - nominal.getX()) / hMass;
             dAccdM[1] += (shifted.getY() - nominal.getY()) / hMass;

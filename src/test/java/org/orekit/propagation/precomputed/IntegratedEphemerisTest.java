@@ -32,9 +32,9 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.JacobiansMapper;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -95,9 +95,10 @@ public class IntegratedEphemerisTest {
         numericalPropagator.setPropagationOrbitType(OrbitType.CARTESIAN);
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
-        derivatives.setInitialJacobians(6, 0);
+        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
+        derivatives.setInitialJacobians(initialState, 6, 0);
         final JacobiansMapper mapper = derivatives.getMapper();
-        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+        numericalPropagator.setInitialState(initialState);
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
         BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
         ephemeris.setMasterMode(new OrekitStepHandler() {
@@ -115,10 +116,11 @@ public class IntegratedEphemerisTest {
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
             throws PropagationException {
                 try {
+                    SpacecraftState state = interpolator.getInterpolatedState();
                     double[] p = interpolator.getInterpolatedAdditionalState(eqName);
                     Assert.assertEquals(mapper.getAdditionalStateDimension(), p.length);
-                    mapper.getStateJacobian(p, dYdY0.getDataRef());
-                    mapper.getParametersJacobian(p, null); // no parameters, this is a no-op and should work
+                    mapper.getStateJacobian(state, p, dYdY0.getDataRef());
+                    mapper.getParametersJacobian(state, p, null); // no parameters, this is a no-op and should work
                     RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
                     Assert.assertTrue(deltaId.getNorm() >  100);
                     Assert.assertTrue(deltaId.getNorm() < 3100);

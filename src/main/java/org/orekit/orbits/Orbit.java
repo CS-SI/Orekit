@@ -324,7 +324,8 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
      * @param type type of the position angle to use
-     * @param jacobian placeholder 6x6 matrix to be filled with the Jacobian
+     * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
+     * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
     public void getJacobianWrtCartesian(final PositionAngle type, final double[][] jacobian) {
 
@@ -371,7 +372,8 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
      * @param type type of the position angle to use
-     * @param jacobian placeholder 6x6 matrix to be filled with the Jacobian
+     * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
+     * is larger than 6x6, only the 6x6 upper left corner will be modified
      */
     public void getJacobianWrtParameters(final PositionAngle type, final double[][] jacobian) {
 

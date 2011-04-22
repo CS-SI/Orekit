@@ -25,14 +25,12 @@ import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
-import org.orekit.orbits.OrbitType;
-import org.orekit.propagation.JacobiansMapper;
 import org.orekit.propagation.SpacecraftState;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
- * This set of equations can be added to a {@link NumericalPropagator numerical propagator}
+ * This set of equations are automaticall added to a {@link NumericalPropagator numerical propagator}
  * in order to compute partial derivatives of the orbit along with the orbit itself. This is
  * useful for example in orbit determination applications.
  * </p>
@@ -65,12 +63,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
     /** Step used for finite difference computation with respect to spacecraft position. */
     private double hPos;
-
-    /** Step used for finite difference computation with respect to spacecraft velocity. */
-    private double hVel;
-
-    /** Step used for finite difference computation with respect to spacecraft mass. */
-    private double hM;
 
     /** Boolean for force models / selected parameters consistency. */
     private boolean dirty = false;
@@ -107,9 +99,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         selectedParameters = new ArrayList<ParameterConfiguration>();
         stateDim = -1;
         paramDim = -1;
-        hPos  = Double.NaN;
-        hVel  = Double.NaN;
-        hM = Double.NaN;
+        hPos     = Double.NaN;
         propagator.addAdditionalEquations(this);
     }
 
@@ -169,22 +159,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         dirty = true;
     }
 
-    /** Set the steps for finite differences with respect to spacecraft state.
+    /** Set the step for finite differences with respect to spacecraft position.
      * @param hPosition step used for finite difference computation with respect to spacecraft position (m)
-     * @param hVelocity step used for finite difference computation with respect to spacecraft velocity (m/s)
-     * @param hMass step used for finite difference computation with respect to spacecraft mass (kg)
      */
-    public void setSteps(final double hPosition, final double hVelocity, final double hMass) {
+    public void setSteps(final double hPosition) {
         this.hPos = hPosition;
-        this.hVel = hVelocity;
-        this.hM   = hMass;
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
      * <p>
-     * This method is equivalent to call {@link #setInitialJacobians(double[][], double[][])}
-     * with dYdY0 set to the identity matrix and dYdP set to a zero matrix.
+     * This method is equivalent to call {@link #setInitialJacobians(SpacecraftState,
+     * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
+     * to a zero matrix.
      * </p>
+     * @param s0 initial state
      * @param stateDimension state dimension, must be either 6 for orbit only or 7 for orbit and mass
      * @param paramDimension parameters dimension
      * @exception OrekitException if the partial equation has not been registered in
@@ -192,46 +180,49 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see #selectedParameters
      * @see #selectParamAndStep(String, double)
      */
-    public void setInitialJacobians(final int stateDimension, final int paramDimension)
+    public void setInitialJacobians(final SpacecraftState s0, final int stateDimension, final int paramDimension)
         throws OrekitException {
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
         final double[][] dYdP  = new double[stateDimension][paramDimension];
         for (int i = 0; i < stateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
-        setInitialJacobians(dYdY0, dYdP);
+        setInitialJacobians(s0, dYdY0, dYdP);
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
-     * @param dYdY0 initial Jacobian w.r to state (may be either 6x6 for orbit only
-     * or 7x7 for orbit and mass)
-     * @param dYdP initial Jacobian w.r to parameter (may be null if no parameters are selected)
+     * @param s1 current state
+     * @param dY1dY0 Jacobian of current state at time t<sub>1</sub> with respect
+     * to state at some previous time t<sub>0</sub> (may be either 6x6 for orbit
+     * only or 7x7 for orbit and mass)
+     * @param dY1dP Jacobian of current state at time t<sub>1</sub> with respect
+     * to parameters (may be null if no parameters are selected)
      * @exception OrekitException if the partial equation has not been registered in
      * the propagator or if matrices dimensions are incorrect
      * @see #selectedParameters
      * @see #selectParamAndStep(String, double)
      */
-    public void setInitialJacobians(final double[][] dYdY0, final double[][] dYdP)
+    public void setInitialJacobians(final SpacecraftState s1,
+                                    final double[][] dY1dY0, final double[][] dY1dP)
         throws OrekitException {
 
         // Check dimensions
-        stateDim = dYdY0.length;
-        if ((stateDim < 6) || (stateDim > 7) || (stateDim != dYdY0[0].length)) {
+        stateDim = dY1dY0.length;
+        if ((stateDim < 6) || (stateDim > 7) || (stateDim != dY1dY0[0].length)) {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NEITHER_6X6_NOR_7X7,
-                                      stateDim, dYdY0[0].length);
+                                      stateDim, dY1dY0[0].length);
         }
-        if ((dYdP != null) && (stateDim != dYdP.length)) {
+        if ((dY1dP != null) && (stateDim != dY1dP.length)) {
             throw new OrekitException(OrekitMessages.STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH,
-                                      stateDim, dYdP.length);
+                                      stateDim, dY1dP.length);
         }
 
-        paramDim = (dYdP == null) ? 0 : dYdP[0].length;
+        paramDim = (dY1dP == null) ? 0 : dY1dP[0].length;
 
         // store the matrices as a single dimension array
         final JacobiansMapper mapper = getMapper();
         final double[] p = new double[mapper.getAdditionalStateDimension()];
-        mapper.setStateJacobian(dYdY0, p);
-        mapper.setParametersJacobian(dYdP, p);
+        mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
         // set value in propagator
         propagator.setInitialAdditionalState(name, p);
@@ -239,11 +230,19 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** Get a mapper between two-dimensional Jacobians and one-dimensional additional state.
-     * @return a mapper between two-dimensional Jacobians and one-dimensional additional state
-     * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
+     * @return a mapper between two-dimensional Jacobians and one-dimensional additional state,
+     * with the same name as the instance
+     * @exception OrekitException if the initial Jacobians have not been initialized yet
+     * @see #setInitialJacobians(SpacecraftState, int, int)
+     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      */
-    public JacobiansMapper getMapper() {
-        return new JacobiansMapper(stateDim, paramDim);
+    public JacobiansMapper getMapper() throws OrekitException {
+        if (stateDim < 0) {
+            throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
+        }
+        return new JacobiansMapper(name, stateDim, paramDim,
+                                   propagator.getPropagationOrbitType(),
+                                   propagator.getPositionAngleType());
     }
 
     /** {@inheritDoc} */
@@ -255,16 +254,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // Lazy initialization
         if (dirty) {
 
-            if (propagator.getPropagationOrbitType() != OrbitType.CARTESIAN) {
-                throw new OrekitException(OrekitMessages.PARTIAL_DERIVATIVES_ONLY_IN_CARTESIAN);
-            }
-
-            // if steps have not been set by user, set default values
+            // if step has not been set by user, set a default value
             if (Double.isNaN(hPos)) {
-                final double factor = FastMath.sqrt(MathUtils.EPSILON);
-                hPos  = factor * s.getPVCoordinates().getPosition().getNorm();
-                hVel  = factor * s.getPVCoordinates().getVelocity().getNorm();
-                hM = factor * s.getMass();
+                hPos = FastMath.sqrt(MathUtils.EPSILON) * s.getPVCoordinates().getPosition().getNorm();
             }
 
              // set up Jacobians providers
@@ -278,7 +270,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                 } else {
 
                     // wrap the force model to compute the Jacobians by finite differences
-                    jacobiansProviders.add(new Jacobianizer(model, selectedParameters, hPos, hVel, hM));
+                    jacobiansProviders.add(new Jacobianizer(model, selectedParameters, hPos));
 
                 }
             }

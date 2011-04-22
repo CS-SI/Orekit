@@ -23,6 +23,11 @@
     <release version="5.1" date="TBD"
              description="TBD.">
       <action dev="luc" type="add" >
+        Added propagation of Jacobians matrices in circular, Keplerian and equinoctial
+        parameters, using either true, eccentric or mean position angles. Formerly,
+        propagation of Jacobians matrices was possible only in Cartesian parameters
+      </action>
+      <action dev="luc" type="add" >
         Added a way to propagate additional state along with orbit in analytical
         propagators, as an analytical counterpart to the additional equations that
         can be integrated by numerical propagators

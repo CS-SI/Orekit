@@ -1003,6 +1003,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
      * @param dP user specified position error
      * @param orbit reference orbit
      * @param type propagation type for the meaning of the tolerance vectors elements
+     * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
      */
