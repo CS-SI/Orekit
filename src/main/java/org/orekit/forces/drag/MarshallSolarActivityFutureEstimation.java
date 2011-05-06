@@ -177,7 +177,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
 
         // third to eighth group: data fields
         for (int i = 0; i < 6; ++i) {
-            builder.append("\\p{Blank}+([0-9]+\\.[0-9]+)");
+            builder.append("\\p{Blank}+([-+]?[0-9]+\\.[0-9]+)");
         }
 
         // end of line
