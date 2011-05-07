@@ -49,19 +49,14 @@ public class CombinedEventsDetectorsManager implements Serializable {
     /** First active event. */
     private EventState first;
 
-    /** Occurred event observer. */
-    private EventObserver observer;
-
     /** Initialization indicator. */
     private boolean initialized;
 
     /** Create an empty manager.
-     * @param observer for the occurred events
      */
-    public CombinedEventsDetectorsManager(final EventObserver observer) {
+    public CombinedEventsDetectorsManager() {
         states      = new ArrayList<EventState>();
         first       = null;
-        this.observer = observer;
         initialized = false;
     }
 
@@ -71,7 +66,7 @@ public class CombinedEventsDetectorsManager implements Serializable {
      * @see #clearEventsDetectors()
      */
     public void addEventDetector(final EventDetector detector) {
-        states.add(new EventState(detector, observer));
+        states.add(new EventState(detector));
     }
 
     /** Get all the events detectors that have been added to the manager.

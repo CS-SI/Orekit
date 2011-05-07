@@ -36,6 +36,10 @@
         Fixed missing partial derivatives data in ephemerides produced by a numerical
         propagator despite it was set up to computed them (fixes bug #16)
       </action>
+      <action dev="luc" type="fix" >
+        Added a new much simpler way to log events occurrences all at once (or
+        only a subset of the events if desired)
+      </action>
       <action dev="pascal" type="add" >
         Added alternative default name for ICGEM files
       </action>
@@ -274,6 +278,14 @@
       <action dev="pascal" type="fix" due-to="Bruno Revelin">
         fixed an error when crawling a classpath or a directory a zip file was found.
         This might lead to select an inappropriate data provider.
+      </action>
+    </release>
+    <release version="5.0.1" date="2011-04-15"
+             description="version 5.0.1 is a minor release of Orekit without any functional changes.
+             The differences with respect to 5.0 are only related to packaging and deployement to
+             maven central. There are NO bug fixes and NO evolutions.">
+      <action dev="luc" type="update">
+        updated packaging to allow deployment to maven central.
       </action>
     </release>
     <release version="5.0" date="2010-05-06"

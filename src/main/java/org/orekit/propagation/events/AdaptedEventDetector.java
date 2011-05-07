@@ -38,7 +38,7 @@ import org.orekit.time.AbsoluteDate;
 public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5163201216950133324L;
+    private static final long serialVersionUID = -5983739314228874403L;
 
     /** Propagation orbit type. */
     private final OrbitType orbitType;
@@ -52,9 +52,6 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
     /** Underlying event detector. */
     private final EventDetector detector;
 
-    /** Occurred event observer. */
-    private final EventObserver observer;
-
     /** Reference date from which t is counted. */
     private final AbsoluteDate referenceDate;
 
@@ -66,7 +63,6 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Build a wrapped event detector.
      * @param detector event detector to wrap
-     * @param observer occurred event observer
      * @param orbitType orbit type
      * @param angleType position angle type
      * @param attitudeProvider attitude provider
@@ -74,13 +70,12 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param integrationFrame frame in which integration is performed
      */
-    public AdaptedEventDetector(final EventDetector detector, final EventObserver observer,
+    public AdaptedEventDetector(final EventDetector detector,
                                 final OrbitType orbitType, final PositionAngle angleType,
                                 final AttitudeProvider attitudeProvider,
                                 final AbsoluteDate referenceDate,
                                 final double mu, final Frame integrationFrame) {
         this.detector         = detector;
-        this.observer         = observer;
         this.orbitType        = orbitType;
         this.angleType        = angleType;
         this.attitudeProvider = attitudeProvider;
@@ -122,7 +117,6 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
 
             final SpacecraftState state = mapArrayToState(t, y);
             final int whatNext = detector.eventOccurred(state, increasing);
-            observer.notify(state, detector);
 
             switch (whatNext) {
             case EventDetector.STOP :
