@@ -45,8 +45,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdaptedEventDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventObserver;
-import org.orekit.propagation.events.OccurredEvent;
 import org.orekit.propagation.sampling.AdaptedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -128,7 +126,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class NumericalPropagator implements Propagator, EventObserver {
+public class NumericalPropagator implements Propagator {
 
     /** Parameters types that can be used for propagation. */
     public enum PropagationParametersType {
@@ -161,9 +159,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
     /** Event detectors not related to force models. */
     private final List<EventDetector> detectors;
-
-    /** List for occurred events. */
-    private final List <OccurredEvent> occurredEvents;
 
     /** State vector. */
     private double[] stateVector;
@@ -216,7 +211,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
         forceModels         = new ArrayList<ForceModel>();
         detectors           = new ArrayList<EventDetector>();
-        occurredEvents      = new ArrayList<OccurredEvent>();
         startDate           = null;
         referenceDate       = null;
         currentState        = null;
@@ -491,12 +485,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** {@inheritDoc} */
-    public void notify(final SpacecraftState s, final EventDetector detector) {
-        // Add occurred event to occurred events list
-        occurredEvents.add(new OccurredEvent(s, detector));
-    }
-
-    /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
         try {
             if (startDate == null) {
@@ -559,9 +547,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     private SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
         throws PropagationException {
         try {
-
-            // reset occurred events list
-            occurredEvents.clear();
 
             if (initialState.getDate().equals(tEnd)) {
                 // don't extrapolate
@@ -773,7 +758,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     protected void setUpEventDetector(final EventDetector osf) {
         final EventHandler handler =
-            new AdaptedEventDetector(osf, this, mapper, referenceDate,
+            new AdaptedEventDetector(osf, mapper, referenceDate,
                                      newtonianAttraction.getMu(), initialState.getFrame());
         integrator.addEventHandler(handler,
                                    osf.getMaxCheckInterval(),

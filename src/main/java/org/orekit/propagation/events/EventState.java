@@ -53,9 +53,6 @@ public class EventState implements Serializable {
     /** Event detector. */
     private EventDetector detector;
 
-    /** Occurred event observer. */
-    private EventObserver observer;
-
     /** Time at the beginning of the step. */
     private AbsoluteDate t0;
 
@@ -87,11 +84,9 @@ public class EventState implements Serializable {
 
     /** Simple constructor.
      * @param detector monitored event detector
-     * @param observer occurred event observer
      */
-    public EventState(final EventDetector detector, final EventObserver observer) {
+    public EventState(final EventDetector detector) {
         this.detector     = detector;
-        this.observer     = observer;
 
         // some dummy values ...
         t0                = null;
@@ -275,7 +270,6 @@ public class EventState implements Serializable {
             previousEventTime = state.getDate();
             g0Positive        = increasing;
             nextAction        = detector.eventOccurred(state, !(increasing ^ forward));
-            observer.notify(state, detector);
         } else {
             g0Positive = g0 >= 0;
             nextAction = EventDetector.CONTINUE;

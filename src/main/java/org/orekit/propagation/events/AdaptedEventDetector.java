@@ -42,9 +42,6 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
     /** Underlying event detector. */
     private final EventDetector detector;
 
-    /** Occurred event observer. */
-    private final EventObserver observer;
-
     /** Reference date from which t is counted. */
     private final AbsoluteDate referenceDate;
 
@@ -56,17 +53,15 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Build a wrapped event detector.
      * @param detector event detector to wrap
-     * @param observer occurred event observer
      * @param mapper mapper between spacecraft state and simple array
      * @param referenceDate reference date from which t is counted
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param integrationFrame frame in which integration is performed
      */
-    public AdaptedEventDetector(final EventDetector detector, final EventObserver observer,
+    public AdaptedEventDetector(final EventDetector detector,
                                 final StateMapper mapper, final AbsoluteDate referenceDate,
                                 final double mu, final Frame integrationFrame) {
         this.detector         = detector;
-        this.observer         = observer;
         this.mapper           = mapper;
         this.referenceDate    = referenceDate;
         this.mu               = mu;
@@ -92,7 +87,6 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
             final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
             final SpacecraftState state = mapper.mapArrayToState(y, currentDate, mu, integrationFrame);
             final int whatNext = detector.eventOccurred(state, increasing);
-            observer.notify(state, detector);
 
             switch (whatNext) {
             case EventDetector.STOP :
