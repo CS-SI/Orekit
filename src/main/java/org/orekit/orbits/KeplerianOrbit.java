@@ -690,14 +690,6 @@ public class KeplerianOrbit extends Orbit {
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
-     * </p>
      * @return 6x6 Jacobian matrix
      */
     private double[][] computeJacobianMeanWrtCartesianElliptical() {
@@ -836,14 +828,6 @@ public class KeplerianOrbit extends Orbit {
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
-     * </p>
      * @return 6x6 Jacobian matrix
      */
     private double[][] computeJacobianMeanWrtCartesianHyperbolic() {
@@ -978,14 +962,6 @@ public class KeplerianOrbit extends Orbit {
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
-     * </p>
      * @return 6x6 Jacobian matrix
      */
     private double[][] computeJacobianEccentricWrtCartesianElliptical() {
@@ -1018,14 +994,6 @@ public class KeplerianOrbit extends Orbit {
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
-     * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
      * </p>
      * @return 6x6 Jacobian matrix
      */
@@ -1069,14 +1037,6 @@ public class KeplerianOrbit extends Orbit {
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
-     * </p>
      * @return 6x6 Jacobian matrix
      */
     private double[][] computeJacobianTrueWrtCartesianElliptical() {
@@ -1115,14 +1075,6 @@ public class KeplerianOrbit extends Orbit {
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
-     * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
      * </p>
      * @return 6x6 Jacobian matrix
      */
