@@ -22,6 +22,10 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added a new much simpler way to log events occurrences all at once (or
+        only a subset of the events if desired)
+      </action>
       <action dev="pascal" type="add" >
         Added alternative default name for ICGEM files
       </action>

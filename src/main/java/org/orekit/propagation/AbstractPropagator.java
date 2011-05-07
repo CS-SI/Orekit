@@ -36,9 +36,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventObserver;
 import org.orekit.propagation.events.EventState;
-import org.orekit.propagation.events.OccurredEvent;
 import org.orekit.propagation.numerical.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -62,7 +60,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public abstract class AbstractPropagator implements Propagator, EventObserver {
+public abstract class AbstractPropagator implements Propagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 4797122381575498520L;
@@ -81,9 +79,6 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
     /** Initialization indicator of events states. */
     private boolean statesInitialized;
-
-    /** List for occurred events. */
-    private final List <OccurredEvent> occurredEvents;
 
     /** Internal steps interpolator. */
     private final BasicStepInterpolator interpolator;
@@ -110,7 +105,6 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     protected AbstractPropagator(final AttitudeProvider attitudeProvider) {
         eventsStates           = new ArrayList<EventState>();
         statesInitialized      = false;
-        occurredEvents         = new ArrayList<OccurredEvent>();
         interpolator           = new BasicStepInterpolator();
         this.pvProvider        = new LocalPVProvider();
         this.attitudeProvider  = attitudeProvider;
@@ -196,7 +190,7 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
 
     /** {@inheritDoc} */
     public void addEventDetector(final EventDetector detector) {
-        eventsStates.add(new EventState(detector, this));
+        eventsStates.add(new EventState(detector));
     }
 
     /** {@inheritDoc} */
@@ -471,12 +465,6 @@ public abstract class AbstractPropagator implements Propagator, EventObserver {
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         initialState = state;
-    }
-
-    /** {@inheritDoc} */
-    public void notify(final SpacecraftState s, final EventDetector detector) {
-        // Add occurred event to occurred events list
-        occurredEvents.add(new OccurredEvent(s, detector));
     }
 
     /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
