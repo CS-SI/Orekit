@@ -31,6 +31,7 @@ import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.events.EventHandler;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.util.FastMath;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
@@ -41,7 +42,6 @@ import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -52,8 +52,6 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AdaptedEventDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventObserver;
-import org.orekit.propagation.events.OccurredEvent;
 import org.orekit.propagation.sampling.AdaptedStepHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -153,7 +151,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision$ $Date$
  */
-public class NumericalPropagator implements Propagator, EventObserver {
+public class NumericalPropagator implements Propagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2385169798425713766L;
@@ -176,9 +174,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     /** Event detectors not related to force models. */
     private final List<EventDetector> detectors;
 
-    /** List for occurred events. */
-    private final List <OccurredEvent> occurredEvents;
-
     /** State vector. */
     private double[] stateVector;
 
@@ -199,9 +194,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
     /** Counter for differential equations calls. */
     private int calls;
-
-    /** Mapper between spacecraft state and simple array. */
-    private StateMapper mapper;
 
     /** Propagator mode handler. */
     private transient ModeHandler modeHandler;
@@ -232,7 +224,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
         forceModels         = new ArrayList<ForceModel>();
         detectors           = new ArrayList<EventDetector>();
-        occurredEvents      = new ArrayList<OccurredEvent>();
         startDate           = null;
         referenceDate       = null;
         currentState        = null;
@@ -518,12 +509,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
     }
 
     /** {@inheritDoc} */
-    public void notify(final SpacecraftState s, final EventDetector detector) {
-        // Add occurred event to occurred events list
-        occurredEvents.add(new OccurredEvent(s, detector));
-    }
-
-    /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
         try {
             if (startDate == null) {
@@ -587,9 +572,6 @@ public class NumericalPropagator implements Propagator, EventObserver {
         throws PropagationException {
         try {
 
-            // reset occurred events list
-            occurredEvents.clear();
-
             if (initialState.getDate().equals(tEnd)) {
                 // don't extrapolate
                 return initialState;
@@ -602,27 +584,7 @@ public class NumericalPropagator implements Propagator, EventObserver {
             referenceDate  = initialState.getDate();
 
             // set propagation orbit type
-            Orbit initialOrbit = null;
-            switch (orbitType) {
-            case CARTESIAN :
-                initialOrbit = new CartesianOrbit(initialState.getOrbit());
-                mapper = new StateMapperCartesian(attitudeProvider);
-                break;
-            case CIRCULAR :
-                initialOrbit = new CircularOrbit(initialState.getOrbit());
-                mapper = new StateMapperCircular(angleType, attitudeProvider);
-                break;
-            case EQUINOCTIAL :
-                initialOrbit = new EquinoctialOrbit(initialState.getOrbit());
-                mapper = new StateMapperEquinoctial(angleType, attitudeProvider);
-                break;
-            case KEPLERIAN :
-                initialOrbit = new KeplerianOrbit(initialState.getOrbit());
-                mapper = new StateMapperKeplerian(angleType, attitudeProvider);
-                break;
-            default :
-                throw OrekitException.createInternalError(null);
-            }
+            Orbit initialOrbit = orbitType.convertType(initialState.getOrbit());
             if (Double.isNaN(getMu())) {
                 setMu(initialOrbit.getMu());
             }
@@ -641,7 +603,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
                 for (final AdditionalEquationsAndData equationsAndData : addEquationsAndData) {
                     stateData.add(equationsAndData.getData());
                 }
-                modeHandler.initialize(mapper, stateData, activateHandlers, referenceDate,
+                modeHandler.initialize(orbitType, angleType, attitudeProvider, stateData,
+                                       activateHandlers, referenceDate,
                                        initialState.getFrame(), newtonianAttraction.getMu());
             }
 
@@ -660,7 +623,8 @@ public class NumericalPropagator implements Propagator, EventObserver {
             final double t1 = tEnd.durationFrom(initialState.getDate());
 
             // Map state to array
-            mapper.mapStateToArray(initialState, stateVector);
+            orbitType.mapOrbitToArray(initialState.getOrbit(), angleType, stateVector);
+            stateVector[6] = initialState.getMass();
             int index = 7;
             for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
                 final double[] addState = stateAndEqu.getData().getAdditionalState();
@@ -708,7 +672,11 @@ public class NumericalPropagator implements Propagator, EventObserver {
             }
 
             // get final state
-            initialState = mapper.mapArrayToState(stateVector, date, getMu(), initialState.getFrame());
+            final Orbit finalOrbit = orbitType.mapArrayToOrbit(stateVector, angleType, date, getMu(),
+                                                               initialState.getFrame());
+            final Attitude finalAttitude = attitudeProvider.getAttitude(finalOrbit, date,
+                                                                        initialState.getFrame());
+            initialState = new SpacecraftState(finalOrbit, finalAttitude, stateVector[6]);
             startDate = date;
             return initialState;
 
@@ -809,8 +777,9 @@ public class NumericalPropagator implements Propagator, EventObserver {
      */
     protected void setUpEventDetector(final EventDetector osf) {
         final EventHandler handler =
-            new AdaptedEventDetector(osf, this, mapper, referenceDate,
-                                     newtonianAttraction.getMu(), initialState.getFrame());
+            new AdaptedEventDetector(osf, orbitType, angleType, attitudeProvider,
+                                     referenceDate, newtonianAttraction.getMu(),
+                                     initialState.getFrame());
         integrator.addEventHandler(handler,
                                    osf.getMaxCheckInterval(),
                                    osf.getThreshold(),
@@ -865,7 +834,13 @@ public class NumericalPropagator implements Propagator, EventObserver {
 
             try {
                 // update space dynamics view
-                currentState = mapper.mapArrayToState(y, referenceDate.shiftedBy(t), currentState.getMu(), currentState.getFrame());
+                final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
+                final Orbit currentOrbit =
+                    orbitType.mapArrayToOrbit(y, angleType, currentDate,
+                                              currentState.getMu(), currentState.getFrame());
+                final Attitude currentAttitude =
+                    attitudeProvider.getAttitude(currentOrbit, currentDate, currentState.getFrame());
+                currentState = new SpacecraftState(currentOrbit, currentAttitude, y[6]);
 
                 if (currentState.getMass() <= 0.0) {
                     throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,

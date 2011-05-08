@@ -139,7 +139,8 @@ public class KeplerianOrbit extends Orbit {
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits
+     * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
+     * or v is out of range for hyperbolic orbits
      */
     public KeplerianOrbit(final double a, final double e, final double i,
                           final double pa, final double raan,
@@ -158,23 +159,32 @@ public class KeplerianOrbit extends Orbit {
         this.pa   =   pa;
         this.raan = raan;
 
+        final double tmpV;
         switch (type) {
         case MEAN :
-            this.v = (a < 0) ?
+            tmpV = (a < 0) ?
                      hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly)) :
                      ellipticEccentricToTrue(meanToEllipticEccentric(anomaly));
             break;
         case ECCENTRIC :
-            this.v = (a < 0) ?
+            tmpV = (a < 0) ?
                      hyperbolicEccentricToTrue(anomaly) :
                      ellipticEccentricToTrue(anomaly);
             break;
         case TRUE :
-            this.v = anomaly;
+            tmpV = anomaly;
             break;
         default : // this should never happen
             throw OrekitException.createInternalError(null);
         }
+
+        // check true anomaly range
+        if (1 + e * FastMath.cos(tmpV) <= 0) {
+            final double vMax = FastMath.acos(-1 / e);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE,
+                                                                 tmpV, e, -vMax, vMax);
+        }
+        this.v = tmpV;
 
     }
 
@@ -201,7 +211,8 @@ public class KeplerianOrbit extends Orbit {
      * @deprecated as of 5.1 replaced by {@link #KeplerianOrbit(double, double, double,
      * double, double, double, PositionAngle, Frame, AbsoluteDate, double)
      * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits
+     * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
+     * or v is out of range for hyperbolic orbits
      */
     @Deprecated
     public KeplerianOrbit(final double a, final double e, final double i,
@@ -378,8 +389,9 @@ public class KeplerianOrbit extends Orbit {
     public double getEccentricAnomaly() {
         if (a < 0) {
             // hyperbolic case
-            final double t = FastMath.sqrt((e - 1) / (e + 1)) * FastMath.tan(v / 2);
-            return FastMath.log((1 + t) / (1 - t));
+            final double sinhH = FastMath.sqrt(e * e - 1) * FastMath.sin(v) /
+                                 (1 + e * FastMath.cos(v));
+            return FastMath.asinh(sinhH);
         }
 
         // elliptic case
@@ -651,20 +663,15 @@ public class KeplerianOrbit extends Orbit {
      */
     private PVCoordinates initPVCoordinatesHyperbolic(final Vector3D p, final Vector3D q) {
 
-        // hyperbolic eccentric anomaly
-        final double h      = getEccentricAnomaly();
-        final double cH     = FastMath.cosh(h);
-        final double sH     = FastMath.sinh(h);
-        final double sE2m1  = FastMath.sqrt((e - 1) * (e + 1));
+        // compute position and velocity factors
+        final double sinV      = FastMath.sin(v);
+        final double cosV      = FastMath.cos(v);
+        final double f         = a * (1 - e * e);
+        final double posFactor = f / (1 + e * cosV);
+        final double velFactor = FastMath.sqrt(getMu() / f);
 
-        // coordinates of position and velocity in the orbital plane
-        final double x      = a * (cH - e);
-        final double y      = -a * sE2m1 * sH;
-        final double factor = FastMath.sqrt(getMu() / -a) / (e * cH - 1);
-        final double xDot   = -factor * sH;
-        final double yDot   =  factor * sE2m1 * cH;
-
-        return new PVCoordinates(new Vector3D(x, p, y, q), new Vector3D(xDot, p, yDot, q));
+        return new PVCoordinates(new Vector3D( posFactor * cosV, p, posFactor * sinV, q),
+                                 new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q));
 
     }
 
@@ -689,14 +696,6 @@ public class KeplerianOrbit extends Orbit {
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
-     * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
      * </p>
      * @return 6x6 Jacobian matrix
      */
@@ -836,14 +835,6 @@ public class KeplerianOrbit extends Orbit {
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
-     * </p>
      * @return 6x6 Jacobian matrix
      */
     private double[][] computeJacobianMeanWrtCartesianHyperbolic() {
@@ -978,14 +969,6 @@ public class KeplerianOrbit extends Orbit {
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
-     * </p>
      * @return 6x6 Jacobian matrix
      */
     private double[][] computeJacobianEccentricWrtCartesianElliptical() {
@@ -1018,14 +1001,6 @@ public class KeplerianOrbit extends Orbit {
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
-     * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
      * </p>
      * @return 6x6 Jacobian matrix
      */
@@ -1069,14 +1044,6 @@ public class KeplerianOrbit extends Orbit {
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
      * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
-     * </p>
      * @return 6x6 Jacobian matrix
      */
     private double[][] computeJacobianTrueWrtCartesianElliptical() {
@@ -1115,14 +1082,6 @@ public class KeplerianOrbit extends Orbit {
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
      * respect to cartesian coordinate j (x for j=0, y for j=1, z for j=2, xDot for j=3,
      * yDot for j=4, zDot for j=5).
-     * </p>
-     * <p>
-     * The order and meaning of the rows for all implementations of this method <em>must</em>
-     * be consistent with the mapping done in implementations of the {@link
-     * org.orekit.propagation.numerical.StateMapper StateMapper} interface. This typically
-     * implies that for orbits types which have a notion of mean/eccentric/true angle, the
-     * corresponding row of the Jacobian is the last one and corresponds to the partial
-     * derivatives of the <em>true</em> angle.
      * </p>
      * @return 6x6 Jacobian matrix
      */

@@ -20,10 +20,14 @@ import java.io.Serializable;
 
 import org.apache.commons.math.ode.events.EventException;
 import org.apache.commons.math.ode.events.EventHandler;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 
 /** Adapt an {@link org.orekit.propagation.events.EventDetector}
@@ -34,16 +38,19 @@ import org.orekit.time.AbsoluteDate;
 public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5270333983406326215L;
+    private static final long serialVersionUID = -5983739314228874403L;
 
-    /** Mapper between spacecraft state and simple array. */
-    private final StateMapper mapper;
+    /** Propagation orbit type. */
+    private final OrbitType orbitType;
+
+    /** Position angle type. */
+    private final PositionAngle angleType;
+
+    /** Attitude provider. */
+    private final AttitudeProvider attitudeProvider;
 
     /** Underlying event detector. */
     private final EventDetector detector;
-
-    /** Occurred event observer. */
-    private final EventObserver observer;
 
     /** Reference date from which t is counted. */
     private final AbsoluteDate referenceDate;
@@ -56,29 +63,48 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Build a wrapped event detector.
      * @param detector event detector to wrap
-     * @param observer occurred event observer
-     * @param mapper mapper between spacecraft state and simple array
+     * @param orbitType orbit type
+     * @param angleType position angle type
+     * @param attitudeProvider attitude provider
      * @param referenceDate reference date from which t is counted
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param integrationFrame frame in which integration is performed
      */
-    public AdaptedEventDetector(final EventDetector detector, final EventObserver observer,
-                                final StateMapper mapper, final AbsoluteDate referenceDate,
+    public AdaptedEventDetector(final EventDetector detector,
+                                final OrbitType orbitType, final PositionAngle angleType,
+                                final AttitudeProvider attitudeProvider,
+                                final AbsoluteDate referenceDate,
                                 final double mu, final Frame integrationFrame) {
         this.detector         = detector;
-        this.observer         = observer;
-        this.mapper           = mapper;
+        this.orbitType        = orbitType;
+        this.angleType        = angleType;
+        this.attitudeProvider = attitudeProvider;
         this.referenceDate    = referenceDate;
         this.mu               = mu;
         this.integrationFrame = integrationFrame;
+    }
+
+    /** Map array to spacecraft state.
+     * @param t relative date
+     * @param current state
+     * @return spececraft state as a flight dynamics object
+     * @exception OrekitException if mapping cannot be done
+     */
+    private SpacecraftState mapArrayToState(final double t, final double[] y)
+        throws OrekitException {
+        final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
+        final Orbit currentOrbit =
+            orbitType.mapArrayToOrbit(y, angleType, currentDate, mu, integrationFrame);
+        final Attitude currentAttitude =
+            attitudeProvider.getAttitude(currentOrbit, currentDate, integrationFrame);
+        return new SpacecraftState(currentOrbit, currentAttitude, y[6]);
     }
 
     /** {@inheritDoc} */
     public double g(final double t, final double[] y)
         throws EventException {
         try {
-            final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
-            return detector.g(mapper.mapArrayToState(y, currentDate, mu, integrationFrame));
+            return detector.g(mapArrayToState(t, y));
         } catch (OrekitException oe) {
             throw new EventException(oe);
         }
@@ -89,10 +115,8 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
         throws EventException {
         try {
 
-            final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
-            final SpacecraftState state = mapper.mapArrayToState(y, currentDate, mu, integrationFrame);
+            final SpacecraftState state = mapArrayToState(t, y);
             final int whatNext = detector.eventOccurred(state, increasing);
-            observer.notify(state, detector);
 
             switch (whatNext) {
             case EventDetector.STOP :
@@ -113,10 +137,10 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
     public void resetState(final double t, final double[] y)
         throws EventException {
         try {
-            final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
-            final SpacecraftState oldState = mapper.mapArrayToState(y, currentDate, mu, integrationFrame);
+            final SpacecraftState oldState = mapArrayToState(t, y);
             final SpacecraftState newState = detector.resetState(oldState);
-            mapper.mapStateToArray(newState, y);
+            orbitType.mapOrbitToArray(newState.getOrbit(), angleType, y);
+            y[6] = newState.getMass();
         } catch (OrekitException oe) {
             throw new EventException(oe);
         }

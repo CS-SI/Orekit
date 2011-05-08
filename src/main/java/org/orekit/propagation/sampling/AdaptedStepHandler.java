@@ -22,14 +22,18 @@ import java.util.List;
 import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.AdditionalStateData;
 import org.orekit.propagation.numerical.ModeHandler;
-import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 
 /** Adapt an {@link org.orekit.propagation.sampling.OrekitStepHandler}
@@ -43,8 +47,14 @@ public class AdaptedStepHandler
     /** Serializable UID. */
     private static final long serialVersionUID = -8067262257341902186L;
 
-    /** Mapper between spacecraft state and simple array. */
-    private StateMapper mapper;
+    /** Propagation orbit type. */
+    private OrbitType orbitType;
+
+    /** Position angle type. */
+    private PositionAngle angleType;
+
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProvider;
 
     /** Additional state data list. */
     private List <AdditionalStateData> addStateData;
@@ -75,10 +85,14 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void initialize(final StateMapper stateMapper, final List <AdditionalStateData> addStateData,
+    public void initialize(final OrbitType orbitType, final PositionAngle angleType,
+                           final AttitudeProvider attitudeProvider,
+                           final List <AdditionalStateData> addStateData,
                            final boolean activateHandlers,
                            final AbsoluteDate reference, final Frame frame, final double mu) {
-        this.mapper               = stateMapper;
+        this.orbitType            = orbitType;
+        this.angleType            = angleType;
+        this.attitudeProvider     = attitudeProvider;
         this.addStateData         = addStateData;
         this.activate             = activateHandlers;
         this.initializedReference = reference;
@@ -156,7 +170,10 @@ public class AdaptedStepHandler
         try {
             final double[] y = rawInterpolator.getInterpolatedState();
             final AbsoluteDate interpolatedDate = initializedReference.shiftedBy(rawInterpolator.getInterpolatedTime());
-            return mapper.mapArrayToState(y, interpolatedDate, initializedMu, initializedFrame);
+            final Orbit orbit =
+                orbitType.mapArrayToOrbit(y, angleType, interpolatedDate, initializedMu, initializedFrame);
+            final Attitude attitude = attitudeProvider.getAttitude(orbit, interpolatedDate, initializedFrame);
+            return new SpacecraftState(orbit, attitude, y[6]);
         } catch (DerivativeException de) {
             throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
         }

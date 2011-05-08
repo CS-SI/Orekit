@@ -36,6 +36,10 @@
         Fixed missing partial derivatives data in ephemerides produced by a numerical
         propagator despite it was set up to computed them (fixes bug #16)
       </action>
+      <action dev="luc" type="fix" >
+        Added a new much simpler way to log events occurrences all at once (or
+        only a subset of the events if desired)
+      </action>
       <action dev="pascal" type="add" >
         Added alternative default name for ICGEM files
       </action>

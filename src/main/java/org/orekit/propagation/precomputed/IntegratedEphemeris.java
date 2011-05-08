@@ -20,17 +20,20 @@ import java.util.List;
 
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.DerivativeException;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.AnalyticalPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.AdditionalStateData;
-import org.orekit.propagation.numerical.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -72,10 +75,16 @@ public class IntegratedEphemeris
     extends AnalyticalPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6944126760551100145L;
+    private static final long serialVersionUID = -2135002726640830424L;
 
-    /** Mapper between spacecraft state and simple array. */
-    private final StateMapper mapper;
+    /** Propagation orbit type. */
+    private final OrbitType orbitType;
+
+    /** Position angle type. */
+    private final PositionAngle angleType;
+
+    /** Attitude provider. */
+    private final AttitudeProvider attitudeProvider;
 
     /** Reference frame. */
     private final Frame referenceFrame;
@@ -99,7 +108,9 @@ public class IntegratedEphemeris
      * @param startDate Start date of the integration (can be minDate or maxDate)
      * @param minDate first date of the range
      * @param maxDate last date of the range
-     * @param mapper mapper between spacecraft state and simple array
+     * @param orbitType orbit type
+     * @param angleType position angle type
+     * @param attitudeProvider attitude provider
      * @param providers list of additional state providers
      * @param model underlying raw mathematical model
      * @param referenceFrame reference referenceFrame
@@ -108,20 +119,24 @@ public class IntegratedEphemeris
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                               final StateMapper mapper, final List<AdditionalStateData> stateData,
+                               final OrbitType orbitType, final PositionAngle angleType,
+                               final AttitudeProvider attitudeProvider,
+                               final List<AdditionalStateData> stateData,
                                final ContinuousOutputModel model,
                                final Frame referenceFrame, final double mu)
         throws OrekitException {
 
         super(DEFAULT_LAW);
 
-        this.startDate      = startDate;
-        this.minDate        = minDate;
-        this.maxDate        = maxDate;
-        this.mapper         = mapper;
-        this.model          = model;
-        this.referenceFrame = referenceFrame;
-        this.mu             = mu;
+        this.startDate        = startDate;
+        this.minDate          = minDate;
+        this.maxDate          = maxDate;
+        this.orbitType        = orbitType;
+        this.angleType        = angleType;
+        this.attitudeProvider = attitudeProvider;
+        this.model            = model;
+        this.referenceFrame   = referenceFrame;
+        this.mu               = mu;
 
         // set up providers to map the final elements of the model array to additional states
         int index = 7;
@@ -162,7 +177,11 @@ public class IntegratedEphemeris
         throws PropagationException {
         try {
             setInterpolationDate(date);
-            return mapper.mapArrayToState(model.getInterpolatedState(), date, mu, referenceFrame);
+            final double[] y = model.getInterpolatedState();
+            final Orbit orbit =
+                orbitType.mapArrayToOrbit(y, angleType, date, mu, referenceFrame);
+            final Attitude attitude = attitudeProvider.getAttitude(orbit, date, referenceFrame);
+            return new SpacecraftState(orbit, attitude, y[6]);
         } catch (DerivativeException de) {
             throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
         } catch (OrekitException oe) {

@@ -125,6 +125,7 @@ public enum OrekitMessages implements Localizable {
     STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH("state Jacobian has {0} rows but parameters Jacobian has {1} rows"),
     INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH("initial Jacobian matrix has {0} columns, but {1} parameters have been selected"),
     ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE("orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}"),
+    ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE("true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})"),
     HYPERBOLIC_ORBIT_NOT_HANDLED_AS("hyperbolic orbits cannot be handled as {0} instances"),
     CCSDS_DATE_INVALID_PREAMBLE_FIELD("invalid preamble field in CCSDS date: {0}"),
     CCSDS_DATE_INVALID_LENGTH_TIME_FIELD("invalid time field length in CCSDS date: {0}, expected {1}"),
