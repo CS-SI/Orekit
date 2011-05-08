@@ -292,19 +292,12 @@ public abstract class AnalyticalPropagator implements Propagator {
             startDate = state.getDate();
             return state;
 
+        } catch (PropagationException pe) {
+            throw pe;
         } catch (OrekitException oe) {
-
-            // recover a possible embedded PropagationException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof PropagationException) {
-                    throw (PropagationException) t;
-                }
-            }
-
-            throw new PropagationException(oe);
-
+            throw PropagationException.unwrap(oe);
         } catch (ConvergenceException ce) {
-            throw new PropagationException(ce, ce.getGeneralPattern(), ce.getArguments());
+            throw PropagationException.unwrap(ce);
         }
     }
 

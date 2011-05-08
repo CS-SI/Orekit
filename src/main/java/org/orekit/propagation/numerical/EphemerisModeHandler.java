@@ -18,8 +18,8 @@ package org.orekit.propagation.numerical;
 
 import java.util.List;
 
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.ContinuousOutputModel;
-import org.apache.commons.math.ode.DerivativeException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
@@ -113,7 +113,7 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
 
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
-        throws DerivativeException {
+        throws MathUserException {
         try {
             if (activate) {
                 model.handleStep(interpolator, isLast);
@@ -142,7 +142,7 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
                 }
             }
         } catch (OrekitException oe) {
-            throw new DerivativeException(oe);
+            throw new MathUserException(oe);
         }
     }
 

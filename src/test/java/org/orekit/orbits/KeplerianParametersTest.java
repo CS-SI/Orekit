@@ -702,7 +702,7 @@ public class KeplerianParametersTest {
             double[] row    = jacobian[i];
             double[] rowRef = jRef[i];
             for (int j = 0; j < row.length; j++) {
-                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 6.0e-15);
+                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 1.0e-14);
             }
         }
 

@@ -16,6 +16,8 @@
  */
 package org.orekit.errors;
 
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.exception.MathRuntimeException;
 import org.apache.commons.math.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
@@ -55,6 +57,90 @@ public class PropagationException extends OrekitException {
      */
     public PropagationException(final OrekitException exception) {
         super(exception);
+    }
+
+    /** Simple constructor.
+     * Build an exception wrapping an {@link OrekitException} instance
+     * @param exception underlying cause
+     */
+    public PropagationException(final MathException exception) {
+        super(exception);
+    }
+
+    /** Simple constructor.
+     * Build an exception wrapping an {@link OrekitException} instance
+     * @param exception underlying cause
+     */
+    public PropagationException(final MathRuntimeException exception) {
+        super(exception);
+    }
+
+    /** Recover a PropagationException, possibly embedded in a {@link OrekitException}.
+     * <p>
+     * If the {@code OrekitException} does not embed a PropagationException, a
+     * new one will be created.
+     * </p>
+     * @param oe OrekitException to analyze
+     * @return a (possibly embedded) PropagationException
+     */
+    public static PropagationException unwrap(final OrekitException oe) {
+
+        for (Throwable t = oe; t != null; t = t.getCause()) {
+            if (t instanceof PropagationException) {
+                return (PropagationException) t;
+            }
+        }
+
+        return new PropagationException(oe);
+
+    }
+
+    /** Recover a PropagationException, possibly embedded in a {@link MathException}.
+     * <p>
+     * If the {@code MathException} does not embed a PropagationException, a
+     * new one will be created.
+     * </p>
+     * @param me MathException to analyze
+     * @return a (possibly embedded) PropagationException
+     */
+    public static PropagationException unwrap(final MathException me) {
+
+        for (Throwable t = me; t != null; t = t.getCause()) {
+            if (t instanceof OrekitException) {
+                if (t instanceof PropagationException) {
+                    return (PropagationException) t;
+                } else {
+                    return new PropagationException((OrekitException) t);
+                }
+            }
+        }
+
+        return new PropagationException(me);
+
+    }
+
+    /** Recover a PropagationException, possibly embedded in a {@link MathRuntimeException}.
+     * <p>
+     * If the {@code MathRuntimeException} does not embed a PropagationException, a
+     * new one will be created.
+     * </p>
+     * @param mre MathRuntimeException to analyze
+     * @return a (possibly embedded) PropagationException
+     */
+    public static PropagationException unwrap(final MathRuntimeException mre) {
+
+        for (Throwable t = mre; t != null; t = t.getCause()) {
+            if (t instanceof OrekitException) {
+                if (t instanceof PropagationException) {
+                    return (PropagationException) t;
+                } else {
+                    return new PropagationException((OrekitException) t);
+                }
+            }
+        }
+
+        return new PropagationException(mre);
+
     }
 
 }

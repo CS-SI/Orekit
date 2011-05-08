@@ -182,7 +182,7 @@
         published by IERS (both the finals and daily files are supported).
       </action>
       <action dev="luc" type="update">
-        Orekit now depends on at least version 2.2 of Apache commons-math
+        Orekit now depends on at least version 3.0 of Apache commons-math
       </action>
       <action dev="luc" type="add">
         added a way to list what data have been loaded through DataProvidersManager

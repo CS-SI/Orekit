@@ -19,7 +19,6 @@ package org.orekit.propagation.events;
 import java.io.Serializable;
 
 import org.apache.commons.math.ConvergenceException;
-import org.apache.commons.math.FunctionEvaluationException;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
 import org.apache.commons.math.util.FastMath;
@@ -168,12 +167,12 @@ public class EventState implements Serializable {
                     increasing = gb >= ga;
 
                     final UnivariateRealFunction f = new UnivariateRealFunction() {
-                        public double value(final double t) throws FunctionEvaluationException {
+                        public double value(final double t) throws LocalWrapperException {
                             try {
                                 interpolator.setInterpolatedDate(t0.shiftedBy(t));
                                 return detector.g(interpolator.getInterpolatedState());
                             } catch (OrekitException oe) {
-                                throw new FunctionEvaluationException(oe, t);
+                                throw new LocalWrapperException(oe);
                             }
                         }
                     };
@@ -235,12 +234,8 @@ public class EventState implements Serializable {
             pendingEventTime = null;
             return false;
 
-        } catch (FunctionEvaluationException fee) {
-            final Throwable cause = fee.getCause();
-            if ((cause != null) && (cause instanceof OrekitException)) {
-                throw (OrekitException) cause;
-            }
-            throw new OrekitException(fee, fee.getGeneralPattern(), fee.getArguments());
+        } catch (LocalWrapperException lwe) {
+            throw lwe.getWrappedException();
         }
 
     }
@@ -304,6 +299,31 @@ public class EventState implements Serializable {
         pendingEventTime  = null;
 
         return newState;
+
+    }
+
+    /** Local runtime exception wrapping OrekitException. */
+    private static class LocalWrapperException extends RuntimeException {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 2734331164409224983L;
+
+        /** Wrapped exception. */
+        private final OrekitException wrappedException;
+
+        /** Simple constructor.
+         * @param wrapped wrapped exception
+         */
+        public LocalWrapperException(final OrekitException wrapped) {
+            this.wrappedException = wrapped;
+        }
+
+        /** Get the wrapped exception.
+         * @return wrapped exception
+         */
+        public OrekitException getWrappedException() {
+            return wrappedException;
+        }
 
     }
 

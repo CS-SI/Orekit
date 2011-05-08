@@ -18,8 +18,8 @@ package org.orekit.propagation.precomputed;
 
 import java.util.List;
 
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.ContinuousOutputModel;
-import org.apache.commons.math.ode.DerivativeException;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -182,8 +182,21 @@ public class IntegratedEphemeris
                 orbitType.mapArrayToOrbit(y, angleType, date, mu, referenceFrame);
             final Attitude attitude = attitudeProvider.getAttitude(orbit, date, referenceFrame);
             return new SpacecraftState(orbit, attitude, y[6]);
-        } catch (DerivativeException de) {
-            throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
+        } catch (MathUserException mue) {
+
+            // recover a possible embedded OrekitException
+            for (Throwable t = mue; t != null; t = t.getCause()) {
+                if (t instanceof OrekitException) {
+                    if (t instanceof PropagationException) {
+                        throw (PropagationException) t;
+                    } else {
+                        throw new PropagationException((OrekitException) t);
+                    }
+                }
+            }
+
+            throw new PropagationException(mue);
+
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
@@ -273,8 +286,21 @@ public class IntegratedEphemeris
 
                 return additionalState;
 
-            } catch (DerivativeException de) {
-                throw new PropagationException(de, de.getGeneralPattern(), de.getArguments());
+            } catch (MathUserException mue) {
+
+                // recover a possible embedded OrekitException
+                for (Throwable t = mue; t != null; t = t.getCause()) {
+                    if (t instanceof OrekitException) {
+                        if (t instanceof PropagationException) {
+                            throw (PropagationException) t;
+                        } else {
+                            throw new PropagationException((OrekitException) t);
+                        }
+                    }
+                }
+
+                throw new PropagationException(mue);
+
             } catch (OrekitException oe) {
                 throw new PropagationException(oe);
             }
