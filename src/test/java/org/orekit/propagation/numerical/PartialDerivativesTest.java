@@ -26,7 +26,6 @@ import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.Attitude;
@@ -115,7 +114,7 @@ public class PartialDerivativesTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 2.3e-4);
+                        Assert.assertEquals(0, error, 3.0e-4);
                         
                     }
                 }
@@ -126,7 +125,6 @@ public class PartialDerivativesTest {
     }
 
     @Test
-    @Ignore
     public void testPropagationTypesHyperbolic() throws OrekitException, ParseException, IOException {
 
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
@@ -135,9 +133,8 @@ public class PartialDerivativesTest {
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
                                           provider.getC(5, 5, true), provider.getS(5, 5, true));
         SpacecraftState initialState =
-            new SpacecraftState(new KeplerianOrbit(-7000000.0, 1.2, FastMath.toRadians(80.),
-                                                   FastMath.toRadians(80.), FastMath.toRadians(20.),
-                                                   FastMath.toRadians(40.), PositionAngle.MEAN,
+            new SpacecraftState(new KeplerianOrbit(new PVCoordinates(new Vector3D(-1551946.0, 708899.0, 6788204.0),
+                                                                     new Vector3D(-9875.0, -3941.0, -1845.0)),
                                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, mu));
 
         double dt = 3200;
@@ -184,7 +181,7 @@ public class PartialDerivativesTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 2.3e-4);
+                        Assert.assertEquals(0, error, 9.0e-4);
                         
                     }
                 }
@@ -418,15 +415,11 @@ public class PartialDerivativesTest {
             return dYdY0;
         }
 
-        public double[][] getdYdP() {
-            return dYdP;
-        }
-
         public void reset() {
         }
 
         public boolean requiresDenseOutput() {
-            return false;
+            return true;
         }
 
         public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
