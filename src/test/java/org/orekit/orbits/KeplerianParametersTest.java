@@ -508,6 +508,15 @@ public class KeplerianParametersTest {
 
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeV() throws OrekitException {
+        new KeplerianOrbit(-7000434.460140012, 1.1999785407363386, 1.3962787004479158,
+                           1.3962320168955138, 0.3490728321331678, -2.55593407037698,
+                           PositionAngle.TRUE, FramesFactory.getEME2000(),
+                           new AbsoluteDate("2000-01-01T12:00:00.391", TimeScalesFactory.getUTC()),
+                           3.986004415E14);
+    }
+
     @Test
     public void testJacobianReferenceEllipse() throws OrekitException {
 
@@ -683,8 +692,8 @@ public class KeplerianParametersTest {
         };
 
         PVCoordinates pv = orbKep.getPVCoordinates();
-        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm(), 5.0e-16 * pRef.getNorm());
-        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm(), 2.0e-16 * vRef.getNorm());
+        Assert.assertEquals(0, pv.getPosition().subtract(pRef).getNorm() / pRef.getNorm(), 1.0e-16);
+        Assert.assertEquals(0, pv.getVelocity().subtract(vRef).getNorm() / vRef.getNorm(), 3.0e-16);
 
         double[][] jacobian = new double[6][6];
         orbKep.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
@@ -693,7 +702,7 @@ public class KeplerianParametersTest {
             double[] row    = jacobian[i];
             double[] rowRef = jRef[i];
             for (int j = 0; j < row.length; j++) {
-                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 4.0e-15);
+                Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 6.0e-15);
             }
         }
 
@@ -717,7 +726,7 @@ public class KeplerianParametersTest {
                 double[] row    = jacobian[i];
                 double[] rowRef = finiteDiffJacobian[i];
                 for (int j = 0; j < row.length; j++) {
-                    Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 2.0e-8);
+                    Assert.assertEquals(0, (row[j] - rowRef[j]) / rowRef[j], 3.0e-8);
                 }
             }
         }
