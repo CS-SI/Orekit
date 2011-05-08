@@ -231,7 +231,7 @@ public class JacobiansMapper implements Serializable {
             // get the conversion Jacobian between state parameters and cartesian parameters
             final double[][] dYdC = getdYdC(state);
 
-            // compute dYdY0 = dYdC * dCdY0, without allocating new arrays
+            // compute dYdP = dYdC * dCdP, without allocating new arrays
             for (int i = 0; i < stateDimension; i++) {
                 final double[] rowC = dYdC[i];
                 final double[] rowD = dYdP[i];
@@ -240,7 +240,7 @@ public class JacobiansMapper implements Serializable {
                     int pIndex = j + stateDimension * stateDimension;
                     for (int k = 0; k < stateDimension; ++k) {
                         sum += rowC[k] * p[pIndex];
-                        pIndex += stateDimension;
+                        pIndex += parameters;
                     }
                     rowD[j] = sum;
                 }
