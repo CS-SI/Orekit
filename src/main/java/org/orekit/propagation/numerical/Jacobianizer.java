@@ -77,7 +77,8 @@ class Jacobianizer implements AccelerationJacobiansProvider {
             if (forceModel.isSupported(name)) {
                 double step = param.getHP();
                 if (Double.isNaN(step)) {
-                    step = forceModel.getParameter(name) * FastMath.sqrt(MathUtils.EPSILON);
+                    step = FastMath.max(1.0, FastMath.abs(forceModel.getParameter(name))) *
+                           FastMath.sqrt(MathUtils.EPSILON);
                 }
                 hParam.put(name, step);
             }
