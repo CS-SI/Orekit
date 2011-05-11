@@ -20,7 +20,7 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="5.1" date="TBD"
+    <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="update" >
         Changed step handling of analytical propagators, now they use a single step
