@@ -18,6 +18,7 @@ package org.orekit.errors;
 
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.exception.MathRuntimeException;
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
@@ -75,6 +76,14 @@ public class PropagationException extends OrekitException {
         super(exception);
     }
 
+    /** Simple constructor.
+     * Build an exception wrapping an {@link OrekitException} instance
+     * @param exception underlying cause
+     */
+    public PropagationException(final MathUserException exception) {
+        super(exception);
+    }
+
     /** Recover a PropagationException, possibly embedded in a {@link OrekitException}.
      * <p>
      * If the {@code OrekitException} does not embed a PropagationException, a
@@ -127,9 +136,9 @@ public class PropagationException extends OrekitException {
      * @param mre MathRuntimeException to analyze
      * @return a (possibly embedded) PropagationException
      */
-    public static PropagationException unwrap(final MathRuntimeException mre) {
+    public static PropagationException unwrap(final MathUserException mue) {
 
-        for (Throwable t = mre; t != null; t = t.getCause()) {
+        for (Throwable t = mue; t != null; t = t.getCause()) {
             if (t instanceof OrekitException) {
                 if (t instanceof PropagationException) {
                     return (PropagationException) t;
@@ -139,7 +148,7 @@ public class PropagationException extends OrekitException {
             }
         }
 
-        return new PropagationException(mre);
+        return new PropagationException(mue);
 
     }
 
