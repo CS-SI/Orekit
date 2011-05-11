@@ -22,6 +22,7 @@ import java.util.Locale;
 
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.exception.MathRuntimeException;
+import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
@@ -114,6 +115,17 @@ public class OrekitException extends Exception {
      * @since 6.0
      */
     public OrekitException(final MathRuntimeException cause) {
+        super(cause);
+        this.specifier = null;
+        this.parts = new Object[0];
+    }
+
+    /** Simple constructor.
+     * Build an exception from an Apache Commons Math exception
+     * @param cause underlying cause
+     * @since 6.0
+     */
+    public OrekitException(final MathUserException cause) {
         super(cause);
         this.specifier = null;
         this.parts = new Object[0];
