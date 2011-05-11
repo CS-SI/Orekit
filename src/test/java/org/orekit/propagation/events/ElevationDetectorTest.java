@@ -111,11 +111,10 @@ public class ElevationDetectorTest {
                 Vector3D subSat = shape.transform(new GeodeticPoint(p.getLatitude(), p.getLongitude(), 0.0));
                 double range = topo.getRange(subSat, shape.getBodyFrame(), currentState.getDate());
 
-                
                 if (visible) {
-                    Assert.assertTrue(range < 2.5e6);
+                    Assert.assertTrue(range < 2.45e6);
                 } else {
-                    Assert.assertTrue(range > 2.2e6);
+                    Assert.assertTrue(range > 2.02e6);
                 }
 
             } catch (OrekitException e) {

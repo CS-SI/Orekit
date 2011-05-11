@@ -264,12 +264,8 @@ public abstract class AnalyticalPropagator implements Propagator {
 
             // evaluate step size
             final double stepSize;
-            if (mode == MASTER_MODE) {
-                if (Double.isNaN(fixedStepSize)) {
-                    stepSize = state.getKeplerianPeriod() / 100;
-                } else {
-                    stepSize = fixedStepSize;
-                }
+            if ((mode == MASTER_MODE) && !Double.isNaN(fixedStepSize)) {
+                stepSize = state.getKeplerianPeriod() / 100;
             } else {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }

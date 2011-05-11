@@ -81,11 +81,13 @@ public class DetectorTest {
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             // step handling and event occurrences may be out of order up to one step
+            // with variable steps, and two steps with fixed steps (due to the delay
+            // induced by StepNormalizer)
             if (triggerDate != null) {
                 double dt = currentState.getDate().durationFrom(triggerDate);
                 if (dt < 0) {
                     outOfOrderCallDetected = true;
-                    Assert.assertTrue(FastMath.abs(dt) < stepSize);
+                    Assert.assertTrue(FastMath.abs(dt) < (2 * stepSize));
                 }
             }
         }

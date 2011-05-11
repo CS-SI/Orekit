@@ -22,6 +22,13 @@
   <body>
     <release version="5.1" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update" >
+        Changed step handling of analytical propagators, now they use a single step
+        equal to the duration of the propagation in all cases except when a fixed step
+        is requested in master mode. Previously, they arbitrarily used on hundredth of
+        the Keplerian period as the step size, hence performing many steps even if not
+        strictly required
+      </action>
       <action dev="luc" type="add" >
         Added propagation of Jacobians matrices in circular, Keplerian and equinoctial
         parameters, using either true, eccentric or mean position angles. Formerly,
