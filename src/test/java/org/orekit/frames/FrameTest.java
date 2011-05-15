@@ -18,8 +18,8 @@ package org.orekit.frames;
 
 import java.util.Random;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;

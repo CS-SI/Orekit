@@ -16,8 +16,8 @@
  */
 package org.orekit.bodies;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;

@@ -16,7 +16,7 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;

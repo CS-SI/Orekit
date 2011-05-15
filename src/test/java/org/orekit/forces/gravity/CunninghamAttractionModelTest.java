@@ -20,8 +20,8 @@ package org.orekit.forces.gravity;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;

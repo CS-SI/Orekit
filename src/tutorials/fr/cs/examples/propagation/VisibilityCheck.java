@@ -17,7 +17,7 @@
 
 package fr.cs.examples.propagation;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;

@@ -20,7 +20,7 @@ package org.orekit.forces.drag;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;

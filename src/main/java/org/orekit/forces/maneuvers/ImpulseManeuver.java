@@ -16,8 +16,8 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;

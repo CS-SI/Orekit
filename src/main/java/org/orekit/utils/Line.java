@@ -16,7 +16,7 @@
  */
 package org.orekit.utils;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 
 /** The class represent lines in a three dimensional space.
 

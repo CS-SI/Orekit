@@ -18,8 +18,8 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.Rotation;
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 

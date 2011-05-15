@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;

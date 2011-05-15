@@ -18,7 +18,7 @@ package org.orekit.forces.drag;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 
