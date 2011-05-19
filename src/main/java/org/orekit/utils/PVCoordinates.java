@@ -18,7 +18,7 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 
 /** Simple container for Position/Velocity pairs.
  * <p>

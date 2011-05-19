@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 

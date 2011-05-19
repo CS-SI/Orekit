@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.precomputed;
 
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
 import org.apache.commons.math.linear.MatrixUtils;
 import org.apache.commons.math.linear.RealMatrix;

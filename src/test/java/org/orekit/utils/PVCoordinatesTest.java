@@ -17,7 +17,7 @@
 package org.orekit.utils;
 
 
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Test;
 

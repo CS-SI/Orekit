@@ -18,7 +18,7 @@ package org.orekit.orbits;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.linear.DecompositionSolver;
 import org.apache.commons.math.linear.MatrixUtils;
 import org.apache.commons.math.linear.QRDecompositionImpl;

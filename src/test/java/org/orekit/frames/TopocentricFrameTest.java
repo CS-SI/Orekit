@@ -18,7 +18,7 @@ package org.orekit.frames;
 
 
 
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;

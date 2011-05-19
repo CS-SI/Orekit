@@ -17,9 +17,9 @@
 package org.orekit.attitudes;
 
 
-import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
-import org.apache.commons.math.geometry.euclidean.threeD.RotationOrder;
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;

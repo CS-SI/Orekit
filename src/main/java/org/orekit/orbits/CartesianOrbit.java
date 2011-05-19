@@ -16,8 +16,8 @@
  */
 package org.orekit.orbits;
 
-import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;

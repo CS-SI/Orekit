@@ -23,10 +23,10 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math.geometry.euclidean.threeD.Rotation;
-import org.apache.commons.math.geometry.euclidean.threeD.RotationOrder;
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3DFormat;
+import org.apache.commons.math.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3DFormat;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;

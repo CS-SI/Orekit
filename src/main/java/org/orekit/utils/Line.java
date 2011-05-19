@@ -16,7 +16,7 @@
  */
 package org.orekit.utils;
 
-import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 
 /** The class represent lines in a three dimensional space.
 
@@ -28,7 +28,7 @@ import org.apache.commons.math.geometry.euclidean.threeD.Vector3D;
  * direction.</p>
 
  * <p>This class is a simplification of the
- * <code>org.spaceroots.lift.geometry.threeD.Line</code> class from the Lift
+ * <code>org.spaceroots.lift.geometry.threed.Line</code> class from the Lift
  * library written and owned by Luc Maisonobe. It is reused here with permission,
  * as CS has a source and redistribution licence for it.</p>
 
