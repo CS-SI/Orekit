@@ -18,9 +18,9 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 
 

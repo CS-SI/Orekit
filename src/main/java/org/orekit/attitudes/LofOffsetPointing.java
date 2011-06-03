@@ -16,6 +16,7 @@
  */
 package org.orekit.attitudes;
 
+import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
@@ -25,7 +26,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 

@@ -17,6 +17,7 @@
 package org.orekit.attitudes;
 
 
+import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
@@ -38,7 +39,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 
 

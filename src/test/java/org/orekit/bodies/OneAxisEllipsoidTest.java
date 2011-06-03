@@ -17,6 +17,8 @@
 package org.orekit.bodies;
 
 
+import org.apache.commons.math.geometry.euclidean.oned.Vector1D;
+import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
@@ -33,7 +35,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Line;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -132,7 +133,7 @@ public class OneAxisEllipsoidTest {
         model = new OneAxisEllipsoid(100.0, 0.9, frame);
         point = new Vector3D(0.0, -93.7139699, -3.5930796);
         direction = new Vector3D(0.0, -1.0, -1.0);
-        line = Line.revert(new Line(point, direction));
+        line = new Line(point, direction).revert();
         gp = model.getIntersectionPoint(line, point, frame, date);
         Assert.assertTrue(line.contains(model.transform(gp)));
 
@@ -245,13 +246,13 @@ public class OneAxisEllipsoidTest {
         pointItrf     = earth.transform(geoPoint);
         direction = new Vector3D(1., pSatItrf, -1., pointItrf);
         line = new Line(pSatItrf, direction);
-        Assert.assertTrue(line.getAbscissa(pSatItrf) > 0);
+        Assert.assertTrue(line.toSubSpace(pSatItrf).getX() > 0);
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
         
         // With the point opposite to satellite point along the line
-        GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.pointAt(-line.getAbscissa(pSatItrf)), frame, date);
+        GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.toSpace(new Vector1D(-line.toSubSpace(pSatItrf).getX())), frame, date);
         Assert.assertTrue(FastMath.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > FastMath.toRadians(0.1));
         Assert.assertTrue(FastMath.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > FastMath.toRadians(0.1));
         

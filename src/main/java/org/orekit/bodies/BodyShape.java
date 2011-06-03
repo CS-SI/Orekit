@@ -18,11 +18,11 @@ package org.orekit.bodies;
 
 import java.io.Serializable;
 
+import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Line;
 
 
 /** Interface representing the rigid surface shape of a natural body.

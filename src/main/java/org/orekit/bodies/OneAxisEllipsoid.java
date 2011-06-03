@@ -16,6 +16,8 @@
  */
 package org.orekit.bodies;
 
+import org.apache.commons.math.geometry.euclidean.oned.Vector1D;
+import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
@@ -23,7 +25,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Line;
 
 
 /** Modeling of a one-axis ellipsoid.
@@ -157,7 +158,7 @@ public class OneAxisEllipsoid implements BodyShape {
         final Transform frameToBodyFrame = frame.getTransformTo(bodyFrame, date);
         final Line lineInBodyFrame = frameToBodyFrame.transformLine(line);
         final Vector3D closeInBodyFrame = frameToBodyFrame.transformPosition(close);
-        final double closeAbscissa = lineInBodyFrame.getAbscissa(closeInBodyFrame);
+        final double closeAbscissa = lineInBodyFrame.toSubSpace(closeInBodyFrame).getX();
 
         // compute some miscellaneous variables outside of the loop
         final Vector3D point    = lineInBodyFrame.getOrigin();
@@ -190,7 +191,7 @@ public class OneAxisEllipsoid implements BodyShape {
         // select the right point
         final double k =
             (FastMath.abs(k1 - closeAbscissa) < FastMath.abs(k2 - closeAbscissa)) ? k1 : k2;
-        final Vector3D intersection = lineInBodyFrame.pointAt(k);
+        final Vector3D intersection = lineInBodyFrame.toSpace(new Vector1D(k));
         final double ix = intersection.getX();
         final double iy = intersection.getY();
         final double iz = intersection.getZ();
