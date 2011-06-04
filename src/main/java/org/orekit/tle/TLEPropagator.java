@@ -486,4 +486,11 @@ public abstract class TLEPropagator extends AnalyticalPropagator implements Seri
         }
     }
 
+    /** Get the underlying TLE.
+     * @return underlying TLE
+     */
+    public TLE getTLE() {
+        return tle;
+    }
+
 }
