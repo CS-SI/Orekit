@@ -115,7 +115,7 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     public TimeComponents(final int secondInDayA, final double secondInDayB) {
         // range check
         final double secondInDay = secondInDayA + secondInDayB;
-        if ((secondInDay < 0) || (secondInDay >= Constants.JULIAN_DAY)) {
+        if ((secondInDayB < -secondInDayA) || (secondInDayB >= (Constants.JULIAN_DAY - secondInDayA))) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_SECONDS_NUMBER,
                                                                  secondInDay);
         }
