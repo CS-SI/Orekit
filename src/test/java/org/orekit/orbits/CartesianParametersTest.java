@@ -35,6 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -175,6 +176,18 @@ public class CartesianParametersTest {
     }
 
     @Test
+    public void testNumericalIssue25() throws OrekitException {
+        Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
+        Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
+        CartesianOrbit orbit = new CartesianOrbit(new PVCoordinates(position, velocity),
+                                                  FramesFactory.getEME2000(),
+                                                  new AbsoluteDate("2004-01-01T23:00:00.000",
+                                                                   TimeScalesFactory.getUTC()),
+                                                                   3.986004415E14);
+        Assert.assertEquals(0.0, orbit.getE(), 2.0e-14);
+    }
+
+    @Test
     public void testSerialization()
       throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
@@ -278,6 +291,8 @@ public class CartesianParametersTest {
 
     @Before
     public void setUp() {
+
+        Utils.setDataRoot("regular-data");
 
         // Computation date
         date = AbsoluteDate.J2000_EPOCH;

@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Fixed numerical issue in eccentricity computation (fixes bug #25)
+      </action>
       <action dev="luc" type="update" >
         Changed step handling of analytical propagators, now they use a single step
         equal to the duration of the propagation in all cases except when a fixed step

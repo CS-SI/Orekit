@@ -343,6 +343,18 @@ public class CircularParametersTest {
     }
 
     @Test
+    public void testNumericalIssue25() throws OrekitException {
+        Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
+        Vector3D velocity = new Vector3D(-6349.7848910501, 288.4061811651, 4066.9366759691);
+        CircularOrbit orbit = new CircularOrbit(new PVCoordinates(position, velocity),
+                                                FramesFactory.getEME2000(),
+                                                new AbsoluteDate("2004-01-01T23:00:00.000",
+                                                                 TimeScalesFactory.getUTC()),
+                                                                 3.986004415E14);
+        Assert.assertEquals(0.0, orbit.getE(), 2.0e-14);
+    }
+
+    @Test
     public void testPositionVelocityNormsCirc() {
 
         // elliptic and non equatorial (i retrograde) orbit

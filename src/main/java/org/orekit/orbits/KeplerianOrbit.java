@@ -86,11 +86,6 @@ public class KeplerianOrbit extends Orbit {
     @Deprecated
     public static final int TRUE_ANOMALY = 2;
 
-    /** Eccentricity threshold for near circular orbits.
-     *  if e < E_CIRC : the orbit is considered circular
-     */
-    public static final double E_CIRC = 1.e-10;
-
     /** Serializable UID. */
     private static final long serialVersionUID = 7593919633854535287L;
 
@@ -289,26 +284,20 @@ public class KeplerianOrbit extends Orbit {
 
         // compute semi-major axis (will be negative for hyperbolic orbits)
         a = r / (2 - rV2OnMu);
-
-        // compute eccentricity (will be larger than 1 for hyperbolic orbits)
         final double muA = mu * a;
-        e = FastMath.sqrt(1 - m2 / muA);
 
         // compute true anomaly
         if (a > 0) {
-            if (e < E_CIRC) {
-                // circular orbit
-                v = 0;
-            } else {
-                // elliptic orbit
-                final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
-                final double eCE = rV2OnMu - 1;
-                v = ellipticEccentricToTrue(FastMath.atan2(eSE, eCE));
-            }
+            // elliptic or circular orbit
+            final double eSE = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(muA);
+            final double eCE = rV2OnMu - 1;
+            e = FastMath.sqrt(eSE * eSE + eCE * eCE);
+            v = ellipticEccentricToTrue(FastMath.atan2(eSE, eCE));
         } else {
             // hyperbolic orbit
             final double eSH = Vector3D.dotProduct(pvP, pvV) / FastMath.sqrt(-muA);
             final double eCH = rV2OnMu - 1;
+            e = FastMath.sqrt(1 - m2 / muA);
             v = hyperbolicEccentricToTrue(FastMath.log((eCH + eSH) / (eCH - eSH)) / 2);
         }
 
