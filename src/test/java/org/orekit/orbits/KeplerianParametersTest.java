@@ -530,6 +530,19 @@ public class KeplerianParametersTest {
     }
 
     @Test
+    public void testPerfectlyEquatorial() throws OrekitException {
+        Vector3D position = new Vector3D(6957904.3624652653594, 766529.11411558074507, 0);
+        Vector3D velocity = new Vector3D(-7538.2817012412102845, 342.38751001881413381, 0.);
+        KeplerianOrbit orbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
+                                                  FramesFactory.getEME2000(),
+                                                  new AbsoluteDate("2004-01-01T23:00:00.000",
+                                                                   TimeScalesFactory.getUTC()),
+                                                  3.986004415E14);
+        Assert.assertEquals(0.0, orbit.getI(), 2.0e-14);
+        Assert.assertEquals(0.0, orbit.getRightAscensionOfAscendingNode(), 2.0e-14);
+    }
+
+    @Test
     public void testJacobianReferenceEllipse() throws OrekitException {
 
         AbsoluteDate dateTca = new AbsoluteDate(2000, 04, 01, 0, 0, 0.000, TimeScalesFactory.getUTC());

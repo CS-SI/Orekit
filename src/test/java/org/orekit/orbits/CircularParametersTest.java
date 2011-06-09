@@ -355,6 +355,19 @@ public class CircularParametersTest {
     }
 
     @Test
+    public void testPerfectlyEquatorial() throws OrekitException {
+        Vector3D position = new Vector3D(-7293947.695148368, 5122184.668436634, 0.0);
+        Vector3D velocity = new Vector3D(-3890.4029433398, -5369.811285264604, 0.0);
+        CircularOrbit orbit = new CircularOrbit(new PVCoordinates(position, velocity),
+                                                FramesFactory.getEME2000(),
+                                                new AbsoluteDate("2004-01-01T23:00:00.000",
+                                                                 TimeScalesFactory.getUTC()),
+                                                3.986004415E14);
+        Assert.assertEquals(0.0, orbit.getI(), 2.0e-14);
+        Assert.assertEquals(0.0, orbit.getRightAscensionOfAscendingNode(), 2.0e-14);
+    }
+
+    @Test
     public void testPositionVelocityNormsCirc() {
 
         // elliptic and non equatorial (i retrograde) orbit

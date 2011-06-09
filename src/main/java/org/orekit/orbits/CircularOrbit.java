@@ -241,10 +241,8 @@ public class CircularOrbit
         i = Vector3D.angle(momentum, Vector3D.PLUS_K);
 
         // compute right ascension of ascending node
-        final Vector3D node     = Vector3D.crossProduct(Vector3D.PLUS_K, momentum);
-        final double   n2       = Vector3D.dotProduct(node, node);
-        // the following comparison with 0 IS REALLY numerically justified and stable
-        raan = (n2 == 0) ? 0 : FastMath.atan2(node.getY(), node.getX());
+        final Vector3D node  = Vector3D.crossProduct(Vector3D.PLUS_K, momentum);
+        raan = FastMath.atan2(node.getY(), node.getX());
 
         // 2D-coordinates in the canonical frame
         final double cosRaan = FastMath.cos(raan);
