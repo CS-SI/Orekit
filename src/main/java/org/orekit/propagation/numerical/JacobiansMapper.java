@@ -25,7 +25,7 @@ import org.apache.commons.math.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AnalyticalPropagator;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 
@@ -39,7 +39,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
  * @see org.orekit.propagation.numerical.PartialDerivativesEquations
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
- * @see AnalyticalPropagator
+ * @see AbstractPropagator
  */
 public class JacobiansMapper implements Serializable {
 

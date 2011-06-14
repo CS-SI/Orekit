@@ -61,7 +61,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-public abstract class AnalyticalPropagator implements Propagator {
+public abstract class AbstractPropagator implements Propagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 2434402795728927604L;
@@ -106,7 +106,7 @@ public abstract class AnalyticalPropagator implements Propagator {
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
      */
-    protected AnalyticalPropagator(final AttitudeProvider attitudeProvider) {
+    protected AbstractPropagator(final AttitudeProvider attitudeProvider) {
         eventsStates           = new ArrayList<EventState>();
         statesInitialized      = false;
         additionalStateProviders = new ArrayList<AdditionalStateProvider>();
@@ -483,7 +483,7 @@ public abstract class AnalyticalPropagator implements Propagator {
     }
 
     /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
-    private class UnboundedPropagatorView extends AnalyticalPropagator implements BoundedPropagator {
+    private class UnboundedPropagatorView extends AbstractPropagator implements BoundedPropagator {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3340036098040553110L;
@@ -491,7 +491,7 @@ public abstract class AnalyticalPropagator implements Propagator {
         /** Simple constructor.
          */
         public UnboundedPropagatorView() {
-            super(AnalyticalPropagator.this.getAttitudeProvider());
+            super(AbstractPropagator.this.getAttitudeProvider());
         }
 
         /** {@inheritDoc} */
@@ -507,12 +507,12 @@ public abstract class AnalyticalPropagator implements Propagator {
         /** {@inheritDoc} */
         protected Orbit propagateOrbit(final AbsoluteDate target)
             throws PropagationException {
-            return AnalyticalPropagator.this.propagateOrbit(target);
+            return AbstractPropagator.this.propagateOrbit(target);
         }
 
         /** {@inheritDoc} */
         public double getMass(final AbsoluteDate date) throws PropagationException {
-            return AnalyticalPropagator.this.getMass(date);
+            return AbstractPropagator.this.getMass(date);
         }
 
         /** {@inheritDoc} */
@@ -524,12 +524,12 @@ public abstract class AnalyticalPropagator implements Propagator {
         /** {@inheritDoc} */
         public void resetInitialState(final SpacecraftState state)
             throws PropagationException {
-            AnalyticalPropagator.this.resetInitialState(state);
+            AbstractPropagator.this.resetInitialState(state);
         }
 
         /** {@inheritDoc} */
         public SpacecraftState getInitialState() throws OrekitException {
-            return AnalyticalPropagator.this.getInitialState();
+            return AbstractPropagator.this.getInitialState();
         }
 
     }

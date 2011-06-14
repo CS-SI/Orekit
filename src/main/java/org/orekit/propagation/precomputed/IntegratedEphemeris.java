@@ -30,7 +30,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AdditionalStateProvider;
-import org.orekit.propagation.AnalyticalPropagator;
+import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.AdditionalStateData;
@@ -72,7 +72,7 @@ import org.orekit.utils.PVCoordinates;
  * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
 public class IntegratedEphemeris
-    extends AnalyticalPropagator implements BoundedPropagator {
+    extends AbstractPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -2135002726640830424L;

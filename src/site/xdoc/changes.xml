@@ -26,7 +26,7 @@
         Fixed numerical issue in eccentricity computation (fixes bug #25)
       </action>
       <action dev="luc" type="update" >
-        Changed step handling of analytical propagators, now they use a single step
+        Changed step handling of abstract propagators, now they use a single step
         equal to the duration of the propagation in all cases except when a fixed step
         is requested in master mode. Previously, they arbitrarily used on hundredth of
         the Keplerian period as the step size, hence performing many steps even if not
@@ -38,7 +38,7 @@
         propagation of Jacobians matrices was possible only in Cartesian parameters
       </action>
       <action dev="luc" type="add" >
-        Added a way to propagate additional state along with orbit in analytical
+        Added a way to propagate additional state along with orbit in abstract
         propagators, as an analytical counterpart to the additional equations that
         can be integrated by numerical propagators
       </action>
@@ -581,7 +581,7 @@
         ImpulseManeuver were overwritten by other event detectors
       </action>
       <action dev="luc" type="fix" >
-        fixed stop date of analytical propagators (Keplerian and Eckstein-Heschler). They used to
+        fixed stop date of abstract propagators (Keplerian and Eckstein-Heschler). They used to
         stop at the first event after target date when an event detector was set up, instead of
         stopping at the target date
       </action>

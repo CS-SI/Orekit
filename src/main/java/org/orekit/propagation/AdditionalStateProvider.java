@@ -23,9 +23,9 @@ import org.orekit.errors.OrekitException;
  * This interface is the analytical (read already integrated) counterpart of
  * the {@link org.orekit.propagation.numerical.AdditionalEquations} interface.
  * It allows to append various additional state parameters to any {@link
- * AnalyticalPropagator analytical propagator}.
+ * AbstractPropagator abstract propagator}.
  * </p>
- * @see AnalyticalPropagator
+ * @see AbstractPropagator
  * @see org.orekit.propagation.numerical.AdditionalEquations
  * @author Luc Maisonobe
  */
