@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.tle;
+package org.orekit.propagation.analytical.tle;
 
 
 import java.io.IOException;
@@ -29,6 +29,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
+import org.orekit.propagation.analytical.tle.TLESeries;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.tle;
+package org.orekit.propagation.analytical.tle;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;

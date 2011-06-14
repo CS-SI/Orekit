@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.tle;
+package org.orekit.propagation.analytical.tle;
 
 
 import java.io.BufferedReader;
@@ -30,6 +30,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.analytical.tle.TLE;
+import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;

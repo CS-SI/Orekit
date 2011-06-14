@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.tle;
+package org.orekit.propagation.analytical.tle;
 
 import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
