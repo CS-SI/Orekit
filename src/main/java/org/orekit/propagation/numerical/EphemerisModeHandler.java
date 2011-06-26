@@ -147,11 +147,6 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
     }
 
     /** {@inheritDoc} */
-    public boolean requiresDenseOutput() {
-        return model.requiresDenseOutput();
-    }
-
-    /** {@inheritDoc} */
     public void reset() {
         model.reset();
     }
