@@ -57,7 +57,7 @@ public class FactoryManagedFrame extends Frame {
      * @return singleton instance
      * @exception ObjectStreamException if object cannot be deserialized
      */
-    private Object readResolve() throws ObjectStreamException {
+    protected Object readResolve() throws ObjectStreamException {
         try {
             return FramesFactory.getFrame(factoryKey);
         } catch (OrekitException oe) {

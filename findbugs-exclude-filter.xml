@@ -80,12 +80,12 @@
        They are used to pass data back and forth between classes
     -->
   <Match>
-    <Class name="org.orekit.propagation.numerical.AdditionalStateAndEquations"/>
+    <Class name="org.orekit.propagation.numerical.AdditionalStateData"/>
     <Method name ="getAdditionalState" params="" returns="double[]" />
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
-    <Class name="org.orekit.propagation.numerical.AdditionalStateAndEquations"/>
+    <Class name="org.orekit.propagation.numerical.AdditionalStateData"/>
     <Method name ="getAdditionalStateDot" params="" returns="double[]" />
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
