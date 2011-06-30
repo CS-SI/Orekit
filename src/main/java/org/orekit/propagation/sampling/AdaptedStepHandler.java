@@ -101,11 +101,6 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public boolean requiresDenseOutput() {
-        return handler.requiresDenseOutput();
-    }
-
-    /** {@inheritDoc} */
     public void reset() {
         handler.reset();
     }

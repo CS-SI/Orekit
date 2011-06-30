@@ -38,11 +38,6 @@ public interface OrekitStepHandler extends Serializable {
     void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
         throws PropagationException;
 
-    /** Determines whether this handler needs dense output.
-     * @return true if the handler needs dense output
-     */
-    boolean requiresDenseOutput();
-
     /** Reset the step handler.
      */
     void reset();
