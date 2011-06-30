@@ -111,7 +111,7 @@ public class IntegratedEphemeris
      * @param orbitType orbit type
      * @param angleType position angle type
      * @param attitudeProvider attitude provider
-     * @param providers list of additional state providers
+     * @param stateData list of additional state data providers
      * @param model underlying raw mathematical model
      * @param referenceFrame reference referenceFrame
      * @param mu central body attraction coefficient

@@ -41,9 +41,6 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
-import org.orekit.orbits.CartesianOrbit;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -107,15 +104,15 @@ import org.orekit.utils.PVCoordinates;
  * <p>The state that is seen by the integrator is a simple seven elements double array.
  * The six first elements are either:
  * <ul>
- *   <li>the {@link EquinoctialOrbit equinoctial orbit parameters} (a, e<sub>x</sub>,
+ *   <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters} (a, e<sub>x</sub>,
  *   e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>M</sub> or &lambda;<sub>E</sub>
  *   or &lambda;<sub>v</sub>) in meters and radians,</li>
- *   <li>the {@link KeplerianOrbit Keplerian orbit parameters} (a, e, i, &omega;, &Omega;,
+ *   <li>the {@link org.orekit.orbits.KeplerianOrbit Keplerian orbit parameters} (a, e, i, &omega;, &Omega;,
  *   M or E or v) in meters and radians,</li>
- *   <li>the {@link Circular circular orbit parameters} (a, e<sub>x</sub>, e<sub>y</sub>, i,
+ *   <li>the {@link org.orekit.orbits.CircularOrbit circular orbit parameters} (a, e<sub>x</sub>, e<sub>y</sub>, i,
  *   &Omega;, &alpha;<sub>M</sub> or &alpha;<sub>E</sub> or &alpha;<sub>v</sub>) in meters
  *   and radians,</li>
- *   <li>the {@link CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
+ *   <li>the {@link org.orekit.orbits.CartesianOrbit Cartesian orbit parameters} (x, y, z, v<sub>x</sub>,
  *   v<sub>y</sub>, v<sub>z</sub>) in meters and meters per seconds.
  * </ul>
  * The last element is the mass in kilograms.
@@ -263,7 +260,7 @@ public class NumericalPropagator implements Propagator {
 
     /** Set the attitude provider.
      * @param provider attitude provider
-     * @deprecated as of 5.1 replaced by {@link #setAttitudeProvider(AttitudeProvider)}
+     * @deprecated as of 6.0 replaced by {@link #setAttitudeProvider(AttitudeProvider)}
      */
     @Deprecated
     public void setAttitudeLaw(final AttitudeProvider provider) {
@@ -477,7 +474,6 @@ public class NumericalPropagator implements Propagator {
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param addEqu additional equations
      * @see #setInitialAdditionalState(String, double[])
-     * @see #getCurrentAdditionalState(String)
      * @exception OrekitException if a set of equations with the same name is already present
      */
     public void addAdditionalEquations(final AdditionalEquations addEqu)
@@ -501,7 +497,6 @@ public class NumericalPropagator implements Propagator {
      * @param addState additional state
      * @throws OrekitException if additional equation is unknown
      * @see #addAdditionalEquations(AdditionalEquations)
-     * @see #getCurrentAdditionalState(String)
      */
     public void setInitialAdditionalState(final String name, final double[] addState)
         throws OrekitException {

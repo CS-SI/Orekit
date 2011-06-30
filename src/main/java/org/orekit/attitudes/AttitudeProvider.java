@@ -27,7 +27,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** This interface represents an attitude provider model set.
  * <p>An attitude provider provides a way to compute an {@link Attitude Attitude}
  * from an date and position-velocity local provider.</p>
- * @see AttitudeLaw
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */

@@ -809,7 +809,7 @@ public class FramesFactory implements Serializable {
      * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 5.1, replaced by {@link #getGTOD(boolean)}
+     * @deprecated as of 6.0, replaced by {@link #getGTOD(boolean)}
      */
     @Deprecated
     public static FactoryManagedFrame getPEF(final boolean applyEOPCorr) throws OrekitException {
@@ -888,7 +888,7 @@ public class FramesFactory implements Serializable {
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 5.1, replaced by {@link #getMOD(boolean)}
+     * @deprecated as of 6.0, replaced by {@link #getMOD(boolean)}
      */
     @Deprecated
     public static FactoryManagedFrame getMEME(final boolean applyEOPCorr) throws OrekitException {

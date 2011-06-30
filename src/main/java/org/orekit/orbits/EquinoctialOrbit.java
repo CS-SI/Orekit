@@ -67,19 +67,19 @@ import org.orekit.utils.PVCoordinates;
 public class EquinoctialOrbit extends Orbit {
 
     /** Identifier for mean longitude argument.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int MEAN_LATITUDE_ARGUMENT = 0;
 
     /** Identifier for eccentric longitude argument.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int ECCENTRIC_LATITUDE_ARGUMENT = 1;
 
     /** Identifier for true longitude argument.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int TRUE_LATITUDE_ARGUMENT = 2;
@@ -166,8 +166,8 @@ public class EquinoctialOrbit extends Orbit {
      * @see #MEAN_LATITUDE_ARGUMENT
      * @see #ECCENTRIC_LATITUDE_ARGUMENT
      * @see #TRUE_LATITUDE_ARGUMENT
-     * @deprecated as of 5.1 replaced by {@link #EquinoctialOrbit(double, double, double,
-     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)
+     * @deprecated as of 6.0 replaced by {@link #EquinoctialOrbit(double, double, double,
+     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)}
      */
     @Deprecated
     public EquinoctialOrbit(final double a, final double ex, final double ey,

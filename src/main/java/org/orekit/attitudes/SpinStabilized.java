@@ -73,7 +73,7 @@ public class SpinStabilized implements AttitudeProviderModifier {
 
     /** Get the underlying non-rotating attitude provider.
      * @return underlying non-rotating attitude provider
-     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeProvider()}
+     * @deprecated as of 6.0, replaced by {@link #getUnderlyingAttitudeProvider()}
      */
     @Deprecated
     public AttitudeProvider getNonRotatingLaw() {

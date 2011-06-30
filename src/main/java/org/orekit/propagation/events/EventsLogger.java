@@ -78,8 +78,6 @@ public class EventsLogger implements Serializable {
      * themselves, not the wrapping detector returned by this method.
      * </p>
      * @param monitoredDetector event detector to monitor
-     * @param wrapping event detector that must be provided to the propagator
-     * to enable logging
      */
     public EventDetector monitorDetector(final EventDetector monitoredDetector) {
         return new LoggingWrapper(monitoredDetector);

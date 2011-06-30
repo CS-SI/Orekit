@@ -51,8 +51,6 @@ public interface BodyShape extends Serializable {
      * @return intersection point at altitude zero or null if the line does
      * not intersect the surface
      * @exception OrekitException if line cannot be converted to body frame
-     * @see org.orekit.utils.Line#getAbscissa(Vector3D)
-     * @see org.orekit.utils.Line#pointAt(double)
      */
     GeodeticPoint getIntersectionPoint(Line line, Vector3D close,
                                        Frame frame, AbsoluteDate date)

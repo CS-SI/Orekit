@@ -49,7 +49,7 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
     /** Get the underlying ground pointing law.
      * @return underlying ground pointing law.
      * @see #getUnderlyingAttitudeProvider()
-     * @deprecated as of 5.1, replaced by {@link #getUnderlyingAttitudeProvider()}
+     * @deprecated as of 6.0, replaced by {@link #getUnderlyingAttitudeProvider()}
      */
     @Deprecated
     public GroundPointing getGroundPointingLaw() {

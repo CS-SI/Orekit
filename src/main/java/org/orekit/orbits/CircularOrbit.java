@@ -69,19 +69,19 @@ public class CircularOrbit
     extends Orbit {
 
     /** Identifier for mean latitude argument.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int MEAN_LONGITUDE_ARGUMENT = 0;
 
     /** Identifier for eccentric latitude argument.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int ECCENTRIC_LONGITUDE_ARGUMENT = 1;
 
     /** Identifier for true latitude argument.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int TRUE_LONGITUDE_ARGUMENT = 2;
@@ -170,8 +170,8 @@ public class CircularOrbit
      * @see #MEAN_LONGITUDE_ARGUMENT
      * @see #ECCENTRIC_LONGITUDE_ARGUMENT
      * @see #TRUE_LONGITUDE_ARGUMENT
-     * @deprecated as of 5.1 replaced by {@link #CircularOrbit(double, double, double,
-     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)
+     * @deprecated as of 6.0 replaced by {@link #CircularOrbit(double, double, double,
+     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)}
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */

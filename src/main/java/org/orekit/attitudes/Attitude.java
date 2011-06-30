@@ -41,7 +41,6 @@ import org.orekit.time.TimeStamped;
  * <p>The instance <code>Attitude</code> is guaranteed to be immutable.</p>
  * @see     org.orekit.orbits.Orbit
  * @see AttitudeProvider
- * @see AttitudeLaw
  * @author V&eacute;ronique Pommier-Maurussane
  * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */

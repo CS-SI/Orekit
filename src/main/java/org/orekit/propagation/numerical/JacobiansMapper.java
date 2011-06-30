@@ -183,7 +183,7 @@ public class JacobiansMapper implements Serializable {
      * org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
      * OrekitStepInterpolator.getInterpolatedAdditionalState(getName())}
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
-     * @see #getParametersJacobian(double[], double[][])
+     * @see #getParametersJacobian(SpacecraftState, double[], double[][])
      * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
      */
     public void getStateJacobian(final SpacecraftState state, final double[] p, final double[][] dYdY0) {
@@ -222,7 +222,7 @@ public class JacobiansMapper implements Serializable {
      * org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
      * OrekitStepInterpolator.getInterpolatedAdditionalState(getName())}
      * @param dYdP placeholder where to put the Jacobian with respect to parameters
-     * @see #getStateJacobian(double[], double[][])
+     * @see #getStateJacobian(SpacecraftState, double[], double[][])
      */
     public void getParametersJacobian(final SpacecraftState state, final double[] p, final double[][] dYdP) {
 

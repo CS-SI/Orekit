@@ -182,7 +182,7 @@ public class DataProvidersManager implements Serializable {
      * @see #clearProviders()
      * @see #isSupported(Class)
      * @see #getProviders()
-     * @deprecated as of 5.1, replaced by {@link #removeProvider(DataProvider)}
+     * @deprecated as of 6.0, replaced by {@link #removeProvider(DataProvider)}
      */
     @Deprecated
     public DataProvider removeProvider(final Class<? extends DataProvider> providerClass) {
@@ -231,7 +231,7 @@ public class DataProvidersManager implements Serializable {
      * @see #removeProvider(Class)
      * @see #clearProviders()
      * @see #getProviders()
-     * @deprecated as of 5.1, replaced by {@link #isSupported(DataProvider)}
+     * @deprecated as of 6.0, replaced by {@link #isSupported(DataProvider)}
      */
     @Deprecated
     public boolean isSupported(final Class<? extends DataProvider> providerClass) {

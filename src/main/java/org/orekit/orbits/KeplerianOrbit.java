@@ -69,19 +69,19 @@ import org.orekit.utils.PVCoordinates;
 public class KeplerianOrbit extends Orbit {
 
     /** Identifier for mean anomaly.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int MEAN_ANOMALY = 0;
 
     /** Identifier for eccentric anomaly.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int ECCENTRIC_ANOMALY = 1;
 
     /** Identifier for true anomaly.
-     * @deprecated as of 5.1 replaced by {@link PositionAngle}
+     * @deprecated as of 6.0 replaced by {@link PositionAngle}
      */
     @Deprecated
     public static final int TRUE_ANOMALY = 2;
@@ -203,8 +203,8 @@ public class KeplerianOrbit extends Orbit {
      * @see #MEAN_ANOMALY
      * @see #ECCENTRIC_ANOMALY
      * @see #TRUE_ANOMALY
-     * @deprecated as of 5.1 replaced by {@link #KeplerianOrbit(double, double, double,
-     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)
+     * @deprecated as of 6.0 replaced by {@link #KeplerianOrbit(double, double, double,
+     * double, double, double, PositionAngle, Frame, AbsoluteDate, double)}
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame} or a and e don't match for hyperbolic orbits,
      * or v is out of range for hyperbolic orbits

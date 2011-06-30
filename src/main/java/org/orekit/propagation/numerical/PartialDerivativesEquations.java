@@ -129,7 +129,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * {@link ForceModel} added elsewhere.</p>
      * @param parameters parameters to consider for Jacobian processing
      * @see NumericalPropagator#addForceModel(ForceModel)
-     * @see #setInitialJacobians(double[][], double[][])
+     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      * @see ForceModel
      * @see org.orekit.forces.Parameterizable
      */
@@ -150,7 +150,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @param parameter parameter to consider for Jacobian processing
      * @param hP step to use for computing Jacobian column with respect to the specified parameter
      * @see NumericalPropagator#addForceModel(ForceModel)
-     * @see #setInitialJacobians(double[][], double[][])
+     * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      * @see ForceModel
      * @see org.orekit.forces.Parameterizable
      */

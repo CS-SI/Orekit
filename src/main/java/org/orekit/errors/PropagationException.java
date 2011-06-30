@@ -128,12 +128,12 @@ public class PropagationException extends OrekitException {
 
     }
 
-    /** Recover a PropagationException, possibly embedded in a {@link MathRuntimeException}.
+    /** Recover a PropagationException, possibly embedded in a {@link MathUserException}.
      * <p>
-     * If the {@code MathRuntimeException} does not embed a PropagationException, a
+     * If the {@code MathUserException} does not embed a PropagationException, a
      * new one will be created.
      * </p>
-     * @param mre MathRuntimeException to analyze
+     * @param mue MathUserException to analyze
      * @return a (possibly embedded) PropagationException
      */
     public static PropagationException unwrap(final MathUserException mue) {
