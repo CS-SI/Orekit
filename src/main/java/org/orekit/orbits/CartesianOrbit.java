@@ -407,7 +407,8 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot) {
+    public void addKeplerContribution(final PositionAngle type, final double gm,
+                                      final double[] pDot) {
 
         final PVCoordinates pv = getPVCoordinates();
 
@@ -420,7 +421,7 @@ public class CartesianOrbit extends Orbit {
         // velocity derivative is Newtonian acceleration
         final Vector3D position = pv.getPosition();
         final double r2         = position.getNormSq();
-        final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
+        final double coeff      = -gm / (r2 * FastMath.sqrt(r2));
         pDot[3] += coeff * position.getX();
         pDot[4] += coeff * position.getY();
         pDot[5] += coeff * position.getZ();

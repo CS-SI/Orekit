@@ -85,15 +85,15 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void initialize(final OrbitType orbitType, final PositionAngle angleType,
-                           final AttitudeProvider attitudeProvider,
-                           final List <AdditionalStateData> addStateData,
+    public void initialize(final OrbitType orbit, final PositionAngle angle,
+                           final AttitudeProvider provider,
+                           final List <AdditionalStateData> additionalStateData,
                            final boolean activateHandlers,
                            final AbsoluteDate reference, final Frame frame, final double mu) {
-        this.orbitType            = orbitType;
-        this.angleType            = angleType;
-        this.attitudeProvider     = attitudeProvider;
-        this.addStateData         = addStateData;
+        this.orbitType            = orbit;
+        this.angleType            = angle;
+        this.attitudeProvider     = provider;
+        this.addStateData         = additionalStateData;
         this.activate             = activateHandlers;
         this.initializedReference = reference;
         this.initializedFrame     = frame;

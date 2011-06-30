@@ -78,6 +78,7 @@ public class EventsLogger implements Serializable {
      * themselves, not the wrapping detector returned by this method.
      * </p>
      * @param monitoredDetector event detector to monitor
+     * @return the wrapping detector to add to the propagator
      */
     public EventDetector monitorDetector(final EventDetector monitoredDetector) {
         return new LoggingWrapper(monitoredDetector);
@@ -117,7 +118,10 @@ public class EventsLogger implements Serializable {
         private final boolean increasing;
 
         /** Simple constructor.
-         * 
+         * @param detector detector for event that was triggered
+         * @param state state at event trigger date
+         * @param increasing indicator if the event switching function was increasing
+         * or decreasing at event occurrence date
          */
         private LoggedEvent(final EventDetector detector, final SpacecraftState state,
                             final boolean increasing) {
@@ -168,20 +172,20 @@ public class EventsLogger implements Serializable {
         }
 
         /** {@inheritDoc} */
-        public double g(SpacecraftState s) throws OrekitException {
+        public double g(final SpacecraftState s) throws OrekitException {
             return detector.g(s);
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(SpacecraftState s, boolean increasing)
+        public int eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
             log.add(new LoggedEvent(detector, s, increasing));
             return detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState resetState(SpacecraftState oldState)
-        throws OrekitException {
+        public SpacecraftState resetState(final SpacecraftState oldState)
+            throws OrekitException {
             return detector.resetState(oldState);
         }
 

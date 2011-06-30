@@ -241,7 +241,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             throw new OrekitException(OrekitMessages.STATE_JACOBIAN_NOT_INITIALIZED);
         }
         return new JacobiansMapper(name, stateDim, paramDim,
-                                   propagator.getPropagationOrbitType(),
+                                   propagator.getOrbitType(),
                                    propagator.getPositionAngleType());
     }
 
@@ -278,16 +278,16 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             // check all parameters are handled by at least one Jacobian provider
             for (final ParameterConfiguration param : selectedParameters) {
-                final String name = param.getParameterName();
+                final String parameterName = param.getParameterName();
                 boolean found = false;
                 for (final AccelerationJacobiansProvider provider : jacobiansProviders) {
-                    if (provider.isSupported(name)) {
+                    if (provider.isSupported(parameterName)) {
                         param.setProvider(provider);
                         found = true;
                     }
                 }
                 if (!found) {
-                    throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, name);
+                    throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, parameterName);
                 }
             }
 

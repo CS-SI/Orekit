@@ -25,12 +25,11 @@ import org.apache.commons.math.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
- * OrekitStepInterpolator#getInterpolatedAdditionalState(String) additional state arrays}.
+ * org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
+ * additional state arrays}.
  * <p>
  * This class does not hold the states by itself. Instances of this class are guaranteed
  * to be immutable.
@@ -39,7 +38,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
  * @see org.orekit.propagation.numerical.PartialDerivativesEquations
  * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
- * @see AbstractPropagator
+ * @see org.orekit.propagation.AbstractPropagator
  */
 public class JacobiansMapper implements Serializable {
 
@@ -141,7 +140,7 @@ public class JacobiansMapper implements Serializable {
      * @param p placeholder where to put the one-dimensional additional state
      * @see #getStateJacobian(double[], double[][])
      */
-    void setInitialJacobians(final SpacecraftState state,final double[][] dY1dY0,
+    void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
                              final double[][] dY1dP, final double[] p) {
 
         // set up a converter between state parameters and cartesian parameters

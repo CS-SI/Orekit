@@ -247,7 +247,7 @@ public class PartialDerivativesTest {
 
 
 
-        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
         PartialDerivativesEquations PDE = new PartialDerivativesEquations("derivatives", propagator);
         PDE.selectParamAndStep("thrust", Double.NaN);
         PDE.setInitialJacobians(initialState, 7, 1);
@@ -387,7 +387,7 @@ public class PartialDerivativesTest {
         double[][] tol = NumericalPropagator.tolerances(dP, state.getOrbit(), orbitType);
         NumericalPropagator propagator =
             new NumericalPropagator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-        propagator.setPropagationOrbitType(orbitType);
+        propagator.setOrbitType(orbitType);
         propagator.setPositionAngleType(angleType);
         for (ForceModel model : models) {
             propagator.addForceModel(model);

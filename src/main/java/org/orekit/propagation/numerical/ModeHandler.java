@@ -31,17 +31,17 @@ import org.orekit.time.AbsoluteDate;
 public interface ModeHandler {
 
     /** Initialize the mode handler.
-     * @param orbitType orbit type
-     * @param angleType position angle type
-     * @param attitudeProvider attitude provider
+     * @param orbit orbit type
+     * @param angle position angle type
+     * @param provider attitude provider
      * @param additionalStateData list of additional state data
      * @param activateHandlers if handlers shall be active
      * @param reference reference date
      * @param frame reference frame
      * @param mu central body attraction coefficient
      */
-    void initialize(OrbitType orbitType, PositionAngle angleType,
-                    AttitudeProvider attitudeProvider,
+    void initialize(OrbitType orbit, PositionAngle angle,
+                    AttitudeProvider provider,
                     List <AdditionalStateData> additionalStateData,
                     boolean activateHandlers, AbsoluteDate reference, Frame frame, double mu);
 

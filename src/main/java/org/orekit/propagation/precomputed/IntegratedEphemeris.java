@@ -273,7 +273,7 @@ public class IntegratedEphemeris
         }
 
         /** {@inheritDoc} */
-        public double[] getAdditionalState(SpacecraftState state)
+        public double[] getAdditionalState(final SpacecraftState state)
             throws OrekitException {
             try {
 

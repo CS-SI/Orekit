@@ -472,12 +472,12 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
      * motion to evolution of the orbital state.
      * </p>
      * @param type type of the position angle in the state
-     * @param mu attraction coefficient to use
+     * @param gm attraction coefficient to use
      * @param pDot array containing orbital state derivatives to update (the Keplerian
      * part must be <em>added</em> to the array components, as the array may already
      * contain some non-zero elements corresponding to non-Keplerian parts)
      */
-    public abstract void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot);
+    public abstract void addKeplerContribution(final PositionAngle type, final double gm, double[] pDot);
 
         /** Fill a Jacobian half row with a single vector.
      * @param a coefficient of the vector

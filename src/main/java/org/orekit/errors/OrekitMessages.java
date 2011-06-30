@@ -144,7 +144,6 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed {0}");
-    
 
     // CHECKSTYLE: resume JavadocVariable check
 

@@ -119,7 +119,7 @@ public class NumericalPropagatorTest {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
-        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
         final PVCoordinates finalState = 
             propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
         final Vector3D pFin = finalState.getPosition();
@@ -246,7 +246,7 @@ public class NumericalPropagatorTest {
 
         double[][] tol = NumericalPropagator.tolerances(dP, state.getOrbit(), type);
         propagator.setIntegrator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-        propagator.setPropagationOrbitType(type);
+        propagator.setOrbitType(type);
         propagator.setPositionAngleType(angle);
         propagator.setInitialState(state);
         return propagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
@@ -410,7 +410,7 @@ public class NumericalPropagatorTest {
         double mass = 1000.;
         SpacecraftState initialState = new SpacecraftState(geo, mass);
         propagator.setInitialState(initialState);
-        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
 
 
         // Set the events Detectors
@@ -434,7 +434,7 @@ public class NumericalPropagatorTest {
         final double dt = 3200;
         propagator.getInitialState();
 
-        propagator.setPropagationOrbitType(OrbitType.CARTESIAN);
+        propagator.setOrbitType(OrbitType.CARTESIAN);
         propagator.setEphemerisMode();
         propagator.propagate(initDate.shiftedBy(dt));
         final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();

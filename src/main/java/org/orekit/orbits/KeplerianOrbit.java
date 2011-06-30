@@ -1104,9 +1104,10 @@ public class KeplerianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot) {
+    public void addKeplerContribution(final PositionAngle type, final double gm,
+                                      final double[] pDot) {
         final double absA  = FastMath.abs(a);
-        final double n     = FastMath.sqrt(mu / absA) / absA;
+        final double n     = FastMath.sqrt(gm / absA) / absA;
         final double oMe2 = FastMath.abs(1 - e * e);
         final double ksi  = 1 + e * FastMath.cos(v);
         switch (type) {

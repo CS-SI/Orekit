@@ -92,7 +92,7 @@ public class IntegratedEphemerisTest {
 
         final String eqName = "derivatives";
         numericalPropagator.setEphemerisMode();
-        numericalPropagator.setPropagationOrbitType(OrbitType.CARTESIAN);
+        numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);

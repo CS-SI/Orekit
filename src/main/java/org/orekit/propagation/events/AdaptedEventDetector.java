@@ -86,8 +86,8 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
 
     /** Map array to spacecraft state.
      * @param t relative date
-     * @param current state
-     * @return spececraft state as a flight dynamics object
+     * @param y current state
+     * @return spacecraft state as a flight dynamics object
      * @exception OrekitException if mapping cannot be done
      */
     private SpacecraftState mapArrayToState(final double t, final double[] y)

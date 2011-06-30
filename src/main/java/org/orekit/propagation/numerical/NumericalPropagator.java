@@ -74,7 +74,7 @@ import org.orekit.utils.PVCoordinates;
  *   <li>the various force models ({@link #addForceModel(ForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the {@link OrbitType type} of orbital parameters to be used for propagation
- *   ({@link #setPropagationOrbitType(OrbitType)}),
+ *   ({@link #setOrbitType(OrbitType)}),
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngle)}),
@@ -213,7 +213,7 @@ public class NumericalPropagator implements Propagator {
      * This means that if {@link #addForceModel addForceModel} is not
      * called after creation, the integrated orbit will follow a keplerian
      * evolution only. The defaults are {@link OrbitType#EQUINOCTIAL}
-     * for {@link #setPropagationOrbitType(OrbitType) propagation
+     * for {@link #setOrbitType(OrbitType) propagation
      * orbit type} and {@link PositionAngle#TRUE} for {@link
      * #setPositionAngleType(PositionAngle) position angle type}.
      * @param integrator numerical integrator to use for propagation.
@@ -230,7 +230,7 @@ public class NumericalPropagator implements Propagator {
         setMu(Double.NaN);
         setIntegrator(integrator);
         setSlaveMode();
-        setPropagationOrbitType(OrbitType.EQUINOCTIAL);
+        setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
     }
 
@@ -395,21 +395,21 @@ public class NumericalPropagator implements Propagator {
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
-    public void setPropagationOrbitType(final OrbitType orbitType) {
+    public void setOrbitType(final OrbitType orbitType) {
         this.orbitType = orbitType;
     }
 
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
-    public OrbitType getPropagationOrbitType() {
+    public OrbitType getOrbitType() {
         return orbitType;
     }
 
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
-     * #getPropagationOrbitType() propagation orbit type}
+     * #getOrbitType() propagation orbit type}
      * support it. As an example, it is not meaningful for propagation
      * in {@link OrbitType#CARTESIAN Cartesian} parameters.
      * </p>
@@ -579,7 +579,7 @@ public class NumericalPropagator implements Propagator {
             referenceDate  = initialState.getDate();
 
             // set propagation orbit type
-            Orbit initialOrbit = orbitType.convertType(initialState.getOrbit());
+            final Orbit initialOrbit = orbitType.convertType(initialState.getOrbit());
             if (Double.isNaN(getMu())) {
                 setMu(initialOrbit.getMu());
             }
@@ -594,7 +594,8 @@ public class NumericalPropagator implements Propagator {
                 break;
             }
             if (modeHandler != null) {
-                List<AdditionalStateData> stateData = new ArrayList<AdditionalStateData>(addEquationsAndData.size());
+                final List<AdditionalStateData> stateData =
+                        new ArrayList<AdditionalStateData>(addEquationsAndData.size());
                 for (final AdditionalEquationsAndData equationsAndData : addEquationsAndData) {
                     stateData.add(equationsAndData.getData());
                 }
@@ -865,7 +866,9 @@ public class NumericalPropagator implements Propagator {
 
         }
 
-        public void initDerivatives(double[] yDot, Orbit currentOrbit) throws PropagationException {
+        /** {@inheritDoc} */
+        public void initDerivatives(final double[] yDot, final Orbit currentOrbit)
+            throws PropagationException {
             storedYDot = yDot;
             Arrays.fill(storedYDot, 0.0);
             currentOrbit.getJacobianWrtCartesian(angleType, jacobian);
@@ -1004,7 +1007,9 @@ public class NumericalPropagator implements Propagator {
 
         Arrays.fill(relTol, dP / FastMath.sqrt(r2));
 
-        return new double[][] { absTol, relTol };
+        return new double[][] {
+            absTol, relTol
+        };
 
     }
 

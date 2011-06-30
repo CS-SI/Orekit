@@ -623,9 +623,10 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    public void addKeplerContribution(final PositionAngle type, final double mu, double[] pDot) {
+    public void addKeplerContribution(final PositionAngle type, final double gm,
+                                      final double[] pDot) {
         final double oMe2  = 1 - ex * ex - ey * ey;
-        final double n     = FastMath.sqrt(mu / a) / a;
+        final double n     = FastMath.sqrt(gm / a) / a;
         final double ksi   = 1 + ex * FastMath.cos(lv) + ey * FastMath.sin(lv);
         switch (type) {
         case MEAN :
