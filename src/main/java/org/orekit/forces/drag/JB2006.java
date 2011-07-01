@@ -455,12 +455,10 @@ public class JB2006 implements Atmosphere {
         // Compute mass-density and mean-molecular-weight and
         // convert number density logs from natural to common.
 
-        double SUMN  = 0.0;
         double SUMNM = 0.0;
 
         for (int I = 1; I <= 6; ++I) {
             AN = FastMath.exp(ALN[I]);
-            SUMN += AN;
             SUMNM += AN * AMW[I];
         }
 
