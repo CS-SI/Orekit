@@ -345,9 +345,6 @@ public class KeplerianPropagatorTest {
                     throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
                 }
             }
-            public boolean requiresDenseOutput() {
-                return false;
-            }
             public void reset() {
             }
         });
@@ -500,9 +497,6 @@ public class KeplerianPropagatorTest {
                     Assert.assertEquals(step, interpolator.getCurrentDate().durationFrom(previous), 1.0e-10);
                 }
                 previous = interpolator.getCurrentDate();
-            }
-            public boolean requiresDenseOutput() {
-                return false;
             }
             public void reset() {
             }

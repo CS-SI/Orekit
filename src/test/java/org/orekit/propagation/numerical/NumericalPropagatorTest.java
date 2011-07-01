@@ -268,9 +268,6 @@ public class NumericalPropagatorTest {
                     throw new PropagationException(LocalizedFormats.SIMPLE_MESSAGE, "dummy error");
                 }
             }
-            public boolean requiresDenseOutput() {
-                return false;
-            }
             public void reset() {
             }
         });

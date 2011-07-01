@@ -109,10 +109,6 @@ public class IntegratedEphemerisTest {
             public void reset() {
             }
             
-            public boolean requiresDenseOutput() {
-                return false;
-            }
-            
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
             throws PropagationException {
                 try {

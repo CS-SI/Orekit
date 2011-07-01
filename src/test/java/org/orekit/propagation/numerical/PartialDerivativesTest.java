@@ -418,10 +418,6 @@ public class PartialDerivativesTest {
         public void reset() {
         }
 
-        public boolean requiresDenseOutput() {
-            return true;
-        }
-
         public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
         throws PropagationException {
             try {
