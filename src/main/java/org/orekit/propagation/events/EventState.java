@@ -20,7 +20,10 @@ import java.io.Serializable;
 
 import org.apache.commons.math.ConvergenceException;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
+import org.apache.commons.math.analysis.solvers.AllowedSolutions;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
+import org.apache.commons.math.analysis.solvers.PegasusSolver;
+import org.apache.commons.math.analysis.solvers.UnivariateRealSolverUtils;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -115,6 +118,11 @@ public class EventState implements Serializable {
         throws OrekitException {
         this.t0 = state0.getDate();
         g0 = detector.g(state0);
+        if (g0 == 0) {
+            // extremely rare case: there is a zero EXACTLY at interval start
+            // we will use the sign slightly after step beginning to force ignoring this zero
+            g0 = detector.g(state0.shiftedBy(0.5 * detector.getThreshold()));
+        }
         g0Positive = g0 >= 0;
     }
 
@@ -141,21 +149,34 @@ public class EventState implements Serializable {
                 previousEventTime = null;
             }
             final AbsoluteDate t1 = interpolator.getCurrentDate();
-            if (FastMath.abs(t1.durationFrom(t0)) < convergence) {
+            final double dt = t1.durationFrom(t0);
+            if (FastMath.abs(dt) < convergence) {
                 // we cannot do anything on such a small step, don't trigger any events
                 return false;
             }
-            final AbsoluteDate start = forward ? t0.shiftedBy(convergence) : t0.shiftedBy(-convergence);
-            final double dt = t1.durationFrom(start);
-            final int    n  = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
-            final double h  = dt / n;
+            final int    n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
+            final double h = dt / n;
+
+            final UnivariateRealFunction f = new UnivariateRealFunction() {
+                public double value(final double t) throws LocalWrapperException {
+                    try {
+                        interpolator.setInterpolatedDate(t0.shiftedBy(t));
+                        return detector.g(interpolator.getInterpolatedState());
+                    } catch (OrekitException oe) {
+                        throw new LocalWrapperException(oe);
+                    }
+                }
+            };
+
+            final BrentSolver nonBracketing = new BrentSolver(convergence);
+            final PegasusSolver bracketing  = new PegasusSolver(convergence);
 
             AbsoluteDate ta = t0;
             double ga = g0;
             for (int i = 0; i < n; ++i) {
 
                 // evaluate detector value at the end of the substep
-                final AbsoluteDate tb = start.shiftedBy((i + 1) * h);
+                final AbsoluteDate tb = t0.shiftedBy((i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
                 final double gb = detector.g(interpolator.getInterpolatedState());
 
@@ -166,50 +187,28 @@ public class EventState implements Serializable {
                     // variation direction, with respect to the integration direction
                     increasing = gb >= ga;
 
-                    final UnivariateRealFunction f = new UnivariateRealFunction() {
-                        public double value(final double t) throws LocalWrapperException {
-                            try {
-                                interpolator.setInterpolatedDate(t0.shiftedBy(t));
-                                return detector.g(interpolator.getInterpolatedState());
-                            } catch (OrekitException oe) {
-                                throw new LocalWrapperException(oe);
-                            }
-                        }
-                    };
-                    final BrentSolver solver = new BrentSolver(convergence);
-
+                    // find the event time making sure we select a solution just at or past the exact root
                     double dtA = ta.durationFrom(t0);
                     final double dtB = tb.durationFrom(t0);
-                    if (ga * gb > 0) {
-                        // this is a corner case:
-                        // - there was an event near ta,
-                        // - there is another event between ta and tb
-                        // - when ta was computed, convergence was reached on the "wrong side" of the interval
-                        // this implies that the real sign of ga is the same as gb, so we need to slightly
-                        // shift ta to make sure ga and gb get opposite signs and the solver won't complain
-                        // about bracketing
-                        final double epsilon = (forward ? 0.25 : -0.25) * convergence;
-                        for (int k = 0; (k < 4) && (ga * gb > 0); ++k) {
-                            dtA += epsilon;
-                            ga = f.value(dtA);
-                        }
-                        if (ga * gb > 0) {
-                            // this should never happen
-                            throw OrekitException.createInternalError(null);
-                        }
-                    }
-
-                    final double dtRoot = (dtA <= dtB) ?
-                                          solver.solve(maxIterationcount, f, dtA, dtB) :
-                                          solver.solve(maxIterationcount, f, dtB, dtA);
+                    final double dtBaseRoot = forward ?
+                                              nonBracketing.solve(maxIterationcount, f, dtA, dtB) :
+                                              nonBracketing.solve(maxIterationcount, f, dtB, dtA);
+                    final int remainingEval = maxIterationcount - nonBracketing.getEvaluations();
+                    final double dtRoot     = forward ?
+                                              UnivariateRealSolverUtils.forceSide(remainingEval, f, bracketing,
+                                                                                  dtBaseRoot, dtA, dtB, AllowedSolutions.RIGHT_SIDE) :
+                                              UnivariateRealSolverUtils.forceSide(remainingEval, f, bracketing,
+                                                                                  dtBaseRoot, dtB, dtA, AllowedSolutions.LEFT_SIDE);
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((previousEventTime != null) &&
                         (FastMath.abs(root.durationFrom(ta)) <= convergence) &&
                         (FastMath.abs(root.durationFrom(previousEventTime)) <= convergence)) {
-                            // we have either found nothing or found (again ?) a past event, we simply ignore it
-                        ta = tb;
-                        ga = gb;
+                        // we have either found nothing or found (again ?) a past event,
+                        // retry the substep excluding this value
+                        ta = forward ? ta.shiftedBy(convergence) : ta.shiftedBy(- convergence);
+                        ga = f.value(ta.durationFrom(t0));
+                        --i;
                     } else if ((previousEventTime == null) ||
                                (FastMath.abs(previousEventTime.durationFrom(root)) > convergence)) {
                         pendingEventTime = root;

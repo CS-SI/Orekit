@@ -365,7 +365,7 @@ public class KeplerianPropagatorTest {
         PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
-        Assert.assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
+        Assert.assertEquals(0, pv.getPosition().getZ(), 2.0e-6);
         Assert.assertTrue(pv.getVelocity().getZ() > 0);
     }
 
@@ -455,7 +455,7 @@ public class KeplerianPropagatorTest {
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0);
-        Assert.assertEquals(0.09, elevation, 1.0e-11);
+        Assert.assertEquals(0.09, elevation, 1.0e-9);
         Assert.assertTrue(zVelocity < 0);
     }
 

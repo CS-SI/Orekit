@@ -26,6 +26,7 @@ public class DateDetectorTest {
     private double dt;
     private Orbit iniOrbit;
     private AbsoluteDate iniDate;
+    private AbsoluteDate nodeDate;
     private DateDetector dateDetector;
     private NumericalPropagator propagator;
 
@@ -45,7 +46,8 @@ public class DateDetectorTest {
 			private static final long serialVersionUID = 3583432139818469589L;
 			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
 				if (increasing) {
-	  		        dateDetector.addEventDate(s.getDate().shiftedBy(dt));
+				    nodeDate = s.getDate();
+	  		        dateDetector.addEventDate(nodeDate.shiftedBy(dt));
 				}
 		        return CONTINUE;
             }
@@ -55,7 +57,7 @@ public class DateDetectorTest {
         propagator.addEventDetector(dateDetector);
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(100.*dt));
 
-        Assert.assertEquals(dt+3.4652245504379913, finalState.getDate().durationFrom(iniDate), threshold);
+        Assert.assertEquals(dt, finalState.getDate().durationFrom(nodeDate), threshold);
     }
 
     @Test
