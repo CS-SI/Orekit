@@ -25,6 +25,11 @@ import org.orekit.time.TimeStamped;
  */
 public interface EOPHistory extends Iterable<TimeStamped> {
 
+    /** Get the number of entries in the history.
+     * @return number of entries in the history
+     */
+    int size();
+
     /** Get the date of the first available Earth Orientation Parameters.
      * @return the start date of the available data
      */

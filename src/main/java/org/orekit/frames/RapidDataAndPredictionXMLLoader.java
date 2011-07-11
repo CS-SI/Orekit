@@ -35,9 +35,10 @@ import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-/** Loader for XML EOP files.
- * <p>XML EOP files contain {@link TimeStampedEntry
- * Earth Orientation Parameters} consistent with ITRF.</p>
+/** Loader for IERS rapid data and prediction file in XML format (finals file).
+ * <p>Rapid data and prediction file contain {@link TimeStampedEntry
+ * Earth Orientation Parameters} for several years periods, in one file
+ * only that is updated regularly.</p>
  * <p>The XML EOP files are recognized thanks to their base names, which
  * must match one of the the patterns <code>finals.2000A.*.xml</code> or
  * <code>finals.*.xml</code> (or the same ending with <code>.gz</code> for
@@ -48,7 +49,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
-class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
+class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Conversion factor for milli-arc seconds entries. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
@@ -68,7 +69,7 @@ class XMLEOPFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
     /** Build a loader for IERS XML EOP files.
      * @param supportedNames regular expression for supported files names
      */
-    public XMLEOPFilesLoader(final String supportedNames) {
+    public RapidDataAndPredictionXMLLoader(final String supportedNames) {
         this.supportedNames = supportedNames;
     }
 

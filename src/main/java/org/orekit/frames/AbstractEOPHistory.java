@@ -63,6 +63,11 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     }
 
     /** {@inheritDoc} */
+    public int size() {
+        return entries.size();
+    }
+
+    /** {@inheritDoc} */
     public Iterator<TimeStamped> iterator() {
         return entries.iterator();
     }

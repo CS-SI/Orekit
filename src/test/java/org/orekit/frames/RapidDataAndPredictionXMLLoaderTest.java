@@ -27,40 +27,40 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 
-public class XMLEOPFilesLoaderTest extends AbstractFilesLoaderTest {
+public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
     public void testStartDateDaily1980() throws OrekitException, ParseException {
-        setRoot("xml-daily-data");
+        setRoot("rapid-data-xml");
         EOP1980History history = new EOP1980History();
-        new XMLEOPFilesLoader("^finals\\.daily\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
                             history.getStartDate());
     }
 
     @Test
     public void testEndDateDaily1980() throws OrekitException, ParseException {
-        setRoot("xml-daily-data");
+        setRoot("rapid-data-xml");
         EOP1980History history = new EOP1980History();
-        new XMLEOPFilesLoader("^finals\\.daily\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2010, 8, 1, TimeScalesFactory.getUTC()),
                             history.getEndDate());
     }
 
     @Test
     public void testStartDateDaily2000() throws OrekitException, ParseException {
-        setRoot("xml-daily-data");
+        setRoot("rapid-data-xml");
         EOP2000History history = new EOP2000History();
-        new XMLEOPFilesLoader("^finals2000A\\.daily\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2010, 5, 11, TimeScalesFactory.getUTC()),
                             history.getStartDate());
     }
 
     @Test
     public void testEndDateDaily2000() throws OrekitException, ParseException {
-        setRoot("xml-daily-data");
+        setRoot("rapid-data-xml");
         EOP2000History history = new EOP2000History();
-        new XMLEOPFilesLoader("^finals2000A\\.daily\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 24, TimeScalesFactory.getUTC()),
                             history.getEndDate());
     }
@@ -69,7 +69,7 @@ public class XMLEOPFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testStartDateFinals1980() throws OrekitException, ParseException {
         setRoot("compressed-data");
         EOP1980History history = new EOP1980History();
-        new XMLEOPFilesLoader("^finals\\.1999\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(1999, 1, 1, TimeScalesFactory.getUTC()),
                             history.getStartDate());
     }
@@ -78,7 +78,7 @@ public class XMLEOPFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testEndDateFinals1980() throws OrekitException, ParseException {
         setRoot("compressed-data");
         EOP1980History history = new EOP1980History();
-        new XMLEOPFilesLoader("^finals\\.1999\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(1999, 12, 31, TimeScalesFactory.getUTC()),
                             history.getEndDate());
     }
@@ -87,7 +87,7 @@ public class XMLEOPFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testStartDateFinals2000() throws OrekitException, ParseException {
         setRoot("regular-data");
         EOP2000History history = new EOP2000History();
-        new XMLEOPFilesLoader("^finals2000A\\.2002\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2002, 1, 1, TimeScalesFactory.getUTC()),
                             history.getStartDate());
     }
@@ -96,7 +96,7 @@ public class XMLEOPFilesLoaderTest extends AbstractFilesLoaderTest {
     public void testEndDateFinals2000() throws OrekitException, ParseException {
         setRoot("regular-data");
         EOP2000History history = new EOP2000History();
-        new XMLEOPFilesLoader("^finals2000A\\.2002\\.xml$").fillHistory(history);
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2002, 12, 31, TimeScalesFactory.getUTC()),
                             history.getEndDate());
     }
