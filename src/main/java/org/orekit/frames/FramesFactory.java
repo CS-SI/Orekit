@@ -102,11 +102,23 @@ import org.orekit.utils.Constants;
  */
 public class FramesFactory implements Serializable {
 
+    /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU1980 compatibles). */
+    public static final String RAPID_DATA_PREDICITON_COLUMNS_1980_FILENAME = "^finals\\.[^.]*$";
+
+    /** Default regular expression for the Rapid Data and Prediction EOP XML files (IAU1980 compatibles). */
+    public static final String RAPID_DATA_PREDICITON_XML_1980_FILENAME = "^finals\\..*\\.xml$";
+
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
     public static final String EOPC04_1980_FILENAME = "^eopc04\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
     public static final String BULLETINB_1980_FILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
+
+    /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU2000 compatibles). */
+    public static final String RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME = "^finals2000A\\.[^.]*$";
+
+    /** Default regular expression for the Rapid Data and Prediction EOP XML files (IAU2000 compatibles). */
+    public static final String RAPID_DATA_PREDICITON_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
     public static final String EOPC04_2000_FILENAME = "^eopc04_IAU2000\\.(\\d\\d)$";
@@ -188,6 +200,12 @@ public class FramesFactory implements Serializable {
      * <p>
      * The default loaders look for IERS EOP 05 C04 and bulletins B files.
      * </p>
+     * @param rapidDataColumnsSupportedNames regular expression for supported
+     * rapid data columns EOP files names
+     * (may be null if the default IERS file names are used)
+     * @param rapidDataXMLSupportedNames regular expression for supported
+     * rapid data XML EOP files names
+     * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
@@ -196,12 +214,20 @@ public class FramesFactory implements Serializable {
      * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
      * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
      * @see #clearEOP1980HistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String)
      */
-    public static void addDefaultEOP1980HistoryLoaders(final String eopC04SupportedNames,
+    public static void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
+                                                       final String rapidDataXMLSupportedNames,
+                                                       final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
+        final String rapidColNames =
+                (rapidDataColumnsSupportedNames == null) ? RAPID_DATA_PREDICITON_COLUMNS_1980_FILENAME : rapidDataColumnsSupportedNames;
+        addEOP1980HistoryLoader(new RapidDataAndPredictionColumnsLoader(rapidColNames));
+        final String rapidXmlNames =
+                (rapidDataXMLSupportedNames == null) ? RAPID_DATA_PREDICITON_XML_1980_FILENAME : rapidDataXMLSupportedNames;
+        addEOP1980HistoryLoader(new RapidDataAndPredictionXMLLoader(rapidXmlNames));
         final String eopcNames =
-            (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
+                (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
         addEOP1980HistoryLoader(new EOP05C04FilesLoader(eopcNames));
         final String bulBNames =
             (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
@@ -234,7 +260,7 @@ public class FramesFactory implements Serializable {
     public static EOP1980History getEOP1980History() throws OrekitException {
         final EOP1980History history = new EOP1980History();
         if (EOP_1980_LOADERS.isEmpty()) {
-            addDefaultEOP1980HistoryLoaders(null, null);
+            addDefaultEOP1980HistoryLoaders(null, null, null, null);
         }
         for (final EOP1980HistoryLoader loader : EOP_1980_LOADERS) {
             loader.fillHistory(history);
@@ -259,6 +285,12 @@ public class FramesFactory implements Serializable {
      * <p>
      * The default loaders look for IERS EOP 05 C04 and bulletins B files.
      * </p>
+     * @param rapidDataColumnsSupportedNames regular expression for supported
+     * rapid data columns EOP files names
+     * (may be null if the default IERS file names are used)
+     * @param rapidDataXMLSupportedNames regular expression for supported
+     * rapid data XML EOP files names
+     * (may be null if the default IERS file names are used)
      * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
@@ -267,10 +299,18 @@ public class FramesFactory implements Serializable {
      * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
      * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
      * @see #clearEOP2000HistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String)
      */
-    public static void addDefaultEOP2000HistoryLoaders(final String eopC04SupportedNames,
+    public static void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
+                                                       final String rapidDataXMLSupportedNames,
+                                                       final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
+        final String rapidColNames =
+                (rapidDataColumnsSupportedNames == null) ? RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME : rapidDataColumnsSupportedNames;
+        addEOP2000HistoryLoader(new RapidDataAndPredictionColumnsLoader(rapidColNames));
+        final String rapidXmlNames =
+            (rapidDataXMLSupportedNames == null) ? RAPID_DATA_PREDICITON_XML_2000_FILENAME : rapidDataXMLSupportedNames;
+        addEOP2000HistoryLoader(new RapidDataAndPredictionXMLLoader(rapidXmlNames));
         final String eopcNames =
             (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
         addEOP2000HistoryLoader(new EOP05C04FilesLoader(eopcNames));
@@ -305,7 +345,7 @@ public class FramesFactory implements Serializable {
     public static EOP2000History getEOP2000History() throws OrekitException {
         final EOP2000History history = new EOP2000History();
         if (EOP_2000_LOADERS.isEmpty()) {
-            addDefaultEOP2000HistoryLoaders(null, null);
+            addDefaultEOP2000HistoryLoaders(null, null, null, null);
         }
         for (final EOP2000HistoryLoader loader : EOP_2000_LOADERS) {
             loader.fillHistory(history);
