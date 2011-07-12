@@ -186,7 +186,7 @@ public class FramesFactory implements Serializable {
 
     /** Add a loader for EOP 1980 history.
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
      * @see #clearEOP1980HistoryLoaders()
      * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
      */
@@ -214,7 +214,7 @@ public class FramesFactory implements Serializable {
      * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
      * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
      * @see #clearEOP1980HistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
      */
     public static void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
@@ -236,7 +236,7 @@ public class FramesFactory implements Serializable {
 
     /** Clear loaders for EOP 1980 history.
      * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
      * @see #clearEOP2000HistoryLoaders()
      */
     public static void clearEOP1980HistoryLoaders() {
@@ -251,7 +251,7 @@ public class FramesFactory implements Serializable {
      * #addEOP1980HistoryLoader(EOP1980HistoryLoader) addEOP1980HistoryLoader}
      * or if {@link #clearEOP1980HistoryLoaders() clearEOP1980HistoryLoaders}
      * has been called afterwards,
-     * the {@link #addDefaultEOP1980HistoryLoaders(String, String)} method
+     * the {@link #addDefaultEOP1980HistoryLoaders(String, String, String, String) method
      * will be called automatically with two null parameters (supported file names).
      * </p>
      * @return Earth Orientation Parameters history (IAU1980) data
@@ -271,7 +271,7 @@ public class FramesFactory implements Serializable {
 
     /** Add a loader for EOP 2000 history.
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP2000HistoryLoaders(String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
      * @see #clearEOP2000HistoryLoaders()
      * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
      */
@@ -299,7 +299,7 @@ public class FramesFactory implements Serializable {
      * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
      * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
      * @see #clearEOP2000HistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
      */
     public static void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
@@ -321,7 +321,7 @@ public class FramesFactory implements Serializable {
 
     /** Clear loaders for EOP 2000 history.
      * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
-     * @see #addDefaultEOP2000HistoryLoaders(String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
      * @see #clearEOP1980HistoryLoaders()
      */
     public static void clearEOP2000HistoryLoaders() {
@@ -336,7 +336,7 @@ public class FramesFactory implements Serializable {
      * #addEOP2000HistoryLoader(EOP2000HistoryLoader) addEOP2000HistoryLoader}
      * or if {@link #clearEOP2000HistoryLoaders() clearEOP2000HistoryLoaders}
      * has been called afterwards,
-     * the {@link #addDefaultEOP2000HistoryLoaders(String, String)} method
+     * the {@link #addDefaultEOP2000HistoryLoaders(String, String, String, String) method
      * will be called automatically with two null parameters (supported file names).
      * </p>
      * @return Earth Orientation Parameters history (IAU2000) data
