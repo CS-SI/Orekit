@@ -20,6 +20,16 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="5.0.3" date="2011-07-12"
+             description="version 5.0.3 is a bug-fix release.">
+      <action dev="luc" type="fix">
+        Fixed a performance bug implying that some frames reloaded all EOP history files
+        each time a transform was computed  (fixes bug #26).
+      </action>
+      <action dev="luc" type="fix">
+        Fixed a parsing bug in IERS Rapid Data and Prediction files for dates between 2000 and 2009.
+      </action>
+    </release>
     <release version="5.0.2" date="2011-07-11"
              description="version 5.0.2 is an interim release of Orekit with support for IERS
              Rapid Data and Prediction files.">

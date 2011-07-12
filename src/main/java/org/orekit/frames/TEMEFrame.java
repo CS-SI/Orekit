@@ -42,7 +42,7 @@ import org.orekit.utils.Constants;
 class TEMEFrame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2301804206118748070L;
+    private static final long serialVersionUID = 3484776102613053728L;
 
     /** 2&pi;. */
     private static final double TWO_PI = 2.0 * Math.PI;
@@ -261,8 +261,8 @@ class TEMEFrame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Flag for EOP correction application. */
-    private final boolean applyEOPCorrection;
+    /** EOP history. */
+    private final EOP1980History eopHistory;
 
     /** Simple constructor, applying EOP corrections (here, nutation).
      * @param date the date.
@@ -286,8 +286,6 @@ class TEMEFrame extends Frame {
 
         super(FramesFactory.getMEME(applyEOPCorr), null , name, true);
 
-        applyEOPCorrection = applyEOPCorr;
-
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.7e-10 arcseconds
         final int n = 12;
@@ -299,6 +297,8 @@ class TEMEFrame extends Frame {
         dpsiNeville = new double[n];
         depsNeville = new double[n];
 
+        eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
+
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
 
@@ -308,7 +308,7 @@ class TEMEFrame extends Frame {
      * @return true if EOP correction is applied
      */
     boolean isEOPCorrectionApplied() {
-        return applyEOPCorrection;
+        return eopHistory != null;
     }
 
     /** Update the frame to the given date.
@@ -334,8 +334,9 @@ class TEMEFrame extends Frame {
             moe = ((MOE_3 * ttc + MOE_2) * ttc + MOE_1) * ttc + MOE_0;
 
             // get the IAU1980 corrections for the nutation parameters
-            final NutationCorrection nutCorr =
-                ((MEMEFrame) getParent()).getNutationCorrection(date);
+            final NutationCorrection nutCorr = (eopHistory == null) ?
+                                               NutationCorrection.NULL_CORRECTION :
+                                               eopHistory.getNutationCorrection(date);
 
             final double deps = depsCurrent + nutCorr.getDdeps();
             final double dpsi = dpsiCurrent + nutCorr.getDdpsi();

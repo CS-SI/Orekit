@@ -32,7 +32,7 @@ import org.orekit.utils.Constants;
 class MEMEFrame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2119588933116161867L;
+    private static final long serialVersionUID = -4939175733381713275L;
 
     /** Radians per arcsecond. */
     private static final double RADIANS_PER_ARC_SECOND = Math.PI / (180.0 * 3600.0);
@@ -61,12 +61,6 @@ class MEMEFrame extends Frame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** EOP history (null if EOP are ignored). */
-    private final EOP1980History eopHistory;
-
-    /** Flag for EOP correction application. */
-    private final boolean applyEOPCorrection;
-
     /** Simple constructor, applying EOP corrections (here, EME2000/GCRF bias compensation).
      * @param date the date.
      * @param name name of the frame
@@ -89,40 +83,9 @@ class MEMEFrame extends Frame {
 
         super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(), null , name, true);
 
-        eopHistory = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
-
-        applyEOPCorrection = applyEOPCorr;
-
         // everything is in place, we can now synchronize the frame
         updateFrame(date);
 
-    }
-
-    /** Indicate if EOP correction is applied.
-     * @return true if EOP correction is applied
-     */
-    boolean isEOPCorrectionApplied() {
-        return applyEOPCorrection;
-    }
-
-    /** Get the LoD (Length of Day) value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return LoD in seconds (0 if date is outside covered range)
-     */
-    double getLOD(final AbsoluteDate date) {
-        return (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
-    }
-
-    /** Get the correction to the nutation parameters.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the correction is desired
-     * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
-     * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
-     */
-    NutationCorrection getNutationCorrection(final AbsoluteDate date) {
-        return (eopHistory == null) ?
-               NutationCorrection.NULL_CORRECTION : eopHistory.getNutationCorrection(date);
     }
 
     /** Update the frame to the given date.
