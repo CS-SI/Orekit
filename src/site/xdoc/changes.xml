@@ -294,6 +294,24 @@
         This might lead to select an inappropriate data provider.
       </action>
     </release>
+    <release version="5.0.3" date="2011-07-12"
+             description="version 5.0.3 is a bug-fix release.">
+      <action dev="luc" type="fix">
+        Fixed a performance bug implying that some frames reloaded all EOP history files
+        each time a transform was computed  (fixes bug #26).
+      </action>
+      <action dev="luc" type="fix">
+        Fixed a parsing bug in IERS Rapid Data and Prediction files for dates between 2000 and 2009.
+      </action>
+    </release>
+    <release version="5.0.2" date="2011-07-11"
+             description="version 5.0.2 is an interim release of Orekit with support for IERS
+                          Rapid Data and Prediction files.">
+      <action dev="luc" type="update">
+        Added support for IERS Rapid Data and Prediction files finals.all, finals.data and finals.daily,
+        for both IAU-1980 and IAU-2000 and with both columns and XML formats.
+      </action>
+    </release>
     <release version="5.0.1" date="2011-04-15"
              description="version 5.0.1 is a minor release of Orekit without any functional changes.
              The differences with respect to 5.0 are only related to packaging and deployement to
