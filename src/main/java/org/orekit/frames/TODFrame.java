@@ -45,7 +45,7 @@ import org.orekit.utils.Constants;
 class TODFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 6318738377160926252L;
+    private static final long serialVersionUID = 5889997098421530065L;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -259,8 +259,8 @@ class TODFrame extends FactoryManagedFrame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Flag for EOP correction application. */
-    private final boolean applyEOPCorrection;
+    /** EOP history. */
+    private final EOP1980History eopHistory;
 
     /** Simple constructor, applying EOP corrections (here, nutation).
      * @param factoryKey key of the frame within the factory
@@ -281,8 +281,6 @@ class TODFrame extends FactoryManagedFrame {
 
         super(FramesFactory.getMOD(applyEOPCorr), null , true, factoryKey);
 
-        applyEOPCorrection = applyEOPCorr;
-
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.7e-10 arcseconds
         final int n = 12;
@@ -294,16 +292,20 @@ class TODFrame extends FactoryManagedFrame {
         dpsiNeville = new double[n];
         depsNeville = new double[n];
 
+        eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
+
         // everything is in place, we can now synchronize the frame
         updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 
-    /** Indicate if EOP correction is applied.
-     * @return true if EOP correction is applied
+    /** Get the LoD (Length of Day) value.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the value is desired
+     * @return LoD in seconds (0 if date is outside covered range)
      */
-    boolean isEOPCorrectionApplied() {
-        return applyEOPCorrection;
+    double getLOD(final AbsoluteDate date) {
+        return (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
     }
 
     /** Update the frame to the given date.
@@ -326,8 +328,9 @@ class TODFrame extends FactoryManagedFrame {
             final double moe = getMeanObliquityOfEcliptic(t);
 
             // get the IAU1980 corrections for the nutation parameters
-            final NutationCorrection nutCorr =
-                ((MODFrame) getParent()).getNutationCorrection(date);
+            final NutationCorrection nutCorr = (eopHistory == null) ?
+                                               NutationCorrection.NULL_CORRECTION :
+                                               eopHistory.getNutationCorrection(date);
 
             final double deps = nutation[1] + nutCorr.getDdeps();
             final double dpsi = nutation[0] + nutCorr.getDdpsi();

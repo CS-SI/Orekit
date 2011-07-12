@@ -52,6 +52,9 @@ class VEISFrame extends FactoryManagedFrame {
     /** Cached date to avoid useless calculus. */
     private transient AbsoluteDate cachedDate;
 
+    /** EOP history. */
+    private final EOP1980History eopHistory;
+
     /** Constructor for the singleton.
      * @param factoryKey key of the frame within the factory
      * @exception OrekitException if data embedded in the library cannot be read
@@ -60,6 +63,8 @@ class VEISFrame extends FactoryManagedFrame {
         throws OrekitException {
 
         super(FramesFactory.getGTOD(false), null, true, factoryKey);
+
+        eopHistory = FramesFactory.getEOP1980History();
 
         // frame synchronization
         updateFrame(AbsoluteDate.J2000_EPOCH);
@@ -77,7 +82,7 @@ class VEISFrame extends FactoryManagedFrame {
             // offset from FIFTIES epoch (UT1 scale)
             final double dtai = date.durationFrom(VST_REFERENCE);
             final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
-            final double dut1 = FramesFactory.getEOP1980History().getUT1MinusUTC(date);
+            final double dut1 = eopHistory.getUT1MinusUTC(date);
 
             final double tut1 = dtai + dutc + dut1;
             final double ttd  = tut1 / Constants.JULIAN_DAY;

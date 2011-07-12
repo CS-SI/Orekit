@@ -38,7 +38,7 @@ import org.orekit.utils.Constants;
 class GTODFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7304302237325702464L;
+    private static final long serialVersionUID = -1727797229994466102L;
 
     /** Radians per second of time. */
     private static final double RADIANS_PER_SECOND = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -65,8 +65,8 @@ class GTODFrame extends FactoryManagedFrame {
     /** Cached date to avoid useless calculus. */
     private AbsoluteDate cachedDate;
 
-    /** Flag for EOP correction application. */
-    private final boolean applyEOPCorrection;
+    /** EOP history. */
+    private final EOP1980History eopHistory;
 
     /** Simple constructor, applying EOP corrections (here, lod).
      * @param factoryKey key of the frame within the factory
@@ -87,18 +87,13 @@ class GTODFrame extends FactoryManagedFrame {
 
         super(FramesFactory.getTOD(applyEOPCorr), null, false, factoryKey);
 
-        applyEOPCorrection = applyEOPCorr;
+        // we need this history even if we don't apply all correction,
+        // as we at least always apply the very large UT1-UTC offset
+        eopHistory = FramesFactory.getEOP1980History();
 
         // everything is in place, we can now synchronize the frame
         updateFrame(AbsoluteDate.J2000_EPOCH);
 
-    }
-
-    /** Indicate if EOP correction is applied.
-     * @return true if EOP correction is applied
-     */
-    boolean isEOPCorrectionApplied() {
-        return applyEOPCorrection;
     }
 
     /** Update the frame to the given date.
@@ -112,7 +107,6 @@ class GTODFrame extends FactoryManagedFrame {
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
             final TODFrame tod = (TODFrame) getParent();
-            final MODFrame mod = (MODFrame) tod.getParent();
 
             // offset from J2000.0 epoch
             final double eqe = tod.getEquationOfEquinoxes(date);
@@ -120,7 +114,7 @@ class GTODFrame extends FactoryManagedFrame {
             // offset in julian centuries from J2000 epoch (UT1 scale)
             final double dtai = date.durationFrom(GMST_REFERENCE);
             final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
-            final double dut1 = FramesFactory.getEOP1980History().getUT1MinusUTC(date);
+            final double dut1 = eopHistory.getUT1MinusUTC(date);
 
             final double tut1 = dtai + dutc + dut1;
             final double tt   = tut1 / Constants.JULIAN_CENTURY;
@@ -137,7 +131,7 @@ class GTODFrame extends FactoryManagedFrame {
             final double gast = gmst + eqe;
 
             // compute true angular rotation of Earth, in rad/s
-            final double lod = mod.getLOD(date);
+            final double lod = tod.getLOD(date);
             final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
             final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 

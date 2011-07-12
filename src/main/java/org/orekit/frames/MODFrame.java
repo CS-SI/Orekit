@@ -32,7 +32,7 @@ import org.orekit.utils.Constants;
 class MODFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3965968487731196666L;
+    private static final long serialVersionUID = -8560514103170944033L;
 
     /** 1st coefficient for ZETA precession angle. */
     private static final double ZETA_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
@@ -58,12 +58,6 @@ class MODFrame extends FactoryManagedFrame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** EOP history (null if EOP are ignored). */
-    private final EOP1980History eopHistory;
-
-    /** Flag for EOP correction application. */
-    private final boolean applyEOPCorrection;
-
     /** Simple constructor, applying EOP corrections (here, EME2000/GCRF bias compensation).
      * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters cannot be read
@@ -84,40 +78,9 @@ class MODFrame extends FactoryManagedFrame {
         super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
               null , true, factoryKey);
 
-        eopHistory = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
-
-        applyEOPCorrection = applyEOPCorr;
-
         // everything is in place, we can now synchronize the frame
         updateFrame(AbsoluteDate.J2000_EPOCH);
 
-    }
-
-    /** Indicate if EOP correction is applied.
-     * @return true if EOP correction is applied
-     */
-    boolean isEOPCorrectionApplied() {
-        return applyEOPCorrection;
-    }
-
-    /** Get the LoD (Length of Day) value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return LoD in seconds (0 if date is outside covered range)
-     */
-    double getLOD(final AbsoluteDate date) {
-        return (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
-    }
-
-    /** Get the correction to the nutation parameters.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the correction is desired
-     * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
-     * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
-     */
-    NutationCorrection getNutationCorrection(final AbsoluteDate date) {
-        return (eopHistory == null) ?
-               NutationCorrection.NULL_CORRECTION : eopHistory.getNutationCorrection(date);
     }
 
     /** Update the frame to the given date.
