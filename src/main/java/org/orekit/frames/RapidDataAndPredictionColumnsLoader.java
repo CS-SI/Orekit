@@ -65,7 +65,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
     private static final String  MJD_FIELD                    = "\\p{Blank}+(\\p{Digit}+)(?:\\.00*)";
 
     /** Field for separator parsing. */
-    private static final String  SEPARATOR                    = "[IP]";
+    private static final String  SEPARATOR                    = "\\p{Blank}*[IP]";
 
     /** Field for real parsing. */
     private static final String  REAL_FIELD                   = "\\p{Blank}*(-?\\p{Digit}*\\.\\p{Digit}*)";
@@ -157,11 +157,11 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
             // split the lines in its various columns (some of them can be blank)
-            final String datePart      = (line.length() >= DATE_END)     ? line.substring(DATE_START,       DATE_END).trim()     : "";
-            final String polePart      = (line.length() >= POLE_END)     ? line.substring(POLE_START,       POLE_END).trim()     : "";
-            final String ut1utcPart    = (line.length() >= UT1_UTC_END ) ? line.substring(UT1_UTC_START,    UT1_UTC_END).trim()  : "";
-            final String lodPart       = (line.length() >= LOD_END)      ? line.substring(LOD_START,        LOD_END).trim()      : "";
-            final String nutationPart  = (line.length() >= NUTATION_END) ? line.substring(NUTATION_START,   NUTATION_END).trim() : "";
+            final String datePart      = (line.length() >= DATE_END)     ? line.substring(DATE_START,       DATE_END)     : "";
+            final String polePart      = (line.length() >= POLE_END)     ? line.substring(POLE_START,       POLE_END)     : "";
+            final String ut1utcPart    = (line.length() >= UT1_UTC_END ) ? line.substring(UT1_UTC_START,    UT1_UTC_END)  : "";
+            final String lodPart       = (line.length() >= LOD_END)      ? line.substring(LOD_START,        LOD_END)      : "";
+            final String nutationPart  = (line.length() >= NUTATION_END) ? line.substring(NUTATION_START,   NUTATION_END) : "";
 
             // parse the date part
             final Matcher dateMatcher = DATE_PATTERN.matcher(datePart);
@@ -180,7 +180,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
             }
 
             // parse the pole part
-            if (polePart.length() == 0) {
+            if (polePart.trim().length() == 0) {
                 // pole part is blank
                 x = 0;
                 y = 0;
@@ -195,7 +195,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
             }
 
             // parse the UT1-UTC part
-            if (ut1utcPart.length() == 0) {
+            if (ut1utcPart.trim().length() == 0) {
                 // UT1-UTC part is blank
                 dtu1 = 0;
             } else {
@@ -208,7 +208,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
             }
 
             // parse the lod part
-            if (lodPart.length() == 0) {
+            if (lodPart.trim().length() == 0) {
                 // lod part is blank
                 lod = 0;
             } else {
@@ -221,7 +221,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
             }
 
             // parse the nutation part
-            if (nutationPart.length() == 0) {
+            if (nutationPart.trim().length() == 0) {
                 // nutation part is blank
                 dpsi = 0;
                 deps = 0;
