@@ -17,7 +17,6 @@
 package org.orekit.errors;
 
 import org.apache.commons.math.MathException;
-import org.apache.commons.math.exception.MathRuntimeException;
 import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.exception.util.Localizable;
 
@@ -65,14 +64,6 @@ public class PropagationException extends OrekitException {
      * @param exception underlying cause
      */
     public PropagationException(final MathException exception) {
-        super(exception);
-    }
-
-    /** Simple constructor.
-     * Build an exception wrapping an {@link OrekitException} instance
-     * @param exception underlying cause
-     */
-    public PropagationException(final MathRuntimeException exception) {
         super(exception);
     }
 
