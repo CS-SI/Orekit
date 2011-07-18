@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add">
+        Added support for LVLH, VVLH and VNC local orbital frames.
+      </action>
       <action dev="luc" type="fix">
         Fixed a performance bug implying that some frames reloaded all EOP history files
         each time a transform was computed (fixes bug #26).

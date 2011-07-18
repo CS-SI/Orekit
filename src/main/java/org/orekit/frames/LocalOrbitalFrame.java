@@ -41,11 +41,84 @@ public class LocalOrbitalFrame extends Frame {
     /** List of supported frames types. */
     public enum LOFType {
 
-        /** Constant for TNW frame (X axis aligned with velocity). */
+        /** Constant for TNW frame
+         * (X axis aligned with velocity, Z axis aligned with orbital momentum).
+         * <p>
+         * The axes of this frame are parallel to the axes of the {@link #VNC} frame:
+         * <ul>
+         *   <li>X<sub>TNW</sub> =  X<sub>VNC</sub></li>
+         *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub></li>
+         *   <li>Z<sub>TNW</sub> =  Y<sub>VNC</sub></li>
+         * </ul>
+         * </p>
+         * @see #VNC
+         */
         TNW,
 
-        /** Constant for QSW frame (X axis aligned with position). */
-        QSW
+        /** Constant for QSW frame
+         * (X axis aligned with position, Z axis aligned with orbital momentum).
+         * <p>
+         * This frame is also known as the {@link LVLH} frame, both constants are equivalent.
+         * </p>
+         * <p>
+         * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
+         * <ul>
+         *   <li>X<sub>QSW/LVLH</sub> = -Z<sub>VVLH</sub></li>
+         *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
+         *   <li>Z<sub>QSW/LVLH</sub> = -Y<sub>VVLH</sub></li>
+         * </ul>
+         * </p>
+         * @see #LVLH
+         * @see #VVLH
+         */
+        QSW,
+
+        /** Constant for Local Vertical, Local Horizontal frame
+         * (X axis aligned with position, Z axis aligned with orbital momentum).
+         * <p>
+         * This frame is also known as the {@link QSW} frame, both constants are equivalent.
+         * </p>
+         * <p>
+         * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
+         * <ul>
+         *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>VVLH</sub></li>
+         *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>VVLH</sub></li>
+         *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>VVLH</sub></li>
+         * </ul>
+         * </p>
+         * @see #QSW
+         * @see #VVLH
+         */
+        LVLH,
+
+        /** Constant for Vehicle Velocity, Local Horizontal frame
+         * (Z axis aligned with opposite of position, Y axis aligned with opposite of orbital momentum).
+         * <p>
+         * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
+         * <ul>
+         *   <li>X<sub>VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
+         *   <li>Y<sub>VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
+         *   <li>Z<sub>VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
+         * </ul>
+         * </p>
+         * @see #QSW
+         * @see #LVLH
+         */
+        VVLH,
+
+        /** Constant for Velocity - Normal - Co-normal frame
+         * (X axis aligned with velocity, Y axis aligned with orbital momentum).
+         * <p>
+         * The axes of this frame are parallel to the axes of the {@link #TNW} frame:
+         * <ul>
+         *   <li>X<sub>VNC</sub> =  X<sub>TNW</sub></li>
+         *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub></li>
+         *   <li>Z<sub>VNC</sub> = -Y<sub>TNW</sub></li>
+         * </ul>
+         * </p>
+         * @see #TNW
+         */
+        VNC;
 
     }
 
@@ -87,8 +160,25 @@ public class LocalOrbitalFrame extends Frame {
         final Transform translation = new Transform(p.negate(), v.negate());
 
         // compute the rotation part of the transform
-        final Rotation r = new Rotation((type == LOFType.TNW) ? v : p, momentum,
-                                         Vector3D.PLUS_I, Vector3D.PLUS_K);
+        final Rotation r;
+        switch (type) {
+        case TNW:
+            r = new Rotation(v, momentum, Vector3D.PLUS_I, Vector3D.PLUS_K);
+            break;
+        case QSW :
+        case LVLH :
+            r = new Rotation(p, momentum, Vector3D.PLUS_I, Vector3D.PLUS_K);
+            break;
+        case VVLH :
+            r = new Rotation(p, momentum, Vector3D.MINUS_K, Vector3D.MINUS_J);
+            break;
+        case VNC :
+            r = new Rotation(v, momentum, Vector3D.PLUS_I, Vector3D.PLUS_J);
+            break;
+        default :
+            // this should never happen
+            throw OrekitException.createInternalError(null);
+        }
         final Transform rotation =
             new Transform(r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
 
