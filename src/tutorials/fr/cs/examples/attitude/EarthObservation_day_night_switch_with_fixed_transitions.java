@@ -36,6 +36,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -89,26 +90,26 @@ public class EarthObservation_day_night_switch_with_fixed_transitions {
             //-------------------------
 
             // Mode : day
-            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                      RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
 
             // Mode : night
-            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame());
+            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
 
             // Mode : day-night rdv 1
-            final AttitudeProvider dayNightRdV1Law = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider dayNightRdV1Law = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                    RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
 
             // Mode : day-night rdv 2
-            final AttitudeProvider dayNightRdV2Law = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider dayNightRdV2Law = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                    RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
 
             // Mode : night-day rdv 1
-            final AttitudeProvider nightDayRdV1Law = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider nightDayRdV1Law = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                    RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
 
             // Mode : night-day rdv 2
-            final AttitudeProvider nightDayRdV2Law = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider nightDayRdV2Law = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                    RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(20), 0);
 
             // Event detectors definition

@@ -64,7 +64,7 @@ Propagator kepler = new KeplerianPropagator(initialOrbit);
 
 +---------------------
 LocalOrbitalFrame lof =
-    new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "LOF");
+    new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
 +---------------------
 
   On the other hand, let's define the ground station by its coordinates as a <GeodeticPoint> 

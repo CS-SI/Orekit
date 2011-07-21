@@ -29,9 +29,9 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.LocalOrbitalFrame;
 import org.orekit.frames.TopocentricFrame;
-import org.orekit.frames.LocalOrbitalFrame.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -72,7 +72,7 @@ public class Frames1 {
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
             // The local orbital frame (LOF) is related to the orbit propagated by the kepler propagator.
-            LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "LOF");
+            LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
 
             // Earth and frame  
             double ae =  6378137.0; // equatorial radius in meter

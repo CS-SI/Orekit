@@ -33,6 +33,7 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -76,9 +77,9 @@ public class EarthObservation {
 
             // Attitudes sequence definition
             final AttitudesSequence attitudesSequence = new AttitudesSequence();
-            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                      RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame());
+            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
             final EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {

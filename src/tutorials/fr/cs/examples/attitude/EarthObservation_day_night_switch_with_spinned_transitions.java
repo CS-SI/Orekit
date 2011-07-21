@@ -37,6 +37,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
@@ -88,10 +89,10 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
 
             // Attitude laws definition
             final double settingRate = FastMath.toRadians(1.0);
-            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                      RotationOrder.XYZ, FastMath.toRadians(20), FastMath.toRadians(40), 0);
-            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame());
-            final AttitudeProvider transitionLaw     = new LofOffset(initialOrbit.getFrame(),
+            final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
+            final AttitudeProvider transitionLaw     = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
                                                                      RotationOrder.XYZ, FastMath.toRadians(20), 0, 0);
             final AttitudeProvider rollSetUpLaw      = new SpinStabilized(nightRestingLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_I, settingRate);
             final AttitudeProvider pitchSetUpLaw     = new SpinStabilized(transitionLaw, AbsoluteDate.J2000_EPOCH, Vector3D.PLUS_J, settingRate);

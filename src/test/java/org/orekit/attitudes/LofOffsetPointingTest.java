@@ -30,6 +30,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
@@ -69,7 +70,7 @@ public class LofOffsetPointingTest {
 
         // Create lof aligned law
         //************************
-        final LofOffset lofLaw = new LofOffset(circ.getFrame());
+        final LofOffset lofLaw = new LofOffset(circ.getFrame(), LOFType.VVLH);
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
         final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
  
@@ -95,7 +96,7 @@ public class LofOffsetPointingTest {
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
                                    FastMath.toRadians(5.300), PositionAngle.MEAN, 
                                    FramesFactory.getEME2000(), date, mu);
-        final LofOffset upsideDown = new LofOffset(circ.getFrame(), RotationOrder.XYX, FastMath.PI, 0, 0);
+        final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.VVLH, RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
         pointing.getTargetPoint(circ, date, circ.getFrame());
     }
@@ -114,7 +115,7 @@ public class LofOffsetPointingTest {
 
         final AttitudeProvider law =
             new LofOffsetPointing(earthSpheric,
-                                  new LofOffset(orbit.getFrame(), RotationOrder.XYX, 0.1, 0.2, 0.3),
+                                  new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.XYX, 0.1, 0.2, 0.3),
                                   Vector3D.PLUS_K);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);

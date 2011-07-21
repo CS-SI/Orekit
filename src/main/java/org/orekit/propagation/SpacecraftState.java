@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
@@ -80,7 +81,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
     public SpacecraftState(final Orbit orbit)
         throws OrekitException {
         this.orbit    = orbit;
-        this.attitude = new LofOffset(orbit.getFrame()).getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        this.attitude = new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         this.mass     = DEFAULT_MASS;
     }
 
@@ -108,7 +109,7 @@ public class SpacecraftState implements TimeStamped, Serializable {
     public SpacecraftState(final Orbit orbit, final double mass)
         throws OrekitException {
         this.orbit    = orbit;
-        this.attitude = new LofOffset(orbit.getFrame()).getAttitude(orbit, orbit.getDate(), orbit.getFrame());
+        this.attitude = new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame());
         this.mass     = mass;
     }
 

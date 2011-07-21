@@ -28,6 +28,7 @@ import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -247,7 +248,7 @@ public class BoxAndSolarArraySpacecraftTest {
                                    FramesFactory.getEME2000(), date, mu);
         propagator =
             new EcksteinHechlerPropagator(circ,
-                                          new LofOffset(circ.getFrame()),
+                                          new LofOffset(circ.getFrame(), LOFType.VVLH),
                                           ae, mu, c20, c30, c40, c50, c60);
         } catch (OrekitException oe) {
             Assert.fail(oe.getLocalizedMessage());

@@ -16,11 +16,8 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Class for frames moving with an orbiting satellite.
@@ -38,92 +35,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class LocalOrbitalFrame extends Frame {
 
-    /** List of supported frames types. */
-    public enum LOFType {
-
-        /** Constant for TNW frame
-         * (X axis aligned with velocity, Z axis aligned with orbital momentum).
-         * <p>
-         * The axes of this frame are parallel to the axes of the {@link #VNC} frame:
-         * <ul>
-         *   <li>X<sub>TNW</sub> =  X<sub>VNC</sub></li>
-         *   <li>Y<sub>TNW</sub> = -Z<sub>VNC</sub></li>
-         *   <li>Z<sub>TNW</sub> =  Y<sub>VNC</sub></li>
-         * </ul>
-         * </p>
-         * @see #VNC
-         */
-        TNW,
-
-        /** Constant for QSW frame
-         * (X axis aligned with position, Z axis aligned with orbital momentum).
-         * <p>
-         * This frame is also known as the {@link LVLH} frame, both constants are equivalent.
-         * </p>
-         * <p>
-         * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
-         * <ul>
-         *   <li>X<sub>QSW/LVLH</sub> = -Z<sub>VVLH</sub></li>
-         *   <li>Y<sub>QSW/LVLH</sub> =  X<sub>VVLH</sub></li>
-         *   <li>Z<sub>QSW/LVLH</sub> = -Y<sub>VVLH</sub></li>
-         * </ul>
-         * </p>
-         * @see #LVLH
-         * @see #VVLH
-         */
-        QSW,
-
-        /** Constant for Local Vertical, Local Horizontal frame
-         * (X axis aligned with position, Z axis aligned with orbital momentum).
-         * <p>
-         * This frame is also known as the {@link QSW} frame, both constants are equivalent.
-         * </p>
-         * <p>
-         * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
-         * <ul>
-         *   <li>X<sub>LVLH/QSW</sub> = -Z<sub>VVLH</sub></li>
-         *   <li>Y<sub>LVLH/QSW</sub> =  X<sub>VVLH</sub></li>
-         *   <li>Z<sub>LVLH/QSW</sub> = -Y<sub>VVLH</sub></li>
-         * </ul>
-         * </p>
-         * @see #QSW
-         * @see #VVLH
-         */
-        LVLH,
-
-        /** Constant for Vehicle Velocity, Local Horizontal frame
-         * (Z axis aligned with opposite of position, Y axis aligned with opposite of orbital momentum).
-         * <p>
-         * The axes of this frame are parallel to the axes of both the {@link #QSW} and {@link #LVLH} frames:
-         * <ul>
-         *   <li>X<sub>VVLH</sub> =  Y<sub>QSW/LVLH</sub></li>
-         *   <li>Y<sub>VVLH</sub> = -Z<sub>QSW/LVLH</sub></li>
-         *   <li>Z<sub>VVLH</sub> = -X<sub>QSW/LVLH</sub></li>
-         * </ul>
-         * </p>
-         * @see #QSW
-         * @see #LVLH
-         */
-        VVLH,
-
-        /** Constant for Velocity - Normal - Co-normal frame
-         * (X axis aligned with velocity, Y axis aligned with orbital momentum).
-         * <p>
-         * The axes of this frame are parallel to the axes of the {@link #TNW} frame:
-         * <ul>
-         *   <li>X<sub>VNC</sub> =  X<sub>TNW</sub></li>
-         *   <li>Y<sub>VNC</sub> =  Z<sub>TNW</sub></li>
-         *   <li>Z<sub>VNC</sub> = -Y<sub>TNW</sub></li>
-         * </ul>
-         * </p>
-         * @see #TNW
-         */
-        VNC;
-
-    }
-
     /** Serializable UID. */
-    private static final long serialVersionUID = 4815246887625815981L;
+    private static final long serialVersionUID = 3442484777549385439L;
 
     /** Frame type. */
     private final LOFType type;
@@ -150,40 +63,8 @@ public class LocalOrbitalFrame extends Frame {
     /** {@inheritDoc} */
     protected void updateFrame(final AbsoluteDate date) throws OrekitException {
 
-        // get position/velocity with respect to parent frame
-        final PVCoordinates pv = provider.getPVCoordinates(date, getParent());
-        final Vector3D p = pv.getPosition();
-        final Vector3D v = pv.getVelocity();
-        final Vector3D momentum = pv.getMomentum();
-
-        // compute the translation part of the transform
-        final Transform translation = new Transform(p.negate(), v.negate());
-
-        // compute the rotation part of the transform
-        final Rotation r;
-        switch (type) {
-        case TNW:
-            r = new Rotation(v, momentum, Vector3D.PLUS_I, Vector3D.PLUS_K);
-            break;
-        case QSW :
-        case LVLH :
-            r = new Rotation(p, momentum, Vector3D.PLUS_I, Vector3D.PLUS_K);
-            break;
-        case VVLH :
-            r = new Rotation(p, momentum, Vector3D.MINUS_K, Vector3D.MINUS_J);
-            break;
-        case VNC :
-            r = new Rotation(v, momentum, Vector3D.PLUS_I, Vector3D.PLUS_J);
-            break;
-        default :
-            // this should never happen
-            throw OrekitException.createInternalError(null);
-        }
-        final Transform rotation =
-            new Transform(r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
-
         // update the frame defining transform
-        setTransform(new Transform(translation, rotation));
+        setTransform(type.transformFromInertial(provider.getPVCoordinates(date, getParent())));
 
     }
 
