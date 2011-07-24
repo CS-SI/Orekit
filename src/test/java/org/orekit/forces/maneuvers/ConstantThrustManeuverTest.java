@@ -123,6 +123,8 @@ public class ConstantThrustManeuverTest {
                                                        TimeScalesFactory.getUTC());
         final ConstantThrustManeuver maneuver =
             new ConstantThrustManeuver(fireDate, duration, f, isp, Vector3D.PLUS_I);
+        Assert.assertEquals(f,   maneuver.getThrust(), 1.0e-10);
+        Assert.assertEquals(isp, maneuver.getISP(),    1.0e-10);
 
         double[] absTolerance = {
             0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
@@ -139,7 +141,9 @@ public class ConstantThrustManeuverTest {
         propagator.addForceModel(maneuver);
         final SpacecraftState finalorb = propagator.propagate(fireDate.shiftedBy(3800));
 
-        Assert.assertEquals(2007.88245442614, finalorb.getMass(), 1e-10);
+        final double massTolerance =
+                FastMath.abs(maneuver.getFlowRate()) * maneuver.getEventsDetectors()[0].getThreshold();
+        Assert.assertEquals(2007.8824544261233, finalorb.getMass(), massTolerance);
         Assert.assertEquals(2.6872, FastMath.toDegrees(MathUtils.normalizeAngle(finalorb.getI(), FastMath.PI)), 1e-4);
         Assert.assertEquals(28970, finalorb.getA()/1000, 1);
 

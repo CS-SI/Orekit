@@ -98,6 +98,27 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
 
     }
 
+    /** Get the thrust.
+     * @return thrust force (N).
+     */
+    public double getThrust() {
+        return thrust;
+    }
+
+    /** Get the specific impulse.
+     * @return specific impulse (s).
+     */
+    public double getISP() {
+        return -thrust / (G0 * flowRate);
+    }
+
+    /** Get the flow rate.
+     * @return flow rate (negative, kg/s).
+     */
+    public double getFlowRate() {
+        return flowRate;
+    }
+
     /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
