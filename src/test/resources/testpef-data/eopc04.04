@@ -4,7 +4,7 @@
 This file is NOT an original IERS file.
 
 It has been deliberately edited for test purposes and should NOT
-be used except for the PEFFrameAlternateConfigurationTest test 
+be used except for the GTODFrameAlternateConfigurationTest test 
 cases in Orekit distribution.
 
 ### Vallado paper
