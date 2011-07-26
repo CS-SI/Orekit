@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import org.orekit.time.AbsoluteDate;
 
 /** This class holds Earth Orientation Parameters (IAU2000) data throughout a large time range.
  * @author Pascal Parraud
@@ -25,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 public class EOP2000History extends AbstractEOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1940180123066815667L;
+    private static final long serialVersionUID = 8374043152379666334L;
 
     /** Simple constructor.
      */
@@ -37,29 +36,6 @@ public class EOP2000History extends AbstractEOPHistory {
      */
     public void addEntry(final EOP2000Entry entry) {
         entries.add(entry);
-    }
-
-    /** Get the pole IERS Reference Pole correction.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the correction is desired
-     * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
-     * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
-     */
-    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        if (prepareInterpolation(date)) {
-            synchronized (this) {
-
-                final EOP2000Entry n = (EOP2000Entry) next;
-                final EOP2000Entry p = (EOP2000Entry) previous;
-                final double x = (dtP * n.getX() + dtN * p.getX()) / (dtP + dtN);
-                final double y = (dtP * n.getY() + dtN * p.getY()) / (dtP + dtN);
-
-                return new PoleCorrection(x, y);
-
-            }
-        } else {
-            return PoleCorrection.NULL_CORRECTION;
-        }
     }
 
 }

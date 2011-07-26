@@ -308,6 +308,18 @@ class TODFrame extends FactoryManagedFrame {
         return (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
     }
 
+    /** Get the pole IERS Reference Pole correction.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
+     * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
+     */
+    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
+        return (eopHistory == null) ?
+               PoleCorrection.NULL_CORRECTION :
+               eopHistory.getPoleCorrection(date);
+    }
+
     /** Update the frame to the given date.
      * <p>The update considers the nutation effects from IERS data.</p>
      * @param date new value of the date

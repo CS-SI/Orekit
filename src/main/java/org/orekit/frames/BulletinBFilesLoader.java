@@ -187,7 +187,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                                                     storedRealField + storedRealField + storedRealField +
                                                     finalBlanks);
         SECTION_1_DATA_NEW_FORMAT = Pattern.compile(storedIntegerField + storedIntegerField + storedIntegerField + mjdField +
-                                                    ignoredRealField + ignoredRealField + storedRealField +
+                                                    storedRealField + storedRealField + storedRealField +
                                                     ignoredRealField + ignoredRealField + ignoredRealField + ignoredRealField +
                                                     ignoredRealField + ignoredRealField + ignoredRealField +
                                                     finalBlanks);
@@ -270,8 +270,8 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
 
                 final Map<Integer, double[]> fieldsMap = new HashMap<Integer, double[]>();
 
-                // extract UT1-UTC from section 1
-                loadDTNewFormat(fieldsMap, reader, name);
+                // extract x, y, UT1-UTC from section 1
+                loadXYDTNewFormat(fieldsMap, reader, name);
 
                 // skip to section 2
                 seekToLine(SECTION_2_HEADER, reader, name);
@@ -290,10 +290,11 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                     final int mjd = entry.getKey();
                     final double[] array = entry.getValue();
                     if (Double.isNaN(array[0]) || Double.isNaN(array[1]) ||
-                        Double.isNaN(array[3]) || Double.isNaN(array[3])) {
+                        Double.isNaN(array[3]) || Double.isNaN(array[3]) ||
+                        Double.isNaN(array[4]) || Double.isNaN(array[5])) {
                         notifyUnexpectedErrorEncountered(name);
                     }
-                    history1980.addEntry(new EOP1980Entry(mjd, array[0], array[1], array[2], array[3]));
+                    history1980.addEntry(new EOP1980Entry(mjd, array[0], array[1], array[2], array[3], array[4], array[5]));
                 }
 
             }
@@ -380,16 +381,16 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
             final Matcher matcher = SECTION_2_DATA_OLD_FORMAT.matcher(line);
             if (matcher.matches()) {
                 // this is a data line, build an entry from the extracted fields
-                final int    date  = Integer.parseInt(matcher.group(1));
-                final double x     = Double.parseDouble(matcher.group(2)) * Constants.ARC_SECONDS_TO_RADIANS;
-                final double y     = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
-                final double dtu1  = Double.parseDouble(matcher.group(4));
-                final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
-                final double dpsi  = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                final double deps  = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                final int    date = Integer.parseInt(matcher.group(1));
+                final double x    = Double.parseDouble(matcher.group(2)) * Constants.ARC_SECONDS_TO_RADIANS;
+                final double y    = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
+                final double dtu1 = Double.parseDouble(matcher.group(4));
+                final double lod  = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
                 if (date >= mjdMin) {
                     if (history1980 != null) {
-                        history1980.addEntry(new EOP1980Entry(date, dtu1, lod, dpsi, deps));
+                        final double dpsi = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                        final double deps = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                        history1980.addEntry(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
                     }
                     if (history2000 != null) {
                         history2000.addEntry(new EOP2000Entry(date, dtu1, lod, x, y));
@@ -411,7 +412,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
      * @exception IOException if data can't be read
      * @exception OrekitException if some data is missing or if some loader specific error occurs
      */
-    private void loadDTNewFormat(final Map<Integer, double[]> fieldsMap, final BufferedReader reader, final String name)
+    private void loadXYDTNewFormat(final Map<Integer, double[]> fieldsMap, final BufferedReader reader, final String name)
         throws OrekitException, IOException {
 
         mjdMin = Integer.MAX_VALUE;
@@ -437,8 +438,10 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                     }
                     mjdMin = FastMath.min(mjdMin, mjd);
                     mjdMax = FastMath.max(mjdMax, mjd);
-                    final double dtu1 = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
-                    fieldsMap.put(mjd, new double[] {dtu1, Double.NaN, Double.NaN, Double.NaN});
+                    final double x    = Double.parseDouble(matcher.group(5)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                    final double y    = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                    final double dtu1 = Double.parseDouble(matcher.group(7)) * MILLI_SECONDS_TO_SECONDS;
+                    fieldsMap.put(mjd, new double[] {dtu1, Double.NaN, x, y, Double.NaN, Double.NaN});
                 } else {
                     matcher = FINAL_VALUES_END.matcher(line);
                     if (matcher.matches()) {
@@ -473,8 +476,8 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                     if (array == null) {
                         notifyUnexpectedErrorEncountered(name);
                     }
-                    array[2] = dpsi;
-                    array[3] = deps;
+                    array[4] = dpsi;
+                    array[5] = deps;
                     if (mjd >= mjdMax) {
                         // don't bother reading the rest of the file
                         return;

@@ -4,8 +4,9 @@
 This file is NOT an original IERS file.
 
 It has been deliberately edited for test purposes and should NOT
-be used except for the GTODFrameAlternateConfigurationTest test 
-cases in Orekit distribution.
+be used except for the GTODFrameAlternateConfigurationTest and
+ITRFEquinoxFrameAlternateConfigurationTest test cases in Orekit
+distribution.
 
 ### Vallado paper
 ### 2004   4   6  53101  -0.140682   0.333309  -0.4399620   0.0015560  ...

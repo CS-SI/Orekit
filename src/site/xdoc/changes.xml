@@ -23,6 +23,9 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="add">
+        Added an equinox-based version of ITRF.
+      </action>
+      <action dev="luc" type="add">
         Added getters for thrust, Isp and flow rate in constant thrust maneuvers.
       </action>
       <action dev="luc" type="add">

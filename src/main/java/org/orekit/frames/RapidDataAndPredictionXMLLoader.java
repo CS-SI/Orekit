@@ -315,8 +315,9 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                 checkDates();
                 if ((history1980 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
+                    (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
                     (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
+                    history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
@@ -358,8 +359,9 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                 checkDates();
                 if ((history1980 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
+                    (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
                     (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
+                    history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&

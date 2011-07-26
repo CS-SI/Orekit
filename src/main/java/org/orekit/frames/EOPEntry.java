@@ -31,7 +31,7 @@ import org.orekit.time.TimeStamped;
 public class EOPEntry implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2662304704586116425L;
+    private static final long serialVersionUID = -3157843129484837222L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
     private final int mjd;
@@ -45,13 +45,22 @@ public class EOPEntry implements TimeStamped, Serializable {
     /** Length of day. */
     private final double lod;
 
+    /** X component of pole motion. */
+    private final double x;
+
+    /** Y component of pole motion. */
+    private final double y;
+
    /** Simple constructor.
     * @param mjd entry date (modified julian day, 00h00 UTC scale)
     * @param dt UT1-UTC in seconds
     * @param lod length of day
+    * @param x X component of pole motion
+    * @param y Y component of pole motion
     * @exception OrekitException if UTC time scale cannot be retrieved
     */
-    public EOPEntry(final int mjd, final double dt, final double lod)
+    public EOPEntry(final int mjd, final double dt, final double lod,
+                    final double x, final double y)
         throws OrekitException {
 
         this.mjd = mjd;
@@ -62,6 +71,8 @@ public class EOPEntry implements TimeStamped, Serializable {
 
         this.dt    = dt;
         this.lod   = lod;
+        this.x     = x;
+        this.y     = y;
 
     }
 
@@ -90,6 +101,20 @@ public class EOPEntry implements TimeStamped, Serializable {
      */
     public double getLOD() {
         return lod;
+    }
+
+    /** Get the X component of the pole motion.
+     * @return X component of pole motion
+     */
+    public double getX() {
+        return x;
+    }
+
+    /** Get the Y component of the pole motion.
+     * @return Y component of pole motion
+     */
+    public double getY() {
+        return y;
     }
 
 }

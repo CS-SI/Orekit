@@ -25,6 +25,7 @@ import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 
 public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
@@ -53,6 +54,22 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
         new EOP05C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
                             history.getEndDate());
+    }
+
+    @Test
+    public void testContent() throws OrekitException, ParseException {
+        setRoot("regular-data");
+        EOP2000History history = new EOP2000History();
+        new EOP05C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        AbsoluteDate date = new AbsoluteDate(2003, 1, 7, 12, 0, 0, TimeScalesFactory.getUTC());
+        Assert.assertEquals(        ( 0.0007776 +  0.0008613) / 2,  history.getLOD(date), 1.0e-10);
+        Assert.assertEquals(        (-0.2920235 + -0.2928453) / 2,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assert.assertEquals(asToRad((-0.106053  + -0.108629)  / 2), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assert.assertEquals(asToRad(( 0.201512  +  0.203603)  / 2), history.getPoleCorrection(date).getYp(), 1.0e-10);
+    }
+
+    private double asToRad(double mas) {
+        return mas * Constants.ARC_SECONDS_TO_RADIANS;
     }
 
 }

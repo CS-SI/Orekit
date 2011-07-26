@@ -25,6 +25,7 @@ import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 
 public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
@@ -65,6 +66,44 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
                             history.getStartDate());
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
                             history.getEndDate());
+    }
+
+    @Test
+    public void testOldFormatContent() throws OrekitException, ParseException {
+        setRoot("regular-data");
+        EOP2000History history = new EOP2000History();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        AbsoluteDate date = new AbsoluteDate(2006, 1, 11, 12, 0, 0, TimeScalesFactory.getUTC());
+        Assert.assertEquals(msToS(( -0.130    + -0.244)   / 2), history.getLOD(date), 1.0e-10);
+        Assert.assertEquals(        (0.333310 + 0.333506) / 2,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assert.assertEquals(asToRad((0.04927  + 0.04876)  / 2), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assert.assertEquals(asToRad((0.38105  + 0.38071)  / 2), history.getPoleCorrection(date).getYp(), 1.0e-10);
+    }
+
+    @Test
+    public void testNewFormatContent() throws OrekitException, ParseException {
+        setRoot("new-bulletinB");
+        EOP1980History history = new EOP1980History();
+        new BulletinBFilesLoader("bulletinb.270").fillHistory(history);
+        AbsoluteDate date = new AbsoluteDate(2010, 6, 12, 12, 0, 0, TimeScalesFactory.getUTC());
+        Assert.assertEquals(msToS((     0.0294 +   0.0682) / 2), history.getLOD(date), 1.0e-10);
+        Assert.assertEquals(msToS((   -57.2523 + -57.3103) / 2), history.getUT1MinusUTC(date), 1.0e-10);
+        Assert.assertEquals(masToRad((  1.658  +   4.926)  / 2), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assert.assertEquals(masToRad((469.330  + 470.931)  / 2), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assert.assertEquals(masToRad((-65.018  + -65.067)  / 2), history.getNutationCorrection(date).getDdpsi(), 1.0e-10);
+        Assert.assertEquals(masToRad(( -9.927  + -10.036)  / 2), history.getNutationCorrection(date).getDdeps(), 1.0e-10);
+    }
+
+    private double msToS(double ms) {
+        return ms / 1000.0;
+    }
+
+    private double asToRad(double mas) {
+        return mas * Constants.ARC_SECONDS_TO_RADIANS;
+    }
+
+    private double masToRad(double mas) {
+        return mas * Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
     }
 
     @Test(expected=OrekitException.class)

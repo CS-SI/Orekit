@@ -790,6 +790,28 @@ public class FramesFactory implements Serializable {
         }
     }
 
+    /** Get the equinox-based ITRF reference frame.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     */
+    public static FactoryManagedFrame getITRFEquinox() throws OrekitException {
+        synchronized (FramesFactory.class) {
+
+            // try to find an already built frame
+            final Predefined factoryKey = Predefined.ITRF_EQUINOX;
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                frame = new ITRFEquinoxFrame(factoryKey);
+                FRAMES.put(factoryKey, frame);
+            }
+
+            return frame;
+
+        }
+    }
+
     /** Get the GTOD reference frame.
      * <p>
      * The applyEOPCorr parameter is available mainly for testing purposes or for

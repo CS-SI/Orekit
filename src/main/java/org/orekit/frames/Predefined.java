@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 
 /** Predefined frames provided by {@link FramesFactory}.
- * @version $Revision$ $Date$
  * @author Luc Maisonobe
  */
 public enum Predefined {
@@ -61,6 +60,9 @@ public enum Predefined {
 
     /** ITRF93 with tidal effects. */
     ITRF_93_WITH_TIDAL_EFFECTS("ITRF93 with tides"),
+
+    /** Equinox-based ITRF. */
+    ITRF_EQUINOX("Equinox-based ITRF"),
 
     /** TIRF2000 without tidal effects. */
     TIRF_2000_WITHOUT_TIDAL_EFFECTS("TIRF2000 without tides"),

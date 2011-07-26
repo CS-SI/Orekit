@@ -153,7 +153,7 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                     final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
                     if (history1980 != null) {
-                        history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, dpsi, deps));
+                        history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                     }
                     if (history2000 != null) {
                         history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));

@@ -25,13 +25,7 @@ import org.orekit.errors.OrekitException;
 public class EOP2000Entry extends EOPEntry {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4943721984721570383L;
-
-    /** X component of pole motion. */
-    private final double x;
-
-    /** Y component of pole motion. */
-    private final double y;
+    private static final long serialVersionUID = -6291663706005945705L;
 
    /** Simple constructor.
     * @param mjd entry date (modified julian day, 00h00 UTC scale)
@@ -44,23 +38,7 @@ public class EOP2000Entry extends EOPEntry {
     public EOP2000Entry(final int mjd, final double dt, final double lod,
                         final double x, final double y)
         throws OrekitException {
-        super(mjd, dt, lod);
-        this.x = x;
-        this.y = y;
-    }
-
-    /** Get the X component of the pole motion.
-     * @return X component of pole motion
-     */
-    public double getX() {
-        return x;
-    }
-
-    /** Get the Y component of the pole motion.
-     * @return Y component of pole motion
-     */
-    public double getY() {
-        return y;
+        super(mjd, dt, lod, x, y);
     }
 
 }
