@@ -156,7 +156,7 @@ Frames
 
   * those related to the older IERS conventions: MOD with and without EOP correction,
     TOD with and without EOP correction, GTOD with and without EOP correction,
-    equinoxe-based ITRF and Veis 1950.
+    equinox-based ITRF and Veis 1950.
 
 **** CIO-based transformations
 
