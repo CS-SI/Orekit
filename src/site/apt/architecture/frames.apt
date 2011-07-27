@@ -75,9 +75,9 @@ Frames
   The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
   <<<getICRF()>>>, <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF93()>>>, <<<getITRF97()>>>,
   <<<getITRF2000()>>>, <<<getITRF2005()>>>, <<<getITRF2008()>>>, <<<getMOD()>>>, <<<getTOD()>>>,
-  <<<getGTOD()>>>, <<<getTEME()>>> and <<<getVeis1950()>>>. One of these reference frames
-  has been arbitrarily chosen as the root of the frames tree: the <Geocentric Celestial
-  Reference Frame> (GCRF) which is an inertial reference defined by IERS.
+  <<<getGTOD()>>>, <<<getITRFEquinox()>>>, <<<getTEME()>>> and <<<getVeis1950()>>>.
+  One of these reference frames has been arbitrarily chosen as the root of the frames tree:
+  the <Geocentric Celestial Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
   For most purposes, the recommended frames to use are ITRF 20xx for terrestrial frame and
   GCRF for celestial frame. EME2000, TOD, Veis1950 could also be used for compatibility
@@ -129,7 +129,7 @@ Frames
   motion leads to the ITRF. 
 
   In summary, six frames are involved along this path: GCRF, EME2000, MOD, TOD, GTOD
-  and ITRF.
+  and equinox-based ITRF.
   
   The so called Veis 1950 belongs also to this path, it is defined from the GTOD by the
   application of a modified sidereal time.
@@ -155,7 +155,8 @@ Frames
     tidal effects, various ITRF with and without tidal effects,
 
   * those related to the older IERS conventions: MOD with and without EOP correction,
-    TOD with and without EOP correction, GTOD with and without EOP correction, Veis 1950.
+    TOD with and without EOP correction, GTOD with and without EOP correction,
+    equinoxe-based ITRF and Veis 1950.
 
 **** CIO-based transformations
 
