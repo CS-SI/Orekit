@@ -49,7 +49,8 @@ import org.orekit.utils.Constants;
  * {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
  * {@link #getITRF2008(boolean)}, {@link #getITRF2008()},
  * {@link #getEME2000()}, {@link #getMOD(boolean)}, {@link #getTOD(boolean)},
- * {@link #getGTOD(boolean)}, {@link #getTEME()} and {@link #getVeis1950()}).
+ * {@link #getGTOD(boolean)}, {@link #getITRFEquinox()}, {@link #getTEME()}
+ * and {@link #getVeis1950()}).
  * </p>
  * <h5> International Terrestrial Reference Frame 2008 </h5>
  * <p>
@@ -91,28 +92,29 @@ import org.orekit.utils.Constants;
  * Here is a schematic representation of the predefined reference frames tree:
  * </p>
  * <pre>
- *                                                GCRF
- *                                                 |
- *                                                 |---------------------------------------------
- *                                                 |                       |     Frame bias     |
- *                                                 |                       |                 EME2000
- *                                                 |                       |                    |
- *                                                 |                       | Precession effects |
- *                                                 |                       |                    |
- *           Bias, Precession and Nutation effects |                      MOD                  MOD  (Mean Equator Of Date)
- *                                                 |                       |             w/o EOP corrections
- *                                                 |                       |  Nutation effects  |
- *    (Celestial Intermediate Reference Frame) CIRF2000                    |                    |
- *                                                 |                      TOD                  TOD  (True Equator Of Date)
- *                          Earth natural rotation |                       |             w/o EOP corrections
- *                                                 |-------------          |    Sidereal Time   |
- *                                                 |            |          |                    |
- *  (Terrestrial Intermediate Reference Frame) TIRF2000     TIRF2000     GTOD                 GTOD  (Greenwich True Of Date)
- *                                                 |    w/o tidal effects                w/o EOP corrections
- *                                     Pole motion |            |                               |
- *                                                 |            |                               |
- * (International Terrestrial Reference Frame)   ITRF         ITRF                          VEIS1950
- *                                                 |    w/o tidal effects
+ *                                                                  GCRF
+ *                                                                    |
+ *                                                 |-----------------------------------------------
+ *                                                 |                         |     Frame bias     |
+ *                                                 |                         |                 EME2000
+ *                                                 |                         |                    |
+ *                                                 |                         | Precession effects |
+ *                                                 |                         |                    |
+ *           Bias, Precession and Nutation effects |                        MOD                  MOD  (Mean Equator Of Date)
+ *                                                 |                         |             w/o EOP corrections
+ *                                                 |                         |  Nutation effects  |
+ *    (Celestial Intermediate Reference Frame) CIRF2000                      |                    |
+ *                                                 |                        TOD                  TOD  (True Equator Of Date)
+ *                          Earth natural rotation |                         |             w/o EOP corrections
+ *                                                 |-------------            |    Sidereal Time   |
+ *                                                 |            |            |                    |
+ *  (Terrestrial Intermediate Reference Frame) TIRF2000     TIRF2000       GTOD                 GTOD  (Greenwich True Of Date)
+ *                                                 |    w/o tidal effects                  w/o EOP corrections
+ *                                     Pole motion |            |                                 |
+ *                                                 |            |                                 |-------------
+ *                                                 |            |                                 |            |
+ * (International Terrestrial Reference Frame)   ITRF         ITRF                              ITRF        VEIS1950
+ *                                                 |    w/o tidal effects                   equinox-based
  *                                                 |            |
  *                                           other ITRF     other ITRF
  *                                                      w/o tidal effects
@@ -354,6 +356,8 @@ public class FramesFactory implements Serializable {
         switch (factoryKey) {
         case GCRF :
             return getGCRF();
+        case ICRF :
+            return getICRF();
         case EME2000 :
             return getEME2000();
         case ITRF_2008_WITHOUT_TIDAL_EFFECTS :
@@ -376,6 +380,8 @@ public class FramesFactory implements Serializable {
             return getITRF93(true);
         case ITRF_93_WITH_TIDAL_EFFECTS :
             return getITRF93(false);
+        case ITRF_EQUINOX :
+            return getITRFEquinox();
         case TIRF_2000_WITHOUT_TIDAL_EFFECTS :
             return getTIRF2000(true);
         case TIRF_2000_WITH_TIDAL_EFFECTS :
@@ -396,6 +402,8 @@ public class FramesFactory implements Serializable {
             return getMOD(false);
         case MOD_WITH_EOP_CORRECTIONS :
             return getMOD(true);
+        case TEME :
+            return getTEME();
         default :
             throw OrekitException.createInternalError(null);
         }
