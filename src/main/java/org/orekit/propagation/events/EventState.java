@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math.ConvergenceException;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
-import org.apache.commons.math.analysis.solvers.AllowedSolutions;
+import org.apache.commons.math.analysis.solvers.AllowedSolution;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
 import org.apache.commons.math.analysis.solvers.PegasusSolver;
 import org.apache.commons.math.analysis.solvers.UnivariateRealSolverUtils;
@@ -196,9 +196,9 @@ public class EventState implements Serializable {
                     final int remainingEval = maxIterationcount - nonBracketing.getEvaluations();
                     final double dtRoot     = forward ?
                                               UnivariateRealSolverUtils.forceSide(remainingEval, f, bracketing,
-                                                                                  dtBaseRoot, dtA, dtB, AllowedSolutions.RIGHT_SIDE) :
+                                                                                  dtBaseRoot, dtA, dtB, AllowedSolution.RIGHT_SIDE) :
                                               UnivariateRealSolverUtils.forceSide(remainingEval, f, bracketing,
-                                                                                  dtBaseRoot, dtB, dtA, AllowedSolutions.LEFT_SIDE);
+                                                                                  dtBaseRoot, dtB, dtA, AllowedSolution.LEFT_SIDE);
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((previousEventTime != null) &&
