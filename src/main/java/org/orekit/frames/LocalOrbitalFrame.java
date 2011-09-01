@@ -21,15 +21,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Class for frames moving with an orbiting satellite.
- * <p>There are two main local orbital frames:</p>
- * <ul>
- *   <li>the (t, n, w) frame has its X axis along velocity (tangential), its
- *   Z axis along orbital momentum and its Y axis completes the right-handed
- *   trihedra (it is roughly pointing towards the central body)</li>
- *   <li>the (q, s, w) frame has its X axis along position (radial), its
- *   Z axis along orbital momentum and its Y axis completes the right-handed
- *   trihedra (it is roughly along velocity)</li>
- * </ul>
+ * <p>There are several local orbital frames available. They are specified
+ * by the {@link LOFType} enumerate.</p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
  */
