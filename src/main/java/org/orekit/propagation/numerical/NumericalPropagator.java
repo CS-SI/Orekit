@@ -267,9 +267,12 @@ public class NumericalPropagator implements Propagator {
         this.attitudeProvider = provider;
     }
 
-    /** Set the attitude provider.
-     * @param attitudeProvider attitude provider
-     */
+    /** {@inheritDoc} */
+    public AttitudeProvider getAttitudeProvider() {
+        return attitudeProvider;
+    }
+
+    /** {@inheritDoc} */
     public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         this.attitudeProvider = attitudeProvider;
     }
@@ -280,7 +283,7 @@ public class NumericalPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public Collection<EventDetector>getEventsDetectors() {
+    public Collection<EventDetector> getEventsDetectors() {
         return Collections.unmodifiableCollection(detectors);
     }
 

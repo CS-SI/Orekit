@@ -171,6 +171,16 @@ public interface Propagator extends PVCoordinatesProvider, Serializable {
      */
     void clearEventsDetectors();
 
+    /** Get attitude provider.
+     * @return attitude provider
+     */
+    AttitudeProvider getAttitudeProvider();
+
+    /** Set attitude provider.
+     * @param attitudeProvider attitude provider
+     */
+    void setAttitudeProvider(final AttitudeProvider attitudeProvider);
+
     /** Get the frame in which the orbit is propagated.
      * <p>
      * The propagation frame is the definition frame of the initial

@@ -123,17 +123,13 @@ public abstract class AbstractPropagator implements Propagator {
         this.startDate = startDate;
     }
 
-    /** Get attitude provider.
-     * @return attitude provider
-     */
+    /**  {@inheritDoc} */
     public AttitudeProvider getAttitudeProvider() {
         return attitudeProvider;
     }
 
-    /** Set attitude provider.
-     * @param attitudeProvider attitude provider
-     */
-    protected void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
+    /**  {@inheritDoc} */
+    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         this.attitudeProvider = attitudeProvider;
     }
 
