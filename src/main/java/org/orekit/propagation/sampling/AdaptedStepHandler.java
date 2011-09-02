@@ -25,6 +25,7 @@ import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -106,15 +107,14 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final StepInterpolator interpolator, final boolean isLast)
-        throws MathUserException {
+    public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
         try {
             this.rawInterpolator = interpolator;
             if (activate) {
                 handler.handleStep(this, isLast);
             }
         } catch (PropagationException pe) {
-            throw new MathUserException(pe);
+            throw new OrekitExceptionWrapper(pe);
         }
     }
 
