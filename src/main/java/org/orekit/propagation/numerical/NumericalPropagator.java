@@ -25,7 +25,6 @@ import java.util.List;
 
 import org.apache.commons.math.exception.MathIllegalArgumentException;
 import org.apache.commons.math.exception.MathIllegalStateException;
-import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
@@ -817,7 +816,7 @@ public class NumericalPropagator implements Propagator {
 
         /** {@inheritDoc} */
         public void computeDerivatives(final double t, final double[] y, final double[] yDot)
-            throws MathUserException {
+            throws OrekitExceptionWrapper {
 
             try {
                 // update space dynamics view
@@ -868,7 +867,7 @@ public class NumericalPropagator implements Propagator {
                 ++calls;
 
             } catch (OrekitException oe) {
-                throw new MathUserException(oe, oe.getSpecifier(), oe.getParts());
+                throw new OrekitExceptionWrapper(oe);
             }
 
         }

@@ -18,19 +18,19 @@ package org.orekit.propagation.precomputed;
 
 import java.util.List;
 
-import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.AbstractPropagator;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.AdditionalStateData;
@@ -182,23 +182,18 @@ public class IntegratedEphemeris
                 orbitType.mapArrayToOrbit(y, angleType, date, mu, referenceFrame);
             final Attitude attitude = attitudeProvider.getAttitude(orbit, date, referenceFrame);
             return new SpacecraftState(orbit, attitude, y[6]);
-        } catch (MathUserException mue) {
-
-            // recover a possible embedded OrekitException
-            for (Throwable t = mue; t != null; t = t.getCause()) {
-                if (t instanceof OrekitException) {
-                    if (t instanceof PropagationException) {
-                        throw (PropagationException) t;
-                    } else {
-                        throw new PropagationException((OrekitException) t);
-                    }
-                }
+        } catch (OrekitExceptionWrapper oew) {
+            if (oew.getException() instanceof PropagationException) {
+                throw (PropagationException) oew.getException();
+            } else {
+                throw new PropagationException(oew.getException());
             }
-
-            throw new PropagationException(mue);
-
         } catch (OrekitException oe) {
-            throw new PropagationException(oe);
+            if (oe instanceof PropagationException) {
+                throw (PropagationException) oe;
+            } else {
+                throw new PropagationException(oe);
+            }
         }
     }
 
@@ -286,23 +281,18 @@ public class IntegratedEphemeris
 
                 return additionalState;
 
-            } catch (MathUserException mue) {
-
-                // recover a possible embedded OrekitException
-                for (Throwable t = mue; t != null; t = t.getCause()) {
-                    if (t instanceof OrekitException) {
-                        if (t instanceof PropagationException) {
-                            throw (PropagationException) t;
-                        } else {
-                            throw new PropagationException((OrekitException) t);
-                        }
-                    }
+            } catch (OrekitExceptionWrapper oew) {
+                if (oew.getException() instanceof PropagationException) {
+                    throw (PropagationException) oew.getException();
+                } else {
+                    throw new PropagationException(oew.getException());
                 }
-
-                throw new PropagationException(mue);
-
             } catch (OrekitException oe) {
-                throw new PropagationException(oe);
+                if (oe instanceof PropagationException) {
+                    throw (PropagationException) oe;
+                } else {
+                    throw new PropagationException(oe);
+                }
             }
         }
 
