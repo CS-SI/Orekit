@@ -18,11 +18,11 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.ode.events.EventException;
 import org.apache.commons.math.ode.events.EventHandler;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -101,18 +101,16 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
     }
 
     /** {@inheritDoc} */
-    public double g(final double t, final double[] y)
-        throws EventException {
+    public double g(final double t, final double[] y) {
         try {
             return detector.g(mapArrayToState(t, y));
         } catch (OrekitException oe) {
-            throw new EventException(oe);
+            throw new OrekitExceptionWrapper(oe);
         }
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(final double t, final double[] y, final boolean increasing)
-        throws EventException {
+    public int eventOccurred(final double t, final double[] y, final boolean increasing) {
         try {
 
             final SpacecraftState state = mapArrayToState(t, y);
@@ -129,20 +127,19 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
                 return CONTINUE;
             }
         } catch (OrekitException oe) {
-            throw new EventException(oe);
+            throw new OrekitExceptionWrapper(oe);
         }
     }
 
     /** {@inheritDoc} */
-    public void resetState(final double t, final double[] y)
-        throws EventException {
+    public void resetState(final double t, final double[] y) {
         try {
             final SpacecraftState oldState = mapArrayToState(t, y);
             final SpacecraftState newState = detector.resetState(oldState);
             orbitType.mapOrbitToArray(newState.getOrbit(), angleType, y);
             y[6] = newState.getMass();
         } catch (OrekitException oe) {
-            throw new EventException(oe);
+            throw new OrekitExceptionWrapper(oe);
         }
     }
 

@@ -20,8 +20,8 @@ import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.exception.MathUserException;
+import org.apache.commons.math.exception.util.ExceptionContext;
+import org.apache.commons.math.exception.util.ExceptionContextProvider;
 import org.apache.commons.math.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
@@ -47,6 +47,9 @@ public class OrekitException extends Exception {
     /** Serializable UID. */
     private static final long serialVersionUID = 3366757982695469677L;
 
+    /** Exception context (may be null). */
+    private final ExceptionContext context;
+
     /** Format specifier (to be translated). */
     private final Localizable specifier;
 
@@ -59,8 +62,9 @@ public class OrekitException extends Exception {
      * @param parts parts to insert in the format (no translation)
      */
     public OrekitException(final Localizable specifier, final Object ... parts) {
-        this.specifier   = specifier;
-        this.parts = (parts == null) ? new Object[0] : parts.clone();
+        this.context   = null;
+        this.specifier = specifier;
+        this.parts     = (parts == null) ? new Object[0] : parts.clone();
     }
 
     /** Copy constructor.
@@ -69,8 +73,9 @@ public class OrekitException extends Exception {
      */
     public OrekitException(final OrekitException exception) {
         super(exception);
+        this.context   = exception.context;
         this.specifier = exception.specifier;
-        this.parts = exception.parts.clone();
+        this.parts     = exception.parts.clone();
     }
 
     /** Simple constructor.
@@ -80,8 +85,9 @@ public class OrekitException extends Exception {
      */
     public OrekitException(final Localizable message, final Throwable cause) {
         super(cause);
+        this.context   = null;
         this.specifier = message;
-        this.parts = new Object[0];
+        this.parts     = new Object[0];
     }
 
     /** Simple constructor.
@@ -93,30 +99,21 @@ public class OrekitException extends Exception {
     public OrekitException(final Throwable cause, final Localizable specifier,
                            final Object ... parts) {
         super(cause);
+        this.context   = null;
         this.specifier = specifier;
-        this.parts = (parts == null) ? new Object[0] : parts.clone();
+        this.parts     = (parts == null) ? new Object[0] : parts.clone();
     }
 
     /** Simple constructor.
-     * Build an exception from an Apache Commons Math exception
-     * @param cause underlying cause
+     * Build an exception from an Apache Commons Math exception context context
+     * @param context underlying exception context context
      * @since 6.0
      */
-    public OrekitException(final MathException cause) {
-        super(cause);
+    public OrekitException(final ExceptionContextProvider provider) {
+        super(provider.getException());
+        this.context   = provider.getContext();
         this.specifier = null;
-        this.parts = new Object[0];
-    }
-
-    /** Simple constructor.
-     * Build an exception from an Apache Commons Math exception
-     * @param cause underlying cause
-     * @since 6.0
-     */
-    public OrekitException(final MathUserException cause) {
-        super(cause);
-        this.specifier = null;
-        this.parts = new Object[0];
+        this.parts     = new Object[0];
     }
 
     /** Gets the message in a specified locale.
@@ -125,16 +122,9 @@ public class OrekitException extends Exception {
      * @since 5.0
      */
     public String getMessage(final Locale locale) {
-        final Throwable cause = getCause();
-        if (cause != null) {
-            if (cause instanceof MathException) {
-                return ((MathException) cause).getMessage(locale);
-            }
-            if (cause instanceof MathUserException) {
-                return ((MathUserException) cause).getMessage(locale);
-            }
-        }
-        return buildMessage(locale, specifier, parts);
+        return (context != null) ?
+                context.getMessage(locale) :
+                buildMessage(locale, specifier, parts);
     }
 
     /** {@inheritDoc} */

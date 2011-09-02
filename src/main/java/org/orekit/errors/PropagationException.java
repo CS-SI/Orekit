@@ -16,8 +16,7 @@
  */
 package org.orekit.errors;
 
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.exception.MathUserException;
+import org.apache.commons.math.exception.util.ExceptionContextProvider;
 import org.apache.commons.math.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
@@ -60,19 +59,11 @@ public class PropagationException extends OrekitException {
     }
 
     /** Simple constructor.
-     * Build an exception wrapping an {@link OrekitException} instance
-     * @param exception underlying cause
+     * Build an exception wrapping an Apache Commons Math exception context exception
+     * @param provider underlying cause
      */
-    public PropagationException(final MathException exception) {
-        super(exception);
-    }
-
-    /** Simple constructor.
-     * Build an exception wrapping an {@link OrekitException} instance
-     * @param exception underlying cause
-     */
-    public PropagationException(final MathUserException exception) {
-        super(exception);
+    public PropagationException(final ExceptionContextProvider provider) {
+        super(provider);
     }
 
     /** Recover a PropagationException, possibly embedded in a {@link OrekitException}.
@@ -95,17 +86,17 @@ public class PropagationException extends OrekitException {
 
     }
 
-    /** Recover a PropagationException, possibly embedded in a {@link MathException}.
+    /** Recover a PropagationException, possibly embedded in an {@link ExceptionContextProvider}.
      * <p>
-     * If the {@code MathException} does not embed a PropagationException, a
+     * If the {@code ExceptionContextProvider} does not embed a PropagationException, a
      * new one will be created.
      * </p>
-     * @param me MathException to analyze
+     * @param provider ExceptionContextProvider to analyze
      * @return a (possibly embedded) PropagationException
      */
-    public static PropagationException unwrap(final MathException me) {
+    public static PropagationException unwrap(final ExceptionContextProvider provider) {
 
-        for (Throwable t = me; t != null; t = t.getCause()) {
+        for (Throwable t = provider.getException(); t != null; t = t.getCause()) {
             if (t instanceof OrekitException) {
                 if (t instanceof PropagationException) {
                     return (PropagationException) t;
@@ -115,31 +106,7 @@ public class PropagationException extends OrekitException {
             }
         }
 
-        return new PropagationException(me);
-
-    }
-
-    /** Recover a PropagationException, possibly embedded in a {@link MathUserException}.
-     * <p>
-     * If the {@code MathUserException} does not embed a PropagationException, a
-     * new one will be created.
-     * </p>
-     * @param mue MathUserException to analyze
-     * @return a (possibly embedded) PropagationException
-     */
-    public static PropagationException unwrap(final MathUserException mue) {
-
-        for (Throwable t = mue; t != null; t = t.getCause()) {
-            if (t instanceof OrekitException) {
-                if (t instanceof PropagationException) {
-                    return (PropagationException) t;
-                } else {
-                    return new PropagationException((OrekitException) t);
-                }
-            }
-        }
-
-        return new PropagationException(mue);
+        return new PropagationException(provider);
 
     }
 
