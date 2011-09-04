@@ -23,6 +23,9 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="add">
+        Added a method to compute visibility circles in TopocentricFrame.
+      </action>
+      <action dev="luc" type="add">
         Added an equinox-based version of ITRF.
       </action>
       <action dev="luc" type="add">

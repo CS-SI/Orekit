@@ -18,12 +18,13 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.ConvergenceException;
 import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.solvers.AllowedSolution;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
 import org.apache.commons.math.analysis.solvers.PegasusSolver;
 import org.apache.commons.math.analysis.solvers.UnivariateRealSolverUtils;
+import org.apache.commons.math.exception.NoBracketingException;
+import org.apache.commons.math.exception.TooManyEvaluationsException;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -133,10 +134,11 @@ public class EventState implements Serializable {
      * rejected)
      * @exception OrekitException if the switching function
      * cannot be evaluated
-     * @exception ConvergenceException if an event cannot be located
+     * @exception TooManyEvaluationsException if an event cannot be located
+     * @exception NoBracketingException if bracketing cannot be performed
      */
     public boolean evaluateStep(final OrekitStepInterpolator interpolator)
-        throws OrekitException, ConvergenceException {
+        throws OrekitException, TooManyEvaluationsException, NoBracketingException {
 
         try {
 

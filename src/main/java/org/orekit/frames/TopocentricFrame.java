@@ -16,6 +16,10 @@
  */
 package org.orekit.frames;
 
+import org.apache.commons.math.analysis.UnivariateRealFunction;
+import org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.apache.commons.math.analysis.solvers.UnivariateRealSolver;
+import org.apache.commons.math.exception.TooManyEvaluationsException;
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
@@ -23,7 +27,9 @@ import org.apache.commons.math.util.MathUtils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -230,6 +236,69 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
     }
 
+    /**
+     * Compute the limit visibility point for a satellite in a given direction.
+     * <p>
+     * This method can be used to compute visibility circles around ground stations
+     * for example, using a simple loop on azimuth, with either a fixed elevation
+     * or an elevation that depends on azimuth to take ground masks into account.
+     * </p>
+     * @param radius satellite distance to Earth center
+     * @param azimuth pointing azimuth from station
+     * @param elevation pointing elevation from station
+     * @return limit visibility point for the satellite
+     * @throws OrekitException if point cannot be found
+     */
+    public GeodeticPoint computeLimitVisibilityPoint(final double radius,
+                                                     final double azimuth, final double elevation)
+        throws OrekitException {
+        try {
+            // convergence threshold on point position: 1mm
+            final double deltaP = 0.001;
+            UnivariateRealSolver solver =
+                    new BracketingNthOrderBrentSolver(deltaP / Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      deltaP, deltaP, 5);
+
+            // find the distance such that a point in the specified direction and at the solved-for
+            // distance is exactly at the specified radius
+            double distance = solver.solve(1000, new UnivariateRealFunction() {
+                /** {@inheritDoc} */
+                public double value(double x) {
+                    try {
+                        final GeodeticPoint point = pointAtDistance(azimuth, elevation, x);
+                        return parentShape.transform(point).getNorm() - radius;
+                    } catch (OrekitException oe) {
+                        throw new OrekitExceptionWrapper(oe);
+                    }
+                }
+            }, 0, 2 * radius);
+
+            // return the limit point
+            return pointAtDistance(azimuth, elevation, distance);
+
+        } catch (TooManyEvaluationsException tmee) {
+            throw new OrekitException(tmee);
+        } catch (OrekitExceptionWrapper lwe) {
+            throw lwe.getException();
+        }
+    }
+
+    
+
+    /** Compute the point observed from the station at some specified distance.
+     * @param azimuth pointing azimuth from station
+     * @param elevation pointing elevation from station
+     * @param distance distance to station
+     * @return observed point
+     * @exception OrekitException if point cannot be computed
+     */
+    public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
+                                         final double distance)
+        throws OrekitException {
+        final Vector3D  observed = new Vector3D(distance, new Vector3D(azimuth, elevation));
+        return parentShape.transform(observed, this, AbsoluteDate.J2000_EPOCH);
+    }
+
     /** Get the {@link PVCoordinates} of the topocentric frame origin in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
@@ -240,4 +309,5 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         throws OrekitException {
         return getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
     }
+
 }

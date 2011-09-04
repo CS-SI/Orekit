@@ -23,11 +23,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math.exception.MathUserException;
+import org.apache.commons.math.exception.MathIllegalArgumentException;
+import org.apache.commons.math.exception.MathIllegalStateException;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.events.EventHandler;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.util.FastMath;
@@ -35,6 +35,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
@@ -650,7 +651,12 @@ public class NumericalPropagator implements Propagator {
             if (!addEquationsAndData.isEmpty()) {
                 expandToleranceArray();
             }
-            final double stopTime = integrator.integrate(new DifferentialEquations(), t0, stateVector, t1, stateVector);
+            final double stopTime;
+            try {
+                stopTime = integrator.integrate(new DifferentialEquations(), t0, stateVector, t1, stateVector);
+            } catch (OrekitExceptionWrapper oew) {
+                throw oew.getException();
+            }
             if (!addEquationsAndData.isEmpty()) {
                 resetToleranceArray();
             }
@@ -680,10 +686,10 @@ public class NumericalPropagator implements Propagator {
             throw pe;
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
-        } catch (MathUserException mue) {
-            throw PropagationException.unwrap(mue);
-        } catch (IntegratorException ie) {
-            throw PropagationException.unwrap(ie);
+        } catch (MathIllegalArgumentException miae) {
+            throw PropagationException.unwrap(miae);
+        } catch (MathIllegalStateException mise) {
+            throw PropagationException.unwrap(mise);
         }
     }
 
@@ -810,7 +816,7 @@ public class NumericalPropagator implements Propagator {
 
         /** {@inheritDoc} */
         public void computeDerivatives(final double t, final double[] y, final double[] yDot)
-            throws MathUserException {
+            throws OrekitExceptionWrapper {
 
             try {
                 // update space dynamics view
@@ -861,7 +867,7 @@ public class NumericalPropagator implements Propagator {
                 ++calls;
 
             } catch (OrekitException oe) {
-                throw new MathUserException(oe, oe.getSpecifier(), oe.getParts());
+                throw new OrekitExceptionWrapper(oe);
             }
 
         }

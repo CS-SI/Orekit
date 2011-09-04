@@ -19,12 +19,12 @@ package org.orekit.propagation.sampling;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
@@ -106,15 +106,14 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void handleStep(final StepInterpolator interpolator, final boolean isLast)
-        throws MathUserException {
+    public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
         try {
             this.rawInterpolator = interpolator;
             if (activate) {
                 handler.handleStep(this, isLast);
             }
         } catch (PropagationException pe) {
-            throw new MathUserException(pe);
+            throw new OrekitExceptionWrapper(pe);
         }
     }
 
@@ -169,8 +168,12 @@ public class AdaptedStepHandler
                 orbitType.mapArrayToOrbit(y, angleType, interpolatedDate, initializedMu, initializedFrame);
             final Attitude attitude = attitudeProvider.getAttitude(orbit, interpolatedDate, initializedFrame);
             return new SpacecraftState(orbit, attitude, y[6]);
-        } catch (MathUserException mue) {
-            throw PropagationException.unwrap(mue);
+        } catch (OrekitExceptionWrapper oew) {
+            if (oew.getException() instanceof PropagationException) {
+                throw (PropagationException) oew.getException();
+            } else {
+                throw new PropagationException(oew.getException());
+            }
         }
     }
 
@@ -196,8 +199,12 @@ public class AdaptedStepHandler
 
             throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
 
-        } catch (MathUserException mue) {
-            throw PropagationException.unwrap(mue);
+        } catch (OrekitExceptionWrapper oew) {
+            if (oew.getException() instanceof PropagationException) {
+                throw (PropagationException) oew.getException();
+            } else {
+                throw new PropagationException(oew.getException());
+            }
         }
 
     }
