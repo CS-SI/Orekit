@@ -110,7 +110,7 @@ public class OrekitException extends Exception {
      * @since 6.0
      */
     public OrekitException(final ExceptionContextProvider provider) {
-        super(provider.getException());
+        super(provider.getContext().getThrowable());
         this.context   = provider.getContext();
         this.specifier = null;
         this.parts     = new Object[0];

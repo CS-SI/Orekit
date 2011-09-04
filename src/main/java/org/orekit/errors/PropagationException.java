@@ -96,7 +96,7 @@ public class PropagationException extends OrekitException {
      */
     public static PropagationException unwrap(final ExceptionContextProvider provider) {
 
-        for (Throwable t = provider.getException(); t != null; t = t.getCause()) {
+        for (Throwable t = provider.getContext().getThrowable(); t != null; t = t.getCause()) {
             if (t instanceof OrekitException) {
                 if (t instanceof PropagationException) {
                     return (PropagationException) t;
