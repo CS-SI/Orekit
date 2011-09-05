@@ -43,6 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -243,8 +244,10 @@ public class TargetPointingTest {
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
         
         // Line containing satellite point and following pointing direction
-        Line pointingLine = new Line(eme2000ToItrf.transformPosition(pvSatEME2000.getPosition()),
-                                     eme2000ToItrf.transformVector(zSatEME2000));
+        Vector3D p = eme2000ToItrf.transformPosition(pvSatEME2000.getPosition());
+        Line pointingLine = new Line(p,
+                                     p.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                           eme2000ToItrf.transformVector(zSatEME2000)));
         
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));

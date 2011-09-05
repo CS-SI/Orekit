@@ -43,6 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -101,7 +102,9 @@ public class YawCompensationTest {
         // ground point in satellite Z direction
         Vector3D satInert = circOrbit.getPVCoordinates().getPosition();
         Vector3D zInert   = att0.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        GeodeticPoint gp  = earthShape.getIntersectionPoint(new Line(satInert, zInert), satInert,
+        GeodeticPoint gp  = earthShape.getIntersectionPoint(new Line(satInert,
+                                                                     satInert.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zInert)),
+                                                            satInert,
                                                             inertFrame, circOrbit.getDate());
         Vector3D pEarth   = earthShape.transform(gp);
 

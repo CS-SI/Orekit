@@ -242,9 +242,9 @@ public class Transform implements Serializable {
      * @return transformed line
      */
     public Line transformLine(final Line line) {
-        final Vector3D transformedOrigin    = transformPosition(line.getOrigin());
-        final Vector3D transformedDirection = transformVector(line.getDirection());
-        return new Line(transformedOrigin, transformedDirection);
+        final Vector3D transformedP0 = transformPosition(line.getOrigin());
+        final Vector3D transformedP1 = transformVector(line.pointAt(1.0e6));
+        return new Line(transformedP0, transformedP1);
     }
 
     /** Transform {@link PVCoordinates} including kinematic effects.

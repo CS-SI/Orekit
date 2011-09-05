@@ -26,6 +26,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -92,7 +93,9 @@ public class LofOffsetPointing extends GroundPointing {
         final Vector3D pBodyFrame = t.transformPosition(pv.getPosition());
 
         // Line from satellite following pointing direction
-        final Line pointingLine = new Line(pBodyFrame, pointingBodyFrame);
+        // we use arbitrarily the Earth radius as a scaling factor, it could be anything else
+        final Line pointingLine = new Line(pBodyFrame,
+                                           pBodyFrame.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, pointingBodyFrame));
 
         // Intersection with body shape
         final GeodeticPoint gpIntersection =
