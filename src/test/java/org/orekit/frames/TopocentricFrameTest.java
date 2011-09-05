@@ -18,6 +18,9 @@ package org.orekit.frames;
 
 
 
+import java.io.IOException;
+
+import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.junit.After;
@@ -25,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -36,6 +40,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -409,6 +414,40 @@ public class TopocentricFrameTest {
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
         }
+    }
+
+    @Test
+    public void testVisibilityCircle() throws OrekitException, IOException {
+
+        // a few random from International Laser Ranging Service
+        final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                     Constants.WGS84_EARTH_FLATTENING,
+                                                     FramesFactory.getITRF2008());
+        final TopocentricFrame[] ilrs = {
+            new TopocentricFrame(earth,
+                                 new GeodeticPoint(FastMath.toRadians(52.3800), FastMath.toRadians(3.0649), 133.745),
+                                 "Potsdam"),
+            new TopocentricFrame(earth,
+                                 new GeodeticPoint(FastMath.toRadians(36.46273), FastMath.toRadians(-6.20619), 64.0),
+                                 "San Fernando"),
+            new TopocentricFrame(earth,
+                                 new GeodeticPoint(FastMath.toRadians(35.5331), FastMath.toRadians(24.0705), 157.0),
+                                 "Chania")
+        };
+
+        PolynomialFunction distanceModel =
+                new PolynomialFunction(new double[] { 7.0892e+05, 3.1913, -8.2181e-07, 1.4033e-13 });
+        for (TopocentricFrame station : ilrs) {
+            for (double altitude = 500000; altitude < 2000000; altitude += 100000) {
+                for (double azimuth = 0; azimuth < 2 * FastMath.PI; azimuth += 0.05) {
+                    GeodeticPoint p = station.computeLimitVisibilityPoint(Constants.WGS84_EARTH_EQUATORIAL_RADIUS + altitude,
+                                                                          azimuth, FastMath.toRadians(5.0));
+                    double d = station.getRange(earth.transform(p), earth.getBodyFrame(), AbsoluteDate.J2000_EPOCH);
+                    Assert.assertEquals(distanceModel.value(altitude), d, 40000.0);
+                }
+            }
+        }
+
     }
 
     @After

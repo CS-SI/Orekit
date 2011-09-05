@@ -22,7 +22,6 @@ import java.text.ParseException;
 
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
@@ -60,7 +59,7 @@ public class CunninghamAttractionModelTest {
     // rough test to determine if J2 alone creates heliosynchronism
     @Test
     public void testHelioSynchronous()
-        throws ParseException, FileNotFoundException, OrekitException, IntegratorException {
+        throws ParseException, FileNotFoundException, OrekitException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
@@ -127,7 +126,7 @@ public class CunninghamAttractionModelTest {
     // test the difference with the analytical extrapolator Eckstein Hechler
     @Test
     public void testEcksteinHechlerReference()
-        throws ParseException, FileNotFoundException, OrekitException, IntegratorException {
+        throws ParseException, FileNotFoundException, OrekitException {
 
         //  Definition of initial conditions with position and velocity
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
@@ -208,7 +207,7 @@ public class CunninghamAttractionModelTest {
     // test the difference with the Cunningham model
     @Test
     public void testZonalWithDrozinerReference()
-        throws OrekitException, IntegratorException, ParseException {
+        throws OrekitException, ParseException {
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
                                              new TimeComponents(13, 59, 27.816),

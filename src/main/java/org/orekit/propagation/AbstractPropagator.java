@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math.ConvergenceException;
+import org.apache.commons.math.exception.NoBracketingException;
+import org.apache.commons.math.exception.TooManyEvaluationsException;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -288,8 +289,10 @@ public abstract class AbstractPropagator implements Propagator {
             throw pe;
         } catch (OrekitException oe) {
             throw PropagationException.unwrap(oe);
-        } catch (ConvergenceException ce) {
-            throw PropagationException.unwrap(ce);
+        } catch (TooManyEvaluationsException tmee) {
+            throw PropagationException.unwrap(tmee);
+        } catch (NoBracketingException nbe) {
+            throw PropagationException.unwrap(nbe);
         }
     }
 
@@ -298,10 +301,11 @@ public abstract class AbstractPropagator implements Propagator {
      * @param epsilon threshold for end date detection
      * @return state at the end of the step
      * @exception OrekitException if the switching function cannot be evaluated
-     * @exception ConvergenceException if an event cannot be located
+     * @exception TooManyEvaluationsException if an event cannot be located
+     * @exception NoBracketingException if bracketing cannot be performed
      */
     protected SpacecraftState acceptStep(final AbsoluteDate target, final double epsilon)
-        throws OrekitException, ConvergenceException {
+        throws OrekitException, TooManyEvaluationsException, NoBracketingException {
 
         AbsoluteDate previousT      = interpolator.getGlobalPreviousDate();
         final AbsoluteDate currentT = interpolator.getGlobalCurrentDate();

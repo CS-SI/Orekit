@@ -18,12 +18,12 @@ package org.orekit.propagation.numerical;
 
 import java.util.List;
 
-import org.apache.commons.math.exception.MathUserException;
 import org.apache.commons.math.ode.ContinuousOutputModel;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -113,7 +113,7 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
 
     /** {@inheritDoc} */
     public void handleStep(final StepInterpolator interpolator, final boolean isLast)
-        throws MathUserException {
+        throws OrekitExceptionWrapper {
         try {
             if (activate) {
                 model.handleStep(interpolator, isLast);
@@ -142,7 +142,7 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
                 }
             }
         } catch (OrekitException oe) {
-            throw new MathUserException(oe);
+            throw new OrekitExceptionWrapper(oe);
         }
     }
 

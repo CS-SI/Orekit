@@ -26,6 +26,9 @@
         Added getters/setters for attitude provider in all orbit propagators.
       </action>
       <action dev="luc" type="add">
+        Added a method to compute visibility circles in TopocentricFrame.
+      </action>
+      <action dev="luc" type="add">
         Added an equinox-based version of ITRF.
       </action>
       <action dev="luc" type="add">

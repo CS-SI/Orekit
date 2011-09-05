@@ -20,7 +20,6 @@ package org.orekit.forces.radiation;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import org.apache.commons.math.ode.IntegratorException;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.FastMath;
@@ -50,7 +49,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class SolarRadiationPressureTest {
 
     @Test
-    public void testLightning() throws OrekitException, ParseException, IntegratorException{
+    public void testLightning() throws OrekitException, ParseException {
         // Initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 3, 21),
                                              new TimeComponents(13, 59, 27.816),
@@ -98,7 +97,7 @@ public class SolarRadiationPressureTest {
     }
 
     @Test
-    public void testRoughOrbitalModifs() throws ParseException, OrekitException, IntegratorException, FileNotFoundException {
+    public void testRoughOrbitalModifs() throws ParseException, OrekitException, FileNotFoundException {
 
         // initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 7, 1),
