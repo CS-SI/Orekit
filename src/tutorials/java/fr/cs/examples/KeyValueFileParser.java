@@ -168,7 +168,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param key parameter key
      * @return inertial frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
-     * @exception SkatException if frame is not pseudo-inertial
      * @exception OrekitException if frame cannot be built
      */
     public Frame getInertialFrame(final Key key) throws NoSuchElementException, OrekitException {
@@ -201,7 +200,6 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      * @param parameters key/value map containing the parameters
      * @return Earth frame corresponding to the key
      * @exception NoSuchElementException if key is not in the map
-     * @exception SkatException if frame is not pseudo-inertial
      * @exception OrekitException if frame cannot be built
      */
     public Frame getEarthFrame(final Key key)
