@@ -17,20 +17,16 @@
 
 package fr.cs.examples.propagation;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.NoSuchElementException;
 
 import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
@@ -54,19 +50,18 @@ import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
+import fr.cs.examples.KeyValueFileParser;
 
 /** Orekit tutorial for track corridor display.
  * @author Luc Maisonobe
  */
 public class TrackCorridor {
-
-    /** Parameters map. */
-    private final Map<ParameterKey, String> map = new HashMap<TrackCorridor.ParameterKey, String>();
 
     /** Program entry point.
      * @param args program arguments
@@ -100,31 +95,53 @@ public class TrackCorridor {
         }
     }
 
+    /** Input parameter keys. */
+    private static enum ParameterKey {
+
+        TLE_LINE1,
+        TLE_LINE2,
+        ORBIT_CIRCULAR_DATE,
+        ORBIT_CIRCULAR_A,
+        ORBIT_CIRCULAR_EX,
+        ORBIT_CIRCULAR_EY,
+        ORBIT_CIRCULAR_I,
+        ORBIT_CIRCULAR_RAAN,
+        ORBIT_CIRCULAR_ALPHA,
+        START_DATE,
+        DURATION,
+        STEP,
+        ANGULAR_OFFSET;
+
+    }
+
     private void run(final File input, final File output, final String separator)
             throws IOException, IllegalArgumentException, OrekitException {
 
         // read input parameters
-        parseInput(input);
+        KeyValueFileParser<ParameterKey> parser =
+                new KeyValueFileParser<ParameterKey>(ParameterKey.class);
+        parser.parseInput(new FileInputStream(input));
+        TimeScale utc = TimeScalesFactory.getUTC();
 
         Propagator propagator;
-        if (map.containsKey(ParameterKey.TLE_LINE1)) {
-            propagator = createPropagator(getString(ParameterKey.TLE_LINE1),
-                                          getString(ParameterKey.TLE_LINE2));
+        if (parser.containsKey(ParameterKey.TLE_LINE1)) {
+            propagator = createPropagator(parser.getString(ParameterKey.TLE_LINE1),
+                                          parser.getString(ParameterKey.TLE_LINE2));
         } else {
-            propagator = createPropagator(getDate(ParameterKey.ORBIT_CIRCULAR_DATE),
-                                          getDouble(ParameterKey.ORBIT_CIRCULAR_A),
-                                          getDouble(ParameterKey.ORBIT_CIRCULAR_EX),
-                                          getDouble(ParameterKey.ORBIT_CIRCULAR_EY),
-                                          getAngle(ParameterKey.ORBIT_CIRCULAR_I),
-                                          getAngle(ParameterKey.ORBIT_CIRCULAR_RAAN),
-                                          getAngle(ParameterKey.ORBIT_CIRCULAR_ALPHA));
+            propagator = createPropagator(parser.getDate(ParameterKey.ORBIT_CIRCULAR_DATE, utc),
+                                          parser.getDouble(ParameterKey.ORBIT_CIRCULAR_A),
+                                          parser.getDouble(ParameterKey.ORBIT_CIRCULAR_EX),
+                                          parser.getDouble(ParameterKey.ORBIT_CIRCULAR_EY),
+                                          parser.getAngle(ParameterKey.ORBIT_CIRCULAR_I),
+                                          parser.getAngle(ParameterKey.ORBIT_CIRCULAR_RAAN),
+                                          parser.getAngle(ParameterKey.ORBIT_CIRCULAR_ALPHA));
         }
 
         // simulation properties
-        AbsoluteDate start = getDate(ParameterKey.START_DATE);
-        double duration    = getDouble(ParameterKey.DURATION);
-        double step        = getDouble(ParameterKey.STEP);
-        double angle       = getAngle(ParameterKey.ANGULAR_OFFSET);
+        AbsoluteDate start = parser.getDate(ParameterKey.START_DATE, utc);
+        double duration    = parser.getDouble(ParameterKey.DURATION);
+        double step        = parser.getDouble(ParameterKey.STEP);
+        double angle       = parser.getAngle(ParameterKey.ANGULAR_OFFSET);
 
         // set up a handler to gather all corridor points
         CorridorHandler handler = new CorridorHandler(angle);
@@ -154,104 +171,6 @@ public class TrackCorridor {
         }
         stream.close();
 
-    }
-
-    /** Parse an input file.
-     * <p>
-     * The input file syntax is a set of key=value lines. Blank lines and lines
-     * starting with '#' (after whitespace trimming) are silently ignored. The
-     * equal sign may be surrounded by space characters. Keys must correspond to
-     * the {@link ParameterKey} enumerate constants, given that matching is not
-     * case sensitive and that '_' characters may appear as '.' characters in the
-     * file. this means that the lines:
-     * <pre>
-     *   # this is the semi-major axis
-     *   orbit.circular.a   = 7231582
-     * </pre>
-     * are perfectly right and correspond to key {@link ParameterKey#ORBIT_CIRCULAR_A}.
-     * </p>
-     * @param input input file
-     * @return key/value map
-     * @exception IOException if input file cannot be read
-     * @exception IllegalArgumentException if a line cannot be read properly
-     */
-    private void parseInput(final File input)
-        throws IOException, IllegalArgumentException {
-
-        BufferedReader reader = new BufferedReader(new FileReader(input));
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            line = line.trim();
-            // we ignore blank lines and line starting with '#'
-            if ((line.length() > 0) && !line.startsWith("#")) {
-                String[] fields = line.split("\\s*=\\s*");
-                if (fields.length != 2) {
-                    throw new IllegalArgumentException(line);
-                }
-                ParameterKey key = ParameterKey.valueOf(fields[0].toUpperCase().replaceAll("\\.", "_"));
-                map.put(key, fields[1]);
-            }
-        }
-        reader.close();
-
-    }
-
-    /** Get a raw string value from a parameters map.
-     * @param key parameter key
-     * @return string value corresponding to the key
-     * @exception NoSuchElementException if key is not in the map
-     */
-    private String getString(final ParameterKey key)
-        throws NoSuchElementException {
-        final String value = map.get(key);
-        if (value == null) {
-            throw new NoSuchElementException(key.toString());
-        }
-        return value.trim();
-    }
-
-    /** Get a raw double value from a parameters map.
-     * @param key parameter key
-     * @return double value corresponding to the key
-     * @exception NoSuchElementException if key is not in the map
-     */
-    private double getDouble(final ParameterKey key)
-        throws NoSuchElementException {
-        final String value = map.get(key);
-        if (value == null) {
-            throw new NoSuchElementException(key.toString());
-        }
-        return Double.parseDouble(value.trim());
-    }
-
-    /** Get an angle value from a parameters map.
-     * <p>
-     * The angle is considered to be in degrees in the file, it will be returned in radians
-     * </p>
-     * @param key parameter key
-     * @return angular value corresponding to the key, in radians
-     * @exception NoSuchElementException if key is not in the map
-     */
-    private double getAngle(final ParameterKey key)
-        throws NoSuchElementException {
-        return FastMath.toRadians(getDouble(key));
-    }
-
-    /** Get a date value from a parameters map.
-     * <p>
-     * The date is considered to be in UTC in the file
-     * </p>
-     * @param key parameter key
-     * @return date value corresponding to the key
-     * @exception NoSuchElementException if key is not in the map
-     * @exception OrekitException if UTC time scale cannot be retrieved
-     */
-    private AbsoluteDate getDate(final ParameterKey key)
-        throws NoSuchElementException, OrekitException {
-        final String value = map.get(key);
-        if (value == null) {
-            throw new NoSuchElementException(key.toString());
-        }
-        return new AbsoluteDate(value.trim(), TimeScalesFactory.getUTC());
     }
 
     /** Create an orbit propagator for a circular orbit
@@ -432,25 +351,6 @@ public class TrackCorridor {
         public GeodeticPoint getRight() {
             return right;
         }
-
-    }
-
-    /** Input parameter keys. */
-    private static enum ParameterKey {
-
-        TLE_LINE1,
-        TLE_LINE2,
-        ORBIT_CIRCULAR_DATE,
-        ORBIT_CIRCULAR_A,
-        ORBIT_CIRCULAR_EX,
-        ORBIT_CIRCULAR_EY,
-        ORBIT_CIRCULAR_I,
-        ORBIT_CIRCULAR_RAAN,
-        ORBIT_CIRCULAR_ALPHA,
-        START_DATE,
-        DURATION,
-        STEP,
-        ANGULAR_OFFSET;
 
     }
 
