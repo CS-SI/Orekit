@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 
 import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.exception.util.Localizable;
+import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -162,6 +163,19 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      */
     public AbsoluteDate getDate(final Key key, TimeScale scale) throws NoSuchElementException {
         return new AbsoluteDate(getString(key), scale);
+    }
+
+    /** Get a vector value from a parameters map.
+     * @param xKey parameter key for abscissa
+     * @param yKey parameter key for ordinate
+     * @param zKey parameter key for height
+     * @param scale time scale in which the date is to be parsed
+     * @return date value corresponding to the key
+     * @exception NoSuchElementException if key is not in the map
+     */
+    public Vector3D getVector(final Key xKey, final Key yKey, final Key zKey)
+        throws NoSuchElementException {
+        return new Vector3D(getDouble(xKey), getDouble(yKey), getDouble(zKey));
     }
 
     /** Get an inertial frame from a parameters map.
