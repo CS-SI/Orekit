@@ -125,7 +125,7 @@ public class EarthObservation {
                 public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
                     try {
                     	DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
-                    	angleDegree.setDecimalSeparator('°');
+                    	angleDegree.setDecimalSeparator('\u00b0');
                         DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
                         // the Earth position in spacecraft frame should be along spacecraft Z axis
                         // during nigthtime and away from it during daytime due to roll and pitch offsets
