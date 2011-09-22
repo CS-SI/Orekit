@@ -139,4 +139,25 @@ public class ImpulseManeuver implements EventDetector {
 
     }
 
+    /** Get the triggering event.
+     * @return triggering event
+     */
+    public EventDetector getTrigger() {
+        return trigger;
+    }
+
+    /** Get the velocity increment in satellite frame.
+    * @return velocity increment in satellite frame
+    */
+    public Vector3D getDeltaVSat() {
+        return deltaVSat;
+    }
+
+    /** Get the specific impulse.
+    * @return specific impulse
+    */
+    public double getIsp() {
+        return vExhaust / ConstantThrustManeuver.G0;
+    }
+
 }
