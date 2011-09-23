@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="pascal" type="fix">
+        Fixed frame for TLEPropagator (fixes bug #31).
+      </action>
       <action dev="luc" type="add">
         Added getters/setters for impulse maneuvers.
       </action>

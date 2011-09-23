@@ -25,6 +25,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
@@ -72,6 +73,9 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
         (1000 * 1000 * 1000) / (60 * 60);
 
     // CHECKSTYLE: stop VisibilityModifierCheck
+
+    /** TLE frame. */
+    private final Frame frame;
 
     /** Initial state. */
     protected final TLE tle;
@@ -194,6 +198,7 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
         tle = initialTLE;
+        frame = FramesFactory.getTEME();
         this.mass = mass;
         initializeCommons();
         sxpInitialize();
@@ -491,6 +496,11 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
      */
     public TLE getTLE() {
         return tle;
+    }
+
+    /** {@inheritDoc} */
+    public Frame getFrame() {
+        return frame;
     }
 
 }
