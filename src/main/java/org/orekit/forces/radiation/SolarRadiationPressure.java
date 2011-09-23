@@ -301,8 +301,8 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-            return RESET_DERIVATIVES;
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+            return Action.RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
@@ -338,8 +338,8 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-            return RESET_DERIVATIVES;
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+            return Action.RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and

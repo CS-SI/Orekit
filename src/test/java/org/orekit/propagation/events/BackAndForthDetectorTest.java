@@ -95,10 +95,10 @@ public class BackAndForthDetectorTest {
         }
 
         @Override 
-        public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException
+        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException
         {
             _visiNb++;
-            return CONTINUE;
+            return Action.CONTINUE;
         }
 
         public int getVisiNb() {

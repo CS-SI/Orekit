@@ -116,7 +116,7 @@ public class DihedralFieldOfViewDetectorTest {
             super(maxCheck, pvTarget, center, axis1, aperture1, axis2, aperture2);
         }
 
-        public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
             if (increasing) {
                 //System.err.println(" Sun visibility starts " + s.getDate());
@@ -125,14 +125,14 @@ public class DihedralFieldOfViewDetectorTest {
                                                               TimeScalesFactory.getUTC());
                 
                 Assert.assertTrue(s.getDate().durationFrom(startVisiDate) <= 1);
-                return CONTINUE;
+                return Action.CONTINUE;
             } else {
                 AbsoluteDate endVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
                                                               new TimeComponents(1, 39 , 42.674),
                                                               TimeScalesFactory.getUTC());
                 Assert.assertTrue(s.getDate().durationFrom(endVisiDate) <= 1);
                 //System.err.println(" Sun visibility ends at " + s.getDate());
-                return CONTINUE;//STOP;
+                return Action.CONTINUE;//STOP;
             }
         }
 

@@ -95,9 +95,9 @@ public class ElevationDetectorTest {
             visible = false;
         }
 
-        public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
             visible = increasing;
-            return CONTINUE;
+            return Action.CONTINUE;
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast)

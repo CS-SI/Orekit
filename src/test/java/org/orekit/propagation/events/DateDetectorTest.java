@@ -44,12 +44,12 @@ public class DateDetectorTest {
     	dateDetector = new DateDetector(maxCheck, threshold);
         EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()) {
 			private static final long serialVersionUID = 3583432139818469589L;
-			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
 				if (increasing) {
 				    nodeDate = s.getDate();
 	  		        dateDetector.addEventDate(nodeDate.shiftedBy(dt));
 				}
-		        return CONTINUE;
+		        return Action.CONTINUE;
             }
         };
 
@@ -64,11 +64,11 @@ public class DateDetectorTest {
     public void testAutoEmbeddedTimer() throws OrekitException {
     	dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(-dt)) {
             private static final long serialVersionUID = 1L;
-			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
 				AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
 				this.addEventDate(nextDate);
   		        ++evtno;
-		        return CONTINUE;
+		        return Action.CONTINUE;
             }
         };
         propagator.addEventDetector(dateDetector);
@@ -81,12 +81,12 @@ public class DateDetectorTest {
     public void testExceptionTimer() throws OrekitException {
     	dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt)) {
             private static final long serialVersionUID = 1L;
-			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
 				double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;
 				AbsoluteDate nextDate = s.getDate().shiftedBy(step);
 				this.addEventDate(nextDate);
   		        ++evtno;
-		        return CONTINUE;
+		        return Action.CONTINUE;
             }
         };
         propagator.addEventDetector(dateDetector);

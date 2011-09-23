@@ -100,10 +100,10 @@ public class ImpulseManeuver implements EventDetector {
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
         // filter underlying event
-        return (trigger.eventOccurred(s, increasing) == STOP) ? RESET_STATE : CONTINUE;
+        return (trigger.eventOccurred(s, increasing) == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
     }
 
     /** {@inheritDoc} */

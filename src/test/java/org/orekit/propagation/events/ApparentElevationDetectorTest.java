@@ -77,8 +77,8 @@ public class ApparentElevationDetectorTest {
             new ApparentElevationDetector(FastMath.toRadians(0.0), topo) {
                 /** Serializable UID. */
                 private static final long serialVersionUID = 7515758050410436713L;
-                public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? STOP : CONTINUE;
+                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+                    return increasing ? Action.STOP : Action.CONTINUE;
                 }
         };
 
@@ -117,8 +117,8 @@ public class ApparentElevationDetectorTest {
             new ApparentElevationDetector(FastMath.toRadians(2.0), topo) {
                 /** Serializable UID. */
                 private static final long serialVersionUID = 7515758050410436713L;
-                public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? STOP : CONTINUE;
+                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+                    return increasing ? Action.STOP : Action.CONTINUE;
                 }
         };
         detector.setPressure(101325);

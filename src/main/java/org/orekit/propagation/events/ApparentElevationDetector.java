@@ -183,9 +183,9 @@ public class ApparentElevationDetector extends AbstractDetector {
      * @return {@link #STOP} or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
-        return increasing ? CONTINUE : STOP;
+        return increasing ? Action.CONTINUE : Action.STOP;
     }
 
     /** Compute the value of the switching function.

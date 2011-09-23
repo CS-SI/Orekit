@@ -110,16 +110,16 @@ public class VisibilityCheck {
             super(maxCheck, elevation, topo);
         }
 
-        public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
             if (increasing) {
                 System.out.println(" Visibility on " + getTopocentricFrame().getName()
                                                      + " begins at " + s.getDate());
-                return CONTINUE;
+                return Action.CONTINUE;
             } else {
                 System.out.println(" Visibility on " + getTopocentricFrame().getName()
                                                      + " ends at " + s.getDate());
-                return CONTINUE;//STOP;
+                return Action.CONTINUE;//STOP;
             }
         }
 

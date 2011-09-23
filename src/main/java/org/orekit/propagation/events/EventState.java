@@ -83,7 +83,7 @@ public class EventState implements Serializable {
     private boolean increasing;
 
     /** Next action indicator. */
-    private int nextAction;
+    private EventDetector.Action nextAction;
 
     /** Simple constructor.
      * @param detector monitored event detector
@@ -99,7 +99,7 @@ public class EventState implements Serializable {
         pendingEventTime  = null;
         previousEventTime = null;
         increasing        = true;
-        nextAction        = EventDetector.CONTINUE;
+        nextAction        = EventDetector.Action.CONTINUE;
 
     }
 
@@ -268,7 +268,7 @@ public class EventState implements Serializable {
             nextAction        = detector.eventOccurred(state, !(increasing ^ forward));
         } else {
             g0Positive = g0 >= 0;
-            nextAction = EventDetector.CONTINUE;
+            nextAction = EventDetector.Action.CONTINUE;
         }
     }
 
@@ -277,7 +277,7 @@ public class EventState implements Serializable {
      * @return true if the propagation should be stopped
      */
     public boolean stop() {
-        return nextAction == EventDetector.STOP;
+        return nextAction == EventDetector.Action.STOP;
     }
 
     /** Let the event detector reset the state if it wants.
@@ -294,7 +294,7 @@ public class EventState implements Serializable {
         }
 
         final SpacecraftState newState =
-            (nextAction == EventDetector.RESET_STATE) ?
+            (nextAction == EventDetector.Action.RESET_STATE) ?
             detector.resetState(oldState) : null;
         pendingEvent      = false;
         pendingEventTime  = null;

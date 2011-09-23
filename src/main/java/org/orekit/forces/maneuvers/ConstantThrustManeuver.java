@@ -177,10 +177,10 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
             // start the maneuver
             firing = true;
-            return RESET_DERIVATIVES;
+            return Action.RESET_DERIVATIVES;
         }
 
     }
@@ -197,10 +197,10 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
             // stop the maneuver
             firing = false;
-            return RESET_DERIVATIVES;
+            return Action.RESET_DERIVATIVES;
         }
 
     }

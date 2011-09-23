@@ -84,20 +84,20 @@ public class EarthObservation {
             final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
             final EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
                 private static final long serialVersionUID = 8091992101063392941L;
-                public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+                public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
                     if (!increasing) {
                         output.add(s.getDate() + " : event occured, entering eclipse => switching to night law");
                     }
-                    return CONTINUE;
+                    return Action.CONTINUE;
                 }
             };
             final EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
                 private static final long serialVersionUID = -377454330129772997L;
-                public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+                public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
                     if (increasing) {
                         output.add(s.getDate() + " : event occured, exiting eclipse => switching to day law");
                     }
-                    return CONTINUE;
+                    return Action.CONTINUE;
                 }
             };
             attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);

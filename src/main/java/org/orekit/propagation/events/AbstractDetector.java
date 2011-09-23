@@ -51,7 +51,7 @@ public abstract class AbstractDetector implements EventDetector {
     }
 
     /** {@inheritDoc} */
-    public abstract int eventOccurred(SpacecraftState s, boolean increasing)
+    public abstract Action eventOccurred(SpacecraftState s, boolean increasing)
         throws OrekitException;
 
     /** {@inheritDoc} */

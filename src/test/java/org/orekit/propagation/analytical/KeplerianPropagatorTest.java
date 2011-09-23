@@ -377,8 +377,8 @@ public class KeplerianPropagatorTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()) {
             private static final long serialVersionUID = -1486037976198573520L;
-            public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-                return CONTINUE;
+            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+                return Action.CONTINUE;
             }
         });
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);

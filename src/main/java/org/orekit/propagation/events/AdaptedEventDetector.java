@@ -114,14 +114,14 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
         try {
 
             final SpacecraftState state = mapArrayToState(t, y);
-            final int whatNext = detector.eventOccurred(state, increasing);
+            final EventDetector.Action whatNext = detector.eventOccurred(state, increasing);
 
             switch (whatNext) {
-            case EventDetector.STOP :
+            case STOP :
                 return STOP;
-            case EventDetector.RESET_STATE :
+            case RESET_STATE :
                 return RESET_STATE;
-            case EventDetector.RESET_DERIVATIVES :
+            case RESET_DERIVATIVES :
                 return RESET_DERIVATIVES;
             default :
                 return CONTINUE;

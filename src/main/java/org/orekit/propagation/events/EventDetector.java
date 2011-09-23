@@ -46,37 +46,43 @@ import org.orekit.propagation.SpacecraftState;
  */
 public interface EventDetector extends Serializable {
 
-    /** Stop indicator.
-     * <p>This value should be used as the return value of the {@link
-     * #eventOccurred eventOccurred} method when the propagation should be
-     * stopped after the event ending the current step.</p>
-     */
-    int STOP = 0;
+    /** Enumerate for actions to be performed when an even occurs. */
+    public enum Action {
 
-    /** Reset state indicator.
-     * <p>This value should be used as the return value of the {@link
-     * #eventOccurred eventOccurred} method when the propagation should
-     * go on after the event ending the current step, with a new state
-     * (which will be retrieved thanks to the {@link #resetState
-     * resetState} method).</p>
-     */
-    int RESET_STATE = 1;
+        /** Stop indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should be
+         * stopped after the event ending the current step.</p>
+         */
+        STOP,
 
-    /** Reset derivatives indicator.
-     * <p>This value should be used as the return value of the {@link
-     * #eventOccurred eventOccurred} method when the propagation should
-     * go on after the event ending the current step, with recomputed
-     * derivatives vector.</p>
-     */
-    int RESET_DERIVATIVES = 2;
+        /** Reset state indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should
+         * go on after the event ending the current step, with a new state
+         * (which will be retrieved thanks to the {@link #resetState
+         * resetState} method).</p>
+         */
+        RESET_STATE,
 
-    /** Continue indicator.
-     * <p>This value should be used as the return value of the {@link
-     * #eventOccurred eventOccurred} method when the propagation should go
-     * on after the event ending the current step.</p>
-     */
-    int CONTINUE = 3;
+        /** Reset derivatives indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should
+         * go on after the event ending the current step, with recomputed
+         * derivatives vector.</p>
+         */
+        RESET_DERIVATIVES,
 
+        /** Continue indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should go
+         * on after the event ending the current step.</p>
+         */
+        CONTINUE;
+
+    }
+
+    
     /** Compute the value of the switching function.
      * This function must be continuous (at least in its roots neighborhood),
      * as the integrator will need to find its roots to locate the events.
@@ -121,7 +127,7 @@ public interface EventDetector extends Serializable {
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
+    Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
 
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
