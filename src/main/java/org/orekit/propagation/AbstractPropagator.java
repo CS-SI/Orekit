@@ -51,13 +51,11 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Common handling of {@link Propagator} methods for analytical propagators.
  * <p>
  * This abstract class allows to provide easily the full set of {@link Propagator}
- * methods, including all propagation modes support and discrete events support
- * for any simple propagation method. Only three methods must be implemented by
- * derived classes: {@link #getInitialState()}, {@link #basicPropagate(AbsoluteDate)}
- * and {@link #resetInitialState(SpacecraftState)}. The second method should perform
- * straightforward propagation starting from some internally stored initial state
- * up to the specified target date. The third method should reset the initial state
- * when called.
+ * methods, including all propagation modes support and discrete events support for
+ * any simple propagation method. Only two methods must be implemented by derived
+ * classes: {@link #propagateOrbit(AbsoluteDate)} and {@link #getMass(AbsoluteDate)}.
+ * The first method should perform straightforward propagation starting from some
+ * internally stored initial state up to the specified target date.
  * </p>
  * @author Luc Maisonobe
  * @version $Revision$ $Date$
