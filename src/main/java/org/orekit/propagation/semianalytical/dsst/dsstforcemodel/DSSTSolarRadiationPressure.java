@@ -1,28 +1,26 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
-import org.orekit.orbits.Orbit;
+import org.orekit.errors.OrekitException;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 public class DSSTSolarRadiationPressure implements DSSTForceModel {
 
-    @Override
-    public double[] getMeanElementRate(AbsoluteDate date,
-                                       double[] currentState) {
+    /** {@inheritDoc} */
+    public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
-    public double[] getShortPeriodicVariations(AbsoluteDate date,
-                                               double[] currentState) {
+    /** {@inheritDoc} */
+    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] stateVector)
+        throws OrekitException {
         // TODO Auto-generated method stub
         return null;
     }
 
-
-    @Override
-    public void init(Orbit initialState,
-                     AbsoluteDate referenceDate) {
+    /** {@inheritDoc} */
+    public void init(final SpacecraftState state) throws OrekitException {
         // TODO Auto-generated method stub
         
     }
