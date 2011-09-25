@@ -45,7 +45,7 @@ import org.orekit.propagation.SpacecraftState;
  */
 public interface EventDetector extends Serializable {
 
-    /** Enumerate for actions to be performed when an even occurs. */
+    /** Enumerate for actions to be performed when an event occurs. */
     public enum Action {
 
         /** Stop indicator.
