@@ -109,7 +109,7 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(final double t, final double[] y, final boolean increasing) {
+    public Action eventOccurred(final double t, final double[] y, final boolean increasing) {
         try {
 
             final SpacecraftState state = mapArrayToState(t, y);
@@ -117,13 +117,13 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
 
             switch (whatNext) {
             case STOP :
-                return STOP;
+                return Action.STOP;
             case RESET_STATE :
-                return RESET_STATE;
+                return Action.RESET_STATE;
             case RESET_DERIVATIVES :
-                return RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             default :
-                return CONTINUE;
+                return Action.CONTINUE;
             }
         } catch (OrekitException oe) {
             throw new OrekitExceptionWrapper(oe);
