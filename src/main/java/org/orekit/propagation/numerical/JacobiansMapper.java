@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math.linear.Array2DRowRealMatrix;
 import org.apache.commons.math.linear.DecompositionSolver;
-import org.apache.commons.math.linear.QRDecompositionImpl;
+import org.apache.commons.math.linear.QRDecomposition;
 import org.apache.commons.math.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -145,7 +145,7 @@ public class JacobiansMapper implements Serializable {
 
         // set up a converter between state parameters and cartesian parameters
         final RealMatrix dY1dC1 = new Array2DRowRealMatrix(getdYdC(state), false);
-        final DecompositionSolver solver = new QRDecompositionImpl(dY1dC1).getSolver();
+        final DecompositionSolver solver = new QRDecomposition(dY1dC1).getSolver();
 
         // convert the provided state Jacobian to cartesian parameters
         final RealMatrix dC1dY0 = solver.solve(new Array2DRowRealMatrix(dY1dY0, false));
