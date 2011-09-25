@@ -125,7 +125,6 @@ import org.orekit.utils.Constants;
  * @author Guylaine Prat
  * @author Luc Maisonobe
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class FramesFactory implements Serializable {
 

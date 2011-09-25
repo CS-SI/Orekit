@@ -59,7 +59,6 @@ import org.orekit.utils.PVCoordinates;
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
  * @see TLE
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public abstract class TLEPropagator extends AbstractPropagator implements Serializable {
 

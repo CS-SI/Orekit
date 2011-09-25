@@ -40,7 +40,6 @@ import org.orekit.utils.Constants;
  * (43200 seconds) each, the resulting maximal interpolation error on the frame is about
  * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 class TODFrame extends FactoryManagedFrame {
 

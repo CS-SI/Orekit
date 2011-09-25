@@ -51,7 +51,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for spacecraft frame support.
  * <p>This tutorial shows the very simple usage of spacecraft frame.</p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class Frames3 {
 

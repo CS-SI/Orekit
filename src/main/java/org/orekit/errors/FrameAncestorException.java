@@ -21,7 +21,6 @@ import org.apache.commons.math.exception.util.Localizable;
 /** This class is the base class for exception thrown by
  * the {@link org.orekit.frames.Frame#updateTransform(Frame,
  * Frame,Transform,AbsoluteDate) Frame.updateTransform} method.
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class FrameAncestorException extends OrekitException {
 

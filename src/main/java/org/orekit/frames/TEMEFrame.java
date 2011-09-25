@@ -28,7 +28,6 @@ import org.orekit.time.AbsoluteDate;
  * TLE propagation and not for anything else, as recommended by the CCSDS Orbit Data Message
  * blue book.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 class TEMEFrame extends FactoryManagedFrame {
 

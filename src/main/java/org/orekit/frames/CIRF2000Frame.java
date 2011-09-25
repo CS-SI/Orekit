@@ -45,7 +45,6 @@ import org.orekit.utils.Constants;
  * between these points. This implementation uses 12 points separated by 1/2 day
  * (43200 seconds) each, the resulting maximal interpolation error on the frame is about
  * 1.3&times;10<sup>-10</sup> arcseconds.</p>
- * @version $Revision$ $Date$
  */
 class CIRF2000Frame extends FactoryManagedFrame {
 

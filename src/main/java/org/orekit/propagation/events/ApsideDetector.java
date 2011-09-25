@@ -37,7 +37,6 @@ import org.orekit.utils.PVCoordinates;
  * after the maneuver has been performed!</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ApsideDetector extends AbstractDetector {
 

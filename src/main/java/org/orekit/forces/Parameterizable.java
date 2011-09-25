@@ -23,7 +23,6 @@ import java.util.Collection;
  *  with respect to force model parameters.
  *
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 
 public interface Parameterizable extends Serializable {

@@ -41,7 +41,6 @@ import org.orekit.errors.OrekitMessages;
  *
  * @see PotentialReaderFactory
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ICGEMFormatReader extends PotentialCoefficientsReader {
 

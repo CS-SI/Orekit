@@ -39,7 +39,6 @@ import org.orekit.utils.Constants;
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @since 5.1
  */
 public class HelmertTransformation implements Serializable {

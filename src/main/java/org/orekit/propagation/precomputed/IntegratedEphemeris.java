@@ -69,7 +69,6 @@ import org.orekit.utils.PVCoordinates;
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision:1698 $ $Date:2008-06-18 16:01:17 +0200 (mer., 18 juin 2008) $
  */
 public class IntegratedEphemeris
     extends AbstractPropagator implements BoundedPropagator {

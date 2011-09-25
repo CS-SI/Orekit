@@ -18,7 +18,6 @@ package org.orekit.data;
 
 /** Class for luni-solar only terms.
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 class LuniSolarTerm extends SeriesTerm {
 

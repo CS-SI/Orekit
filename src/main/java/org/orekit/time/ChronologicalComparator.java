@@ -23,7 +23,6 @@ import java.util.Comparator;
  * @see AbsoluteDate
  * @see TimeStamped
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ChronologicalComparator implements Comparator<TimeStamped>, Serializable {
 

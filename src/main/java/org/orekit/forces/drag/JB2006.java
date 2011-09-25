@@ -71,7 +71,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  *
  * @author Bruce R Bowman (HQ AFSPC, Space Analysis Division), Feb 2006: FORTRAN routine
  * @author Fabien Maussion (java translation)
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class JB2006 implements Atmosphere {
 

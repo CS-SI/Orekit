@@ -32,7 +32,6 @@ package org.orekit.time;
  * @see AbsoluteDate
  * @see ChronologicalComparator
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface TimeStamped {
 

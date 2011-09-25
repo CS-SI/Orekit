@@ -33,7 +33,6 @@ import org.orekit.time.AbsoluteDate;
 /** Adapt an {@link org.orekit.propagation.events.EventDetector}
  * to commons-math {@link org.apache.commons.math.ode.events.EventHandler} interface.
  * @author Fabien Maussion
- * @version $Revision$ $Date$
  */
 public class AdaptedEventDetector implements EventHandler, Serializable {
 

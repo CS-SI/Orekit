@@ -20,7 +20,6 @@ import org.orekit.errors.OrekitException;
 
 /** This class holds an Earth Orientation Parameters entry (IAU2000).
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class EOP2000Entry extends EOPEntry {
 

@@ -21,7 +21,6 @@ import java.io.Serializable;
 /** Simple container associating a parameter name with a step to compute its jacobian
  * and the provider thant manages it.
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 class ParameterConfiguration implements Serializable {
 

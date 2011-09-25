@@ -27,7 +27,6 @@ import org.orekit.utils.Constants;
  * <p> Handles pole motion effects and depends on {@link TIRF2000Frame}, its
  * parent frame.</p>
  * @author Luc Maisonobe
- * @version $Revision: 1726 $ $Date: 2008-06-20 11:18:17 +0200 (ven., 20 juin 2008) $
  */
 class ITRFFrame extends FactoryManagedFrame {
 

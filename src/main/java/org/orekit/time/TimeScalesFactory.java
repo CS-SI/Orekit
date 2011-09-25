@@ -32,7 +32,6 @@ import org.orekit.frames.FramesFactory;
  * This is a utility class, so its constructor is private.
  * </p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class TimeScalesFactory implements Serializable {
 

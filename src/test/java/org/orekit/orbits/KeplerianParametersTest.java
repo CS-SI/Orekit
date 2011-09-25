@@ -33,7 +33,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-//$Id:KeplerianParametersTest.java 1665 2008-06-11 10:12:59Z luc $
 public class KeplerianParametersTest {
 
     // Computation date 

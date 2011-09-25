@@ -90,7 +90,6 @@ import org.orekit.utils.Constants;
  * @see TimeScale
  * @see TimeStamped
  * @see ChronologicalComparator
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Serializable {
 

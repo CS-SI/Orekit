@@ -45,7 +45,6 @@ import org.orekit.utils.Constants;
  * official JB2006 website.</a>
  *
  * @author Fabien Maussion
- * @version $Revision$ $Date$
  */
 public class SolarInputs97to05 implements JB2006InputParameters, DTM2000InputParameters {
 

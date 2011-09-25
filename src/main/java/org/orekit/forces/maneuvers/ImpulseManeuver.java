@@ -56,7 +56,6 @@ import org.orekit.utils.PVCoordinates;
  * during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ImpulseManeuver implements EventDetector {
 

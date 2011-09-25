@@ -19,7 +19,6 @@ package org.orekit.attitudes;
 
 /** This interface represents an attitude provider that modifies/wraps another underlying provider.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @since 5.1
  */
 public interface AttitudeProviderModifier extends AttitudeProvider {

@@ -42,7 +42,6 @@ import org.orekit.propagation.SpacecraftState;
  *
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 public interface EventDetector extends Serializable {
 

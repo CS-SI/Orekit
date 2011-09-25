@@ -22,7 +22,6 @@ import java.io.Serializable;
  * <p>This class is a simple container, it does not provide
  * any processing method.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class PoleCorrection implements Serializable {
 

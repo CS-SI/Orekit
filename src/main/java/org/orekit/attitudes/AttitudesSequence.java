@@ -44,7 +44,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * addition to the nominal switches that correspond to proper operations. Another example
  * is handling of maneuver mode.<p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @since 5.1
  */
 public class AttitudesSequence implements AttitudeProvider {

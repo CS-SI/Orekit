@@ -42,7 +42,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for special event detection.
  * <p>This tutorial shows how to easily check for visibility between a satellite and a ground station.<p>
  * @author Pascal Parraud
- * @version $Revision: 2043 $ $Date: 2008-09-24 10:57:23 +0200 (mer., 24 sept. 2008) $
  */
 public class VisibilityCheck {
 

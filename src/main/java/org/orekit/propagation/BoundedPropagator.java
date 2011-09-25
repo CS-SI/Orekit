@@ -28,7 +28,6 @@ import org.orekit.time.AbsoluteDate;
  *
  * @author Luc Maisonobe
  *
- * @version $Revision$ $Date$
  */
 public interface BoundedPropagator extends Propagator {
 

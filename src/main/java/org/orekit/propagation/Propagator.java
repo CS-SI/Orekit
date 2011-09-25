@@ -43,7 +43,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  *
- * @version $Revision$ $Date$
  */
 
 public interface Propagator extends PVCoordinatesProvider, Serializable {

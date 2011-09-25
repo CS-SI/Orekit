@@ -46,7 +46,6 @@ import org.orekit.utils.PVCoordinates;
  *
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
 

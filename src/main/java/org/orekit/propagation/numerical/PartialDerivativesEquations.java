@@ -35,7 +35,6 @@ import org.orekit.propagation.SpacecraftState;
  * useful for example in orbit determination applications.
  * </p>
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 public class PartialDerivativesEquations implements AdditionalEquations {
 

@@ -36,7 +36,6 @@ import org.orekit.errors.OrekitMessages;
  *
  * @see org.orekit.forces.gravity.potential.PotentialReaderFactory
  * @author Fabien Maussion
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {
 

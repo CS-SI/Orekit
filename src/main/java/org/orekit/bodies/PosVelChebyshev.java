@@ -30,7 +30,6 @@ import org.orekit.utils.PVCoordinates;
  * for solar system bodies like JPL DE 405 ephemerides.</p>
  * @see JPLEphemeridesLoader
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 class PosVelChebyshev implements TimeStamped, Serializable {
 

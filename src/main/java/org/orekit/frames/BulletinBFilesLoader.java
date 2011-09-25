@@ -55,7 +55,6 @@ import org.orekit.utils.Constants;
  * and takes care to use the new format only for the IAU-2000 precession-nutation model.
  * </p>
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 

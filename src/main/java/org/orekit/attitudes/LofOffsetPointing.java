@@ -39,7 +39,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * the satellite axis vector chosen for pointing.
  * <p>
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class LofOffsetPointing extends GroundPointing {
 

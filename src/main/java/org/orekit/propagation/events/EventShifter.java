@@ -33,7 +33,6 @@ import org.orekit.propagation.SpacecraftState;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see EventDetector
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class EventShifter extends AbstractDetector {
 

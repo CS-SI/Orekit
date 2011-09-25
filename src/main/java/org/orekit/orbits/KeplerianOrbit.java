@@ -64,7 +64,6 @@ import org.orekit.utils.PVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class KeplerianOrbit extends Orbit {
 

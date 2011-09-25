@@ -53,7 +53,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for Earth observation attitude sequence.
  * <p>This tutorial shows how to easily switch between day and night attitude modes.<p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class EarthObservation {
 

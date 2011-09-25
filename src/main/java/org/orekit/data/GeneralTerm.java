@@ -18,7 +18,6 @@ package org.orekit.data;
 
 /** Class for general terms.
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 class GeneralTerm extends SeriesTerm {
 

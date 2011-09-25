@@ -27,7 +27,6 @@ import org.orekit.propagation.SpacecraftState;
  * @see DragForce
  * @author Luc Maisonobe
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public interface DragSensitive extends Serializable {
 

@@ -47,7 +47,6 @@ import org.orekit.utils.Constants;
  * format and are available at IERS web site: <a
  * href="http://hpiers.obspm.fr/iers/eop/eopc04_05/">Index of /iers/eop/eopc04_05</a>.</p>
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 

@@ -60,7 +60,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see SphericalSpacecraft
  * @author Luc Maisonobe
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensitive {
 
@@ -389,7 +388,6 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     /** Class representing a single facet of a convex spacecraft body.
      * <p>Instance of this class are guaranteed to be immutable.</p>
      * @author Luc Maisonobe
-     * @version $Revision$ $Date$
      */
     public static class Facet implements Serializable {
 

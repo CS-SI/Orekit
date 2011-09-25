@@ -26,7 +26,6 @@ import org.apache.commons.math.util.MathUtils;
  * <p>Instance of this class are guaranteed to be immutable.</p>
  * @see BodyShape
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class GeodeticPoint implements Serializable {
 

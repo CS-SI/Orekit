@@ -40,7 +40,6 @@ import org.orekit.time.TimeStamped;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class DateDetector extends AbstractDetector implements TimeStamped {
 

@@ -39,7 +39,6 @@ import org.orekit.time.AbsoluteDate;
 /** Adapt an {@link org.orekit.propagation.sampling.OrekitStepHandler}
  * to commons-math {@link StepHandler} interface.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class AdaptedStepHandler
     implements OrekitStepInterpolator, StepHandler, ModeHandler, Serializable {

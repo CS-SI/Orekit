@@ -30,7 +30,6 @@ import org.orekit.utils.Constants;
  * <p>By convention, TDB = TT + 0.001658 sin(g) + 0.000014 sin(2g)seconds
  * where g = 357.53 + 0.9856003 (JD - 2451545) degrees.</p>
  * @author Aude Privat
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class TDBScale implements TimeScale {
 

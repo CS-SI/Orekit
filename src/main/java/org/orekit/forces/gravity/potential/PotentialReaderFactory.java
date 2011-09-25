@@ -28,7 +28,6 @@ import org.orekit.errors.OrekitMessages;
 /** Factory used to read gravity field files in several supported formats.
  * @author Fabien Maussion
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @deprecated as of 4.2, replaced by {@link GravityFieldFactory}
  */
 @Deprecated

@@ -36,7 +36,6 @@ import org.apache.commons.math.exception.util.Localizable;
  * translation is missing.
  * </p>
  * @since 2.1
- * @version $Revision$ $Date$
  */
 public enum OrekitMessages implements Localizable {
 

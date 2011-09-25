@@ -30,7 +30,6 @@ import org.orekit.time.AbsoluteDate;
  * href="http://commons.apache.org/math/">commons-math</a> but
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class OrekitStepNormalizer implements OrekitStepHandler {
 

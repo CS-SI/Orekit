@@ -34,7 +34,6 @@ import org.orekit.utils.PVCoordinates;
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class AltitudeDetector extends AbstractDetector {
 

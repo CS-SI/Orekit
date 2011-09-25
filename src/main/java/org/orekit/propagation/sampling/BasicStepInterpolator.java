@@ -25,7 +25,6 @@ import org.orekit.time.AbsoluteDate;
 /** Implementation of the {@link OrekitStepInterpolator} interface based
  * on a {@link Propagator}.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class BasicStepInterpolator implements OrekitStepInterpolator {
 

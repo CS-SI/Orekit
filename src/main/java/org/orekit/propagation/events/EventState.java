@@ -46,7 +46,6 @@ import org.orekit.time.AbsoluteDate;
  * step (and hence the step should be reduced to ensure the event
  * occurs at a bound rather than inside the step).</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class EventState implements Serializable {
 

@@ -31,7 +31,6 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  *
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class ThirdBodyAttraction extends AbstractParameterizable implements ForceModel {
 

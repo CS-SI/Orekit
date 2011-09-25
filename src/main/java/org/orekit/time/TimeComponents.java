@@ -35,7 +35,6 @@ import org.orekit.utils.Constants;
  * @see DateComponents
  * @see DateTimeComponents
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class TimeComponents implements Serializable, Comparable<TimeComponents> {
 

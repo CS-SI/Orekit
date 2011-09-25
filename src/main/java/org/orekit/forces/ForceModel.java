@@ -49,7 +49,6 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @author Mathieu Rom&eacute;ro
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 public interface ForceModel extends Parameterizable {
 

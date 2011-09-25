@@ -38,7 +38,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for ephemeris mode propagation.
  * <p>This tutorial shows a basic usage of the ephemeris mode in conjunction with a numerical propagator.<p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class EphemerisMode {
 

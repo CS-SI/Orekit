@@ -20,7 +20,6 @@ import org.orekit.time.AbsoluteDate;
 
 /** This class holds Earth Orientation Parameters (IAU1980) data throughout a large time range.
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class EOP1980History extends AbstractEOPHistory {
 

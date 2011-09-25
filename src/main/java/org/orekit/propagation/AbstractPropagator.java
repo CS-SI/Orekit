@@ -58,7 +58,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * internally stored initial state up to the specified target date.
  * </p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public abstract class AbstractPropagator implements Propagator {
 

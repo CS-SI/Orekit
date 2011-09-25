@@ -39,7 +39,6 @@ import javax.swing.SpringLayout;
  * </pre>
  * </p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class AuthenticatorDialog extends Authenticator {
 

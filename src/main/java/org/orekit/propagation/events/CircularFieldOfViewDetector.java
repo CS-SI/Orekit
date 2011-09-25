@@ -32,7 +32,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see DihedralFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 public class CircularFieldOfViewDetector extends AbstractDetector {
 

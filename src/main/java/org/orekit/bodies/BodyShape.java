@@ -29,7 +29,6 @@ import org.orekit.time.AbsoluteDate;
  * <p>The shape is not provided as a single complete geometric
  * model, but single points can be queried ({@link #getIntersectionPoint}).</p>
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface BodyShape extends Serializable {
 

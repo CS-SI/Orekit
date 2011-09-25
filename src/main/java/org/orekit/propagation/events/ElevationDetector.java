@@ -30,7 +30,6 @@ import org.orekit.propagation.SpacecraftState;
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ElevationDetector extends AbstractDetector {
 

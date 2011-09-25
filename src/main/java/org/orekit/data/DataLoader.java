@@ -25,7 +25,6 @@ import org.orekit.errors.OrekitException;
 /** Interface for loading data files from {@link DataProvider data providers}.
  * @see DataProvider
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface DataLoader {
 

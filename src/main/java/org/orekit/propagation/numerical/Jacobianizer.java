@@ -35,7 +35,6 @@ import org.orekit.utils.PVCoordinates;
 /** Class enabling basic {@link ForceModel} instances
  *  to be used when processing spacecraft state partial derivatives.
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 class Jacobianizer implements AccelerationJacobiansProvider {
 

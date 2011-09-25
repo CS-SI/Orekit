@@ -21,7 +21,6 @@ import org.orekit.errors.OrekitException;
 /** Interface used to provide gravity field coefficients.
  * @see PotentialReaderFactory
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface PotentialCoefficientsProvider {
 

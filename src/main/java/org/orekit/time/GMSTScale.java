@@ -26,7 +26,6 @@ import org.orekit.utils.Constants;
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
- * @version $Revision$ $Date$
  * @since 5.1
  */
 public class GMSTScale implements TimeScale {

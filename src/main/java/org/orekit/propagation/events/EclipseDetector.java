@@ -33,7 +33,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class EclipseDetector extends AbstractDetector {
 

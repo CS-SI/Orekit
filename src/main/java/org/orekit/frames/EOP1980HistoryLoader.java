@@ -21,7 +21,6 @@ import org.orekit.errors.OrekitException;
 
 /** Interface for loading Earth Orientation Parameters 1980 history.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface EOP1980HistoryLoader extends DataLoader {
 

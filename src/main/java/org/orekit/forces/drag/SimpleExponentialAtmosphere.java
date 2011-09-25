@@ -32,7 +32,6 @@ import org.orekit.utils.PVCoordinates;
  * density and rigidly bound to the underlying rotating body.</p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class SimpleExponentialAtmosphere implements Atmosphere {
 

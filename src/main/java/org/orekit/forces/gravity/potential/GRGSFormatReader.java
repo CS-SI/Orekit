@@ -40,7 +40,6 @@ import org.orekit.errors.OrekitMessages;
  *
  * @see PotentialReaderFactory
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class GRGSFormatReader extends PotentialCoefficientsReader {
 

@@ -26,7 +26,6 @@ import org.orekit.time.TimeStamped;
 
 /** This class holds an Earth Orientation Parameters entry.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class EOPEntry implements TimeStamped, Serializable {
 

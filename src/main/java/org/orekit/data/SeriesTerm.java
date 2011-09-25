@@ -23,7 +23,6 @@ import org.apache.commons.math.util.FastMath;
 /** Base class for nutation series terms.
  * @author Luc Maisonobe
  * @see PoissonSeries
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public abstract class SeriesTerm implements Serializable {
 

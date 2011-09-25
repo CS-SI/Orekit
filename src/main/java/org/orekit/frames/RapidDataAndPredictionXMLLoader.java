@@ -47,7 +47,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * <p>Files containing data (back to 1973) are available at IERS web site: <a
  * href="http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html">Earth orientation data</a>.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
