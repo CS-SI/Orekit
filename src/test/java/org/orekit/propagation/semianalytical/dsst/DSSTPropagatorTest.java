@@ -36,6 +36,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
@@ -124,9 +125,9 @@ public class DSSTPropagatorTest {
         final AbsoluteDate stopDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(stopDate) {
             private static final long serialVersionUID = -5024861864672841095L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public EventDetector.Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
-                return STOP;
+                return EventDetector.Action.STOP;
             }
             public SpacecraftState resetState(SpacecraftState oldState) {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
@@ -143,9 +144,9 @@ public class DSSTPropagatorTest {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 6453983658076746705L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public EventDetector.Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
-                return RESET_STATE;
+                return EventDetector.Action.RESET_STATE;
             }
             public SpacecraftState resetState(SpacecraftState oldState) {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
@@ -162,9 +163,9 @@ public class DSSTPropagatorTest {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 5959523015368708867L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public EventDetector.Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
-                return CONTINUE;
+                return EventDetector.Action.CONTINUE;
             }
         });
         final double dt = 3200;

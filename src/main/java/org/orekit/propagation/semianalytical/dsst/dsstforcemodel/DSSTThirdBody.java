@@ -1,13 +1,12 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
-import org.orekit.orbits.Orbit;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 public class DSSTThirdBody implements DSSTForceModel {
 
     @Override
-    public double[] getMeanElementRate(AbsoluteDate date,
-                                       double[] currentState) {
+    public double[] getMeanElementRate(SpacecraftState currentState) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -20,8 +19,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     }
 
     @Override
-    public void init(Orbit initialState,
-                     AbsoluteDate referenceDate) {
+    public void init(SpacecraftState state) {
         // TODO Auto-generated method stub
 
     }
