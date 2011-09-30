@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -48,20 +49,22 @@ public class HarrisPriesterTest {
     // Time Scale
     private TimeScale utc;
 
+    // Date
+    private AbsoluteDate date;
+
     @Test
     public void testStandard() throws OrekitException {
 
         HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
-        
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
-                                             TimeComponents.H00, utc);
-        // Position
-        Vector3D pos = new Vector3D(7000000.0, 0.0, 0.0);
+
+        // Position at 500 km height
+        GeodeticPoint point = new GeodeticPoint(0, 0, 500000.);
+        Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        double rho = hp.getDensity(date, pos, FramesFactory.getEME2000());
+        double rho = hp.getDensity(date, pos, itrf);
 
-        Assert.assertEquals(3.42e-13, rho, 1.0e-15);
+        Assert.assertEquals(3.9236341626253185E-13, rho, 0.0);
 
     }
 
@@ -70,28 +73,27 @@ public class HarrisPriesterTest {
 
         HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
 
-        hp.setN(2);
-        
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
-                                             TimeComponents.H00, utc);
-        // Position
-        Vector3D pos = new Vector3D(7000000.0, 0.0, 0.0);
+        // Position at 500 km height
+        final GeodeticPoint point = new GeodeticPoint(0, 0, 500000.);
+        final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        double rho2 = hp.getDensity(date, pos, FramesFactory.getEME2000());
+        final double rho4 = hp.getDensity(date, pos, itrf);
+
+
+        hp.setN(2);
+
+        // COMPUTE DENSITY KG/M3 RHO
+        final double rho2 = hp.getDensity(date, pos, itrf);
 
         hp.setN(6);
-        
-        date = new AbsoluteDate(new DateComponents(2003, 01, 01),
-                                             TimeComponents.H00, utc);
-        // Position
-        pos = new Vector3D(7000000.0, 0.0, 0.0);
 
         // COMPUTE DENSITY KG/M3 RHO
-        double rho6 = hp.getDensity(date, pos, FramesFactory.getEME2000());
+        double rho6 = hp.getDensity(date, pos, itrf);
 
-        Assert.assertEquals(4.13e-13, rho2, 1.0e-15);
-        Assert.assertEquals(2.86e-13, rho6, 1.0e-15);
+        final double c2Psi2 = 2.150731005787848e-2;
+        
+        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho4-rho2) - 1., 1.e-15);
 
     }
 
@@ -100,13 +102,12 @@ public class HarrisPriesterTest {
 
         HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
         
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
-                                             TimeComponents.H00, utc);
-        // Position
-        Vector3D pos = new Vector3D(7500000.0, 0.0, 0.0);
+        // Position at 1500 km height
+        final GeodeticPoint point = new GeodeticPoint(0, 0, 1500000.);
+        final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        double rho = hp.getDensity(date, pos, FramesFactory.getEME2000());
+        final double rho = hp.getDensity(date, pos, itrf);
 
         Assert.assertEquals(0.0, rho, 0.0);
     }
@@ -180,15 +181,15 @@ public class HarrisPriesterTest {
         HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
         hp.setTabDensity(userTab);
         
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
-                                             TimeComponents.H00, utc);
-        // Position
-        Vector3D pos = new Vector3D(7500000.0, 0.0, 0.0);
+        // Position at 1500 km height
+        final GeodeticPoint point = new GeodeticPoint(0, 0, 1500000.);
+        final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        double rho = hp.getDensity(date, pos, FramesFactory.getEME2000());
+        final double rho = hp.getDensity(date, pos, itrf);
 
-        Assert.assertEquals(4.6e-6, rho, 2.0e-8);
+        Assert.assertEquals(2.9049031824908125E-7, rho, 0.0);
+
     }
 
     @Test(expected=OrekitException.class)
@@ -196,23 +197,26 @@ public class HarrisPriesterTest {
 
         HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
         
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 01, 01),
-                                             TimeComponents.H00, utc);
-        // Position
-        Vector3D pos = new Vector3D(6400000.0, 0.0, 0.0);
+        // Position at 50 km height
+        final GeodeticPoint point = new GeodeticPoint(0, 0, 50000.);
+        final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        hp.getDensity(date, pos, FramesFactory.getEME2000());
+        hp.getDensity(date, pos, itrf);
     }
 
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
-        sun   = CelestialBodyFactory.getSun();
+        sun = CelestialBodyFactory.getSun();
+
         itrf  = FramesFactory.getITRF2005(true);
         earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
-        earth.setAngularThreshold(1.e-4);
-        utc   = TimeScalesFactory.getUTC();
+        earth.setAngularThreshold(1.e-10);
+
+        // Equinoxe 21 mars 2003 à 1h00m
+        utc  = TimeScalesFactory.getUTC();
+        date = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), utc);
     }
 
     @After

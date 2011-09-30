@@ -209,12 +209,14 @@ public class HarrisPriester implements Atmosphere {
                                            cosDec * FastMath.sin(sunRAsc + LAG),
                                            FastMath.sin(sunDecl));
 
-        // Cosine of half angle between the diurnal bulge apex and the satellite
-        double cosPsi2 = (0.5 + 0.5 * dDBA.normalize().dotProduct(satPos.normalize()));
+        // Cosine of angle Psi between the diurnal bulge apex and the satellite
+        double cosPsi = dDBA.normalize().dotProduct(satPos.normalize());
+        // (1 + cos(Psi))/2 = cos2(Psi/2)
+        double c2Psi2 = 0.5 + 0.5 * cosPsi;
 
         // Search altitude index in density table
         int ia = 0;
-        while (ia < tabAltRho.length-1 && satAlt > tabAltRho[ia][0]) {  
+        while (ia < tabAltRho.length-2 && satAlt > tabAltRho[ia][0]) {  
             ia++ ;
         }
 
@@ -225,7 +227,7 @@ public class HarrisPriester implements Atmosphere {
         double rhoMin = tabAltRho[ia][1] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMin);
         double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMax);
 
-        return rhoMin + (rhoMax - rhoMin) * FastMath.pow(cosPsi2, n/2);
+        return rhoMin + (rhoMax - rhoMin) * FastMath.pow(c2Psi2, n/2);
     }
 
     /** Get the local density.
