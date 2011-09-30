@@ -123,9 +123,9 @@ public class OneAxisEllipsoid implements BodyShape {
      * stop the iterations in the {@link #transform(Vector3D, Frame,
      * AbsoluteDate)} method.
      * It applies directly to the latitude. When convergence is reached,
-     * the real latitude is guaranteed to be between &phi; - &delta;&phi/2
-     * and &phi; + &delta;&phi/2 where &phi; is the computed latitude
-     * and &delta;&phi is the angular threshold set by this method.</p>
+     * the real latitude is guaranteed to be between &phi; - &delta;&phi;/2
+     * and &phi; + &delta;&phi;/2 where &phi; is the computed latitude
+     * and &delta;&phi; is the angular threshold set by this method.</p>
      * <p>If this method is not called, the default value is set to
      * 10<sup>-14</sup>.</p>
      * @param angularThreshold angular convergence threshold (rad)
