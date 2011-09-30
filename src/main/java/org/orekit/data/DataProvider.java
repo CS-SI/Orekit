@@ -40,7 +40,6 @@ import org.orekit.errors.OrekitException;
  * @see DataLoader
  * @see DataProvidersManager
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface DataProvider extends Serializable {
 

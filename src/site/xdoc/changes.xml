@@ -22,6 +22,15 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update">
+        Changed the return value of eventOccurred method from an int to an enumerate.
+      </action>
+      <action dev="pascal" type="fix">
+        Fixed frame for TLEPropagator (fixes bug #31).
+      </action>
+      <action dev="luc" type="add">
+        Added getters/setters for impulse maneuvers.
+      </action>
       <action dev="luc" type="add">
         Added getters/setters for attitude provider in all orbit propagators.
       </action>

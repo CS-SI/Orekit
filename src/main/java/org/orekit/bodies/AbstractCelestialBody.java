@@ -37,7 +37,6 @@ import org.orekit.utils.PVCoordinates;
  * </p>
  * @see IAUPole
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public abstract class AbstractCelestialBody implements CelestialBody {
 

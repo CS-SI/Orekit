@@ -26,7 +26,6 @@ import org.orekit.time.AbsoluteDate;
 
 /** Common interface for all propagator mode handlers initialization.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface ModeHandler {
 

@@ -34,7 +34,6 @@ import org.orekit.propagation.SpacecraftState;
  * @author &Eacute;douard Delente
  * @author Fabien Maussion
  * @author Pascal Parraud
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 

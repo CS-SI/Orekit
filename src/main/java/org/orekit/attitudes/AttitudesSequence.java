@@ -44,7 +44,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * addition to the nominal switches that correspond to proper operations. Another example
  * is handling of maneuver mode.<p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @since 5.1
  */
 public class AttitudesSequence implements AttitudeProvider {
@@ -189,7 +188,7 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
 
             if ((increasing && switchOnIncrease) || (!increasing && switchOnDecrease)) {

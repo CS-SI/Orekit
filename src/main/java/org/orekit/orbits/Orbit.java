@@ -21,7 +21,7 @@ import java.io.Serializable;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.linear.DecompositionSolver;
 import org.apache.commons.math.linear.MatrixUtils;
-import org.apache.commons.math.linear.QRDecompositionImpl;
+import org.apache.commons.math.linear.QRDecomposition;
 import org.apache.commons.math.linear.RealMatrix;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -62,7 +62,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesProvider {
 
@@ -425,7 +424,7 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
 
         // invert the direct Jacobian
         final RealMatrix matrix = MatrixUtils.createRealMatrix(directJacobian);
-        final DecompositionSolver solver = new QRDecompositionImpl(matrix).getSolver();
+        final DecompositionSolver solver = new QRDecomposition(matrix).getSolver();
         return solver.getInverse().getData();
 
     }

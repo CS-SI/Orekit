@@ -56,7 +56,6 @@ import org.orekit.utils.PVCoordinates;
  * during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ImpulseManeuver implements EventDetector {
 
@@ -100,10 +99,10 @@ public class ImpulseManeuver implements EventDetector {
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
         // filter underlying event
-        return (trigger.eventOccurred(s, increasing) == STOP) ? RESET_STATE : CONTINUE;
+        return (trigger.eventOccurred(s, increasing) == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
     }
 
     /** {@inheritDoc} */
@@ -137,6 +136,27 @@ public class ImpulseManeuver implements EventDetector {
         return new SpacecraftState(new EquinoctialOrbit(newPV, eme2000, date, oldState.getMu()),
                                    attitude, newMass);
 
+    }
+
+    /** Get the triggering event.
+     * @return triggering event
+     */
+    public EventDetector getTrigger() {
+        return trigger;
+    }
+
+    /** Get the velocity increment in satellite frame.
+    * @return velocity increment in satellite frame
+    */
+    public Vector3D getDeltaVSat() {
+        return deltaVSat;
+    }
+
+    /** Get the specific impulse.
+    * @return specific impulse
+    */
+    public double getIsp() {
+        return vExhaust / ConstantThrustManeuver.G0;
     }
 
 }

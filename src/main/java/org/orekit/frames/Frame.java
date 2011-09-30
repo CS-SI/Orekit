@@ -52,7 +52,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Guylaine Prat
  * @author Luc Maisonobe
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class Frame implements Serializable {
 

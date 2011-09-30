@@ -50,7 +50,6 @@ import org.orekit.utils.PVCoordinates;
  * <code>unx[mp]####.ddd.gz</code> for gzip-compressed files) where # stands for a
  * digit character and where ddd is an ephemeris type (typically 405 or 406).</p>
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class JPLEphemeridesLoader implements CelestialBodyLoader {
 

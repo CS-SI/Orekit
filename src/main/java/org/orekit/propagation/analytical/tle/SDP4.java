@@ -34,7 +34,6 @@ import org.orekit.utils.Constants;
  * @author Felix R. Hoots, Ronald L. Roehrich, December 1980 (original fortran)
  * @author David A. Vallado, Paul Crawford, Richard Hujsak, T.S. Kelso (C++ translation and improvements)
  * @author Fabien Maussion (java translation)
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 abstract class SDP4  extends TLEPropagator {
 

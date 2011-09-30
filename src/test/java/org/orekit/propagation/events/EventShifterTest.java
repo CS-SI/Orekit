@@ -198,10 +198,10 @@ public class EventShifterTest {
                                    CelestialBodyFactory.getSun(), sunRadius,
                                    CelestialBodyFactory.getEarth(), earthRadius) {
             private static final long serialVersionUID = 1L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 log.add(new EventEntry(s.getDate().durationFrom(iniDate), tolerance,
                                        increasing ? nameIncreasing : nameDecreasing));
-                return CONTINUE;
+                return Action.CONTINUE;
             }
         };
     }

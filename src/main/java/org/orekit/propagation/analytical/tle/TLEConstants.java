@@ -22,7 +22,6 @@ package org.orekit.propagation.analytical.tle;
  * This constants are used in the WGS-72 model, compliant with NORAD implementations.
  *
  * @author Fabien Maussion
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 interface TLEConstants {
 

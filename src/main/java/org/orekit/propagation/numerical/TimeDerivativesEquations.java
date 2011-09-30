@@ -39,7 +39,6 @@ import org.orekit.orbits.Orbit;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 public interface TimeDerivativesEquations extends Serializable {
 

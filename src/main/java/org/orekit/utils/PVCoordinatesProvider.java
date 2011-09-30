@@ -24,7 +24,6 @@ import org.orekit.time.AbsoluteDate;
 /**
 ** Interface for PV coordinates providers.
  * @author Veronique Pommier
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  * <p>The PV coordinates provider interface can be used by any class used for position/velocity
  * computation, for example celestial bodies or spacecraft position/velocity propagators,
  * and many others...

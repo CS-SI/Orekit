@@ -25,7 +25,6 @@ import org.orekit.frames.EOPHistory;
  * Parameters published by IERS.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
- * @version $Revision$ $Date$
  * @since 5.1
  */
 public class UT1Scale implements TimeScale {

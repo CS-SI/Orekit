@@ -30,7 +30,6 @@ import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class PVCoordinates implements Serializable {
 

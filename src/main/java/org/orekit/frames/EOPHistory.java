@@ -21,7 +21,6 @@ import org.orekit.time.TimeStamped;
 
 /** Interface for retrieving Earth Orientation Parameters history throughout a large time range.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface EOPHistory extends Iterable<TimeStamped> {
 

@@ -37,7 +37,6 @@ import org.orekit.time.AbsoluteDate;
  *</p>
  *
  * @author Fabien Maussion
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface DTM2000InputParameters extends Serializable {
 

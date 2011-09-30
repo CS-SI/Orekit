@@ -21,7 +21,6 @@ import org.apache.commons.math.util.MathUtils;
 /** Set of useful physical constants.
 
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface Constants {
 

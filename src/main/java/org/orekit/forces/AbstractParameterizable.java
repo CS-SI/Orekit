@@ -25,7 +25,6 @@ import org.orekit.errors.OrekitMessages;
 /** Simple abstract class providing boilerplate parameters list.
  *
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 
 public abstract class AbstractParameterizable implements Parameterizable {

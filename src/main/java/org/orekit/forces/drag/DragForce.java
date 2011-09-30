@@ -35,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
  *
  * The drag acceleration is computed as follows :
  *
- * &gamma = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
+ * &gamma; = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
  *
  * With DragCoefVector = {Cx, Cy, Cz} and S given by the user through the interface
  * {@link DragSensitive}
@@ -44,7 +44,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 
 public class DragForce implements ForceModel, Parameterizable {

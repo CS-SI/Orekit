@@ -19,7 +19,6 @@ package org.orekit.frames;
 
 /** This class holds Earth Orientation Parameters (IAU2000) data throughout a large time range.
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class EOP2000History extends AbstractEOPHistory {
 

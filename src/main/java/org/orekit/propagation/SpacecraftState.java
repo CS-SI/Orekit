@@ -54,7 +54,6 @@ import org.orekit.utils.PVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class SpacecraftState implements TimeStamped, Serializable {
 

@@ -26,7 +26,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for dates support.
  * <p>This tutorial shows basic date usage.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class Time1 {
 

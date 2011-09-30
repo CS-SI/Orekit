@@ -40,7 +40,6 @@ import org.orekit.time.TimeStamped;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class DateDetector extends AbstractDetector implements TimeStamped {
 
@@ -105,9 +104,9 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
      * @return {@link #STOP}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
-        return STOP;
+        return Action.STOP;
     }
 
     /** Compute the value of the switching function.

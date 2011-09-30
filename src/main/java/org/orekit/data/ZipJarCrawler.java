@@ -56,7 +56,6 @@ import org.orekit.errors.OrekitException;
  * </p>
  * @see DataProvidersManager
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ZipJarCrawler implements DataProvider {
 

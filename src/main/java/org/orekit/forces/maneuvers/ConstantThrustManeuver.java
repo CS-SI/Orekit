@@ -36,7 +36,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class ConstantThrustManeuver extends AbstractParameterizable implements ForceModel {
 
@@ -177,10 +176,10 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
             // start the maneuver
             firing = true;
-            return RESET_DERIVATIVES;
+            return Action.RESET_DERIVATIVES;
         }
 
     }
@@ -197,10 +196,10 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
             // stop the maneuver
             firing = false;
-            return RESET_DERIVATIVES;
+            return Action.RESET_DERIVATIVES;
         }
 
     }

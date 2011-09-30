@@ -23,7 +23,6 @@ package org.orekit.time;
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
- * @version $Revision$ $Date$
  */
 public class TCBScale implements TimeScale {
 

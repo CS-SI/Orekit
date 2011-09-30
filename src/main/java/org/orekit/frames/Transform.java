@@ -76,7 +76,6 @@ import org.orekit.utils.PVCoordinates;
  *
  * @author Luc Maisonobe
  * @author Fabien Maussion
- * @version $Revision$ $Date$
  */
 public class Transform implements Serializable {
 

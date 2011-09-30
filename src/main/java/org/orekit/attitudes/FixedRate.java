@@ -29,7 +29,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * specified as a simple {@link Attitude reference attitude}.</p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class FixedRate implements AttitudeProvider {
 

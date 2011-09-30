@@ -21,7 +21,6 @@ import java.io.Serializable;
 /** Simple container class for nutation correction (IAU 1980) parameters.
  * <p>This class is a simple container, it does not provide any processing method.</p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class NutationCorrection implements Serializable {
 

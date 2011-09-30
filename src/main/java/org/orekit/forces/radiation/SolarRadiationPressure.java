@@ -38,7 +38,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author &Eacute;douard Delente
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class SolarRadiationPressure extends AbstractParameterizable implements ForceModel, AccelerationJacobiansProvider {
 
@@ -301,8 +300,8 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-            return RESET_DERIVATIVES;
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+            return Action.RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
@@ -338,8 +337,8 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-            return RESET_DERIVATIVES;
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+            return Action.RESET_DERIVATIVES;
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and

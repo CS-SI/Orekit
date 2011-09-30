@@ -24,7 +24,6 @@ import org.orekit.data.DataProvidersManager;
 
 /** Utility class for configuring the library for tutorials runs.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class Autoconfiguration {
 

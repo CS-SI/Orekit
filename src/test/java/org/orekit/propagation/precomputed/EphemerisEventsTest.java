@@ -73,13 +73,13 @@ public class EphemerisEventsTest {
                                                   CelestialBodyFactory.getSun(), sunRadius,
                                                   CelestialBodyFactory.getEarth(), earthRadius) {
             private static final long serialVersionUID = 1L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 if (increasing) {
                     ++inEclipsecounter;
                 } else {
                     ++outEclipsecounter;
                 }
-                return CONTINUE;
+                return Action.CONTINUE;
             }
         };
 

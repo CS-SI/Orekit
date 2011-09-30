@@ -24,7 +24,6 @@ import org.orekit.time.AbsoluteDate;
  * <p>The various realizations of ITRS are linked together by {@link HelmertTransformation
  * Helmert transformations}.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 class DerivedITRSRealizationFrame extends FactoryManagedFrame {
 

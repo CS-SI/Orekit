@@ -21,7 +21,6 @@ import org.orekit.errors.OrekitException;
 
 /** Interface for loading celestial bodies.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface CelestialBodyLoader extends DataLoader {
 

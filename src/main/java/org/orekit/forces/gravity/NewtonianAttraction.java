@@ -28,7 +28,6 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class NewtonianAttraction extends AbstractParameterizable implements AccelerationJacobiansProvider, ForceModel {
 

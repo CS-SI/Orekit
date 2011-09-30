@@ -157,9 +157,9 @@ public class EventsLoggerTest {
         return new EclipseDetector(60., 1.e-3, CelestialBodyFactory.getSun(), 696000000,
                                    CelestialBodyFactory.getEarth(), 6400000, totalEclipse) {
             private static final long serialVersionUID = 1L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 ++count;
-                return CONTINUE;
+                return Action.CONTINUE;
             }
         };
     }

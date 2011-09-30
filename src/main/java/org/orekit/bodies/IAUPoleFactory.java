@@ -30,7 +30,6 @@ import org.orekit.utils.Constants;
  * around 2005.
  *</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @since 5.1
  */
 class IAUPoleFactory {

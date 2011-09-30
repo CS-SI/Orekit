@@ -29,7 +29,6 @@ import java.io.Serializable;
 * @see NumericalPropagator
 * @see AdditionalEquations
 * @author Luc Maisonobe
-* @version $Revision: 3409 $ $Date: 2010-06-10 15:42:04 +0200 (jeu., 10 juin 2010) $
 */
 public class AdditionalStateData implements Serializable {
 

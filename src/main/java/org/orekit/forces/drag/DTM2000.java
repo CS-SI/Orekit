@@ -93,7 +93,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  *
  * @author R. Biancale, S. Bruinsma: original fortran routine
  * @author Fabien Maussion (java translation)
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class DTM2000 implements Atmosphere {
 

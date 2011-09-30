@@ -28,7 +28,6 @@ import org.orekit.utils.Constants;
  * @see DateComponents
  * @see TimeComponents
  * @author Luc Maisonobe
- * @version  $Revision$ $Date$
  */
 public class DateTimeComponents implements Serializable, Comparable<DateTimeComponents> {
 

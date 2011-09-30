@@ -29,7 +29,6 @@ import org.orekit.errors.OrekitMessages;
  * @author Fabien Maussion
  * @author Pascal Parraud
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class GravityFieldFactory {
 

@@ -61,7 +61,6 @@ import org.orekit.errors.OrekitMessages;
  * </p>
  *
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @see DirectoryCrawler
  * @see ClasspathCrawler
  */

@@ -26,7 +26,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Spacecraft frame.
  * <p>Frame associated to a satellite body, taking into account orbit and attitude.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
 

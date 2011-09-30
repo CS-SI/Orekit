@@ -53,7 +53,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class CelestialBodyPointed implements AttitudeProvider {
 

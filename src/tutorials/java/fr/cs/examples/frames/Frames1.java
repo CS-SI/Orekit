@@ -46,7 +46,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for basic frames support.
  * <p>This tutorial shows a simple usage of frames and transforms.</p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class Frames1 {
 

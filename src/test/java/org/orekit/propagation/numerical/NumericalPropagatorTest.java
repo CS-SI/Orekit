@@ -279,9 +279,9 @@ public class NumericalPropagatorTest {
         final AbsoluteDate stopDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(stopDate) {
             private static final long serialVersionUID = -5024861864672841095L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
-                return STOP;
+                return Action.STOP;
             }
             public SpacecraftState resetState(SpacecraftState oldState) {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
@@ -298,9 +298,9 @@ public class NumericalPropagatorTest {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 6453983658076746705L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
-                return RESET_STATE;
+                return Action.RESET_STATE;
             }
             public SpacecraftState resetState(SpacecraftState oldState) {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
@@ -317,9 +317,9 @@ public class NumericalPropagatorTest {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 4217482936692909475L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
-                return RESET_DERIVATIVES;
+                return Action.RESET_DERIVATIVES;
             }
         });
         final double dt = 3200;
@@ -341,9 +341,9 @@ public class NumericalPropagatorTest {
         final AbsoluteDate resetDate = initDate.shiftedBy(1000);
         propagator.addEventDetector(new DateDetector(resetDate) {
             private static final long serialVersionUID = 5959523015368708867L;
-            public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
                 setGotHere(true);
-                return CONTINUE;
+                return Action.CONTINUE;
             }
         });
         final double dt = 3200;

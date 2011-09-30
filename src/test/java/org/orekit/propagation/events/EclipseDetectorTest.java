@@ -51,8 +51,8 @@ public class EclipseDetectorTest {
                 CelestialBodyFactory.getSun(), sunRadius,
                 CelestialBodyFactory.getEarth(), earthRadius) {
             private static final long serialVersionUID = 1L;
-			public int eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-		        return increasing ? CONTINUE : STOP;
+			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+		        return increasing ? Action.CONTINUE : Action.STOP;
             }
         });
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));

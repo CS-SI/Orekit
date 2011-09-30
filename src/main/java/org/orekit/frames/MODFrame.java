@@ -27,7 +27,6 @@ import org.orekit.utils.Constants;
  * <p>Its parent frame is the GCRF frame.<p>
  * <p>It is sometimes called Mean of Date (MoD) frame.<p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 class MODFrame extends FactoryManagedFrame {
 

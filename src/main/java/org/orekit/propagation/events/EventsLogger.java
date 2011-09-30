@@ -177,7 +177,7 @@ public class EventsLogger implements Serializable {
         }
 
         /** {@inheritDoc} */
-        public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
             log.add(new LoggedEvent(detector, s, increasing));
             return detector.eventOccurred(s, increasing);

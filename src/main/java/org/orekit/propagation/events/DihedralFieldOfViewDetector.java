@@ -33,7 +33,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see CircularFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision: 2761 $ $Date: 2009-04-28 17:49:07 +0200 (mar., 28 avr. 2009) $
  */
 public class DihedralFieldOfViewDetector extends AbstractDetector {
 
@@ -144,9 +143,9 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
      * or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
-        return increasing ? CONTINUE : STOP;
+        return increasing ? Action.CONTINUE : Action.STOP;
     }
 
     /** {@inheritDoc}

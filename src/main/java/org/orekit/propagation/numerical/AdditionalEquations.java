@@ -59,7 +59,6 @@ import org.orekit.propagation.SpacecraftState;
  * @see NumericalPropagator
  * @see org.orekit.propagation.AdditionalStateProvider
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface AdditionalEquations extends Serializable {
 

@@ -38,7 +38,6 @@ import org.orekit.errors.OrekitException;
  * <p>The position of the bodies provided by this class are interpolated using
  * the JPL DE 405/DE 406 ephemerides.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  * @deprecated since 4.2 replaced by {@link CelestialBodyFactory}
  */
 @Deprecated

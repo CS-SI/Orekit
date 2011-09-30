@@ -26,7 +26,6 @@ import org.orekit.utils.Constants;
  * using Lieske precession-nutation model for Earth. This frame has been superseded
  * by GCRF which is implicitly defined from a few hundred quasars coordinates.<p>
  * <p>The transformation between GCRF and EME2000 is a constant rotation bias.</p>
- * @version $Revision$ $Date$
  * @author Luc Maisonobe
  */
 class EME2000Frame extends FactoryManagedFrame {

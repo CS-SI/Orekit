@@ -74,9 +74,9 @@ public class DetectorTest {
             this.stepSize = stepSize;
         }
 
-        public int eventOccurred(SpacecraftState s, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, boolean increasing) {
             triggerDate = s.getDate();
-            return CONTINUE;
+            return Action.CONTINUE;
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {

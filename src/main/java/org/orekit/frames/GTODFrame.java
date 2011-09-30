@@ -33,7 +33,6 @@ import org.orekit.utils.Constants;
  * <p> The pole motion is not applied here.</p>
  * @author Pascal Parraud
  * @author Thierry Ceolin
- * @version $Revision$ $Date$
  */
 class GTODFrame extends FactoryManagedFrame {
 

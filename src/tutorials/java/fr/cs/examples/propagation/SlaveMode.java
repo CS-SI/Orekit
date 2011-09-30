@@ -35,7 +35,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for slave mode propagation.
  * <p>This tutorial shows a basic usage of the slave mode in which the user drives all propagation steps.<p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class SlaveMode {
 

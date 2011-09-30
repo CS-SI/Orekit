@@ -33,7 +33,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class EclipseDetector extends AbstractDetector {
 
@@ -252,9 +251,9 @@ public class EclipseDetector extends AbstractDetector {
      * @return {@link #STOP} or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
-        return increasing ? STOP : CONTINUE;
+        return increasing ? Action.STOP : Action.CONTINUE;
     }
 
     /** Compute the value of the switching function.

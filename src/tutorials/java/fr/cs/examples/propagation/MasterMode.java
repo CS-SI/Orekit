@@ -41,7 +41,6 @@ import fr.cs.examples.Autoconfiguration;
  * internal mechanic of the propagation and just fulfills the user main needs.<p>
  * @author Fabien Maussion
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class MasterMode {
 

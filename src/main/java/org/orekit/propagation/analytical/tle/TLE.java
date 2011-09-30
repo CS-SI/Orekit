@@ -48,7 +48,6 @@ import org.orekit.utils.Constants;
  * <a href="http://www.celestrak.com/">CelesTrak website.</a></p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class TLE implements TimeStamped, Serializable {
 

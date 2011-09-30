@@ -26,7 +26,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Luc Maisonobe
  * @see CelestialBodyFactory
  * @see IAUPole
- * @version $Revision$ $Date$
  */
 public interface CelestialBody extends Serializable, PVCoordinatesProvider {
 

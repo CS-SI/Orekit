@@ -41,7 +41,6 @@ import org.orekit.utils.Constants;
  * so there is no public constructor.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public class UTCScale implements TimeScale {
 

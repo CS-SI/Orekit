@@ -22,7 +22,6 @@ import org.orekit.data.DataLoader;
 
 /** Interface for loading UTC-TAI offsets data files.
  * @author Pascal Parraud
- * @version $Revision:1665 $ $Date:2008-06-11 12:12:59 +0200 (mer., 11 juin 2008) $
  */
 public interface UTCTAILoader extends DataLoader {
 

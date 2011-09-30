@@ -112,7 +112,7 @@ public class CircularFieldOfViewDetectorTest {
             super(maxCheck, pvTarget, center, aperture);
         }
 
-        public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
             if (increasing) {
                 // System.err.println(" Sun visibility starts " + s.getDate());
@@ -120,14 +120,14 @@ public class CircularFieldOfViewDetectorTest {
                                                             new TimeComponents(0, 11 , 7.820),
                                                             TimeScalesFactory.getUTC());
               Assert.assertTrue(s.getDate().durationFrom(startVisiDate) <= 1);
-                return CONTINUE;
+                return Action.CONTINUE;
             } else {
                 // System.err.println(" Sun visibility ends at " + s.getDate());
                 AbsoluteDate endVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
                                                             new TimeComponents(0, 25 , 18.224),
                                                             TimeScalesFactory.getUTC());
                 Assert.assertTrue(s.getDate().durationFrom(endVisiDate) <= 1);
-                return CONTINUE;//STOP;
+                return Action.CONTINUE;//STOP;
             }
         }
 

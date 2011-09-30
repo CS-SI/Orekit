@@ -59,7 +59,6 @@ import org.orekit.errors.OrekitMessages;
  * </p>
  * @see DataProvidersManager
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class ClasspathCrawler implements DataProvider {
 

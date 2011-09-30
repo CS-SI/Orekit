@@ -31,7 +31,6 @@ import org.orekit.utils.Constants;
 /** Terrestrial Intermediate Reference Frame 2000.
  * <p> The pole motion is not considered : Pseudo Earth Fixed Frame. It handles
  * the earth rotation angle, its parent frame is the {@link CIRF2000Frame}</p>
- * @version $Revision$ $Date$
  */
 class TIRF2000Frame extends FactoryManagedFrame {
 

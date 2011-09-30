@@ -33,7 +33,6 @@ import org.orekit.time.AbsoluteDate;
 /** Adapt an {@link org.orekit.propagation.events.EventDetector}
  * to commons-math {@link org.apache.commons.math.ode.events.EventHandler} interface.
  * @author Fabien Maussion
- * @version $Revision$ $Date$
  */
 public class AdaptedEventDetector implements EventHandler, Serializable {
 
@@ -110,21 +109,21 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
     }
 
     /** {@inheritDoc} */
-    public int eventOccurred(final double t, final double[] y, final boolean increasing) {
+    public Action eventOccurred(final double t, final double[] y, final boolean increasing) {
         try {
 
             final SpacecraftState state = mapArrayToState(t, y);
-            final int whatNext = detector.eventOccurred(state, increasing);
+            final EventDetector.Action whatNext = detector.eventOccurred(state, increasing);
 
             switch (whatNext) {
-            case EventDetector.STOP :
-                return STOP;
-            case EventDetector.RESET_STATE :
-                return RESET_STATE;
-            case EventDetector.RESET_DERIVATIVES :
-                return RESET_DERIVATIVES;
+            case STOP :
+                return Action.STOP;
+            case RESET_STATE :
+                return Action.RESET_STATE;
+            case RESET_DERIVATIVES :
+                return Action.RESET_DERIVATIVES;
             default :
-                return CONTINUE;
+                return Action.CONTINUE;
             }
         } catch (OrekitException oe) {
             throw new OrekitExceptionWrapper(oe);

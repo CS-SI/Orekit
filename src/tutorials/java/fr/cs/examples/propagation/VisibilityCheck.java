@@ -42,7 +42,6 @@ import fr.cs.examples.Autoconfiguration;
 /** Orekit tutorial for special event detection.
  * <p>This tutorial shows how to easily check for visibility between a satellite and a ground station.<p>
  * @author Pascal Parraud
- * @version $Revision: 2043 $ $Date: 2008-09-24 10:57:23 +0200 (mer., 24 sept. 2008) $
  */
 public class VisibilityCheck {
 
@@ -110,16 +109,16 @@ public class VisibilityCheck {
             super(maxCheck, elevation, topo);
         }
 
-        public int eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
             if (increasing) {
                 System.out.println(" Visibility on " + getTopocentricFrame().getName()
                                                      + " begins at " + s.getDate());
-                return CONTINUE;
+                return Action.CONTINUE;
             } else {
                 System.out.println(" Visibility on " + getTopocentricFrame().getName()
                                                      + " ends at " + s.getDate());
-                return CONTINUE;//STOP;
+                return Action.CONTINUE;//STOP;
             }
         }
 

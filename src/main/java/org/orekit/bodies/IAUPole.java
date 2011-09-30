@@ -38,7 +38,6 @@ import org.orekit.time.AbsoluteDate;
  * </p>
  * @see CelestialBodyFactory
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface IAUPole extends Serializable {
 

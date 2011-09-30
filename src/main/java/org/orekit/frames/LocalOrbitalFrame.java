@@ -24,7 +24,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>There are several local orbital frames available. They are specified
  * by the {@link LOFType} enumerate.</p>
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class LocalOrbitalFrame extends Frame {
 

@@ -147,7 +147,6 @@ import org.orekit.utils.PVCoordinates;
  * @author Guylaine Prat
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
- * @version $Revision$ $Date$
  */
 public class NumericalPropagator implements Propagator {
 

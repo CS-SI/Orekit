@@ -546,8 +546,8 @@ public class EcksteinHechlerPropagatorTest {
             new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
         propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()) {
             private static final long serialVersionUID = 8805264185199866748L;
-            public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-                return CONTINUE;
+            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+                return Action.CONTINUE;
             }
         });
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);

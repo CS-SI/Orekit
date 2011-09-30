@@ -28,7 +28,6 @@ import org.orekit.utils.Constants;
  * Earth orientation. It is a java translation of the fortran subroutine
  * found at ftp://tai.bipm.org/iers/conv2003/chapter8/ortho_eop.f.</p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public class TidalCorrection implements Serializable {
 

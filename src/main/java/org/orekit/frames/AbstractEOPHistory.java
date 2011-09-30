@@ -30,7 +30,6 @@ import org.orekit.time.TimeStamped;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
 

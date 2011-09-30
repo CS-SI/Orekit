@@ -22,7 +22,6 @@ import org.orekit.propagation.SpacecraftState;
 /** Common parts shared by several orbital events finders.
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public abstract class AbstractDetector implements EventDetector {
 
@@ -51,7 +50,7 @@ public abstract class AbstractDetector implements EventDetector {
     }
 
     /** {@inheritDoc} */
-    public abstract int eventOccurred(SpacecraftState s, boolean increasing)
+    public abstract Action eventOccurred(SpacecraftState s, boolean increasing)
         throws OrekitException;
 
     /** {@inheritDoc} */

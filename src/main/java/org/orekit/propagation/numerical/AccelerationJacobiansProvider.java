@@ -24,7 +24,6 @@ import org.orekit.propagation.SpacecraftState;
  * Interface for computing acceleration jacobians, for the sake of {@link PartialDerivativesEquations
  * partial derivatives equations}.
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public interface AccelerationJacobiansProvider extends Parameterizable {
 

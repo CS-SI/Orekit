@@ -22,7 +22,6 @@ import org.orekit.errors.OrekitException;
 
 
 /** Base class for the predefined frames that are managed by {@link FramesFactory}.
- * @version $Revision$ $Date$
  * @author Luc Maisonobe
  */
 public class FactoryManagedFrame extends Frame {

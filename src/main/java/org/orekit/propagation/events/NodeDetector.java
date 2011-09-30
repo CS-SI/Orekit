@@ -38,7 +38,6 @@ import org.orekit.propagation.SpacecraftState;
  * encountered during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
- * @version $Revision$ $Date$
  */
 public class NodeDetector extends AbstractDetector {
 
@@ -93,9 +92,9 @@ public class NodeDetector extends AbstractDetector {
      * @return {@link #STOP} or {@link #CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
-    public int eventOccurred(final SpacecraftState s, final boolean increasing)
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
-        return increasing ? STOP : CONTINUE;
+        return increasing ? Action.STOP : Action.CONTINUE;
     }
 
     /** Compute the value of the switching function.

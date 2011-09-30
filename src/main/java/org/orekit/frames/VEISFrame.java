@@ -29,7 +29,6 @@ import org.orekit.utils.Constants;
  * <p>Its parent frame is the {@link GTODFrame} without EOP correction application.<p>
  * <p>This frame is mainly provided for consistency with legacy softwares.</p>
  * @author Pascal Parraud
- * @version $Revision$ $Date$
  */
 class VEISFrame extends FactoryManagedFrame {
 
