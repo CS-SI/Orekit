@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="pascal" type="add">
+        Added Harris-Priester atmosphere model.
+      </action>
       <action dev="luc" type="update">
         Changed the return value of eventOccurred method from an int to an enumerate.
       </action>
