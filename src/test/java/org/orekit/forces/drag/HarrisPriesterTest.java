@@ -81,15 +81,15 @@ public class HarrisPriesterTest {
         final double rho4 = hp.getDensity(date, pos, itrf);
 
 
-        hp.setN(2);
+        HarrisPriester hp2 = new HarrisPriester(sun, earth, itrf, 2);
 
         // COMPUTE DENSITY KG/M3 RHO
-        final double rho2 = hp.getDensity(date, pos, itrf);
+        final double rho2 = hp2.getDensity(date, pos, itrf);
 
-        hp.setN(6);
+        HarrisPriester hp6 = new HarrisPriester(sun, earth, itrf, 6);
 
         // COMPUTE DENSITY KG/M3 RHO
-        double rho6 = hp.getDensity(date, pos, itrf);
+        double rho6 = hp6.getDensity(date, pos, itrf);
 
         final double c2Psi2 = 2.150731005787848e-2;
         
@@ -177,18 +177,27 @@ public class HarrisPriesterTest {
             {1900000.,  9.600e-08,  5.200e-07},
             {2000000.,  7.300e-08,  4.400e-07}
         };
-
-        HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
-        hp.setTabDensity(userTab);
         
         // Position at 1500 km height
         final GeodeticPoint point = new GeodeticPoint(0, 0, 1500000.);
         final Vector3D pos = earth.transform(point);
 
+        HarrisPriester hp = new HarrisPriester(sun, earth, itrf, userTab);
+
         // COMPUTE DENSITY KG/M3 RHO
         final double rho = hp.getDensity(date, pos, itrf);
-
+        
         Assert.assertEquals(2.9049031824908125E-7, rho, 0.0);
+
+        HarrisPriester hp6 = new HarrisPriester(sun, earth, itrf, userTab, 6);
+        final double rho6 = hp6.getDensity(date, pos, itrf);
+
+        HarrisPriester hp2 = new HarrisPriester(sun, earth, itrf, userTab, 2);
+        final double rho2 = hp2.getDensity(date, pos, itrf);
+
+        final double c2Psi2 = 2.150731005787848e-2;
+        
+        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho-rho2) - 1., 1.e-15);
 
     }
 
