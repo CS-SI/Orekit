@@ -108,6 +108,9 @@ public class HarrisPriester implements Atmosphere {
         { 1000000.0, 1.150e-15, 1.810e-14 }
     };
 
+    /** Cosine exponent from 2 to 6 according to inclination. */
+    private double n;
+
     /** Sun position. */
     private PVCoordinatesProvider sun;
 
@@ -120,21 +123,134 @@ public class HarrisPriester implements Atmosphere {
     /** Density table. */
     private double[][] tabAltRho;
 
-    /** Cosine exponent from 2 to 6 according to inclination. */
-    private double n;
-
     /** Simple constructor for Modified Harris-Priester atmosphere model.
+     *  <p>The cosine exponent value is set to 4 by default.</p>
+     *  <p>The default embedded density table is the one given in the referenced
+     *  book from Montenbruck & Gill. It is given for mean solar activity and
+     *  spreads over 100 to 1000 km.</p>
      * @param sun the sun position
      * @param earth the earth body shape
      * @param earthFixed the earth fixed frame
      */
-    public HarrisPriester(final PVCoordinatesProvider sun,
-                          final BodyShape earth, final Frame earthFixed) {
+    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
+                          final Frame earthFixed) {
         this.sun       = sun;
         this.earth     = earth;
         this.bodyFrame = earthFixed;
-        this.tabAltRho = ALT_RHO.clone();
-        this.n = 4;
+        this.tabAltRho = ALT_RHO;
+        setN(4);
+    }
+
+    /** Constructor for Modified Harris-Priester atmosphere model.
+     *  <p>Recommanded values for the cosine exponent spread over the range
+     *  2, for low inclination orbits, to 6, for polar orbits.</p>
+     *  <p> The default embedded density table is the one given in the referenced
+     *  book from Montenbruck & Gill. It is given for mean solar activity and
+     *  spreads over 100 to 1000 km. </p>
+     *  @param sun the sun position
+     *  @param earth the earth body shape
+     *  @param earthFixed the earth fixed frame
+     *  @param n the cosine exponent
+     */
+    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
+                          final Frame earthFixed, final double n) {
+        this.sun       = sun;
+        this.earth     = earth;
+        this.bodyFrame = earthFixed;
+        this.tabAltRho = ALT_RHO;
+        setN(n);
+    }
+
+    /** Constructor for Modified Harris-Priester atmosphere model.
+     *  <p>The provided density table must be an array such as:
+     *  <ul>
+     *   <li>tabAltRho[][0] = altitude (m)</li>
+     *   <li>tabAltRho[][1] = min density (kg/m<sup>3</sup>)</li>
+     *   <li>tabAltRho[][2] = max density (kg/m<sup>3</sup>)</li>
+     *  </ul>
+     *  The altitude must be increasing without limitation in range.<br>
+     *  The internal density table is a copy of the provided one.
+     *  </p>
+     *  <p>The cosine exponent value is set to 4 by default.</p>
+     * @param sun the sun position
+     * @param earth the earth body shape
+     * @param earthFixed the earth fixed frame
+     * @param tabAltRho the density table
+     */
+    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
+                          final Frame earthFixed, final double[][] tabAltRho) {
+        this.sun       = sun;
+        this.earth     = earth;
+        this.bodyFrame = earthFixed;
+        setN(4);
+        setTabDensity(tabAltRho);
+    }
+
+    /** Constructor for Modified Harris-Priester atmosphere model.
+     *  <p>Recommanded values for the cosine exponent spread over the range
+     *  2, for low inclination orbits, to 6, for polar orbits.</p>
+     *  </p>
+     *  <p>The provided density table must be an array such as:
+     *  <ul>
+     *   <li>tabAltRho[][0] = altitude (m)</li>
+     *   <li>tabAltRho[][1] = min density (kg/m<sup>3</sup>)</li>
+     *   <li>tabAltRho[][2] = max density (kg/m<sup>3</sup>)</li>
+     *  </ul>
+     *  The altitude must be increasing without limitation in range.<br>
+     *  The internal density table is a copy of the provided one.
+     *  </p>
+     *  @param sun the sun position
+     *  @param earth the earth body shape
+     *  @param earthFixed the earth fixed frame
+     *  @param n the cosine exponent
+     *  @param tabAltRho the density table
+     */
+    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
+                          final Frame earthFixed, final double[][] tabAltRho, final double n) {
+        this.sun       = sun;
+        this.earth     = earth;
+        this.bodyFrame = earthFixed;
+        setN(n);
+        setTabDensity(tabAltRho);
+    }
+
+    /** Set parameter N, the cosine exponent.
+     *  @param n the cosine exponent
+     */
+    private void setN(final double n) {
+        this.n = n;
+    }
+
+    /** Set a user define density table to deal with different solar activities.
+     *  @param tabAltRho density vs. altitude table
+     */
+    private void setTabDensity(final double[][] tabAltRho) {
+        this.tabAltRho = new double[tabAltRho.length][];
+        for (int i = 0; i < tabAltRho.length; i++) {
+            this.tabAltRho[i] = tabAltRho[i].clone();
+        }
+    }
+
+    /** Get the current density table.
+     *  <p>The density table is an array such as:
+     *  <ul>
+     *   <li>tabAltRho[][0] = altitude (m)</li>
+     *   <li>tabAltRho[][1] = min density (kg/m<sup>3</sup>)</li>
+     *   <li>tabAltRho[][2] = max density (kg/m<sup>3</sup>)</li>
+     *  </ul>
+     *  The altitude must be increasing without limitation in range.
+     *  </p>
+     *  <p>
+     *  The returned density table is a copy of the current one.
+     *  </p>
+     *  @return density vs. altitude table
+     */
+    public double[][] getTabDensity() {
+        double[][] copy = new double[tabAltRho.length][];
+        for (int i = 0; i < tabAltRho.length; i++) {
+            copy[i] = tabAltRho[i].clone();
+        }
+        return copy;
     }
 
     /** Get the minimal altitude for the model.
@@ -151,37 +267,6 @@ public class HarrisPriester implements Atmosphere {
      */
     public double getMaxAlt() {
         return tabAltRho[tabAltRho.length-1][0];
-    }
-
-    /** Set parameter N, the cosine exponent.
-     *  <p>Recommanded values spread over the range
-     *  2, for low inclination orbits, to 6, for polar orbits.</p>
-     *  <p>If this method is not called, the default value is set to 4.</p>
-     *  </p>
-     *  @param n the cosine exponent
-     */
-    public void setN(final double n) {
-        this.n = n;
-    }
-
-    /** Set a user define density table to deal with different solar activities.
-     *  <p>The density table must be an array such as:
-     *  <ul>
-     *   <li>tabAltRho[][0] = altitude (m)</li>
-     *   <li>tabAltRho[][1] = min density (kg/m<sup>3</sup>)</li>
-     *   <li>tabAltRho[][2] = max density (kg/m<sup>3</sup>)</li>
-     *  </ul>
-     *  The altitude must be increasing without limitation in range.
-     *  </p>
-     *  <p>
-     *  If this method is not called, the default embedded table is the one given
-     *  in the referenced book from Montenbruck & Gill. It deals with mean solar
-     *  activity and spreads over 100 to 1000 km.
-     *  </p>
-     *  @param tabAltRho density vs. altitude table
-     */
-    public void setTabDensity(final double[][] tabAltRho) {
-        this.tabAltRho = tabAltRho.clone();
     }
 
     /** Get the local density.
