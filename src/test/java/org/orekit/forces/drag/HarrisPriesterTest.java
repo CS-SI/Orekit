@@ -55,7 +55,7 @@ public class HarrisPriesterTest {
     @Test
     public void testStandard() throws OrekitException {
 
-        HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
+        HarrisPriester hp = new HarrisPriester(sun, earth);
 
         // Position at 500 km height
         GeodeticPoint point = new GeodeticPoint(0, 0, 500000.);
@@ -71,7 +71,7 @@ public class HarrisPriesterTest {
     @Test
     public void testParameterN() throws OrekitException {
 
-        HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
+        HarrisPriester hp = new HarrisPriester(sun, earth);
 
         // Position at 500 km height
         final GeodeticPoint point = new GeodeticPoint(0, 0, 500000.);
@@ -81,12 +81,12 @@ public class HarrisPriesterTest {
         final double rho4 = hp.getDensity(date, pos, itrf);
 
 
-        HarrisPriester hp2 = new HarrisPriester(sun, earth, itrf, 2);
+        HarrisPriester hp2 = new HarrisPriester(sun, earth, 2);
 
         // COMPUTE DENSITY KG/M3 RHO
         final double rho2 = hp2.getDensity(date, pos, itrf);
 
-        HarrisPriester hp6 = new HarrisPriester(sun, earth, itrf, 6);
+        HarrisPriester hp6 = new HarrisPriester(sun, earth, 6);
 
         // COMPUTE DENSITY KG/M3 RHO
         double rho6 = hp6.getDensity(date, pos, itrf);
@@ -100,7 +100,7 @@ public class HarrisPriesterTest {
     @Test
     public void testMaxAlt() throws OrekitException {
 
-        HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
+        HarrisPriester hp = new HarrisPriester(sun, earth);
         
         // Position at 1500 km height
         final GeodeticPoint point = new GeodeticPoint(0, 0, 1500000.);
@@ -182,17 +182,17 @@ public class HarrisPriesterTest {
         final GeodeticPoint point = new GeodeticPoint(0, 0, 1500000.);
         final Vector3D pos = earth.transform(point);
 
-        HarrisPriester hp = new HarrisPriester(sun, earth, itrf, userTab);
+        HarrisPriester hp = new HarrisPriester(sun, earth, userTab);
 
         // COMPUTE DENSITY KG/M3 RHO
         final double rho = hp.getDensity(date, pos, itrf);
         
         Assert.assertEquals(2.9049031824908125E-7, rho, 0.0);
 
-        HarrisPriester hp6 = new HarrisPriester(sun, earth, itrf, userTab, 6);
+        HarrisPriester hp6 = new HarrisPriester(sun, earth, userTab, 6);
         final double rho6 = hp6.getDensity(date, pos, itrf);
 
-        HarrisPriester hp2 = new HarrisPriester(sun, earth, itrf, userTab, 2);
+        HarrisPriester hp2 = new HarrisPriester(sun, earth, userTab, 2);
         final double rho2 = hp2.getDensity(date, pos, itrf);
 
         final double c2Psi2 = 2.150731005787848e-2;
@@ -204,7 +204,7 @@ public class HarrisPriesterTest {
     @Test(expected=OrekitException.class)
     public void testOutOfRange() throws OrekitException {
 
-        HarrisPriester hp = new HarrisPriester(sun, earth, itrf);
+        HarrisPriester hp = new HarrisPriester(sun, earth);
         
         // Position at 50 km height
         final GeodeticPoint point = new GeodeticPoint(0, 0, 50000.);

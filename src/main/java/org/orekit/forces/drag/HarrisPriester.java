@@ -117,9 +117,6 @@ public class HarrisPriester implements Atmosphere {
     /** Earth body shape. */
     private BodyShape earth;
 
-    /** Earth fixed frame. */
-    private Frame bodyFrame;
-
     /** Density table. */
     private double[][] tabAltRho;
 
@@ -130,13 +127,10 @@ public class HarrisPriester implements Atmosphere {
      *  spreads over 100 to 1000 km.</p>
      * @param sun the sun position
      * @param earth the earth body shape
-     * @param earthFixed the earth fixed frame
      */
-    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
-                          final Frame earthFixed) {
+    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth) {
         this.sun       = sun;
         this.earth     = earth;
-        this.bodyFrame = earthFixed;
         this.tabAltRho = ALT_RHO;
         setN(4);
     }
@@ -148,15 +142,12 @@ public class HarrisPriester implements Atmosphere {
      *  book from Montenbruck & Gill. It is given for mean solar activity and
      *  spreads over 100 to 1000 km. </p>
      *  @param sun the sun position
-     *  @param earth the earth body shape
-     *  @param earthFixed the earth fixed frame
-     *  @param n the cosine exponent
+     * @param earth the earth body shape
+     * @param n the cosine exponent
      */
-    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
-                          final Frame earthFixed, final double n) {
+    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth, final double n) {
         this.sun       = sun;
         this.earth     = earth;
-        this.bodyFrame = earthFixed;
         this.tabAltRho = ALT_RHO;
         setN(n);
     }
@@ -174,14 +165,12 @@ public class HarrisPriester implements Atmosphere {
      *  <p>The cosine exponent value is set to 4 by default.</p>
      * @param sun the sun position
      * @param earth the earth body shape
-     * @param earthFixed the earth fixed frame
      * @param tabAltRho the density table
      */
     public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
-                          final Frame earthFixed, final double[][] tabAltRho) {
+                          final double[][] tabAltRho) {
         this.sun       = sun;
         this.earth     = earth;
-        this.bodyFrame = earthFixed;
         setN(4);
         setTabDensity(tabAltRho);
     }
@@ -200,16 +189,14 @@ public class HarrisPriester implements Atmosphere {
      *  The internal density table is a copy of the provided one.
      *  </p>
      *  @param sun the sun position
-     *  @param earth the earth body shape
-     *  @param earthFixed the earth fixed frame
-     *  @param n the cosine exponent
-     *  @param tabAltRho the density table
+     * @param earth the earth body shape
+     * @param tabAltRho the density table
+     * @param n the cosine exponent
      */
     public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
-                          final Frame earthFixed, final double[][] tabAltRho, final double n) {
+                          final double[][] tabAltRho, final double n) {
         this.sun       = sun;
         this.earth     = earth;
-        this.bodyFrame = earthFixed;
         setN(n);
         setTabDensity(tabAltRho);
     }
@@ -352,7 +339,7 @@ public class HarrisPriester implements Atmosphere {
      */
     public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position, final Frame frame)
         throws OrekitException {
-        final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+        final Transform bodyToFrame = earth.getBodyFrame().getTransformTo(frame, date);
         final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
         final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
         final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
