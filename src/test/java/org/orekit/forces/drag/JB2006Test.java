@@ -51,7 +51,7 @@ public class JB2006Test {
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
-        JB2006 atm = new JB2006(in, sun, earth, itrf);
+        JB2006 atm = new JB2006(in, sun, earth);
         double myRo;
         double PI = 3.1415927;
 
@@ -191,8 +191,8 @@ public class JB2006Test {
 
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
-        JB2006 jb = new JB2006(in, sun, earth, itrf);
-        DTM2000 dtm = new DTM2000(in, sun, earth, itrf);
+        JB2006 jb = new JB2006(in, sun, earth);
+        DTM2000 dtm = new DTM2000(in, sun, earth);
         // Positions
 
         Vector3D pos = new Vector3D(6500000.0,

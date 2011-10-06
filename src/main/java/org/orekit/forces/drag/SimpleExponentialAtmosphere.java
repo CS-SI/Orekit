@@ -41,9 +41,6 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     /** Earth shape model. */
     private BodyShape    shape;
 
-    /** Earth reference frame. */
-    private Frame        bodyFrame;
-
     /** Reference density. */
     private double       rho0;
 
@@ -55,15 +52,13 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
 
     /** Create an exponential atmosphere.
      * @param shape body shape model
-     * @param bodyFrame body rotation frame
      * @param rho0 Density at the altitude h0
      * @param h0 Altitude of reference (m)
      * @param hscale Scale factor
      */
-    public SimpleExponentialAtmosphere(final BodyShape shape, final Frame bodyFrame,
-                                       final double rho0, final double h0, final double hscale) {
+    public SimpleExponentialAtmosphere(final BodyShape shape, final double rho0,
+                                       final double h0, final double hscale) {
         this.shape  = shape;
-        this.bodyFrame = bodyFrame;
         this.rho0   = rho0;
         this.h0     = h0;
         this.hscale = hscale;
@@ -80,7 +75,7 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     public Vector3D getVelocity(final AbsoluteDate date,
                                 final Vector3D position, final Frame frame)
         throws OrekitException {
-        final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+        final Transform bodyToFrame = shape.getBodyFrame().getTransformTo(frame, date);
         final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
         final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
         final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);

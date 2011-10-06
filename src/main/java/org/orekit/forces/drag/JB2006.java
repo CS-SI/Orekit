@@ -204,22 +204,16 @@ public class JB2006 implements Atmosphere {
     /** Earth body shape. */
     private BodyShape earth;
 
-    /** Earth fixed frame. */
-    private Frame bodyFrame;
-
     /** Constructor with space environment information for internal computation.
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
-     * @param earthFixed the earth fixed frame
      */
     public JB2006(final JB2006InputParameters parameters,
-                            final PVCoordinatesProvider sun, final BodyShape earth,
-                            final Frame earthFixed) {
+                  final PVCoordinatesProvider sun, final BodyShape earth) {
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
-        this.bodyFrame = earthFixed;
     }
 
     /** Get the local density with initial entries.
@@ -771,7 +765,7 @@ public class JB2006 implements Atmosphere {
     public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position,
                                 final Frame frame)
         throws OrekitException {
-        final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+        final Transform bodyToFrame = earth.getBodyFrame().getTransformTo(frame, date);
         final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
         final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
         final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);

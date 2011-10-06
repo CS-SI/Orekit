@@ -293,24 +293,18 @@ public class DTM2000 implements Atmosphere {
     /** Earth body shape. */
     private BodyShape earth;
 
-    /** Earth fixed frame. */
-    private Frame bodyFrame;
-
     /** Simple constructor for independent computation.
      * @param parameters the solar and magnetic activity data
      * @param sun the sun position
      * @param earth the earth body shape
-     * @param earthFixed the earth fixed frame
      * @exception OrekitException if some resource file reading error occurs
      */
     public DTM2000(final DTM2000InputParameters parameters,
-                             final PVCoordinatesProvider sun, final BodyShape earth,
-                             final Frame earthFixed)
+                   final PVCoordinatesProvider sun, final BodyShape earth)
         throws OrekitException {
         this.earth = earth;
         this.sun = sun;
         this.inputParams = parameters;
-        this.bodyFrame = earthFixed;
         if (tt == null) {
             readcoefficients();
         }
@@ -898,7 +892,7 @@ public class DTM2000 implements Atmosphere {
     public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position,
                                 final Frame frame)
         throws OrekitException {
-        final Transform bodyToFrame = bodyFrame.getTransformTo(frame, date);
+        final Transform bodyToFrame = earth.getBodyFrame().getTransformTo(frame, date);
         final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
         final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
         final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
