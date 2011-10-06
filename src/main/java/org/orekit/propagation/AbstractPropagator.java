@@ -264,6 +264,11 @@ public abstract class AbstractPropagator implements Propagator {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
 
+            // initialize step handler
+            if (stepHandler != null) {
+                stepHandler.reset();
+            }
+
             // iterate over the propagation range
             statesInitialized = false;
             isLastStep = false;
