@@ -42,7 +42,7 @@ public class DTM2000Test {
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();
         earth.setAngularThreshold(1e-10);
-        DTM2000 atm = new DTM2000(in, sun, earth, itrf);
+        DTM2000 atm = new DTM2000(in, sun, earth);
         double roTestCase;
         double tzTestCase;
         double tinfTestCase;

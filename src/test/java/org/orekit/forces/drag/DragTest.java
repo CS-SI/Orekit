@@ -39,7 +39,7 @@ public class DragTest {
         Frame itrf = FramesFactory.getITRF2005();
         SimpleExponentialAtmosphere atm =
             new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101, itrf),
-                                            itrf, 0.0004, 42000.0, 7500.0);
+                                            0.0004, 42000.0, 7500.0);
         Vector3D vel = atm.getVelocity(date, posInEME2000, FramesFactory.getEME2000());
 
         Transform toBody = FramesFactory.getEME2000().getTransformTo(itrf, date);
