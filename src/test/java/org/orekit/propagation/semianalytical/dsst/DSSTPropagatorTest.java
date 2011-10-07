@@ -25,12 +25,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
-import org.orekit.forces.drag.SimpleExponentialAtmosphere;
-import org.orekit.frames.Frame;
+import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -41,6 +41,7 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmospheric
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 
 public class DSSTPropagatorTest {
@@ -84,21 +85,22 @@ public class DSSTPropagatorTest {
 
         // Check results
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
-        Assert.assertEquals(initialState.getA(),    finalState.getA(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEx(),    finalState.getEquinoctialEx(),    1.0e-10);
-        Assert.assertEquals(initialState.getEquinoctialEy(),    finalState.getEquinoctialEy(),    1.0e-10);
-        Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
-        Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
-        Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 2.0e-9);
+        Assert.assertEquals(initialState.getA(),             finalState.getA(),             1.0e-15);
+        Assert.assertEquals(initialState.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-15);
+        Assert.assertEquals(initialState.getEquinoctialEy(), finalState.getEquinoctialEy(), 1.0e-15);
+        Assert.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-15);
+        Assert.assertEquals(initialState.getHy(),            finalState.getHy(),            1.0e-15);
+        Assert.assertEquals(initialState.getLM() + n * dt,   finalState.getLM(),            1.0e-15);
 
     }
 
     @Test
     public void testPropagationWithDrag() throws OrekitException {
 
-        Frame itrf = FramesFactory.getITRF2000();
-        Atmosphere atm = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101, itrf),
-                                                         itrf, 0.0004, 42000.0, 7500.0);
+        PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, FramesFactory.getITRF2005(true));
+        Atmosphere atm = new HarrisPriester(sun, earth);
+
         double sf = 5.0;
         double cd = 2.0;
         SphericalSpacecraft sc = new SphericalSpacecraft(sf, cd, 0.0, 0.0);

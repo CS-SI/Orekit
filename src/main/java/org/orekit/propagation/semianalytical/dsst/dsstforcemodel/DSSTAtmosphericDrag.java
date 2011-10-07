@@ -27,8 +27,14 @@ import org.orekit.time.AbsoluteDate;
  */
 public class DSSTAtmosphericDrag implements DSSTForceModel {
 
-    /** Null contribution. */
-    private final static double[] NULL_CONTRIBUTION = {0.,0.,0.,0.,0.,0.};
+    /** DSST model needs equinoctial orbit as internal representation.
+     *  Classical equinoctial elements have discontinuities when inclination is close to zero.
+     *  In this representation, I = +1. <br>
+     *  To avoid this discontinuity, another representation exists and equinoctial elements can
+     *  be expressed in a different way, called "retrograde" orbit. This implies I = -1.
+     *  As Orekit doesn't implement the retrograde orbit, I = +1 here.
+     */
+    private double I = 1;
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
@@ -69,9 +75,11 @@ public class DSSTAtmosphericDrag implements DSSTForceModel {
     public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
         final double[]   mer = NULL_CONTRIBUTION;
         final double[][] jac = new double[6][6];
-        double coef = 1.;
+        // Compute jacobian
+        OrbitType.EQUINOCTIAL.convertType(state.getOrbit()).getJacobianWrtCartesian(PositionAngle.ECCENTRIC, jac);
         // Analyse critical distance from center of central body
         double r = state.getOrbit().getPVCoordinates().getPosition().getNorm();
+        double coef = 1.;
         if (r < rbar) {
             // compute the integral limits
             double[] f = getFLimits(state);
@@ -80,8 +88,6 @@ public class DSSTAtmosphericDrag implements DSSTForceModel {
         }
         // Compute drag acceleration
         Vector3D drag = getDragAcceleration(state);
-        // Compute jacobian
-        OrbitType.EQUINOCTIAL.convertType(state.getOrbit()).getJacobianWrtCartesian(PositionAngle.ECCENTRIC, jac);
         // Compute mean elements rate
         for (int i = 0; i < 6; i++) {
             final Vector3D aisrp = new Vector3D(jac[i][3],jac[i][4],jac[i][5]);

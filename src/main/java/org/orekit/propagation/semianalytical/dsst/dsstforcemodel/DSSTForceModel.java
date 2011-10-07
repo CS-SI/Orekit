@@ -29,6 +29,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface DSSTForceModel {
 
+    /** Null contribution. */
+    double[] NULL_CONTRIBUTION = {0.,0.,0.,0.,0.,0.};
+
     /** Compute the mean element rates
      *  @param state current state information: date, kinematics, attitude
      *  @return the mean element rates dai/dt

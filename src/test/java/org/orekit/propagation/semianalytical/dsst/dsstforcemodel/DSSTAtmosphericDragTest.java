@@ -42,7 +42,7 @@ public class DSSTAtmosphericDragTest {
     public void testMeanElementRate() throws OrekitException {
         final Frame itrf = FramesFactory.getITRF2005();
         final Atmosphere atm = new SimpleExponentialAtmosphere(new OneAxisEllipsoid(Utils.ae, 1.0 / 298.257222101, itrf),
-                                                               itrf, 0.0004, 42000.0, 7500.0);
+                                                               0.0004, 42000.0, 7500.0);
         final DragSensitive sc = new SphericalSpacecraft(5., 2., 0., 0.);
         final DSSTForceModel force = new DSSTAtmosphericDrag(atm, sc);
 
