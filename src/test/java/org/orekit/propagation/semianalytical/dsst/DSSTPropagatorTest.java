@@ -67,19 +67,19 @@ public class DSSTPropagatorTest {
         final Vector3D finalVelocity   = finalState.getPVCoordinates().getVelocity();
 
         // Check results
-        Assert.assertEquals(initialPosition.getX(), finalPosition.getX(), 1.0e-10);
-        Assert.assertEquals(initialPosition.getY(), finalPosition.getY(), 1.0e-10);
-        Assert.assertEquals(initialPosition.getZ(), finalPosition.getZ(), 1.0e-10);
-        Assert.assertEquals(initialVelocity.getX(), finalVelocity.getX(), 1.0e-10);
-        Assert.assertEquals(initialVelocity.getY(), finalVelocity.getY(), 1.0e-10);
-        Assert.assertEquals(initialVelocity.getZ(), finalVelocity.getZ(), 1.0e-10);
+        Assert.assertEquals(initialPosition.getX(), finalPosition.getX(), 0.0);
+        Assert.assertEquals(initialPosition.getY(), finalPosition.getY(), 0.0);
+        Assert.assertEquals(initialPosition.getZ(), finalPosition.getZ(), 0.0);
+        Assert.assertEquals(initialVelocity.getX(), finalVelocity.getX(), 0.0);
+        Assert.assertEquals(initialVelocity.getY(), finalVelocity.getY(), 0.0);
+        Assert.assertEquals(initialVelocity.getZ(), finalVelocity.getZ(), 0.0);
 
     }
 
     @Test
     public void testKepler() throws OrekitException {
 
-        // Propagation of the initial at t + dt
+        // Propagation of the initial state at t + dt
         final double dt = 3200;
         final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(dt));
 
@@ -91,6 +91,36 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(initialState.getHx(),            finalState.getHx(),            1.0e-15);
         Assert.assertEquals(initialState.getHy(),            finalState.getHy(),            1.0e-15);
         Assert.assertEquals(initialState.getLM() + n * dt,   finalState.getLM(),            1.0e-15);
+
+    }
+
+    @Test
+    public void testAccumulator() throws OrekitException {
+
+        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        // Propagation of the initial state at t + 2*dt then back to t + dt, back to t - 2*dt and forth to t - dt
+        final double dt = 3200;
+        propagator.propagate(initDate.shiftedBy(2*dt));
+        final SpacecraftState finalState1 = propagator.propagate(initDate.shiftedBy(dt));
+
+        // Check results
+        Assert.assertEquals(initialState.getA(),             finalState1.getA(),             1.0e-15);
+        Assert.assertEquals(initialState.getEquinoctialEx(), finalState1.getEquinoctialEx(), 1.0e-15);
+        Assert.assertEquals(initialState.getEquinoctialEy(), finalState1.getEquinoctialEy(), 1.0e-15);
+        Assert.assertEquals(initialState.getHx(),            finalState1.getHx(),            1.0e-15);
+        Assert.assertEquals(initialState.getHy(),            finalState1.getHy(),            1.0e-15);
+        Assert.assertEquals(initialState.getLM() + n * dt,   finalState1.getLM(),            1.0e-15);
+
+        // Continue propagation of the initial state back to t - 2*dt and forth to t - dt
+        propagator.propagate(initDate.shiftedBy(-2*dt));
+        final SpacecraftState finalState2 = propagator.propagate(initDate.shiftedBy(-dt));
+        // Check results
+        Assert.assertEquals(initialState.getA(),             finalState2.getA(),             1.0e-15);
+        Assert.assertEquals(initialState.getEquinoctialEx(), finalState2.getEquinoctialEx(), 1.0e-15);
+        Assert.assertEquals(initialState.getEquinoctialEy(), finalState2.getEquinoctialEy(), 1.0e-15);
+        Assert.assertEquals(initialState.getHx(),            finalState2.getHx(),            1.0e-15);
+        Assert.assertEquals(initialState.getHy(),            finalState2.getHy(),            1.0e-15);
+        Assert.assertEquals(initialState.getLM() - n * dt,   finalState2.getLM(),            1.0e-15);
 
     }
 
@@ -198,7 +228,7 @@ public class DSSTPropagatorTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        final double step = 100.;
+        final double step = 250.;
         final FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(step);
         propagator = new DSSTPropagator(integrator, orbit);
         gotHere = false;

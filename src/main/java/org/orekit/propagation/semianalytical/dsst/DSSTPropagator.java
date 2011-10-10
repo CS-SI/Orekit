@@ -25,6 +25,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
@@ -234,7 +235,7 @@ public class DSSTPropagator extends AbstractPropagator {
         this.isDirty = true;
         this.mass = state.getMass();
         this.referenceDate = state.getDate();
-        this.cumulator.reset();
+        this.cumulator.resetAccumulator();
     }
 
     /** Add a force model to the global perturbation model.
@@ -466,8 +467,9 @@ public class DSSTPropagator extends AbstractPropagator {
             return cumulatedSteps;
         }
 
-        @Override
-        public void reset() {
+        /** Reset the accumulator: clear the cumulated steps and reinitialize the dates.
+         */
+        public void resetAccumulator() {
             cumulatedSteps.clear();
             td = AbsoluteDate.FUTURE_INFINITY;
             tf = AbsoluteDate.PAST_INFINITY;
@@ -483,6 +485,10 @@ public class DSSTPropagator extends AbstractPropagator {
                 double tstop = target.durationFrom(referenceDate) + interpolator.getCurrentTime() - interpolator.getPreviousTime();
                 trigger.addEvent(tstop);
             }
+        }
+
+        @Override
+        public void reset() {
         }
     }
 
@@ -701,6 +707,36 @@ public class DSSTPropagator extends AbstractPropagator {
             }
 
         }
+
+    }
+
+    /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
+     * <p>
+     * The errors are estimated from partial derivatives properties of orbits,
+     * starting from a scalar position error specified by the user.
+     * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
+     * we get at constant energy (i.e. on a Keplerian trajectory):
+     * <pre>
+     * V<sup>2</sup> r |dV| = mu |dr|
+     * </pre>
+     * So we deduce a scalar velocity error consistent with the position error.
+     * From here, we apply orbits Jacobians matrices to get consistent errors
+     * on orbital parameters.
+     * </p>
+     * <p>
+     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
+     * are only local estimates, not global ones. So some care must be taken when using
+     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
+     * will guarantee a 1mm error position after several orbits integration.
+     * </p>
+     * @param dP user specified position error
+     * @param orbit reference orbit
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1
+     * being the relative tolerance error
+     */
+    public static double[][] tolerances(final double dP, final Orbit orbit) {
+
+        return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
 
     }
 
