@@ -222,8 +222,8 @@ public class DSSTPropagatorTest {
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
         mu  = 3.9860047e14;
-        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Vector3D position = new Vector3D(7.0e6, 0.0, 0.0);
+        final Vector3D velocity = new Vector3D(0.0, 5000.0, 5000.0);
         initDate = AbsoluteDate.J2000_EPOCH;
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);

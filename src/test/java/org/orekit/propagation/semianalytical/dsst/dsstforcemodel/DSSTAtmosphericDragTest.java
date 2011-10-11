@@ -54,8 +54,8 @@ public class DSSTAtmosphericDragTest {
         // Equinoxe 21 mars 2003 à 1h00m
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final double mu  = 3.9860047e14;
-        final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
-        final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
+        final Vector3D position = new Vector3D(7.0e6, 0.0, 0.0);
+        final Vector3D velocity = new Vector3D(0.0, 0.707*7000.0, 0.707*7000.0);
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), date, mu);
 

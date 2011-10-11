@@ -6,9 +6,11 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -78,14 +80,10 @@ public class DSSTAtmosphericDrag implements DSSTForceModel {
         // Compute jacobian
         OrbitType.EQUINOCTIAL.convertType(state.getOrbit()).getJacobianWrtCartesian(PositionAngle.ECCENTRIC, jac);
         // Analyse critical distance from center of central body
-        double r = state.getOrbit().getPVCoordinates().getPosition().getNorm();
-        double coef = 1.;
-        if (r < rbar) {
-            // compute the integral limits
-            double[] f = getFLimits(state);
-            coef -= state.getEquinoctialEx() * (FastMath.sin(f[1]) - FastMath.sin(f[0]));
-            coef -= state.getEquinoctialEy() * (FastMath.cos(f[0]) - FastMath.cos(f[1]));
-        }
+        final double r = state.getOrbit().getPVCoordinates().getPosition().getNorm();
+        final double a = state.getOrbit().getA();
+        final double[] f = getFLimits(r, state);
+        final double coef = r * (f[1] - f[0])/ (a * 2. * FastMath.PI);
         // Compute drag acceleration
         Vector3D drag = getDragAcceleration(state);
         // Compute mean elements rate
@@ -130,18 +128,22 @@ public class DSSTAtmosphericDrag implements DSSTForceModel {
     }
 
     /** Compute the limits for the mean elements rate integral.
+     *  @param  r radial distance for the spacecraft
      *  @param  s current state information: date, kinematics, attitude
-     *  @return the limits for the integral
+     *  @return the integration limits
      */
-    private double[] getFLimits(final SpacecraftState s) {
-
-        final double a  = s.getA();
-        final double e  = s.getE();
-        final double eb = FastMath.acos((1. - rbar/a)/e);
-        final double ww = FastMath.atan2(s.getEquinoctialEx(), s.getEquinoctialEy());
-
-        double f[] = {-eb + ww, eb + ww};
-        
+    private double[] getFLimits(double r, final SpacecraftState s) {
+        double[] f = {-FastMath.PI, FastMath.PI};
+        if (r < rbar) {
+            final double a  = s.getA();
+            final double e  = s.getE();
+            final double w  = ((KeplerianOrbit)OrbitType.KEPLERIAN.convertType(s.getOrbit())).getPerigeeArgument();
+            final double W  = ((KeplerianOrbit)OrbitType.KEPLERIAN.convertType(s.getOrbit())).getRightAscensionOfAscendingNode();
+            final double eb = FastMath.acos((1. - rbar/a)/e);
+            final double wW = w + I * W;
+            f[0] = -eb + wW;
+            f[1] =  eb + wW;
+        }
         return f;
     }
 
