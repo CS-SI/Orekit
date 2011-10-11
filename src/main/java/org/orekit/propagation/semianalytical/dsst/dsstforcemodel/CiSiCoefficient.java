@@ -13,8 +13,11 @@ import org.apache.commons.math.complex.Complex;
  * 
  * <pre>
  * C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup>
- * where k is the x-component of the eccentricity vector and h its y-component.
  * </pre>
+ * 
+ * The C<sub>i</sub>(k, h) and the S<sub>i</sub>(k, h) elements are store as an {@link ArrayList} of
+ * {@link Complex} number, the C<sub>i</sub>(k, h) being represented by its real part and the
+ * S<sub>i</sub>(k, h) by the imaginary part.
  */
 public class CiSiCoefficient {
 
@@ -27,16 +30,17 @@ public class CiSiCoefficient {
     /** List of computed elements */
     private List<Complex> CjSj    = new ArrayList<Complex>();
 
-    /** is the y-component of the eccentricity vector */
-    private final double  h;
+    /** is the x-component of the S<sub>i</sub>, C<sub>i</sub> series */
+    private final double  x;
 
-    /** is the x-component of the eccentricity vector */
-    private final double  k;
+    /** is the y-component of the S<sub>i</sub>, C<sub>i</sub> series */
+    private final double  y;
 
-    public CiSiCoefficient(final double k,
-                           final double h) {
-        this.k = k;
-        this.h = h;
+    /** S<sub>i</sub>(k, h) and C<sub>i</sub>(k, h) constructor */
+    public CiSiCoefficient(final double x,
+                           final double y) {
+        this.x = x;
+        this.y = y;
     }
 
     /**
@@ -85,7 +89,7 @@ public class CiSiCoefficient {
     public double getDciDk(final int i) {
         return i * getCi(i - 1);
     }
-    
+
     /**
      * Get the dS<sub>i</sub> / d<sub>k</sub> coefficient
      * 
@@ -96,7 +100,7 @@ public class CiSiCoefficient {
     public double getDsiDk(final int i) {
         return i * getSi(i - 1);
     }
-    
+
     /**
      * Get the dC<sub>i</sub> / d<sub>h</sub> coefficient
      * 
@@ -105,9 +109,9 @@ public class CiSiCoefficient {
      * @return dC<sub>i</sub> / d<sub>k</sub>
      */
     public double getDciDh(final int i) {
-        return - i * getSi(i - 1);
+        return -i * getSi(i - 1);
     }
-    
+
     /**
      * Get the dS<sub>i</sub> / d<sub>h</sub> coefficient
      * 
@@ -128,8 +132,7 @@ public class CiSiCoefficient {
     private void updateCjSi(int i) {
         Complex previous = CjSj.get(CjSj.size() - 1);
         for (int j = last + 1; j <= i; j++) {
-            Complex next = previous.multiply(new Complex(k,
-                                                         h));
+            Complex next = previous.multiply(new Complex(x, y));
             CjSj.add(next);
             previous = next;
             last = j;
@@ -146,14 +149,12 @@ public class CiSiCoefficient {
         // Initialization
         double c0 = 1;
         double s0 = 0;
-        Complex previous = new Complex(c0,
-                                       s0);
+        Complex previous = new Complex(c0, s0);
         CjSj.add(previous);
 
         // First computation :
         for (int j = 1; j <= i; j++) {
-            Complex next = previous.multiply(new Complex(k,
-                                                         h));
+            Complex next = previous.multiply(new Complex(x, y));
             CjSj.add(next);
             previous = next;
         }

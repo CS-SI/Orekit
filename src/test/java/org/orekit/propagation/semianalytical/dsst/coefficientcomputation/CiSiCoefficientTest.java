@@ -1,4 +1,4 @@
-package org.orekit.propagation.dsst;
+package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 
 import static org.junit.Assert.*;
 
