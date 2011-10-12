@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math.util.ArithmeticsUtils;
 import org.apache.commons.math.util.FastMath;
 import org.apache.commons.math.util.MathUtils;
 import org.junit.internal.ArrayComparisonFailure;
@@ -553,9 +554,9 @@ public class DSSTCentralBody implements DSSTForceModel {
             if (s <= -m) {
                 res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow((1 + I * gamma), -I * m);
             } else if (FastMath.abs(s) <= m) {
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * MathUtils.factorial(n + m) * MathUtils.factorial(n + m)
-                                * FastMath.pow(1 + I * gamma, I * s);
-                den = MathUtils.factorial(n + s) * MathUtils.factorial(n - s);
+                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticsUtils.factorial(n + m) *
+                      ArithmeticsUtils.factorial(n + m) * FastMath.pow(1 + I * gamma, I * s);
+                den = ArithmeticsUtils.factorial(n + s) * ArithmeticsUtils.factorial(n - s);
                 res = num / den;
             } else if (s >= m) {
                 res = FastMath.pow(2, -s) * FastMath.pow(1 + I * gamma, I * m);
@@ -580,9 +581,9 @@ public class DSSTCentralBody implements DSSTForceModel {
             if (s <= -m) {
                 res = -FastMath.pow(-1, m - s) * FastMath.pow(2, s) * m * FastMath.pow((1 + I * gamma), -I * m - 1);
             } else if (FastMath.abs(s) <= m) {
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * MathUtils.factorial(n + m) * MathUtils.factorial(n + m) * s
-                                * FastMath.pow(1 + I * gamma, I * s - 1);
-                den = MathUtils.factorial(n + s) * MathUtils.factorial(n - s);
+                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticsUtils.factorial(n + m) *
+                      ArithmeticsUtils.factorial(n + m) * s * FastMath.pow(1 + I * gamma, I * s - 1);
+                den = ArithmeticsUtils.factorial(n + s) * ArithmeticsUtils.factorial(n - s);
                 res = num / den;
             } else if (s >= m) {
                 res = FastMath.pow(2, -s) * m * FastMath.pow(1 + I * gamma, I * m - 1);
@@ -591,7 +592,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         /**
-         * Compute the Hansen coefficient for the resonnant tesseral harmonics from equation 2.7.3 -
+         * Compute the Hansen coefficient for the resonant tesseral harmonics from equation 2.7.3 -
          * (10)
          * 
          * @throws OrekitException
