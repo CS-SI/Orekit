@@ -77,7 +77,7 @@ import org.orekit.time.AbsoluteDate;
  * @see SpacecraftState
  * @see DSSTForceModel
  *
- * @author Romain Di Constanzo
+ * @author Romain Di Costanzo
  * @author Pascal Parraud
  */
 public class DSSTPropagator extends AbstractPropagator {
