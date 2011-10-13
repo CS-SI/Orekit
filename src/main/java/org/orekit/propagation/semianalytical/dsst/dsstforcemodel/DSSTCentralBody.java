@@ -1,7 +1,5 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -9,14 +7,11 @@ import java.util.Map.Entry;
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.ArithmeticsUtils;
+import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
-import org.junit.internal.ArrayComparisonFailure;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -145,10 +140,14 @@ public class DSSTCentralBody implements DSSTForceModel {
         // Get zonal harmonics contributuion :
         ZonalHarmonics zonalHarmonics = new ZonalHarmonics();
         double[] zonalTerms = zonalHarmonics.getZonalContribution(orbit);
+        System.out.println(" zonal " + zonalTerms[0] + " " + zonalTerms[1] + " " + zonalTerms[2] + " " + zonalTerms[3] + " "
+                        + zonalTerms[4] + " " + zonalTerms[5] + " ");
 
         // Get tesseral resonant harmonics contributuion :
         TesseralResonantHarmonics tesseralHarmonics = new TesseralResonantHarmonics();
         double[] tesseralTerms = tesseralHarmonics.getResonantContribution(orbit);
+        System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " + tesseralTerms[2] + " " + tesseralTerms[3]
+                        + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
 
         double[] meanElementRate = new double[tesseralTerms.length];
         for (int i = 0; i < tesseralTerms.length; i++) {
@@ -184,30 +183,30 @@ public class DSSTCentralBody implements DSSTForceModel {
 
         private double[] getZonalContribution(Orbit orbit) {
             // Initialization :
-            double dEx = 0d;
-            double dEy = 0d;
-            double dHx = 0d;
-            double dHy = 0d;
+            double dh = 0d;
+            double dk = 0d;
+            double dp = 0d;
+            double dq = 0d;
             double dM = 0d;
 
             double a = orbit.getA();
-            double ex = orbit.getEquinoctialEx();
-            double ey = orbit.getEquinoctialEy();
+            double k = orbit.getEquinoctialEx();
+            double h = orbit.getEquinoctialEy();
             double hx = orbit.getHx();
             double hy = orbit.getHy();
 
             // Compute non constant coefficient which depends on previous initialized data :
-            final double[][] Kns = computeKnsCoefficient(degree);
-            final double[][] dKns = computeKnsDerivatives(Kns);
-            final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(ex, ey, alpha, beta, order);
+            final double[][] Kns = computeKnsCoefficient(degree, B);
+            final double[][] dKns = computeKnsDerivatives(Kns, B);
+            final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
             final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order, gamma);
 
             // Compute potential derivative :
             final double[] potentialDerivatives = computePotentialderivatives(Kns, dKns, Qns, GsHs);
 
             final double dUda = potentialDerivatives[0];
-            final double dUdEx = potentialDerivatives[1];
-            final double dUdEy = potentialDerivatives[2];
+            final double dUdk = potentialDerivatives[1];
+            final double dUdh = potentialDerivatives[2];
             final double dUdAl = potentialDerivatives[3];
             final double dUdBe = potentialDerivatives[4];
             final double dUdGa = potentialDerivatives[5];
@@ -218,17 +217,32 @@ public class DSSTCentralBody implements DSSTForceModel {
             // U(beta,gamma) = beta * du / dgamma - gamma * du / dbeta
             final double UBetaGamma = beta * dUdGa - gamma * dUdBe;
 
-            final double factor = (hx * UAlphaGamma - I * hy * UBetaGamma) / (A * B);
+            final double factor = (hy * UAlphaGamma - I * hx * UBetaGamma) / (A * B);
 
             // Compute mean element Rate for Zonal Harmonic :
             // da / dt = 0 for zonal harmonic :
-            dEx = (B / A) * dUdEy + ey * factor;
-            dEy = -(B / A) * dUdEx - ex * factor;
-            dHx = -C / (2 * A * B) * UBetaGamma;
-            dHy = -I * C * UAlphaGamma / (2 * A * B);
-            dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (ex * dUdEx + ey * dUdEy) + (hx * UAlphaGamma - I * hy * UBetaGamma) / (A * B);
+            dh = (B / A) * dUdk + k * factor;
+            dk = -(B / A) * dUdh - h * factor;
+            dp = -C / (2 * A * B) * UBetaGamma;
+            dq = -I * C * UAlphaGamma / (2 * A * B);
+            dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (hy * UAlphaGamma - I * hx * UBetaGamma) / (A * B);
 
-            return new double[] { 0d, dEx, dEy, dHx, dHy, dM };
+            return new double[] { 0d, dk, dh, dq, dp, dM };
+        }
+
+        /**
+         * return the value within the range <code>[0; 2&pi;[</code>.
+         * 
+         * @param angle_rad
+         *            radians.
+         * @return value modulo <code>[0; 2&pi;[</code>.
+         */
+        public double modulo0To2Pi(final double angle_rad) {
+            double rem = angle_rad % (2 * Math.PI);
+            if (rem < -1e-12) {
+                rem += (2 * Math.PI);
+            }
+            return rem;
         }
 
         /**
@@ -238,8 +252,8 @@ public class DSSTCentralBody implements DSSTForceModel {
          * equation 3.1 - (6) from the main paper. <br>
          * The result is an array containing the following data : <br>
          * dU / da <br>
-         * dU / de<sub>x</sub> <br>
-         * dU /de<sub>y</sub> <br>
+         * dU / dk <br>
+         * dU / dh <br>
          * dU / d&alpha; <br>
          * dU/ d&beta; <br>
          * dU/d&gamma;<br>
@@ -289,6 +303,8 @@ public class DSSTCentralBody implements DSSTForceModel {
             double qns;
             double gs;
             double hs;
+            double gsM1;
+            double hsM1;
             double dkns;
 
             // Other data :
@@ -299,10 +315,18 @@ public class DSSTCentralBody implements DSSTForceModel {
             // Kronecker symbol (2 - delta(0,s))
             double delta0s = 0d;
 
-            for (int s = 0; s < order - 2; s++) {
+            for (int s = 0; s < order - 1; s++) {
                 // Get the current gs and hs coefficient :
                 gs = GsHs[0][s];
                 hs = GsHs[1][s];
+                // Get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF NULL !! TODO to chek
+                gsM1 = (s > 0 ? GsHs[0][s - 1] : 0);
+                hsM1 = (s > 0 ? GsHs[1][s - 1] : 0);
+                // Compute partial derivatives of GsHs TODO
+                dGsdk = s * beta * gsM1 - s * alpha * hsM1;
+                dGsdh = s * alpha * gsM1 + s * beta * hsM1;
+                dGsdAl = s * k * gsM1 - s * h * hsM1;
+                dGsdBe = s * h * gsM1 + s * k * hsM1;
 
                 // Compute Partial derivatives of Gs from equ. (9)
                 if (s == 0) {
@@ -311,29 +335,26 @@ public class DSSTCentralBody implements DSSTForceModel {
                 } else {
                     // s > 0
                     delta0s = 2;
-                    // Compute partial derivatives of Gs
-                    dGsdk = s * beta * gs - s * alpha * hs;
-                    dGsdh = s * alpha * gs + s * beta * hs;
-                    dGsdAl = s * h * gs - s * k * hs;
-                    dGsdBe = s * k * gs + s * h * hs;
                 }
 
-                for (int n = s + 2; n < order - 1; n++) {
+                for (int n = s + 2; n < order; n++) {
                     // Extract data from previous computation :
                     jn = Jn[n];
                     vns = Vns[n][s];
-                    kns = Kns[FastMath.abs(-n - 1)][s];
+                    // TODO try with n value instead of Math.abs(-n-1)
+                    kns = Kns[n][s];
                     qns = Qns[n][s];
                     raExpN = FastMath.pow(Ra, n);
-                    dkns = dKns[FastMath.abs(-n - 1)][s];
+                    // TODO try with n value instead of Math.abs(-n-1)
+                    dkns = dKns[n][s];
                     commonCoefficient = delta0s * raExpN * jn * vns;
 
                     // Compute dU / da :
                     dUda += commonCoefficient * (n + 1) * kns * qns * gs;
                     // Compute dU / dEx
-                    dUdk += commonCoefficient * qns * (kns * dGsdk + k * khi3 * gs * dkns);
+                    dUdk += commonCoefficient * qns * (kns * dGsdk + k * khi3 * dkns);
                     // Compute dU / dEy
-                    dUdh += commonCoefficient * qns * (kns * dGsdh + h * khi3 * dkns);
+                    dUdh += commonCoefficient * qns * (kns * dGsdh + h * khi3 * gs * dkns);
                     // Compute dU / dAlpha
                     dUdAl += commonCoefficient * qns * kns * dGsdAl;
                     // Compute dU / dBeta
@@ -355,8 +376,14 @@ public class DSSTCentralBody implements DSSTForceModel {
 
         /**
          * Kernels of Hansen coefficients from equation 2.7.3 - (6)
+         * 
+         * @param degree
+         *            computational degree
+         * @param B
+         *            B coefficient defined by 2.1.6 - (1b)
          */
-        private double[][] computeKnsCoefficient(final int degree) {
+        private double[][] computeKnsCoefficient(final int degree,
+                                                 final double B) {
             // Initialization :
             double[][] Kns = new double[degree][];
             for (int i = 0; i < degree; i++) {
@@ -379,8 +406,16 @@ public class DSSTCentralBody implements DSSTForceModel {
             return Kns;
         }
 
-        /** equation 3.1-(7) */
-        private double[][] computeKnsDerivatives(double[][] Kns) {
+        /**
+         * Derivative of the Kernels of Hansen coefficients from equation 3.1-(7)
+         * 
+         * @param Kns
+         *            Kernels of Hansen coefficients from equation 2.7.3 - (6)
+         * @param B
+         *            B coefficient defined by 2.1.6 - (1b)
+         */
+        private double[][] computeKnsDerivatives(final double[][] Kns,
+                                                 final double B) {
             // Initialization :
             double[][] dKns = new double[Kns.length][];
             for (int i = 0; i < Kns.length; i++) {
@@ -470,9 +505,9 @@ public class DSSTCentralBody implements DSSTForceModel {
             if (s <= -m) {
                 res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow((1 + I * gamma), -I * m);
             } else if (FastMath.abs(s) <= m) {
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticsUtils.factorial(n + m) *
-                      ArithmeticsUtils.factorial(n + m) * FastMath.pow(1 + I * gamma, I * s);
-                den = ArithmeticsUtils.factorial(n + s) * ArithmeticsUtils.factorial(n - s);
+                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n + m)
+                                * FastMath.pow(1 + I * gamma, I * s);
+                den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
                 res = num / den;
             } else if (s >= m) {
                 res = FastMath.pow(2, -s) * FastMath.pow(1 + I * gamma, I * m);
@@ -497,9 +532,11 @@ public class DSSTCentralBody implements DSSTForceModel {
             if (s <= -m) {
                 res = -FastMath.pow(-1, m - s) * FastMath.pow(2, s) * m * FastMath.pow((1 + I * gamma), -I * m - 1);
             } else if (FastMath.abs(s) <= m) {
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticsUtils.factorial(n + m) *
-                      ArithmeticsUtils.factorial(n + m) * s * FastMath.pow(1 + I * gamma, I * s - 1);
-                den = ArithmeticsUtils.factorial(n + s) * ArithmeticsUtils.factorial(n - s);
+
+                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n + m)
+                                * s * FastMath.pow(1 + I * gamma, I * s - 1);
+                den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
+
                 res = num / den;
             } else if (s >= m) {
                 res = FastMath.pow(2, -s) * m * FastMath.pow(1 + I * gamma, I * m - 1);
@@ -508,19 +545,33 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         /**
-         * Compute the Hansen coefficient for the resonant tesseral harmonics from equation 2.7.3 -
-         * (10)
+         * <<<<<<< Updated upstream Compute the Hansen coefficient for the resonant tesseral
+         * harmonics from equation 2.7.3 - (10) ======= Compute the Hansen coefficient
+         * K<sub>j</sub><sup>ns</sup> for the resonnant tesseral harmonics from equation 2.7.3 -
+         * (10). This equation is slightly different from the one quoted as it offers much better
+         * convergence for high eccentricity cases with no penalty for low eccentricity cases (see
+         * the Daniel John Fonte thesis :
+         * "Implementing a 50x50 gravity field model in an orbit determination system", under Cefola
+         * supervision. >>>>>>> Stashed changes
          * 
          * @throws OrekitException
+         *             if the Newcomb operator cannot be computed with the current indexes
          */
         private double computeKernelOfHansenCoefficient(final int j,
                                                         final int n,
                                                         final int s) throws OrekitException {
             final double e = orbit.getE();
-            final double coeff = FastMath.pow(1 - e * e, n + 1.5);
+            // The added coefficient from the Danielson paper is :
+            // FastMath.pow(e, FastMath.abs(j - s))
+            final double coeff = FastMath.pow(1 - e * e, n + 1.5) * FastMath.pow(e, FastMath.abs(j - s));
             final int orderMax = resonantTesseralSize;
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
+            // final int a = FastMath.max(j - s, 0);
+            // final int b = FastMath.max(s - j, 0);
+
+            // New definition of a, b
+            final int a = (FastMath.abs(j - s) + (j - s)) / 2;
+            final int b = (FastMath.abs(j - s) - (j - s)) / 2;
+
             double result = 0d;
             for (int i = 0; i < orderMax; i++) {
                 result += newcombOperator.getValue(i + a, i + b, n, s) * FastMath.pow(e, 2 * i);
