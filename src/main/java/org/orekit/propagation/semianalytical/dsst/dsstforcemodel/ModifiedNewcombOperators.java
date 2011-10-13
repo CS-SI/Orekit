@@ -92,6 +92,7 @@ public class ModifiedNewcombOperators {
      *            s-value
      * @return evaluated polynomial
      * @throws OrekitException
+     *             if &rho; < &sigma;
      */
     public double getValue(int rho,
                            int sigma,

@@ -1,5 +1,7 @@
 package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 
+import org.apache.commons.math.distribution.BinomialDistribution;
+import org.apache.commons.math.distribution.BinomialDistributionImpl;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory;
@@ -37,6 +39,10 @@ public class CoefficientFactoryTest {
         Assert.assertEquals(1 / 3840d, Vns[5][5], epsilon);
     }
 
+    /**
+     * Qns test based on two computation method. As method are independent and give the same result,
+     * we assume the result to be consistent.
+     */
     @Test
     public void QnsGenerationTest() {
         Assert.assertEquals(1, CoefficientFactory.getQnsPolynomialValue(0, 0, 0), 1e-15);
@@ -54,8 +60,21 @@ public class CoefficientFactoryTest {
         }
     }
 
-    // @Test
-    // public void testVmsnCoefficientComputation() {
-    // System.out.println(CoefficientFactory.getVmsn(2, 10, 10));
-    // }
+    /**
+     * Gs and Hs test based on two computation method. As method are independent and give the same
+     * result, we assume the result to be consistent.
+     */
+    @Test
+    public void GsHsComputationTest() {
+        final int order = 50;
+        for (int j = 0; j < order; j++) {
+            final double k = Math.random();
+            final double h = Math.random();
+            final double alpha = Math.random();
+            final double beta = Math.random();
+            double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
+            Assert.assertEquals(GsHs[0][j], CoefficientFactory.getGsCoefficient(k, h, alpha, beta, j), epsilon);
+            Assert.assertEquals(GsHs[1][j], CoefficientFactory.getHsCoefficient(k, h, alpha, beta, j), epsilon);
+        }
+    }
 }

@@ -5,6 +5,7 @@ import java.text.ParseException;
 
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.FastMath;
 import org.junit.Before;
@@ -54,16 +55,22 @@ public class DSSTCentralBodyTest {
 
         dsstModel.addForceModel(new DSSTCentralBody(ae, Cnm, Snm, null));
         
-        dsstModel.propagate(date.shiftedBy(10));
+        System.out.println(dsstModel.propagate(date.shiftedBy(10)).getOrbit());
 
     }
 
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        double[] absTolerance = { 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6};
-        double[] relTolerance = { 1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7};
-        integrator = new DormandPrince853Integrator(0.001, 200, absTolerance, relTolerance);
+//        double[] absTolerance = { 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001};
+//        double[] relTolerance = { 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7};
+//        
+//        
+//        integrator = new DormandPrince853Integrator(0.001, 200, absTolerance, relTolerance);
+        
+        
+        final double step = 100.;
+        integrator = new ClassicalRungeKuttaIntegrator(step);
         ae = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
     }
 
