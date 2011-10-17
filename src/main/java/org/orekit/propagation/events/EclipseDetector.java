@@ -237,7 +237,7 @@ public class EclipseDetector extends AbstractDetector {
      * @return the total eclipse detection flag (true for umbra events detection,
      * false for penumbra events detection)
      */
-    public boolean geTotaltEclipse() {
+    public boolean getTotalEclipse() {
         return totalEclipse;
     }
 
