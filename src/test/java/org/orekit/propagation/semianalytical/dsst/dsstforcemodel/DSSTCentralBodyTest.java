@@ -54,8 +54,10 @@ public class DSSTCentralBodyTest {
         DSSTPropagator dsstModel = new DSSTPropagator(integrator, equi);
 
         dsstModel.addForceModel(new DSSTCentralBody(ae, Cnm, Snm, null));
-        
-        System.out.println(dsstModel.propagate(date.shiftedBy(10)).getOrbit());
+        for (int i = 0; i < 100; i++){
+            System.out.println(dsstModel.propagate(date.shiftedBy(i * 10)).getOrbit());
+
+        }
 
     }
 
