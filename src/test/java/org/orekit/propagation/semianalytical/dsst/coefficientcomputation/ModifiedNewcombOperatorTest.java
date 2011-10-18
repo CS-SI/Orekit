@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Categories.ExcludeCategory;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.ModifiedNewcombOperators;
 
@@ -29,7 +30,7 @@ public class ModifiedNewcombOperatorTest {
         f2.add(q2);
 
         // Multiplication gives :
-        List<PolynomialFunction> list = ModifiedNewcombOperators.multiplyPolynomialList(f1, f2);
+        List<PolynomialFunction> list = ModifiedNewcombOperators.NewcombPolynomialsGenerator.multiplyPolynomialList(f1, f2);
 
         // Constant term in s :
         checkPolynomial(list.get(0), "x + 2 x^2 + x^3");
@@ -65,7 +66,7 @@ public class ModifiedNewcombOperatorTest {
         f2.add(q4);
 
         // Multiplication gives :
-        List<PolynomialFunction> list = ModifiedNewcombOperators.multiplyPolynomialList(f1, f2);
+        List<PolynomialFunction> list = ModifiedNewcombOperators.NewcombPolynomialsGenerator.multiplyPolynomialList(f1, f2);
 
         // // No constant term in s :
         checkPolynomial(list.get(0), "0");
@@ -88,20 +89,26 @@ public class ModifiedNewcombOperatorTest {
      */
     @Test
     public void GenerationOfNewcombOperatorTest() throws OrekitException {
-        ModifiedNewcombOperators newcomb = new ModifiedNewcombOperators(5);
+
         // (0, 0) : 1
-        checkPolynomial(newcomb.getPolynomialList(0, 0).get(0), "1");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 0).get(0), "1");
         // (1, 0) : s - n / 2
-        checkPolynomial(newcomb.getPolynomialList(1, 0).get(0), "x");
-        checkPolynomial(newcomb.getPolynomialList(1, 0).get(1), "-0.5");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 0).get(0), "x");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 0).get(1), "-0.5");
         // (2, 0) : (5/8 s + 1/2 s^2) + (-3/8 - 1/2s)n + 1/8 n^2
-        checkPolynomial(newcomb.getPolynomialList(2, 0).get(0), "0.625 x + 0.5 x^2");
-        checkPolynomial(newcomb.getPolynomialList(2, 0).get(1), "-0.375 - 0.5 x");
-        checkPolynomial(newcomb.getPolynomialList(2, 0).get(2), "0.125");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(2, 0).get(0), "0.625 x + 0.5 x^2");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(2, 0).get(1), "-0.375 - 0.5 x");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(2, 0).get(2), "0.125");
         // (1, 1) : (3/2 + 1/2 x - 1/2 x^2) + n + 1/8 n^2
-        checkPolynomial(newcomb.getPolynomialList(1, 1).get(0), "1.5 + 0.5 x - 0.5 x^2");
-        checkPolynomial(newcomb.getPolynomialList(1, 1).get(1), "1");
-        checkPolynomial(newcomb.getPolynomialList(1, 1).get(2), "0.125");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(0), "1.5 + 0.5 x - 0.5 x^2");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(1), "1");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(2), "0.125");
+        ModifiedNewcombOperators.getPolynomialList(20, 10);
+    }
+    
+    @Test(expected = OrekitException.class)
+    public void ErrorGenerationTest() throws OrekitException{
+        ModifiedNewcombOperators.getValue(0, 1, 0, 0);
     }
 
     /** */
@@ -123,7 +130,7 @@ public class ModifiedNewcombOperatorTest {
         f2.add(q2);
 
         // Multiplication gives :
-        List<PolynomialFunction> list = ModifiedNewcombOperators.sumPolynomialList(f1, f2);
+        List<PolynomialFunction> list = ModifiedNewcombOperators.NewcombPolynomialsGenerator.sumPolynomialList(f1, f2);
 
         // Constant term in s :
         checkPolynomial(list.get(0), "1 + 3 x + x^2");
