@@ -666,6 +666,7 @@ public abstract class AbstractPropagator implements Propagator {
 
             } catch (PropagationException pe) {
                 // simply re-throw this exception which has the required type
+                throw pe;
             } catch (OrekitException oe) {
                 // wrap other exceptions
                 throw new PropagationException(oe);
