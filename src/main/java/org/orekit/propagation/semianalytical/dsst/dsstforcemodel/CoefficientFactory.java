@@ -5,12 +5,16 @@ import java.util.TreeMap;
 
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
+import org.apache.commons.math.complex.Complex;
+import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.MathUtils;
 
 public class CoefficientFactory {
 
+    /** Internal storage of the polynomial values. Reused for further computation */
     private static double[][]                      Vns               = new double[][] {};
 
+    /** Map of the Qns derivatives, for each (n, s) couple {@link CoefficientFactory.QnsKey} */
     private static Map<QnsKey, PolynomialFunction> QnsDerivativesMap = new TreeMap<QnsKey, PolynomialFunction>();
 
     /** Get the Qns value from 2.8.1-(4) */
@@ -31,9 +35,7 @@ public class CoefficientFactory {
         return derivative.value(gamma);
     }
 
-    /**
-     * Q<sub>ns</sub> array coefficient from 2.8.3-(2)
-     */
+    /** Q<sub>ns</sub> array coefficient from 2.8.3-(2) */
     public static double[][] computeQnsCoefficient(final int order,
                                                    final double gamma) {
         // Initialization
@@ -61,20 +63,21 @@ public class CoefficientFactory {
     /**
      * Compute G<sub>s</sub> and H<sub>s</sub> polynomial from equation 3.1-(5)
      * 
-     * @param ex
-     *            x-component of the eccentricity vector (or k component in D.A Danielson notation)
-     * @param ey
-     *            y-component of the eccentricity vector (or h component in D.A Danielson notation)
+     * @param k
+     *            x-component of the eccentricity vector
+     * @param h
+     *            y-component of the eccentricity vector
      * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomial. First column contains the
      *         G<sub>s</sub> values and the second column containt the H<sub>s</sub> values
      */
-    public static double[][] computeGsHsCoefficient(final double ex,
-                                                    final double ey,
+    public static double[][] computeGsHsCoefficient(final double k,
+                                                    final double h,
                                                     final double alpha,
                                                     final double beta,
                                                     final int order) {
-        // TODO this coefficient can also be computed by direct relation 3.1-(5) Check for
-        // performances...
+
+        // TODO this coefficient can also be computed by direct relation 3.1-(4) Check for
+        // performances... see below
         // Initialization
         double[][] GsHs = new double[2][order];
         // First Gs coefficient
@@ -84,14 +87,40 @@ public class CoefficientFactory {
 
         for (int s = 1; s < order; s++) {
             // Gs coefficient :
-            GsHs[0][s] = (ey * alpha + ex * beta) * GsHs[0][s - 1] - (ex * alpha - ey * beta) * GsHs[1][s - 1];
+            GsHs[0][s] = (k * alpha + h * beta) * GsHs[0][s - 1] - (h * alpha - k * beta) * GsHs[1][s - 1];
             // Hs coefficient
-            GsHs[1][s] = (ex * alpha - ey * beta) * GsHs[0][s - 1] + (ey * alpha + ex * beta) * GsHs[1][s - 1];
+            GsHs[1][s] = (h * alpha - k * beta) * GsHs[0][s - 1] + (k * alpha + h * beta) * GsHs[1][s - 1];
         }
 
         return GsHs;
     }
-    
+
+    /** relation 3.1-(4) */
+    public static double getGsCoefficient(final double k,
+                                          final double h,
+                                          final double alpha,
+                                          final double beta,
+                                          final int s) {
+        Complex a = new Complex(k, h);
+        Complex a2 = a.pow(s);
+        Complex b = new Complex(alpha, -beta);
+        Complex b2 = b.pow(s);
+        return a2.multiply(b2).getReal();
+    }
+
+    /** relation 3.1-(4) */
+    public static double getHsCoefficient(final double k,
+                                          final double h,
+                                          final double alpha,
+                                          final double beta,
+                                          final int s) {
+        Complex a = new Complex(k, h);
+        Complex a2 = a.pow(s);
+        Complex b = new Complex(alpha, -beta);
+        Complex b2 = b.pow(s);
+        return a2.multiply(b2).getImaginary();
+    }
+
     /** Compute the V<sub>n, s</sub> coefficient from 2.8.2 - (1)(2) */
     public static double[][] computeVnsCoefficient(final int order) {
         if (order > Vns.length) {
@@ -131,17 +160,23 @@ public class CoefficientFactory {
         // If (n -s) is odd, the Vmsn coefficient is null
         double result = 0;
         if ((n - s) % 2 == 0) {
-            result = MathUtils.factorial(n + s) / MathUtils.factorial(n - m) * Vns[n - 1][s - 1];
+            result = ArithmeticUtils.factorial(n + s) / ArithmeticUtils.factorial(n - m) * Vns[n - 1][s - 1];
         }
         return result;
     }
 
+    /**
+     * Qns couple's key
+     */
     private static class QnsKey implements Comparable<QnsKey> {
 
+        /** n value */
         final int n;
 
+        /** s value */
         final int s;
 
+        /** Default constructor */
         public QnsKey(final int n,
                       final int s) {
             this.n = n;

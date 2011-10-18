@@ -466,7 +466,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                 res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow((1 + I * gamma), -I * m);
             } else if (FastMath.abs(s) <= m) {
                 num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) *
-                      ArithmeticUtils.factorial(n + m) * FastMath.pow(1 + I * gamma, I * s);
+                        ArithmeticUtils.factorial(n + m) * FastMath.pow(1 + I * gamma, I * s);
                 den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
                 res = num / den;
             } else if (s >= m) {
@@ -493,7 +493,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                 res = -FastMath.pow(-1, m - s) * FastMath.pow(2, s) * m * FastMath.pow((1 + I * gamma), -I * m - 1);
             } else if (FastMath.abs(s) <= m) {
                 num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) *
-                      ArithmeticUtils.factorial(n + m) * s * FastMath.pow(1 + I * gamma, I * s - 1);
+                        ArithmeticUtils.factorial(n + m) * s * FastMath.pow(1 + I * gamma, I * s - 1);
                 den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
                 res = num / den;
             } else if (s >= m) {
