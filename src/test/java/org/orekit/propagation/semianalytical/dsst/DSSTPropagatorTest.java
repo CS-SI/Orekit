@@ -28,7 +28,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.frames.FramesFactory;
@@ -39,7 +38,11 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -125,7 +128,7 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testPropagationWithDrag() throws OrekitException {
+    public void testPropagationWithForces() throws OrekitException {
 
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, FramesFactory.getITRF2005(true));
@@ -133,14 +136,17 @@ public class DSSTPropagatorTest {
 
         double sf = 5.0;
         double cd = 2.0;
+        double cr = 2.0;
         DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, sf);
+        DSSTForceModel srp  = new DSSTSolarRadiationPressure(cr, sf, sun, 6378136.460);
 
         // Propagation of the initial at t + dt
         final double dt = 86400;
         PVCoordinates pv = propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
         propagator.resetInitialState(initialState);
-        propagator.addForceModel(drag);
+//        propagator.addForceModel(drag);
+        propagator.addForceModel(srp);
         PVCoordinates pvd = propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
         Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 0.0);
@@ -221,9 +227,10 @@ public class DSSTPropagatorTest {
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
         mu  = 3.9860047e14;
-        final Vector3D position = new Vector3D(7.0e6, 0.0, 0.0);
-        final Vector3D velocity = new Vector3D(0.0, 5000.0, 5000.0);
-        initDate = AbsoluteDate.J2000_EPOCH;
+        final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
+        final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
+        // Equinoxe 21 mars 2003 à 1h00m
+        initDate = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);

@@ -12,6 +12,7 @@ import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.events.EventHandler;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -94,10 +95,13 @@ public class DSSTPropagator extends AbstractPropagator {
     private static final long serialVersionUID = -1217566398912634178L;
 
     /** Propagation orbit type. */
-    private static final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+    private static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
 
     /** Position angle type. */
-    private static final PositionAngle angleType = PositionAngle.MEAN;
+    private static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
+
+    /** Position error tolerance (m). */
+    private static final double POSITION_ERROR = 1.0;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
     private transient FirstOrderIntegrator integrator;
@@ -295,7 +299,7 @@ public class DSSTPropagator extends AbstractPropagator {
             final AbsoluteDate initialDate = initialState.getDate();
 
             if (initialDate.equals(date)) {
-                // don't extrapolate
+                // don't extrapolate, return current orbit
                 return initialState.getOrbit();
             }
 
@@ -306,30 +310,64 @@ public class DSSTPropagator extends AbstractPropagator {
                 }
                 isDirty = false;
             }
-            
-            // mathematical view
-            double[] stateIn = new double[6];
-            double[] stateOut = new double[6];
-            orbitType.mapOrbitToArray(initialState.getOrbit(), angleType, stateIn);
+
+            // Initialize mean elements
+            double[] meanElements = getInitialMeanElements(initialState);
+
+            // Propagate mean elements
             try {
-                stateOut = extrapolate(initialDate, stateIn, date);
+                meanElements = extrapolate(initialDate, meanElements, date);
             } catch (OrekitExceptionWrapper oew) {
                 throw new PropagationException(oew.getException());
             }
 
-            // Add short periodic variations to state vector
+            // Add short periodic variations to mean elements to get osculating elements
+            double[] osculatingElements = meanElements.clone();
             for (final DSSTForceModel forceModel : forceModels) {
-                double[] ySPV = forceModel.getShortPeriodicVariations(date, stateOut);
-                for (int i = 0; i < ySPV.length; i++) {
-                    stateOut[i] += ySPV[i];
+                double[] shortPeriodicVariations = forceModel.getShortPeriodicVariations(date, meanElements);
+                for (int i = 0; i < shortPeriodicVariations.length; i++) {
+                    osculatingElements[i] += shortPeriodicVariations[i];
                 }
             }
-            
-            return orbitType.mapArrayToOrbit(stateOut, angleType, date, mu, frame);
+
+            return ORBIT_TYPE.mapArrayToOrbit(osculatingElements, ANGLE_TYPE, date, mu, frame);
 
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
+    }
+
+    /** Compute initial mean elements from osculating elements.
+     *  @param state current state information: date, kinematics, attitude
+     *  @return mean elements
+     *  @throws OrekitException 
+     */
+    private double[] getInitialMeanElements(final SpacecraftState state) throws OrekitException {
+        final double[][] tolerances = NumericalPropagator.tolerances(POSITION_ERROR, state.getOrbit(), OrbitType.EQUINOCTIAL);
+        double[] osculatingElements = new double[6];
+        ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, osculatingElements);
+        double[] meanElements = osculatingElements.clone();
+        double epsilon;
+        do {
+            double[] meanPrec = meanElements.clone();
+            double[] shortPeriodicVariations = new double[6];
+            // Compute short periodic variations from current mean elements
+            for (final DSSTForceModel forceModel : forceModels) {
+                double[] spv = forceModel.getShortPeriodicVariations(state.getDate(), meanElements);
+                for (int i = 0; i < shortPeriodicVariations.length; i++) {
+                    shortPeriodicVariations[i] += spv[i];
+                }
+            }
+            // Remove short periodic variations from osculating elements to get mean elements
+            epsilon = 0.0;
+            for (int i = 0; i < meanElements.length; i++) {
+                meanElements[i] = osculatingElements[i] - shortPeriodicVariations[i];
+                epsilon += FastMath.pow((meanElements[i] - meanPrec[i]) / tolerances[0][i], 2);
+            }
+            epsilon = FastMath.sqrt(epsilon);
+        } while (epsilon > POSITION_ERROR);
+        
+        return meanElements;
     }
 
     /** Extrapolation to tf.
@@ -405,7 +443,7 @@ public class DSSTPropagator extends AbstractPropagator {
             try {
                 // update space dynamics view
                 final AbsoluteDate date = referenceDate.shiftedBy(t);
-                final Orbit orbit = orbitType.mapArrayToOrbit(y, angleType, date, mu, frame);
+                final Orbit orbit = ORBIT_TYPE.mapArrayToOrbit(y, ANGLE_TYPE, date, mu, frame);
                 final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, frame);
                 final SpacecraftState state = new SpacecraftState(orbit, attitude, mass);
 
@@ -421,7 +459,7 @@ public class DSSTPropagator extends AbstractPropagator {
                 }
 
                 // finalize derivatives by adding the Kepler contribution
-                orbit.addKeplerContribution(angleType, mu, yDot);
+                orbit.addKeplerContribution(ANGLE_TYPE, mu, yDot);
 
                 // increment calls counter
                 ++calls;
