@@ -29,15 +29,12 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface DSSTForceModel {
 
-    /** Null contribution. */
-    double[] NULL_CONTRIBUTION = {0.,0.,0.,0.,0.,0.};
-
     /** Compute the mean element rates
      *  @param state current state information: date, kinematics, attitude
      *  @return the mean element rates dai/dt
      *  @exception OrekitException if some specific error occurs
      */
-    public abstract double[] getMeanElementRate(final SpacecraftState state) throws OrekitException;
+    double[] getMeanElementRate(final SpacecraftState state) throws OrekitException;
 
     /** Compute the short periodic variations
      *  @param date current date
@@ -45,13 +42,13 @@ public interface DSSTForceModel {
      *  @return the short periodic variations
      *  @exception OrekitException if some specific error occurs
      */
-    public abstract double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] stateVector)
+    double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] stateVector)
         throws OrekitException;
 
     /** Initialize the current computation
      *  @param state current state information: date, kinematics, attitude
      *  @exception OrekitException if some specific error occurs
      */
-    public abstract void init(final SpacecraftState state) throws OrekitException;
+    void init(final SpacecraftState state) throws OrekitException;
 
 }

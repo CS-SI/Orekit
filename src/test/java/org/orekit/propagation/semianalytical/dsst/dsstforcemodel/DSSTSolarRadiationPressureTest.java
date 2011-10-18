@@ -22,10 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.drag.Atmosphere;
-import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -34,19 +31,17 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
-public class DSSTAtmosphericDragTest {
+public class DSSTSolarRadiationPressureTest {
 
     @Test
     public void testMeanElementRate() throws OrekitException {
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, FramesFactory.getITRF2005(true));
-        earth.setAngularThreshold(1.e-10);
-        final Atmosphere atm = new HarrisPriester(sun, earth);
-        final DSSTForceModel force = new DSSTAtmosphericDrag(atm, 2., 5.);
+        final DSSTSolarRadiationPressure force = new DSSTSolarRadiationPressure(2., 5., sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
 
         // Equinoxe 21 mars 2003 à 1h00m
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
@@ -55,11 +50,13 @@ public class DSSTAtmosphericDragTest {
         final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), date, mu);
+        final SpacecraftState state = new SpacecraftState(orbit);
 
-        double[] daidt = force.getMeanElementRate(new SpacecraftState(orbit));
+        final double[] daidt2 = force.getMeanElementRate2(state);
+        final double[] daidt  = force.getMeanElementRate(state);
 
-        for (int i = 0; i < daidt.length; i++) {
-            System.out.println(daidt[i]);
+        for (int i = 0; i < daidt2.length; i++) {
+            System.out.println(daidt[i] + " " + daidt2[i]);
         }
 
     }

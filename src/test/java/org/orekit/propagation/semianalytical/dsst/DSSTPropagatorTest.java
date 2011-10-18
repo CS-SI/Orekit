@@ -133,8 +133,7 @@ public class DSSTPropagatorTest {
 
         double sf = 5.0;
         double cd = 2.0;
-        SphericalSpacecraft sc = new SphericalSpacecraft(sf, cd, 0.0, 0.0);
-        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, sc);
+        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, sf);
 
         // Propagation of the initial at t + dt
         final double dt = 86400;

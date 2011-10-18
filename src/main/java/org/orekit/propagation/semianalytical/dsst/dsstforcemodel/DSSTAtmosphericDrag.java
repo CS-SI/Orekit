@@ -4,56 +4,41 @@ import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.Atmosphere;
-import org.orekit.forces.drag.DragSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Atmospheric drag force model for {@link DSSTPropagator}.
- *
+/** Atmospheric drag contribution for {@link DSSTPropagator}.
  * <p>
- *  The drag acceleration is computed as follows :
- *
- *  &gamma; = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
- *
- *  With DragCoefVector = {Cx, Cy, Cz} and S given by the user through the interface
- *  {@link DragSensitive}
+ *  The drag acceleration is computed as follows:<br>
+ *  &gamma; = (1/2 &rho; C<sub>D</sub> A<sub>Ref</sub> / m) * |v<sub>atm</sub> - v<sub>sat</sub>| * (v<sub>atm</sub> - v<sub>sat</sub>)
  * </p>
  *
  *  @author Pascal Parraud
  */
-public class DSSTAtmosphericDrag implements DSSTForceModel {
-
-    /** DSST model needs equinoctial orbit as internal representation.
-     *  Classical equinoctial elements have discontinuities when inclination is close to zero.
-     *  In this representation, I = +1. <br>
-     *  To avoid this discontinuity, another representation exists and equinoctial elements can
-     *  be expressed in a different way, called "retrograde" orbit. This implies I = -1.
-     *  As Orekit doesn't implement the retrograde orbit, I = +1 here.
-     */
-    private double I = 1;
+public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
-    /** Drag sensitive spacecraft. */
-    private final DragSensitive spacecraft;
+    /** Coefficient 1/2 * C<sub>D</sub> * A<sub>Ref</sub> */
+    private final double kRef;
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private double rbar;
 
     /** Simple constructor.
      * @param atmosphere atmospheric model
-     * @param spacecraft the object physical and geometrical information
+     * @param cd drag coefficient
+     * @param area cross sectionnal area of satellite
      */
-    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
+    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd, final double area) {
         this.atmosphere = atmosphere;
-        this.spacecraft = spacecraft;
+        this.kRef = 0.5 * cd * area;
         this.rbar = Double.NEGATIVE_INFINITY;
     }
 
@@ -74,77 +59,48 @@ public class DSSTAtmosphericDrag implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
-        final double[]   mer = NULL_CONTRIBUTION;
-        final double[][] jac = new double[6][6];
-        // Compute jacobian
-        OrbitType.EQUINOCTIAL.convertType(state.getOrbit()).getJacobianWrtCartesian(PositionAngle.ECCENTRIC, jac);
-        // Analyse critical distance from center of central body
-        final double r = state.getOrbit().getPVCoordinates().getPosition().getNorm();
-        final double a = state.getOrbit().getA();
-        final double[] f = getFLimits(r, state);
-        final double coef = r * (f[1] - f[0])/ (a * 2. * FastMath.PI);
-        // Compute drag acceleration
-        Vector3D drag = getDragAcceleration(state);
-        // Compute mean elements rate
-        for (int i = 0; i < 6; i++) {
-            final Vector3D aisrp = new Vector3D(jac[i][3],jac[i][4],jac[i][5]);
-            mer[i] = coef * Vector3D.dotProduct(aisrp, drag);
-        }
-        return mer;
+    public double[] getShortPeriodicVariations(final AbsoluteDate date,
+                                               final double[] stateVector) throws OrekitException {
+        return new double[] {0.,0.,0.,0.,0.,0.};
     }
 
     /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] stateVector)
-        throws OrekitException {
-        // Short Periodic Variations are set to null
-        return NULL_CONTRIBUTION;
+    public void init(SpacecraftState state) throws OrekitException {
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState state) throws OrekitException {
-        // Nothing to do here
-    }
-
-    /** Compute the acceleration due to drag.
-     *  <p>
-     *  The computation includes all spacecraft specific characteristics
-     *  like shape, area and coefficients.
-     *  </p>
-     *  @param s current state information: date, kinematics, attitude
-     *  @exception OrekitException if some specific error occurs
-     */
-    private Vector3D getDragAcceleration(final SpacecraftState s) throws OrekitException {
-
-        final AbsoluteDate date     = s.getDate();
-        final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
-
+    protected Vector3D getAcceleration(final SpacecraftState state,
+                                       final Vector3D position,
+                                       final Vector3D velocity) throws OrekitException {
+        final AbsoluteDate date  = state.getDate();
+        final Frame        frame = state.getFrame();
+        // compute atmospheric density (assuming it doesn't depend on the date)
         final double rho    = atmosphere.getDensity(date, position, frame);
+        // compute atmospheric velocity (assuming it doesn't depend on the date)
         final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
-        final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
-        // compute drag for the given drag sensitive spacecraft
-        return spacecraft.dragAcceleration(s, rho, relativeVelocity);
+        // compute relative velocity
+        final Vector3D vRel = vAtm.subtract(velocity);
+        // compute compound drag coefficient
+        final double bc = kRef / state.getMass();
+        // compute drag acceleration
+        return new Vector3D(bc * rho * vRel.getNorm(), vRel);
     }
 
-    /** Compute the limits for the mean elements rate integral.
-     *  @param  r radial distance for the spacecraft
-     *  @param  s current state information: date, kinematics, attitude
-     *  @return the integration limits
-     */
-    private double[] getFLimits(double r, final SpacecraftState s) {
-        double[] f = {-FastMath.PI, FastMath.PI};
+    /** {@inheritDoc} */
+    protected double[] getLLimits(SpacecraftState state) throws OrekitException {
+        double[] ll = {-FastMath.PI, FastMath.PI};
+        final double r = state.getOrbit().getPVCoordinates().getPosition().getNorm();
         if (r < rbar) {
-            final double a  = s.getA();
-            final double e  = s.getE();
-            final double w  = ((KeplerianOrbit)OrbitType.KEPLERIAN.convertType(s.getOrbit())).getPerigeeArgument();
-            final double W  = ((KeplerianOrbit)OrbitType.KEPLERIAN.convertType(s.getOrbit())).getRightAscensionOfAscendingNode();
-            final double eb = FastMath.acos((1. - rbar/a)/e);
-            final double wW = w + I * W;
-            f[0] = -eb + wW;
-            f[1] =  eb + wW;
+            final double a  = state.getA();
+            final double e  = state.getE();
+            final double w  = ((KeplerianOrbit)OrbitType.KEPLERIAN.convertType(state.getOrbit())).getPerigeeArgument();
+            final double W  = ((KeplerianOrbit)OrbitType.KEPLERIAN.convertType(state.getOrbit())).getRightAscensionOfAscendingNode();
+            final double fb = FastMath.acos(((a * (1. - e * e) / rbar) - 1.) / e);
+            final double wW = w + getRetrogradeFactor() * W;
+            ll[0] = -fb + wW;
+            ll[1] =  fb + wW;
         }
-        return f;
+        return ll;
     }
 
 }
