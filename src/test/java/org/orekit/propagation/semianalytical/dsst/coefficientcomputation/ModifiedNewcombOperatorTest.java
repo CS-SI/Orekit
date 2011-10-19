@@ -122,6 +122,7 @@ public class ModifiedNewcombOperatorTest {
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(0), "-0.625 x + 0.5 x^2");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(1), "-0.375 + 0.5 x");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(2), "0.125");
+        ModifiedNewcombOperators.getPolynomialList(0, 10);
         
         
     }

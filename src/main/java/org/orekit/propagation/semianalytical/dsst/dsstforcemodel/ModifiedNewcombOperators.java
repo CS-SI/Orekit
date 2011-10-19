@@ -62,13 +62,15 @@ public class ModifiedNewcombOperators {
                                   int n,
                                   int s) throws OrekitException {
         boolean reverse = rho < sigma;
-        int maxOrder = (reverse ? NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_SUP_SIGMA : NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_INF_SIGMA);
+        int maxOrder = (reverse ? NewcombPolynomialsGenerator.COMPUTED_REVERSE_ORDER : NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER);
 
         // If order hasn't been computed yet, update the Newcomb polynomials
-        if (reverse && sigma > NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_INF_SIGMA) {
-            NewcombPolynomialsGenerator.computeUpToDegree(rho, maxOrder, false);
+        if (reverse && sigma > maxOrder) {
+            if (sigma > NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER) {
+                NewcombPolynomialsGenerator.computeUpToDegree(sigma, maxOrder, false);
+            }
             NewcombPolynomialsGenerator.computeUpToDegree(sigma, maxOrder, true);
-        } else if (!reverse && rho > NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_SUP_SIGMA) {
+        } else if (!reverse && rho > maxOrder) {
             NewcombPolynomialsGenerator.computeUpToDegree(rho, maxOrder, false);
         }
 
@@ -101,15 +103,15 @@ public class ModifiedNewcombOperators {
     public static List<PolynomialFunction> getPolynomialList(final int rho,
                                                              final int sigma) {
         boolean reverse = rho < sigma;
-        int maxOrder = (reverse ? NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_INF_SIGMA : NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_SUP_SIGMA);
+        int maxOrder = (reverse ? NewcombPolynomialsGenerator.COMPUTED_REVERSE_ORDER : NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER);
 
         // If order hasn't been computed yet, update the Newcomb polynomials
-        if (reverse && sigma > NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_INF_SIGMA) {
-            if (sigma > NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_SUP_SIGMA){
-                NewcombPolynomialsGenerator.computeUpToDegree(sigma, NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_SUP_SIGMA, false);    
-            }            
+        if (reverse && sigma > NewcombPolynomialsGenerator.COMPUTED_REVERSE_ORDER) {
+            if (sigma > NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER) {
+                NewcombPolynomialsGenerator.computeUpToDegree(sigma, NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER, false);
+            }
             NewcombPolynomialsGenerator.computeUpToDegree(sigma, maxOrder, true);
-        } else if (!reverse && rho > NewcombPolynomialsGenerator.COMPUTED_ORDER_RHO_SUP_SIGMA) {
+        } else if (!reverse && rho > NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER) {
             NewcombPolynomialsGenerator.computeUpToDegree(rho, maxOrder, false);
         }
         return NewcombPolynomialsGenerator.NEWCOMB_POLYNOMIALS.get(new Couple(rho, sigma));
@@ -127,11 +129,11 @@ public class ModifiedNewcombOperators {
         /** Store polynomials to avoid recomputation for a given &rho;, &sigma; */
         private static SortedMap<Couple, List<PolynomialFunction>> NEWCOMB_POLYNOMIALS = new TreeMap<Couple, List<PolynomialFunction>>();
 
-        /** Maximum order computed with &rho;>&sigma; */
-        private static int                                         COMPUTED_ORDER_RHO_SUP_SIGMA;
+        /** Maximum computed order with &rho;>&sigma; */
+        private static int                                         COMPUTED_DIRECT_ORDER;
 
         /** Maximum order computed with &rho;<&sigma; */
-        private static int                                         COMPUTED_ORDER_RHO_INF_SIGMA;
+        private static int                                         COMPUTED_REVERSE_ORDER;
 
         /** Recurrence generator */
         private static RecurrencePolynomialGenerator               POLYNOMIAL_GENERATOR;
@@ -155,8 +157,8 @@ public class ModifiedNewcombOperators {
             NEWCOMB_POLYNOMIALS.put(new Couple(0, 0), l00);
             NEWCOMB_POLYNOMIALS.put(new Couple(1, 0), l10);
             NEWCOMB_POLYNOMIALS.put(new Couple(0, 1), l01);
-            COMPUTED_ORDER_RHO_INF_SIGMA = 0;
-            COMPUTED_ORDER_RHO_SUP_SIGMA = 0;
+            COMPUTED_REVERSE_ORDER = 0;
+            COMPUTED_DIRECT_ORDER = 0;
             POLYNOMIAL_GENERATOR = new RecurrencePolynomialGenerator();
         }
 
@@ -201,7 +203,6 @@ public class ModifiedNewcombOperators {
 
                     // Create the current couple
                     Couple couple = (reverseOrder ? new Couple(j, k) : new Couple(k, j));
-                    System.out.println(couple);
 
                     // Get the coefficient from the recurrence relation
                     map = POLYNOMIAL_GENERATOR.generateRecurrenceCoefficients(couple);
@@ -261,9 +262,9 @@ public class ModifiedNewcombOperators {
                 }
             }
             // Set the maximum order computed
-            COMPUTED_ORDER_RHO_SUP_SIGMA = (rho > COMPUTED_ORDER_RHO_SUP_SIGMA) ? rho : COMPUTED_ORDER_RHO_SUP_SIGMA;
+            COMPUTED_DIRECT_ORDER = (rho > COMPUTED_DIRECT_ORDER) ? rho : COMPUTED_DIRECT_ORDER;
             if (reverseOrder) {
-                COMPUTED_ORDER_RHO_INF_SIGMA = rho;
+                COMPUTED_REVERSE_ORDER = rho;
             }
         }
 

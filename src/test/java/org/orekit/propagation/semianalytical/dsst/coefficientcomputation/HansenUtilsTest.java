@@ -81,18 +81,20 @@ public class HansenUtilsTest {
         Iterator<Entry<NSKey, Double>> ite = map.entrySet().iterator();
         while (ite.hasNext()) {
             Entry<NSKey, Double> next = ite.next();
-//            System.out.println(next.getKey() + " " + next.getValue());
+            // System.out.println(next.getKey() + " " + next.getValue());
         }
 
-//        System.out.println(map.get(new NSKey(-1, 0)));
+        // System.out.println(map.get(new NSKey(-1, 0)));
         // System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -1, 0,
         // 15));
-        for (int n = 0; n < 5; n++) {
-            for (int s = 0; s < n ; s++) {
+        for (int n = 0; n < 10; n++) {
+            for (int s = 0; s < n; s++) {
                 NSKey key = new NSKey(-n - 1, s);
                 final double mapp = map.get(key);
-                final double coef = HansenUtils.computeKernelOfHansenCoefficient(ecc, 0, n, s, 5);
-//                System.out.println(key + "    " + mapp + "    " + coef + "    " + (mapp - coef));
+                final double coef = HansenUtils.computeKernelOfHansenCoefficient(ecc, 0, n, s, 3);
+                if ((n != 3) && (n != s + 1) && (n != -s + 1)) {
+                    System.out.println(key + "    " + mapp + "    " + coef + "    " + (mapp - coef));
+                }
             }
         }
         // System.out.println(HansenUtils.computeKernelOfHansenCoefficient(ecc, 0, -1, 0, 5));

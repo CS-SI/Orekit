@@ -195,7 +195,7 @@ public class HansenUtils {
 
         double result = 0d;
         for (int i = 0; i < computationOrder; i++) {
-             System.out.println("index " + i + " rho " + (i + a) + " sigma " + (i + b) + " n " +n + " s " + s );
+//             System.out.println("index " + i + " rho " + (i + a) + " sigma " + (i + b) + " n " +n + " s " + s );
             final double newcomb = ModifiedNewcombOperators.getValue(i + a, i + b, n, s);
             result += newcomb * FastMath.pow(ecc, 2 * i);;
 //            System.out.println(i + " " + newcomb * FastMath.pow(ecc, 2 * i));
@@ -215,6 +215,10 @@ public class HansenUtils {
         final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
         final double khi2 = khi * khi;
 
+        if ((n == 3) || (n == s + 1) || (n == -s +1)){
+            System.out.println("error equation 2.7.3 - 9 undefined for : " + n + "  " + s  );
+            return 0d;
+        }
         final double commonFactor = khi2 / ((3 - n) * (1 - n + s) * (1 - n - s));
         final double factorMn = (3 - n) * (1 - n) * (3 - 2 * n);
         final double factorMnP1 = -(2 - n) * ((3 - n) * (1 - n) + 2 * j * s / khi);
