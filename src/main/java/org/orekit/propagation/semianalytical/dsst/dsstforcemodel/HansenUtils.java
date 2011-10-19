@@ -9,39 +9,6 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFact
 
 public class HansenUtils {
 
-    // /**
-    // * Kernels of Hansen coefficients from equation 2.7.3 - (6)
-    // *
-    // * @param degree
-    // * computational degree
-    // * @param B
-    // * B coefficient defined by 2.1.6 - (1b)
-    // */
-    // public static double[][] computeKnsCoefficientOLD(final int degree,
-    // final double ecc) {
-    // // Initialization :
-    // double[][] Kns = new double[degree][];
-    // for (int i = 0; i < degree; i++) {
-    // Kns[i] = new double[i + 1];
-    // }
-    // final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
-    // final double khi2 = khi * khi;
-    // // Kns[0][] = computeKernelOfHansenCoefficient(ecc, 0, 0, s);
-    //
-    // // Compute coefficients
-    // for (int n = 0; n < degree; n++) {
-    // for (int s = 0; s < n + 1; s++) {
-    // if (n == (s + 1) && n >= 1) {
-    // Kns[n][s] = FastMath.pow(khi, 1 + 2 * s) / FastMath.pow(2, s);
-    // } else if (n >= s + 2 && n >= 2) {
-    // Kns[n][s] = ((n - 1) * khi2 / ((n + s - 1) * (n - s - 1)))
-    // * ((2 * n - 3) * Kns[FastMath.abs(-n + 1)][s] - (n - 2) * Kns[FastMath.abs(-n + 2)][s]);
-    // }
-    // }
-    // }
-    // return Kns;
-    // }
-
     /** Equation 2.7.3 - (6) computed only from the recurrence formula */
     public static Map<NSKey, Double> computeHansenKernelForZonalHarmonicsReccurence(final int degreeMax,
                                                                                     final double ecc) {
@@ -98,7 +65,10 @@ public class HansenUtils {
                     double kMns = map.get(new NSKey(-n, s));
                     double KMnP1s = map.get(new NSKey(-n + 1, s));
                     // TODO make it nicer !
-                    double KMnM1s = Kns.get(new NSKey(-n-1, s));/*computeKernelOfHansenCoefficient(ecc, 0, -n-1, s, 5);*/
+                    double KMnM1s = Kns.get(new NSKey(-n - 1, s));/*
+                                                                   * computeKernelOfHansenCoefficient(
+                                                                   * ecc, 0, -n-1, s, 5);
+                                                                   */
 
                     value = (n - 1) * khi2 * ((2 * n - 3) * kMns - (n - 2) * KMnP1s + 2 * KMnM1s / khi) / ((n + s - 1) * (n - s + 1));
                 }
@@ -120,9 +90,9 @@ public class HansenUtils {
      *            eccentricity
      * @throws OrekitException
      */
-    public static double computeKernelOfHansenForZonalHarmonics(final int n,
+    public static double computeKernelOfHansenForZonalHarmonics(final double ecc,
+                                                                final int n,
                                                                 final int s,
-                                                                final double ecc,
                                                                 final int convergenceOrder) throws OrekitException {
         double result;
         final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
@@ -133,8 +103,8 @@ public class HansenUtils {
         } else if (n == (s + 1) && n >= 1) {
             result = FastMath.pow(khi, 1 + 2 * s) / FastMath.pow(2, s);
         } else {
-            final double kMns = computeKernelOfHansenCoefficient(ecc, 0, -n, s, convergenceOrder);
-            final double KMnP1s = computeKernelOfHansenCoefficient(ecc, 0, -n + 1, s, convergenceOrder);
+            final double kMns = computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -n, s, convergenceOrder);
+            final double KMnP1s = computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -n + 1, s, convergenceOrder);
             result = (n - 1) * khi2 * ((2 * n - 3) * kMns - (n - 2) * KMnP1s) / ((n + s - 1) * (n - s - 1));
         }
         return result;
@@ -193,8 +163,8 @@ public class HansenUtils {
         } else if (n == (s + 1)) {
             result = (1 + 2 * s) * FastMath.pow(khi, 2 * s) / FastMath.pow(2, s);
         } else {
-            final double kMns = computeKernelOfHansenCoefficient(ecc, 0, -n, s, computationOrder);
-            final double KMnP1s = computeKernelOfHansenCoefficient(ecc, 0, -n + 1, s, computationOrder);
+            final double kMns = computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -n, s, computationOrder);
+            final double KMnP1s = computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -n + 1, s, computationOrder);
             result = (n - 1) * khi2 * ((2 * n - 3) * kMns - (n - 2) * KMnP1s) / ((n + s - 1) * (n - s - 1));
         }
         return result;
@@ -208,29 +178,49 @@ public class HansenUtils {
      * @throws OrekitException
      *             if the Newcomb operator cannot be computed with the current indexes
      */
-    public static double computeKernelOfHansenCoefficient(final double ecc,
-                                                          final int j,
-                                                          final int n,
-                                                          final int s,
-                                                          final int computationOrder) throws OrekitException {
+    public static double computeKernelOfHansenCoefficientFromNewcomb(final double ecc,
+                                                                     final int j,
+                                                                     final int n,
+                                                                     final int s,
+                                                                     final int computationOrder) throws OrekitException {
         final double coeff = FastMath.pow(1 - ecc * ecc, n + 1.5);
         final int a = FastMath.max(j - s, 0);
         final int b = FastMath.max(s - j, 0);
 
         // TODO check a, b value from both expressions
         // New definition of a, b
-         final int a2 = (FastMath.abs(j - s) + (j - s)) / 2;
-         final int b2 = (FastMath.abs(j - s) - (j - s)) / 2;
+        final int a2 = (FastMath.abs(j - s) + (j - s)) / 2;
+        final int b2 = (FastMath.abs(j - s) - (j - s)) / 2;
         // System.out.println(a2 + " " + b2 + " " + ecc);
 
         double result = 0d;
         for (int i = 0; i < computationOrder; i++) {
-            // System.out.println("index " + i + " rho " + (i + a) + " sigma " + (i + b));
+             System.out.println("index " + i + " rho " + (i + a) + " sigma " + (i + b) + " n " +n + " s " + s );
             final double newcomb = ModifiedNewcombOperators.getValue(i + a, i + b, n, s);
             result += newcomb * FastMath.pow(ecc, 2 * i);;
-            // System.out.println(i + " " + newcomb + " e^" + 2 * i);
+//            System.out.println(i + " " + newcomb * FastMath.pow(ecc, 2 * i));
         }
         return coeff * result;
+    }
+
+    public static double computeKernelOfHansenCoefficient(final double ecc,
+                                                          final int j,
+                                                          final int n,
+                                                          final int s,
+                                                          final int computationOrder) throws OrekitException {
+        final double kMn = computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -n, s, computationOrder);
+        final double kMnP1 = computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -n + 1, s, computationOrder);
+        final double kMnP3 = computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -n + 3, s, computationOrder);
+
+        final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
+        final double khi2 = khi * khi;
+
+        final double commonFactor = khi2 / ((3 - n) * (1 - n + s) * (1 - n - s));
+        final double factorMn = (3 - n) * (1 - n) * (3 - 2 * n);
+        final double factorMnP1 = -(2 - n) * ((3 - n) * (1 - n) + 2 * j * s / khi);
+        final double factorMnP3 = j * j * (1 - n);
+
+        return commonFactor * (factorMn * kMn + factorMnP1 * kMnP1 + factorMnP3 * kMnP3);
     }
 
     /**
@@ -250,7 +240,7 @@ public class HansenUtils {
                                                                      final int s,
                                                                      final int computationOrder) throws OrekitException {
         // Initialization :
-        final double Kjns = computeKernelOfHansenCoefficient(ecc, j, n, s, computationOrder);
+        final double Kjns = computeKernelOfHansenCoefficientFromNewcomb(ecc, j, n, s, computationOrder);
         final double coeff = FastMath.pow(1 - ecc * ecc, n + 1.5);
         final int a = FastMath.max(j - s, 0);
         final int b = FastMath.max(s - j, 0);

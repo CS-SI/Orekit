@@ -139,17 +139,17 @@ public class DSSTCentralBody implements DSSTForceModel {
                         + zonalTerms[4] + " " + zonalTerms[5] + " ");
 
         // Get tesseral resonant harmonics contributuion :
-//        TesseralResonantHarmonics tesseralHarmonics = new TesseralResonantHarmonics();
-//        double[] tesseralTerms = tesseralHarmonics.getResonantContribution(orbit);
-//        System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " + tesseralTerms[2] + " " + tesseralTerms[3]
-//                        + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
+        TesseralResonantHarmonics tesseralHarmonics = new TesseralResonantHarmonics();
+        double[] tesseralTerms = tesseralHarmonics.getResonantContribution(orbit);
+        System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " + tesseralTerms[2] + " " + tesseralTerms[3]
+                        + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
 
-//        double[] meanElementRate = new double[zonalTerms.length];
-//        for (int i = 0; i < zonalTerms.length; i++) {
-//            meanElementRate[i] = tesseralTerms[i] + zonalTerms[i];
-//        }
+        double[] meanElementRate = new double[zonalTerms.length];
+        for (int i = 0; i < zonalTerms.length; i++) {
+            meanElementRate[i] = tesseralTerms[i] + zonalTerms[i];
+        }
 
-        return zonalTerms;
+        return meanElementRate;
     }
 
     /** {@inheritDoc} */
@@ -693,7 +693,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                             gamMsn = computeGammaMsn(n, s, Im, gamma);
                             dGamma = computeDGammaMsn(n, s, m, gamma);
                             // TODO ordre de convergence en dur
-                            kjn_1 = HansenUtils.computeKernelOfHansenCoefficient(ecc, j, nMin, s, 5);
+                            kjn_1 = HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, j, nMin, s, 5);
                             dkjn_1 = HansenUtils.computeDerivativedKernelOfHansenCoefficient(ecc, j, nMin, s, 5);
                             dGdh = GHms.getdGmsdh(m, s, j);
                             dGdk = GHms.getdGmsdk(m, s, j);

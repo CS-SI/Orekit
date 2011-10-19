@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Categories.ExcludeCategory;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.ModifiedNewcombOperators;
 
@@ -88,7 +87,7 @@ public class ModifiedNewcombOperatorTest {
      * @throws OrekitException
      */
     @Test
-    public void GenerationOfNewcombOperatorTest() throws OrekitException {
+    public void GenerationOfNewcombOperator_Rho_Sup_Sigma_Test() throws OrekitException {
 
         // (0, 0) : 1
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 0).get(0), "1");
@@ -99,16 +98,32 @@ public class ModifiedNewcombOperatorTest {
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(2, 0).get(0), "0.625 x + 0.5 x^2");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(2, 0).get(1), "-0.375 - 0.5 x");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(2, 0).get(2), "0.125");
-        // (1, 1) : (3/2 + 1/2 x - 1/2 x^2) + n + 1/8 n^2
+        // (1, 1) : (3/2 + 1/2 s - 1/2 s^2) + n + 1/8 n^2
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(0), "1.5 + 0.5 x - 0.5 x^2");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(1), "1");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(2), "0.125");
-        ModifiedNewcombOperators.getPolynomialList(20, 10);
+
+        // order 0 :
+        // (4*x^3)/(12*2)+(20*x^2)/(12*8)+(8*x^2)/(12*2)+(20*x)/(12*8)+(4*x)/(12*2)+x^2/12+(2*x)/12
+        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(0));
+        // order 1 :
+        // (-5)/48+(-1)/4-((4*x^2)/(12*2))-((12*x)/(12*8))-((5*x)/(12*4))-((7*x)/(12*2))-(x^2/12)-((2*x)/12)
+        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(1));
+        // order 2 : 1/24+1/16+1/12+x/(12*2)+x/12
+        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(2));
     }
-    
-    @Test(expected = OrekitException.class)
-    public void ErrorGenerationTest() throws OrekitException{
-        ModifiedNewcombOperators.getValue(0, 1, 0, 0);
+
+    @Test
+    public void GenerationOfNewcombOperator_Rho_Inf_Sigma_Test() {
+        // (0, 1) : -s - n / 2
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 1).get(0), "-x");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 1).get(1), "-0.5");
+        // (0, 2) : (5/8 s + 1/2 s^2) + (-3/8 - 1/2s)n + 1/8 n^2
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(0), "-0.625 x + 0.5 x^2");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(1), "-0.375 + 0.5 x");
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(2), "0.125");
+        
+        
     }
 
     /** */
@@ -129,7 +144,7 @@ public class ModifiedNewcombOperatorTest {
         f2.add(q1);
         f2.add(q2);
 
-        // Multiplication gives :
+        // Sum gives :
         List<PolynomialFunction> list = ModifiedNewcombOperators.NewcombPolynomialsGenerator.sumPolynomialList(f1, f2);
 
         // Constant term in s :
