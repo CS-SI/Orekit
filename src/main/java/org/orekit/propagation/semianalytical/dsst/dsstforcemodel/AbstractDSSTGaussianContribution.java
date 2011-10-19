@@ -50,13 +50,13 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
     /** Maximum number of iterations. */
     private final static int MAXIMAL_ITERATION_COUNT = UnivariateRealIntegratorImpl.DEFAULT_MAX_ITERATIONS_COUNT;
     /** Maximum number of evaluations. */
-    private final static int MAX_EVAL = 50;
+    private final static int MAX_EVAL = 10;
 
     /** Propagation orbit type. */
-    private static final OrbitType orbitType = OrbitType.EQUINOCTIAL;
+    private static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
 
     /** Position angle type. */
-    private static final PositionAngle angleType = PositionAngle.MEAN;
+    private static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
 
     /** DSST model needs equinoctial orbit as internal representation.
      *  Classical equinoctial elements have discontinuities when inclination is close to zero.
@@ -68,13 +68,13 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
     private double I = 1;
 
     /** Numerical quadrature operator. */
-    private UnivariateRealIntegrator lgi;
+    private UnivariateRealIntegrator numQuad;
 
     /** Build a new instance. */
     protected AbstractDSSTGaussianContribution() {
-//        this.lgi = new LegendreGaussIntegrator(NB_POINTS, RELATIVE_ACCURACY, ABSOLUTE_ACCURACY,
+//        this.numQuad = new LegendreGaussIntegrator(NB_POINTS, RELATIVE_ACCURACY, ABSOLUTE_ACCURACY,
 //                                               MINIMAL_ITERATION_COUNT, MAXIMAL_ITERATION_COUNT);
-        this.lgi = new SimpsonIntegrator();
+        this.numQuad = new SimpsonIntegrator();
     }
 
     /** Get the current retrograde factor I.
@@ -98,13 +98,13 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         for (int i = 0; i < 6; i++) {
             iFct.setElement(i);
             try {
-                meanElementRate[i] = coef * lgi.integrate(MAX_EVAL, iFct, ll[0], ll[1]);
+                meanElementRate[i] = coef * numQuad.integrate(MAX_EVAL, iFct, ll[0], ll[1]);
             } catch (OrekitExceptionWrapper oew) {
                 throw oew.getException();
             }
         }
 
-        return meanElementRate;    
+        return meanElementRate;
     }
 
     /** Compute the acceleration due to the non conservative perturbing force.
@@ -301,7 +301,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
 
             // Get current state vector (equinoctial elements):
             double[] stateVector = new double[6];
-            orbitType.mapOrbitToArray(state.getOrbit(), angleType, stateVector);
+            ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, stateVector);
 
             // Equinoctial elements
             a = stateVector[0];
