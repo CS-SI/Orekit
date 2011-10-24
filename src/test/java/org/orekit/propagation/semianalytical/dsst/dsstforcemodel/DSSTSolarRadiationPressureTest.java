@@ -18,6 +18,8 @@ package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math.util.FastMath;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -26,6 +28,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -38,10 +42,15 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 public class DSSTSolarRadiationPressureTest {
 
+    private final static double D_REF = 149597870000.0;
+    private final static double P_REF = 4.56e-6;
+
     @Test
     public void testMeanElementRate() throws OrekitException {
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final DSSTSolarRadiationPressure force = new DSSTSolarRadiationPressure(2., 5., sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+        final double cR = 2.;
+        final double aC = 5.;
+        final DSSTSolarRadiationPressure force = new DSSTSolarRadiationPressure(cR, aC, sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
 
         // Equinoxe 21 mars 2003 à 1h00m
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
@@ -52,13 +61,96 @@ public class DSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(), date, mu);
         final SpacecraftState state = new SpacecraftState(orbit);
 
-        final double[] daidt2 = force.getMeanElementRate2(state);
-        final double[] daidt  = force.getMeanElementRate(state);
+        long start0 = System.nanoTime();
+        final double[] daidt = force.getMeanElementRate(state);
+        double dT0 = (System.nanoTime() - start0) * 1.0e-9;
+        long start1 = System.nanoTime();
+        final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
+        double dT1 = (System.nanoTime() - start1) * 1.0e-9;
+        System.out.println("DT0: " + dT0 + " ; DT1: " + dT1);
 
-        for (int i = 0; i < daidt2.length; i++) {
-            System.out.println(daidt[i] + " " + daidt2[i]);
-        }
+        Assert.assertEquals(daidtRef[0], daidt[0], 1.e-20);
+        Assert.assertEquals(daidtRef[1], daidt[1], 1.e-18);
+        Assert.assertEquals(daidtRef[2], daidt[2], 1.e-18);
+        Assert.assertEquals(daidtRef[3], daidt[3], 1.e-16);
+        Assert.assertEquals(daidtRef[4], daidt[4], 1.e-16);
+        Assert.assertEquals(daidtRef[5], daidt[5], 5.e-17);
 
+    }
+
+    /** Direct computation of the mean element rates without shadow 
+     *  @param state current state information: date, kinematics, attitude
+     *  @param cr satellite radiation pressure coefficient (assuming total specular reflection)
+     *  @param area cross sectionnal area of satellite
+     *  @param sun Sun provider
+     *  @return the mean element rates dai/dt
+     *  @exception OrekitException if some specific error occurs
+     */
+    public double[] getDirectMeanElementRate(final SpacecraftState state,
+                                             final double cr, final double area,
+                                             final PVCoordinatesProvider sun) throws OrekitException {
+        final double[] meanElementRate = new double[6];
+ 
+        // Equinoctial elements
+        double[] stateVector = new double[6];
+        OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, stateVector);
+        final double a = stateVector[0];
+        final double k = stateVector[1];
+        final double h = stateVector[2];
+        final double q = stateVector[3];
+        final double p = stateVector[4];
+        final double I = +1;
+
+        // Factors
+        final double k2 = k * k;
+        final double h2 = h * h;
+        final double q2 = q * q;
+        final double p2 = p * p;
+
+        // Computation of A, B, C (equinoctial coefficients)
+        final double A = FastMath.sqrt(state.getMu() * a);
+        final double B = FastMath.sqrt(1 - k2 - h2);
+        final double C = 1 + q2 + p2;
+
+        // Direction cosines
+        final Vector3D f = new Vector3D( (1 - p2 + q2) / C,        2. * p * q / C,       -2. * I * p / C);
+        final Vector3D g = new Vector3D(2. * I * p * q / C, I * (1 + p2 - q2) / C,            2. * q / C);
+        final Vector3D w = new Vector3D(        2. * p / C,           -2. * q / C, I * (1 - p2 - q2) / C);
+
+        // Direction cosines
+        final Vector3D sunPos = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
+        final double alpha = sunPos.dotProduct(f);
+        final double beta  = sunPos.dotProduct(g);
+        final double gamma = sunPos.dotProduct(w);
+
+        // Compute T coefficient
+        final double kRef = 0.5 * P_REF * D_REF * D_REF * cr * area;
+        final double T = kRef / state.getMass();
+        // Compute R3^2
+        final double R32 = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().getNormSq();
+        // Compute V coefficient
+        final double V =  (3. * T * a) / (2. * R32);
+        // Compute mean elements rate
+        final double ab = A * B;
+        final double bvoa = B * V / A;
+        final double kpihq = k * p - I * h * q;
+        final double vgoab = V * gamma / ab;
+        final double cvgo2ab = C * vgoab / 2.;
+        final double kpihqvgoab = kpihq * vgoab;
+        // da/dt =  0
+        meanElementRate[0] = 0.;
+        // dk/dt = −B*V*β/A + (V*h*γ/A*B)*(k*p − I*h*q)
+        meanElementRate[1] = -bvoa * beta + kpihqvgoab * h;
+        // dh/dt = B*V*α/A − (V*k*γ/A*B)*(k*p − I*h*q)
+        meanElementRate[2] =  bvoa * alpha - kpihqvgoab * k;
+        // dq/dt = I*C*V*k*γ/2*A*B
+        meanElementRate[3] =  I * cvgo2ab * k;
+        // dp/dt = C*V*h*γ/2*A*B
+        meanElementRate[4] =  cvgo2ab * h;
+        // dλ/dt = −(2 + B)*V*(k*α + h*β)/A*(1 + B) − (V*γ/A*B)*(k*p − I*h*q)
+        meanElementRate[5] = -(kpihqvgoab + (2. + B) * V * (k * alpha + h * beta) / (A * (1. + B)));
+    
+        return meanElementRate;
     }
 
     @Before

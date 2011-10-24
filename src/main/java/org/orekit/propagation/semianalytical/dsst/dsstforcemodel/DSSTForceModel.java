@@ -14,14 +14,13 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  * The propagator will call at each step the {@link #getMeanElementRate(SpacecraftState)} method.
  * The force model instance will extract all the state data needed (date, position, velocity,
- * frame, attitude, mass) to compute the mean element rates that contribute to the global state
+ * frame, attitude, mass) to compute the mean element rates that contribute to the mean state
  * derivative.
  * </p>
  * <p>
- * The propagator will call the {@link #getShortPeriodicVariations(SpacecraftState)} method at
- * the end of the propagation. The force model instance will extract all the state data it needs
- * (date, position, velocity, frame, attitude, mass) to compute the short periodic variations to
- * be added to the final state.
+ * The propagator will call the {@link #getShortPeriodicVariations(AbsoluteDate, double[])}
+ * method at the end of the propagation in order to compute the short periodic variations to
+ * be added to the mean elements to get the final state.
  * </p>
  *
  * @author Romain Di Constanzo
@@ -38,11 +37,11 @@ public interface DSSTForceModel {
 
     /** Compute the short periodic variations
      *  @param date current date
-     *  @param state current state vector
+     *  @param meanElements current mean elements
      *  @return the short periodic variations
      *  @exception OrekitException if some specific error occurs
      */
-    double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] stateVector)
+    double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
         throws OrekitException;
 
     /** Initialize the current computation
