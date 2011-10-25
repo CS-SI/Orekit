@@ -141,14 +141,16 @@ public class DSSTCentralBody implements DSSTForceModel {
         // Get zonal harmonics contributuion :
         ZonalHarmonics zonalHarmonics = new ZonalHarmonics();
         double[] zonalTerms = zonalHarmonics.getZonalContribution(orbit);
-//        System.out.println(" zonal " + zonalTerms[0] + " " + zonalTerms[1] + " " + zonalTerms[2] + " " + zonalTerms[3] + " "
-//                        + zonalTerms[4] + " " + zonalTerms[5] + " ");
+        // System.out.println(" zonal " + zonalTerms[0] + " " + zonalTerms[1] + " " + zonalTerms[2]
+        // + " " + zonalTerms[3] + " "
+        // + zonalTerms[4] + " " + zonalTerms[5] + " ");
 
         // Get tesseral resonant harmonics contributuion :
         TesseralResonantHarmonics tesseralHarmonics = new TesseralResonantHarmonics();
         double[] tesseralTerms = tesseralHarmonics.getResonantContribution(orbit);
-//        System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " + tesseralTerms[2] + " " + tesseralTerms[3]
-//                        + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
+        // System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " +
+        // tesseralTerms[2] + " " + tesseralTerms[3]
+        // + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
 
         double[] meanElementRate = new double[zonalTerms.length];
         for (int i = 0; i < zonalTerms.length; i++) {
@@ -453,13 +455,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                 dGsdBe = s * h * gsM1 + s * k * hsM1;
 
                 // Compute Partial derivatives of Gs from equ. (9)
-                if (s == 0) {
-                    // Here the partial derivatives of Gs are null.
-                    delta0s = 1;
-                } else {
-                    // s > 0
-                    delta0s = 2;
-                }
+                delta0s = (s == 0) ? 1 : 2;
 
                 for (int n = s + 2; n < order; n++) {
                     // Extract data from previous computation :

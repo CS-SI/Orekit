@@ -22,6 +22,20 @@ public class HansenCoefficients {
         HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, 0, 0), 0d);
     }
 
+    /**
+     * Get the K<sub>j</sub><sup>n,s</sup> coefficient value, for any value.
+     * 
+     * @param m
+     *            m
+     * @param j
+     *            j
+     * @param n
+     *            n
+     * @param s
+     *            s
+     * @return
+     * @throws OrekitException
+     */
     public double getHansenKernelValue(final int m,
                                        final int j,
                                        final int n,
@@ -41,17 +55,19 @@ public class HansenCoefficients {
     }
 
     /**
-     * Equation 3.1 - (7) computed only from the recurrence formula
+     * Compute dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; with negative subscript from Equation 3.1 -
+     * (7)
      * 
      * <pre>
      * dK<sub>0</sub><sup>-n-1,s</sup> / d&chi;
      * 
      * </pre>
      * 
-     * @param degreeMax
-     * @param ecc
-     * @param convergenceCriteria
-     * @return
+     * @param n
+     *            n must be negative and equal to the wanted returned order -n-1
+     * @param s
+     *            s
+     * @return dK<sub>0</sub><sup>-n-1,s</sup> / d&chi;
      * @throws OrekitException
      */
     public double getDkdX(final int n,
@@ -59,30 +75,31 @@ public class HansenCoefficients {
         final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
         final double khi2 = khi * khi;
         double value = 0d;
-        MNSKey key = new MNSKey(0, -n - 1, s);
+        final int nn = -n - 1;
+        MNSKey key = new MNSKey(0, n, s);
 
-        if (FastMath.abs(n) == FastMath.abs(s)) {
+        if (FastMath.abs(nn) == FastMath.abs(s)) {
             HANSEN_KERNEL_DERIVATIVES.put(key, 0d);
-        } else if (FastMath.abs(n) == FastMath.abs(s) + 1) {
+        } else if (FastMath.abs(nn) == FastMath.abs(s) + 1) {
             value = (1 + 2 * s) * FastMath.pow(khi, 2 * s) / FastMath.pow(2, s);
             HANSEN_KERNEL_DERIVATIVES.put(key, value);
         } else {
-            MNSKey mN = new MNSKey(0, -n, s);
-            MNSKey mNp1 = new MNSKey(0, -n + 1, s);
+            MNSKey mN = new MNSKey(0, -nn, s);
+            MNSKey mNp1 = new MNSKey(0, -nn + 1, s);
             double kMns;
             double KMnP1s;
             if (!HANSEN_KERNEL_DERIVATIVES.containsKey(mN)) {
-                getDkdX(n - 1, s);
+                getDkdX(n + 1, s);
             }
             if (!HANSEN_KERNEL_DERIVATIVES.containsKey(mNp1)) {
-                getDkdX(n - 2, s);
+                getDkdX(n + 2, s);
             }
 
             kMns = HANSEN_KERNEL_DERIVATIVES.get(mN);
             KMnP1s = HANSEN_KERNEL_DERIVATIVES.get(mNp1);
-            double KMnM1s = computeHansenKernelNegativeSubscribt(-n - 1, s);
+            double KMnM1s = getHansenKernelValue(0, 0, n, s);
 
-            value = (n - 1) * khi2 * ((2 * n - 3) * kMns - (n - 2) * KMnP1s + 2 * KMnM1s / khi) / ((n + s - 1) * (n - s + 1));
+            value = (nn - 1) * khi2 * ((2 * nn - 3) * kMns - (nn - 2) * KMnP1s + 2 * KMnM1s / khi) / ((nn + s - 1) * (nn - s + 1));
 
             HANSEN_KERNEL_DERIVATIVES.put(key, value);
         }
@@ -90,14 +107,15 @@ public class HansenCoefficients {
     }
 
     /**
-     * Equation 2.7.3 - (6) computed only from the recurrence formula
+     * Compute the K<sub>0</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3 - (6).
      * 
      * <pre>
      * K<sub>0</sub><sup>-n-1,s</sup>
      * </pre>
      * 
      * @param n
-     *            must be negative
+     *            must be positive. For a given 'n', the K<sub>0</sub><sup>-n-1,s</sup> will be
+     *            returned
      * @param s
      *            s value
      * @return K<sub>0</sub><sup>-n-1,s</sup>
@@ -117,10 +135,10 @@ public class HansenCoefficients {
         MNSKey key2 = new MNSKey(0, -n - 1, -ss);
 
         if (HANSEN_KERNEL.containsKey(key1)) {
-            result = HANSEN_KERNEL.get(new MNSKey(0, n, ss));
+            result = HANSEN_KERNEL.get(key1);
             HANSEN_KERNEL.put(key2, result);
         } else if (HANSEN_KERNEL.containsKey(key2)) {
-            result = HANSEN_KERNEL.get(new MNSKey(0, n, -ss));
+            result = HANSEN_KERNEL.get(key2);
             HANSEN_KERNEL.put(key1, result);
 
         } else {
@@ -189,9 +207,9 @@ public class HansenCoefficients {
             for (int n = currentN; n < nMax; n++) {
                 MNSKey key = new MNSKey(j, -n - 1, s);
                 if (!HANSEN_KERNEL.containsKey(key)) {
-                    final double kMn = computeKernelOfHansenCoefficientFromNewcomb(eccentricity, j, -n, s, convergenceCriteria);
-                    final double kMnP1 = computeKernelOfHansenCoefficientFromNewcomb(eccentricity, j, -n + 1, s, convergenceCriteria);
-                    final double kMnP3 = computeKernelOfHansenCoefficientFromNewcomb(eccentricity, j, -n + 3, s, convergenceCriteria);
+                    final double kMn = computeKernelOfHansenCoefficientFromNewcomb(j, -n, s);
+                    final double kMnP1 = computeKernelOfHansenCoefficientFromNewcomb(j, -n + 1, s);
+                    final double kMnP3 = computeKernelOfHansenCoefficientFromNewcomb(j, -n + 3, s);
                     final double commonFactor = khi2 / ((3 - n) * (1 - n + s) * (1 - n - s));
                     final double factorMn = (3 - n) * (1 - n) * (3 - 2 * n);
                     final double factorMnP1 = -(2 - n) * ((3 - n) * (1 - n) + 2 * j * s / khi);
@@ -205,7 +223,7 @@ public class HansenCoefficients {
     }
 
     /**
-     * Compute the Hansen coefficient K<sub>j</sub><sup>ns</sup> for the resonnant tesseral
+     * Compute the Hansen coefficient K<sub>j</sub><sup>ns</sup> used for the resonant tesseral
      * harmonics from equation 2.7.3 - (10). The coefficient value is evaluated from the
      * {@link ModifiedNewcombOperators} elements.
      * 
@@ -218,22 +236,20 @@ public class HansenCoefficients {
      * @throws OrekitException
      *             if the Newcomb operator cannot be computed with the current indexes
      */
-    private double computeKernelOfHansenCoefficientFromNewcomb(final double ecc,
-                                                               final int j,
+    private double computeKernelOfHansenCoefficientFromNewcomb(final int j,
                                                                final int n,
-                                                               final int s,
-                                                               final double convergenceCriteria) throws OrekitException {
-        final double coeff = FastMath.pow(1 - ecc * ecc, n + 1.5);
+                                                               final int s) throws OrekitException {
+        final double coeff = FastMath.pow(1 - eccentricity * eccentricity, n + 1.5);
         final int a = FastMath.max(j - s, 0);
         final int b = FastMath.max(s - j, 0);
 
-        double tmp = convergenceCriteria + 1;
+        double tmp = EPSILON + 1;
         int i = 0;
 
         double result = 0d;
-        while (Math.abs(tmp) > convergenceCriteria) {
+        while (Math.abs(tmp) > EPSILON) {
             final double newcomb = ModifiedNewcombOperators.getValue(i + a, i + b, n, s);
-            tmp = newcomb * FastMath.pow(ecc, 2 * i);
+            tmp = newcomb * FastMath.pow(eccentricity, 2 * i);
             result += tmp;
             i++;
         }
