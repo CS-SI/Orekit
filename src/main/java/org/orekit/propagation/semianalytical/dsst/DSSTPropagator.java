@@ -343,10 +343,12 @@ public class DSSTPropagator extends AbstractPropagator {
      *  @throws OrekitException 
      */
     private double[] getInitialMeanElements(final SpacecraftState state) throws OrekitException {
+
         final double[][] tolerances = NumericalPropagator.tolerances(POSITION_ERROR, state.getOrbit(), OrbitType.EQUINOCTIAL);
         double[] osculatingElements = new double[6];
         ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, osculatingElements);
         double[] meanElements = osculatingElements.clone();
+
         double epsilon;
         do {
             double[] meanPrec = meanElements.clone();
@@ -401,9 +403,9 @@ public class DSSTPropagator extends AbstractPropagator {
                 stateIn = si.getInterpolatedState();
             }
             if (target.compareTo(referenceDate.shiftedBy(t0)) > 0) {
-                t1 += 864000.;
+                t1 += 86400.;
             } else {
-                t1 -= 864000.;
+                t1 -= 86400.;
             }
             try {
                 t1 = integrator.integrate(new DifferentialEquations(), t0, stateIn, t1, stateIn);
@@ -773,8 +775,13 @@ public class DSSTPropagator extends AbstractPropagator {
      * being the relative tolerance error
      */
     public static double[][] tolerances(final double dP, final Orbit orbit) {
+        
+        final double[][] numTol = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        final double[][] dssTol = new double[2][6];
+        System.arraycopy(numTol[0], 0, dssTol[0], 0, dssTol[0].length);
+        System.arraycopy(numTol[1], 0, dssTol[1], 0, dssTol[1].length);
 
-        return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
+        return dssTol;
 
     }
 

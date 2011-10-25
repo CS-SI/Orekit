@@ -2,12 +2,9 @@ package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.integration.LegendreGaussIntegrator;
-import org.apache.commons.math.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math.analysis.integration.UnivariateRealIntegrator;
-import org.apache.commons.math.analysis.integration.UnivariateRealIntegratorImpl;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.orbits.OrbitType;
@@ -16,7 +13,7 @@ import org.orekit.propagation.SpacecraftState;
 
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
  * <p>
- * This abstract class allows to provide easily the full set of {@link DSSTForceModel} methods
+ * This abstract class allows to provide easily a subset of {@link DSSTForceModel} methods
  * for specific Gaussian contributions (i.e. atmospheric drag and solar radiation pressure).
  * </p><p>
  * Gaussian contributions can be expressed as: da<sub>i</sub>/dt = &delta;a<sub>i</sub>/&delta;v . q<br>
@@ -36,22 +33,6 @@ import org.orekit.propagation.SpacecraftState;
  */
 public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel {
 
-    // Quadrature parameters
-    /** Number of points desired for quadrature (must be between 2 and 5 inclusive). */
-    private final static int NB_POINTS = 3;
-    /** Relative accuracy of the result. */
-//    private final static double RELATIVE_ACCURACY = UnivariateRealIntegratorImpl.DEFAULT_RELATIVE_ACCURACY;
-    private final static double RELATIVE_ACCURACY = 1.e-2;
-    /** Absolute accuracy of the result. */
-//    private final static double ABSOLUTE_ACCURACY = UnivariateRealIntegratorImpl.DEFAULT_ABSOLUTE_ACCURACY;
-    private final static double ABSOLUTE_ACCURACY = MathUtils.SAFE_MIN;
-    /** Minimum number of iterations. */
-    private final static int MINIMAL_ITERATION_COUNT = UnivariateRealIntegratorImpl.DEFAULT_MIN_ITERATIONS_COUNT;
-    /** Maximum number of iterations. */
-    private final static int MAXIMAL_ITERATION_COUNT = UnivariateRealIntegratorImpl.DEFAULT_MAX_ITERATIONS_COUNT;
-    /** Maximum number of evaluations. */
-    private final static int MAX_EVAL = 10;
-
     /** Propagation orbit type. */
     private static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
 
@@ -67,14 +48,8 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
      */
     private double I = 1;
 
-    /** Numerical quadrature operator. */
-    private UnivariateRealIntegrator numQuad;
-
     /** Build a new instance. */
     protected AbstractDSSTGaussianContribution() {
-//        this.numQuad = new LegendreGaussIntegrator(NB_POINTS, RELATIVE_ACCURACY, ABSOLUTE_ACCURACY,
-//                                               MINIMAL_ITERATION_COUNT, MAXIMAL_ITERATION_COUNT);
-        this.numQuad = new SimpsonIntegrator();
     }
 
     /** Get the current retrograde factor I.
@@ -92,18 +67,26 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         final double k = state.getOrbit().getEquinoctialEx();
         final double coef = 1. / (2. * FastMath.PI * FastMath.sqrt(1. - h * h - k * k));
         final double[] ll = getLLimits(state);
-        /// Define integrable functions
+        // Define integrable functions
         final IntegrableFunction iFct = new IntegrableFunction(state);
         // Compute mean element rates
         for (int i = 0; i < 6; i++) {
+            // Select element
             iFct.setElement(i);
+            // Define numerical quadrature operator parameters
+            final int    nbPts = getNbPoints(i);
+            final double relAc = getRelativeAccuracy(i);
+            final double absAc = getAbsoluteAccuracy(i);
+            final int    maxEv = getMaxEval(i);
+            // Define numerical quadrature operator
+            final UnivariateRealIntegrator numQuad = new LegendreGaussIntegrator(nbPts, relAc, absAc);
             try {
-                meanElementRate[i] = coef * numQuad.integrate(MAX_EVAL, iFct, ll[0], ll[1]);
+                // Numerical quadrature
+                meanElementRate[i] = coef * numQuad.integrate(maxEv, iFct, ll[0], ll[1]);
             } catch (OrekitExceptionWrapper oew) {
                 throw oew.getException();
             }
         }
-
         return meanElementRate;
     }
 
@@ -126,6 +109,34 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
      *  @exception OrekitException if some specific error occurs
      */
     protected abstract double[] getLLimits(final SpacecraftState state) throws OrekitException;
+
+    /** Get the number of points suited to integrate mean element of indice i.
+     *
+     *  @param element element indice in [0, 5]
+     *  @return number of points for quadrature
+     */
+    protected abstract int getNbPoints(final int element);
+
+    /** Get the relative accuracy suited to integrate mean element of indice i.
+     *
+     *  @param element element indice in [0, 5]
+     *  @return relative accuracy for quadrature
+     */
+    protected abstract double getRelativeAccuracy(final int element);
+
+    /** Get the absolute accuracy suited to integrate mean element of indice i.
+     *
+     *  @param element element indice in [0, 5]
+     *  @return absolute accuracy for quadrature
+     */
+    protected abstract double getAbsoluteAccuracy(final int element);
+
+    /** Get the max number of evaluations suited to integrate mean element of indice i.
+     *
+     *  @param element element indice in [0, 5]
+     *  @return max eval number for quadrature
+     */
+    protected abstract int getMaxEval(final int element);
 
     /** Internal class for numerical quadrature. */
     private class IntegrableFunction implements UnivariateRealFunction {
@@ -168,6 +179,20 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         /** C = 1 + p<sup>2</sup> + q<sup>2</sup> */
         private double C;
 
+        // Common factors
+        /** 2. / (n<sup>2</sup> * a) */
+        private double ton2a;
+        /** 1. / A */
+        private double ooA;
+        /** 1. / (A * B) */
+        private double ooAB;
+        /** C / (2. * A * B) */
+        private double Co2AB;
+        /** 1. / (1. + B) */
+        private double ooBpo;
+        /** 1. / &mu; */
+        private double ooMu;
+
         /** Build a new instance.
          *  @param  state current state information: date, kinematics, attitude
          */
@@ -191,20 +216,26 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             double val = 0;
             final double cosL = FastMath.cos(x);
             final double sinL = FastMath.sin(x);
-            final double roa  = B * B / (1 + h * sinL + k * cosL);
+            final double roa  = B * B / (1. + h * sinL + k * cosL);
             final double roa2 = roa * roa;
             final double r    = a * roa;
             final double X    = r * cosL;
             final double Y    = r * sinL;
-            final double Xdot = -n * a * (h + sinL) / B;
-            final double Ydot =  n * a * (k + cosL) / B;
+            final double naob = n * a / B;
+            final double Xdot = -naob * (h + sinL);
+            final double Ydot =  naob * (k + cosL);
+            final Vector3D pos = new Vector3D(X, f, Y, g);
+            final Vector3D vel = new Vector3D(Xdot, f, Ydot, g);
             Vector3D acc = Vector3D.ZERO;
             try {
-                acc = getAcceleration(state, new Vector3D(X, f, Y, g), new Vector3D(Xdot, f, Ydot, g));
+                acc = getAcceleration(state, pos, vel);
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
             switch(this.element) {
+                case 0: // element dex/dt
+                    val = roa2 * getAoV(vel).dotProduct(acc);
+                    break;
                 case 1: // element dex/dt
                     val = roa2 * getKoV(X, Y, Xdot, Ydot).dotProduct(acc);
                     break;
@@ -221,19 +252,18 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
                     val = roa2 * getLoV(X, Y, Xdot, Ydot).dotProduct(acc);
                     break;
                 default: // element da/dt
-                    val = roa2 * getAoV(Xdot, Ydot).dotProduct(acc);
+                    val = roa2 * getAoV(vel).dotProduct(acc);
                     break;
             }
             return val;
         }
 
         /** Compute &delta;a/&delta;v
-         *  @param Xdot satellite velocity component along f, equinoctial reference frame 1st vector
-         *  @param Ydot satellite velocity component along g, equinoctial reference frame 2nd vector
+         *  @param vel satellite velocity
          *  @return &delta;a/&delta;v
          */
-        private Vector3D getAoV(final double Xdot, final double Ydot) {
-            return new Vector3D(2. / (n * n * a), new Vector3D(Xdot, f, Ydot, g));
+        private Vector3D getAoV(final Vector3D vel) {
+            return new Vector3D(ton2a, vel);
         }
 
         /** Compute &delta;h/&delta;v
@@ -244,9 +274,9 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
          *  @return &delta;h/&delta;v
          */
         private Vector3D getHoV(final double X, final double Y, final double Xdot, final double Ydot) {
-            final double kf = (2. * Xdot * Y - X * Ydot) / state.getMu();
-            final double kg = X * Xdot / state.getMu();
-            final double kw = k * (I * q * Y - p * X) / (A * B);
+            final double kf = (2. * Xdot * Y - X * Ydot) * ooMu;
+            final double kg = X * Xdot * ooMu;
+            final double kw = k * (I * q * Y - p * X) * ooAB;
             return new Vector3D(kf, f, -kg, g, kw, w);
         }
 
@@ -258,9 +288,9 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
          *  @return &delta;k/&delta;v
          */
         private Vector3D getKoV(final double X, final double Y, final double Xdot, final double Ydot) {
-            final double kf = Y * Ydot / state.getMu();
-            final double kg = (2. * X * Ydot - Xdot * Y) / state.getMu();
-            final double kw = h * (I * q * Y - p * X) / (A * B);
+            final double kf = Y * Ydot * ooMu;
+            final double kg = (2. * X * Ydot - Xdot * Y) * ooMu;
+            final double kw = h * (I * q * Y - p * X) * ooAB;
             return new Vector3D(-kf, f, kg, g, -kw, w);
         }
 
@@ -269,7 +299,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
          *  @return &delta;p/&delta;v
          */
         private Vector3D getPoV(final double Y) {
-            return new Vector3D(C * Y / (2. * A * B), w);
+            return new Vector3D(Co2AB * Y, w);
         }
 
         /** Compute &delta;q/&delta;v
@@ -277,7 +307,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
          *  @return &delta;q/&delta;v
          */
         private Vector3D getQoV(final double X) {
-            return new Vector3D(I * C * X / (2. * A * B), w);
+            return new Vector3D(I * Co2AB * X, w);
         }
 
         /** Compute &delta;&lambda;/&delta;v
@@ -290,7 +320,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         private Vector3D getLoV(final double X, final double Y, final double Xdot, final double Ydot) {
             Vector3D pos = new Vector3D(X, f, Y, g);
             Vector3D v2  = new Vector3D(k, getHoV(X, Y, Xdot, Ydot), -h, getKoV(X, Y, Xdot, Ydot));
-            return new Vector3D(-2. / A, pos, 1. / (1. + B), v2, (I * q * Y - p * X) / A, w);
+            return new Vector3D(-2. * ooA, pos, ooBpo, v2, (I * q * Y - p * X) * ooA, w);
         }
 
         /** Compute useful equinoctial parameters: A, B, C, f, g, w.
@@ -321,13 +351,21 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             B = FastMath.sqrt(1 - k2 - h2);
             C = 1 + q2 + p2;
 
-            // Kepler mean motion
-            n = A / (a * a);
-
             // Direction cosines
             f = new Vector3D( (1 - p2 + q2) / C,        2. * p * q / C,       -2. * I * p / C);
             g = new Vector3D(2. * I * p * q / C, I * (1 + p2 - q2) / C,            2. * q / C);
             w = new Vector3D(        2. * p / C,           -2. * q / C, I * (1 - p2 - q2) / C);
+
+            // Kepler mean motion
+            n = A / (a * a);
+
+            // Common factors
+            ton2a = 2. / (n * n * a);
+            ooA   = 1. / A ;
+            ooAB  = ooA / B;
+            Co2AB = C * ooAB / 2.;
+            ooBpo = 1. / (1. + B);
+            ooMu  = 1. / state.getMu();
         }
         
     }

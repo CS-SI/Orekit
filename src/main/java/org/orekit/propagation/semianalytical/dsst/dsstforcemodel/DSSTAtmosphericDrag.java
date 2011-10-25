@@ -22,6 +22,16 @@ import org.orekit.time.AbsoluteDate;
  */
 public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
 
+    // Quadrature parameters
+    /** Number of points desired for quadrature (must be between 2 and 5 inclusive). */
+    private final static int[] NB_POINTS = {5, 5, 5, 5, 5, 5};
+    /** Relative accuracy of the result. */
+    private final static double[] RELATIVE_ACCURACY = {1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3};
+    /** Absolute accuracy of the result. */
+    private final static double[] ABSOLUTE_ACCURACY = {1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20};
+    /** Maximum number of evaluations. */
+    private final static int[] MAX_EVAL = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000};
+
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
@@ -60,7 +70,7 @@ public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
 
     /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
-                                               final double[] stateVector) throws OrekitException {
+                                               final double[] meanElements) throws OrekitException {
         return new double[] {0.,0.,0.,0.,0.,0.};
     }
 
@@ -90,6 +100,7 @@ public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
     protected double[] getLLimits(SpacecraftState state) throws OrekitException {
         double[] ll = {-FastMath.PI, FastMath.PI};
         final double r = state.getOrbit().getPVCoordinates().getPosition().getNorm();
+        // TODO : to be validated
         if (r < rbar) {
             final double a  = state.getA();
             final double e  = state.getE();
@@ -101,6 +112,26 @@ public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
             ll[1] =  fb + wW;
         }
         return ll;
+    }
+
+    /** {@inheritDoc} */
+    protected int getNbPoints(int element) {
+        return NB_POINTS[element];
+    }
+
+    /** {@inheritDoc} */
+    protected double getRelativeAccuracy(int element) {
+        return RELATIVE_ACCURACY[element];
+    }
+
+    /** {@inheritDoc} */
+    protected double getAbsoluteAccuracy(int element) {
+        return ABSOLUTE_ACCURACY[element];
+    }
+
+    /** {@inheritDoc} */
+    protected int getMaxEval(int element) {
+        return MAX_EVAL[element];
     }
 
 }

@@ -5,20 +5,20 @@ import org.orekit.time.AbsoluteDate;
 
 public class DSSTThirdBody implements DSSTForceModel {
 
-    @Override
+    /** {@inheritDoc} */
     public double[] getMeanElementRate(SpacecraftState currentState) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
+    /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(AbsoluteDate date,
-                                               double[] currentState) {
+                                               double[] meanElements) {
         // TODO Auto-generated method stub
         return null;
     }
 
-    @Override
+    /** {@inheritDoc} */
     public void init(SpacecraftState state) {
         // TODO Auto-generated method stub
 
