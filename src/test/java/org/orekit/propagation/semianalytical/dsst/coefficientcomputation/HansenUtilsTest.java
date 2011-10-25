@@ -8,12 +8,17 @@ import static org.junit.Assert.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
+import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.FastMath;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.MNSKey;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenCoefficients;
+import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenFinal;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenUtils;
 
 /**
@@ -21,7 +26,7 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenUtils;
  */
 public class HansenUtilsTest {
 
-    private final static double epsilon = 1e-12;
+    private final static double epsilon = 1e-3;
 
     /**
      * @throws java.lang.Exception
@@ -43,7 +48,7 @@ public class HansenUtilsTest {
         final int maxOrder = 10;
         final int convergenceOrder = 10;
 
-        Map<NSKey, Double> map = HansenUtils.computeHansenKernelForZonalHarmonicsReccurence(maxOrder, ecc);
+        Map<NSKey, Double> map = HansenUtils.computeHansenKernelForZonalHarmonicsReccurence(ecc, maxOrder);
 
         // Test where n = s = 0 >= 0
         for (int i = 0; i < maxOrder; i++) {
@@ -69,7 +74,7 @@ public class HansenUtilsTest {
         }
         // System.out.println(map.get(new NSKey(-5 , 0)));
 
-        System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(0.1, 1, 30, -20, 2));
+        System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(0.1, 1, 30, -20, epsilon));
 
     }
 
@@ -77,28 +82,27 @@ public class HansenUtilsTest {
     public void testPascal() throws OrekitException {
         final double ecc = 0.1;
 
-        Map<NSKey, Double> map = HansenUtils.computeHansenKernelForZonalHarmonicsReccurence(10, ecc);
-        Iterator<Entry<NSKey, Double>> ite = map.entrySet().iterator();
-        while (ite.hasNext()) {
-            Entry<NSKey, Double> next = ite.next();
-            // System.out.println(next.getKey() + " " + next.getValue());
-        }
+        final int nMax = 15;
+        double start = System.currentTimeMillis();
 
-        // System.out.println(map.get(new NSKey(-1, 0)));
-        // System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -1, 0,
-        // 15));
-        for (int n = 0; n < 10; n++) {
-            for (int s = 0; s < n; s++) {
-                NSKey key = new NSKey(-n - 1, s);
+        Map<MNSKey, Double> map = HansenUtils.computeKernelOfHansenCoefficientNEW(ecc, 0, 0, nMax, epsilon);
+        //
+        for (int s = -nMax; s < nMax; s++) {
+            int nMin = FastMath.max(2, Math.abs(s));
+            for (int n = nMin; n < nMax; n++) {
+                MNSKey key = new MNSKey(0, -n - 1, s);
                 final double mapp = map.get(key);
-                final double coef = HansenUtils.computeKernelOfHansenCoefficient(ecc, 0, n, s, 3);
+                final double mapp2 = HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -n - 1, s, epsilon);
+                final double coef = HansenUtils.computeKernelOfHansenCoefficient(ecc, 0, n, s, epsilon);
                 if ((n != 3) && (n != s + 1) && (n != -s + 1)) {
-                    System.out.println(key + "    " + mapp + "    " + coef + "    " + (mapp - coef));
+                    System.out.println((-n - 1) + "  " + s + "    " + mapp + "    " + mapp2 + "  " + coef + "  " + ((mapp - mapp2) / mapp)
+                                    * 100 + "  " + ((mapp - coef) / mapp) * 100 + "  " + ((mapp2 - coef) / mapp2) * 100);
                 }
             }
         }
-        // System.out.println(HansenUtils.computeKernelOfHansenCoefficient(ecc, 0, -1, 0, 5));
+        double end = System.currentTimeMillis();
 
+        System.out.println((end - start) / 1000d);
         // System.out.println(HansenUtils.computeKernelOfHansenForZonalHarmonics(ecc, -1, 0, 5));
 
     }
@@ -121,21 +125,92 @@ public class HansenUtilsTest {
      * @throws OrekitException
      */
     @Test
-    public void testComputeKernelOfHansenCoefficient() throws OrekitException {
-        double ex = 0.1;
-        double ey = 0.1;
-        double ecc = FastMath.sqrt(ex * ex + ey * ey);
-        System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, 2, 0, 1, 4));
+    public void testComputeKernelOfHansenCoefficientRecurrenceCall() throws OrekitException {
+        double ecc = 0.1;
+        final int nMax = 30;
+
+        final HansenCoefficients hansen = new HansenCoefficients(ecc);
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 4, 0) + " " + hansen.getHansenKernelValue(0, 0, -5, 0));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 0) + " " + hansen.getHansenKernelValue(0, 0, -4, 0));
+        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 0) + " " + hansen.getHansenKernelValue(0, 0, -3, 0));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 0) + " " + hansen.getHansenKernelValue(0, 0, -2, 0));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 0, 0) + " " + hansen.getHansenKernelValue(0, 0, -1, 0));
+//        //
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 4, 1) + " " + hansen.getHansenKernelValue(0, 0, -5, 1));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 1) + " " + hansen.getHansenKernelValue(0, 0, -4, 1));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 1) + " " + hansen.getHansenKernelValue(0, 0, -3, 1));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 1) + " " + hansen.getHansenKernelValue(0, 0, -2, 1));
+
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 1) + " " + hansen.getHansenKernelValue(0, 0, -4, 1));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 1) + " " + hansen.getHansenKernelValue(0, 0, -3, 1));
+//        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 1) + " " + hansen.getHansenKernelValue(0, 0, -2, 1));
+        
+        // System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -5, 3,
+        // epsilon));
+
+        // Map<MNSKey, Double> map = HansenUtils.computeKernelOfHansenCoefficientNEW(ecc, 0, 0,
+        // nMax, epsilon);
+
+        for (int s = -nMax; s < nMax; s++) {
+            int nMin = FastMath.max(2, Math.abs(s));
+            for (int n = nMin; n < nMax; n++) {
+                double res = HansenUtils.computeHansenKernelReccurenceCALL(ecc, n, s);
+                // double ref = map.get(new MNSKey(0, -n - 1, s));
+                // System.out.println(res + "   " + ref + "   " + (res - ref));
+
+                System.out.println((-n - 1) + "  " + s + "  " + res);
+
+            }
+        }
+    }
+
+    @Test
+    public void testHansenCoefficientSymetry() throws OrekitException {
+        double ecc = 0.1;
+
+        // Map<MNSKey, Double> map = HansenUtils.computeKernelOfHansenCoefficientNEW(ecc, 2, 0, 15,
+        // epsilon);
+        double value = HansenUtils.computeKernelOfHansenCoefficientRecurssif(ecc, 2, 0, 15, 5, epsilon);
+        System.out.println(value);
+        // -n-1 check
+        // n = 1
+        final double ref_n1_s0 = FastMath.pow(1 - ecc * ecc, -0.5);
+        ArithmeticUtils.binomialCoefficient(2, 0);
+        // System.out.println(map.get(new MNSKey(0, -2, 0)) + "  " + ref_n1_s0);
+
+        // for (int s = -nMax; s < nMax; s++) {
+        // int nMin = FastMath.max(2, Math.abs(s));
+        // for (int n = nMin; n < nMax; n++) {
+        // MNSKey keyPlus = new MNSKey(0, -n - 1, s);
+        // MNSKey keyMinus = new MNSKey(0, -n - 1, -s);
+        //
+        // System.out.println(map.get(keyPlus) + " " + map.get(keyMinus) + "  " +
+        // Math.abs(map.get(keyPlus) - map.get(keyMinus))) ;
+        // }
+        // }
+
     }
 
     /**
      * Test method for
      * {@link org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenUtils#computeDerivativedKernelOfHansenCoefficient(int, double, int, int, int)}
      * .
+     * 
+     * @throws OrekitException
      */
     @Test
-    public void testComputeDerivativedKernelOfHansenCoefficient() {
-        fail("Not yet implemented");
+    public void testComputeDerivativedKernelOfHansenCoefficient() throws OrekitException {
+        double ecc = 0.1;
+        int nMax = 10;
+        Map<MNSKey, Double> map = new TreeMap<MNSKey, Double>();
+        for (int s = -nMax; s < nMax; s++) {
+            int nMin = FastMath.max(2, Math.abs(s));
+            for (int n = nMin; n < nMax; n++) {
+                map = HansenUtils.computeDerivative(ecc, n, s, epsilon);
+                // System.out.println(map.get(new MNSKey(0, -n - 1, s)));
+            }
+        }
+        System.out.println();
     }
 
 }

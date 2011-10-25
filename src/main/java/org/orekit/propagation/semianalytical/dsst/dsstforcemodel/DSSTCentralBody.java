@@ -1,6 +1,7 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -19,6 +20,8 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFact
 import org.orekit.time.AbsoluteDate;
 
 public class DSSTCentralBody implements DSSTForceModel {
+
+    private final static double    epsilon = 1e-12;
 
     /**
      * General data
@@ -48,7 +51,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      * expressed in a different way, called "retrograde" orbit. This implies I = -1. As Orekit
      * doesn't implement the retrograde orbit, I = 1 here.
      */
-    private int                    I = 1;
+    private int                    I       = 1;
 
     /** current orbital state */
     private Orbit                  orbit;
@@ -56,7 +59,7 @@ public class DSSTCentralBody implements DSSTForceModel {
     /**
      * Equinoctial coefficients
      */
-    /** A = sqrt(&mu * a) */
+    /** A = sqrt(&mu; * a) */
     private double                 A;
 
     /** B = sqrt(1 - ex<sup>2</sup> - ey<sup>2</sup> */
@@ -84,10 +87,12 @@ public class DSSTCentralBody implements DSSTForceModel {
     private double[]               Jn;
 
     /** Resonant tesseral coefficient */
-    private Map<Integer, Integer>  resonantTesserals;
+    private List<ResonantCouple>   resonantTesseralsTerm;
 
     /** size of the resonnant tesseral terms. If no terms are defined, the size is set to 0 */
     private final int              resonantTesseralSize;
+
+    private HansenCoefficients     hansen;
 
     /**
      * TODO mettre que mu provient du bulletin orbital et est sauvegarder lors de l'initialisation
@@ -103,12 +108,12 @@ public class DSSTCentralBody implements DSSTForceModel {
     public DSSTCentralBody(double ae,
                            double[][] Cnm,
                            double[][] Snm,
-                           Map<Integer, Integer> resonantTesserals) {
+                           List<ResonantCouple> resonantTesserals) {
         this.Cnm = Cnm;
         this.Snm = Snm;
         this.degree = Cnm.length - 1;
         this.order = Cnm[degree].length - 1;
-        this.resonantTesserals = resonantTesserals;
+        this.resonantTesseralsTerm = resonantTesserals;
         if ((Cnm.length != Snm.length) || (Cnm[Cnm.length - 1].length != Snm[Snm.length - 1].length)) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH, Cnm.length, Cnm[degree].length, Snm.length, Snm[degree].length);
         }
@@ -131,18 +136,19 @@ public class DSSTCentralBody implements DSSTForceModel {
         orbit = spacecraftState.getOrbit();
         // Initialisation of A, B, C, Alpha, Beta and Gamma coefficient :
         updateABCAlphaBetaGamma(orbit);
+        hansen = new HansenCoefficients(orbit.getE());
 
         // Get zonal harmonics contributuion :
         ZonalHarmonics zonalHarmonics = new ZonalHarmonics();
         double[] zonalTerms = zonalHarmonics.getZonalContribution(orbit);
-        System.out.println(" zonal " + zonalTerms[0] + " " + zonalTerms[1] + " " + zonalTerms[2] + " " + zonalTerms[3] + " "
-                        + zonalTerms[4] + " " + zonalTerms[5] + " ");
+//        System.out.println(" zonal " + zonalTerms[0] + " " + zonalTerms[1] + " " + zonalTerms[2] + " " + zonalTerms[3] + " "
+//                        + zonalTerms[4] + " " + zonalTerms[5] + " ");
 
         // Get tesseral resonant harmonics contributuion :
         TesseralResonantHarmonics tesseralHarmonics = new TesseralResonantHarmonics();
         double[] tesseralTerms = tesseralHarmonics.getResonantContribution(orbit);
-        System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " + tesseralTerms[2] + " " + tesseralTerms[3]
-                        + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
+//        System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " + tesseralTerms[2] + " " + tesseralTerms[3]
+//                        + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
 
         double[] meanElementRate = new double[zonalTerms.length];
         for (int i = 0; i < zonalTerms.length; i++) {
@@ -312,13 +318,15 @@ public class DSSTCentralBody implements DSSTForceModel {
 
             // Compute non constant coefficient which depends on previous initialized data :
             // TODO definir le degré max : ici -> degree
-            final Map<NSKey, Double> Kns = HansenUtils.computeHansenKernelForZonalHarmonicsReccurence(degree, B);
-            final Map<NSKey, Double> dKns = HansenUtils.computeDerivativeOfHansenKernelForZonalHarmonicsReccurence(degree, B, Kns);
+            // final Map<NSKey, Double> Kns =
+            // HansenUtils.computeHansenKernelForZonalHarmonicsReccurence(degree, B);
+            // final Map<NSKey, Double> dKns =
+            // HansenUtils.computeDerivativeOfHansenKernelForZonalHarmonicsReccurence(degree, B);
             final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
             final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order, gamma);
 
             // Compute potential derivative :
-            final double[] potentialDerivatives = computePotentialderivatives(Kns, dKns, Qns, GsHs);
+            final double[] potentialDerivatives = computePotentialderivatives(Qns, GsHs);
 
             final double dUda = potentialDerivatives[0];
             final double dUdk = potentialDerivatives[1];
@@ -382,9 +390,7 @@ public class DSSTCentralBody implements DSSTForceModel {
          * @return data needed for the potential derivatives
          * @throws OrekitException
          */
-        private double[] computePotentialderivatives(Map<NSKey, Double> Kns,
-                                                     Map<NSKey, Double> dKns,
-                                                     double[][] Qns,
+        private double[] computePotentialderivatives(double[][] Qns,
                                                      double[][] GsHs) throws OrekitException {
 
             // Initialize data
@@ -460,11 +466,11 @@ public class DSSTCentralBody implements DSSTForceModel {
                     jn = Jn[n];
                     vns = Vns.get(new NSKey(n, s));
                     // TODO try with n value instead of Math.abs(-n-1)
-                    kns = Kns.get(new NSKey(-n - 1, s));
+                    kns = hansen.getHansenKernelValue(0, 0, -n - 1, s);
                     qns = Qns[n][s];
                     raExpN = FastMath.pow(Ra, n);
                     // TODO try with n value instead of Math.abs(-n-1)
-                    dkns = dKns.get(new NSKey(-n - 1, s));
+                    dkns = hansen.getDkdX(-n - 1, s);
                     commonCoefficient = delta0s * raExpN * jn * vns;
 
                     // Compute dU / da :
@@ -665,12 +671,12 @@ public class DSSTCentralBody implements DSSTForceModel {
                 double dHdA = 0d;
                 double dHdB = 0d;
 
-                Iterator<Entry<Integer, Integer>> iterator = resonantTesserals.entrySet().iterator();
+                Iterator<ResonantCouple> iterator = resonantTesseralsTerm.iterator();
                 // Iterative process :
                 while (iterator.hasNext()) {
-                    Entry<Integer, Integer> resonantTesseralCouple = iterator.next();
-                    int j = resonantTesseralCouple.getKey();
-                    int m = resonantTesseralCouple.getValue();
+                    ResonantCouple resonantTesseralCouple = iterator.next();
+                    int j = resonantTesseralCouple.getJ();
+                    int m = resonantTesseralCouple.getM();
 
                     final double jlMmt = j * lambda - m * theta;
                     final double sinPhi = FastMath.sin(jlMmt);
@@ -693,8 +699,8 @@ public class DSSTCentralBody implements DSSTForceModel {
                             gamMsn = computeGammaMsn(n, s, Im, gamma);
                             dGamma = computeDGammaMsn(n, s, m, gamma);
                             // TODO ordre de convergence en dur
-                            kjn_1 = HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, j, nMin, s, 5);
-                            dkjn_1 = HansenUtils.computeDerivativedKernelOfHansenCoefficient(ecc, j, nMin, s, 5);
+                            kjn_1 = HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, j, nMin, s, epsilon);
+                            dkjn_1 = HansenUtils.computeDerivativedKernelOfHansenCoefficient(ecc, j, nMin, s, epsilon);
                             dGdh = GHms.getdGmsdh(m, s, j);
                             dGdk = GHms.getdGmsdk(m, s, j);
                             dGdA = GHms.getdGmsdAlpha(m, s, j);

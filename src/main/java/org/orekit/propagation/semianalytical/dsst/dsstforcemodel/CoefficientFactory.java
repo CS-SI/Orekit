@@ -11,6 +11,9 @@ import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
+/**
+ * @author rdicosta
+ */
 public class CoefficientFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation */
@@ -28,7 +31,17 @@ public class CoefficientFactory {
         Vns.put(new NSKey(1, 1), 0.5);
     }
 
-    /** Get the Qns value from 2.8.1-(4) */
+    /**
+     * Get the Qns value from 2.8.1-(4)
+     * 
+     * @param n
+     *            n
+     * @param s
+     *            s
+     * @param gamma
+     *            &gamma;
+     * @return the polynomial value evaluated at &gamma;
+     */
     public static double getQnsPolynomialValue(final int n,
                                                final int s,
                                                final double gamma) {
@@ -46,7 +59,10 @@ public class CoefficientFactory {
         return derivative.value(gamma);
     }
 
-    /** Q<sub>ns</sub> array coefficient from 2.8.3-(2) */
+    /** Q<sub>ns</sub> array coefficient from 2.8.3-(2) 
+     * @param order order of computation
+     * @param gamma 
+     * @return */
     public static double[][] computeQnsCoefficient(final int order,
                                                    final double gamma) {
         // Initialization
@@ -221,10 +237,9 @@ public class CoefficientFactory {
     /**
      * Implementation of the V<sub>n, s</sub> <sup>m</sup> from equations in paragraph 2.7.2.
      * 
-     * @param mRange
-     * @param nRange
-     * @param sRange
-     * @return
+     * @param mMax
+     * @param sMax
+     * @return Map<MNSKey, Double>
      */
     @Deprecated
     public static Map<MNSKey, Double> computeVmns2(final int mMax,
@@ -286,7 +301,7 @@ public class CoefficientFactory {
      * @param mRange
      * @param nRange
      * @param sRange
-     * @return
+     * @return Map<MNSKey, Double>
      */
     @Deprecated
     public static Map<MNSKey, Double> computeVmns(final int mMax,

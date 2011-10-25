@@ -117,13 +117,11 @@ public class ModifiedNewcombOperators {
         return NewcombPolynomialsGenerator.NEWCOMB_POLYNOMIALS.get(new Couple(rho, sigma));
     }
 
-    // TODO
     /**
      * orderMax maximum order of computation. This parameter set the &rho; value, and then every
      * Newcomb polynomials are going to be computed until the element Y<sub>orderMax, orderMax</sub>
      * is reached.
      */
-
     public static class NewcombPolynomialsGenerator {
 
         /** Store polynomials to avoid recomputation for a given &rho;, &sigma; */
@@ -308,6 +306,15 @@ public class ModifiedNewcombOperators {
             return result;
         }
 
+        /**
+         * Sum two list of {@link PolynomialFunction}
+         * 
+         * @param poly1
+         *            first list
+         * @param poly2
+         *            second list
+         * @return the summed list
+         */
         public static List<PolynomialFunction> sumPolynomialList(final List<PolynomialFunction> poly1,
                                                                  final List<PolynomialFunction> poly2) {
             // identify the lowest degree polynomial
