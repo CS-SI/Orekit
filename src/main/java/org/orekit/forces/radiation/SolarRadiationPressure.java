@@ -173,32 +173,34 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         double result = 1.0;
 
         // Is the satellite in complete umbra ?
-        if (sunEarthAngle - alphaEarth + alphaSun < 0.0) {
+        if (sunEarthAngle - alphaEarth + alphaSun <= 0.0) {
             result = 0.0;
-        }
-        // Compute a lightning ratio in penumbra
-        if ((sunEarthAngle - alphaEarth + alphaSun >= 0.0) &&
-            (sunEarthAngle - alphaEarth - alphaSun <= 0.0)) {
+        } else if (sunEarthAngle - alphaEarth - alphaSun < 0.0) {
+            // Compute a lightning ratio in penumbra
 
             //result = (alphaSun + sunEarthAngle - alphaEarth) / (2*alphaSun);
 
-            final double alpha1 =
-                (sunEarthAngle * sunEarthAngle -
-                        (alphaEarth - alphaSun) * (alphaSun + alphaEarth)) / (2 * sunEarthAngle);
+            final double sEA2    = sunEarthAngle * sunEarthAngle;
+            final double oo2sEA  = 1.0 / (2. * sunEarthAngle);
+            final double aS2     = alphaSun * alphaSun;
+            final double aE2     = alphaEarth * alphaEarth;
+            final double aE2maS2 = aE2 - aS2;
 
-            final double alpha2 =
-                (sunEarthAngle * sunEarthAngle +
-                        (alphaEarth - alphaSun) * (alphaSun + alphaEarth)) / (2 * sunEarthAngle);
+            final double alpha1  = (sEA2 - aE2maS2) * oo2sEA;
+            final double alpha2  = (sEA2 + aE2maS2) * oo2sEA;
 
-            final double P1 = FastMath.PI * alphaSun * alphaSun -
-                alphaSun * alphaSun * FastMath.acos(alpha1 / alphaSun) +
-                alpha1 * FastMath.sqrt(alphaSun * alphaSun - alpha1 * alpha1);
+            // Protection against numerical inaccuracy at boundaries
+            final double a1oaS   = FastMath.min(1.0, FastMath.max(-1.0, alpha1 / alphaSun));
+            final double aS2ma12 = FastMath.max(0.0, aS2 - alpha1 * alpha1);
+            final double a2oaE   = FastMath.min(1.0, FastMath.max(-1.0, alpha2 / alphaEarth));
+            final double aE2ma22 = FastMath.max(0.0, aE2 - alpha2 * alpha2);
 
-            final double P2 = alphaEarth * alphaEarth * FastMath.acos(alpha2 / alphaEarth) -
-                alpha2 * FastMath.sqrt(alphaEarth * alphaEarth - alpha2 * alpha2);
+            final double P1 = aS2 * FastMath.acos(a1oaS) - alpha1 * FastMath.sqrt(aS2ma12);
+            final double P2 = aE2 * FastMath.acos(a2oaE) - alpha2 * FastMath.sqrt(aE2ma22);
 
-            result = (P1 - P2) / (FastMath.PI * alphaSun * alphaSun);
+            result = 1. - (P1 + P2) / (FastMath.PI * aS2);
         }
+
         return result;
     }
 
