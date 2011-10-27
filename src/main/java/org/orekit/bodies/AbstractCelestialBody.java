@@ -18,7 +18,7 @@ package org.orekit.bodies;
 
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -143,7 +143,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
             // methods
             final Vector3D pole  = iauPole.getPole(date);
             Vector3D qNode = Vector3D.crossProduct(Vector3D.PLUS_K, pole);
-            if (qNode.getNormSq() < MathUtils.SAFE_MIN) {
+            if (qNode.getNormSq() < Precision.SAFE_MIN) {
                 qNode = Vector3D.PLUS_I;
             }
             final Rotation r2000 = new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);

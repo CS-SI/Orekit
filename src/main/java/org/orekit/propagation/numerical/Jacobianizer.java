@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -77,7 +77,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
                 double step = param.getHP();
                 if (Double.isNaN(step)) {
                     step = FastMath.max(1.0, FastMath.abs(forceModel.getParameter(name))) *
-                           FastMath.sqrt(MathUtils.EPSILON);
+                           FastMath.sqrt(Precision.EPSILON);
                 }
                 hParam.put(name, step);
             }

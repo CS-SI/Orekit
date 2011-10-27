@@ -20,7 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math.util.Precision;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -126,7 +126,7 @@ public class HelmertTransformation implements Serializable {
         // build rotation part
         final double angle = dR.getNorm();
         final Transform rotationTransform =
-            new Transform((angle < MathUtils.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
+            new Transform((angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
                           rotationRate);
 
         // combine both parts

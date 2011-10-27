@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
@@ -255,7 +255,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             // if step has not been set by user, set a default value
             if (Double.isNaN(hPos)) {
-                hPos = FastMath.sqrt(MathUtils.EPSILON) * s.getPVCoordinates().getPosition().getNorm();
+                hPos = FastMath.sqrt(Precision.EPSILON) * s.getPVCoordinates().getPosition().getNorm();
             }
 
              // set up Jacobians providers

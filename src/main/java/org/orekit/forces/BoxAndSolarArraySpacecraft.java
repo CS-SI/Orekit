@@ -23,7 +23,7 @@ import java.util.List;
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
@@ -289,7 +289,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         final Vector3D sunSpacecraft = state.getAttitude().getRotation().applyTo(sunInert);
         final double d = Vector3D.dotProduct(sunSpacecraft, saZ);
         final double f = 1 - d * d;
-        if (f < MathUtils.EPSILON) {
+        if (f < Precision.EPSILON) {
             // extremely rare case: the sun is along solar array rotation axis
             // (there will not be much output power ...)
             // we set up an arbitrary normal
