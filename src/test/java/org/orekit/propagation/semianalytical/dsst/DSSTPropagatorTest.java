@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math.util.FastMath;
@@ -28,6 +29,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
@@ -40,14 +42,19 @@ import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
@@ -387,6 +394,32 @@ public class DSSTPropagatorTest {
 //        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(), 8.e-3);
 //        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(), 4.e-4);
 //        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 3.e-3);
+    }
+
+    @Test
+    public void testImpulseManeuver() throws OrekitException {
+        final Orbit initialOrbit =
+            new KeplerianOrbit(24532000.0, 0.72, 0.3, FastMath.PI, 0.4, 2.0,
+                               PositionAngle.MEAN, FramesFactory.getEME2000(),
+                               new AbsoluteDate(new DateComponents(2008, 06, 23),
+                                                new TimeComponents(14, 18, 37),
+                                                TimeScalesFactory.getUTC()),
+                               3.986004415e14);
+        final double a  = initialOrbit.getA();
+        final double e  = initialOrbit.getE();
+        final double i  = initialOrbit.getI();
+        final double mu = initialOrbit.getMu();
+        final double vApo = FastMath.sqrt(mu * (1 - e) / (a * (1 + e)));
+        double dv = 0.99 * FastMath.tan(i) * vApo;
+
+        final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
+        FirstOrderIntegrator integrator = new DormandPrince853Integrator(10., 1000., tol[0], tol[1]);
+        DSSTPropagator propagator = new DSSTPropagator(integrator, initialOrbit,
+                                                       new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
+        propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()),
+                                                        new Vector3D(dv, Vector3D.PLUS_J), 400.0));
+        SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
+        Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
     }
 
     @Test

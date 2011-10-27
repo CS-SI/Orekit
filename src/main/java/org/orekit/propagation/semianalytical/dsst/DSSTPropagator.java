@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
 import org.apache.commons.math.ode.events.EventHandler;
@@ -31,6 +32,8 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
  * <p>
@@ -204,16 +207,26 @@ public class DSSTPropagator extends AbstractPropagator {
                           final AttitudeProvider attitudeProv, final double mass)
         throws PropagationException {
         super(attitudeProv);
-        forceModels   = new ArrayList<DSSTForceModel>();
-        mu            = initialOrbit.getMu();
-        frame         = initialOrbit.getFrame();
-        referenceDate = null;
+        this.forceModels   = new ArrayList<DSSTForceModel>();
+        this.mu            = initialOrbit.getMu();
+        this.frame         = initialOrbit.getFrame();
+        this.referenceDate = null;
+        this.mass          = mass;
 
         setIntegrator(integrator);
+        
+        PVCoordinatesProvider pvProv = new PVCoordinatesProvider() {
+            public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+                throws OrekitException {
+                return initialOrbit.getPVCoordinates();
+            }
+        };
 
         try {
             resetInitialState(new SpacecraftState(initialOrbit,
-                                                  attitudeProv.getAttitude(getPvProvider(), initialOrbit.getDate(), initialOrbit.getFrame()),
+                                                  attitudeProv.getAttitude(pvProv,
+                                                                           initialOrbit.getDate(),
+                                                                           initialOrbit.getFrame()),
                                                   mass));
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
@@ -418,7 +431,6 @@ public class DSSTPropagator extends AbstractPropagator {
         si.setInterpolatedTime(target.durationFrom(referenceDate));
         return si.getInterpolatedState();
     }
-    
 
     /** Internal class for differential equations representation. */
     private class DifferentialEquations implements FirstOrderDifferentialEquations {
