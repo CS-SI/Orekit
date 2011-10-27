@@ -457,16 +457,19 @@ public class HansenUtils {
     }
 
     public static double computeKernelOfHansenCoefficientRecurssif(final double ecc,
-                                                                                final int j,
-                                                                                final int m,
-                                                                                final int n,
-                                                                                final int s,
-                                                                                final double convergenceCriteria) throws OrekitException {
-        initializeDerivatives(ecc, j, s);
+                                                                   final int j,
+                                                                   final int n,
+                                                                   final int s,
+                                                                   final double convergenceCriteria) throws OrekitException {
+        // initializeDerivatives(ecc, j, s);
         final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
         final double khi2 = khi * khi;
         double value;
         double kMn, kMnP1, kMnP3;
+        HANSEN_KERNEL.put(new MNSKey(j, -1, s), computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -1, s, convergenceCriteria));
+        HANSEN_KERNEL.put(new MNSKey(j, -2, s), computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -2, s, convergenceCriteria));
+        HANSEN_KERNEL.put(new MNSKey(j, -3, s), computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -3, s, convergenceCriteria));
+        HANSEN_KERNEL.put(new MNSKey(j, -4, s), computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -4, s, convergenceCriteria));
 
         // For non resonant term, use the special formulation defined by equation 2.7.3 - (6)
 
@@ -474,29 +477,57 @@ public class HansenUtils {
         if (!HANSEN_KERNEL.containsKey(key)) {
 
             if (!HANSEN_KERNEL.containsKey(new MNSKey(j, -n, s))) {
-                computeKernelOfHansenCoefficientRecurssif(ecc, j, m, n - 1, s, convergenceCriteria);
+                computeKernelOfHansenCoefficientRecurssif(ecc, j, n - 1, s, convergenceCriteria);
             }
             if (!HANSEN_KERNEL.containsKey(new MNSKey(j, -n + 1, s))) {
-                computeKernelOfHansenCoefficientRecurssif(ecc, j, m, n - 2, s, convergenceCriteria);
+                computeKernelOfHansenCoefficientRecurssif(ecc, j, n - 2, s, convergenceCriteria);
             }
             if (!HANSEN_KERNEL.containsKey(new MNSKey(j, -n + 3, s))) {
-                computeKernelOfHansenCoefficientRecurssif(ecc, j, m, n - 4, s, convergenceCriteria);
+                computeKernelOfHansenCoefficientRecurssif(ecc, j, n - 4, s, convergenceCriteria);
             }
-            
-            kMn = HANSEN_KERNEL.get(new MNSKey(m, -n, s));
-            kMnP1 = HANSEN_KERNEL.get(new MNSKey(m, -n + 1, s));
-            kMnP3 = HANSEN_KERNEL.get(new MNSKey(m, -n + 3, s));
+
+            kMn = HANSEN_KERNEL.get(new MNSKey(j, -n, s));
+            kMnP1 = HANSEN_KERNEL.get(new MNSKey(j, -n + 1, s));
+            kMnP3 = HANSEN_KERNEL.get(new MNSKey(j, -n + 3, s));
             final double commonFactor = khi2 / ((3 - n) * (1 - n + s) * (1 - n - s));
             final double factorMn = (3 - n) * (1 - n) * (3 - 2 * n);
             final double factorMnP1 = -(2 - n) * ((3 - n) * (1 - n) + 2 * j * s / khi);
             final double factorMnP3 = j * j * (1 - n);
             // System.out.println(key);
             value = commonFactor * (factorMn * kMn + factorMnP1 * kMnP1 + factorMnP3 * kMnP3);
+            if (Double.isInfinite(value)) {
+                System.out.println(key);
+            }
             HANSEN_KERNEL.put(key, value);
 
-        }else {
-            value = HANSEN_KERNEL.get(new MNSKey(m, n, s));
+        } else {
+            value = HANSEN_KERNEL.get(new MNSKey(j, n, s));
         }
+        return value;
+    }
+
+    public static double computeKernel(final double ecc,
+                                       final int j,
+                                       final int n,
+                                       final int s,
+                                       final double convergenceCriteria) throws OrekitException {
+        final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
+        final double khi2 = khi * khi;
+        double value;
+        double kMn, kMnP1, kMnP3;
+        HANSEN_KERNEL.put(new MNSKey(j, -n, s), computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -n, s, convergenceCriteria));
+        HANSEN_KERNEL.put(new MNSKey(j, -n + 1, s), computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -n + 1, s, convergenceCriteria));
+        HANSEN_KERNEL.put(new MNSKey(j, -n + 3, s), computeKernelOfHansenCoefficientFromNewcomb(ecc, j, -n + 3, s, convergenceCriteria));
+
+        kMn = HANSEN_KERNEL.get(new MNSKey(j, -n, s));
+        kMnP1 = HANSEN_KERNEL.get(new MNSKey(j, -n + 1, s));
+        kMnP3 = HANSEN_KERNEL.get(new MNSKey(j, -n + 3, s));
+        final double commonFactor = khi2 / ((3 - n) * (1 - n + s) * (1 - n - s));
+        final double factorMn = (3 - n) * (1 - n) * (3 - 2 * n);
+        final double factorMnP1 = -(2 - n) * ((3 - n) * (1 - n) + 2 * j * s / khi);
+        final double factorMnP3 = j * j * (1 - n);
+        // System.out.println(key);
+        value = commonFactor * (factorMn * kMn + factorMnP1 * kMnP1 + factorMnP3 * kMnP3);
         return value;
     }
 

@@ -17,52 +17,63 @@ import org.orekit.errors.OrekitMessages;
 public class CoefficientFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation */
-    private static TreeMap<NSKey, Double>         Vns               = new TreeMap<NSKey, Double>();
+    private static TreeMap<NSKey, Double>         VNS            = new TreeMap<NSKey, Double>();
 
-    private static int                            lastVnsOrder      = 2;
+    private static int                            LAST_VNS_ORDER = 2;
 
     /** Map of the Qns derivatives, for each (n, s) couple {@link CoefficientFactory.NSKey} */
-    private static Map<NSKey, PolynomialFunction> QnsDerivativesMap = new TreeMap<NSKey, PolynomialFunction>();
+    private static Map<NSKey, PolynomialFunction> QNS_MAP        = new TreeMap<NSKey, PolynomialFunction>();
 
     static {
         // Initialization
-        Vns.put(new NSKey(0, 0), 1d);
-        Vns.put(new NSKey(1, 0), 0d);
-        Vns.put(new NSKey(1, 1), 0.5);
+        VNS.put(new NSKey(0, 0), 1d);
+        VNS.put(new NSKey(1, 0), 0d);
+        VNS.put(new NSKey(1, 1), 0.5);
     }
 
     /**
-     * Get the Qns value from 2.8.1-(4)
+     * Get the Qns value from 2.8.1-(4) evaluated in &gamma; This method is using the Legendre
+     * polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method allows to
+     * store the polynomials value in a static map for future exploitation. If the Q<sub>ns</sub>
+     * had been computed already, it just will be evaluated at &gamma;
      * 
      * @param n
-     *            n
+     *            n-value
      * @param s
-     *            s
+     *            s-value
      * @param gamma
-     *            &gamma;
+     *            polynomial evaluation at &gamma;
      * @return the polynomial value evaluated at &gamma;
      */
     public static double getQnsPolynomialValue(final int n,
                                                final int s,
                                                final double gamma) {
         PolynomialFunction derivative;
-        if (QnsDerivativesMap.containsKey(new NSKey(n, s))) {
-            derivative = QnsDerivativesMap.get(new NSKey(n, s));
+        if (QNS_MAP.containsKey(new NSKey(n, s))) {
+            derivative = QNS_MAP.get(new NSKey(n, s));
         } else {
             PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
             derivative = legendre;
             for (int i = 0; i < s; i++) {
                 derivative = (PolynomialFunction) derivative.derivative();
             }
-            QnsDerivativesMap.put(new NSKey(n, s), derivative);
+            QNS_MAP.put(new NSKey(n, s), derivative);
         }
         return derivative.value(gamma);
     }
 
-    /** Q<sub>ns</sub> array coefficient from 2.8.3-(2) 
-     * @param order order of computation
-     * @param gamma 
-     * @return */
+    /**
+     * Compute the Q<sub>ns</sub> array of coefficient evaluated at &gamma; from a recurrence
+     * formula. The relation used is located at 2.8.3-(2) of the Danielson paper. As this method
+     * directly evaluate the polynomial at &gamma;, values aren't stored. For single use, this
+     * method is faster than the {@link CoefficientFactory}
+     * {@link #getQnsPolynomialValue(int, int, double)}
+     * 
+     * @param order
+     *            order of computation
+     * @param gamma
+     * @return
+     */
     public static double[][] computeQnsCoefficient(final int order,
                                                    final double gamma) {
         // Initialization
@@ -156,29 +167,29 @@ public class CoefficientFactory {
      */
     public static TreeMap<NSKey, Double> computeVnsCoefficient(final int order) {
 
-        if (order > lastVnsOrder) {
+        if (order > LAST_VNS_ORDER) {
             // Compute coefficient
             // Need previous computation as recurrence relation is done at s + 1 and n + 2
-            int min = (lastVnsOrder - 2 < 0) ? 0 : (lastVnsOrder - 2);
+            int min = (LAST_VNS_ORDER - 2 < 0) ? 0 : (LAST_VNS_ORDER - 2);
             for (int n = min; n < order; n++) {
                 for (int s = 0; s < n + 1; s++) {
                     if ((n - s) % 2 != 0) {
-                        Vns.put(new NSKey(n, s), 0d);
+                        VNS.put(new NSKey(n, s), 0d);
                     } else {
                         // s = n
                         if (n == s && (s + 1) < order) {
-                            Vns.put(new NSKey(s + 1, s + 1), Vns.get(new NSKey(s, s)) / (2 * s + 2d));
+                            VNS.put(new NSKey(s + 1, s + 1), VNS.get(new NSKey(s, s)) / (2 * s + 2d));
                         }
                         // otherwise
                         if ((n + 2) < order) {
-                            Vns.put(new NSKey(n + 2, s), (-n + s - 1) / (n + s + 2d) * Vns.get(new NSKey(n, s)));
+                            VNS.put(new NSKey(n + 2, s), (-n + s - 1) / (n + s + 2d) * VNS.get(new NSKey(n, s)));
                         }
                     }
                 }
             }
-            lastVnsOrder = order;
+            LAST_VNS_ORDER = order;
         }
-        return Vns;
+        return VNS;
     }
 
     /**
@@ -197,7 +208,7 @@ public class CoefficientFactory {
             throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_MS, m, s);
         }
 
-        if ((n + 1) > lastVnsOrder) {
+        if ((n + 1) > LAST_VNS_ORDER) {
             // Update the Vns coefficient
             computeVnsCoefficient(n + 1);
         }
@@ -205,7 +216,7 @@ public class CoefficientFactory {
         // If (n -s) is odd, the Vmsn coefficient is null
         double result = 0;
         if ((n - s) % 2 == 0) {
-            result = ArithmeticUtils.factorial(n + s) * Vns.get(new NSKey(n, s)) / ArithmeticUtils.factorial(n - m);
+            result = ArithmeticUtils.factorial(n + s) * VNS.get(new NSKey(n, s)) / ArithmeticUtils.factorial(n - m);
         }
         return result;
     }
