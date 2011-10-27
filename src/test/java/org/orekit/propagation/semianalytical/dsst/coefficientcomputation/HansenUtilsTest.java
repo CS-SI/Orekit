@@ -79,13 +79,25 @@ public class HansenUtilsTest {
     }
 
     @Test
+    public void test() throws OrekitException {
+        // System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(0.1, 1, -31,
+        // -20, 1e-1));
+
+        System.out.println(HansenUtils.computeKernelOfHansenCoefficientNEW(0.1, 1, 0, 30, 1e-4).get(new MNSKey(1, -31, -20)));
+        // System.out.println(HansenUtils.computeKernelOfHansenCoefficientRecurssif(0.1, 1, 30, -20,
+        // 1e-1));
+        System.out.println(HansenUtils.computeKernel(0.1, 1, 30, -20, 1e-4));
+
+    }
+
+    @Test
     public void testPascal() throws OrekitException {
         final double ecc = 0.1;
 
-        final int nMax = 15;
+        final int nMax = 3;
         double start = System.currentTimeMillis();
 
-        Map<MNSKey, Double> map = HansenUtils.computeKernelOfHansenCoefficientNEW(ecc, 0, 0, nMax, epsilon);
+        Map<MNSKey, Double> map = HansenUtils.computeKernelOfHansenCoefficientNEW(ecc, -1, 0, nMax, epsilon);
         //
         for (int s = -nMax; s < nMax; s++) {
             int nMin = FastMath.max(2, Math.abs(s));
@@ -126,25 +138,41 @@ public class HansenUtilsTest {
      */
     @Test
     public void testComputeKernelOfHansenCoefficientRecurrenceCall() throws OrekitException {
+
         double ecc = 0.1;
         final int nMax = 30;
 
-        final HansenCoefficients hansen = new HansenCoefficients(ecc);
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 4, 0) + " " + hansen.getHansenKernelValue(0, 0, -5, 0));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 0) + " " + hansen.getHansenKernelValue(0, 0, -4, 0));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 0) + " " + hansen.getHansenKernelValue(0, 0, -3, 0));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 0) + " " + hansen.getHansenKernelValue(0, 0, -2, 0));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 0, 0) + " " + hansen.getHansenKernelValue(0, 0, -1, 0));
-        //
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 4, 1) + " " + hansen.getHansenKernelValue(0, 0, -5, 1));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 1) + " " + hansen.getHansenKernelValue(0, 0, -4, 1));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 1) + " " + hansen.getHansenKernelValue(0, 0, -3, 1));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 1) + " " + hansen.getHansenKernelValue(0, 0, -2, 1));
+        final HansenCoefficients hansen = new HansenCoefficients(ecc, epsilon);
 
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 1) + " " + hansen.getHansenKernelValue(0, 0, -4, 1));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 1) + " " + hansen.getHansenKernelValue(0, 0, -3, 1));
-        System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 1) + " " + hansen.getHansenKernelValue(0, 0, -2, 1));
-        
+        System.out.println(hansen.getHansenKernelValue(1, -31, -20));
+
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 4, 0) + " " +
+        // hansen.getHansenKernelValue(0, 0, -5, 0));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 0) + " " +
+        // hansen.getHansenKernelValue(0, 0, -4, 0));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 0) + " " +
+        // hansen.getHansenKernelValue(0, 0, -3, 0));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 0) + " " +
+        // hansen.getHansenKernelValue(0, 0, -2, 0));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 0, 0) + " " +
+        // hansen.getHansenKernelValue(0, 0, -1, 0));
+        // //
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 4, 1) + " " +
+        // hansen.getHansenKernelValue(0, 0, -5, 1));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 1) + " " +
+        // hansen.getHansenKernelValue(0, 0, -4, 1));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 1) + " " +
+        // hansen.getHansenKernelValue(0, 0, -3, 1));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 1) + " " +
+        // hansen.getHansenKernelValue(0, 0, -2, 1));
+        //
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 3, 1) + " " +
+        // hansen.getHansenKernelValue(0, 0, -4, 1));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 2, 1) + " " +
+        // hansen.getHansenKernelValue(0, 0, -3, 1));
+        // System.out.println(HansenUtils.computeHansenKernelReccurenceCALL(ecc, 1, 1) + " " +
+        // hansen.getHansenKernelValue(0, 0, -2, 1));
+
         // System.out.println(HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, 0, -5, 3,
         // epsilon));
 
@@ -158,7 +186,7 @@ public class HansenUtilsTest {
                 // double ref = map.get(new MNSKey(0, -n - 1, s));
                 // System.out.println(res + "   " + ref + "   " + (res - ref));
 
-                System.out.println((-n - 1) + "  " + s + "  " + res);
+                // System.out.println((-n - 1) + "  " + s + "  " + res);
 
             }
         }
@@ -170,7 +198,7 @@ public class HansenUtilsTest {
 
         // Map<MNSKey, Double> map = HansenUtils.computeKernelOfHansenCoefficientNEW(ecc, 2, 0, 15,
         // epsilon);
-        double value = HansenUtils.computeKernelOfHansenCoefficientRecurssif(ecc, 2, 0, 15, 5, epsilon);
+        double value = HansenUtils.computeKernelOfHansenCoefficientRecurssif(ecc, 2, 15, 5, epsilon);
         System.out.println(value);
         // -n-1 check
         // n = 1

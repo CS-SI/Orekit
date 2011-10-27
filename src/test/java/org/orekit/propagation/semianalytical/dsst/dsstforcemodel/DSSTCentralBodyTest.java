@@ -42,12 +42,12 @@ public class DSSTCentralBodyTest {
     public void test() throws IOException, ParseException, OrekitException {
 
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
-        double[][] Cnm = provider.getC(5, 5, true);
-        double[][] Snm = provider.getS(5, 5, true);
+        double[][] Cnm = provider.getC(8, 8, true);
+        double[][] Snm = provider.getS(8, 8, true);
 
         DSSTPropagator dsstModel = new DSSTPropagator(integrator, spotOrbit);
 
-        dsstModel.addForceModel(new DSSTCentralBody(ae, Cnm, Snm, null));
+        dsstModel.addForceModel(new DSSTCentralBody(ae, Cnm, Snm, null, 1e-4));
         AbsoluteDate currentDate = dateOrbit;
 
         while (currentDate.compareTo(dateFin) < 0d) {
@@ -60,7 +60,7 @@ public class DSSTCentralBodyTest {
 
     @Before
     public void setUp() throws OrekitException {
-        Utils.setDataRoot("regular-data:potential/shm-format");
+        Utils.setDataRoot("regular-data:potential/icgem-format");
         // double[] absTolerance = { 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001};
         // double[] relTolerance = { 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7};
         //
