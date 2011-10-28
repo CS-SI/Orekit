@@ -28,10 +28,10 @@ public class HansenCoefficients {
 
     private void initializeKernels() {
         HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, 0, 0), 0d);
-        HANSEN_KERNEL.put(new MNSKey(0, 0, 0), 0d);
+        HANSEN_KERNEL.put(new MNSKey(0, 0, 0), 1d);
         HANSEN_KERNEL.put(new MNSKey(0, 0, 1), -1d);
         HANSEN_KERNEL.put(new MNSKey(0, 1, 0), 1 + eccentricity * eccentricity / 2d);
-        HANSEN_KERNEL.put(new MNSKey(0, 1, 1), -3 * eccentricity / 2d);
+        HANSEN_KERNEL.put(new MNSKey(0, 1, 1), -3 / 2d);
     }
 
     /**
@@ -83,7 +83,7 @@ public class HansenCoefficients {
         double value = 0d;
         // Computation for negative subscript
         if (j == 0 && n < 0) {
-            value = getDkdXNegativeSubscript(-n-1, s);
+            value = getDkdXNegativeSubscript(-n - 1, s);
         } else if (j == 0 && n >= 0) {
             value = getDkdXPositiveSubscriptJNull(n, s);
         } else if (j != 0 && n > 0d) {
@@ -105,38 +105,50 @@ public class HansenCoefficients {
      */
     private double computeHansenKernelPositiveSubscriptNullJ(int n,
                                                              int s) throws OrekitException {
-        if (n < 2) {
-            // TODO create one
-            throw new OrekitException(OrekitMessages.DSST_NEWCOMB_OPERATORS_COMPUTATION, new String[] {});
-        }
+
         final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
         final double khi2 = khi * khi;
         double result = 0d;
-
+        double val = 0d;
+        MNSKey key;
         if (n == (s - 1) && n >= 1) {
-            if (!HANSEN_KERNEL.containsKey(new MNSKey(0, s - 2, s - 1))) {
-                computeHansenKernelPositiveSubscriptNullJ(s - 2, s - 1);
+            key = new MNSKey(0, s - 2, s - 1);
+            if (HANSEN_KERNEL.containsKey(key)) {
+                val = HANSEN_KERNEL.get(key);
             } else {
-                double val = HANSEN_KERNEL.get(new MNSKey(0, s - 2, s - 1));
-                result = -(2 * s - 1) / s * val;
+                val = computeHansenKernelPositiveSubscriptNullJ(s - 2, s - 1);
+                HANSEN_KERNEL.put(key, val);
             }
+            result = -(2. * s - 1.) / s * val;
+
         } else if (n == s && n >= 1) {
-            if (!HANSEN_KERNEL.containsKey(new MNSKey(0, s - 1, s))) {
-                computeHansenKernelPositiveSubscriptNullJ(s - 1, s);
+            key = new MNSKey(0, s - 1, s);
+            if (HANSEN_KERNEL.containsKey(key)) {
+                val = HANSEN_KERNEL.get(key);
             } else {
-                double val = HANSEN_KERNEL.get(new MNSKey(0, s - 1, s));
-                result = (2 * s + 1) / (s + 1) * val;
+                val = computeHansenKernelPositiveSubscriptNullJ(s - 1, s);
+                HANSEN_KERNEL.put(key, val);
             }
+            result = (2d * s + 1d) / (s + 1d) * val;
+
         } else if (n >= s + 1 && n >= 2) {
-            if (!HANSEN_KERNEL.containsKey(new MNSKey(0, n - 2, s)) && (n >= 2)) {
-                computeHansenKernelPositiveSubscriptNullJ(n - 2, s);
+            key = new MNSKey(0, n - 2, s);
+            if (HANSEN_KERNEL.containsKey(key) && (n >= 2)) {
+                val = HANSEN_KERNEL.get(key);
+            } else {
+                val = computeHansenKernelPositiveSubscriptNullJ(n - 2, s);
+                HANSEN_KERNEL.put(key, val);
             }
-            if (!HANSEN_KERNEL.containsKey(new MNSKey(0, n - 1, s)) && (n >= 1)) {
-                computeHansenKernelPositiveSubscriptNullJ(n - 1, s);
+            key = new MNSKey(0, n - 1, s);
+            if (HANSEN_KERNEL.containsKey(key) && (n >= 1)) {
+                val = HANSEN_KERNEL.get(key);
+            } else {
+                val = computeHansenKernelPositiveSubscriptNullJ(n - 1, s);
+                HANSEN_KERNEL.put(key, val);
             }
 
-            double val1 = (2 * n + 1) / (n + 1);
-            double val2 = -(n + s) * (n - s) / (n * (n + 1) * khi2);
+            double val1 = (2d * n + 1d) / (n + 1d);
+            double val2 = -(n + s) * (n - s) / (n * (n + 1d) * khi2);
             double knM1 = HANSEN_KERNEL.get(new MNSKey(0, n - 1, s));
             double knM2 = HANSEN_KERNEL.get(new MNSKey(0, n - 2, s));
             result = val1 * knM1 + val2 * knM2;
@@ -180,9 +192,9 @@ public class HansenCoefficients {
             dKnM2 = HANSEN_KERNEL_DERIVATIVES.get(nM2);
             knM2 = getHansenKernelValue(0, n - 2, s);
 
-            final double val1 = (2 * n + 1) / (n + 1) * dKnM1;
-            final double val2 = -(n + s) * (n - s) / (n * (n + 1) * khi2) * dKnM2;
-            final double val3 = 2 * (n + s) * (n - s) / (n * (n + 1) * khi2 * khi) * knM2;
+            final double val1 = (2d * n + 1d) / (n + 1d) * dKnM1;
+            final double val2 = -(n + s) * (n - s) / (n * (n + 1d) * khi2) * dKnM2;
+            final double val3 = 2d * (n + s) * (n - s) / (n * (n + 1d) * khi2 * khi) * knM2;
             result = val1 + val2 + val3;
             HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, n, s), result);
         }
@@ -252,7 +264,7 @@ public class HansenCoefficients {
         final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
         final double khi2 = khi * khi;
         double value = 0d;
-        MNSKey key = new MNSKey(0, -n-1, s);
+        MNSKey key = new MNSKey(0, -n - 1, s);
 
         if (n == FastMath.abs(s)) {
             HANSEN_KERNEL_DERIVATIVES.put(key, 0d);
@@ -265,17 +277,17 @@ public class HansenCoefficients {
             double kMns;
             double KMnP1s;
             if (!HANSEN_KERNEL_DERIVATIVES.containsKey(mN)) {
-                getDkdXNegativeSubscript(n-1, s);
+                getDkdXNegativeSubscript(n - 1, s);
             }
             if (!HANSEN_KERNEL_DERIVATIVES.containsKey(mNp1)) {
-                getDkdXNegativeSubscript(n-2, s);
+                getDkdXNegativeSubscript(n - 2, s);
             }
 
             kMns = HANSEN_KERNEL_DERIVATIVES.get(mN);
             KMnP1s = HANSEN_KERNEL_DERIVATIVES.get(mNp1);
-            double KMnM1s = getHansenKernelValue(0, -n-1, s);
+            double KMnM1s = getHansenKernelValue(0, -n - 1, s);
 
-            value = (n - 1) * khi2 * ((2 * n - 3) * kMns - (n - 2) * KMnP1s) / ((n + s - 1) * (n - s + 1)) + 2 * KMnM1s / khi ;
+            value = (n - 1d) * khi2 * ((3d - 2 * n) * kMns - (2d - n) * KMnP1s) / ((n - s - 1d) * (1d - n - s)) + 2d * KMnM1s / khi;
 
             HANSEN_KERNEL_DERIVATIVES.put(key, value);
         }
@@ -331,13 +343,12 @@ public class HansenCoefficients {
             if (n == ss && n >= 0) {
                 value = 0d;
             } else if (n == (ss + 1) && n >= 1) {
-//                value = FastMath.pow(khi, 1 + 2 * ss) / FastMath.pow(2, ss);
+                // value = FastMath.pow(khi, 1 + 2 * ss) / FastMath.pow(2, ss);
                 // Replaced formula. See method documentation for further informations
                 // TODO check this as the basic expression of hansen coeff is different in danielson
                 // and Hughes......
 
-                 value = FastMath.pow(eccentricity * 0.5, ss) * FastMath.pow((1 - eccentricity *
-                 eccentricity), -(2 * n - 1) / 2d);
+                value = FastMath.pow(eccentricity * 0.5, ss) * FastMath.pow((1 - eccentricity * eccentricity), -(2d * n - 1d) / 2d);
             } else {
                 if (!HANSEN_KERNEL.containsKey(new MNSKey(0, -n, ss))) {
                     computeHansenKernelNegativeSubscribtNullJ(n - 1, ss);
@@ -349,7 +360,7 @@ public class HansenCoefficients {
                 kMns = HANSEN_KERNEL.get(new MNSKey(0, -n, ss));
                 KMnP1s = HANSEN_KERNEL.get(new MNSKey(0, -n + 1, ss));
 
-                value = (n - 1) * khi2 * ((2 * n - 3) * kMns - (n - 2) * KMnP1s) / ((n + ss - 1) * (n - ss - 1));
+                value = (n - 1d) * khi2 * ((2d * n - 3) * kMns - (n - 2d) * KMnP1s) / ((n + ss - 1d) * (n - ss - 1d));
             }
             // Add K(n, s) and K(n, -s) as they are symmetric
             HANSEN_KERNEL.put(key1, value);
