@@ -110,6 +110,8 @@ public class HansenCoefficients {
         final double khi2 = khi * khi;
         double result = 0d;
         double val = 0d;
+        double knM1 = 0d;
+        double knM2 = 0d;
         MNSKey key;
         if (n == (s - 1) && n >= 1) {
             key = new MNSKey(0, s - 2, s - 1);
@@ -134,23 +136,21 @@ public class HansenCoefficients {
         } else if (n >= s + 1 && n >= 2) {
             key = new MNSKey(0, n - 2, s);
             if (HANSEN_KERNEL.containsKey(key) && (n >= 2)) {
-                val = HANSEN_KERNEL.get(key);
+                knM2 = HANSEN_KERNEL.get(key);
             } else {
-                val = computeHansenKernelPositiveSubscriptNullJ(n - 2, s);
-                HANSEN_KERNEL.put(key, val);
+                knM2 = computeHansenKernelPositiveSubscriptNullJ(n - 2, s);
+                HANSEN_KERNEL.put(key, knM2);
             }
             key = new MNSKey(0, n - 1, s);
             if (HANSEN_KERNEL.containsKey(key) && (n >= 1)) {
-                val = HANSEN_KERNEL.get(key);
+                knM1 = HANSEN_KERNEL.get(key);
             } else {
-                val = computeHansenKernelPositiveSubscriptNullJ(n - 1, s);
-                HANSEN_KERNEL.put(key, val);
+                knM1 = computeHansenKernelPositiveSubscriptNullJ(n - 1, s);
+                HANSEN_KERNEL.put(key, knM1);
             }
 
             double val1 = (2d * n + 1d) / (n + 1d);
             double val2 = -(n + s) * (n - s) / (n * (n + 1d) * khi2);
-            double knM1 = HANSEN_KERNEL.get(new MNSKey(0, n - 1, s));
-            double knM2 = HANSEN_KERNEL.get(new MNSKey(0, n - 2, s));
             result = val1 * knM1 + val2 * knM2;
             HANSEN_KERNEL.put(new MNSKey(0, n, s), result);
         }
