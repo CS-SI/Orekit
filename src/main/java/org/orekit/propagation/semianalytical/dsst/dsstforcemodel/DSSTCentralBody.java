@@ -16,6 +16,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 public class DSSTCentralBody implements DSSTForceModel {
 
@@ -91,7 +92,8 @@ public class DSSTCentralBody implements DSSTForceModel {
     private HansenCoefficients     hansen;
 
     /**
-     * convergence parameter used in Hansen coefficient generation. 1e-4 seems to be a correct value.
+     * convergence parameter used in Hansen coefficient generation. 1e-4 seems to be a correct
+     * value.
      */
     private final double           epsilon;
 
@@ -126,7 +128,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         this.ae = ae;
         // Initialize the constant component
         initializeJn(Cnm);
-        Vns = CoefficientFactory.computeVnsCoefficient(order);
+        Vns = CoefficientFactory.computeVnsCoefficient(order + 1);
         resonantTesseralSize = (resonantTesserals == null) ? 0 : resonantTesserals.size();
     }
 
@@ -189,8 +191,8 @@ public class DSSTCentralBody implements DSSTForceModel {
      *            Geopotential coefficient
      */
     private void initializeJn(double[][] Cnm) {
-        Jn = new double[degree];
-        for (int i = 0; i < degree; i++) {
+        Jn = new double[degree + 1];
+        for (int i = 0; i <= degree; i++) {
             Jn[i] = -Cnm[i][0];
         }
     }
@@ -321,11 +323,27 @@ public class DSSTCentralBody implements DSSTForceModel {
             double a = orbit.getA();
             double k = orbit.getEquinoctialEx();
             double h = orbit.getEquinoctialEy();
-            double hx = orbit.getHx();
-            double hy = orbit.getHy();
+            double q = orbit.getHx();
+            double p = orbit.getHy();
 
-            final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
-            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order, gamma);
+            final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order + 1);
+            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order + 1, gamma);
+            
+            
+            /**
+             * analytic expression of J2
+             */
+            double J = 3 * mu * Constants.WGS84_EARTH_EQUATORIAL_RADIUS * Constants.WGS84_EARTH_EQUATORIAL_RADIUS * Cnm[2][2] / 4d;
+             double dhdt = J * k * (3 * gamma * gamma - 1 + 2 * gamma * (alpha * p - beta * q)) / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
+            System.out.println("dhdt " + dhdt);
+
+            double dudh = 3 * J * h * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k,2.5));
+            double dudk = 3 * J * k * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k,2.5));
+            
+            System.out.println("dudh " + dudh);
+            System.out.println("dudk " + dudk);
+
+            
 
             // Compute potential derivative :
             final double[] potentialDerivatives = computePotentialderivatives(Qns, GsHs);
@@ -343,7 +361,7 @@ public class DSSTCentralBody implements DSSTForceModel {
             // U(beta,gamma) = beta * du / dgamma - gamma * du / dbeta
             final double UBetaGamma = beta * dUdGa - gamma * dUdBe;
 
-            final double factor = (hy * UAlphaGamma - I * hx * UBetaGamma) / (A * B);
+            final double factor = (p * UAlphaGamma - I * q * UBetaGamma) / (A * B);
 
             // Compute mean element Rate for Zonal Harmonic :
             // da / dt = 0 for zonal harmonic :
@@ -351,7 +369,7 @@ public class DSSTCentralBody implements DSSTForceModel {
             dk = -(B / A) * dUdh - h * factor;
             dp = -C / (2 * A * B) * UBetaGamma;
             dq = -I * C * UAlphaGamma / (2 * A * B);
-            dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (hy * UAlphaGamma - I * hx * UBetaGamma) / (A * B);
+            dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (p * UAlphaGamma - I * q * UBetaGamma) / (A * B);
 
             return new double[] { 0d, dk, dh, dq, dp, dM };
         }
@@ -442,12 +460,11 @@ public class DSSTCentralBody implements DSSTForceModel {
                 // Compute Partial derivatives of Gs from equ. (9)
                 delta0s = (s == 0) ? 1 : 2;
 
-                for (int n = s + 2; n < order; n++) {
+                for (int n = s + 2; n <= order; n++) {
                     // Extract data from previous computation :
                     jn = Jn[n];
                     vns = Vns.get(new NSKey(n, s));
                     kns = hansen.getHansenKernelValue(0, -n - 1, s);
-                    System.out.println((-n-1) + "  " + s + "  " + kns);
                     qns = Qns[n][s];
                     raExpN = FastMath.pow(Ra, n);
                     dkns = hansen.getHansenKernelDerivative(0, -n - 1, s);

@@ -103,6 +103,9 @@ public class ModifiedNewcombOperatorTest {
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(1), "1");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(2), "0.125");
 
+
+
+
         // order 0 :
         // (4*x^3)/(12*2)+(20*x^2)/(12*8)+(8*x^2)/(12*2)+(20*x)/(12*8)+(4*x)/(12*2)+x^2/12+(2*x)/12
         System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(0));

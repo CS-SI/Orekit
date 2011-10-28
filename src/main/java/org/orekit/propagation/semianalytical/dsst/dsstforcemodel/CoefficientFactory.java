@@ -35,7 +35,7 @@ public class CoefficientFactory {
      * Get the Qns value from 2.8.1-(4) evaluated in &gamma; This method is using the Legendre
      * polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method allows to
      * store the polynomials value in a static map for future exploitation. If the Q<sub>ns</sub>
-     * had been computed already, it just will be evaluated at &gamma;
+     * had been computed already, they just will be evaluated at &gamma;
      * 
      * @param n
      *            n-value

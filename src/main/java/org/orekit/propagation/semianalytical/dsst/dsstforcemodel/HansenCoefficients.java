@@ -83,7 +83,7 @@ public class HansenCoefficients {
         double value = 0d;
         // Computation for negative subscript
         if (j == 0 && n < 0) {
-            value = getDkdXNegativeSubscript(n, s);
+            value = getDkdXNegativeSubscript(-n-1, s);
         } else if (j == 0 && n >= 0) {
             value = getDkdXPositiveSubscriptJNull(n, s);
         } else if (j != 0 && n > 0d) {
@@ -252,31 +252,30 @@ public class HansenCoefficients {
         final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
         final double khi2 = khi * khi;
         double value = 0d;
-        final int nn = -n - 1;
-        MNSKey key = new MNSKey(0, n, s);
+        MNSKey key = new MNSKey(0, -n-1, s);
 
-        if (FastMath.abs(nn) == FastMath.abs(s)) {
+        if (n == FastMath.abs(s)) {
             HANSEN_KERNEL_DERIVATIVES.put(key, 0d);
-        } else if (FastMath.abs(nn) == FastMath.abs(s) + 1) {
+        } else if (n == FastMath.abs(s) + 1) {
             value = (1 + 2 * s) * FastMath.pow(khi, 2 * s) / FastMath.pow(2, s);
             HANSEN_KERNEL_DERIVATIVES.put(key, value);
         } else {
-            MNSKey mN = new MNSKey(0, -nn, s);
-            MNSKey mNp1 = new MNSKey(0, -nn + 1, s);
+            MNSKey mN = new MNSKey(0, -n, s);
+            MNSKey mNp1 = new MNSKey(0, -n + 1, s);
             double kMns;
             double KMnP1s;
             if (!HANSEN_KERNEL_DERIVATIVES.containsKey(mN)) {
-                getDkdXNegativeSubscript(n + 1, s);
+                getDkdXNegativeSubscript(n-1, s);
             }
             if (!HANSEN_KERNEL_DERIVATIVES.containsKey(mNp1)) {
-                getDkdXNegativeSubscript(n + 2, s);
+                getDkdXNegativeSubscript(n-2, s);
             }
 
             kMns = HANSEN_KERNEL_DERIVATIVES.get(mN);
             KMnP1s = HANSEN_KERNEL_DERIVATIVES.get(mNp1);
-            double KMnM1s = getHansenKernelValue(0, n, s);
+            double KMnM1s = getHansenKernelValue(0, -n-1, s);
 
-            value = (nn - 1) * khi2 * ((2 * nn - 3) * kMns - (nn - 2) * KMnP1s + 2 * KMnM1s / khi) / ((nn + s - 1) * (nn - s + 1));
+            value = (n - 1) * khi2 * ((2 * n - 3) * kMns - (n - 2) * KMnP1s) / ((n + s - 1) * (n - s + 1)) + 2 * KMnM1s / khi ;
 
             HANSEN_KERNEL_DERIVATIVES.put(key, value);
         }
