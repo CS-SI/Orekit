@@ -66,8 +66,7 @@ public class CoefficientFactory {
      * Compute the Q<sub>ns</sub> array of coefficient evaluated at &gamma; from a recurrence
      * formula. The relation used is located at 2.8.3-(2) of the Danielson paper. As this method
      * directly evaluate the polynomial at &gamma;, values aren't stored. For single use, this
-     * method is faster than the {@link CoefficientFactory}
-     * {@link #getQnsPolynomialValue(int, int, double)}
+     * method is faster than the {@link #getQnsPolynomialValue(int, int, double)}
      * 
      * @param order
      *            order of computation
@@ -98,39 +97,78 @@ public class CoefficientFactory {
         return Qns;
     }
 
-    /**
-     * Compute G<sub>s</sub> and H<sub>s</sub> polynomial from equation 3.1-(5)
+    /** Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5)
      * 
-     * @param k
-     *            x-component of the eccentricity vector
-     * @param h
-     *            y-component of the eccentricity vector
-     * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomial. First column contains the
-     *         G<sub>s</sub> values and the second column containt the H<sub>s</sub> values
+     *  @param k x-component of the eccentricity vector
+     *  @param h y-component of the eccentricity vector
+     *  @param alpha 1st direction cosine
+     *  @param beta 2nd direction cosine
+     *  @param order development order
+     *  @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order-1.
+     *          The 1st column contains the G<sub>s</sub> values.
+     *          The 2nd column contains the H<sub>s</sub> values.
+     *  @see getGsHsCoefficient
      */
     public static double[][] computeGsHsCoefficient(final double k,
                                                     final double h,
                                                     final double alpha,
                                                     final double beta,
                                                     final int order) {
-
-        // TODO this coefficient can also be computed by direct relation 3.1-(4) Check for
-        // performances... see below
         // Initialization
         double[][] GsHs = new double[2][order];
         // First Gs coefficient
         GsHs[0][0] = 1;
         // First Hs coefficient
         GsHs[1][0] = 0;
+        // Constant terms
+        final double hamkb = (h * alpha - k * beta);
+        final double kaphb = (k * alpha + h * beta);
 
         for (int s = 1; s < order; s++) {
-            // Gs coefficient :
-            GsHs[0][s] = (k * alpha + h * beta) * GsHs[0][s - 1] - (h * alpha - k * beta) * GsHs[1][s - 1];
+            // Gs coefficient
+            GsHs[0][s] = kaphb * GsHs[0][s - 1] - hamkb * GsHs[1][s - 1];
             // Hs coefficient
-            GsHs[1][s] = (h * alpha - k * beta) * GsHs[0][s - 1] + (k * alpha + h * beta) * GsHs[1][s - 1];
+            GsHs[1][s] = hamkb * GsHs[0][s - 1] + kaphb * GsHs[1][s - 1];
         }
 
         return GsHs;
+    }
+
+    /** Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5)
+     * 
+     *  @param k x-component of the eccentricity vector
+     *  @param h y-component of the eccentricity vector
+     *  @param alpha 1st direction cosine
+     *  @param beta 2nd direction cosine
+     *  @param order development order
+     *  @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order-1.
+     *          The 1st column contains the G<sub>s</sub> values.
+     *          The 2nd column contains the H<sub>s</sub> values.
+     *  @see getGsHsCoefficient
+     */
+
+    /** Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4)
+     * 
+     *  @param k x-component of the eccentricity vector
+     *  @param h y-component of the eccentricity vector
+     *  @param alpha 1st direction cosine
+     *  @param beta 2nd direction cosine
+     *  @param s development order
+     *  @return Array of G<sub>s</sub> and H<sub>s</sub> values for s.
+     *          The 1st column contains the G<sub>s</sub> value.
+     *          The 2nd column contains the H<sub>s</sub> value.
+     */
+    public static double[] getGsHsCoefficient(final double k,
+                                              final double h,
+                                              final double alpha,
+                                              final double beta,
+                                              final int s) {
+        Complex a  = new Complex(k, h);
+        Complex as = a.pow(s);
+        Complex b  = new Complex(alpha, -beta);
+        Complex bs = b.pow(s);
+        Complex asbs = as.multiply(bs);
+        return new double[] {asbs.getReal(), asbs.getImaginary()};
     }
 
     /** relation 3.1-(4) */

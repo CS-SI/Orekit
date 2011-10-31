@@ -1,11 +1,9 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
-import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.MNSKey;
 
 public class HansenCoefficients {
@@ -14,35 +12,36 @@ public class HansenCoefficients {
 
     private static TreeMap<MNSKey, Double> HANSEN_KERNEL_DERIVATIVES = new TreeMap<CoefficientFactory.MNSKey, Double>();
 
-    private final double                   eccentricity;
+    private final double                   ecc;
+    private final double                   ome2;
+    private final double                   chi;
 
     private final double                   EPSILON;
 
     public HansenCoefficients(final double ecc,
                               final double epsilon) {
-        this.eccentricity = ecc;
+        this.ecc  = ecc;
+        this.ome2 = 1. - ecc * ecc;
+        this.chi  = 1. / FastMath.sqrt(ome2);
         this.EPSILON = epsilon;
         initializeKernels();
 
     }
 
     private void initializeKernels() {
-        HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, 0, 0), 0d);
-        HANSEN_KERNEL.put(new MNSKey(0, 0, 0), 1d);
-        HANSEN_KERNEL.put(new MNSKey(0, 0, 1), -1d);
-        HANSEN_KERNEL.put(new MNSKey(0, 1, 0), 1 + eccentricity * eccentricity / 2d);
-        HANSEN_KERNEL.put(new MNSKey(0, 1, 1), -3 / 2d);
+        HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, 0, 0), 0.);
+        HANSEN_KERNEL.put(new MNSKey(0, 0, 0),  1.);
+        HANSEN_KERNEL.put(new MNSKey(0, 0, 1), -1.);
+        HANSEN_KERNEL.put(new MNSKey(0, 1, 0),  1. + ecc * ecc / 2.);
+        HANSEN_KERNEL.put(new MNSKey(0, 1, 1), -3. / 2.);
     }
 
     /**
      * Get the K<sub>j</sub><sup>n,s</sup> coefficient value, for any value.
      * 
-     * @param j
-     *            j
-     * @param n
-     *            n
-     * @param s
-     *            s
+     * @param j j
+     * @param n n
+     * @param s s
      * @return
      * @throws OrekitException
      */
@@ -86,7 +85,7 @@ public class HansenCoefficients {
             value = getDkdXNegativeSubscript(-n - 1, s);
         } else if (j == 0 && n >= 0) {
             value = getDkdXPositiveSubscriptJNull(n, s);
-        } else if (j != 0 && n > 0d) {
+        } else if (j != 0 && n > 0) {
             value = getDkdXPositiveSubscript(j, n, s, EPSILON);
         }
         return value;
@@ -94,19 +93,17 @@ public class HansenCoefficients {
 
     /**
      * Compute K<sub>0</sub><sup>n,s</sup> with positive subscript from Equation 2.7.3 - (7)(8).
+     * 
      * Those coefficients are used for third body description.
      * 
-     * @param n
-     *            n
-     * @param s
-     *            s
+     * @param n n
+     * @param s s
      * @return K<sub>0</sub><sup>n,s</sup>
      * @throws OrekitException
      */
-    private double computeHansenKernelPositiveSubscriptNullJ(int n,
-                                                             int s) throws OrekitException {
+    private double computeHansenKernelPositiveSubscriptNullJ(int n, int s) throws OrekitException {
 
-        final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
+        final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
         final double khi2 = khi * khi;
         double result = 0d;
         double val = 0d;
@@ -160,41 +157,39 @@ public class HansenCoefficients {
     /**
      * Compute dK<sub>0</sub><sup>n,s</sup> / d&chi; with positive subscript from Equation 3.2 - (3)
      * 
-     * @param n
-     *            n must be positive
-     * @param s
-     *            s
+     * @param n n indice (must be positive)
+     * @param s s indice
      * @return dK<sub>0</sub><sup>n,s</sup> / d&chi;
-     * @throws OrekitException
+     * @throws OrekitException if some error occured
      */
-    private double getDkdXPositiveSubscriptJNull(int n,
-                                                 int s) throws OrekitException {
-        final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
-        final double khi2 = khi * khi;
+    private double getDkdXPositiveSubscriptJNull(int n, int s) throws OrekitException {
 
-        double result = 0d;
-        if ((n == s - 1) || (n != s)) {
+        double result = 0.;
+        if ((n == s - 1) || (n == s)) {
             HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, n, s), 0d);
         } else {
-            MNSKey nM1 = new MNSKey(0, n - 1, s);
-            MNSKey nM2 = new MNSKey(0, n - 2, s);
-            double dKnM1;
-            double dKnM2;
-            double knM2;
-            if (!HANSEN_KERNEL_DERIVATIVES.containsKey(nM1)) {
-                getDkdXNegativeSubscript(n - 1, s);
-            }
-            if (!HANSEN_KERNEL_DERIVATIVES.containsKey(nM2)) {
-                getDkdXNegativeSubscript(n - 2, s);
+            final MNSKey nM1 = new MNSKey(0, n - 1, s);
+            double dKnM1 = 0.;
+            if (HANSEN_KERNEL_DERIVATIVES.containsKey(nM1)) {
+                dKnM1 = HANSEN_KERNEL_DERIVATIVES.get(nM1);
+            } else {
+                dKnM1 = getDkdXPositiveSubscriptJNull(n - 1, s);
             }
 
-            dKnM1 = HANSEN_KERNEL_DERIVATIVES.get(nM1);
+            final MNSKey nM2 = new MNSKey(0, n - 2, s);
+            double dKnM2 = 0.;
+            if (HANSEN_KERNEL_DERIVATIVES.containsKey(nM2)) {
             dKnM2 = HANSEN_KERNEL_DERIVATIVES.get(nM2);
-            knM2 = getHansenKernelValue(0, n - 2, s);
+            } else {
+                dKnM2 = getDkdXPositiveSubscriptJNull(n - 2, s);
+            }
 
-            final double val1 = (2d * n + 1d) / (n + 1d) * dKnM1;
-            final double val2 = -(n + s) * (n - s) / (n * (n + 1d) * khi2) * dKnM2;
-            final double val3 = 2d * (n + s) * (n - s) / (n * (n + 1d) * khi2 * khi) * knM2;
+            final double knM2 = getHansenKernelValue(0, n - 2, s);
+
+            final double chi2 = chi * chi;
+            final double val1 = (2. * n + 1.) / (n + 1.) * dKnM1;
+            final double val2 = -(n + s) * (n - s) / (n * (n + 1.) * chi2) * dKnM2;
+            final double val3 = 2. * (n + s) * (n - s) / (n * (n + 1.) * chi2 * chi) * knM2;
             result = val1 + val2 + val3;
             HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, n, s), result);
         }
@@ -224,10 +219,10 @@ public class HansenCoefficients {
                                             final double convergenceCriteria) throws OrekitException {
         // Initialization :
         final double Kjns = computeKernelOfHansenCoefficientFromNewcomb(j, n, s);
-        final double coeff = FastMath.pow(1 - eccentricity * eccentricity, n + 1.5);
+        final double coeff = FastMath.pow(1 - ecc * ecc, n + 1.5);
         final int a = FastMath.max(j - s, 0);
         final int b = FastMath.max(s - j, 0);
-        final double KjnsTerm = -((n + 1.5) / (1 - eccentricity * eccentricity)) * Kjns;
+        final double KjnsTerm = -((n + 1.5) / (1 - ecc * ecc)) * Kjns;
 
         double tmp = EPSILON + 1;
         int i = 1;
@@ -236,7 +231,7 @@ public class HansenCoefficients {
         // Iteration over the modified Newcomb Operator
         while (Math.abs(tmp) > EPSILON) {
             final double newcomb = ModifiedNewcombOperators.getValue(i + a, i + b, n, s);
-            tmp = i * newcomb * FastMath.pow(eccentricity, 2 * (i - 1));
+            tmp = i * newcomb * FastMath.pow(ecc, 2 * (i - 1));
             result += tmp;
             i++;
         }
@@ -261,7 +256,7 @@ public class HansenCoefficients {
      */
     private double getDkdXNegativeSubscript(final int n,
                                             final int s) throws OrekitException {
-        final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
+        final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
         final double khi2 = khi * khi;
         double value = 0d;
         MNSKey key = new MNSKey(0, -n - 1, s);
@@ -335,7 +330,7 @@ public class HansenCoefficients {
             HANSEN_KERNEL.put(key1, result);
 
         } else {
-            final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
+            final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
             final double khi2 = khi * khi;
             double value;
             double kMns;
@@ -348,7 +343,7 @@ public class HansenCoefficients {
                 // TODO check this as the basic expression of hansen coeff is different in danielson
                 // and Hughes......
 
-                value = FastMath.pow(eccentricity * 0.5, ss) * FastMath.pow((1 - eccentricity * eccentricity), -(2d * n - 1d) / 2d);
+                value = FastMath.pow(ecc * 0.5, ss) * FastMath.pow((1 - ecc * ecc), -(2d * n - 1d) / 2d);
             } else {
                 if (!HANSEN_KERNEL.containsKey(new MNSKey(0, -n, ss))) {
                     computeHansenKernelNegativeSubscribtNullJ(n - 1, ss);
@@ -396,7 +391,7 @@ public class HansenCoefficients {
                                                                 final int n,
                                                                 final double convergenceCriteria) throws OrekitException {
 
-        final double khi = 1 / FastMath.sqrt(1 - eccentricity * eccentricity);
+        final double khi = 1 / FastMath.sqrt(1 - ecc * ecc);
         final double khi2 = khi * khi;
         double value;
         double kMn, kMnP1, kMnP3;
@@ -433,7 +428,7 @@ public class HansenCoefficients {
     public double computeKernelOfHansenCoefficientFromNewcomb(final int j,
                                                               final int n,
                                                               final int s) throws OrekitException {
-        final double coeff = FastMath.pow(1 - eccentricity * eccentricity, n + 1.5);
+        final double coeff = FastMath.pow(1 - ecc * ecc, n + 1.5);
         final int a = FastMath.max(j - s, 0);
         final int b = FastMath.max(s - j, 0);
 
@@ -443,7 +438,7 @@ public class HansenCoefficients {
         double result = 0d;
         while (Math.abs(tmp) > EPSILON) {
             final double newcomb = ModifiedNewcombOperators.getValue(i + a, i + b, n, s);
-            tmp = newcomb * FastMath.pow(eccentricity, 2 * i);
+            tmp = newcomb * FastMath.pow(ecc, 2 * i);
             result += tmp;
             i++;
         }

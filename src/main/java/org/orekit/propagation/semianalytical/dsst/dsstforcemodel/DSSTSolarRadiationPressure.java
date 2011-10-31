@@ -35,8 +35,8 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
    /** Sun model. */
    private final PVCoordinatesProvider sun;
 
-   /** Central Body radius. */
-   private final double equatorialRadius;
+   /** Square of Central Body radius: (R<sub>+</sub>)<sup>2</sup>. */
+   private final double rcb2;
 
    /** Simple constructor with default reference values.
     *  <p>When this constructor is used, the reference values are:</p>
@@ -74,77 +74,13 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
                                       final double equatorialRadius) {
         this.kRef = 0.5 * pRef * dRef * dRef * cr * area;
         this.sun  = sun;
-        this.equatorialRadius = equatorialRadius;
+        this.rcb2 = equatorialRadius * equatorialRadius;
     }
-    
-//    @Override
-//    public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
-//        final double[] meanElementRate = new double[6];
-// 
-//        // Equinoctial elements
-//        double[] stateVector = new double[6];
-//        OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, stateVector);
-//        final double a = stateVector[0];
-//        final double k = stateVector[1];
-//        final double h = stateVector[2];
-//        final double q = stateVector[3];
-//        final double p = stateVector[4];
-//        final double I = +1;
-//
-//        // Factors
-//        final double k2 = k * k;
-//        final double h2 = h * h;
-//        final double q2 = q * q;
-//        final double p2 = p * p;
-//
-//        // Computation of A, B, C (equinoctial coefficients)
-//        final double A = FastMath.sqrt(state.getMu() * a);
-//        final double B = FastMath.sqrt(1 - k2 - h2);
-//        final double C = 1 + q2 + p2;
-//
-//        // Direction cosines
-//        final Vector3D f = new Vector3D( (1 - p2 + q2) / C,        2. * p * q / C,       -2. * I * p / C);
-//        final Vector3D g = new Vector3D(2. * I * p * q / C, I * (1 + p2 - q2) / C,            2. * q / C);
-//        final Vector3D w = new Vector3D(        2. * p / C,           -2. * q / C, I * (1 - p2 - q2) / C);
-//
-//        // Direction cosines
-//        final Vector3D sunPos = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
-//        final double alpha = sunPos.dotProduct(f);
-//        final double beta  = sunPos.dotProduct(g);
-//        final double gamma = sunPos.dotProduct(w);
-//
-//        // Compute T coefficient
-//        final double T = kRef / state.getMass();
-//        // Compute R3^2
-//        final double R32 = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().getNormSq();
-//        // Compute V coefficient
-//        final double V =  (3. * T * a) / (2. * R32);
-//        // Compute mean elements rate
-//        final double ab = A * B;
-//        final double bvoa = B * V / A;
-//        final double kpihq = k * p - I * h * q;
-//        final double vgoab = V * gamma / ab;
-//        final double cvgo2ab = C * vgoab / 2.;
-//        final double kpihqvgoab = kpihq * vgoab;
-//        // da/dt =  0
-//        meanElementRate[0] = 0.;
-//        // dk/dt = −B*V*β/A + (V*h*γ/A*B)*(k*p − I*h*q)
-//        meanElementRate[1] = -bvoa * beta + kpihqvgoab * h;
-//        // dh/dt = B*V*α/A − (V*k*γ/A*B)*(k*p − I*h*q)
-//        meanElementRate[2] =  bvoa * alpha - kpihqvgoab * k;
-//        // dq/dt = I*C*V*k*γ/2*A*B
-//        meanElementRate[3] =  I * cvgo2ab * k;
-//        // dp/dt = C*V*h*γ/2*A*B
-//        meanElementRate[4] =  cvgo2ab * h;
-//        // dλ/dt = −(2 + B)*V*(k*α + h*β)/A*(1 + B) − (V*γ/A*B)*(k*p − I*h*q)
-//        meanElementRate[5] = -(kpihqvgoab + (2. + B) * V * (k * alpha + h * beta) / (A * (1. + B)));
-//    
-//        return meanElementRate;
-//    }
 
     /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
         throws OrekitException {
+        // TODO: not implemented yet
         // Short Periodic Variations are set to null
         return new double[] {0.,0.,0.,0.,0.,0.};
     }
@@ -170,6 +106,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     protected double[] getLLimits(SpacecraftState state) throws OrekitException {
         double[] ll = {-FastMath.PI, FastMath.PI};
         // TODO: cylinder or conical modeling for shadow computation
+        final double M = rcb2;
         return ll;
     }
 

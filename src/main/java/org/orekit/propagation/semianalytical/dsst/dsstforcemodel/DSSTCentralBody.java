@@ -169,12 +169,11 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public double[] getShortPeriodicVariations(AbsoluteDate date,
-                                               double[] currentState) {
-        // TODO Auto-generated method stub
-        // Not implemented yet
-        return new double[] { 0d, 0d, 0d, 0d, 0d, 0d };
+    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
+        throws OrekitException {
+        // TODO: not implemented yet
+        // Short Periodic Variations are set to null
+        return new double[] {0.,0.,0.,0.,0.,0.};
     }
 
     /** {@inheritDoc} */
