@@ -30,7 +30,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     private static final double DEFAULT_EPSILON = 1.e-4;
 
     /** Default N order for summation. */
-    private static final int DEFAULT_ORDER = 10;
+    private static final int DEFAULT_ORDER = 5;
 
     /** The 3rd body to consider. */
     private final CelestialBody body;
@@ -144,15 +144,15 @@ public class DSSTThirdBody implements DSSTForceModel {
         computeParameters(currentState);
 
         // Compute potential U derivatives
-        final double[] potentialDerivatives = computeUDerivatives(currentState);
-        final double dUda  = potentialDerivatives[0];
-        final double dUdk  = potentialDerivatives[1];
-        final double dUdh  = potentialDerivatives[2];
-        final double dUdAl = potentialDerivatives[3];
-        final double dUdBe = potentialDerivatives[4];
-        final double dUdGa = potentialDerivatives[5];
+        final double[] uDerivatives = computeUDerivatives(currentState);
+        final double dUda  = uDerivatives[0];
+        final double dUdk  = uDerivatives[1];
+        final double dUdh  = uDerivatives[2];
+        final double dUdAl = uDerivatives[3];
+        final double dUdBe = uDerivatives[4];
+        final double dUdGa = uDerivatives[5];
 
-        // Compute cross derivatives from formula 2.2 - (8):
+        // Compute cross derivatives from 2.2-(8)
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
         final double UAlphaGamma = alpha * dUdGa - gamma * dUdAl;
         // U(beta,gamma)  =  beta * dU/dgamma - gamma * dU/dbeta
@@ -215,19 +215,34 @@ public class DSSTThirdBody implements DSSTForceModel {
         R3 = bodyPos.getNorm();
 
         // Direction cosines
-        final Vector3D f = new Vector3D( (1 - p2 + q2) / C,        2. * p * q / C,       -2. * I * p / C);
-        final Vector3D g = new Vector3D(2. * I * p * q / C, I * (1 + p2 - q2) / C,            2. * q / C);
-        final Vector3D w = new Vector3D(        2. * p / C,           -2. * q / C, I * (1 - p2 - q2) / C);
+        final double fx = (1 - p2 + q2) / C;
+        final double fy =    2. * p * q / C;
+        final double fz =   -2. * I * p / C;
+        final Vector3D f = new Vector3D(fx, fy, fz).normalize();
+        final double gx =    2. * I * p * q / C;
+        final double gy = I * (1 + p2 - q2) / C;
+        final double gz =            2. * q / C;
+        final Vector3D g = new Vector3D(gx, gy, gz).normalize();
+        final double wx =            2. * p / C;
+        final double wy =           -2. * q / C;
+        final double wz = I * (1 - p2 - q2) / C;
+        final Vector3D w = new Vector3D(wx, wy, wz).normalize();
         final Vector3D bodyDir = bodyPos.normalize();
+
         alpha = bodyDir.dotProduct(f);
         beta  = bodyDir.dotProduct(g);
         gamma = bodyDir.dotProduct(w);
-
-        // Common factors
+ 
+        // Common factors:
+        // 1 / A
         ooA   = 1. / A ;
+        // B / A
         BoA   = B * ooA;
+        // 1 / AB
         ooAB  = ooA / B;
+        // C / 2AB
         Co2AB = C * ooAB / 2.;
+        // 1 / (1 + B)
         ooBpo = 1. / (1. + B);
     }
 
@@ -236,9 +251,9 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Hansen coefficients
         final HansenCoefficients hansen = new HansenCoefficients(state.getE(), epsilon);
         // Gs coefficients
-        final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order+1);
+        final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
         // Qns coefficients
-        final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order+1, gamma);
+        final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, order);
         // mu3 / R3
         final double muoR3 = gm / R3;
         // a / R3
@@ -254,44 +269,48 @@ public class DSSTThirdBody implements DSSTForceModel {
         double dUdBe = 0.;
         double dUdGa = 0.;
     
-        for (int s = 0; s < order - 1; s++) {
+        for (int s = 0; s <= order; s++) {
             // Get the current Gs and Hs coefficient
             final double gs   = GsHs[0][s];
-            final double gsM1 = (s > 0 ? GsHs[0][s - 1] : 0);
-            final double hsM1 = (s > 0 ? GsHs[1][s - 1] : 0);
+            final double gsm1 = (s > 0 ? GsHs[0][s - 1] : 0.);
+            final double hsm1 = (s > 0 ? GsHs[1][s - 1] : 0.);
 
-            // Compute partial derivatives of Gs
-            final double dGsdk  = s *  beta * gsM1 - s * alpha * hsM1;
-            final double dGsdh  = s * alpha * gsM1 + s *  beta * hsM1;
-            final double dGsdAl = s *     k * gsM1 - s *     h * hsM1;
-            final double dGsdBe = s *     h * gsM1 + s *     k * hsM1;
+            // Compute partial derivatives of Gs from 3.1-(9)
+            final double dGsdh  = s *  beta * gsm1 - s * alpha * hsm1;
+            final double dGsdk  = s * alpha * gsm1 + s *  beta * hsm1;
+            final double dGsdAl = s *     k * gsm1 - s *     h * hsm1;
+            final double dGsdBe = s *     h * gsm1 + s *     k * hsm1;
     
             // Kronecker symbol (2 - delta(0,s))
             final double delta0s = (s == 0) ? 1. : 2.;
     
-            for (int n = s + 2; n <= order; n++) {
+            for (int n = FastMath.max(2, s); n <= order; n++) {
+//            for (int n = s + 1; n <= order; n++) {
                 // Extract data from previous computation :
-                final double vns = Vns.get(new NSKey(n, s));
-    
+                final double vns   = Vns.get(new NSKey(n, s));
                 final double kns   = hansen.getHansenKernelValue(0, n, s);
                 final double qns   = Qns[n][s];
                 final double aoR3n = FastMath.pow(aoR3, n);
                 final double dkns  = hansen.getHansenKernelDerivative(0, n, s);
                 final double coef0 = delta0s * aoR3n * vns;
                 final double coef1 = coef0 * qns;
-    
+                // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                // but n >=s then when n == s, Q(n, s + 1) undefined !!! so what ???
+                final double dqns  = (n == s) ? qns : Qns[n][s+1];
+
+//                System.out.println("n; " + n + " s: " + s + " Vns: " + vns);
                 // Compute dU / da :
                 dUda += coef1 * n * kns * gs;
-                // Compute dU / dEx
-                dUdk += coef1 * (kns * dGsdk + k * chi3 * gs * dkns);
-                // Compute dU / dEy
+                // Compute dU / dh
                 dUdh += coef1 * (kns * dGsdh + h * chi3 * gs * dkns);
+                // Compute dU / dk
+                dUdk += coef1 * (kns * dGsdk + k * chi3 * gs * dkns);
                 // Compute dU / dAlpha
                 dUdAl += coef1 * kns * dGsdAl;
                 // Compute dU / dBeta
                 dUdBe += coef1 * kns * dGsdBe;
                 // Compute dU / dGamma with dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
-                dUdGa += coef0 * kns * Qns[n][s + 1] * gs;
+                dUdGa += coef0 * kns * dqns * gs;
             }
         }
     

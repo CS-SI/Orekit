@@ -114,17 +114,17 @@ public class CoefficientFactoryTest {
      * As methods are independent, if they give the same results, we assume them to be consistent.
      */
     @Test
-    public void QnsGenerationTest() {
-        Assert.assertEquals(1, CoefficientFactory.getQnsPolynomialValue(0, 0, 0), 1e-15);
+    public void testQNS() {
+        Assert.assertEquals(1., CoefficientFactory.getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
         final int order = 10;
         final MersenneTwister random = new MersenneTwister(123456789);
         for (int g = 0; g < 1000; g++) {
             final double gamma = random.nextDouble();
-            double[][] qns = CoefficientFactory.computeQnsCoefficient(order, gamma);
+            double[][] qns = CoefficientFactory.computeQnsCoefficient(gamma, order);
             for (int n = 0; n < order; n++) {
                 for (int s = 0; s <= n; s++) {
-                    Assert.assertEquals(qns[n][s], CoefficientFactory.getQnsPolynomialValue(n, s, gamma), Math.abs(eps11 * qns[n][s]));
+                    Assert.assertEquals(qns[n][s], CoefficientFactory.getQnsPolynomialValue(gamma, n, s), Math.abs(eps11 * qns[n][s]));
                 }
             }
         }

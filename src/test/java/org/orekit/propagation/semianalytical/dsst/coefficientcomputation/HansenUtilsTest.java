@@ -29,13 +29,6 @@ public class HansenUtilsTest {
     private final static double epsilon = 1e-3;
 
     /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    /**
      * Test method for
      * {@link org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenUtils#computeKnsCoefficient(int, double)}
      * .
@@ -239,6 +232,13 @@ public class HansenUtilsTest {
             }
         }
         System.out.println();
+    }
+
+    /**
+     * @throws java.lang.Exception
+     */
+    @Before
+    public void setUp() throws Exception {
     }
 
 }

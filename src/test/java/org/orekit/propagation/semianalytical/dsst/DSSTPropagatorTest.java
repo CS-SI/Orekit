@@ -288,8 +288,8 @@ public class DSSTPropagatorTest {
         PVCoordinates pv = propaDSST.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
         // Third Body Force Model
-        DSSTForceModel force = new DSSTThirdBody(CelestialBodyFactory.getSun());
-        ForceModel nForce = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
+        DSSTForceModel force = new DSSTThirdBody(CelestialBodyFactory.getMoon());
+        ForceModel nForce = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
 
         // DSST Propagation
         propaDSST.resetInitialState(initialState);

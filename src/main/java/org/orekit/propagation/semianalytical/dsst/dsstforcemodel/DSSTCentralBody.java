@@ -326,7 +326,7 @@ public class DSSTCentralBody implements DSSTForceModel {
             double p = orbit.getHy();
 
             final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order + 1);
-            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order + 1, gamma);
+            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, order + 1);
             
             
             /**
