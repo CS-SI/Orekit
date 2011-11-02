@@ -13,7 +13,7 @@ public class HansenCoefficientsTest {
     final static double epsilonM4 = 1e-4;
 
     @Test
-    public void jEqual0NegativeSubscriptTest() throws OrekitException {
+    public void testJ0NNegative() throws OrekitException {
         final double ecc = 0.1;
         // Validation from Eugene brumberg and Toshio Fukushima Expansions of Elliptic Motion based
         // on Elliptic function Theory
@@ -33,7 +33,7 @@ public class HansenCoefficientsTest {
     }
 
     @Test
-    public void jEqual0PositiveSubscriptTest() throws OrekitException {
+    public void testJ0NPositive() throws OrekitException {
         final double ecc = 0.1;
         HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
 //        System.out.println(hansen.getHansenKernelValue(0, 1, 0));
@@ -46,7 +46,7 @@ public class HansenCoefficientsTest {
     }
 
     @Test
-    public void jEqual1HighOrderForNSTest() throws OrekitException {
+    public void testJ1NHigh() throws OrekitException {
         final double ecc = 0.1;
         HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
         System.out.println(hansen.getHansenKernelValue(1, -31, -20));

@@ -169,12 +169,11 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public double[] getShortPeriodicVariations(AbsoluteDate date,
-                                               double[] currentState) {
-        // TODO Auto-generated method stub
-        // Not implemented yet
-        return new double[] { 0d, 0d, 0d, 0d, 0d, 0d };
+    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
+        throws OrekitException {
+        // TODO: not implemented yet
+        // Short Periodic Variations are set to null
+        return new double[] {0.,0.,0.,0.,0.,0.};
     }
 
     /** {@inheritDoc} */
@@ -327,8 +326,10 @@ public class DSSTCentralBody implements DSSTForceModel {
             double p = orbit.getHy();
 
             final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order + 1);
-            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order + 1, gamma);
 
+            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, order + 1);
+            
+            
             /**
              * analytic expression of J2
              */
