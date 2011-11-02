@@ -41,6 +41,8 @@ public class HansenCoefficientsTest {
         System.out.println(hansen.getHansenKernelValue(0, 3, 0));
         System.out.println(hansen.getHansenKernelValue(0, 4, 0));
         
+        System.out.println(hansen.getHansenKernelValue(0, 2, 2));
+        
     }
 
     @Test

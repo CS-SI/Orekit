@@ -328,22 +328,39 @@ public class DSSTCentralBody implements DSSTForceModel {
 
             final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order + 1);
             final double[][] Qns = CoefficientFactory.computeQnsCoefficient(order + 1, gamma);
-            
-            
+
             /**
              * analytic expression of J2
              */
-            double J = 3 * mu * Constants.WGS84_EARTH_EQUATORIAL_RADIUS * Constants.WGS84_EARTH_EQUATORIAL_RADIUS * Cnm[2][2] / 4d;
-             double dhdt = J * k * (3 * gamma * gamma - 1 + 2 * gamma * (alpha * p - beta * q)) / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
-            System.out.println("dhdt " + dhdt);
+            double commonFactor = Constants.WGS84_EARTH_EQUATORIAL_RADIUS * Constants.WGS84_EARTH_EQUATORIAL_RADIUS / (a * a) * Jn[2]
+                            * (-1 / 2d);
 
-            double dudh = 3 * J * h * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k,2.5));
-            double dudk = 3 * J * k * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k,2.5));
-            
-            System.out.println("dudh " + dudh);
-            System.out.println("dudk " + dudk);
+            double J = 3 * mu * ae * ae * Jn[2] / 4d;
+            double dhdt = J * k * (3 * gamma * gamma - 1 + 2 * gamma * (alpha * p - beta * q))
+                            / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
+            double dkdt = -J * h * (3 * gamma * gamma - 1 + 2 * gamma * (alpha * p - beta * q))
+                            / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
+            double dpdt = -C * J * beta * gamma / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
+            double dqdt = -C * J * alpha * gamma / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
+            double dLambdadt = J*((1+B)*(3*gamma*gamma-1)+2*gamma*(p*alpha-q*beta))/ (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
+            // System.out.println("dhdt " + dhdt);
 
-            
+            double duda = -3 * J * (gamma * gamma - 1. / 3.) / ((Math.pow(a, 4)) * Math.pow(1 - h * h - k * k, 3. / 2.));
+            double dudh = 3 * J * h * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 2.5));
+            double dudk = 3 * J * k * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 2.5));
+            double dudga = J * 2 * gamma / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 1.5));
+//            System.out.println("duda " + duda);
+//            System.out.println("dudh " + dudh);
+//            System.out.println("dudk " + dudk);
+//            System.out.println("dhdt " + dhdt);
+//            System.out.println("dudga " + dudga);
+//            
+//            System.out.println();
+//            System.out.println("dhdt " + dhdt);
+//            System.out.println("dkdt " + dkdt);
+//            System.out.println("dpdt " + dpdt);
+//            System.out.println("dqdt " + dqdt);
+//            System.out.println("dLambdadt " + dLambdadt);
 
             // Compute potential derivative :
             final double[] potentialDerivatives = computePotentialderivatives(Qns, GsHs);
@@ -370,6 +387,14 @@ public class DSSTCentralBody implements DSSTForceModel {
             dp = -C / (2 * A * B) * UBetaGamma;
             dq = -I * C * UAlphaGamma / (2 * A * B);
             dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (p * UAlphaGamma - I * q * UBetaGamma) / (A * B);
+//            System.out.println();
+//            System.out.println("ref");
+//            System.out.println("dh " + dh);
+//            System.out.println("dk " + dk);
+//            System.out.println("dp " + dp);
+//            System.out.println("dq " + dq );
+//            System.out.println("dM " + dM);
+            System.out.println("diff " + (dhdt - dh) + " " + (dkdt - dk) + " " + (dpdt - dp) + " " + (dqdt-dq) + " " + (dLambdadt - dM));
 
             return new double[] { 0d, dk, dh, dq, dp, dM };
         }
@@ -471,9 +496,11 @@ public class DSSTCentralBody implements DSSTForceModel {
                     commonCoefficient = delta0s * raExpN * jn * vns;
 
                     // Compute dU / da :
-                    dUda += commonCoefficient * (n + 1) * kns * qns * gs;
+                    // dUda += commonCoefficient * (n + 1) * kns * qns * gs;
+                    dUda += (n + 1) * Math.pow(ae / a, 2) * jn * vns * kns * qns * gs;
+
                     // Compute dU / dEx
-                    dUdk += commonCoefficient * qns * (kns * dGsdk + k * khi3 * dkns);
+                    dUdk += commonCoefficient * qns * (kns * dGsdk + k * khi3 * gs * dkns);
                     // Compute dU / dEy
                     dUdh += commonCoefficient * qns * (kns * dGsdh + h * khi3 * gs * dkns);
                     // Compute dU / dAlpha

@@ -239,7 +239,7 @@ public class DSSTPropagatorTest {
             final double incNum = orbNum.getI();
             final double incDsst = orbDsst.getI();
 
-            printShift(raanNum, raanDsst);
+            printShift(anNum, anDsst);
 
         }
 
