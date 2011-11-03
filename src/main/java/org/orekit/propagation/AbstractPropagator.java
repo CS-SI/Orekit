@@ -258,8 +258,12 @@ public abstract class AbstractPropagator implements Propagator {
 
             // evaluate step size
             final double stepSize;
-            if ((mode == MASTER_MODE) && !Double.isNaN(fixedStepSize)) {
-                stepSize = state.getKeplerianPeriod() / 100;
+            if (mode == MASTER_MODE) {
+                if (Double.isNaN(fixedStepSize)) {
+                    stepSize = state.getKeplerianPeriod() / 100;
+                } else {
+                    stepSize = fixedStepSize;
+                }
             } else {
                 stepSize = target.durationFrom(interpolator.getCurrentDate());
             }
