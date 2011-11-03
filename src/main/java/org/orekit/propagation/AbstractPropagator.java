@@ -313,8 +313,8 @@ public abstract class AbstractPropagator implements Propagator {
     protected SpacecraftState acceptStep(final AbsoluteDate target, final double epsilon)
         throws OrekitException, TooManyEvaluationsException, NoBracketingException {
 
-        AbsoluteDate previousT      = interpolator.getGlobalPreviousDate();
-        final AbsoluteDate currentT = interpolator.getGlobalCurrentDate();
+        AbsoluteDate previousT = interpolator.getGlobalPreviousDate();
+        AbsoluteDate currentT  = interpolator.getGlobalCurrentDate();
 
         // initialize the events states if needed
         if (!statesInitialized) {
@@ -398,17 +398,21 @@ public abstract class AbstractPropagator implements Propagator {
 
         }
 
+        final double remaining = target.durationFrom(currentT);
+        if (interpolator.isForward()) {
+            isLastStep = remaining <  epsilon;
+        } else {
+            isLastStep = remaining > -epsilon;
+        }
+        if (isLastStep) {
+            currentT = target;
+        }
+
         interpolator.setInterpolatedDate(currentT);
         final SpacecraftState currentY = interpolator.getInterpolatedState();
         for (final EventState state : eventsStates) {
             state.stepAccepted(currentY);
             isLastStep = isLastStep || state.stop();
-        }
-        final double remaining = target.durationFrom(currentT);
-        if (interpolator.isForward()) {
-            isLastStep = isLastStep || (remaining <  epsilon);
-        } else {
-            isLastStep = isLastStep || (remaining > -epsilon);
         }
 
         // handle the remaining part of the step, after all events if any
