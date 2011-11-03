@@ -25,7 +25,8 @@ public class OrbitFactory {
                                                  final double pa,
                                                  final double raan,
                                                  final double anomaly,
-                                                 final PositionAngle angleType) {
+                                                 final PositionAngle angleType,
+                                                 final double mu) {
         // Get inclination :
         final double ae = Constants.WGS84_EARTH_EQUATORIAL_RADIUS;
         final double a = ae + alt;

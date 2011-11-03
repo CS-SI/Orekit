@@ -128,7 +128,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         this.ae = ae;
         // Initialize the constant component
         initializeJn(Cnm);
-        Vns = CoefficientFactory.computeVnsCoefficient(order + 1);
+        Vns = CoefficientFactory.computeVnsCoefficient(degree + 1);
         resonantTesseralSize = (resonantTesserals == null) ? 0 : resonantTesserals.size();
     }
 
@@ -169,11 +169,11 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
-        throws OrekitException {
+    public double[] getShortPeriodicVariations(final AbsoluteDate date,
+                                               final double[] meanElements) throws OrekitException {
         // TODO: not implemented yet
         // Short Periodic Variations are set to null
-        return new double[] {0.,0.,0.,0.,0.,0.};
+        return new double[] { 0., 0., 0., 0., 0., 0. };
     }
 
     /** {@inheritDoc} */
@@ -325,11 +325,10 @@ public class DSSTCentralBody implements DSSTForceModel {
             double q = orbit.getHx();
             double p = orbit.getHy();
 
-            final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order + 1);
+            final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, degree + 1);
 
-            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, order + 1);
-            
-            
+            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, degree + 1);
+
             /**
              * analytic expression of J2
              */
@@ -343,25 +342,26 @@ public class DSSTCentralBody implements DSSTForceModel {
                             / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
             double dpdt = -C * J * beta * gamma / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
             double dqdt = -C * J * alpha * gamma / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
-            double dLambdadt = J*((1+B)*(3*gamma*gamma-1)+2*gamma*(p*alpha-q*beta))/ (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
+            double dLambdadt = J * ((1 + B) * (3 * gamma * gamma - 1) + 2 * gamma * (p * alpha - q * beta))
+                            / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
             // System.out.println("dhdt " + dhdt);
 
             double duda = -3 * J * (gamma * gamma - 1. / 3.) / ((Math.pow(a, 4)) * Math.pow(1 - h * h - k * k, 3. / 2.));
             double dudh = 3 * J * h * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 2.5));
             double dudk = 3 * J * k * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 2.5));
             double dudga = J * 2 * gamma / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 1.5));
-//            System.out.println("duda " + duda);
-//            System.out.println("dudh " + dudh);
-//            System.out.println("dudk " + dudk);
-//            System.out.println("dhdt " + dhdt);
-//            System.out.println("dudga " + dudga);
-//            
-//            System.out.println();
-//            System.out.println("dhdt " + dhdt);
-//            System.out.println("dkdt " + dkdt);
-//            System.out.println("dpdt " + dpdt);
-//            System.out.println("dqdt " + dqdt);
-//            System.out.println("dLambdadt " + dLambdadt);
+            // System.out.println("duda " + duda);
+            // System.out.println("dudh " + dudh);
+            // System.out.println("dudk " + dudk);
+            // System.out.println("dhdt " + dhdt);
+            // System.out.println("dudga " + dudga);
+            //
+            // System.out.println();
+            // System.out.println("dhdt " + dhdt);
+            // System.out.println("dkdt " + dkdt);
+            // System.out.println("dpdt " + dpdt);
+            // System.out.println("dqdt " + dqdt);
+            // System.out.println("dLambdadt " + dLambdadt);
 
             // Compute potential derivative :
             final double[] potentialDerivatives = computePotentialderivatives(Qns, GsHs);
@@ -388,14 +388,15 @@ public class DSSTCentralBody implements DSSTForceModel {
             dp = -C / (2 * A * B) * UBetaGamma;
             dq = -I * C * UAlphaGamma / (2 * A * B);
             dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (p * UAlphaGamma - I * q * UBetaGamma) / (A * B);
-//            System.out.println();
-//            System.out.println("ref");
-//            System.out.println("dh " + dh);
-//            System.out.println("dk " + dk);
-//            System.out.println("dp " + dp);
-//            System.out.println("dq " + dq );
-//            System.out.println("dM " + dM);
-            System.out.println("diff " + (dhdt - dh) + " " + (dkdt - dk) + " " + (dpdt - dp) + " " + (dqdt-dq) + " " + (dLambdadt - dM));
+            // System.out.println();
+            // System.out.println("ref");
+            // System.out.println("dh " + dh);
+            // System.out.println("dk " + dk);
+            // System.out.println("dp " + dp);
+            // System.out.println("dq " + dq );
+            // System.out.println("dM " + dM);
+            // System.out.println("diff " + (dhdt - dh) + " " + (dkdt - dk) + " " + (dpdt - dp) +
+            // " " + (dqdt-dq) + " " + (dLambdadt - dM));
 
             return new double[] { 0d, dk, dh, dq, dp, dM };
         }
@@ -469,7 +470,7 @@ public class DSSTCentralBody implements DSSTForceModel {
             // Kronecker symbol (2 - delta(0,s))
             double delta0s = 0d;
 
-            for (int s = 0; s < order - 1; s++) {
+            for (int s = 0; s < degree - 1; s++) {
                 // Get the current gs and hs coefficient :
                 gs = GsHs[0][s];
 
@@ -486,7 +487,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                 // Compute Partial derivatives of Gs from equ. (9)
                 delta0s = (s == 0) ? 1 : 2;
 
-                for (int n = s + 2; n <= order; n++) {
+                for (int n = s + 2; n < degree + 1; n++) {
                     // Extract data from previous computation :
                     jn = Jn[n];
                     vns = Vns.get(new NSKey(n, s));

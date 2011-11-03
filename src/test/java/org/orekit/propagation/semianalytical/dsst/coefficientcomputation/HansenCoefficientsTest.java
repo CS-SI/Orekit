@@ -6,43 +6,49 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenCoefficients;
 
+/**
+ * Test on hansen coefficient
+ */
 public class HansenCoefficientsTest {
 
-    final static double epsilonM3 = 1e-3;
+    final static double epsilonM3  = 1e-3;
 
-    final static double epsilonM4 = 1e-4;
+    final static double epsilonM4  = 1e-4;
 
+    final static double epsilonM15 = 1e-15;
+
+    /** Test the series values for K<sub>0</sub><sup>-n-1,s</sup> */
     @Test
     public void testJ0NNegative() throws OrekitException {
         final double ecc = 0.1;
-        // Validation from Eugene brumberg and Toshio Fukushima Expansions of Elliptic Motion based
-        // on Elliptic function Theory
-        HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
+        final double chi = Math.pow(1 - ecc * ecc, -0.5);
+        final double chi2 = chi * chi;
+        final double chi3 = chi * chi2;
 
-        // n = -1 - > -4 & s = j = 0
-        Assert.assertEquals(1.0050441601, hansen.getHansenKernelValue(0, -2, 0), epsilonM4);
-        Assert.assertEquals(1.0152088751, hansen.getHansenKernelValue(0, -3, 0), epsilonM4);
-        Assert.assertEquals(1.0306100228, hansen.getHansenKernelValue(0, -4, 0), epsilonM4);
-        Assert.assertEquals(1.0514042728, hansen.getHansenKernelValue(0, -5, 0), epsilonM4);
+        HansenCoefficients hansen = new HansenCoefficients(ecc, 1e-15);
 
-        // n = -1 - > -4 & s = 1, j = 0
-        Assert.assertEquals(0.0001262623, hansen.getHansenKernelValue(0, -2, 1), epsilonM3);
-        Assert.assertEquals(0.0509504745, hansen.getHansenKernelValue(0, -3, 1), epsilonM3);
-        Assert.assertEquals(0.1028020726, hansen.getHansenKernelValue(0, -4, 1), epsilonM3);
-        Assert.assertEquals(0.1560857065, hansen.getHansenKernelValue(0, -5, 1), epsilonM3);
+        Assert.assertEquals(0, hansen.getHansenKernelValue(0, -1, 0), epsilonM15);
+        Assert.assertEquals(0, hansen.getHansenKernelValue(0, -1, 1), epsilonM15);
+        Assert.assertEquals(chi, hansen.getHansenKernelValue(0, -2, 0), epsilonM15);
+        Assert.assertEquals(0, hansen.getHansenKernelValue(0, -2, 1), epsilonM15);
+        Assert.assertEquals(chi3, hansen.getHansenKernelValue(0, -3, 0), epsilonM15);
+        Assert.assertEquals(chi3 / 2., hansen.getHansenKernelValue(0, -3, 1), epsilonM15);
+        Assert.assertEquals(0, hansen.getHansenKernelValue(0, -3, 2), epsilonM15);
+        Assert.assertEquals(chi3 / 2. * (3 * chi2 - 1), hansen.getHansenKernelValue(0, -4, 0), epsilonM15);
+        Assert.assertEquals(chi3 * chi2, hansen.getHansenKernelValue(0, -4, 1), epsilonM15);
     }
 
     @Test
     public void testJ0NPositive() throws OrekitException {
         final double ecc = 0.1;
         HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
-//        System.out.println(hansen.getHansenKernelValue(0, 1, 0));
+        // System.out.println(hansen.getHansenKernelValue(0, 1, 0));
         System.out.println(hansen.getHansenKernelValue(0, 2, 0));
         System.out.println(hansen.getHansenKernelValue(0, 3, 0));
         System.out.println(hansen.getHansenKernelValue(0, 4, 0));
-        
+
         System.out.println(hansen.getHansenKernelValue(0, 2, 2));
-        
+
     }
 
     @Test
