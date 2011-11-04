@@ -26,9 +26,6 @@ public class DSSTThirdBody implements DSSTForceModel {
     /** Position angle type. */
     private static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
 
-    /** Default convergence parameter used in Hansen coefficient generation. */
-    private static final double DEFAULT_EPSILON = 1.e-4;
-
     /** Default N order for summation. */
     private static final int DEFAULT_ORDER = 5;
 
@@ -37,9 +34,6 @@ public class DSSTThirdBody implements DSSTForceModel {
 
     /** Standard gravitational parameter &mu; for the body in m<sup>3</sup>/s<sup>2</sup>. */
     private final double gm;
-
-    /** Convergence parameter used in Hansen coefficient generation. */
-    private final double epsilon;
 
     /** N order for summation. */
     private final int order;
@@ -99,40 +93,28 @@ public class DSSTThirdBody implements DSSTForceModel {
      */
     private int  I = 1;
 
-    /** Default constructor.
-     * @param body the third body to consider
-     * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
-     * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
+    /** Simple constructor.
+     *
+     *  @param body the 3rd body to consider
+     *
+     *  @see org.orekit.bodies.CelestialBodyFactory
      */
     public DSSTThirdBody(final CelestialBody body) {
-        this(body, DEFAULT_ORDER, DEFAULT_EPSILON);
-    }
-
-    /** Default constructor.
-     * @param body the third body to consider
-     * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
-     * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
-     * @param order N order for summation
-     */
-    public DSSTThirdBody(final CelestialBody body,
-                         final int order) {
-        this(body, order, DEFAULT_EPSILON);
+        this(body, DEFAULT_ORDER);
     }
 
     /** Complete constructor.
-     * @param body the third body to consider
-     * (ex: {@link org.orekit.bodies.CelestialBodyFactory#getSun()} or
-     * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
-     * @param order N order for summation
-     * @param epsilon convergence parameter used in Hansen coefficient generation
+     *
+     *  @param body the 3rd body to consider
+     *  @param order N order for summation
+     * 
+     *  @see org.orekit.bodies.CelestialBodyFactory
      */
     public DSSTThirdBody(final CelestialBody body,
-                         final int order,
-                         final double epsilon) {
+                         final int order) {
         this.body = body;
         this.gm   = body.getGM();
 
-        this.epsilon = epsilon;
         this.order = order;
         this.Vns = CoefficientFactory.computeVnsCoefficient(order + 1);
     }
@@ -249,7 +231,7 @@ public class DSSTThirdBody implements DSSTForceModel {
     private double[] computeUDerivatives(final SpacecraftState state) throws OrekitException {
 
         // Hansen coefficients
-        final HansenCoefficients hansen = new HansenCoefficients(state.getE(), epsilon);
+        final HansenCoefficients hansen = new HansenCoefficients(state.getE());
         // Gs coefficients
         final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
         // Qns coefficients

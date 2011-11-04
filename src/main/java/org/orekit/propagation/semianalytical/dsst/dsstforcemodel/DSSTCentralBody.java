@@ -16,7 +16,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 
 public class DSSTCentralBody implements DSSTForceModel {
 
@@ -149,16 +148,10 @@ public class DSSTCentralBody implements DSSTForceModel {
         // Get zonal harmonics contributuion :
         ZonalHarmonics zonalHarmonics = new ZonalHarmonics();
         double[] zonalTerms = zonalHarmonics.getZonalContribution(orbit);
-        // System.out.println(" zonal " + zonalTerms[0] + " " + zonalTerms[1] + " " + zonalTerms[2]
-        // + " " + zonalTerms[3] + " "
-        // + zonalTerms[4] + " " + zonalTerms[5] + " ");
 
         // Get tesseral resonant harmonics contributuion :
         TesseralResonantHarmonics tesseralHarmonics = new TesseralResonantHarmonics();
         double[] tesseralTerms = tesseralHarmonics.getResonantContribution(orbit);
-        // System.out.println(" tesseralTerms " + tesseralTerms[0] + " " + tesseralTerms[1] + " " +
-        // tesseralTerms[2] + " " + tesseralTerms[3]
-        // + " " + tesseralTerms[4] + " " + tesseralTerms[5] + " ");
 
         double[] meanElementRate = new double[zonalTerms.length];
         for (int i = 0; i < zonalTerms.length; i++) {
@@ -196,33 +189,6 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
     }
 
-    // /** Initialize the V<sub>n, s</sub> <sup>m</sup> coefficient from 2.7.2 -(2)(3) */
-    // private void initializeVnsmCoefficient() {
-    // final int mMax = resonantTesserals.size();
-    // // V[m][s][n]
-    // this.Vmsn = new double[][][] {};
-    // double num;
-    // double den;
-    //
-    // // Initialization :
-    // Vmsn[0][0][0] = 1;
-    //
-    // // Case where n = s :
-    // for (int s = 0; s < order; s++) {
-    // Vmsn[0][s + 1][s + 1] = ((2 * s + 1) * Vmsn[0][s][s]) / (s + 1);
-    // // Case when m > 0 and n = s
-    // for (int m = 1; m < mMax; m++) {
-    // Vmsn[m][s + 1][s + 1] = (s - m) * Vmsn[m][s][s];
-    // // Case for non negative m and s and increasing n
-    // for (int n = 0; n < degree; n++) {
-    // num = -(n + s + 1) * (n - s + 1) * Vmsn[m][s][s];
-    // den = (n - m + 2) * (n - m + 1);
-    // Vmsn[m][s][n + 2] = num / den;
-    // }
-    // }
-    // }
-    // }
-
     /**
      * @param initialState
      */
@@ -245,7 +211,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         // Direction cosines :
         Vector3D[] equinoctialFrame = computeEquinoctialReferenceFrame(orbit);
         alpha = equinoctialFrame[0].getZ();
-        beta = equinoctialFrame[1].getZ();
+        beta  = equinoctialFrame[1].getZ();
         gamma = equinoctialFrame[2].getZ();
     }
 
@@ -329,40 +295,6 @@ public class DSSTCentralBody implements DSSTForceModel {
 
             final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, degree + 1);
 
-            /**
-             * analytic expression of J2
-             */
-            double commonFactor = Constants.WGS84_EARTH_EQUATORIAL_RADIUS * Constants.WGS84_EARTH_EQUATORIAL_RADIUS / (a * a) * Jn[2]
-                            * (-1 / 2d);
-
-            double J = 3 * mu * ae * ae * Jn[2] / 4d;
-            double dhdt = J * k * (3 * gamma * gamma - 1 + 2 * gamma * (alpha * p - beta * q))
-                            / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
-            double dkdt = -J * h * (3 * gamma * gamma - 1 + 2 * gamma * (alpha * p - beta * q))
-                            / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
-            double dpdt = -C * J * beta * gamma / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
-            double dqdt = -C * J * alpha * gamma / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
-            double dLambdadt = J * ((1 + B) * (3 * gamma * gamma - 1) + 2 * gamma * (p * alpha - q * beta))
-                            / (A * Math.pow(B, 4) * Math.pow(orbit.getA(), 3));
-            // System.out.println("dhdt " + dhdt);
-
-            double duda = -3 * J * (gamma * gamma - 1. / 3.) / ((Math.pow(a, 4)) * Math.pow(1 - h * h - k * k, 3. / 2.));
-            double dudh = 3 * J * h * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 2.5));
-            double dudk = 3 * J * k * (gamma * gamma - 1 / 3d) / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 2.5));
-            double dudga = J * 2 * gamma / (Math.pow(a, 3) * Math.pow(1 - h * h - k * k, 1.5));
-            // System.out.println("duda " + duda);
-            // System.out.println("dudh " + dudh);
-            // System.out.println("dudk " + dudk);
-            // System.out.println("dhdt " + dhdt);
-            // System.out.println("dudga " + dudga);
-            //
-            // System.out.println();
-            // System.out.println("dhdt " + dhdt);
-            // System.out.println("dkdt " + dkdt);
-            // System.out.println("dpdt " + dpdt);
-            // System.out.println("dqdt " + dqdt);
-            // System.out.println("dLambdadt " + dLambdadt);
-
             // Compute potential derivative :
             final double[] potentialDerivatives = computePotentialderivatives(Qns, GsHs);
 
@@ -388,15 +320,6 @@ public class DSSTCentralBody implements DSSTForceModel {
             dp = -C / (2 * A * B) * UBetaGamma;
             dq = -I * C * UAlphaGamma / (2 * A * B);
             dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (p * UAlphaGamma - I * q * UBetaGamma) / (A * B);
-            // System.out.println();
-            // System.out.println("ref");
-            // System.out.println("dh " + dh);
-            // System.out.println("dk " + dk);
-            // System.out.println("dp " + dp);
-            // System.out.println("dq " + dq );
-            // System.out.println("dM " + dM);
-            // System.out.println("diff " + (dhdt - dh) + " " + (dkdt - dk) + " " + (dpdt - dp) +
-            // " " + (dqdt-dq) + " " + (dLambdadt - dM));
 
             return new double[] { 0d, dk, dh, dq, dp, dM };
         }
@@ -663,7 +586,6 @@ public class DSSTCentralBody implements DSSTForceModel {
                 final double muOa = mu / orbit.getA();
                 final double k = orbit.getEquinoctialEx();
                 final double h = orbit.getEquinoctialEy();
-                final double ecc = orbit.getE();
                 double rRn;
                 double vmsn;
                 double gamMsn;
@@ -712,21 +634,19 @@ public class DSSTCentralBody implements DSSTForceModel {
                     // Sum(-N, N)
                     for (int s = -degree; s < degree; m++) {
                         // Sum(Max(2, m, |s|))
-                        int nMin = Math.max(2, m);
-                        nMin = Math.max(nMin, Math.abs(s));
+                        int nmin = Math.max(Math.max(2, m), Math.abs(s));
 
                         // jacobi v, w, indices :
                         v = FastMath.abs(m - s);
                         w = FastMath.abs(m + s);
-                        for (int n = nMin; n < degree; n++) {
+                        for (int n = nmin; n < degree; n++) {
                             // (R / r)^n
                             rRn = FastMath.pow(rR, n);
                             vmsn = CoefficientFactory.getVmns(m, n, s);
                             gamMsn = computeGammaMsn(n, s, Im, gamma);
                             dGamma = computeDGammaMsn(n, s, m, gamma);
-                            // TODO ordre de convergence en dur
-                            kjn_1 = HansenUtils.computeKernelOfHansenCoefficientFromNewcomb(ecc, j, nMin, s, epsilon);
-                            dkjn_1 = HansenUtils.computeDerivativedKernelOfHansenCoefficient(ecc, j, nMin, s, epsilon);
+                            kjn_1  = hansen.getHansenKernelValue(j, -n-1, s);
+                            dkjn_1 = hansen.getHansenKernelDerivative(j, -n-1, s);
                             dGdh = GHms.getdGmsdh(m, s, j);
                             dGdk = GHms.getdGmsdk(m, s, j);
                             dGdA = GHms.getdGmsdAlpha(m, s, j);

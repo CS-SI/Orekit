@@ -22,7 +22,7 @@ import org.orekit.time.TimeScalesFactory;
 public class DSSTThirdBodyTest {
 
     @Test
-    public void testMeanElementRate() throws OrekitException, IOException, ParseException {
+    public void testMeanElementRateForTheMoon() throws OrekitException, IOException, ParseException {
 
         final DSSTThirdBody force = new DSSTThirdBody(CelestialBodyFactory.getMoon());
 
@@ -33,7 +33,34 @@ public class DSSTThirdBodyTest {
         double hx = FastMath.tan(inc / 2.) * ix / (2 * FastMath.sin(inc / 2.));
         double hy = FastMath.tan(inc / 2.) * iy / (2 * FastMath.sin(inc / 2.));
 
-        // Equinoxe 21 mars 2003 à 1h00m
+        Orbit orbit = new EquinoctialOrbit(42166.712, 0.5, -0.5, hx, hy, 5.300,
+                                           PositionAngle.MEAN, FramesFactory.getEME2000(),
+                                           new AbsoluteDate(new DateComponents(2003, 03, 21),
+                                                            new TimeComponents(1, 0, 0.),
+                                                            TimeScalesFactory.getUTC()),
+                                           CelestialBodyFactory.getEarth().getGM());
+        final SpacecraftState state = new SpacecraftState(orbit);
+
+        final double[] daidt = force.getMeanElementRate(state);
+
+        for (int i = 0; i < daidt.length; i++){
+            System.out.println(daidt[i]);
+        }
+
+    }
+
+    @Test
+    public void testMeanElementRateForTheSun() throws OrekitException, IOException, ParseException {
+
+        final DSSTThirdBody force = new DSSTThirdBody(CelestialBodyFactory.getSun());
+
+        // elliptic orbit
+        double ix = 1.200e-04;
+        double iy = -1.16e-04;
+        double inc = 2 * FastMath.asin(FastMath.sqrt((ix * ix + iy * iy) / 4.));
+        double hx = FastMath.tan(inc / 2.) * ix / (2 * FastMath.sin(inc / 2.));
+        double hy = FastMath.tan(inc / 2.) * iy / (2 * FastMath.sin(inc / 2.));
+
         Orbit orbit = new EquinoctialOrbit(42166.712, 0.5, -0.5, hx, hy, 5.300,
                                            PositionAngle.MEAN, FramesFactory.getEME2000(),
                                            new AbsoluteDate(new DateComponents(2003, 03, 21),

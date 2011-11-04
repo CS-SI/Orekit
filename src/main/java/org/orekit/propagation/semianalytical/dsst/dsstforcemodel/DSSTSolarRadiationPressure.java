@@ -36,7 +36,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
    private final PVCoordinatesProvider sun;
 
    /** Square of Central Body radius: (R<sub>+</sub>)<sup>2</sup>. */
-   private final double rcb2;
+   private final double cbr2;
 
    /** Simple constructor with default reference values.
     *  <p>When this constructor is used, the reference values are:</p>
@@ -74,7 +74,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
                                       final double equatorialRadius) {
         this.kRef = 0.5 * pRef * dRef * dRef * cr * area;
         this.sun  = sun;
-        this.rcb2 = equatorialRadius * equatorialRadius;
+        this.cbr2 = equatorialRadius * equatorialRadius;
     }
 
     /** {@inheritDoc} */
@@ -106,7 +106,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     protected double[] getLLimits(SpacecraftState state) throws OrekitException {
         double[] ll = {-FastMath.PI, FastMath.PI};
         // TODO: cylinder or conical modeling for shadow computation
-        final double M = rcb2;
+        final double M = cbr2;
         return ll;
     }
 

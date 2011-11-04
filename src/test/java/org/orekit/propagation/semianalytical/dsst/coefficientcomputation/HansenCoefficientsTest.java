@@ -20,8 +20,8 @@ public class HansenCoefficientsTest {
     /** Test the series values for K<sub>0</sub><sup>-n-1,s</sup> */
     @Test
     public void testJ0NNegative() throws OrekitException {
-        final double ecc = 0.1;
-        final double chi = Math.pow(1 - ecc * ecc, -0.5);
+        final double ecc  = 0.1;
+        final double chi  = Math.pow(1 - ecc * ecc, -0.5);
         final double chi2 = chi * chi;
         final double chi3 = chi * chi2;
 
@@ -60,7 +60,7 @@ public class HansenCoefficientsTest {
     }
 
     @Test
-    public void jEqual0_ValidationFromAnalyticFormula() throws OrekitException {
+    public void testJ0fromAnalyticSeries() throws OrekitException {
         final double ecc = 0.1;
         // Analytic formula from "The computation of tables of Hansen coefficients" from
         // s. Hughes, published in Celestial Mechanics 29 (1981) 101-107

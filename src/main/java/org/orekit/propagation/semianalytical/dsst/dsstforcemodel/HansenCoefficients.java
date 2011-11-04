@@ -8,6 +8,9 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFact
 
 public class HansenCoefficients {
 
+    /** Default convergence parameter used in Hansen coefficient generation. */
+    private static final double DEFAULT_EPSILON = 1.e-4;
+
     private static TreeMap<MNSKey, Double> HANSEN_KERNEL             = new TreeMap<CoefficientFactory.MNSKey, Double>();
     private static TreeMap<MNSKey, Double> HANSEN_KERNEL_DERIVATIVES = new TreeMap<CoefficientFactory.MNSKey, Double>();
 
@@ -20,8 +23,16 @@ public class HansenCoefficients {
 
     /** Simple constructor.
      * 
-     * @param ecc eccentricity
-     * @param eps threshold for Newcomb computation
+     *  @param ecc eccentricity
+     */
+    public HansenCoefficients(final double ecc) {
+        this(ecc, DEFAULT_EPSILON);
+    }
+
+    /** Simple constructor.
+     * 
+     *  @param ecc eccentricity
+     *  @param eps threshold for Newcomb computation
      */
     public HansenCoefficients(final double ecc, final double eps) {
         this.ecc  = ecc;
@@ -30,23 +41,6 @@ public class HansenCoefficients {
         this.chi2 = chi * chi;
         this.eps  = eps;
         initializeKernels();
-
-    }
-
-    private void initializeKernels() {
-        HANSEN_KERNEL.put(new MNSKey(0, 0, 0),  1.);
-        HANSEN_KERNEL.put(new MNSKey(0, 0, 1), -1.);
-        HANSEN_KERNEL.put(new MNSKey(0, 1, 0),  1. + 0.5 * ecc * ecc);
-        HANSEN_KERNEL.put(new MNSKey(0, 1, 1), -1.5);
-        HANSEN_KERNEL.put(new MNSKey(0, 2, 0),  1. + 1.5 * ecc * ecc);
-        HANSEN_KERNEL.put(new MNSKey(0, 2, 1), -2. - 0.5 * ecc * ecc);
-        HANSEN_KERNEL.put(new MNSKey(0,-1, 0), 0.);
-        HANSEN_KERNEL.put(new MNSKey(0,-1, 1), 0.);
-        HANSEN_KERNEL.put(new MNSKey(0,-2, 0), chi);
-        HANSEN_KERNEL.put(new MNSKey(0,-2, 1), 0.);
-        HANSEN_KERNEL.put(new MNSKey(0,-3, 0), chi * chi2);
-        HANSEN_KERNEL.put(new MNSKey(0,-3, 1), 0.5 * chi * chi2);
-        HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, 0, 0), 0.);
     }
 
     /** Get the K<sub>j</sub><sup>n,s</sup> coefficient value for any (j, n, s).
@@ -99,6 +93,22 @@ public class HansenCoefficients {
         }
     }
 
+    private void initializeKernels() {
+        HANSEN_KERNEL.put(new MNSKey(0, 0, 0),  1.);
+        HANSEN_KERNEL.put(new MNSKey(0, 0, 1), -1.);
+        HANSEN_KERNEL.put(new MNSKey(0, 1, 0),  1. + 0.5 * ecc * ecc);
+        HANSEN_KERNEL.put(new MNSKey(0, 1, 1), -1.5);
+        HANSEN_KERNEL.put(new MNSKey(0, 2, 0),  1. + 1.5 * ecc * ecc);
+        HANSEN_KERNEL.put(new MNSKey(0, 2, 1), -2. - 0.5 * ecc * ecc);
+        HANSEN_KERNEL.put(new MNSKey(0,-1, 0), 0.);
+        HANSEN_KERNEL.put(new MNSKey(0,-1, 1), 0.);
+        HANSEN_KERNEL.put(new MNSKey(0,-2, 0), chi);
+        HANSEN_KERNEL.put(new MNSKey(0,-2, 1), 0.);
+        HANSEN_KERNEL.put(new MNSKey(0,-3, 0), chi * chi2);
+        HANSEN_KERNEL.put(new MNSKey(0,-3, 1), 0.5 * chi * chi2);
+        HANSEN_KERNEL_DERIVATIVES.put(new MNSKey(0, 0, 0), 0.);
+    }
+
     /** Compute K<sub>0</sub><sup>n,s</sup> from Equation 2.7.3-(7)(8).
      * 
      *  @param n n value
@@ -108,7 +118,6 @@ public class HansenCoefficients {
      */
     private double computeHKVJ0NPositive(final int n,
                                          final int s) throws OrekitException {
-
         double kns = 0.;
 
         if (n == (s - 1)) {
@@ -212,31 +221,26 @@ public class HansenCoefficients {
         return kns;
     }
 
-    /**
-     * Calcul tenant compte des bornes sur s et b afin de lever les ambiguités sur l'expression de
-     * récurrence. Ne marche pas pour j = 0 !
-     * 
-     * <pre>
-     * K<sub>j</sub><sup>-n-1,s</sup>
-     * </pre>
+    /** Compute the K<sub>j</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(9).
+     *  Not to be used for j = 0 !
      * 
      *  @param j j value
      *  @param n np value, must be positive. For a given 'np', the K<sub>j</sub><sup>-np-1,s</sup> will be returned
      *  @param s s value
      *  @return K<sub>j</sub><sup>-n-1,s</sup>
-     *  @throws OrekitException
+     *  @throws OrekitException if some error occured
      */
     private double computeHKVNNegative(final int j,
                                        final int n,
                                        final int s) throws OrekitException {
-        // Initialisation
-        HANSEN_KERNEL.put(new MNSKey(j, -n, s),     computeKernelOfHansenCoefficientFromNewcomb(j, -n, s));
-        HANSEN_KERNEL.put(new MNSKey(j, -n + 1, s), computeKernelOfHansenCoefficientFromNewcomb(j, -n + 1, s));
-        HANSEN_KERNEL.put(new MNSKey(j, -n + 3, s), computeKernelOfHansenCoefficientFromNewcomb(j, -n + 3, s));
+
+        final double kmN   = computHKVfromNewcomb(j, -n, s);
+        HANSEN_KERNEL.put(new MNSKey(j, -n, s),     kmN);
+        final double kmNp1 = computHKVfromNewcomb(j, -n + 1, s);
+        HANSEN_KERNEL.put(new MNSKey(j, -n + 1, s), kmNp1);
+        final double kmNp3 = computHKVfromNewcomb(j, -n + 3, s);
+        HANSEN_KERNEL.put(new MNSKey(j, -n + 3, s), kmNp3);
     
-        final double kmN      = HANSEN_KERNEL.get(new MNSKey(j, -n, s));
-        final double kmNp1    = HANSEN_KERNEL.get(new MNSKey(j, -n + 1, s));
-        final double kmNp3    = HANSEN_KERNEL.get(new MNSKey(j, -n + 3, s));
         final double factor   = chi2 / ((3. - n) * (1. - n + s) * (1. - n - s));
         final double factmN   = (3. - n) * (1. - n) * (3. - 2. * n);
         final double factmNp1 = (2. - n) * ((3. - n) * (1. - n) + (2. * j * s) / chi);
@@ -257,6 +261,7 @@ public class HansenCoefficients {
                                          final int s) throws OrekitException {
 
         double dkdxns = 0.;
+
         final MNSKey keyNS = new MNSKey(0, n, s);
         if ((n == s - 1) || (n == s)) {
             HANSEN_KERNEL_DERIVATIVES.put(keyNS, 0.);
@@ -337,11 +342,7 @@ public class HansenCoefficients {
         return dkdxns;
     }
 
-    /** Compute the Hansen derivated coefficient for the resonnant tesseral harmonics from equation 3.3-(5)
-     * 
-     *  <pre>
-     *  dK<sub>j</sub><sup>n,s</sup> / de<sup>2</sup>
-     *  </pre>
+    /** Compute dK<sub>j</sub><sup>n,s</sup> / de<sup>2</sup>; from equation 3.3-(5)
      *  
      *  This coefficient is always calculated for a negative n = -np-1 with np > 0
      * 
@@ -356,7 +357,7 @@ public class HansenCoefficients {
                                        final int s) throws OrekitException {
         // Initialisation
         final int nn = -(n + 1);
-        final double Kjns = computeKernelOfHansenCoefficientFromNewcomb(j, nn, s);
+        final double Kjns = computHKVfromNewcomb(j, nn, s);
         final double KjnsTerm = -((nn + 1.5) / ome2) * Kjns;
         final int a = FastMath.max(j - s, 0);
         final int b = FastMath.max(s - j, 0);
@@ -385,9 +386,10 @@ public class HansenCoefficients {
      *  @return K<sub>j</sub><sup>ns</sup>
      *  @throws OrekitException if the Newcomb operator cannot be computed with the current indexes
      */
-    private double computeKernelOfHansenCoefficientFromNewcomb(final int j,
-                                                               final int n,
-                                                               final int s) throws OrekitException {
+    private double computHKVfromNewcomb(final int j,
+                                        final int n,
+                                        final int s) throws OrekitException {
+
         final int a = FastMath.max(j - s, 0);
         final int b = FastMath.max(s - j, 0);
         int i = 0;

@@ -248,6 +248,7 @@ public class DSSTPropagator extends AbstractPropagator {
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         super.resetInitialState(state);
+        super.setStartDate(state.getDate());
         this.isDirty = true;
         this.mass = state.getMass();
         this.referenceDate = state.getDate();
@@ -356,7 +357,7 @@ public class DSSTPropagator extends AbstractPropagator {
      */
     private double[] getInitialMeanElements(final SpacecraftState state) throws OrekitException {
 
-        final double[][] tolerances = NumericalPropagator.tolerances(POSITION_ERROR, state.getOrbit(), OrbitType.EQUINOCTIAL);
+        final double[][] tolerances = DSSTPropagator.tolerances(POSITION_ERROR, state.getOrbit());
         double[] osculatingElements = new double[6];
         ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, osculatingElements);
         double[] meanElements = osculatingElements.clone();

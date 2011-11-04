@@ -1,8 +1,5 @@
 package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.commons.math.random.MersenneTwister;
@@ -10,7 +7,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.MNSKey;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
 
 public class CoefficientFactoryTest {
@@ -85,29 +81,29 @@ public class CoefficientFactoryTest {
         CoefficientFactory.getVmns2(3, 2, 1);
     }
 
-    @Test
-    public void testVmnsCoefficientComputation() throws OrekitException {
-        final int N = 5;
-        final int M = 5;
-
-        @SuppressWarnings("deprecation")
-        Map<MNSKey, Double> map = CoefficientFactory.computeVmns2(M, N);
-        Iterator<Entry<MNSKey, Double>> it = map.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Entry<MNSKey, Double> next = it.next();
-            System.out.println(next.getKey() + " " + next.getValue());
-        }
-        // With m = 0,
-        // final int order = 10;
-        // CoefficientFactory.getVmns(0, 2, 0);
-
-        Assert.assertEquals(map.get(new MNSKey(0, 0, 0)), CoefficientFactory.getVmns(0, 0, 0), eps8);
-        Assert.assertEquals(map.get(new MNSKey(0, 1, 1)), CoefficientFactory.getVmns(0, 1, 1), eps8);
-        Assert.assertEquals(map.get(new MNSKey(0, 2, 2)), CoefficientFactory.getVmns(0, 2, 2), eps8);
-        Assert.assertEquals(map.get(new MNSKey(0, 3, 1)), CoefficientFactory.getVmns(0, 3, 1), eps8);
-        Assert.assertEquals(map.get(new MNSKey(0, 3, 3)), CoefficientFactory.getVmns(0, 3, 3), eps8);
-    }
+//    @Test
+//    public void testVmnsCoefficientComputation() throws OrekitException {
+//        final int N = 5;
+//        final int M = 5;
+//
+//        @SuppressWarnings("deprecation")
+//        Map<MNSKey, Double> map = CoefficientFactory.computeVmns2(M, N);
+//        Iterator<Entry<MNSKey, Double>> it = map.entrySet().iterator();
+//
+//        while (it.hasNext()) {
+//            Entry<MNSKey, Double> next = it.next();
+//            System.out.println(next.getKey() + " " + next.getValue());
+//        }
+//        // With m = 0,
+//        // final int order = 10;
+//        // CoefficientFactory.getVmns(0, 2, 0);
+//
+//        Assert.assertEquals(map.get(new MNSKey(0, 0, 0)), CoefficientFactory.getVmns(0, 0, 0), eps8);
+//        Assert.assertEquals(map.get(new MNSKey(0, 1, 1)), CoefficientFactory.getVmns(0, 1, 1), eps8);
+//        Assert.assertEquals(map.get(new MNSKey(0, 2, 2)), CoefficientFactory.getVmns(0, 2, 2), eps8);
+//        Assert.assertEquals(map.get(new MNSKey(0, 3, 1)), CoefficientFactory.getVmns(0, 3, 1), eps8);
+//        Assert.assertEquals(map.get(new MNSKey(0, 3, 3)), CoefficientFactory.getVmns(0, 3, 3), eps8);
+//    }
 
     /**
      * Qns test based on two computation method.

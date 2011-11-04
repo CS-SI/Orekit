@@ -61,15 +61,10 @@ public class DSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(), date, mu);
         final SpacecraftState state = new SpacecraftState(orbit);
 
-        long start0 = System.nanoTime();
-        final double[] daidt = force.getMeanElementRate(state);
-        double dT0 = (System.nanoTime() - start0) * 1.0e-9;
-        long start1 = System.nanoTime();
+        final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
-        double dT1 = (System.nanoTime() - start1) * 1.0e-9;
-        System.out.println("DT0: " + dT0 + " ; DT1: " + dT1);
 
-        Assert.assertEquals(daidtRef[0], daidt[0], 1.e-20);
+        Assert.assertEquals(daidtRef[0], daidt[0], 1.e-21);
         Assert.assertEquals(daidtRef[1], daidt[1], 1.e-18);
         Assert.assertEquals(daidtRef[2], daidt[2], 1.e-18);
         Assert.assertEquals(daidtRef[3], daidt[3], 1.e-16);

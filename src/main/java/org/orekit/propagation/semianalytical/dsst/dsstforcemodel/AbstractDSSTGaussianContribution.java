@@ -2,6 +2,7 @@ package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import org.apache.commons.math.analysis.UnivariateRealFunction;
 import org.apache.commons.math.analysis.integration.LegendreGaussIntegrator;
+import org.apache.commons.math.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math.analysis.integration.UnivariateRealIntegrator;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
@@ -74,12 +75,13 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             // Select element
             iFct.setElement(i);
             // Define numerical quadrature operator parameters
-            final int    nbPts = getNbPoints(i);
-            final double relAc = getRelativeAccuracy(i);
-            final double absAc = getAbsoluteAccuracy(i);
+//            final int    nbPts = getNbPoints(i);
+//            final double relAc = getRelativeAccuracy(i);
+//            final double absAc = getAbsoluteAccuracy(i);
             final int    maxEv = getMaxEval(i);
             // Define numerical quadrature operator
-            final UnivariateRealIntegrator numQuad = new LegendreGaussIntegrator(nbPts, relAc, absAc);
+//            final UnivariateRealIntegrator numQuad = new LegendreGaussIntegrator(nbPts, relAc, absAc);
+            final UnivariateRealIntegrator numQuad = new SimpsonIntegrator();
             try {
                 // Numerical quadrature
                 meanElementRate[i] = coef * numQuad.integrate(maxEv, iFct, ll[0], ll[1]);
