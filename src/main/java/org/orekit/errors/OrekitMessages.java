@@ -69,7 +69,6 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_PARSE_LINE_IN_FILE("unable to parse line {0} of file {1}:\n{2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),
     SPACECRAFT_MASS_BECOMES_NEGATIVE("spacecraft mass becomes negative: {0} kg"),
-    ORBIT_BECOMES_HYPERBOLIC_UNABLE_TO_PROPAGATE_FURTHER("orbit becomes hyperbolic, unable to propagate it further (e: {0})"),
     POSITIVE_FLOW_RATE("positive flow rate (q: {0})"),
     NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
     POTENTIAL_ARRAYS_SIZES_MISMATCH("potential arrays sizes mismatch (C: {0}x{1}, S: {2}x{3})"),
