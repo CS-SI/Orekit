@@ -211,6 +211,12 @@ public class CircularParametersTest {
 
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testHyperbolic() {
+        new CircularOrbit(42166.712, 0.9, 0.5, 0.01, -0.02, 5.300,
+                          PositionAngle.MEAN,  FramesFactory.getEME2000(), date, mu);
+    }
+
     @Test
     public void testAnomalyEll() {
 
