@@ -117,12 +117,18 @@ public class EquinoctialOrbit extends Orbit {
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger
      */
     public EquinoctialOrbit(final double a, final double ex, final double ey,
                             final double hx, final double hy,
                             final double l, final PositionAngle type,
-                            final Frame frame, final AbsoluteDate date, final double mu) {
+                            final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
         super(frame, date, mu);
+        if (ex * ex + ey * ey >= 1.0) {
+            throw OrekitException.createIllegalArgumentException(
+                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+        }
         this.a  =  a;
         this.ex = ex;
         this.ey = ey;
@@ -158,10 +164,10 @@ public class EquinoctialOrbit extends Orbit {
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @exception IllegalArgumentException if the longitude argument type is not
-     * one of {@link #MEAN_LATITUDE_ARGUMENT}, {@link #ECCENTRIC_LATITUDE_ARGUMENT}
-     * or {@link #TRUE_LATITUDE_ARGUMENT} or if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if the longitude argument type is not one of {@link #MEAN_LATITUDE_ARGUMENT},
+     * {@link #ECCENTRIC_LATITUDE_ARGUMENT} or {@link #TRUE_LATITUDE_ARGUMENT} or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      * @see #MEAN_LATITUDE_ARGUMENT
      * @see #ECCENTRIC_LATITUDE_ARGUMENT
      * @see #TRUE_LATITUDE_ARGUMENT
@@ -175,6 +181,10 @@ public class EquinoctialOrbit extends Orbit {
                             final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
+        if (ex * ex + ey * ey >= 1.0) {
+            throw OrekitException.createIllegalArgumentException(
+                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+        }
         this.a  =  a;
         this.ex = ex;
         this.ey = ey;
@@ -209,6 +219,7 @@ public class EquinoctialOrbit extends Orbit {
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
+     * @exception OrekitException if eccentricity is equal to 1 or larger
      */
     public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                                  final AbsoluteDate date, final double mu)
