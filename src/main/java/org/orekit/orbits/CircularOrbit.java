@@ -118,8 +118,8 @@ public class CircularOrbit
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     public CircularOrbit(final double a, final double ex, final double ey,
                          final double i, final double raan,
@@ -127,6 +127,10 @@ public class CircularOrbit
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
+        if (ex * ex + ey * ey >= 1.0) {
+            throw OrekitException.createIllegalArgumentException(
+                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+        }
         this.a    =  a;
         this.ex   = ex;
         this.ey   = ey;
@@ -171,8 +175,8 @@ public class CircularOrbit
      * @see #TRUE_LONGITUDE_ARGUMENT
      * @deprecated as of 6.0 replaced by {@link #CircularOrbit(double, double, double,
      * double, double, double, PositionAngle, Frame, AbsoluteDate, double)}
-     * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     @Deprecated
     public CircularOrbit(final double a, final double ex, final double ey,
@@ -181,6 +185,10 @@ public class CircularOrbit
                          final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
         super(frame, date, mu);
+        if (ex * ex + ey * ey >= 1.0) {
+            throw OrekitException.createIllegalArgumentException(
+                  OrekitMessages.HYPERBOLIC_ORBIT_NOT_HANDLED_AS, getClass().getName());
+        }
         this.a    =  a;
         this.ex   = ex;
         this.ey   = ey;
