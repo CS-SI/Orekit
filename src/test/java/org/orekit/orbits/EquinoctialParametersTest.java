@@ -219,6 +219,12 @@ public class EquinoctialParametersTest {
 
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testHyperbolic() {
+        new EquinoctialOrbit(42166.712, 0.9, 0.5, 0.01, -0.02, 5.300,
+                             PositionAngle.MEAN,  FramesFactory.getEME2000(), date, mu);
+    }
+
     @Test
     public void testNumericalIssue25() throws OrekitException {
         Vector3D position = new Vector3D(3782116.14107698, 416663.11924914, 5875541.62103057);
