@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        Fixed a missing reinitialization of start date when state was reset in numerical propagator.
+      </action>
       <action dev="luc" type="update">
         Added detection of attempts to create hyperbolic orbits as circular or equinoctial
         instances.
