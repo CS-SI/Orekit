@@ -457,6 +457,7 @@ public class NumericalPropagator implements Propagator {
             setMu(state.getMu());
         }
         this.initialState = state;
+        this.startDate    = null;
     }
 
     /** Select additional state and equations pair in the list.
