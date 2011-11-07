@@ -35,10 +35,10 @@ import org.orekit.propagation.SpacecraftState;
 public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel {
 
     /** Propagation orbit type. */
-    private static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
+    protected static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
 
     /** Position angle type. */
-    private static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
+    protected static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
 
     /** DSST model needs equinoctial orbit as internal representation.
      *  Classical equinoctial elements have discontinuities when inclination is close to zero.
@@ -47,7 +47,53 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
      *  be expressed in a different way, called "retrograde" orbit. This implies I = -1.
      *  As Orekit doesn't implement the retrograde orbit, I = +1 here.
      */
-    private double I = 1;
+    protected double I = 1;
+
+    // Equinoctial elements (according to DSST notation)
+    /** a */
+    protected double a;
+    /** ex */
+    protected double k;
+    /** ey */
+    protected double h;
+    /** hx */
+    protected double q;
+    /** hy */
+    protected double p;
+
+    // Kepler mean motion
+    /** n = sqrt(&mu; / a<sup>3</sup>) */
+    protected double n;
+
+    // Equinoctial reference frame vectors (according to DSST notation)
+    /** f */
+    protected Vector3D f;
+    /** g */
+    protected Vector3D g;
+    /** w */
+    protected Vector3D w;
+
+    // Useful equinoctial coefficients
+    /** A = sqrt(&mu; * a) */
+    protected double A;
+    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>) */
+    protected double B;
+    /** C = 1 + p<sup>2</sup> + q<sup>2</sup> */
+    protected double C;
+
+    // Common factors
+    /** 2. / (n<sup>2</sup> * a) */
+    protected double ton2a;
+    /** 1. / A */
+    protected double ooA;
+    /** 1. / (A * B) */
+    protected double ooAB;
+    /** C / (2. * A * B) */
+    protected double Co2AB;
+    /** 1. / (1. + B) */
+    protected double ooBpo;
+    /** 1. / &mu; */
+    protected double ooMu;
 
     /** Build a new instance. */
     protected AbstractDSSTGaussianContribution() {
@@ -90,6 +136,61 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             }
         }
         return meanElementRate;
+    }
+
+    /** Compute useful equinoctial parameters: A, B, C, f, g, w.
+     *  @param  state current state information: date, kinematics, attitude
+     */
+    protected void computeParameters(final SpacecraftState state) {
+        // Initialisation of A, B, C coefficients, f, g, w basis
+    
+        // Get current state vector (equinoctial elements):
+        double[] stateVector = new double[6];
+        ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, stateVector);
+    
+        // Equinoctial elements
+        a = stateVector[0];
+        k = stateVector[1];
+        h = stateVector[2];
+        q = stateVector[3];
+        p = stateVector[4];
+    
+        // Factors
+        final double k2 = k * k;
+        final double h2 = h * h;
+        final double q2 = q * q;
+        final double p2 = p * p;
+    
+        // Equinoctial coefficients
+        A = FastMath.sqrt(state.getMu() * a);
+        B = FastMath.sqrt(1 - k2 - h2);
+        C = 1 + q2 + p2;
+    
+        // Equinoctial reference frame basis vectors
+        final double ooC =  1. / C;
+        final double fx  =  1. - p2 + q2;
+        final double fy  =  2. * p * q;
+        final double fz  = -2. * I * p;
+        final double gx  =  I * fy;
+        final double gy  =  I * (1 + p2 - q2);
+        final double gz  =  2. * q;
+        final double wx  =  2. * p;
+        final double wy  = -gz;
+        final double wz  =  I * (1 - p2 - q2);
+        f = new Vector3D( ooC, new Vector3D(fx, fy, fz));
+        g = new Vector3D( ooC, new Vector3D(gx, gy, gz));
+        w = new Vector3D( ooC, new Vector3D(wx, wy, wz));
+    
+        // Kepler mean motion
+        n = A / (a * a);
+    
+        // Common factors
+        ton2a = 2. / (n * n * a);
+        ooA   = 1. / A ;
+        ooAB  = ooA / B;
+        Co2AB = C * ooAB / 2.;
+        ooBpo = 1. / (1. + B);
+        ooMu  = 1. / state.getMu();
     }
 
     /** Compute the acceleration due to the non conservative perturbing force.
@@ -148,52 +249,6 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
 
         /** Current treated element. */
         private int element;
-
-        // Equinoctial elements (according to DSST notation)
-        /** a */
-        private double a;
-        /** ex */
-        private double k;
-        /** ey */
-        private double h;
-        /** hx */
-        private double q;
-        /** hy */
-        private double p;
-
-        // Kepler mean motion
-        /** n = sqrt(&mu; / a<sup>3</sup>) */
-        private double n;
-
-        // Equinoctial reference frame vectors (according to DSST notation)
-        /** f */
-        private Vector3D f;
-        /** g */
-        private Vector3D g;
-        /** w */
-        private Vector3D w;
-
-        // Useful equinoctial coefficients
-        /** A = sqrt(&mu; * a) */
-        private double A;
-        /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>) */
-        private double B;
-        /** C = 1 + p<sup>2</sup> + q<sup>2</sup> */
-        private double C;
-
-        // Common factors
-        /** 2. / (n<sup>2</sup> * a) */
-        private double ton2a;
-        /** 1. / A */
-        private double ooA;
-        /** 1. / (A * B) */
-        private double ooAB;
-        /** C / (2. * A * B) */
-        private double Co2AB;
-        /** 1. / (1. + B) */
-        private double ooBpo;
-        /** 1. / &mu; */
-        private double ooMu;
 
         /** Build a new instance.
          *  @param  state current state information: date, kinematics, attitude
@@ -323,51 +378,6 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             Vector3D pos = new Vector3D(X, f, Y, g);
             Vector3D v2  = new Vector3D(k, getHoV(X, Y, Xdot, Ydot), -h, getKoV(X, Y, Xdot, Ydot));
             return new Vector3D(-2. * ooA, pos, ooBpo, v2, (I * q * Y - p * X) * ooA, w);
-        }
-
-        /** Compute useful equinoctial parameters: A, B, C, f, g, w.
-         *  @param  state current state information: date, kinematics, attitude
-         */
-        private void computeParameters(final SpacecraftState state) {
-            // Initialisation of A, B, C coefficients, f, g, w basis
-
-            // Get current state vector (equinoctial elements):
-            double[] stateVector = new double[6];
-            ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, stateVector);
-
-            // Equinoctial elements
-            a = stateVector[0];
-            k = stateVector[1];
-            h = stateVector[2];
-            q = stateVector[3];
-            p = stateVector[4];
-
-            // Factors
-            final double k2 = k * k;
-            final double h2 = h * h;
-            final double q2 = q * q;
-            final double p2 = p * p;
-
-            // Equinoctial coefficients
-            A = FastMath.sqrt(state.getMu() * a);
-            B = FastMath.sqrt(1 - k2 - h2);
-            C = 1 + q2 + p2;
-
-            // Direction cosines
-            f = new Vector3D( (1 - p2 + q2) / C,        2. * p * q / C,       -2. * I * p / C);
-            g = new Vector3D(2. * I * p * q / C, I * (1 + p2 - q2) / C,            2. * q / C);
-            w = new Vector3D(        2. * p / C,           -2. * q / C, I * (1 - p2 - q2) / C);
-
-            // Kepler mean motion
-            n = A / (a * a);
-
-            // Common factors
-            ton2a = 2. / (n * n * a);
-            ooA   = 1. / A ;
-            ooAB  = ooA / B;
-            Co2AB = C * ooAB / 2.;
-            ooBpo = 1. / (1. + B);
-            ooMu  = 1. / state.getMu();
         }
         
     }

@@ -31,6 +31,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -46,7 +47,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>
  * The configuration parameters that can be set are:</p>
  * <ul>
- *   <li>the initial spacecraft state ({@link #setInitialState(SpacecraftState)})</li>
+ *   <li>the initial spacecraft state ({@link #resetInitialState(SpacecraftState)})</li>
  *   <li>the various force models ({@link #addForceModel(DSSTForceModel)},
  *   {@link #removeForceModels()})</li>
  *   <li>the discrete events that should be triggered during propagation
@@ -105,6 +106,9 @@ public class DSSTPropagator extends AbstractPropagator {
     /** Position error tolerance (m). */
     private static final double POSITION_ERROR = 1.0;
 
+    /** Position error tolerance (m). */
+    private static final double EXTRA_TIME = Constants.JULIAN_DAY;
+
     /** Integrator selected by the user for the orbital extrapolation process. */
     private transient FirstOrderIntegrator integrator;
 
@@ -122,6 +126,9 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /** Target date. */
     private AbsoluteDate target;
+
+    /** Target date. */
+    private double extraTime;
 
     /** Current &mu;. */
     private double mu;
@@ -212,6 +219,8 @@ public class DSSTPropagator extends AbstractPropagator {
         this.referenceDate = null;
         this.mass          = mass;
 
+        setExtraTime(EXTRA_TIME);
+
         setIntegrator(integrator);
         
         PVCoordinatesProvider pvProv = new PVCoordinatesProvider() {
@@ -277,6 +286,15 @@ public class DSSTPropagator extends AbstractPropagator {
      */
     public void removeForceModels() {
         forceModels.clear();
+    }
+
+    /** Set some extra duration to be performed for the first propagation of the orbit.
+     * <p>
+     * A reasonable value would be 5 times the initial step size of the integrator.
+     * </p>
+     */
+    public void setExtraTime(final double extraTime) {
+        this.extraTime = extraTime;
     }
 
     /** Get the number of calls to the differential equations computation method.
@@ -404,21 +422,26 @@ public class DSSTPropagator extends AbstractPropagator {
         SortedSet<StRange> steps = cumulator.getCumulatedSteps();
 
         if (target.compareTo(cumulator.getTd()) < 0 || target.compareTo(cumulator.getTf()) > 0) {
-            if (!steps.isEmpty() && target.compareTo(cumulator.getTd()) < 0) {
-                t0 = cumulator.getTd().durationFrom(referenceDate);
-                StepInterpolator si = steps.first().getStep();
+            double moreTime;
+            if (!steps.isEmpty()) {
+                StepInterpolator si;
+                if (target.compareTo(cumulator.getTd()) < 0) {
+                    t0 = cumulator.getTd().durationFrom(referenceDate);
+                    si = steps.first().getStep();                   
+                } else {
+                    t0 = cumulator.getTf().durationFrom(referenceDate);
+                    si = steps.last().getStep();
+                }
                 si.setInterpolatedTime(t0);
                 stateIn = si.getInterpolatedState();
-            } else if (!steps.isEmpty() && target.compareTo(cumulator.getTf()) > 0) {
-                t0 = cumulator.getTf().durationFrom(referenceDate);
-                StepInterpolator si = steps.last().getStep();
-                si.setInterpolatedTime(t0);
-                stateIn = si.getInterpolatedState();
+                moreTime = 5. * cumulator.getMaxStepSize();
+            } else {
+                moreTime = extraTime;
             }
             if (target.compareTo(referenceDate.shiftedBy(t0)) > 0) {
-                t1 += 86400.;
+                t1 += moreTime;
             } else {
-                t1 -= 86400.;
+                t1 -= moreTime;
             }
             try {
                 t1 = integrator.integrate(new DifferentialEquations(), t0, stateIn, t1, stateIn);
@@ -490,12 +513,21 @@ public class DSSTPropagator extends AbstractPropagator {
         private SortedSet<StRange> cumulatedSteps;
         private AbsoluteDate td;
         private AbsoluteDate tf;
+        private double maxStep;
 
         /** Simple constructor. */
         public StepAccumulator() {
             cumulatedSteps = new TreeSet<StRange>();
             td = AbsoluteDate.FUTURE_INFINITY;
             tf = AbsoluteDate.PAST_INFINITY;
+            maxStep = 0.;
+        }
+        
+        /** Get the maximum step size.
+         * @return the maximum step size
+         */
+        public double getMaxStepSize() {
+            return maxStep;
         }
         
         /** Get the first time.
@@ -525,11 +557,13 @@ public class DSSTPropagator extends AbstractPropagator {
             cumulatedSteps.clear();
             td = AbsoluteDate.FUTURE_INFINITY;
             tf = AbsoluteDate.PAST_INFINITY;
+            maxStep = 0.;
         }
 
         @Override
         public void handleStep(StepInterpolator interpolator, boolean isLast) {
             StRange sr = new StRange(interpolator);
+            maxStep = FastMath.max(maxStep, sr.getTmax().durationFrom(sr.getTmin()));
             cumulatedSteps.add(sr);
             td = cumulatedSteps.first().getTmin();
             tf = cumulatedSteps.last().getTmax();
