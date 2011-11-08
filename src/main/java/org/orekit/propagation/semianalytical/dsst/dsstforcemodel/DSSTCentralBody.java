@@ -211,7 +211,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         // Direction cosines :
         Vector3D[] equinoctialFrame = computeEquinoctialReferenceFrame(orbit);
         alpha = equinoctialFrame[0].getZ();
-        beta  = equinoctialFrame[1].getZ();
+        beta = equinoctialFrame[1].getZ();
         gamma = equinoctialFrame[2].getZ();
     }
 
@@ -230,19 +230,19 @@ public class DSSTCentralBody implements DSSTForceModel {
         final double q2 = q * q;
         final double p2 = p * p;
 
-        final double num = (1 + q2 + p2);
+        final double num = 1. / (1 + q2 + p2);
 
         // compute the f vector :
-        final double fx = 1 - p2 - q2;
+        final double fx = 1 - p2 + q2;
         final double fy = 2 * p * q;
         final double fz = -2 * I * p;
-        Vector3D f = new Vector3D(1 / num, new Vector3D(fx, fy, fz));
+        Vector3D f = new Vector3D(num, new Vector3D(fx, fy, fz));
 
         // Compute the g vector :
         final double gx = 2 * I * p * q;
         final double gy = (1 + p2 - q2) * I;
         final double gz = 2 * q;
-        Vector3D g = new Vector3D(1 / num, new Vector3D(gx, gy, gz));
+        Vector3D g = new Vector3D(num, new Vector3D(gx, gy, gz));
 
         // Compute the w vector :
         Vector3D w = Vector3D.crossProduct(f, g);
@@ -319,7 +319,7 @@ public class DSSTCentralBody implements DSSTForceModel {
             dk = -(B / A) * dUdh - h * factor;
             dp = -C / (2 * A * B) * UBetaGamma;
             dq = -I * C * UAlphaGamma / (2 * A * B);
-            dM = (-2 * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (p * UAlphaGamma - I * q * UBetaGamma) / (A * B);
+            dM = (-2. * a * dUda / A) + (B / (A * (1 + B))) * (h * dUdh + k * dUdk) + (p * UAlphaGamma - I * q * UBetaGamma) / (A * B);
 
             return new double[] { 0d, dk, dh, dq, dp, dM };
         }
@@ -397,17 +397,17 @@ public class DSSTCentralBody implements DSSTForceModel {
                 // Get the current gs and hs coefficient :
                 gs = GsHs[0][s];
 
-                // Get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF NULL !! TODO to chek
+                // Compute partial derivatives of Gs from equ. (9) :
+                // First get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF < 0 !! TODO to chek
                 gsM1 = (s > 0 ? GsHs[0][s - 1] : 0);
                 hsM1 = (s > 0 ? GsHs[1][s - 1] : 0);
-
-                // Compute partial derivatives of GsHs
-                dGsdk = s * beta * gsM1 - s * alpha * hsM1;
-                dGsdh = s * alpha * gsM1 + s * beta * hsM1;
+                // Get derivatives
+                dGsdh = s * beta * gsM1 - s * alpha * hsM1;
+                dGsdk = s * alpha * gsM1 + s * beta * hsM1;
                 dGsdAl = s * k * gsM1 - s * h * hsM1;
                 dGsdBe = s * h * gsM1 + s * k * hsM1;
 
-                // Compute Partial derivatives of Gs from equ. (9)
+                // get (2 - delta0s)
                 delta0s = (s == 0) ? 1 : 2;
 
                 for (int n = s + 2; n < degree + 1; n++) {
@@ -421,9 +421,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                     commonCoefficient = delta0s * raExpN * jn * vns;
 
                     // Compute dU / da :
-                    // dUda += commonCoefficient * (n + 1) * kns * qns * gs;
-                    dUda += (n + 1) * Math.pow(ae / a, 2) * jn * vns * kns * qns * gs;
-
+                    dUda += commonCoefficient * (n + 1) * kns * qns * gs;
                     // Compute dU / dEx
                     dUdk += commonCoefficient * qns * (kns * dGsdk + k * khi3 * gs * dkns);
                     // Compute dU / dEy
@@ -645,8 +643,8 @@ public class DSSTCentralBody implements DSSTForceModel {
                             vmsn = CoefficientFactory.getVmns(m, n, s);
                             gamMsn = computeGammaMsn(n, s, Im, gamma);
                             dGamma = computeDGammaMsn(n, s, m, gamma);
-                            kjn_1  = hansen.getHansenKernelValue(j, -n-1, s);
-                            dkjn_1 = hansen.getHansenKernelDerivative(j, -n-1, s);
+                            kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
+                            dkjn_1 = hansen.getHansenKernelDerivative(j, -n - 1, s);
                             dGdh = GHms.getdGmsdh(m, s, j);
                             dGdk = GHms.getdGmsdk(m, s, j);
                             dGdA = GHms.getdGmsdAlpha(m, s, j);
