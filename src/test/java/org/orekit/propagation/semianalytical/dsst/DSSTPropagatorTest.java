@@ -63,6 +63,7 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.EnumInputOutputFormat;
+import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.OrbitFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -242,7 +243,11 @@ public class DSSTPropagatorTest {
         String format = new String("%14.10f %14.10f %14.10f %14.10f %14.10f %14.10f");
 
         
-        SpacecraftState state = getLEOrbit();
+//        SpacecraftState state = getLEOrbit();
+        SpacecraftState state = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(provider.getAe(), 800000, 1e-3, 0, Math.PI/2d, Math.PI, provider.getMu(), FramesFactory.getGCRF(), AbsoluteDate.J2000_EPOCH));
+        System.out.println(state.getOrbit());
+        System.out.println(new KeplerianOrbit(state.getOrbit()));
+
         setDSSTProp(state);
 
         // DSST Propagation with no force (reference Keplerian motion)
@@ -253,11 +258,14 @@ public class DSSTPropagatorTest {
         // Central Body Force Model
         double[][] CnmNotNorm = provider.getC(2, 0, false);
         double[][] SnmNotNorm = provider.getS(2, 0, false);
+        
+//        CnmNotNorm[0][0] = 0d;
+//        CnmNotNorm[1][0] = 0d;
 
         double[][] Cnm = provider.getC(2, 0, true);
         double[][] Snm = provider.getS(2, 0, true);
 
-        DSSTForceModel force = new DSSTCentralBody(ae, Cnm, Snm, null, 1e-4);
+        DSSTForceModel force = new DSSTCentralBody(ae, CnmNotNorm, CnmNotNorm, null, 1e-4);
         ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
 
         // DSST Propagation
@@ -709,6 +717,8 @@ public class DSSTPropagatorTest {
             if (isLast) {
                 try {
                     buffer.close();
+                    System.out.println(currentState.getOrbit());
+                    System.out.println(new KeplerianOrbit(currentState.getOrbit()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
