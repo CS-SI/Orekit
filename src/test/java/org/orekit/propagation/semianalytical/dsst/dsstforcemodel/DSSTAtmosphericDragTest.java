@@ -56,10 +56,10 @@ public class DSSTAtmosphericDragTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), date, mu);
 
-        long start1 = System.nanoTime(); // requires java 1.5
+//        long start1 = System.nanoTime(); // requires java 1.5
         double[] daidt = force.getMeanElementRate(new SpacecraftState(orbit));
-        double dT1 = (System.nanoTime() - start1) * 1.0e-9;
-        System.out.println("DT1: " + dT1);
+//        double dT1 = (System.nanoTime() - start1) * 1.0e-9;
+//        System.out.println("DT1: " + dT1);
 
         for (int i = 0; i < daidt.length; i++) {
             System.out.println(daidt[i]);

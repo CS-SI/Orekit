@@ -1,7 +1,6 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import org.apache.commons.math.analysis.UnivariateRealFunction;
-import org.apache.commons.math.analysis.integration.LegendreGaussIntegrator;
 import org.apache.commons.math.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math.analysis.integration.UnivariateRealIntegrator;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;

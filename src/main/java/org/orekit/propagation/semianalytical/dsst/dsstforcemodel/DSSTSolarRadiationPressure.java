@@ -29,6 +29,9 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     /** Maximum number of evaluations. */
     private final static int[] MAX_EVAL = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000};
 
+    /** A value smaller than ALMOST_ZERO is considered to be zero (0.0). */
+    private final static double ALMOST_ZERO = FastMath.ulp(1.0);
+
    /** Flux on satellite: kRef = 0.5 * C<sub>R</sub> * Area * P<sub>Ref</sub> * D<sub>Ref</sub><sup>2</sup>. */
    private final double kRef;
 
@@ -120,14 +123,19 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
         final double b2 = bb * bb;
         final double cc = alfa * alfa - bet2 + mm * (k2 - h2);
         final double dd =  1. - bet2 - mm * (1. + h2);
-        final double a0 =  4. * b2 + cc * cc;
-        final double a1 =  8. * bb * mm * h + 4. * cc * mm * k;
-        final double a2 = -4. * b2 + 4. * m2 * h2 - 2. * cc * dd + 4. * m2 * k2;
-        final double a3 = -8. * bb * mm * h - 4. * dd * mm * k;
-        final double a4 = -4. * m2 * h2 + dd * dd;
+        final double[] a = new double[5];
+        a[0] =  4. * b2 + cc * cc;
+        a[1] =  8. * bb * mm * h + 4. * cc * mm * k;
+        a[2] = -4. * b2 + 4. * m2 * h2 - 2. * cc * dd + 4. * m2 * k2;
+        a[3] = -8. * bb * mm * h - 4. * dd * mm * k;
+        a[4] = -4. * m2 * h2 + dd * dd;
         // Compute the real roots of the quartic equation
-        final double[] cosL = realQuarticRoots(a0, a1, a2, a3, a4);
-        // Test the roots
+        final double[] cosL = new double[4];
+        final int nbRoots = realQuarticRoots(a, cosL);
+        if (nbRoots > 0) {
+            // Test the roots
+
+        }
         return ll;
     }
 
@@ -163,104 +171,195 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
         return position.subtract(sunPV.getPosition());
     }
 
-    /** Compute the real roots of the quartic equation:
-     *    a<sub>0</sub> * x<sup>4</sup> + a<sub>1</sub> * x<sup>3</sup>
-     *  + a<sub>2</sub> * x<sup>2</sup> + a<sub>3</sub> * x + a<sub>4</sub> = 0
-     *  @param a0 1st coefficient
-     *  @param a1 2nd coefficient
-     *  @param a2 3rd coefficient
-     *  @param a3 4th coefficient
-     *  @param a4 5th coefficient
-     *  @return the real roots of the quartic equation
-     *  @exception OrekitException
+    /** Compute the real roots of a quartic equation:
+     *  <pre>a[0] * x<sup>4</sup> + a[1] * x<sup>3</sup> + a[2] * x<sup>2</sup> + a[3] * x + a[4] = 0.</pre>
+     *  @param a the 5 coefficients
+     *  @param y the real roots
+     *  @return the number of real roots
      */
-    private double[] realQuarticRoots(final double a0,
-                                      final double a1,
-                                      final double a2,
-                                      final double a3,
-                                      final double a4) {
-        // Reduce all the coefficients
-        final double c3 = a1 / a0;
-        final double c2 = a2 / a0;
-        final double c1 = a3 / a0;
-        final double c0 = a4 / a0;
-
-        // Compute the resolvent cubic coefficients
-        final double cc2 = -c2;
-        final double cc1 =  c1 * c3 - 4 * c0;
-        final double cc0 =  4. * c2 * c0 - c1 * c1 - c3 * c3 * c0;
-        // Compute a real root of the cubic equation
-        final double rr3 = realCubicRoot(cc0, cc1, cc2);
-
-        return new double[] {0., 0., 0., 0.};
-    }
-
-    /** Compute one real root of the cubic equation: 
-     *    x<sup>3</sup> + a<sub>2</sub> * x<sup>2</sup> + a<sub>1</sub> * x + a<sub>0</sub> = 0
-     *  @param a0 1st coefficient
-     *  @param a1 2nd coefficient
-     *  @param a2 3rd coefficient
-     *  @return one real root of the cubic equation
-     */
-    private double realCubicRoot(final double a0, final double a1, final double a2) {
-        double realRoot = 0.;
-        final double Q  = (3. * a1 - a2 * a2) / 9.;
-        final double Q3 = Q * Q * Q;
-        final double R  = (9. * a1 * a2 - 27. * a0 - 2. * a2 * a2 * a2) / 54.;
-        final double R2 = R * R;
-        final double D  = R2 + Q3;
-        if (D < 0.) {
-            final double teta = FastMath.acos(R / FastMath.sqrt(-Q3));
-            realRoot = 2. * FastMath.sqrt(-Q) * FastMath.cos(teta / 3.) - a2 / 3.;
-        } else {
-            final double oneThird = 1. / 3.;
-            final double sqD = FastMath.sqrt(D);
-            final double S = FastMath.pow(R + sqD, oneThird);
-            final double T = FastMath.pow(R - sqD, oneThird);
-            realRoot =  S + T - a2 / 3.;
+    private int realQuarticRoots(final double[] a, final double[] y)
+    {
+        /* Treat the degenerate quartic as cubic */
+        if (a[0] == 0.0) {
+            final double[] aa = new double[a.length - 1];
+            System.arraycopy(a, 1, aa, 0, aa.length);
+            return(realCubicRoots(aa, y));
         }
-        return realRoot;
+        
+        double a0 = a[0];
+        double a1 = a[1];
+        double a2 = a[2];
+        double a3 = a[3];
+        double a4 = a[4];
+        /* Set the leading coefficient to 1.0 */
+        if (a0 != 1.0) {
+            a1 /= a0;
+            a2 /= a0;
+            a3 /= a0;
+            a4 /= a0;
+        }
+
+        /* Compute the cubic resolvant */
+        final double a12 = a1 * a1;
+        final double p = -0.375 * a12 + a2;
+        final double q =  0.125 * a12 * a1 - 0.5 * a1 * a2 + a3;
+        final double r = -0.01171875 * a12 * a12 + 0.0625 * a12 * a2 - 0.25 * a1 * a3 + a4;
+
+        double[] y3 = new double[3];
+        final int i3 = realCubicRoots(new double[] {1.0, -0.5 * p, -r, 0.5 * r * p - 0.125 * q * q}, y3);
+
+        if (i3 == 0) {
+            return(0);
+        }
+        final double z = y3[0];
+
+        double d1 = 2.0 * z - p;
+        if (d1 < 0.0) {
+            if (d1 > -ALMOST_ZERO) {
+                d1 = 0.0;
+            } else {
+                return(0);
+            }
+        }
+        double d2;
+        if (d1 < ALMOST_ZERO) {
+            d2 = z * z - r;
+            if (d2 < 0.0) {
+                return(0);
+            }
+            d2 = FastMath.sqrt(d2);
+        } else {
+            d1 = FastMath.sqrt(d1);
+            d2 = 0.5 * q / d1;
+        }
+
+        /* Set up useful values for the quadratic factors */
+        final double q1 = d1 * d1;
+        final double q2 = -0.25 * a1;
+
+        int i4 = 0;
+        /* Solve the first quadratic */
+        double p1 = q1 - 4.0 * (z - d2);
+        if (p1 == 0) {
+            y[i4++] = -0.5 * d1 - q2;
+        } else if (p1 > 0) {
+            p1 = FastMath.sqrt(p1);
+            y[i4++] = -0.5 * (d1 + p1) + q2;
+            y[i4++] = -0.5 * (d1 - p1) + q2;
+        }
+
+        /* Solve the second quadratic */
+        double p2 = q1 - 4.0 * (z + d2);
+        if (p2 == 0) {
+            y[i4++] = 0.5 * d1 - q2;
+        } else if (p2 > 0) {
+            p2 = FastMath.sqrt(p2);
+            y[i4++] = 0.5 * (d1 + p2) + q2;
+            y[i4++] = 0.5 * (d1 - p2) + q2;
+        }
+
+        return(i4);
     }
 
-    /** Compute the roots of the quadric equation.
-     *  @param A the 5 coefficients
-     *  @return the 4 roots of the quadric equation
+    /** Compute the real roots of a cubic equation:
+     *  <pre>a[0] * x<sup>3</sup> + a[1] * x<sup>2</sup> + a[2] * x + a[3] = 0.</pre>
+     *  @param a the 4 coefficients
+     *  @param y the real roots
+     *  @return the number of real roots
      */
-    private double[] quarticRoots(final double[] A) {
+    private int realCubicRoots(final double[] a, final double[] y)
+    {
+        /* Treat the degenerate cubic as quadratic */
+        if (a[0] == 0.0) {
+            final double[] aa = new double[a.length - 1];
+            System.arraycopy(a, 1, aa, 0, aa.length);
+            return(realQuadraticRoots(aa, y));
+        }
+        
+        double a0 = a[0];
+        double a1 = a[1];
+        double a2 = a[2];
+        double a3 = a[3];
+        /* Make sure the cubic has a leading coefficient of 1.0 */
+        if (a0 != 1.0) {
+            a1 /= a0;
+            a2 /= a0;
+            a3 /= a0;
+        }
 
-        final double[] a = {A[0] / A[4], A[1] / A[4], A[2] / A[4], A[3] / A[4]};
+        final double a12 = a1 * a1;
+        final double q  = (a12 - 3.0 * a2) / 9.0;
+        final double q3 = q * q * q;
+        final double r  = (a1 * (a12 - 4.5 * a2) + 13.5 * a3) / 27.0;
+        final double r2 = r * r;
+        final double d  = q3 - r2;
+        final double a1o3 = a1 / 3.0;
 
-        final double a32 = a[3] * a[3];
-        final double c0 = 4. * a[2] * a[0] - a[1] * a[1] - a32 * a[0];
-        final double c1 = a[1] * a[3] - 4. * a[0];
-        final double c2 = -a[2];
+        if (d >= 0.0) {
+            /* 3 real roots. */
+            final double roq3 = r / FastMath.sqrt(q3);
+            final double teta = FastMath.acos(roq3) / 3.0;
+            final double sqrq = -2.0 * FastMath.sqrt(q);
 
-        final double y1 = realCubicRoot(c0, c1, c2);
-        System.out.println("y1: " + y1);
+            y[0] = sqrq * FastMath.cos(teta) - a1o3;
+            y[1] = sqrq * FastMath.cos(teta + FastMath.PI * 2. / 3.) - a1o3;
+            y[2] = sqrq * FastMath.cos(teta + FastMath.PI * 4. / 3.) - a1o3;
 
-        final double t0 = -a[3] / 4.;
-        final double R2 = a32 / 4. - a[2] + y1;
-        final double R  = FastMath.sqrt(R2);
-        final double r2 = R / 2.;
-        System.out.println("R: " + R);
+            return(3);
 
-        final double t1 = 3. * a32 / 4. - 2. * a[2];
-        System.out.println("t1: " + t1);
+        } else {
+            /* 1 real root. */
+            final double tmp = FastMath.pow(FastMath.sqrt(-d) + FastMath.abs(r), 1.0 / 3.0);
+            if (r < 0) {
+                y[0] =  (tmp + q / tmp) - a1o3;
+            } else {
+                y[0] = -(tmp + q / tmp) - a1o3;
+            }
 
-        final double t2 = (4. * a[3] * a[2] - 8. * a[1] - a32 * a[3]) / 4.;
-        System.out.println("t2: " + t2);
+            return(1);
+        }
+    }
 
-        final double t3 = 2. * FastMath.sqrt(y1 * y1 - 4. * a[0]);
-        System.out.println("t3: " + t3);
- 
-        final double D  = (R != 0.) ? FastMath.sqrt(t1 - R2 + t2 / R) : FastMath.sqrt(t1 + t3);
-        final double d2 = D / 2.;
-        final double E  = (R != 0.) ? FastMath.sqrt(t1 - R2 - t2 / R) : FastMath.sqrt(t1 - t3);
-        final double e2 = E / 2.;
-        System.out.println("D: " + D);
-        System.out.println("E: " + E);
+    /** Compute the real roots of a quadratic equation:
+     *  <pre>a[0] * x<sup>2</sup> + a[1] * x + a[2] = 0.</pre>
+     *  @param a the 3 coefficients
+     *  @param y the real roots
+     *  @return the number of real roots
+     */
+    private int realQuadraticRoots(final double[] a, final double[] y)
+    {
+        final double aa =  a[0];
+        final double bb = -a[1];
+        final double cc =  a[2];
 
-        return new double[] {t0 + r2 + d2, t0 + r2 - d2, t0 - r2 + e2, t0 - r2 - e2};
+        if (aa == 0.0) {
+            if (bb == 0.0) {
+                return(0);
+            }
+            y[0] = cc / bb;
+            return(1);
+        }
+
+        final double d = bb * bb - 4.0 * aa * cc;
+
+        /* Treat values of d around 0 as 0. */
+        if (FastMath.abs(d) < ALMOST_ZERO)
+        {
+            y[0] = 0.5 * bb / aa;
+            return(1);
+        } else {
+            if (d < 0.0) {
+                return(0);
+            }
+        }
+
+        final double oo2a = 0.5 / aa;
+        final double sqrd = FastMath.sqrt(d);
+
+        y[0] = (bb + sqrd) * oo2a;
+        y[1] = (bb - sqrd) * oo2a;
+
+        return(2);
     }
 
 }

@@ -108,12 +108,12 @@ public class ModifiedNewcombOperatorTest {
 
         // order 0 :
         // (4*x^3)/(12*2)+(20*x^2)/(12*8)+(8*x^2)/(12*2)+(20*x)/(12*8)+(4*x)/(12*2)+x^2/12+(2*x)/12
-        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(0));
+//        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(0));
         // order 1 :
         // (-5)/48+(-1)/4-((4*x^2)/(12*2))-((12*x)/(12*8))-((5*x)/(12*4))-((7*x)/(12*2))-(x^2/12)-((2*x)/12)
-        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(1));
+//        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(1));
         // order 2 : 1/24+1/16+1/12+x/(12*2)+x/12
-        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(2));
+//        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(2));
     }
 
     @Test
