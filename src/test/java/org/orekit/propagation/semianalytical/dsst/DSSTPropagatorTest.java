@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Formatter;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
@@ -62,7 +61,6 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTThirdBody;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.EnumInputOutputFormat;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.OrbitFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -158,7 +156,7 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(initialState.getEquinoctialEy(), finalState2.getEquinoctialEy(), 0.);
         Assert.assertEquals(initialState.getHx(), finalState2.getHx(), 0.);
         Assert.assertEquals(initialState.getHy(), finalState2.getHy(), 0.);
-        Assert.assertEquals(initialState.getLM() - n * dt, finalState2.getLM(), 1.e-14);
+        Assert.assertEquals(initialState.getLM() - n * dt, finalState2.getLM(), 1.5e-14);
 
     }
 
@@ -180,64 +178,6 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
     }
 
-    // @Test
-    // public void testPropagationWithCentralBody2() throws OrekitException, IOException,
-    // ParseException {
-    //
-    // // DSST Propagation with no force (reference Keplerian motion)
-    // final double tMax = 86400.;
-    // final double step = 1000.;
-    // // PVCoordinates pv = propaDSST.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
-    //
-    // // Central Body Force Model
-    // PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
-    // double[][] CnmUnNormalized = provider.getC(2, 2, false);
-    // double[][] SnmUnNormalized = provider.getS(2, 2, false);
-    //
-    // double[][] Cnm = provider.getC(2, 2, true);
-    // double[][] Snm = provider.getS(2, 2, true);
-    //
-    // DSSTForceModel force = new DSSTCentralBody(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Cnm, Snm,
-    // null, 1e-4);
-    //
-    // ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-    // Constants.WGS84_EARTH_EQUATORIAL_RADIUS, mu, CnmUnNormalized, SnmUnNormalized);
-    //
-    // // Define initial state
-    // Orbit orbit = OrbitFactory.getHeliosynchronousOrbit(800000.,
-    // 1e-4, Math.PI / 2., 0., Math.PI / 2.,
-    // PositionAngle.MEAN,
-    // provider.getMu());
-    // SpacecraftState state = new SpacecraftState(orbit);
-    //
-    // setDSSTProp(state);
-    // propaDSST.addForceModel(force);
-    //
-    // // Numerical Propagation
-    // setNumProp(initialState);
-    // numProp.addForceModel(nForce);
-    //
-    // AbsoluteDate current = initialState.getDate();
-    //
-    // while (current.compareTo(initialState.getDate().shiftedBy(tMax)) < 0) {
-    // current = current.shiftedBy(step);
-    // PVCoordinates pvd = propaDSST.propagate(current).getPVCoordinates();
-    // PVCoordinates pvn = numProp.propagate(current).getPVCoordinates();
-    // KeplerianOrbit orbNum = new KeplerianOrbit(pvn, FramesFactory.getEME2000(), current, mu);
-    // KeplerianOrbit orbDsst = new KeplerianOrbit(pvd, FramesFactory.getEME2000(), current, mu);
-    // // Anomaly
-    // final double anNum = orbNum.getAnomaly(PositionAngle.TRUE);
-    // final double anDsst = orbDsst.getAnomaly(PositionAngle.TRUE);
-    //
-    // printShift(anNum, anDsst);
-    //
-    // }
-    // }
-
-    // private void printShift(double val1, double val2) {
-    // System.out.println(val1 + "  " + val2 + "  " + Math.abs(val1 - val2));
-    // }
-
     /**
      * @throws Exception 
      */
@@ -248,20 +188,12 @@ public class DSSTPropagatorTest {
 
         setDSSTProp(state);
 
-        // DSST Propagation with no force (reference Keplerian motion)
-        final double dt = 86400.;
-        SpacecraftState finalState0 = propaDSST.propagate(initDate.shiftedBy(dt));
-        PVCoordinates pv = finalState0.getPVCoordinates();
-
         // Central Body Force Model
         double[][] CnmNotNorm = provider.getC(2, 0, false);
         double[][] SnmNotNorm = provider.getS(2, 0, false);
 
         CnmNotNorm[0][0] = 0d;
         CnmNotNorm[1][0] = 0d;
-
-        double[][] Cnm = provider.getC(2, 0, true);
-        double[][] Snm = provider.getS(2, 0, true);
 
         DSSTForceModel force = new DSSTCentralBody(ae, mu, CnmNotNorm, CnmNotNorm, null, 1e-4);
         ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
@@ -315,8 +247,8 @@ public class DSSTPropagatorTest {
         CnmNotNorm[0][0] = 0d;
         CnmNotNorm[1][0] = 0d;
 
-        double[][] Cnm = provider.getC(2, 0, true);
-        double[][] Snm = provider.getS(2, 0, true);
+//        double[][] Cnm = provider.getC(2, 0, true);
+//        double[][] Snm = provider.getS(2, 0, true);
 
         DSSTForceModel force = new DSSTCentralBody(ae, mu,CnmNotNorm, CnmNotNorm, null, 1e-4);
         ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
@@ -324,10 +256,10 @@ public class DSSTPropagatorTest {
         // DSST Propagation
         propaDSST.resetInitialState(initialState);
         propaDSST.addForceModel(force);
-        if (printPV) {
-            propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_DSST_PV"), PrintStepHandler.PrintEnum.PV, format));
+        if (printPV){
+            propaDSST.setMasterMode(100., new PrintStepHandler(new String("./"), new String("CentralBody_DSST_PV"), PrintStepHandler.PrintEnum.PV, format));
         } else {
-            propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_DSST_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
+            propaDSST.setMasterMode(100., new PrintStepHandler(new String("./"), new String("CentralBody_DSST_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
         }
         SpacecraftState finalStateDSST = propaDSST.propagate(initDate.shiftedBy(dt));
         PVCoordinates pvd = finalStateDSST.getPVCoordinates();
@@ -339,46 +271,46 @@ public class DSSTPropagatorTest {
             setNumProp(initialState);
         }
         numProp.addForceModel(nForce);
-        if (printPV) {
-            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_NUM_PV"), PrintStepHandler.PrintEnum.PV, format));
+        if (printPV){
+            numProp.setMasterMode(100., new PrintStepHandler(new String("./"), new String("CentralBody_NUM_PV"),  PrintStepHandler.PrintEnum.PV, format));
         } else {
-            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_NUM_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
+            numProp.setMasterMode(100., new PrintStepHandler(new String("./"), new String("CentralBody_NUM_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
         }
         SpacecraftState finalStateNum = numProp.propagate(initDate.shiftedBy(dt));
         PVCoordinates pvn = finalStateNum.getPVCoordinates();
 
-        // System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
-        // + (pv.getPosition().getX() - pvn.getPosition().getX()) + " "
-        // + (pvn.getPosition().getX() - pvd.getPosition().getX()));
-        // System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
-        // + (pv.getPosition().getY() - pvn.getPosition().getY()) + " "
-        // + (pvn.getPosition().getY() - pvd.getPosition().getY()));
-        // System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
-        // + (pv.getPosition().getZ() - pvn.getPosition().getZ()) + " "
-        // + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
-        // System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
-        // + (pv.getVelocity().getX() - pvn.getVelocity().getX()) + " "
-        // + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
-        // System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
-        // + (pv.getVelocity().getY() - pvn.getVelocity().getY()) + " "
-        // + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
-        // System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
-        // + (pv.getVelocity().getZ() - pvn.getVelocity().getZ())+ " "
-        // + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
+//        System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
+//                + (pv.getPosition().getX() - pvn.getPosition().getX()) + " "
+//                + (pvn.getPosition().getX() - pvd.getPosition().getX()));
+//        System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
+//                + (pv.getPosition().getY() - pvn.getPosition().getY()) + " "
+//                + (pvn.getPosition().getY() - pvd.getPosition().getY()));
+//        System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
+//                + (pv.getPosition().getZ() - pvn.getPosition().getZ()) + " "
+//                + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
+//        System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
+//                + (pv.getVelocity().getX() - pvn.getVelocity().getX()) + " "
+//                + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
+//        System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
+//                + (pv.getVelocity().getY() - pvn.getVelocity().getY()) + " "
+//                + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
+//        System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
+//                + (pv.getVelocity().getZ() - pvn.getVelocity().getZ())+ " "
+//                + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
 
-        Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 1100.0);
-        Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 9000.0);
-        Assert.assertEquals(pv.getPosition().getZ(), pvd.getPosition().getZ(), 20.0);
-        Assert.assertEquals(pv.getVelocity().getX(), pvd.getVelocity().getX(), 1.0);
-        Assert.assertEquals(pv.getVelocity().getY(), pvd.getVelocity().getY(), 0.1);
-        Assert.assertEquals(pv.getVelocity().getZ(), pvd.getVelocity().getZ(), 5.e-3);
+        Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(),  750000.0);
+        Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 7000000.0);
+        Assert.assertEquals(pv.getPosition().getZ(), pvd.getPosition().getZ(), 9000000.0);
+        Assert.assertEquals(pv.getVelocity().getX(), pvd.getVelocity().getX(),  1400.0);
+        Assert.assertEquals(pv.getVelocity().getY(), pvd.getVelocity().getY(),  9500.0);
+        Assert.assertEquals(pv.getVelocity().getZ(), pvd.getVelocity().getZ(),  7200.0);
 
-        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(), 1200.);
-        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(), 11000.);
-        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(), 23.);
-        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(), 1.0);
-        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(), 0.11);
-        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 5.e-3);
+        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(),   200000.0);
+        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(), 12000000.0);
+        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(),  8000000.0);
+        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(),  2500.0);
+        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(),  8000.0);
+        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 12000.0);
     }
 
     @Test
@@ -401,9 +333,9 @@ public class DSSTPropagatorTest {
         propaDSST.resetInitialState(initialState);
         propaDSST.addForceModel(force);
         if (printPV) {
-            propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_DSST_PV"), PrintStepHandler.PrintEnum.PV, format));
+            propaDSST.setMasterMode(100., new PrintStepHandler(new String("./"), new String("ThirdBody_DSST_PV"), PrintStepHandler.PrintEnum.PV, format));
         } else {
-            propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_DSST_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
+            propaDSST.setMasterMode(100., new PrintStepHandler(new String("./"), new String("ThirdBody_DSST_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
         }
 
         SpacecraftState finalState1 = propaDSST.propagate(initDate.shiftedBy(dt));
@@ -413,9 +345,9 @@ public class DSSTPropagatorTest {
         setNumProp(initialState);
         numProp.addForceModel(nForce);
         if (printPV) {
-            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_NUM_PV"), PrintStepHandler.PrintEnum.PV, format));
+            numProp.setMasterMode(100., new PrintStepHandler(new String("./"), new String("ThirdBody_NUM_PV"), PrintStepHandler.PrintEnum.PV, format));
         } else {
-            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_NUM_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
+            numProp.setMasterMode(100., new PrintStepHandler(new String("./"), new String("ThirdBody_NUM_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
         }
         SpacecraftState finalState2 = numProp.propagate(initDate.shiftedBy(dt));
         PVCoordinates pvn = finalState2.getPVCoordinates();
@@ -540,18 +472,18 @@ public class DSSTPropagatorTest {
         numProp.addForceModel(nsrp);
         PVCoordinates pvn = numProp.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
-        // System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
-        // + (pvn.getPosition().getX() - pvd.getPosition().getX()));
-        // System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
-        // + (pvn.getPosition().getY() - pvd.getPosition().getY()));
-        // System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
-        // + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
-        // System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
-        // + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
-        // System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
-        // + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
-        // System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
-        // + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
+//        System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
+//                + (pvn.getPosition().getX() - pvd.getPosition().getX()));
+//        System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
+//                + (pvn.getPosition().getY() - pvd.getPosition().getY()));
+//        System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
+//                + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
+//        System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
+//                + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
+//        System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
+//                + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
+//        System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
+//                + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
 
         Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 40.0);
         Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 50.0);
@@ -719,21 +651,12 @@ public class DSSTPropagatorTest {
             EQUINOCIAL;
         }
 
-        /**
-         * File name.
-         */
-        private final String         fileName;
-
-        /**
-         * Output format.
-         */
+        /** Output format. */
         private final PrintEnum      printType;
 
         private final String         format;
 
-        /**
-         * Buffer
-         */
+        /** Buffer */
         private final BufferedWriter buffer;
 
         /** Serializable UID. */
@@ -745,7 +668,6 @@ public class DSSTPropagatorTest {
                                  String format)
                                                throws IOException {
             this.buffer = new BufferedWriter(new FileWriter(outputPath + name));
-            this.fileName = name;
             this.format = format;
             this.printType = printType;
         }
@@ -786,8 +708,8 @@ public class DSSTPropagatorTest {
             if (isLast) {
                 try {
                     buffer.close();
-                    System.out.println(currentState.getOrbit());
-                    System.out.println(new KeplerianOrbit(currentState.getOrbit()));
+//                    System.out.println(currentState.getOrbit());
+//                    System.out.println(new KeplerianOrbit(currentState.getOrbit()));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

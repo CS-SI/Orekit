@@ -3,6 +3,7 @@ package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -21,7 +22,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
 
     // Quadrature parameters
     /** Number of points desired for quadrature (must be between 2 and 5 inclusive). */
-    private final static int[] NB_POINTS = {2, 5, 5, 5, 5, 5};
+    private final static int[] NB_POINTS = {5, 5, 5, 5, 5, 5};
     /** Relative accuracy of the result. */
     private final static double[] RELATIVE_ACCURACY = {1.e-5, 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3};
     /** Absolute accuracy of the result. */
@@ -89,10 +90,6 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState state) throws OrekitException {
-    }
-
-    /** {@inheritDoc} */
     protected Vector3D getAcceleration(final SpacecraftState state,
                                        final Vector3D position,
                                        final Vector3D velocity) throws OrekitException {
@@ -107,8 +104,9 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
 
     /** {@inheritDoc} */
     protected double[] getLLimits(SpacecraftState state) throws OrekitException {
+        // Default bounds without shadow [-PI, PI]
         double[] ll = {-FastMath.PI, FastMath.PI};
-        // TODO: cylinder or conical modeling for shadow computation
+        // Compute useful equinoctial parameters (A, B, C, f, g, w)
         computeParameters(state);
         // Compute the coefficients of the quartic equation in cos(L) 3.5-(2)
         final double h2 = h * h;
@@ -129,12 +127,56 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
         a[2] = -4. * b2 + 4. * m2 * h2 - 2. * cc * dd + 4. * m2 * k2;
         a[3] = -8. * bb * mm * h - 4. * dd * mm * k;
         a[4] = -4. * m2 * h2 + dd * dd;
-        // Compute the real roots of the quartic equation
+        // Compute the real roots of the quartic equation 3.5-2
         final double[] cosL = new double[4];
         final int nbRoots = realQuarticRoots(a, cosL);
         if (nbRoots > 0) {
+            // Check for consistency
+            boolean entryFound = false;
+            boolean exitFound  = false;
             // Test the roots
-
+            for (int i = 0; i < nbRoots; i++) {
+                // Eliminate the extraneous roots
+                if (FastMath.abs(cosL[i]) <= 1.0) {
+                    final double cL = cosL[i];
+                    final double absL = FastMath.acos(cL);
+                    // Check both angles: L and -L
+                    for (int j = 1; j >= -1; j-=2) {
+                        final double L  = j * absL;
+                        final double sL = FastMath.sin(L);
+                        final double t1 = 1. + k * cL + h * sL;
+                        final double t2 = alfa * cL + beta * sL;
+                        final double S  = 1. - mm * t1 * t1 - t2 * t2;
+                        // The solution must satisfy 3.5-1 and 3.5-3
+                        if (t2 < 0. && FastMath.abs(S) < 1.e-6) {
+                            // Compute the derivative dS/dL
+                            final double dSdL  = -2. * (mm * t1 * (h * cL + k * sL) + t2 * (beta * cL - alfa * sL));
+                            if (dSdL > 0.) {
+                                // Exit from shadow: 3.5-4
+                                exitFound = true;
+                                ll[0] = L;
+                            } else {
+                                // Entry into shadow: 3.5-5
+                                entryFound = true;
+                                ll[1] = L;
+                            }
+                        }
+                    }
+                }
+            }
+            // Must be an entry and an exit or none
+            if (!(entryFound == exitFound)) {
+                throw new OrekitException(OrekitMessages.DSST_SPR_SHADOW_INCONSISTENT, entryFound, exitFound);
+            }
+            // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
+            if (ll[0] > ll[1]) {
+                // Keep the angles between [-2PI, 2PI]
+                if (ll[1] < 0.) {
+                    ll[1] += 2. * FastMath.PI;
+                } else {
+                    ll[0] -= 2. * FastMath.PI;
+                }
+            }
         }
         return ll;
     }

@@ -143,7 +143,8 @@ public enum OrekitMessages implements Localizable {
     NON_RESETABLE_STATE("reset state not allowed {0}"),
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
     DSST_VMSN_COEFFICIENT_ERROR_NS("Cannot compute the Vmsn coefficient with s > n ({0} > {1})"),
-    DSST_VMSN_COEFFICIENT_ERROR_MS("Cannot compute the Vmsn coefficient with m > s ({0} > {1})");
+    DSST_VMSN_COEFFICIENT_ERROR_MS("Cannot compute the Vmsn coefficient with m > s ({0} > {1})"),
+    DSST_SPR_SHADOW_INCONSISTENT("inconsistent shadow computation: entry = {0} whereas exit = {1}");
 
 
     // CHECKSTYLE: resume JavadocVariable check

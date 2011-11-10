@@ -1,6 +1,7 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import org.apache.commons.math.analysis.UnivariateRealFunction;
+//import org.apache.commons.math.analysis.integration.LegendreGaussIntegrator;
 import org.apache.commons.math.analysis.integration.SimpsonIntegrator;
 import org.apache.commons.math.analysis.integration.UnivariateRealIntegrator;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
@@ -289,7 +290,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
                 throw new OrekitExceptionWrapper(oe);
             }
             switch(this.element) {
-                case 0: // element dex/dt
+                case 0: // element da/dt
                     val = roa2 * getAoV(vel).dotProduct(acc);
                     break;
                 case 1: // element dex/dt

@@ -16,7 +16,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 public class OrbitFactory {
@@ -97,8 +96,6 @@ public class OrbitFactory {
         propagator.setMasterMode(10., average);
         SpacecraftState lastState = listStates.get(nodeNumberValue - 1);
         propagator.propagate(lastState.getDate());
-        // Get shift from osculating and mean elements in terms of a, ex, ey, hx, hy
-        double[] deltaElements = average.getDeltaFromMeanElements();
         
         // Build the mean orbit at median node = nodeNumberValue / 2 :
         SpacecraftState middleState = listStates.get(nodeNumberValue / 2 - 1);
@@ -184,7 +181,6 @@ public class OrbitFactory {
         private double            ey;
         private double            hx;
         private double            hy;
-        private double            lm;
 
         // contains aMean, exMean, eyMean, hxMean, hyMean
         private double[]          meanElements;
@@ -196,7 +192,6 @@ public class OrbitFactory {
             this.ey = initialOrbit.getEquinoctialEy();
             this.hx = initialOrbit.getHx();
             this.hy = initialOrbit.getHy();
-            this.lm = initialOrbit.getLM();
         }
 
         @Override
@@ -207,7 +202,6 @@ public class OrbitFactory {
             this.ey += currentState.getEquinoctialEy();
             this.hx += currentState.getHx();
             this.hy += currentState.getHy();
-            this.lm += currentState.getLM();
             index++;
             if (isLast) {
                 this.a /= index;
