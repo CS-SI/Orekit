@@ -335,12 +335,13 @@ public class DSSTPropagator extends AbstractPropagator {
             }
 
             // Initialize force models if needed (i.e. after resetting initial state)
-            if (isDirty) {
-                for (DSSTForceModel force : forceModels) {
-                    force.init(initialState);
-                }
-                isDirty = false;
-            }
+            // TODO initialization deleted ? isDirty needed ?
+//            if (isDirty) {
+//                for (DSSTForceModel force : forceModels) {
+////                    force.init(initialState);
+//                }
+//                isDirty = false;
+//            }
 
             // Initialize mean elements
             double[] meanElements = getInitialMeanElements(initialState);

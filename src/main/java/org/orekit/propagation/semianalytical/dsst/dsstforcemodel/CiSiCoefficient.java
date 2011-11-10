@@ -87,7 +87,7 @@ public class CiSiCoefficient {
      * @return dC<sub>i</sub> / d<sub>k</sub>
      */
     public double getDciDk(final int i) {
-        return i * getCi(i - 1);
+        return (i == 0 ? 0 : i * getCi(i - 1));
     }
 
     /**
@@ -98,7 +98,7 @@ public class CiSiCoefficient {
      * @return dS<sub>i</sub> / d<sub>k</sub>
      */
     public double getDsiDk(final int i) {
-        return i * getSi(i - 1);
+        return (i == 0 ? 0 : i * getSi(i - 1));
     }
 
     /**
@@ -109,7 +109,7 @@ public class CiSiCoefficient {
      * @return dC<sub>i</sub> / d<sub>k</sub>
      */
     public double getDciDh(final int i) {
-        return -i * getSi(i - 1);
+        return (i == 0 ? 0 : -i * getSi(i - 1));
     }
 
     /**
@@ -120,7 +120,7 @@ public class CiSiCoefficient {
      * @return dS<sub>i</sub> / d<sub>h</sub>
      */
     public double getDsiDh(final int i) {
-        return i * getCi(i - 1);
+        return (i == 0 ? 0 : i * getCi(i - 1));
     }
 
     /**

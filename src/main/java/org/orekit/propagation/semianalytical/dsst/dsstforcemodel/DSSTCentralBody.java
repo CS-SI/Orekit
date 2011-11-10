@@ -1,5 +1,6 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -13,7 +14,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
@@ -26,7 +26,7 @@ public class DSSTCentralBody implements DSSTForceModel {
     private final double           ae;
 
     /** Central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private double                 mu;
+    private final double           mu;
 
     /** First normalized potential tesseral coefficients array. */
     private final double[][]       Cnm;
@@ -85,9 +85,6 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** Resonant tesseral coefficient */
     private List<ResonantCouple>   resonantTesseralsTerm;
 
-    /** size of the resonnant tesseral terms. If no terms are defined, the size is set to 0 */
-    private final int              resonantTesseralSize;
-
     private HansenCoefficients     hansen;
 
     /**
@@ -97,38 +94,55 @@ public class DSSTCentralBody implements DSSTForceModel {
     private final double           epsilon;
 
     /**
-     * TODO mettre que mu provient du bulletin orbital et est sauvegarder lors de l'initialisation
-     * faite par {@link DSSTPropagator} pour eviter une incohérence (1 mu ici, un autre dans le
-     * bulletin orbital)
+     * DSST Central body constructor.
      * 
      * @param ae
+     *            Equatorial radius of the central body
+     * @param mu
+     *            &mu; of the central body
      * @param Cnm
+     *            Cosines part of the spherical harmonics
      * @param Snm
+     *            Sines part of the spherical harmonics
      * @param resonantTesserals
-     *            resonant term
+     *            resonant couple term. This parameter can be set to null. If so, all couples will
+     *            be taken in account, i.e (j = 0, m in [1, M]) where M is the maximum order of
+     *            spherical harmonics. If not, only terms included in the resonant couple will be
+     *            considered. If the list is an empty one, only zonal effect will be considered.
      * @param epsilon
      *            convergence parameter used in Hansen coefficient generation. 1e-4 seems to be a
      *            correct value
      */
-    public DSSTCentralBody(double ae,
-                           double[][] Cnm,
-                           double[][] Snm,
-                           List<ResonantCouple> resonantTesserals,
+    public DSSTCentralBody(final double ae,
+                           final double mu,
+                           final double[][] Cnm,
+                           final double[][] Snm,
+                           final List<ResonantCouple> resonantTesserals,
                            final double epsilon) {
         this.Cnm = Cnm;
         this.Snm = Snm;
         this.degree = Cnm.length - 1;
         this.order = Cnm[degree].length - 1;
-        this.resonantTesseralsTerm = resonantTesserals;
         this.epsilon = epsilon;
         if ((Cnm.length != Snm.length) || (Cnm[Cnm.length - 1].length != Snm[Snm.length - 1].length)) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH, Cnm.length, Cnm[degree].length, Snm.length, Snm[degree].length);
         }
         this.ae = ae;
+        this.mu = mu;
         // Initialize the constant component
         initializeJn(Cnm);
         Vns = CoefficientFactory.computeVnsCoefficient(degree + 1);
-        resonantTesseralSize = (resonantTesserals == null) ? 0 : resonantTesserals.size();
+        if (resonantTesserals == null) {
+            final int j = 0;
+            List<ResonantCouple> resonantList = new ArrayList<ResonantCouple>();
+            for (int m = 1; m < order + 1; m++) {
+                ResonantCouple couple = new ResonantCouple(j, m);
+                resonantList.add(couple);
+            }
+            resonantTesseralsTerm = resonantList;
+        } else {
+            resonantTesseralsTerm = resonantTesserals;
+        }
     }
 
     /**
@@ -164,15 +178,8 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
                                                final double[] meanElements) throws OrekitException {
-        // TODO: not implemented yet
-        // Short Periodic Variations are set to null
+        // TODO: not implemented yet : Short Periodic Variations are set to null
         return new double[] { 0., 0., 0., 0., 0., 0. };
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void init(final SpacecraftState initialState) {
-        this.mu = initialState.getMu();
     }
 
     /**
@@ -447,8 +454,8 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /**
-     * 
-     * 
+     * Get the Central-Body Gravitational Resonant Tesserals Harmonics for the first order
+     * contribution
      */
     private class TesseralResonantHarmonics {
 
@@ -575,142 +582,150 @@ public class DSSTCentralBody implements DSSTForceModel {
             double dudbe = 0d;
             double dudga = 0d;
 
-            // The computation is done only if some resonnal tesseral term have been set up :
-            if (resonantTesseralSize > 0) {
+            // radial distance from center of mass of central body
+            // final double r = orbit.getPVCoordinates().getPosition().getNorm();
 
-                // radial distance from center of mass of central body
-                final double r = orbit.getPVCoordinates().getPosition().getNorm();
-                final double rR = ae / r;
-                final double muOa = mu / orbit.getA();
-                final double k = orbit.getEquinoctialEx();
-                final double h = orbit.getEquinoctialEy();
-                double rRn;
-                double vmsn;
-                double gamMsn;
-                double dGamma;
-                double kjn_1;
-                double dkjn_1;
-                double jacobi;
-                double dJacobi;
-                double gms;
-                double hms;
-                double cnm;
-                double snm;
-                double realCosFactor;
-                double realSinFactor;
-                // Jacobi indices
-                int l, v, w;
+            // Get needed orbital elements
+            final double a = orbit.getA();
+            final double k = orbit.getEquinoctialEx();
+            final double h = orbit.getEquinoctialEy();
 
-                final double theta = computeThetaAngle(orbit);
-                // TODO check this : getLM() ?
-                final double lambda = orbit.getLM();
-                CiSiCoefficient cisiHK = new CiSiCoefficient(orbit.getEquinoctialEx(), orbit.getEquinoctialEy());
-                CiSiCoefficient cisiAB = new CiSiCoefficient(alpha, beta);
-                GHmsjPolynomials GHms = new GHmsjPolynomials(cisiHK, cisiAB, false);
+            final double ra = ae / a;
+            final double muOa = mu / a;
 
-                double dGdh = 0d;
-                double dGdk = 0d;
-                double dGdA = 0d;
-                double dGdB = 0d;
-                double dHdh = 0d;
-                double dHdk = 0d;
-                double dHdA = 0d;
-                double dHdB = 0d;
+            double ran;
+            double vmsn;
+            double gamMsn;
+            double dGamma;
+            double kjn_1;
+            double dkjn_1;
+            double jacobi;
+            double dJacobi;
+            double gms;
+            double hms;
+            double cnm;
+            double snm;
+            double realCosFactor;
+            double realSinFactor;
+            // Jacobi indices
+            int l, v, w;
 
-                Iterator<ResonantCouple> iterator = resonantTesseralsTerm.iterator();
-                // Iterative process :
-                while (iterator.hasNext()) {
-                    ResonantCouple resonantTesseralCouple = iterator.next();
-                    int j = resonantTesseralCouple.getJ();
-                    int m = resonantTesseralCouple.getM();
+            final double theta = computeThetaAngle(orbit);
+            // TODO check this : getLM() ?
+            final double lambda = orbit.getLM();
+            CiSiCoefficient cisiKH = new CiSiCoefficient(k, h);
+            CiSiCoefficient cisiAB = new CiSiCoefficient(alpha, beta);
+            GHmsjPolynomials GHms = new GHmsjPolynomials(cisiKH, cisiAB, I);
 
-                    final double jlMmt = j * lambda - m * theta;
-                    final double sinPhi = FastMath.sin(jlMmt);
-                    final double cosPhi = FastMath.cos(jlMmt);
+            double dGdh = 0d;
+            double dGdk = 0d;
+            double dGdA = 0d;
+            double dGdB = 0d;
+            double dHdh = 0d;
+            double dHdk = 0d;
+            double dHdA = 0d;
+            double dHdB = 0d;
 
-                    int Im = (int) FastMath.pow(I, m);
-                    // Sum(-N, N)
-                    for (int s = -degree; s < degree; m++) {
-                        // Sum(Max(2, m, |s|))
-                        int nmin = Math.max(Math.max(2, m), Math.abs(s));
+            Iterator<ResonantCouple> iterator = resonantTesseralsTerm.iterator();
+            // Iterative process :
+            while (iterator.hasNext()) {
+                ResonantCouple resonantTesseralCouple = iterator.next();
+                int j = resonantTesseralCouple.getJ();
+                int m = resonantTesseralCouple.getM();
 
-                        // jacobi v, w, indices :
-                        v = FastMath.abs(m - s);
-                        w = FastMath.abs(m + s);
-                        for (int n = nmin; n < degree; n++) {
-                            // (R / r)^n
-                            rRn = FastMath.pow(rR, n);
+                final double jlMmt = j * lambda - m * theta;
+                final double sinPhi = FastMath.sin(jlMmt);
+                final double cosPhi = FastMath.cos(jlMmt);
+
+                int Im = (int) FastMath.pow(I, m);
+                // Sum(-N, N)
+                for (int s = -degree; s < degree + 1; s++) {
+                    // Sum(Max(2, m, |s|))
+                    int nmin = Math.max(Math.max(2, m), Math.abs(s));
+
+                    // jacobi v, w, indices :
+                    v = FastMath.abs(m - s);
+                    w = FastMath.abs(m + s);
+                    for (int n = nmin; n < degree + 1; n++) {
+                        // System.out.println("j : " + j + " m : " + m + " s : " + s + " n : " + n);
+                        // (R / a)^n
+                        ran = FastMath.pow(ra, n);
+                        // Vmns computation : if s < 0 : V(m, n, s) = (-1)^s * V(m, n, -s). See
+                        // equation 2.7.2 - (1)
+                        if (s < 0) {
+                            vmsn = Math.pow(-1, s) * CoefficientFactory.getVmns(m, n, -s);
+                        } else {
                             vmsn = CoefficientFactory.getVmns(m, n, s);
-                            gamMsn = computeGammaMsn(n, s, Im, gamma);
-                            dGamma = computeDGammaMsn(n, s, m, gamma);
-                            kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
-                            dkjn_1 = hansen.getHansenKernelDerivative(j, -n - 1, s);
-                            dGdh = GHms.getdGmsdh(m, s, j);
-                            dGdk = GHms.getdGmsdk(m, s, j);
-                            dGdA = GHms.getdGmsdAlpha(m, s, j);
-                            dGdB = GHms.getdGmsdBeta(m, s, j);
-                            dHdh = GHms.getdHmsdh(m, s, j);
-                            dHdk = GHms.getdHmsdk(m, s, j);
-                            dHdA = GHms.getdHmsdAlpha(m, s, j);
-                            dHdB = GHms.getdHmsdBeta(m, s, j);
-
-                            // Jacobi l-indices :
-                            l = (Math.abs(s) <= m ? (n - m) : n - Math.abs(s));
-                            // TODO check indices
-                            PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                            jacobi = jacobiPoly.value(gamma);
-                            dJacobi = jacobiPoly.derivative().value(gamma);
-                            gms = GHms.getGmsj(m, s, j);
-                            hms = GHms.getHmsj(m, s, j);
-                            cnm = Cnm[n][m];
-                            snm = Snm[n][m];
-
-                            // Compute dU / da from expansion of equation (4-a)
-                            realCosFactor = (gms * cnm + hms * snm) * cosPhi;
-                            realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                            duda += (n + 1) * rRn * Im * vmsn * gamMsn * kjn_1 * jacobi * gms * cnm * (realCosFactor + realSinFactor);
-
-                            // Compute dU / dh from expansion of equation (4-b)
-                            realCosFactor = (cnm * kjn_1 * dGdh + 2 * cnm * h * (gms + hms) * dkjn_1 + snm * kjn_1 * dHdh) * cosPhi;
-                            realSinFactor = (-cnm * kjn_1 * dHdh + 2 * snm * h * (gms + hms) * dkjn_1 + snm * kjn_1 * dGdh) * sinPhi;
-                            dudh += rRn * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
-
-                            // Compute dU / dk from expansion of equation (4-c)
-                            realCosFactor = (cnm * kjn_1 * dGdk + 2 * cnm * k * (gms + hms) * dkjn_1 + snm * kjn_1 * dHdk) * cosPhi;
-                            realSinFactor = (-cnm * kjn_1 * dHdk + 2 * snm * k * (gms + hms) * dkjn_1 + snm * kjn_1 * dGdk) * sinPhi;
-                            dudk += rRn * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
-
-                            // Compute dU / dLambda from expansion of equation (4-d)
-                            realCosFactor = (snm * gms - hms * cnm) * cosPhi;
-                            realSinFactor = (snm * hms + gms * cnm) * sinPhi;
-                            dudl += j * rRn * Im * vmsn * kjn_1 * jacobi * (realCosFactor - realSinFactor);
-
-                            // Compute dU / alpha from expansion of equation (4-e)
-                            realCosFactor = (dGdA * cnm + dHdA * snm) * cosPhi;
-                            realSinFactor = (dGdA * snm - dHdA * cnm) * sinPhi;
-                            dudal += rRn * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
-
-                            // Compute dU / dBeta from expansion of equation (4-f)
-                            realCosFactor = (dGdB * cnm + dHdB * snm) * cosPhi;
-                            realSinFactor = (dGdB * snm + dHdB * cnm) * sinPhi;
-                            dudbe += rRn * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
-
-                            // Compute dU / dGamma from expansion of equation (4-g)
-                            realCosFactor = (gms * cnm + hms * snm) * cosPhi;
-                            realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                            dudga += rRn * Im * vmsn * kjn_1 * (realCosFactor + realSinFactor) * (jacobi * dGamma + gamMsn * dJacobi);
                         }
+                        gamMsn = computeGammaMsn(n, s, Im, gamma);
+                        dGamma = computeDGammaMsn(n, s, m, gamma);
+                        kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
+                        dkjn_1 = hansen.getHansenKernelDerivative(j, -n - 1, s);
+                        dGdh = GHms.getdGmsdh(m, s, j);
+                        dGdk = GHms.getdGmsdk(m, s, j);
+                        dGdA = GHms.getdGmsdAlpha(m, s, j);
+                        dGdB = GHms.getdGmsdBeta(m, s, j);
+                        dHdh = GHms.getdHmsdh(m, s, j);
+                        dHdk = GHms.getdHmsdk(m, s, j);
+                        dHdA = GHms.getdHmsdAlpha(m, s, j);
+                        dHdB = GHms.getdHmsdBeta(m, s, j);
+
+                        // Jacobi l-indices : see 2.7.1 - (15)
+                        l = (Math.abs(s) <= m ? (n - m) : n - Math.abs(s));
+                        // TODO check indices
+                        PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
+                        jacobi = jacobiPoly.value(gamma);
+                        dJacobi = jacobiPoly.derivative().value(gamma);
+                        gms = GHms.getGmsj(m, s, j);
+                        hms = GHms.getHmsj(m, s, j);
+                        cnm = Cnm[n][m];
+                        snm = Snm[n][m];
+
+                        // Compute dU / da from expansion of equation (4-a)
+                        realCosFactor = (gms * cnm + hms * snm) * cosPhi;
+                        realSinFactor = (gms * snm - hms * cnm) * sinPhi;
+                        duda += (n + 1) * ran * Im * vmsn * gamMsn * kjn_1 * jacobi * gms * cnm * (realCosFactor + realSinFactor);
+
+                        // Compute dU / dh from expansion of equation (4-b)
+                        realCosFactor = (cnm * kjn_1 * dGdh + 2 * cnm * h * (gms + hms) * dkjn_1 + snm * kjn_1 * dHdh) * cosPhi;
+                        realSinFactor = (-cnm * kjn_1 * dHdh + 2 * snm * h * (gms + hms) * dkjn_1 + snm * kjn_1 * dGdh) * sinPhi;
+                        dudh += ran * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
+
+                        // Compute dU / dk from expansion of equation (4-c)
+                        realCosFactor = (cnm * kjn_1 * dGdk + 2 * cnm * k * (gms + hms) * dkjn_1 + snm * kjn_1 * dHdk) * cosPhi;
+                        realSinFactor = (-cnm * kjn_1 * dHdk + 2 * snm * k * (gms + hms) * dkjn_1 + snm * kjn_1 * dGdk) * sinPhi;
+                        dudk += ran * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
+
+                        // Compute dU / dLambda from expansion of equation (4-d)
+                        realCosFactor = (snm * gms - hms * cnm) * cosPhi;
+                        realSinFactor = (snm * hms + gms * cnm) * sinPhi;
+                        dudl += j * ran * Im * vmsn * kjn_1 * jacobi * (realCosFactor - realSinFactor);
+
+                        // Compute dU / alpha from expansion of equation (4-e)
+                        realCosFactor = (dGdA * cnm + dHdA * snm) * cosPhi;
+                        realSinFactor = (dGdA * snm - dHdA * cnm) * sinPhi;
+                        dudal += ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
+
+                        // Compute dU / dBeta from expansion of equation (4-f)
+                        realCosFactor = (dGdB * cnm + dHdB * snm) * cosPhi;
+                        realSinFactor = (dGdB * snm + dHdB * cnm) * sinPhi;
+                        dudbe += ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
+
+                        // Compute dU / dGamma from expansion of equation (4-g)
+                        realCosFactor = (gms * cnm + hms * snm) * cosPhi;
+                        realSinFactor = (gms * snm - hms * cnm) * sinPhi;
+                        dudga += ran * Im * vmsn * kjn_1 * (realCosFactor + realSinFactor) * (jacobi * dGamma + gamMsn * dJacobi);
                     }
                 }
-
-                duda *= -muOa / orbit.getA();
-                dudh *= muOa;
-                dudk *= muOa;
-                dudl *= muOa;
-                dudal *= muOa;
-                dudbe *= muOa;
-                dudga *= muOa;
             }
+
+            duda *= -muOa / orbit.getA();
+            dudh *= muOa;
+            dudk *= muOa;
+            dudl *= muOa;
+            dudal *= muOa;
+            dudbe *= muOa;
+            dudga *= muOa;
 
             return new double[] { duda, dudh, dudk, dudl, dudal, dudbe, dudga };
         }
