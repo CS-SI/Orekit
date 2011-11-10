@@ -82,6 +82,7 @@ public class DSSTPropagatorTest {
     private double                        mu;
     private double                        ae;
     private PotentialCoefficientsProvider provider;
+    private static String                 format = new String("%14.10f %14.10f %14.10f %14.10f %14.10f %14.10f");
 
     @Test
     public void testNoExtrapolation() throws OrekitException {
@@ -237,16 +238,13 @@ public class DSSTPropagatorTest {
     // System.out.println(val1 + "  " + val2 + "  " + Math.abs(val1 - val2));
     // }
 
+    /**
+     * @throws Exception 
+     */
     @Test
-    public void testPropagationWithCentralBody() throws OrekitException, IOException, ParseException {
-        boolean printPV = true;
-        String format = new String("%14.10f %14.10f %14.10f %14.10f %14.10f %14.10f");
-
-        
-//        SpacecraftState state = getLEOrbit();
-        SpacecraftState state = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(provider.getAe(), 800000, 1e-3, 0, Math.PI/2d, Math.PI, provider.getMu(), FramesFactory.getGCRF(), AbsoluteDate.J2000_EPOCH));
-        System.out.println(state.getOrbit());
-        System.out.println(new KeplerianOrbit(state.getOrbit()));
+    public void testGeneratingMeanOrbit() throws Exception {
+        // SpacecraftState state = getLEOrbit();
+        SpacecraftState state = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(provider.getAe(), 800000, 1e-3, 0, Math.PI / 2d, Math.PI, provider.getMu(), FramesFactory.getGCRF(), AbsoluteDate.J2000_EPOCH));
 
         setDSSTProp(state);
 
@@ -258,34 +256,92 @@ public class DSSTPropagatorTest {
         // Central Body Force Model
         double[][] CnmNotNorm = provider.getC(2, 0, false);
         double[][] SnmNotNorm = provider.getS(2, 0, false);
-        
-//        CnmNotNorm[0][0] = 0d;
-//        CnmNotNorm[1][0] = 0d;
+
+        CnmNotNorm[0][0] = 0d;
+        CnmNotNorm[1][0] = 0d;
 
         double[][] Cnm = provider.getC(2, 0, true);
         double[][] Snm = provider.getS(2, 0, true);
 
-        DSSTForceModel force = new DSSTCentralBody(ae, CnmNotNorm, CnmNotNorm, null, 1e-4);
+        DSSTForceModel force = new DSSTCentralBody(ae, mu, CnmNotNorm, CnmNotNorm, null, 1e-4);
         ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
 
         // DSST Propagation
         propaDSST.resetInitialState(initialState);
         propaDSST.addForceModel(force);
-        if (printPV){
+
+        // Numerical Propagation
+        setNumProp(initialState);
+        numProp.addForceModel(nForce);
+
+        SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(numProp, initialState.getOrbit(), 86400d, 14);
+        SpacecraftState mean = orbits[0];
+        SpacecraftState oscu = orbits[1];
+        System.out.println(mean.getDate() + " " + mean.getOrbit());
+        System.out.println(oscu.getDate() + " " + oscu.getOrbit());
+
+    }
+
+    @Test
+    public void testPropagationWithCentralBody() throws OrekitException, IOException, ParseException {
+
+        boolean printPV = true;
+        boolean meanOrbit = true;
+        
+        // Orbit osc
+        AbsoluteDate t = new AbsoluteDate("2000-01-02T01:24:56.645", TimeScalesFactory.getUTC());
+        EquinoctialOrbit mean = new EquinoctialOrbit(7178240.692314685, 2.1526111350176435E-5, 5.546283448696406E-4, -0.020907320423340064, 1.1680664205166011, 2789.12756007107, PositionAngle.TRUE, FramesFactory.getGCRF(), t, mu);
+        EquinoctialOrbit osc = new EquinoctialOrbit(7178125.76388295, -6.676287112575741E-7, 0.0010014274385872829, -0.011535738715759783, 1.1665256807111561, 2789.130877917294, PositionAngle.TRUE, FramesFactory.getGCRF(), t, mu);
+
+
+        // SpacecraftState state = getLEOrbit();
+        SpacecraftState state = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(provider.getAe(), 800000, 1e-3, 0, Math.PI / 2d, Math.PI, provider.getMu(), FramesFactory.getGCRF(), AbsoluteDate.J2000_EPOCH));
+
+        if (meanOrbit) {
+            setDSSTProp(new SpacecraftState(mean));
+        } else {
+            setDSSTProp(state);
+        }
+
+        // DSST Propagation with no force (reference Keplerian motion)
+        final double dt = 4*86400.;
+        SpacecraftState finalState0 = propaDSST.propagate(initDate.shiftedBy(dt));
+        PVCoordinates pv = finalState0.getPVCoordinates();
+
+        // Central Body Force Model
+        double[][] CnmNotNorm = provider.getC(2, 2, false);
+        double[][] SnmNotNorm = provider.getS(2, 2, false);
+
+        CnmNotNorm[0][0] = 0d;
+        CnmNotNorm[1][0] = 0d;
+
+        double[][] Cnm = provider.getC(2, 0, true);
+        double[][] Snm = provider.getS(2, 0, true);
+
+        DSSTForceModel force = new DSSTCentralBody(ae, mu,CnmNotNorm, CnmNotNorm, null, 1e-4);
+        ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
+
+        // DSST Propagation
+        propaDSST.resetInitialState(initialState);
+        propaDSST.addForceModel(force);
+        if (printPV) {
             propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_DSST_PV"), PrintStepHandler.PrintEnum.PV, format));
-        }else {
+        } else {
             propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_DSST_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
         }
         SpacecraftState finalStateDSST = propaDSST.propagate(initDate.shiftedBy(dt));
         PVCoordinates pvd = finalStateDSST.getPVCoordinates();
 
         // Numerical Propagation
-        setNumProp(initialState);
+        if (meanOrbit) {
+            setNumProp(new SpacecraftState(osc));
+        } else {
+            setNumProp(initialState);
+        }
         numProp.addForceModel(nForce);
-        if (printPV){
-            
-            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_NUM_PV"),  PrintStepHandler.PrintEnum.PV, format));
-        }else {
+        if (printPV) {
+            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_NUM_PV"), PrintStepHandler.PrintEnum.PV, format));
+        } else {
             numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/CentralBody/"), new String("CentralBody_NUM_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
         }
         SpacecraftState finalStateNum = numProp.propagate(initDate.shiftedBy(dt));
@@ -326,9 +382,11 @@ public class DSSTPropagatorTest {
     }
 
     @Test
-    public void testPropagationWithThirdBody() throws OrekitException {
+    public void testPropagationWithThirdBody() throws OrekitException, IOException {
         SpacecraftState state = getGEOrbit();
         setDSSTProp(state);
+
+        boolean printPV = true;
 
         // DSST Propagation with no force (reference Keplerian motion)
         final double dt = 864000;
@@ -342,12 +400,23 @@ public class DSSTPropagatorTest {
         // DSST Propagation
         propaDSST.resetInitialState(initialState);
         propaDSST.addForceModel(force);
+        if (printPV) {
+            propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_DSST_PV"), PrintStepHandler.PrintEnum.PV, format));
+        } else {
+            propaDSST.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_DSST_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
+        }
+
         SpacecraftState finalState1 = propaDSST.propagate(initDate.shiftedBy(dt));
         PVCoordinates pvd = finalState1.getPVCoordinates();
 
         // Numerical Propagation
         setNumProp(initialState);
         numProp.addForceModel(nForce);
+        if (printPV) {
+            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_NUM_PV"), PrintStepHandler.PrintEnum.PV, format));
+        } else {
+            numProp.setMasterMode(100., new PrintStepHandler(new String("D:/rdicosta/EUMETSAT/DSSTvalidation/ThirdBody/"), new String("ThirdBody_NUM_equinoxial"), PrintStepHandler.PrintEnum.EQUINOCIAL, format));
+        }
         SpacecraftState finalState2 = numProp.propagate(initDate.shiftedBy(dt));
         PVCoordinates pvn = finalState2.getPVCoordinates();
         //

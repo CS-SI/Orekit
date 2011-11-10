@@ -28,7 +28,7 @@ public class DSSTCentralBodyTest {
         final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         final double[][] Cnm = provider.getC(5, 5, true);
         final double[][] Snm = provider.getS(5, 5, true);
-        final DSSTForceModel force = new DSSTCentralBody(provider.getAe(),
+        final DSSTForceModel force = new DSSTCentralBody(provider.getAe(),provider.getMu(),
                                                          Cnm, Snm, null, 1e-4);
 
         final AbsoluteDate date  = new AbsoluteDate(new DateComponents(2003, 03, 21),
@@ -40,7 +40,6 @@ public class DSSTCentralBodyTest {
                                                  FramesFactory.getEME2000(), date, provider.getMu());
         final SpacecraftState state = new SpacecraftState(orbit);
 
-        force.init(state);
         final double[] daidt = force.getMeanElementRate(state);
 
         for (int i = 0; i < daidt.length; i++) {

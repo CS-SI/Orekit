@@ -162,10 +162,6 @@ public class DSSTThirdBody implements DSSTForceModel {
         return new double[] {0.,0.,0.,0.,0.,0.};
     }
 
-    /** {@inheritDoc} */
-    public void init(SpacecraftState state) {
-
-    }
 
     /** Compute useful parameters: A, B, C, &alpha;, &beta;, &gamma;.
      *  @param state current state information: date, kinematics, attitude

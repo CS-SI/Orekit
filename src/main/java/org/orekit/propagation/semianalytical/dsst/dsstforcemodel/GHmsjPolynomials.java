@@ -34,14 +34,14 @@ public class GHmsjPolynomials {
      * @param cisiAB
      *            {C<sub>j</sub>(&alpha;, &beta;), S<sub>j</sub>(&alpha;, &beta;) coefficient
      * @param isRetrograde
-     *            Is the orbit represented as a retrograde orbit
+     *            Is the orbit is represented as a retrograde orbit I = -1, +1 otherwise
      **/
     public GHmsjPolynomials(final CiSiCoefficient cisiHK,
                             final CiSiCoefficient cisiAB,
-                            final boolean isRetrograde) {
+                            final int isRetrograde) {
         this.cisiKH = cisiHK;
         this.cisiAB = cisiAB;
-        this.I = (isRetrograde ? -1 : 1);
+        this.I = isRetrograde;
     }
 
     /**
@@ -113,16 +113,16 @@ public class GHmsjPolynomials {
     public double getdGmsdk(final int m,
                             final int s,
                             final int j) {
-        final int abssMj = FastMath.abs(s - j);
+        final int sMj = FastMath.abs(s - j);
         final int mMis = m - I * s;
-        final int sMim = s - I * m;
+        final int sMim = FastMath.abs(s - I * m);
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiAB.getCi(mMis) * cisiKH.getDciDk(s - j) - I * FastMath.signum(s - j) * cisiAB.getSi(mMis) * cisiKH.getDsiDk(abssMj);
+            dGms = cisiAB.getCi(mMis) * cisiKH.getDciDk(sMj) - I * FastMath.signum(s - j) * cisiAB.getSi(mMis) * cisiKH.getDsiDk(sMj);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiAB.getCi(sMim) * cisiKH.getDciDk(s - j) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSi(sMim)
-                            * cisiKH.getDsiDk(abssMj);
+            dGms = cisiAB.getCi(sMim) * cisiKH.getDciDk(sMj) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSi(sMim)
+                            * cisiKH.getDsiDk(sMj);
         }
         return dGms;
     }
@@ -141,16 +141,16 @@ public class GHmsjPolynomials {
     public double getdGmsdh(final int m,
                             final int s,
                             final int j) {
-        final int abssMj = FastMath.abs(s - j);
         final int mMis = m - I * s;
-        final int sMim = s - I * m;
+        final int sMim = FastMath.abs(s - I * m);
+        final int sMj = FastMath.abs(s - j);
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiAB.getCi(mMis) * cisiKH.getDciDh(s - j) - I * FastMath.signum(s - j) * cisiAB.getSi(mMis) * cisiKH.getDsiDh(abssMj);
+            dGms = cisiAB.getCi(mMis) * cisiKH.getDciDh(sMj) - I * FastMath.signum(s - j) * cisiAB.getSi(mMis) * cisiKH.getDsiDh(sMj);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiAB.getCi(sMim) * cisiKH.getDciDh(s - j) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSi(sMim)
-                            * cisiKH.getDsiDh(abssMj);
+            dGms = cisiAB.getCi(sMim) * cisiKH.getDciDh(sMj) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSi(sMim)
+                            * cisiKH.getDsiDh(sMj);
         }
         return dGms;
     }
@@ -169,15 +169,15 @@ public class GHmsjPolynomials {
     public double getdGmsdAlpha(final int m,
                                 final int s,
                                 final int j) {
-        final int abssMj = FastMath.abs(s - j);
+        final int sMj = FastMath.abs(s - j);
         final int mMis = m - I * s;
-        final int sMim = s - I * m;
+        final int sMim = FastMath.abs(s - I * m);
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiKH.getCi(s - j) * cisiAB.getDciDk(mMis) - I * FastMath.signum(s - j) * cisiKH.getSi(abssMj) * cisiAB.getDsiDk(mMis);
+            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDk(mMis) - I * FastMath.signum(s - j) * cisiKH.getSi(sMj) * cisiAB.getDsiDk(mMis);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiKH.getCi(s - j) * cisiAB.getDciDk(sMim) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSi(abssMj)
+            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDk(sMim) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSi(sMj)
                             * cisiAB.getDsiDk(sMim);
         }
         return dGms;
@@ -197,15 +197,15 @@ public class GHmsjPolynomials {
     public double getdGmsdBeta(final int m,
                                final int s,
                                final int j) {
-        final int abssMj = FastMath.abs(s - j);
+        final int sMj = FastMath.abs(s - j);
         final int mMis = m - I * s;
-        final int sMim = s - I * m;
+        final int sMim = FastMath.abs(s - I * m);
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiKH.getCi(s - j) * cisiAB.getDciDh(mMis) - I * FastMath.signum(s - j) * cisiKH.getSi(abssMj) * cisiAB.getDsiDh(mMis);
+            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDh(mMis) - I * FastMath.signum(s - j) * cisiKH.getSi(sMj) * cisiAB.getDsiDh(mMis);
         } else if (FastMath.abs(s) > m) {
-            dGms = cisiKH.getCi(s - j) * cisiAB.getDciDh(sMim) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSi(abssMj)
+            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDh(sMim) + FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSi(sMj)
                             * cisiAB.getDsiDh(sMim);
         }
         return dGms;

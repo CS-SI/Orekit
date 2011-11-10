@@ -41,13 +41,7 @@ public interface DSSTForceModel {
      *  @return the short periodic variations
      *  @exception OrekitException if some specific error occurs
      */
-    double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
-        throws OrekitException;
-
-    /** Initialize the current computation
-     *  @param state current state information: date, kinematics, attitude
-     *  @exception OrekitException if some specific error occurs
-     */
-    void init(final SpacecraftState state) throws OrekitException;
+    double[] getShortPeriodicVariations(final AbsoluteDate date,
+                                        final double[] meanElements) throws OrekitException;
 
 }
