@@ -27,6 +27,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 /** Impulse maneuver model.
@@ -80,7 +81,7 @@ public class ImpulseManeuver implements EventDetector {
                            final double isp) {
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;
-        this.vExhaust  = ConstantThrustManeuver.G0 * isp;
+        this.vExhaust  = Constants.G0_STANDARD_GRAVITY * isp;
     }
 
     /** {@inheritDoc} */
@@ -156,7 +157,7 @@ public class ImpulseManeuver implements EventDetector {
     * @return specific impulse
     */
     public double getIsp() {
-        return vExhaust / ConstantThrustManeuver.G0;
+        return vExhaust / Constants.G0_STANDARD_GRAVITY;
     }
 
 }

@@ -17,7 +17,6 @@
 package org.orekit.orbits;
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -53,8 +52,7 @@ public enum OrbitType {
 
         /** {@inheritDoc} */
         public Orbit mapArrayToOrbit(final double[] stateVector, final PositionAngle type,
-                                     final AbsoluteDate date, final double mu, final Frame frame)
-            throws OrekitException {
+                                     final AbsoluteDate date, final double mu, final Frame frame) {
 
             final Vector3D p     = new Vector3D(stateVector[0], stateVector[1], stateVector[2]);
             final Vector3D v     = new Vector3D(stateVector[3], stateVector[4], stateVector[5]);
@@ -200,11 +198,8 @@ public enum OrbitType {
      * @param mu central attraction coefficient used for propagation (m<sup>3</sup>/s<sup>2</sup>)
      * @param frame frame in which integration is performed
      * @return orbit corresponding to the flat array as a space dynamics object
-     * @exception OrekitException if the attitude state cannot be determined
-     * by the attitude provider
      */
     public abstract Orbit mapArrayToOrbit(double[] array, PositionAngle type,
-                                          AbsoluteDate date, double mu, Frame frame)
-        throws OrekitException;
+                                          AbsoluteDate date, double mu, Frame frame);
 
 }
