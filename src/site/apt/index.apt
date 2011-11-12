@@ -68,7 +68,17 @@ Overview
 
     * attitude state and derivative
 
+    * Jacobians
+
     * mass management
+
+  ** Maneuvers
+
+    * analytical models for small maneuvers without propagation
+
+    * impulse maneuvers for any propagator type
+
+    *continuous maneuvers for numerical propagator type
 
   ** Propagation
 

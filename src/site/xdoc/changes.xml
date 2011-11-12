@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add">
+        Added an analytical model for the effect at date t1 of a small maneuver performed at date t0.
+      </action>
       <action dev="luc" type="fix">
         Fixed a missing reinitialization of start date when state was reset in numerical propagator.
       </action>
