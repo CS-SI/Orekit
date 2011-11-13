@@ -109,14 +109,15 @@ public class ManeuverAdapterPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         reference.resetInitialState(state);
     }
 
     /** {@inheritDoc} */
-    protected Orbit propagateOrbit(final AbsoluteDate date)
-        throws PropagationException {
+    @Override
+    protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
 
         // compute reference state
         SpacecraftState state = reference.propagate(date);
@@ -126,20 +127,20 @@ public class ManeuverAdapterPropagator extends AbstractPropagator {
             state = maneuver.applyManeuver(state);
         }
 
-        return state.getOrbit();
+        return state;
 
+    }
+
+    /** {@inheritDoc} */
+    protected Orbit propagateOrbit(final AbsoluteDate date)
+        throws PropagationException {
+        return basicPropagate(date).getOrbit();
     }
 
     /** {@inheritDoc}*/
     protected double getMass(final AbsoluteDate date)
         throws PropagationException {
-        double mass = reference.propagate(date).getMass();
-        for (final SmallManeuverAnalyticalModel maneuver : maneuvers) {
-            if (maneuver.getDate().compareTo(date) <= 0) {
-                mass = maneuver.updateMass(mass);
-            }
-        }
-        return mass;
+        return basicPropagate(date).getMass();
     }
 
 }
