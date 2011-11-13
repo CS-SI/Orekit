@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.forces.maneuvers;
+package org.orekit.propagation.analytical;
 
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
@@ -28,6 +28,7 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
@@ -44,7 +45,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-public class SmallManeuverAnalyticalModelTest {
+public class ManeuverAdapterPropagatorTest {
 
     @Test
     public void testLowEarthOrbit() throws OrekitException {
@@ -65,32 +66,20 @@ public class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, t0, dV, f, isp);
-        SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
-        Assert.assertEquals(t0, model.getDate());
+
+        // we set up a model that reverts the maneuvers
+        ManeuverAdapterPropagator adapterPropagator = new ManeuverAdapterPropagator(withManeuver);
+        adapterPropagator.addManeuver(t0, dV.negate(), isp);
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
              t = t.shiftedBy(60.0)) {
-            PVCoordinates pvWithout = withoutManeuver.getPVCoordinates(t, leo.getFrame());
-            PVCoordinates pvWith    = withManeuver.getPVCoordinates(t, leo.getFrame());
-            PVCoordinates pvModel   = model.applyManeuver(withoutManeuver.propagate(t)).getPVCoordinates(leo.getFrame());
-            double nominalDeltaP    = new PVCoordinates(pvWith, pvWithout).getPosition().getNorm();
-            double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
-            if (t.compareTo(t0) < 0) {
-                // before maneuver, all positions should be equal
-                Assert.assertEquals(0, nominalDeltaP, 1.0e-10);
-                Assert.assertEquals(0, modelError,    1.0e-10);
-            } else {
-                // after maneuver, model error should be less than 0.8m,
-                // despite nominal deltaP exceeds 1 kilometer after less than 3 orbits
-                if (t.durationFrom(t0) > 0.1 * leo.getKeplerianPeriod()) {
-                    Assert.assertTrue(modelError < 0.009 * nominalDeltaP);
-                }
-                Assert.assertTrue(modelError < 0.8);
-            }
+            PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, leo.getFrame());
+            PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, leo.getFrame());
+            double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
+            Assert.assertEquals(0, revertError, 0.8);
         }
-
+ 
     }
 
     @Test
@@ -112,30 +101,18 @@ public class SmallManeuverAnalyticalModelTest {
         double isp      = 315.0;
         BoundedPropagator withoutManeuver = getEphemeris(heo, mass, t0, Vector3D.ZERO, f, isp);
         BoundedPropagator withManeuver    = getEphemeris(heo, mass, t0, dV, f, isp);
-        SmallManeuverAnalyticalModel model =
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
-        Assert.assertEquals(t0, model.getDate());
+
+        // we set up a model that reverts the maneuvers
+        ManeuverAdapterPropagator adapterPropagator = new ManeuverAdapterPropagator(withManeuver);
+        adapterPropagator.addManeuver(t0, dV.negate(), isp);
 
         for (AbsoluteDate t = withoutManeuver.getMinDate();
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
              t = t.shiftedBy(600.0)) {
-            PVCoordinates pvWithout = withoutManeuver.getPVCoordinates(t, heo.getFrame());
-            PVCoordinates pvWith    = withManeuver.getPVCoordinates(t, heo.getFrame());
-            PVCoordinates pvModel   = model.applyManeuver(withoutManeuver.propagate(t)).getPVCoordinates(heo.getFrame());
-            double nominalDeltaP    = new PVCoordinates(pvWith, pvWithout).getPosition().getNorm();
-            double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
-            if (t.compareTo(t0) < 0) {
-                // before maneuver, all positions should be equal
-                Assert.assertEquals(0, nominalDeltaP, 1.0e-10);
-                Assert.assertEquals(0, modelError,    1.0e-10);
-            } else {
-                // after maneuver, model error should be less than 1700m,
-                // despite nominal deltaP exceeds 300 kilometers at perigee, after 3 orbits
-                if (t.durationFrom(t0) > 0.01 * heo.getKeplerianPeriod()) {
-                    Assert.assertTrue(modelError < 0.005 * nominalDeltaP);
-                }
-                Assert.assertTrue(modelError < 1700);
-            }
+            PVCoordinates pvWithout  = withoutManeuver.getPVCoordinates(t, heo.getFrame());
+            PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, heo.getFrame());
+            double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
+            Assert.assertEquals(0, revertError, 1700.0);
         }
 
     }

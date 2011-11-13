@@ -132,6 +132,13 @@ public class SmallManeuverAnalyticalModel implements Serializable {
 
     }
 
+    /** Get the date of the maneuver.
+     * @return date of the maneuver
+     */
+    public AbsoluteDate getDate() {
+        return t0;
+    }
+
     /** Compute the effect of the maneuver on a spacecraft state.
      * @param state1 original spacecraft state at t<sub>1</sub>,
      * without maneuver
@@ -163,8 +170,16 @@ public class SmallManeuverAnalyticalModel implements Serializable {
 
         // return a new state with the same orbit type as provided
         return new SpacecraftState(state1.getOrbit().getType().convertType(updated),
-                                   state1.getAttitude(), massRatio * state1.getMass());
+                                   state1.getAttitude(), updateMass(state1.getMass()));
 
+    }
+
+    /** Update a spacecraft mass due to maneuver.
+     * @param mass masse before maneuver
+     * @return mass after maneuver
+     */
+    public double updateMass(final double mass) {
+        return massRatio * mass;
     }
 
 }
