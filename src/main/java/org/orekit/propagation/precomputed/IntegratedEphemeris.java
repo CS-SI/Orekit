@@ -149,7 +149,7 @@ public class IntegratedEphemeris
 
     /** Set up the model at some interpolation date.
      * @param date desired interpolation date
-     * @exception PropagationException if specifed date is outside
+     * @exception PropagationException if specified date is outside
      * of supported range
      */
     private void setInterpolationDate(final AbsoluteDate date)
