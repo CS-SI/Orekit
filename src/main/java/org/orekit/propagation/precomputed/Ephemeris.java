@@ -232,7 +232,13 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
         return true;
     }
 
-    /** {@inheritDoc} */
+    /** Try (and fail) to reset the initial state.
+     * <p>
+     * This method always throws an exception, as ephemerides cannot be reset.
+     * </p>
+     * @param state new initial state to consider
+     * @exception PropagationException always thrown as ephemerides cannot be reset
+     */
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
         throw new PropagationException(OrekitMessages.NON_RESETABLE_STATE);
