@@ -263,8 +263,7 @@ public class DSSTThirdBody implements DSSTForceModel {
             final double delta0s = (s == 0) ? 1. : 2.;
     
             for (int n = FastMath.max(2, s); n <= order; n++) {
-//            for (int n = s + 1; n <= order; n++) {
-                // Extract data from previous computation :
+                // Compute the specific coefficients: Vns, Kns, Qns, dKns/dchi, dQns/dlambda
                 final double vns   = Vns.get(new NSKey(n, s));
                 final double kns   = hansen.getHansenKernelValue(0, n, s);
                 final double qns   = Qns[n][s];

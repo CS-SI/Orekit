@@ -142,9 +142,6 @@ public class DSSTPropagator extends AbstractPropagator {
     /** Counter for differential equations calls. */
     private int calls;
 
-    /** is the current propagator state dirty ? i.e. needs initialization */
-    private boolean isDirty;
-
     /** Build a DSSTPropagator from integrator and orbit.
      *  <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      *  <p>
@@ -258,7 +255,6 @@ public class DSSTPropagator extends AbstractPropagator {
         throws PropagationException {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        this.isDirty = true;
         this.mass = state.getMass();
         this.referenceDate = state.getDate();
         this.cumulator.resetAccumulator();
@@ -333,15 +329,6 @@ public class DSSTPropagator extends AbstractPropagator {
                 // don't extrapolate, return current orbit
                 return initialState.getOrbit();
             }
-
-            // Initialize force models if needed (i.e. after resetting initial state)
-            // TODO initialization deleted ? isDirty needed ?
-//            if (isDirty) {
-//                for (DSSTForceModel force : forceModels) {
-////                    force.init(initialState);
-//                }
-//                isDirty = false;
-//            }
 
             // Initialize mean elements
             double[] meanElements = getInitialMeanElements(initialState);
