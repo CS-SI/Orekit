@@ -57,7 +57,9 @@ public class OrbitFactory {
 
     }
 
-    public static Orbit getGeostationnaryOrbit() {
+    public static Orbit getGeostationnaryOrbit(final double mu,
+                                               final Frame frame,
+                                               AbsoluteDate date) {
         /** geostationnary orbit */
         double a = 42166712;
         double ix = 1.200e-04;
@@ -65,25 +67,26 @@ public class OrbitFactory {
         double inc = 2 * FastMath.asin(FastMath.sqrt((ix * ix + iy * iy) / 4.));
         double hx = FastMath.tan(inc / 2.) * ix / (2 * FastMath.sin(inc / 2.));
         double hy = FastMath.tan(inc / 2.) * iy / (2 * FastMath.sin(inc / 2.));
-        return new EquinoctialOrbit(a, 1e-4, 2e-4, hx, hy, 0, PositionAngle.MEAN, FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, mu);
+        return new EquinoctialOrbit(a, 1e-4, 2e-4, hx, hy, 0, PositionAngle.MEAN, frame, date, mu);
     }
 
     /**
      * @throws Exception 
      *
      */
-    public static SpacecraftState[] getMeanOrbitFromOsculating(final Propagator propagator,
-                                                               final Orbit orbit,
+    public static SpacecraftState[] getMeanOrbitFromOsculating(final Propagator numericalPropagator,
                                                                final double deltaT,
-                                                               final int nodeNumberValue) throws Exception {
+                                                               final int nodeNumberValue,
+                                                               final int averageStep) throws Exception {
         if (nodeNumberValue % 2 != 0) {
             throw new Exception("need even value for averaging value");
         }
-        NodeDetector2 nodeDetector = new NodeDetector2(deltaT, orbit, FramesFactory.getITRF2005(), nodeNumberValue);
-        propagator.addEventDetector(nodeDetector);
-        propagator.resetInitialState(new SpacecraftState(new EquinoctialOrbit(orbit.getPVCoordinates(), orbit.getFrame(), orbit.getDate(), orbit.getMu())));
+        SpacecraftState orbit =  numericalPropagator.getInitialState();
+        NodeDetector2 nodeDetector = new NodeDetector2(deltaT, orbit.getOrbit(), FramesFactory.getITRF2005(), nodeNumberValue);
+        numericalPropagator.addEventDetector(nodeDetector);
+
         // Propagate to find every wanted nodes :
-        propagator.propagate(orbit.getDate().shiftedBy(deltaT));
+        numericalPropagator.propagate(orbit.getDate().shiftedBy(deltaT));
         // Get list of states at nodes :
         List<SpacecraftState> listStates = nodeDetector.getSpacecraftStateAtNodes();
 
@@ -91,30 +94,31 @@ public class OrbitFactory {
         SpacecraftState firstState = listStates.get(0);
         // Reset the propagator state and operate the averaging operator between the first and the
         // last state (last node)
-        propagator.resetInitialState(firstState);
+        numericalPropagator.resetInitialState(firstState);
         // Averaging operator :
         AveragingOperator average = new AveragingOperator(firstState.getOrbit());
-        propagator.setMasterMode(10., average);
+        numericalPropagator.setMasterMode(averageStep, average);
         SpacecraftState lastState = listStates.get(nodeNumberValue - 1);
-        propagator.propagate(lastState.getDate());
+        numericalPropagator.propagate(lastState.getDate());
         // Get shift from osculating and mean elements in terms of a, ex, ey, hx, hy
         double[] deltaElements = average.getDeltaFromMeanElements();
         
         // Build the mean orbit at median node = nodeNumberValue / 2 :
         SpacecraftState middleState = listStates.get(nodeNumberValue / 2 - 1);
         // Reset the propagator for new extrapolation at middle state :
-        propagator.resetInitialState(firstState);
+        numericalPropagator.resetInitialState(firstState);
         // Propagate at middle state :
-        SpacecraftState stateMedOsc = propagator.propagate(middleState.getDate());
+        SpacecraftState stateMedOsc = numericalPropagator.propagate(middleState.getDate());
+        System.out.println("initial Orbit : " + stateMedOsc.getOrbit());
 
 
-        double a = stateMedOsc.getOrbit().getA() - (stateMedOsc.getA());
-        double ex = stateMedOsc.getOrbit().getEquinoctialEx() - (-2.219374006143401E-5);
-        double ey = stateMedOsc.getOrbit().getEquinoctialEy() - (4.4679909371764226E-4);
-        double hx = stateMedOsc.getOrbit().getHx() - 0.00937158170758028;
-        double hy = stateMedOsc.getOrbit().getHy() - (-0.0015407398054450017);
+        double a = stateMedOsc.getOrbit().getA() - (deltaElements[0]);
+        double ex = stateMedOsc.getOrbit().getEquinoctialEx() - (deltaElements[1]);
+        double ey = stateMedOsc.getOrbit().getEquinoctialEy() - (deltaElements[2]);
+        double hx = stateMedOsc.getOrbit().getHx() - (deltaElements[3]);
+        double hy = stateMedOsc.getOrbit().getHy() - (deltaElements[4]);
         EquinoctialOrbit meanOrbit = new EquinoctialOrbit(a, ex, ey, hx, hy, stateMedOsc.getLM(), PositionAngle.MEAN, stateMedOsc.getFrame(), stateMedOsc.getDate(), stateMedOsc.getMu());
-        System.out.println(meanOrbit);
+        System.out.println("meanOrbit : " + meanOrbit);
         return new SpacecraftState[] { new SpacecraftState(meanOrbit), stateMedOsc };
 
     }
@@ -177,7 +181,7 @@ public class OrbitFactory {
          */
         private static final long serialVersionUID = 602440246251820479L;
         private Orbit             initialOrbit;
-        private int               index            = 0;
+        private int               index            = 1;
 
         private double            a;
         private double            ex;

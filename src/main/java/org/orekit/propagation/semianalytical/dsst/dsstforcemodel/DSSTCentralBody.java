@@ -14,7 +14,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 public class DSSTCentralBody implements DSSTForceModel {
@@ -131,13 +131,19 @@ public class DSSTCentralBody implements DSSTForceModel {
         this.mu = mu;
         // Initialize the constant component
         initializeJn(Cnm);
-        Vns = CoefficientFactory.computeVnsCoefficient(degree + 1);
+        Vns = DSSTCoefficientFactory.computeVnsCoefficient(degree + 1);
+        List<ResonantCouple> resonantList = new ArrayList<ResonantCouple>();
         if (resonantTesserals == null) {
-            final int j = 0;
-            List<ResonantCouple> resonantList = new ArrayList<ResonantCouple>();
-            for (int m = 1; m < order + 1; m++) {
-                ResonantCouple couple = new ResonantCouple(j, m);
-                resonantList.add(couple);
+            for (int j = 1; j < order + 1; j++) {
+                // int j = 0;
+                for (int m = 1; m < j + 1; m++) {
+                    // if (j != m) {
+                    ResonantCouple couple = new ResonantCouple(j, m);
+                    resonantList.add(couple);
+                    System.out.println(couple);
+                    // }
+                }
+
             }
             resonantTesseralsTerm = resonantList;
         } else {
@@ -298,9 +304,9 @@ public class DSSTCentralBody implements DSSTForceModel {
             double q = orbit.getHx();
             double p = orbit.getHy();
 
-            final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, degree + 1);
+            final double[][] GsHs = DSSTCoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, degree + 1);
 
-            final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, degree + 1);
+            final double[][] Qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, degree + 1);
 
             // Compute potential derivative :
             final double[] potentialDerivatives = computePotentialderivatives(Qns, GsHs);
@@ -509,13 +515,10 @@ public class DSSTCentralBody implements DSSTForceModel {
             double num;
             double den;
             double res = 0d;
-            // Sum(Max(2, m, |s|))
-            int max = Math.max(2, m);
-            max = Math.max(max, Math.abs(s));
             if (s <= -m) {
                 res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow((1 + I * gamma), -I * m);
             } else if (FastMath.abs(s) <= m) {
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n + m)
+                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n - m)
                                 * FastMath.pow(1 + I * gamma, I * s);
                 den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
                 res = num / den;
@@ -536,21 +539,23 @@ public class DSSTCentralBody implements DSSTForceModel {
             double num;
             double den;
             double res = 0d;
-            // Sum(Max(2, m, |s|))
-            int max = Math.max(2, m);
-            max = Math.max(max, Math.abs(s));
+            double res2 = 0d;
             if (s <= -m) {
                 res = -FastMath.pow(-1, m - s) * FastMath.pow(2, s) * m * FastMath.pow((1 + I * gamma), -I * m - 1);
+                res2 = -m * computeGammaMsn(n, s, m, gamma) / (1 + I * gamma);
             } else if (FastMath.abs(s) <= m) {
 
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n + m)
+                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n - m)
                                 * s * FastMath.pow(1 + I * gamma, I * s - 1);
                 den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
-
+                res2 =  s * computeGammaMsn(n, s, m, gamma) / (1 + I * gamma);
                 res = num / den;
             } else if (s >= m) {
                 res = FastMath.pow(2, -s) * m * FastMath.pow(1 + I * gamma, I * m - 1);
+                res2 =  m * computeGammaMsn(n, s, m, gamma) / (1 + I * gamma);
+
             }
+//            System.out.println(res-res2);
             return res;
         }
 
@@ -613,9 +618,9 @@ public class DSSTCentralBody implements DSSTForceModel {
             final double theta = computeThetaAngle(orbit);
             // TODO check this : getLM() ?
             final double lambda = orbit.getLM();
-            CiSiCoefficient cisiKH = new CiSiCoefficient(k, h);
-            CiSiCoefficient cisiAB = new CiSiCoefficient(alpha, beta);
-            GHmsjPolynomials GHms = new GHmsjPolynomials(cisiKH, cisiAB, I);
+            final CiSiCoefficient cisiKH = new CiSiCoefficient(k, h);
+            final CiSiCoefficient cisiAB = new CiSiCoefficient(alpha, beta);
+            final GHmsjPolynomials GHms = new GHmsjPolynomials(cisiKH, cisiAB, I);
 
             double dGdh = 0d;
             double dGdk = 0d;
@@ -643,23 +648,23 @@ public class DSSTCentralBody implements DSSTForceModel {
                     // Sum(Max(2, m, |s|))
                     int nmin = Math.max(Math.max(2, m), Math.abs(s));
 
-                    // jacobi v, w, indices :
+                    // jacobi v, w, indices : see 2.7.1 - (15)
                     v = FastMath.abs(m - s);
                     w = FastMath.abs(m + s);
                     for (int n = nmin; n < degree + 1; n++) {
-                        // System.out.println("j : " + j + " m : " + m + " s : " + s + " n : " + n);
                         // (R / a)^n
                         ran = FastMath.pow(ra, n);
                         // Vmns computation : if s < 0 : V(m, n, s) = (-1)^s * V(m, n, -s). See
                         // equation 2.7.2 - (1)
                         if (s < 0) {
-                            vmsn = Math.pow(-1, s) * CoefficientFactory.getVmns(m, n, -s);
+                            vmsn = Math.pow(-1, s) * DSSTCoefficientFactory.getVmns(m, n, -s);
                         } else {
-                            vmsn = CoefficientFactory.getVmns(m, n, s);
+                            vmsn = DSSTCoefficientFactory.getVmns(m, n, s);
                         }
-                        gamMsn = computeGammaMsn(n, s, Im, gamma);
+                        gamMsn = computeGammaMsn(n, s, m, gamma);
                         dGamma = computeDGammaMsn(n, s, m, gamma);
-                        kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
+                        // kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
+                        kjn_1 = hansen.computHKVfromNewcomb(j, -n - 1, s);
                         dkjn_1 = hansen.getHansenKernelDerivative(j, -n - 1, s);
                         dGdh = GHms.getdGmsdh(m, s, j);
                         dGdk = GHms.getdGmsdk(m, s, j);
@@ -684,7 +689,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                         // Compute dU / da from expansion of equation (4-a)
                         realCosFactor = (gms * cnm + hms * snm) * cosPhi;
                         realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                        duda += (n + 1) * ran * Im * vmsn * gamMsn * kjn_1 * jacobi * gms * cnm * (realCosFactor + realSinFactor);
+                        duda += (n + 1) * ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
 
                         // Compute dU / dh from expansion of equation (4-b)
                         realCosFactor = (cnm * kjn_1 * dGdh + 2 * cnm * h * (gms + hms) * dkjn_1 + snm * kjn_1 * dHdh) * cosPhi;
@@ -708,18 +713,22 @@ public class DSSTCentralBody implements DSSTForceModel {
 
                         // Compute dU / dBeta from expansion of equation (4-f)
                         realCosFactor = (dGdB * cnm + dHdB * snm) * cosPhi;
-                        realSinFactor = (dGdB * snm + dHdB * cnm) * sinPhi;
+                        realSinFactor = (dGdB * snm - dHdB * cnm) * sinPhi;
                         dudbe += ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
 
                         // Compute dU / dGamma from expansion of equation (4-g)
                         realCosFactor = (gms * cnm + hms * snm) * cosPhi;
                         realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                        dudga += ran * Im * vmsn * kjn_1 * (realCosFactor + realSinFactor) * (jacobi * dGamma + gamMsn * dJacobi);
+                        dudga += ran * Im * vmsn * kjn_1 * (jacobi * dGamma + gamMsn * dJacobi) * (realCosFactor + realSinFactor) ;
                     }
                 }
             }
+            
+            if (Double.isNaN(duda) ||Double.isNaN(dudh) ||Double.isNaN(dudk) ||Double.isNaN(dudl) ||Double.isNaN(dudal) ||Double.isNaN(dudbe) || Double.isNaN(dudga)){
+                System.out.println();
+            }
 
-            duda *= -muOa / orbit.getA();
+            duda *= -muOa / a;
             dudh *= muOa;
             dudk *= muOa;
             dudl *= muOa;
