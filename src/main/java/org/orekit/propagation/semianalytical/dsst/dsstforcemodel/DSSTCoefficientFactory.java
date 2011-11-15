@@ -14,14 +14,14 @@ import org.orekit.errors.OrekitMessages;
 /**
  * @author rdicosta
  */
-public class CoefficientFactory {
+public class DSSTCoefficientFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation */
     private static TreeMap<NSKey, Double>         VNS            = new TreeMap<NSKey, Double>();
 
     private static int                            LAST_VNS_ORDER = 2;
 
-    /** Map of the Qns derivatives, for each (n, s) couple {@link CoefficientFactory.NSKey} */
+    /** Map of the Qns derivatives, for each (n, s) couple {@link DSSTCoefficientFactory.NSKey} */
     private static Map<NSKey, PolynomialFunction> QNS_MAP        = new TreeMap<NSKey, PolynomialFunction>();
 
     static {
@@ -245,151 +245,6 @@ public class CoefficientFactory {
             result = ArithmeticUtils.factorial(n + s) * VNS.get(new NSKey(n, s)) / ArithmeticUtils.factorial(n - m);
         }
         return result;
-    }
-
-    /**
-     * Direct computation for the Vmns coefficient from equation 2.7.1 - (6)
-     * 
-     * @throws OrekitException
-     */
-    public static double getVmns2(final int m,
-                                  final int n,
-                                  final int s) throws OrekitException {
-        if (s > n) {
-            throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_NS, s, n);
-        }
-        if (m > n) {
-            throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_MS, m, s);
-        }
-        double vmsn = 0d;
-        if ((n - s) % 2 == 0) {
-            final double num = FastMath.pow(-1, (n - s) / 2d) * ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
-            final double den = FastMath.pow(2, n) * ArithmeticUtils.factorial(n - m) * ArithmeticUtils.factorial((n + s) / 2)
-                            * ArithmeticUtils.factorial((n - s) / 2);
-            vmsn = num / den;
-        }
-        return vmsn;
-    }
-
-    /**
-     * Implementation of the V<sub>n, s</sub> <sup>m</sup> from equations in paragraph 2.7.2.
-     * 
-     * @param mMax
-     * @param sMax
-     * @return Map<MNSKey, Double>
-     */
-    @Deprecated
-    public static Map<MNSKey, Double> computeVmns2(final int mMax,
-                                                   final int sMax) {
-        // V[m][s][n]
-        Map<MNSKey, Double> Vmsn = new TreeMap<CoefficientFactory.MNSKey, Double>();
-        double num;
-        double den;
-        MNSKey key;
-        double value;
-
-        // Initialization :
-        Vmsn.put(new MNSKey(0, 0, 0), 1d);
-
-        // Case where m = 0
-        for (int s = 0; s < sMax; s++) {
-            key = new MNSKey(0, s + 1, s + 1);
-            value = ((2 * s + 1) * Vmsn.get(new MNSKey(0, s, s)) / (s + 1));
-            Vmsn.put(key, value);
-
-        }
-
-        // Case where n = s, m != 0 :
-        for (int m = 0; m < mMax; m++) {
-            for (int s = 0; s <= m + 1; s++) {
-                if (s <= m + 1) {
-                    key = new MNSKey(m + 1, s, s);
-                    System.out.println(key);
-                    value = (s - m) * Vmsn.get(new MNSKey(m, s, s));
-                    Vmsn.put(key, value);
-                }
-            }
-        }
-
-        for (int m = 1; m < mMax; m++) {
-            int nMin = FastMath.max(2, m);
-            for (int n = nMin; n < m + 1; n++) {
-                for (int s = 0; s < n + 1; s++) {
-                    if ((n - s) % 2 != 0) {
-                        key = new MNSKey(m, s, n);
-                        Vmsn.put(new MNSKey(m, s, n), 0d);
-                    } else {
-                        // (n - s) even
-                        num = -(n + s + 1) * (n - s + 1) * Vmsn.get(new MNSKey(m, s, s));
-                        den = (n - m + 2) * (n - m + 1);
-                        key = new MNSKey(m, s, n + 2);
-                        value = num / den;
-                        Vmsn.put(key, value);
-                    }
-                }
-            }
-        }
-        return Vmsn;
-    }
-
-    /**
-     * Implementation of the V<sub>n, s</sub> <sup>m</sup> from equations in paragraph 2.7.2.
-     * 
-     * @param mRange
-     * @param nRange
-     * @param sRange
-     * @return Map<MNSKey, Double>
-     */
-    @Deprecated
-    public static Map<MNSKey, Double> computeVmns(final int mMax,
-                                                  final int sMax) {
-        // V[m][s][n]
-        Map<MNSKey, Double> Vmsn = new TreeMap<CoefficientFactory.MNSKey, Double>();
-        double num;
-        double den;
-        MNSKey key;
-        double value;
-
-        // Initialization :
-        Vmsn.put(new MNSKey(0, 0, 0), 1d);
-
-        // Case where n = s :
-        for (int m = 0; m < mMax; m++) {
-            for (int s = 0; s < sMax; s++) {
-                key = new MNSKey(0, s + 1, s + 1);
-                value = ((2 * s + 1) * Vmsn.get(new MNSKey(0, s, s)) / (s + 1));
-                Vmsn.put(key, value);
-                System.out.println(key + " " + value);
-                // Case when m > 0 and n = s
-                key = new MNSKey(m + 1, s, s);
-                value = (s - m) * Vmsn.get(new MNSKey(m, s, s));
-                System.out.println(key + " " + value);
-
-                Vmsn.put(key, value);
-                // Case for non negative m and s and increasing n
-                int nMin = FastMath.max(2, m);
-                nMin = FastMath.max(nMin, FastMath.abs(s));
-                for (int n = nMin; n < mMax; n++) {
-                    // Null if (n - s) is odd
-                    if ((n - s) % 2 != 0) {
-                        key = new MNSKey(m, s, n);
-                        Vmsn.put(new MNSKey(m, s, n), 0d);
-                        System.out.println(key + " " + value);
-
-                    } else {
-                        // (n - s) even
-                        num = -(n + s + 1) * (n - s + 1) * Vmsn.get(new MNSKey(m, s, s));
-                        den = (n - m + 2) * (n - m + 1);
-                        key = new MNSKey(m, s, n + 2);
-                        value = num / den;
-                        Vmsn.put(key, value);
-                        System.out.println(key + " " + value);
-
-                    }
-                }
-            }
-        }
-        return Vmsn;
     }
 
     /**
