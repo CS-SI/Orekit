@@ -1,4 +1,4 @@
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,15 +31,19 @@ public class DSSTCoefficientFactory {
         VNS.put(new NSKey(1, 1), 0.5);
     }
 
-    /** Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma;
-     *  This method is using the Legendre polynomial to compute the Q<sub>ns</sub>'s one.
-     *  This direct computation method allows to store the polynomials value in a static map.
-     *  If the Q<sub>ns</sub> had been computed already, they just will be evaluated at &gamma;
-     * @param gamma &gamma; angle for which Q<sub>ns</sub> is evaluated
-     * @param n n value
-     * @param s s value
+    /**
+     * Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma; This method is using the
+     * Legendre polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method
+     * allows to store the polynomials value in a static map. If the Q<sub>ns</sub> had been
+     * computed already, they just will be evaluated at &gamma;
      * 
-     *  @return the polynomial value evaluated at &gamma;
+     * @param gamma
+     *            &gamma; angle for which Q<sub>ns</sub> is evaluated
+     * @param n
+     *            n value
+     * @param s
+     *            s value
+     * @return the polynomial value evaluated at &gamma;
      */
     public static double getQnsPolynomialValue(final double gamma,
                                                final int n,
@@ -58,19 +62,23 @@ public class DSSTCoefficientFactory {
         return derivative.value(gamma);
     }
 
-    /** Compute the Q<sub>ns</sub> array evaluated at &gamma; from the recurrence formula 2.8.3-(2).
-     *  As this method directly evaluate the polynomial at &gamma;, values aren't stored.
-     *  For single use, this method is faster than the {@link #getQnsPolynomialValue(double, int, int)}
-     * @param gamma &gamma; angle
-     * @param order order N of computation
+    /**
+     * Compute the Q<sub>ns</sub> array evaluated at &gamma; from the recurrence formula 2.8.3-(2).
+     * As this method directly evaluate the polynomial at &gamma;, values aren't stored. For single
+     * use, this method is faster than the {@link #getQnsPolynomialValue(double, int, int)}
      * 
-     *  @return Q<sub>ns</sub> array
+     * @param gamma
+     *            &gamma; angle
+     * @param order
+     *            order N of computation
+     * @return Q<sub>ns</sub> array
      */
-    public static double[][] computeQnsCoefficient(final double gamma, final int order) {
+    public static double[][] computeQnsCoefficient(final double gamma,
+                                                   final int order) {
 
         // Initialization
-        double[][] Qns = new double[order+1][];
-        for (int i = 0; i < order+1; i++) {
+        double[][] Qns = new double[order + 1][];
+        for (int i = 0; i < order + 1; i++) {
             Qns[i] = new double[i + 1];
         }
 
@@ -84,7 +92,7 @@ public class DSSTCoefficientFactory {
                 } else if (n == (s + 1)) {
                     Qns[n][s] = (2. * s + 1.) * gamma * Qns[s][s];
                 } else {
-                    Qns[n][s] =  (2. * n - 1.) * gamma * Qns[n - 1][s] - (n + s - 1.) * Qns[n - 2][s];
+                    Qns[n][s] = (2. * n - 1.) * gamma * Qns[n - 1][s] - (n + s - 1.) * Qns[n - 2][s];
                     Qns[n][s] /= (n - s);
                 }
             }
@@ -93,17 +101,23 @@ public class DSSTCoefficientFactory {
         return Qns;
     }
 
-    /** Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5)
+    /**
+     * Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5)
      * 
-     *  @param k x-component of the eccentricity vector
-     *  @param h y-component of the eccentricity vector
-     *  @param alpha 1st direction cosine
-     *  @param beta 2nd direction cosine
-     *  @param order development order
-     *  @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order.
-     *          The 1st column contains the G<sub>s</sub> values.
-     *          The 2nd column contains the H<sub>s</sub> values.
-     *  @see getGsHsCoefficient
+     * @param k
+     *            x-component of the eccentricity vector
+     * @param h
+     *            y-component of the eccentricity vector
+     * @param alpha
+     *            1st direction cosine
+     * @param beta
+     *            2nd direction cosine
+     * @param order
+     *            development order
+     * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order. The 1st
+     *         column contains the G<sub>s</sub> values. The 2nd column contains the H<sub>s</sub>
+     *         values.
+     * @see getGsHsCoefficient
      */
     public static double[][] computeGsHsCoefficient(final double k,
                                                     final double h,
@@ -111,7 +125,7 @@ public class DSSTCoefficientFactory {
                                                     final double beta,
                                                     final int order) {
         // Initialization
-        double[][] GsHs = new double[2][order+1];
+        double[][] GsHs = new double[2][order + 1];
         // First Gs coefficient
         GsHs[0][0] = 1.;
         // First Hs coefficient
@@ -131,28 +145,33 @@ public class DSSTCoefficientFactory {
         return GsHs;
     }
 
-    /** Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4)
+    /**
+     * Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4)
      * 
-     *  @param k x-component of the eccentricity vector
-     *  @param h y-component of the eccentricity vector
-     *  @param alpha 1st direction cosine
-     *  @param beta 2nd direction cosine
-     *  @param s development order
-     *  @return Array of G<sub>s</sub> and H<sub>s</sub> values for s.
-     *          The 1st column contains the G<sub>s</sub> value.
-     *          The 2nd column contains the H<sub>s</sub> value.
+     * @param k
+     *            x-component of the eccentricity vector
+     * @param h
+     *            y-component of the eccentricity vector
+     * @param alpha
+     *            1st direction cosine
+     * @param beta
+     *            2nd direction cosine
+     * @param s
+     *            development order
+     * @return Array of G<sub>s</sub> and H<sub>s</sub> values for s. The 1st column contains the
+     *         G<sub>s</sub> value. The 2nd column contains the H<sub>s</sub> value.
      */
     public static double[] getGsHsCoefficient(final double k,
                                               final double h,
                                               final double alpha,
                                               final double beta,
                                               final int s) {
-        Complex a  = new Complex(k, h);
+        Complex a = new Complex(k, h);
         Complex as = a.pow(s);
-        Complex b  = new Complex(alpha, -beta);
+        Complex b = new Complex(alpha, -beta);
         Complex bs = b.pow(s);
         Complex asbs = as.multiply(bs);
-        return new double[] {asbs.getReal(), asbs.getImaginary()};
+        return new double[] { asbs.getReal(), asbs.getImaginary() };
     }
 
     /** relation 3.1-(4) */
@@ -221,15 +240,12 @@ public class DSSTCoefficientFactory {
      * @param m
      * @param n
      * @param s
-     * 
-     * @throws OrekitException if s > n or m > s
+     * @throws OrekitException
+     *             if m > s
      */
     public static double getVmns(final int m,
                                  final int n,
                                  final int s) throws OrekitException {
-        if (s > n) {
-            throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_NS, s, n);
-        }
         if (m > n) {
             throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_MS, m, s);
         }
@@ -281,7 +297,6 @@ public class DSSTCoefficientFactory {
         }
 
         /** {@inheritDoc} */
-        @Override
         public int compareTo(NSKey key) {
             int result = 1;
             if (n == key.n) {
@@ -321,7 +336,6 @@ public class DSSTCoefficientFactory {
         }
 
         /** {@inheritDoc} */
-        @Override
         public int compareTo(MNSKey key) {
             int result = 1;
             if (m == key.m) {

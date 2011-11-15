@@ -1,10 +1,10 @@
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.TreeMap;
 
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCoefficientFactory.MNSKey;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.MNSKey;
 
 public class HansenCoefficients {
 

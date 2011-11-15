@@ -10,7 +10,9 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 /** Third body attraction contribution for {@link DSSTPropagator}.

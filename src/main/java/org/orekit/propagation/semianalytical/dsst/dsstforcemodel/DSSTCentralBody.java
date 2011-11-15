@@ -14,7 +14,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.coefficients.CiSiCoefficient;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.coefficients.GHmsjPolynomials;
+import org.orekit.propagation.semianalytical.dsst.coefficients.GammaMsnCoefficients;
+import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 public class DSSTCentralBody implements DSSTForceModel {
@@ -85,7 +90,11 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** Resonant tesseral coefficient */
     private List<ResonantCouple>   resonantTesseralsTerm;
 
+    /** Hansen coefficient */
     private HansenCoefficients     hansen;
+
+    /** &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient from equations 2.7.1 - (13) */
+    private GammaMsnCoefficients   gammaMNS;
 
     /**
      * convergence parameter used in Hansen coefficient generation. 1e-4 seems to be a correct
@@ -106,8 +115,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      *            Sines part of the spherical harmonics
      * @param resonantTesserals
      *            resonant couple term. This parameter can be set to null. If so, all couples will
-     *            be taken in account, i.e (j = 0, m in [1, M]) where M is the maximum order of
-     *            spherical harmonics. If not, only terms included in the resonant couple will be
+     *            be taken in account. If not, only terms included in the resonant couple will be
      *            considered. If the list is an empty one, only zonal effect will be considered.
      * @param epsilon
      *            convergence parameter used in Hansen coefficient generation. 1e-4 seems to be a
@@ -135,13 +143,9 @@ public class DSSTCentralBody implements DSSTForceModel {
         List<ResonantCouple> resonantList = new ArrayList<ResonantCouple>();
         if (resonantTesserals == null) {
             for (int j = 1; j < order + 1; j++) {
-                // int j = 0;
                 for (int m = 1; m < j + 1; m++) {
-                    // if (j != m) {
                     ResonantCouple couple = new ResonantCouple(j, m);
                     resonantList.add(couple);
-                    System.out.println(couple);
-                    // }
                 }
 
             }
@@ -156,7 +160,6 @@ public class DSSTCentralBody implements DSSTForceModel {
      * 
      * @throws OrekitException
      */
-    @Override
     public double[] getMeanElementRate(SpacecraftState spacecraftState) throws OrekitException {
 
         // Store current state :
@@ -164,7 +167,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         // Initialisation of A, B, C, Alpha, Beta and Gamma coefficient :
         updateABCAlphaBetaGamma(orbit);
         hansen = new HansenCoefficients(orbit.getE(), epsilon);
-
+        gammaMNS = new GammaMsnCoefficients(gamma, I);
         // Get zonal harmonics contributuion :
         ZonalHarmonics zonalHarmonics = new ZonalHarmonics();
         double[] zonalTerms = zonalHarmonics.getZonalContribution(orbit);
@@ -411,7 +414,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                 gs = GsHs[0][s];
 
                 // Compute partial derivatives of Gs from equ. (9) :
-                // First get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF < 0 !! TODO to chek
+                // First get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF < 0
                 gsM1 = (s > 0 ? GsHs[0][s - 1] : 0);
                 hsM1 = (s > 0 ? GsHs[1][s - 1] : 0);
                 // Get derivatives
@@ -506,60 +509,6 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         /**
-         * &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient from equations 2.7.1 - (13)
-         */
-        private double computeGammaMsn(final int n,
-                                       final int s,
-                                       final int m,
-                                       final double gamma) {
-            double num;
-            double den;
-            double res = 0d;
-            if (s <= -m) {
-                res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow((1 + I * gamma), -I * m);
-            } else if (FastMath.abs(s) <= m) {
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n - m)
-                                * FastMath.pow(1 + I * gamma, I * s);
-                den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
-                res = num / den;
-            } else if (s >= m) {
-                res = FastMath.pow(2, -s) * FastMath.pow(1 + I * gamma, I * m);
-            }
-            return res;
-        }
-
-        /**
-         * d&Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) / d&gamma; coefficient from equations
-         * 2.7.1 - (13)
-         */
-        private double computeDGammaMsn(final int n,
-                                        final int s,
-                                        final int m,
-                                        final double gamma) {
-            double num;
-            double den;
-            double res = 0d;
-            double res2 = 0d;
-            if (s <= -m) {
-                res = -FastMath.pow(-1, m - s) * FastMath.pow(2, s) * m * FastMath.pow((1 + I * gamma), -I * m - 1);
-                res2 = -m * computeGammaMsn(n, s, m, gamma) / (1 + I * gamma);
-            } else if (FastMath.abs(s) <= m) {
-
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n - m)
-                                * s * FastMath.pow(1 + I * gamma, I * s - 1);
-                den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
-                res2 =  s * computeGammaMsn(n, s, m, gamma) / (1 + I * gamma);
-                res = num / den;
-            } else if (s >= m) {
-                res = FastMath.pow(2, -s) * m * FastMath.pow(1 + I * gamma, I * m - 1);
-                res2 =  m * computeGammaMsn(n, s, m, gamma) / (1 + I * gamma);
-
-            }
-//            System.out.println(res-res2);
-            return res;
-        }
-
-        /**
          * Compute the following elements :
          * 
          * <pre>
@@ -616,7 +565,6 @@ public class DSSTCentralBody implements DSSTForceModel {
             int l, v, w;
 
             final double theta = computeThetaAngle(orbit);
-            // TODO check this : getLM() ?
             final double lambda = orbit.getLM();
             final CiSiCoefficient cisiKH = new CiSiCoefficient(k, h);
             final CiSiCoefficient cisiAB = new CiSiCoefficient(alpha, beta);
@@ -661,8 +609,8 @@ public class DSSTCentralBody implements DSSTForceModel {
                         } else {
                             vmsn = DSSTCoefficientFactory.getVmns(m, n, s);
                         }
-                        gamMsn = computeGammaMsn(n, s, m, gamma);
-                        dGamma = computeDGammaMsn(n, s, m, gamma);
+                        gamMsn = gammaMNS.getGammaMsn(n, s, m);
+                        dGamma = gammaMNS.getDGammaMsn(n, s, m);
                         // kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
                         kjn_1 = hansen.computHKVfromNewcomb(j, -n - 1, s);
                         dkjn_1 = hansen.getHansenKernelDerivative(j, -n - 1, s);
@@ -677,7 +625,6 @@ public class DSSTCentralBody implements DSSTForceModel {
 
                         // Jacobi l-indices : see 2.7.1 - (15)
                         l = (Math.abs(s) <= m ? (n - m) : n - Math.abs(s));
-                        // TODO check indices
                         PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
                         jacobi = jacobiPoly.value(gamma);
                         dJacobi = jacobiPoly.derivative().value(gamma);
@@ -719,12 +666,13 @@ public class DSSTCentralBody implements DSSTForceModel {
                         // Compute dU / dGamma from expansion of equation (4-g)
                         realCosFactor = (gms * cnm + hms * snm) * cosPhi;
                         realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                        dudga += ran * Im * vmsn * kjn_1 * (jacobi * dGamma + gamMsn * dJacobi) * (realCosFactor + realSinFactor) ;
+                        dudga += ran * Im * vmsn * kjn_1 * (jacobi * dGamma + gamMsn * dJacobi) * (realCosFactor + realSinFactor);
                     }
                 }
             }
-            
-            if (Double.isNaN(duda) ||Double.isNaN(dudh) ||Double.isNaN(dudk) ||Double.isNaN(dudl) ||Double.isNaN(dudal) ||Double.isNaN(dudbe) || Double.isNaN(dudga)){
+
+            if (Double.isNaN(duda) || Double.isNaN(dudh) || Double.isNaN(dudk) || Double.isNaN(dudl) || Double.isNaN(dudal)
+                            || Double.isNaN(dudbe) || Double.isNaN(dudga)) {
                 System.out.println();
             }
 

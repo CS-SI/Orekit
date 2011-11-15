@@ -1,4 +1,4 @@
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -436,7 +436,6 @@ public class ModifiedNewcombOperators {
         }
 
         /** {@inheritDoc} */
-        @Override
         public int compareTo(Couple c) {
             int result = 1;
             if (rho == c.rho) {

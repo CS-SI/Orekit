@@ -7,7 +7,7 @@ import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.ModifiedNewcombOperators;
+import org.orekit.propagation.semianalytical.dsst.coefficients.ModifiedNewcombOperators;
 
 public class ModifiedNewcombOperatorTest {
 

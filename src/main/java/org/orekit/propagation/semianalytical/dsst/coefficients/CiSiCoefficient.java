@@ -1,4 +1,4 @@
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.ArrayList;
 import java.util.List;
