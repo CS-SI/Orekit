@@ -93,7 +93,7 @@ public class DSSTPropagation {
     private static double              printStep          = 1000;
 
     // extrapolation time
-    private static double              extrapolationTime  = 86400d;
+    private static double              extrapolationTime  = 365*86400d;
     /**
      * End of tutorial customization
      */
@@ -102,7 +102,9 @@ public class DSSTPropagation {
     private static DSSTPropagator      propaDSST;
     private static NumericalPropagator propaNUM;
 
-    private static String              format             = new String("%14.10f %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f %14.10f");
+    // Print result with the following date : 
+    // date (in days, from the initialDate), px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm
+    private static String              format             = new String("%14.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f");
 
     /**
      * @throws OrekitException
@@ -112,7 +114,7 @@ public class DSSTPropagation {
      */
     public static void main(String[] args) throws IOException, ParseException, OrekitException {
         // Potential data
-        Utils.setDataRoot("regular-data:potential/shm-format");
+        Utils.setDataRoot("tutorial-orekit-data");
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         final double mu = provider.getMu();
         final double ae = provider.getAe();
@@ -199,19 +201,19 @@ public class DSSTPropagation {
         if (generateFileResult) {
             String fileNameExtention = "";
             if (centralBody) {
-                fileNameExtention.concat("_earth");
+                fileNameExtention = fileNameExtention.concat("earth");
             }
             if (sun) {
-                fileNameExtention.concat("_sun");
+                fileNameExtention = fileNameExtention.concat("_sun");
             }
             if (moon) {
-                fileNameExtention.concat("_moon");
+                fileNameExtention = fileNameExtention.concat("_moon");
             }
             if (drag) {
-                fileNameExtention.concat("drag");
+                fileNameExtention = fileNameExtention.concat("_drag");
             }
             if (radiationPressure) {
-                fileNameExtention.concat("radPres");
+                fileNameExtention = fileNameExtention.concat("_radPres");
             }
 
             propaDSST.setMasterMode(printStep, new PrintStepHandler(outputFilePath, fileNameExtention.concat("_DSST"), format, initDate));
