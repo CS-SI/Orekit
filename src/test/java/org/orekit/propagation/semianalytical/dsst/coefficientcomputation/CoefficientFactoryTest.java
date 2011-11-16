@@ -46,7 +46,7 @@ public class CoefficientFactoryTest {
         Assert.assertEquals(1 / 3840d, Vns.get(new NSKey(5, 5)), eps8);
         Assert.assertEquals(Vns.lastKey().getN(), 5);
         Assert.assertEquals(Vns.lastKey().getS(), 5);
-        
+
         /** Compute Vns coefficient by using the cache process to store those coefficient */
         TreeMap<NSKey, Double> Vns30 = DSSTCoefficientFactory.computeVnsCoefficient(30);
         NSKey lastKey30 = Vns30.lastKey();
@@ -69,24 +69,16 @@ public class CoefficientFactoryTest {
 
     }
 
-    /** Error if s > n */
-    @Test(expected = OrekitException.class)
-    public void VmnsErrorCallingSequenceWrong_N_S_Test() throws OrekitException {
-        // if s > n
-        getVmns2(0, 0, 1);
-    }
-
     /** Error if m > n */
     @Test(expected = OrekitException.class)
     public void VmnsErrorCallingSequenceWrong_M_S_Test() throws OrekitException {
         // if m > n
-        getVmns2(3, 2, 1);
+        DSSTCoefficientFactory.getVmns(3, 2, 1);
     }
 
-
     /**
-     * Qns test based on two computation method.
-     * As methods are independent, if they give the same results, we assume them to be consistent.
+     * Qns test based on two computation method. As methods are independent, if they give the same
+     * results, we assume them to be consistent.
      */
     @Test
     public void testQNS() {
@@ -106,8 +98,8 @@ public class CoefficientFactoryTest {
     }
 
     /**
-     * Gs and Hs test based on 2 computation methods.
-     * As methods are independent, if they give the same results, we assume them to be consistent.
+     * Gs and Hs test based on 2 computation methods. As methods are independent, if they give the
+     * same results, we assume them to be consistent.
      */
     @Test
     public void GsHsComputationTest() {
@@ -130,7 +122,7 @@ public class CoefficientFactoryTest {
             }
         }
     }
-    
+
     /**
      * Direct computation for the Vmns coefficient from equation 2.7.1 - (6)
      * 

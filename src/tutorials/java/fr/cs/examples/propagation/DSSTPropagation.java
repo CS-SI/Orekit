@@ -14,24 +14,15 @@ package fr.cs.examples.propagation;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Formatter;
-import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math.util.FastMath;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
@@ -45,8 +36,6 @@ import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -57,13 +46,9 @@ import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.OrbitFactory;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.ResonantCouple;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateComponents;
-import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
@@ -93,7 +78,7 @@ public class DSSTPropagation {
     private static double              printStep          = 1000;
 
     // extrapolation time
-    private static double              extrapolationTime  = 1 * 86400d;
+    private static double              extrapolationTime  = 365 * 86400d;
     /**
      * End of tutorial customization
      */
@@ -108,12 +93,9 @@ public class DSSTPropagation {
 
     /**
      * @param args
-     * @throws OrekitException
-     * @throws ParseException
-     * @throws IOException
      * @throws Exception
      */
-    public static void main(String[] args) throws IOException, ParseException, OrekitException {
+    public static void main(String[] args) throws Exception {
         // Potential data
         Utils.setDataRoot("tutorial-orekit-data");
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
@@ -122,31 +104,43 @@ public class DSSTPropagation {
 
         // Orbit definition
         AbsoluteDate date = new AbsoluteDate("2005-01-01T12:00:00.000", TimeScalesFactory.getUTC());
-        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu, FramesFactory.getGCRF(), date));
-        // WARNING !! If using the OrbitFactory.getHeliosynchronousOrbit(...), you'll have better
-        // result by using the OrbitFactory.getMeanOrbitFromOsculating(orbitOsc) : or un-comment the
-        // following lines instead as an example:
 
         /**
-         * SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae,
-         * 800000, 1e-3, 0, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(),
-         * AbsoluteDate.J2000_EPOCH)); // SpacecraftState[] orbits=
-         * OrbitFactory.getMeanOrbitFromOsculating(numProp, 2*86400, 28, 1); // SpacecraftState mean
-         * = orbits[0]; //SpacecraftState osc = orbits[1];
+         * WARNING !! We are here using an heliosynchronous orbit. As the DSST doen't take yet short
+         * periodic variations create a fake mean orbit from the oscullating parameters. If you want
+         * to use an other orbit, please comment the code below, and uncomment next example :
          */
-
-        // Then, use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
-        // propagator.
+        // !!! COMMENT THIS UNTIL ...
+//        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae, 800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), date));
+//        // Set the numrical propagator to compute the mean orbit from the osculating one :
+//        setNumProp(orbitOsc);
+//        // Add a default gravitational model
+//        propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, provider.getC(2, 0, false), provider.getS(2, 0, false)));
+//        // Create the mean orbit from the osculating :
+//        SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 1 * 86400, 14, 10);
+//        SpacecraftState mean = orbits[0];
+//        SpacecraftState osc = orbits[1];
+//
+//        // As the DSST propagator doesn't take short periodic variation in account actually, we need
+//        // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
+//        // propagator :
+//        setDSSTProp(mean);
+//        // Reset the numerical propagator with new orbit (remove every force model)
+//        setNumProp(osc);
+        // ... HERE //
+        
+        // UNCOMMENT THIS UNTIL ...
+        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu, FramesFactory.getGCRF(), date));
         setDSSTProp(orbitOsc);
         setNumProp(orbitOsc);
-
+        // ... HERE //
         /**
          * FORCES :
          */
         if (centralBody) {
             // Central Body Force Model with un-normalized coefficients
-            double[][] CnmNotNorm = provider.getC(5, 5, false);
-            double[][] SnmNotNorm = provider.getS(5, 5, false);
+            double[][] CnmNotNorm = provider.getC(5, 0, false);
+            double[][] SnmNotNorm = provider.getS(5, 0, false);
 
             // Resonant couple list is here set to null : we're taking in account every tesseral
             // harmonic :
@@ -249,7 +243,7 @@ public class DSSTPropagation {
 
     private static void setDSSTProp(SpacecraftState initialState) throws PropagationException {
         initDate = initialState.getDate();
-        final double minStep = 10000.;
+        final double minStep = 800.;
         final double maxStep = 86400.;
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);

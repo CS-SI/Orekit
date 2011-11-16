@@ -88,7 +88,6 @@ public class ModifiedNewcombOperatorTest {
      */
     @Test
     public void GenerationOfNewcombOperator_Rho_Sup_Sigma_Test() throws OrekitException {
-
         // (0, 0) : 1
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 0).get(0), "1");
         // (1, 0) : s - n / 2
@@ -102,18 +101,23 @@ public class ModifiedNewcombOperatorTest {
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(0), "1.5 + 0.5 x - 0.5 x^2");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(1), "1");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(1, 1).get(2), "0.125");
+        // (3, 0) : (13/24 s + 5/8 s^2 + 1/6 s^3) + (-17/48 -11/16 s - 1/4 s^2)n + (3/16 + 1/8 s)n^2
+        PolynomialFunction f0 = new PolynomialFunction(new double[] { 0, 13. / 24., 5. / 8., 1 / 6. });
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(3, 0).get(0), f0);
+        PolynomialFunction f1 = new PolynomialFunction(new double[] { -17. / 48, -11. / 16, -1. / 4 });
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(3, 0).get(1), f1);
+        PolynomialFunction f2 = new PolynomialFunction(new double[] { 3. / 16, 1. / 8 });
+        checkPolynomial(ModifiedNewcombOperators.getPolynomialList(3, 0).get(2), f2);
+    }
 
-
-
-
-        // order 0 :
-        // (4*x^3)/(12*2)+(20*x^2)/(12*8)+(8*x^2)/(12*2)+(20*x)/(12*8)+(4*x)/(12*2)+x^2/12+(2*x)/12
-//        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(0));
-        // order 1 :
-        // (-5)/48+(-1)/4-((4*x^2)/(12*2))-((12*x)/(12*8))-((5*x)/(12*4))-((7*x)/(12*2))-(x^2/12)-((2*x)/12)
-//        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(1));
-        // order 2 : 1/24+1/16+1/12+x/(12*2)+x/12
-//        System.out.println(ModifiedNewcombOperators.getPolynomialList(3, 0).get(2));
+    @Test
+    public void evaluationOfNewcombOperatorTests() throws OrekitException {
+        // (1, 0) : s - n / 2. With s = 4, n = 2 -> Newcomb = 18,375
+        Assert.assertEquals(3, ModifiedNewcombOperators.getValue(1, 0, 2, 4), 1e-15);
+        // (2, 0) : (5/8 s + 1/2 s^2) + (-3/8 - 1/2s)n + 1/8 n^2. With s = 7, n = 3 -> Newcomb = 18.375
+        Assert.assertEquals(18.375, ModifiedNewcombOperators.getValue(2, 0, 3, 7), 1e-15);
+        // (3, 0) : With n = 3, s = 7 -> Newcomb = 48.3
+        Assert.assertEquals(48.333333333333, ModifiedNewcombOperators.getValue(3, 0, 3, 7), 1e-12);
     }
 
     @Test
@@ -126,8 +130,7 @@ public class ModifiedNewcombOperatorTest {
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(1), "-0.375 + 0.5 x");
         checkPolynomial(ModifiedNewcombOperators.getPolynomialList(0, 2).get(2), "0.125");
         ModifiedNewcombOperators.getPolynomialList(0, 10);
-        
-        
+
     }
 
     /** */
@@ -163,4 +166,13 @@ public class ModifiedNewcombOperatorTest {
         Assert.assertEquals(reference, p.toString());
     }
 
+    public void checkPolynomial(PolynomialFunction p,
+                                PolynomialFunction reference) {
+        if (p.degree() != reference.degree()) {
+            Assert.assertTrue(false);
+        }
+        for (int i = 0; i < p.degree() + 1; i++) {
+            Assert.assertEquals(reference.getCoefficients()[i], p.getCoefficients()[i], 1e-15);
+        }
+    }
 }
