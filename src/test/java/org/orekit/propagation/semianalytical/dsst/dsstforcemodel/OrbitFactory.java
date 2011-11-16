@@ -257,7 +257,6 @@ public class OrbitFactory {
         private double            ey;
         private double            hx;
         private double            hy;
-        private double            lm;
 
         // contains aMean, exMean, eyMean, hxMean, hyMean
         private double[]          meanElements;
@@ -277,7 +276,6 @@ public class OrbitFactory {
             this.ey = initialOrbit.getEquinoctialEy();
             this.hx = initialOrbit.getHx();
             this.hy = initialOrbit.getHy();
-            this.lm = initialOrbit.getLM();
         }
 
         /**
@@ -291,7 +289,6 @@ public class OrbitFactory {
             this.ey += currentState.getEquinoctialEy();
             this.hx += currentState.getHx();
             this.hy += currentState.getHy();
-            this.lm += currentState.getLM();
             index++;
             if (isLast) {
                 this.a /= index + 1;

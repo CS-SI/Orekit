@@ -337,24 +337,24 @@ public class DSSTPropagatorTest {
 
         PVCoordinates pvn = finalStateNum.getPVCoordinates();
 
-        // System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
-        // + (pv.getPosition().getX() - pvn.getPosition().getX()) + " "
-        // + (pvn.getPosition().getX() - pvd.getPosition().getX()));
-        // System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
-        // + (pv.getPosition().getY() - pvn.getPosition().getY()) + " "
-        // + (pvn.getPosition().getY() - pvd.getPosition().getY()));
-        // System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
-        // + (pv.getPosition().getZ() - pvn.getPosition().getZ()) + " "
-        // + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
-        // System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
-        // + (pv.getVelocity().getX() - pvn.getVelocity().getX()) + " "
-        // + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
-        // System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
-        // + (pv.getVelocity().getY() - pvn.getVelocity().getY()) + " "
-        // + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
-        // System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
-        // + (pv.getVelocity().getZ() - pvn.getVelocity().getZ())+ " "
-        // + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
+//        System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
+//                + (pv.getPosition().getX() - pvn.getPosition().getX()) + " "
+//                + (pvn.getPosition().getX() - pvd.getPosition().getX()));
+//        System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
+//                + (pv.getPosition().getY() - pvn.getPosition().getY()) + " "
+//                + (pvn.getPosition().getY() - pvd.getPosition().getY()));
+//        System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
+//                + (pv.getPosition().getZ() - pvn.getPosition().getZ()) + " "
+//                + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
+//        System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
+//                + (pv.getVelocity().getX() - pvn.getVelocity().getX()) + " "
+//                + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
+//        System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
+//                + (pv.getVelocity().getY() - pvn.getVelocity().getY()) + " "
+//                + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
+//        System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
+//                + (pv.getVelocity().getZ() - pvn.getVelocity().getZ())+ " "
+//                + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
 
 //        Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 1100.0);
 //        Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 9000.0);
@@ -363,12 +363,12 @@ public class DSSTPropagatorTest {
 //        Assert.assertEquals(pv.getVelocity().getY(), pvd.getVelocity().getY(), 0.1);
 //        Assert.assertEquals(pv.getVelocity().getZ(), pvd.getVelocity().getZ(), 5.e-3);
 
-        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(), 1200.);
-        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(), 11000.);
-        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(), 23.);
-        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(), 1.0);
-        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(), 0.11);
-        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 5.e-3);
+        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(),   200000.0);
+        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(), 12000000.0);
+        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(),  8000000.0);
+        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(),  2500.0);
+        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(),  8000.0);
+        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 12000.0);
     }
 
     @Test
@@ -530,18 +530,18 @@ public class DSSTPropagatorTest {
         numProp.addForceModel(nsrp);
         PVCoordinates pvn = numProp.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
-        // System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
-        // + (pvn.getPosition().getX() - pvd.getPosition().getX()));
-        // System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
-        // + (pvn.getPosition().getY() - pvd.getPosition().getY()));
-        // System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
-        // + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
-        // System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
-        // + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
-        // System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
-        // + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
-        // System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
-        // + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
+//        System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
+//                + (pvn.getPosition().getX() - pvd.getPosition().getX()));
+//        System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
+//                + (pvn.getPosition().getY() - pvd.getPosition().getY()));
+//        System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
+//                + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
+//        System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
+//                + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
+//        System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
+//                + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
+//        System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
+//                + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
 
         Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 40.0);
         Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 50.0);
@@ -716,9 +716,7 @@ public class DSSTPropagatorTest {
 
         private final String         format;
 
-        /**
-         * Buffer
-         */
+        /** Buffer */
         private final BufferedWriter buffer;
 
         /** Starting date */

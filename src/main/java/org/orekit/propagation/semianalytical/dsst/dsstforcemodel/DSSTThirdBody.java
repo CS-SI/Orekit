@@ -280,10 +280,9 @@ public class DSSTThirdBody implements DSSTForceModel {
                 final double coef0 = delta0s * aoR3n * vns;
                 final double coef1 = coef0 * qns;
                 // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
-                // but n >=s then when n == s, Q(n, s + 1) undefined !!! so what ???
-                final double dqns = (n == s) ? qns : Qns[n][s + 1];
+                // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
+                final double dqns  = (n == s) ? 0. : Qns[n][s+1];
 
-                // System.out.println("n; " + n + " s: " + s + " Vns: " + vns);
                 // Compute dU / da :
                 dUda += coef1 * n * kns * gs;
                 // Compute dU / dh
@@ -294,7 +293,7 @@ public class DSSTThirdBody implements DSSTForceModel {
                 dUdAl += coef1 * kns * dGsdAl;
                 // Compute dU / dBeta
                 dUdBe += coef1 * kns * dGsdBe;
-                // Compute dU / dGamma with dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                // Compute dU / dGamma with dQns/dGamma = Q(n, s + 1)
                 dUdGa += coef0 * kns * dqns * gs;
             }
         }

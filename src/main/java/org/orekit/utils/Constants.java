@@ -43,6 +43,10 @@ public interface Constants {
     double ARC_SECONDS_TO_RADIANS = MathUtils.TWO_PI / 1296000;
 
 
+    /** Standard gravity constant, used in maneuvers definition: 9.80665 m/s<sup>2</sup>. */
+    public static final double G0_STANDARD_GRAVITY = 9.80665;
+
+
     /** Sun radius: 695500000 m. */
     double SUN_RADIUS = 6.955e8;
 

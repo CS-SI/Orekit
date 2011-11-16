@@ -252,7 +252,8 @@ public abstract class AbstractPropagator implements Propagator {
         throws PropagationException {
         try {
 
-            final double epsilon = FastMath.ulp(target.durationFrom(start));
+            final double dt      = target.durationFrom(start);
+            final double epsilon = FastMath.ulp(dt);
             interpolator.storeDate(start);
             SpacecraftState state = interpolator.getInterpolatedState();
 
@@ -265,7 +266,7 @@ public abstract class AbstractPropagator implements Propagator {
                     stepSize = fixedStepSize;
                 }
             } else {
-                stepSize = target.durationFrom(interpolator.getCurrentDate());
+                stepSize = dt;
             }
 
             // initialize step handler
@@ -280,7 +281,14 @@ public abstract class AbstractPropagator implements Propagator {
 
                 // go ahead one step size
                 interpolator.shift();
-                interpolator.storeDate(interpolator.getCurrentDate().shiftedBy(stepSize));
+                final AbsoluteDate t = interpolator.getCurrentDate().shiftedBy(stepSize);
+                if ((dt > 0) ^ (t.compareTo(target) <= 0)) {
+                    // current step exceeds target
+                    interpolator.storeDate(target);
+                } else {
+                    // current step is within range
+                    interpolator.storeDate(t);
+                }
 
                 // accept the step, trigger events and step handlers
                 state = acceptStep(target, epsilon);

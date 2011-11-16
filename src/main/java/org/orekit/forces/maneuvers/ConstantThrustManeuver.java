@@ -25,6 +25,7 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 
 /** This class implements a simple maneuver with constant thrust.
  * <p>The maneuver is defined by a direction in satelliteframe.
@@ -38,9 +39,6 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  */
 public class ConstantThrustManeuver extends AbstractParameterizable implements ForceModel {
-
-    /** Reference gravity acceleration constant (m/s<sup>2</sup>). */
-    public static final double G0 = 9.80665;
 
     /** Parameter name for thrust. */
     private static final String THRUST = "thrust";
@@ -91,7 +89,7 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         }
 
         this.thrust    = thrust;
-        this.flowRate  = -thrust / (G0 * isp);
+        this.flowRate  = -thrust / (Constants.G0_STANDARD_GRAVITY * isp);
         this.direction = direction.normalize();
         firing = false;
 
@@ -108,7 +106,7 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
      * @return specific impulse (s).
      */
     public double getISP() {
-        return -thrust / (G0 * flowRate);
+        return -thrust / (Constants.G0_STANDARD_GRAVITY * flowRate);
     }
 
     /** Get the flow rate.

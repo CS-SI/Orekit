@@ -46,13 +46,13 @@ public class DSSTSolarRadiationPressureTest {
     private final static double P_REF = 4.56e-6;
 
     @Test
-    public void testMeanElementRate() throws OrekitException {
+    public void testMeanElementRateWithShadow() throws OrekitException {
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final double cR = 2.;
         final double aC = 5.;
         final DSSTSolarRadiationPressure force = new DSSTSolarRadiationPressure(cR, aC, sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
 
-        // Equinoxe 21 mars 2003 à 1h00m
+        // LEO orbit with shadow
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final double mu   = 3.9860047e14;
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -63,13 +63,57 @@ public class DSSTSolarRadiationPressureTest {
 
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
+        
+//        System.out.println(daidtRef[0] + " " + daidt[0] + " " + (daidtRef[0] - daidt[0]));
+//        System.out.println(daidtRef[1] + " " + daidt[1] + " " + (daidtRef[1] - daidt[1]));
+//        System.out.println(daidtRef[2] + " " + daidt[2] + " " + (daidtRef[2] - daidt[2]));
+//        System.out.println(daidtRef[3] + " " + daidt[3] + " " + (daidtRef[3] - daidt[3]));
+//        System.out.println(daidtRef[4] + " " + daidt[4] + " " + (daidtRef[4] - daidt[4]));
+//        System.out.println(daidtRef[5] + " " + daidt[5] + " " + (daidtRef[5] - daidt[5]));
 
-        Assert.assertEquals(daidtRef[0], daidt[0], 1.e-21);
-        Assert.assertEquals(daidtRef[1], daidt[1], 1.e-18);
-        Assert.assertEquals(daidtRef[2], daidt[2], 1.e-18);
-        Assert.assertEquals(daidtRef[3], daidt[3], 1.e-16);
-        Assert.assertEquals(daidtRef[4], daidt[4], 1.e-16);
-        Assert.assertEquals(daidtRef[5], daidt[5], 5.e-17);
+        Assert.assertEquals(daidtRef[0], daidt[0], 5.e-9);
+        Assert.assertEquals(daidtRef[1], daidt[1], 1.e-12);
+        Assert.assertEquals(daidtRef[2], daidt[2], 1.e-12);
+        Assert.assertEquals(daidtRef[3], daidt[3], 5.e-13);
+        Assert.assertEquals(daidtRef[4], daidt[4], 5.e-13);
+        Assert.assertEquals(daidtRef[5], daidt[5], 2.e-12);
+
+    }
+
+    @Test
+    public void testMeanElementRateWithoutShadow() throws OrekitException {
+        final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        final double cR = 2.;
+        final double aC = 5.;
+        final DSSTSolarRadiationPressure force = new DSSTSolarRadiationPressure(cR, aC, sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+
+        // GEO orbit without shadow (shadow on 1970-03-23)
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(1970,1,23),
+                                             new TimeComponents(0, 59, 28.812),
+                                             TimeScalesFactory.getUTC());
+        final Vector3D position  = new Vector3D(-42338319.88, 4113188.92, 120810.3);
+        final Vector3D velocity  = new Vector3D(-328.07, -3029.81, 6.28);
+        final double mu = 3.9860047e14;
+        final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
+                                                 FramesFactory.getEME2000(), date, mu);
+        final SpacecraftState state = new SpacecraftState(orbit);
+
+        final double[] daidt    = force.getMeanElementRate(state);
+        final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
+
+//        System.out.println(daidtRef[0] + " " + daidt[0] + " " + (daidtRef[0] - daidt[0]));
+//        System.out.println(daidtRef[1] + " " + daidt[1] + " " + (daidtRef[1] - daidt[1]));
+//        System.out.println(daidtRef[2] + " " + daidt[2] + " " + (daidtRef[2] - daidt[2]));
+//        System.out.println(daidtRef[3] + " " + daidt[3] + " " + (daidtRef[3] - daidt[3]));
+//        System.out.println(daidtRef[4] + " " + daidt[4] + " " + (daidtRef[4] - daidt[4]));
+//        System.out.println(daidtRef[5] + " " + daidt[5] + " " + (daidtRef[5] - daidt[5]));
+
+        Assert.assertEquals(daidtRef[0], daidt[0], 3.e-21);
+        Assert.assertEquals(daidtRef[1], daidt[1], 5.e-17);
+        Assert.assertEquals(daidtRef[2], daidt[2], 1.e-16);
+        Assert.assertEquals(daidtRef[3], daidt[3], 5.e-16);
+        Assert.assertEquals(daidtRef[4], daidt[4], 5.e-16);
+        Assert.assertEquals(daidtRef[5], daidt[5], 2.e-15);
 
     }
 

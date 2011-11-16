@@ -291,7 +291,6 @@ public class DSSTPropagator extends AbstractPropagator {
     public void resetInitialState(final SpacecraftState state) throws PropagationException {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
-        this.isDirty = true;
         this.mass = state.getMass();
         this.referenceDate = state.getDate();
         this.cumulator.resetAccumulator();
@@ -376,16 +375,6 @@ public class DSSTPropagator extends AbstractPropagator {
                 // don't extrapolate, return current orbit
                 return initialState.getOrbit();
             }
-
-            // Initialize force models if needed (i.e. after resetting initial state)
-            // TODO initialization deleted ? isDirty needed ?
-            // if (isDirty) {
-            // for (DSSTForceModel force : forceModels) {
-            // // force.init(initialState);
-            // }
-            // isDirty = false;
-            // }
-
             // Initialize mean elements
             double[] meanElements = getInitialMeanElements(initialState);
 
