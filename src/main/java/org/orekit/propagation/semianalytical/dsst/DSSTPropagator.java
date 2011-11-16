@@ -142,9 +142,6 @@ public class DSSTPropagator extends AbstractPropagator {
     /** Counter for differential equations calls. */
     private int                            calls;
 
-    /** is the current propagator state dirty ? i.e. needs initialization */
-    private boolean                        isDirty;
-
     /**
      * Build a DSSTPropagator from integrator and orbit.
      * <p>

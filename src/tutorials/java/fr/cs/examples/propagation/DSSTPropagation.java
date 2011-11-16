@@ -111,24 +111,28 @@ public class DSSTPropagation {
          * to use an other orbit, please comment the code below, and uncomment next example :
          */
         // !!! COMMENT THIS UNTIL ...
-//        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae, 800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), date));
-//        // Set the numrical propagator to compute the mean orbit from the osculating one :
-//        setNumProp(orbitOsc);
-//        // Add a default gravitational model
-//        propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, provider.getC(2, 0, false), provider.getS(2, 0, false)));
-//        // Create the mean orbit from the osculating :
-//        SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 1 * 86400, 14, 10);
-//        SpacecraftState mean = orbits[0];
-//        SpacecraftState osc = orbits[1];
-//
-//        // As the DSST propagator doesn't take short periodic variation in account actually, we need
-//        // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
-//        // propagator :
-//        setDSSTProp(mean);
-//        // Reset the numerical propagator with new orbit (remove every force model)
-//        setNumProp(osc);
+        // SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae,
+        // 800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), date));
+        // // Set the numrical propagator to compute the mean orbit from the osculating one :
+        // setNumProp(orbitOsc);
+        // // Add a default gravitational model
+        // propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
+        // provider.getC(2, 0, false), provider.getS(2, 0, false)));
+        // // Create the mean orbit from the osculating :
+        // SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 1 * 86400,
+        // 14, 10);
+        // SpacecraftState mean = orbits[0];
+        // SpacecraftState osc = orbits[1];
+        //
+        // // As the DSST propagator doesn't take short periodic variation in account actually, we
+        // need
+        // // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
+        // // propagator :
+        // setDSSTProp(mean);
+        // // Reset the numerical propagator with new orbit (remove every force model)
+        // setNumProp(osc);
         // ... HERE //
-        
+
         // UNCOMMENT THIS UNTIL ...
         SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu, FramesFactory.getGCRF(), date));
         setDSSTProp(orbitOsc);
