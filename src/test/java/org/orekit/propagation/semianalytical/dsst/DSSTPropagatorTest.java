@@ -58,6 +58,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
@@ -159,7 +160,7 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(initialState.getEquinoctialEy(), finalState2.getEquinoctialEy(), 0.);
         Assert.assertEquals(initialState.getHx(), finalState2.getHx(), 0.);
         Assert.assertEquals(initialState.getHy(), finalState2.getHy(), 0.);
-        Assert.assertEquals(initialState.getLM() - n * dt, finalState2.getLM(), 1.5e-14);
+        Assert.assertEquals(initialState.getLM() - n * dt, finalState2.getLM(), 1.e-12);
 
     }
 

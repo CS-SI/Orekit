@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import org.apache.commons.math.complex.Complex;
 import org.junit.Test;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CiSiCoefficient;
+import org.orekit.propagation.semianalytical.dsst.coefficients.CiSiCoefficient;
 
 public class CiSiCoefficientTest {
 

@@ -9,8 +9,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 
 public class CoefficientFactoryTest {
 
@@ -140,12 +140,6 @@ public class CoefficientFactoryTest {
     public static double getVmns2(final int m,
                                   final int n,
                                   final int s) throws OrekitException {
-        if (s > n) {
-            throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_NS, s, n);
-        }
-        if (m > n) {
-            throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_MS, m, s);
-        }
         double vmsn = 0d;
         if ((n - s) % 2 == 0) {
             final double num = FastMath.pow(-1, (n - s) / 2d) * ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
