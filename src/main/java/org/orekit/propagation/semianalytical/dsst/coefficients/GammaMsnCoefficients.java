@@ -7,13 +7,30 @@ import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.MNSKey;
 
+/**
+ * Compute the &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient evaluated at &gamma;
+ * 
+ * @author Romain Di Costanzo
+ */
 public class GammaMsnCoefficients {
 
+    /** &Gamma; */
     private double      gamma;
+
+    /** I = +1 for a prograde orbit, -1 otherwise */
     private int         I;
 
+    /** Result map */
     Map<MNSKey, Double> map = new TreeMap<MNSKey, Double>();
 
+    /**
+     * Default constructor
+     * 
+     * @param gamma
+     *            &gamma;
+     * @param I
+     *            orbit representation : I = +1 for a prograde orbit, -1 otherwise
+     */
     public GammaMsnCoefficients(final double gamma,
                                 final int I) {
         this.gamma = gamma;
@@ -22,6 +39,14 @@ public class GammaMsnCoefficients {
 
     /**
      * &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient from equations 2.7.1 - (13)
+     * 
+     * @param n
+     *            n
+     * @param s
+     *            s
+     * @param m
+     *            m
+     * @return &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;)
      */
     public double getGammaMsn(final int n,
                               final int s,
@@ -50,6 +75,14 @@ public class GammaMsnCoefficients {
     /**
      * d&Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) / d&gamma; coefficient from equations 2.7.1 -
      * (13)
+     * 
+     * @param n
+     *            n
+     * @param s
+     *            s
+     * @param m
+     *            m
+     * @return d&Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) / d&gamma;
      */
     public double getDGammaMsn(final int n,
                                final int s,

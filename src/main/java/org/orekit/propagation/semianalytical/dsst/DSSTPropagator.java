@@ -35,224 +35,260 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
+/**
+ * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
  * <p>
- * The DSST theory, as exposed by D.A.Danielson & al. (1995), describes a semianalytical
- * propagator that combines the accuracy of numerical propagators with the speed of
- * analytical propagators. Whereas analytical propagators are configured only thanks
- * to their various constructors and can be used immediately after construction,
- * such a semianalytical propagator configuration involves setting several parameters
- * between construction time and propagation time, just as numerical propagators.
+ * The DSST theory, as exposed by D.A.Danielson & al. (1995), describes a semianalytical propagator
+ * that combines the accuracy of numerical propagators with the speed of analytical propagators.
+ * Whereas analytical propagators are configured only thanks to their various constructors and can
+ * be used immediately after construction, such a semianalytical propagator configuration involves
+ * setting several parameters between construction time and propagation time, just as numerical
+ * propagators.
  * </p>
  * <p>
- * The configuration parameters that can be set are:</p>
+ * The configuration parameters that can be set are:
+ * </p>
  * <ul>
- *   <li>the initial spacecraft state ({@link #resetInitialState(SpacecraftState)})</li>
- *   <li>the various force models ({@link #addForceModel(DSSTForceModel)},
- *   {@link #removeForceModels()})</li>
- *   <li>the discrete events that should be triggered during propagation
- *   ({@link #addEventDetector(EventDetector)}, {@link #clearEventsDetectors()})</li>
- *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- *   {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link
- *   #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link
- *   #getGeneratedEphemeris()})</li>
+ * <li>the initial spacecraft state ({@link #resetInitialState(SpacecraftState)})</li>
+ * <li>the various force models ({@link #addForceModel(DSSTForceModel)},
+ * {@link #removeForceModels()})</li>
+ * <li>the discrete events that should be triggered during propagation (
+ * {@link #addEventDetector(EventDetector)}, {@link #clearEventsDetectors()})</li>
+ * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
+ * {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * </p>
  * <p>
- * From these configuration parameters, only the initial state is mandatory. The default
- * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngle#TRUE true} longitude argument. The central attraction coefficient
- * used to define the initial orbit will be used. However, specifying only the initial
- * state would mean the propagator would use only keplerian forces. In this case, the
- * simpler {@link org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator}
- * class would perhaps be more effective.
+ * From these configuration parameters, only the initial state is mandatory. The default propagation
+ * settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
+ * {@link PositionAngle#TRUE true} longitude argument. The central attraction coefficient used to
+ * define the initial orbit will be used. However, specifying only the initial state would mean the
+ * propagator would use only keplerian forces. In this case, the simpler
+ * {@link org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator} class would
+ * perhaps be more effective.
  * </p>
  * <p>
- * The underlying numerical integrator set up in the constructor may also have its own
- * configuration parameters. Typical configuration parameters for adaptive stepsize integrators
- * are the min, max and perhaps start step size as well as the absolute and/or relative errors
- * thresholds.
+ * The underlying numerical integrator set up in the constructor may also have its own configuration
+ * parameters. Typical configuration parameters for adaptive stepsize integrators are the min, max
+ * and perhaps start step size as well as the absolute and/or relative errors thresholds.
  * </p>
- * <p>The state that is seen by the integrator is a simple six elements double array.
- * These six elements are:
+ * <p>
+ * The state that is seen by the integrator is a simple six elements double array. These six
+ * elements are:
  * <ul>
- *   <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters} (a, e<sub>x</sub>,
- *   e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>v</sub>) in meters and radians,</li>
+ * <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters} (a,
+ * e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>v</sub>) in meters and
+ * radians,</li>
  * </ul>
  * </p>
- * <p>The same propagator can be reused for several orbit extrapolations, by resetting
- * the initial state without modifying the other configuration parameters. However, the
- * same instance cannot be used simultaneously by different threads, the class is <em>not</em>
- * thread-safe.
+ * <p>
+ * The same propagator can be reused for several orbit extrapolations, by resetting the initial
+ * state without modifying the other configuration parameters. However, the same instance cannot be
+ * used simultaneously by different threads, the class is <em>not</em> thread-safe.
  * </p>
-
+ * 
  * @see SpacecraftState
  * @see DSSTForceModel
- *
  * @author Romain Di Costanzo
  * @author Pascal Parraud
  */
 public class DSSTPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1217566398912634178L;
+    private static final long              serialVersionUID = -1217566398912634178L;
 
     /** Propagation orbit type. */
-    private static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
+    private static final OrbitType         ORBIT_TYPE       = OrbitType.EQUINOCTIAL;
 
     /** Position angle type. */
-    private static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
+    private static final PositionAngle     ANGLE_TYPE       = PositionAngle.MEAN;
 
     /** Position error tolerance (m). */
-    private static final double POSITION_ERROR = 1.0;
+    private static final double            POSITION_ERROR   = 1.0;
 
     /** Position error tolerance (m). */
-    private static final double EXTRA_TIME = Constants.JULIAN_DAY;
+    private static final double            EXTRA_TIME       = Constants.JULIAN_DAY;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
     private transient FirstOrderIntegrator integrator;
 
     /** Force models used during the extrapolation of the Orbit. */
-    private final List<DSSTForceModel> forceModels;
+    private final List<DSSTForceModel>     forceModels;
 
     /** Step accumulator. */
-    private StepAccumulator cumulator;
+    private StepAccumulator                cumulator;
 
     /** Trigger. */
-    private Trigger trigger;
+    private Trigger                        trigger;
 
     /** Reference date. */
-    private AbsoluteDate referenceDate;
+    private AbsoluteDate                   referenceDate;
 
     /** Target date. */
-    private AbsoluteDate target;
+    private AbsoluteDate                   target;
 
     /** Target date. */
-    private double extraTime;
+    private double                         extraTime;
 
     /** Current &mu;. */
-    private double mu;
+    private double                         mu;
 
     /** Current frame. */
-    private Frame frame;
+    private Frame                          frame;
 
     /** Current mass. */
-    private double mass;
+    private double                         mass;
 
     /** Counter for differential equations calls. */
-    private int calls;
+    private int                            calls;
 
-    /** Build a DSSTPropagator from integrator and orbit.
-     *  <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that
-     *  if {@link #addForceModel addForceModel} is not called after creation,
-     *  the integrated orbit will follow a keplerian evolution only.
-     *  </p>
-     *  @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
-     *  @param initialOrbit initial orbit
-     *  @exception PropagationException if initial state cannot be set
-     */  
-    public DSSTPropagator(final FirstOrderIntegrator integrator, final Orbit initialOrbit)
-        throws PropagationException {
+    /** is the current propagator state dirty ? i.e. needs initialization */
+    private boolean                        isDirty;
+
+    /**
+     * Build a DSSTPropagator from integrator and orbit.
+     * <p>
+     * Mass and attitude provider are set to unspecified non-null arbitrary values.
+     * </p>
+     * <p>
+     * After creation, there are no perturbing forces at all. This means that if
+     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     * follow a keplerian evolution only.
+     * </p>
+     * 
+     * @param integrator
+     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit
+     *            initial orbit
+     * @exception PropagationException
+     *                if initial state cannot be set
+     */
+    public DSSTPropagator(final FirstOrderIntegrator integrator,
+                          final Orbit initialOrbit)
+                                                   throws PropagationException {
         this(integrator, initialOrbit, DEFAULT_LAW, DEFAULT_MASS);
     }
 
-    /** Build a DSSTPropagator from integrator, orbit and attitude provider.
-     *  <p>Mass is set to an unspecified non-null arbitrary value.</p>
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that
-     *  if {@link #addForceModel addForceModel} is not called after creation,
-     *  the integrated orbit will follow a keplerian evolution only.
-     *  </p>
-     *  @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
-     *  @param initialOrbit initial orbit
-     *  @param attitudeProv attitude provider
-     *  @exception PropagationException if initial state cannot be set
+    /**
+     * Build a DSSTPropagator from integrator, orbit and attitude provider.
+     * <p>
+     * Mass is set to an unspecified non-null arbitrary value.
+     * </p>
+     * <p>
+     * After creation, there are no perturbing forces at all. This means that if
+     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     * follow a keplerian evolution only.
+     * </p>
+     * 
+     * @param integrator
+     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit
+     *            initial orbit
+     * @param attitudeProv
+     *            attitude provider
+     * @exception PropagationException
+     *                if initial state cannot be set
      */
-    public DSSTPropagator(final FirstOrderIntegrator integrator, final Orbit initialOrbit,
+    public DSSTPropagator(final FirstOrderIntegrator integrator,
+                          final Orbit initialOrbit,
                           final AttitudeProvider attitudeProv)
-        throws PropagationException {
+                                                              throws PropagationException {
         this(integrator, initialOrbit, attitudeProv, DEFAULT_MASS);
     }
 
-    /** Build a DSSTPropagator from integrator, orbit and mass.
-     * <p>Attitude provider is set to an unspecified non-null arbitrary value.</p>
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that
-     *  if {@link #addForceModel addForceModel} is not called after creation,
-     *  the integrated orbit will follow a keplerian evolution only.
-     *  </p>
-     *  @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
-     *  @param initialOrbit initial orbit
-     *  @param mass spacecraft mass
-     *  @exception PropagationException if initial state cannot be set
+    /**
+     * Build a DSSTPropagator from integrator, orbit and mass.
+     * <p>
+     * Attitude provider is set to an unspecified non-null arbitrary value.
+     * </p>
+     * <p>
+     * After creation, there are no perturbing forces at all. This means that if
+     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     * follow a keplerian evolution only.
+     * </p>
+     * 
+     * @param integrator
+     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit
+     *            initial orbit
+     * @param mass
+     *            spacecraft mass
+     * @exception PropagationException
+     *                if initial state cannot be set
      */
-    public DSSTPropagator(final FirstOrderIntegrator integrator, final Orbit initialOrbit,
+    public DSSTPropagator(final FirstOrderIntegrator integrator,
+                          final Orbit initialOrbit,
                           final double mass)
-        throws PropagationException {
+                                            throws PropagationException {
         this(integrator, initialOrbit, DEFAULT_LAW, mass);
     }
 
-    /** Build a DSSTPropagator from integrator, orbit, attitude provider and mass.
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that
-     *  if {@link #addForceModel addForceModel} is not called after creation,
-     *  the integrated orbit will follow a keplerian evolution only.
-     *  </p>
-     *  @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
-     *  @param initialOrbit initial orbit
-     *  @param attitudeProv attitude provider
-     *  @param mass spacecraft mass
-     *  @exception PropagationException if initial state cannot be set
+    /**
+     * Build a DSSTPropagator from integrator, orbit, attitude provider and mass.
+     * <p>
+     * After creation, there are no perturbing forces at all. This means that if
+     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     * follow a keplerian evolution only.
+     * </p>
+     * 
+     * @param integrator
+     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit
+     *            initial orbit
+     * @param attitudeProv
+     *            attitude provider
+     * @param mass
+     *            spacecraft mass
+     * @exception PropagationException
+     *                if initial state cannot be set
      */
-    public DSSTPropagator(final FirstOrderIntegrator integrator, final Orbit initialOrbit,
-                          final AttitudeProvider attitudeProv, final double mass)
-        throws PropagationException {
+    public DSSTPropagator(final FirstOrderIntegrator integrator,
+                          final Orbit initialOrbit,
+                          final AttitudeProvider attitudeProv,
+                          final double mass)
+                                            throws PropagationException {
         super(attitudeProv);
-        this.forceModels   = new ArrayList<DSSTForceModel>();
-        this.mu            = initialOrbit.getMu();
-        this.frame         = initialOrbit.getFrame();
+        this.forceModels = new ArrayList<DSSTForceModel>();
+        this.mu = initialOrbit.getMu();
+        this.frame = initialOrbit.getFrame();
         this.referenceDate = null;
-        this.mass          = mass;
+        this.mass = mass;
 
         setExtraTime(EXTRA_TIME);
 
         setIntegrator(integrator);
-        
+
         PVCoordinatesProvider pvProv = new PVCoordinatesProvider() {
-            public PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-                throws OrekitException {
+            public PVCoordinates getPVCoordinates(AbsoluteDate date,
+                                                  Frame frame) throws OrekitException {
                 return initialOrbit.getPVCoordinates();
             }
         };
 
         try {
-            resetInitialState(new SpacecraftState(initialOrbit,
-                                                  attitudeProv.getAttitude(pvProv,
-                                                                           initialOrbit.getDate(),
-                                                                           initialOrbit.getFrame()),
-                                                  mass));
+            resetInitialState(new SpacecraftState(initialOrbit, attitudeProv.getAttitude(pvProv, initialOrbit.getDate(), initialOrbit.getFrame()), mass));
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
 
     }
 
-    /** Set the integrator.
-     * @param integrator numerical integrator to use for propagation.
+    /**
+     * Set the integrator.
+     * 
+     * @param integrator
+     *            numerical integrator to use for propagation.
      */
     private void setIntegrator(final FirstOrderIntegrator integrator) {
         this.integrator = integrator;
-        this.cumulator  = new StepAccumulator();
-        this.trigger    = new Trigger();
+        this.cumulator = new StepAccumulator();
+        this.trigger = new Trigger();
         this.integrator.addStepHandler(cumulator);
         this.integrator.addEventHandler(trigger, Double.POSITIVE_INFINITY, 1.e-4, 100);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state)
-        throws PropagationException {
+    public void resetInitialState(final SpacecraftState state) throws PropagationException {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
         this.mass = state.getMass();
@@ -260,44 +296,54 @@ public class DSSTPropagator extends AbstractPropagator {
         this.cumulator.resetAccumulator();
     }
 
-    /** Add a force model to the global perturbation model.
-     *  <p>
-     *  If this method is not called at all, the integrated orbit
-     *  will follow a keplerian evolution only.
-     *  </p>
-     *  @param model perturbing {@link DSSTForceModel} to add
-     *  @see #removeForceModels()
+    /**
+     * Add a force model to the global perturbation model.
+     * <p>
+     * If this method is not called at all, the integrated orbit will follow a keplerian evolution
+     * only.
+     * </p>
+     * 
+     * @param forcemodel
+     *            perturbing {@link DSSTForceModel} to add
+     * @see #removeForceModels()
      */
     public void addForceModel(final DSSTForceModel forcemodel) {
         forceModels.add(forcemodel);
     }
 
-    /** Remove all perturbing force models from the global perturbation model.
-     *  <p>
-     *  Once all perturbing forces have been removed (and as long as no new
-     *  force model is added), the integrated orbit will follow a keplerian
-     *  evolution only.
-     *  </p>
-     *  @see #addForceModel(DSSTForceModel)
+    /**
+     * Remove all perturbing force models from the global perturbation model.
+     * <p>
+     * Once all perturbing forces have been removed (and as long as no new force model is added),
+     * the integrated orbit will follow a keplerian evolution only.
+     * </p>
+     * 
+     * @see #addForceModel(DSSTForceModel)
      */
     public void removeForceModels() {
         forceModels.clear();
     }
 
-    /** Set some extra duration to be performed for the first propagation of the orbit.
+    /**
+     * Set some extra duration to be performed for the first propagation of the orbit.
      * <p>
      * A reasonable value would be 5 times the initial step size of the integrator.
      * </p>
+     * 
+     * @param extraTime
+     *            extra time
      */
     public void setExtraTime(final double extraTime) {
         this.extraTime = extraTime;
     }
 
-    /** Get the number of calls to the differential equations computation method.
+    /**
+     * Get the number of calls to the differential equations computation method.
      * <p>
-     * The number of calls is reset each time the {@link #propagateOrbit(AbsoluteDate)}
-     * method is called.
+     * The number of calls is reset each time the {@link #propagateOrbit(AbsoluteDate)} method is
+     * called.
      * </p>
+     * 
      * @return number of calls to the differential equations computation method
      */
     public int getCalls() {
@@ -329,7 +375,6 @@ public class DSSTPropagator extends AbstractPropagator {
                 // don't extrapolate, return current orbit
                 return initialState.getOrbit();
             }
-
             // Initialize mean elements
             double[] meanElements = getInitialMeanElements(initialState);
 
@@ -356,10 +401,13 @@ public class DSSTPropagator extends AbstractPropagator {
         }
     }
 
-    /** Compute initial mean elements from osculating elements.
-     *  @param state current state information: date, kinematics, attitude
-     *  @return mean elements
-     *  @throws OrekitException 
+    /**
+     * Compute initial mean elements from osculating elements.
+     * 
+     * @param state
+     *            current state information: date, kinematics, attitude
+     * @return mean elements
+     * @throws OrekitException
      */
     private double[] getInitialMeanElements(final SpacecraftState state) throws OrekitException {
 
@@ -387,19 +435,25 @@ public class DSSTPropagator extends AbstractPropagator {
             }
             epsilon = FastMath.sqrt(epsilon);
         } while (epsilon > POSITION_ERROR);
-        
+
         return meanElements;
     }
 
-    /** Extrapolation to tf.
-     *  @param start start date for extrapolation
-     *  @param startState state vector at start date
-     *  @param end end date for extrapolation
-     *  @return extrapolated state vector at end date
-     *  @throws PropagationException 
+    /**
+     * Extrapolation to tf.
+     * 
+     * @param start
+     *            start date for extrapolation
+     * @param startState
+     *            state vector at start date
+     * @param end
+     *            end date for extrapolation
+     * @return extrapolated state vector at end date
+     * @throws PropagationException
      */
-    private double[] extrapolate(final AbsoluteDate start, final double[] startState, final AbsoluteDate end)
-        throws PropagationException {
+    private double[] extrapolate(final AbsoluteDate start,
+                                 final double[] startState,
+                                 final AbsoluteDate end) throws PropagationException {
 
         target = end;
         double t0 = start.durationFrom(referenceDate);
@@ -415,7 +469,7 @@ public class DSSTPropagator extends AbstractPropagator {
                 StepInterpolator si;
                 if (target.compareTo(cumulator.getTd()) < 0) {
                     t0 = cumulator.getTd().durationFrom(referenceDate);
-                    si = steps.first().getStep();                   
+                    si = steps.first().getStep();
                 } else {
                     t0 = cumulator.getTf().durationFrom(referenceDate);
                     si = steps.last().getStep();
@@ -456,14 +510,23 @@ public class DSSTPropagator extends AbstractPropagator {
             return 6;
         }
 
-        /** {@inheritDoc} */
-        public void initDerivatives(final double[] yDot, final Orbit currentOrbit) {
+        /**
+         * Initialize derivatives
+         * 
+         * @param yDot
+         *            Derivatives array
+         * @param currentOrbit
+         *            current orbit
+         */
+        public void initDerivatives(final double[] yDot,
+                                    final Orbit currentOrbit) {
             Arrays.fill(yDot, 0.0);
         }
 
         /** {@inheritDoc} */
-        public void computeDerivatives(final double t, final double[] y, final double[] yDot)
-            throws OrekitExceptionWrapper {
+        public void computeDerivatives(final double t,
+                                       final double[] y,
+                                       final double[] yDot) throws OrekitExceptionWrapper {
 
             try {
                 // update space dynamics view
@@ -499,9 +562,9 @@ public class DSSTPropagator extends AbstractPropagator {
     private class StepAccumulator implements StepHandler {
 
         private SortedSet<StRange> cumulatedSteps;
-        private AbsoluteDate td;
-        private AbsoluteDate tf;
-        private double maxStep;
+        private AbsoluteDate       td;
+        private AbsoluteDate       tf;
+        private double             maxStep;
 
         /** Simple constructor. */
         public StepAccumulator() {
@@ -510,36 +573,45 @@ public class DSSTPropagator extends AbstractPropagator {
             tf = AbsoluteDate.PAST_INFINITY;
             maxStep = 0.;
         }
-        
-        /** Get the maximum step size.
+
+        /**
+         * Get the maximum step size.
+         * 
          * @return the maximum step size
          */
         public double getMaxStepSize() {
             return maxStep;
         }
-        
-        /** Get the first time.
+
+        /**
+         * Get the first time.
+         * 
          * @return the first time
          */
         public AbsoluteDate getTd() {
             return td;
         }
-        
-        /** Get the last time.
+
+        /**
+         * Get the last time.
+         * 
          * @return the last time
          */
         public AbsoluteDate getTf() {
             return tf;
         }
 
-        /** Get the cumulated step interpolators.
+        /**
+         * Get the cumulated step interpolators.
+         * 
          * @return the cumulated step interpolators
          */
         public SortedSet<StRange> getCumulatedSteps() {
             return cumulatedSteps;
         }
 
-        /** Reset the accumulator: clear the cumulated steps and reinitialize the dates.
+        /**
+         * Reset the accumulator: clear the cumulated steps and reinitialize the dates.
          */
         public void resetAccumulator() {
             cumulatedSteps.clear();
@@ -548,7 +620,8 @@ public class DSSTPropagator extends AbstractPropagator {
             maxStep = 0.;
         }
 
-        public void handleStep(StepInterpolator interpolator, boolean isLast) {
+        public void handleStep(StepInterpolator interpolator,
+                               boolean isLast) {
             StRange sr = new StRange(interpolator);
             maxStep = FastMath.max(maxStep, sr.getTmax().durationFrom(sr.getTmin()));
             cumulatedSteps.add(sr);
@@ -564,21 +637,25 @@ public class DSSTPropagator extends AbstractPropagator {
         }
     }
 
-    /** Internal class for step interpolator encapsulation before accumulation.
-     *  This class allows step interpolators ordering in a sorted set.
+    /**
+     * Internal class for step interpolator encapsulation before accumulation. This class allows
+     * step interpolators ordering in a sorted set.
      */
     private class StRange implements Comparable<StRange>, Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -6209093963711616737L;
 
-        private AbsoluteDate tmin;
-        private AbsoluteDate tmax;
-        private StepInterpolator step;
+        private AbsoluteDate      tmin;
+        private AbsoluteDate      tmax;
+        private StepInterpolator  step;
 
-        /** Constructor over a real step interpolator 
-         * The step interpolator is copied inside the StRange.
-         * @param si step interpolator
+        /**
+         * Constructor over a real step interpolator The step interpolator is copied inside the
+         * StRange.
+         * 
+         * @param si
+         *            step interpolator
          */
         public StRange(StepInterpolator si) {
             this.step = si.copy();
@@ -588,8 +665,11 @@ public class DSSTPropagator extends AbstractPropagator {
             this.tmax = referenceDate.shiftedBy(dtmax);
         }
 
-        /** Constructor over a single time 
-         * @param t time
+        /**
+         * Constructor over a single time
+         * 
+         * @param t
+         *            time
          */
         public StRange(final AbsoluteDate t) {
             this.step = null;
@@ -597,21 +677,27 @@ public class DSSTPropagator extends AbstractPropagator {
             this.tmax = t;
         }
 
-        /** Get the min time in the range
+        /**
+         * Get the min time in the range
+         * 
          * @return the min time of the range
          */
         public AbsoluteDate getTmin() {
             return tmin;
         }
-        
-        /** Get the max time in the range
+
+        /**
+         * Get the max time in the range
+         * 
          * @return the max time of the range
          */
         public AbsoluteDate getTmax() {
             return tmax;
         }
-        
-        /** Get the step interpolator over the range
+
+        /**
+         * Get the step interpolator over the range
+         * 
          * @return the step interpolator
          */
         public StepInterpolator getStep() {
@@ -635,34 +721,43 @@ public class DSSTPropagator extends AbstractPropagator {
         }
     }
 
-    /** Finder for timed event.
-     * <p>This class finds timed event (i.e. occurrence of some predefined time).</p>
-     * <p>It is a kind of delayed trigger:</p>
+    /**
+     * Finder for timed event.
+     * <p>
+     * This class finds timed event (i.e. occurrence of some predefined time).
+     * </p>
+     * <p>
+     * It is a kind of delayed trigger:
+     * </p>
      * <ul>
-     *   <li>it is defined without prior target ({@link #Trigger()})</li>
-     *   <li>several time targets can be added later ({@link #addEvent(double)})</li>
+     * <li>it is defined without prior target ({@link #Trigger()})</li>
+     * <li>several time targets can be added later ({@link #addEvent(double)})</li>
      * </ul>
-     * <p>The default implementation behavior is to {@link EventHandler.Action#STOP stop}
-     * propagation at the first event time occurrence. This can be changed by
-     * overriding the {@link #eventOccurred(double, double[], boolean) eventOccurred}
-     * method in a derived class.</p>
+     * <p>
+     * The default implementation behavior is to {@link EventHandler.Action#STOP stop} propagation
+     * at the first event time occurrence. This can be changed by overriding the
+     * {@link #eventOccurred(double, double[], boolean) eventOccurred} method in a derived class.
+     * </p>
      */
     private static class Trigger implements EventHandler {
 
         /** Last time for g computation. */
-        private double gTime;
+        private double                     gTime;
 
         /** List of event dates. */
         private final ArrayList<EventTime> eventTimeList;
 
         /** Current event time. */
-        private int currentIndex;
+        private int                        currentIndex;
 
-        /** Build a new instance.
-         * <p>This constructor is dedicated to time detection
-         * when the event time is not known before propagating.
-         * It can be triggered later by adding some event time,
-         * it then acts like a timer.</p>
+        /**
+         * Build a new instance.
+         * <p>
+         * This constructor is dedicated to time detection when the event time is not known before
+         * propagating. It can be triggered later by adding some event time, it then acts like a
+         * timer.
+         * </p>
+         * 
          * @see #addEvent(double)
          */
         public Trigger() {
@@ -671,7 +766,8 @@ public class DSSTPropagator extends AbstractPropagator {
             this.gTime = Double.NaN;
         }
 
-        public double g(double t, double[] y) {
+        public double g(double t,
+                        double[] y) {
             gTime = t;
             if (currentIndex < 0) {
                 return -1.0;
@@ -681,16 +777,22 @@ public class DSSTPropagator extends AbstractPropagator {
             }
         }
 
-        public Action eventOccurred(double t, double[] y, boolean increasing) {
+        public Action eventOccurred(double t,
+                                    double[] y,
+                                    boolean increasing) {
             return Action.STOP;
         }
 
-        public void resetState(double t, double[] y) {
+        public void resetState(double t,
+                               double[] y) {
             return;
         }
 
-        /** Add an event time.
-         * @param target target time
+        /**
+         * Add an event time.
+         * 
+         * @param target
+         *            target time
          */
         public void addEvent(final double target) {
             final boolean increasing;
@@ -713,8 +815,11 @@ public class DSSTPropagator extends AbstractPropagator {
             }
         }
 
-        /** Get the closest EventTime to the target time.
-         * @param target target time
+        /**
+         * Get the closest EventTime to the target time.
+         * 
+         * @param target
+         *            target time
          * @return current EventTime
          */
         private EventTime getClosest(final double target) {
@@ -746,28 +851,37 @@ public class DSSTPropagator extends AbstractPropagator {
         private static class EventTime {
 
             /** Event time. */
-            private final double eventTime;
+            private final double  eventTime;
 
             /** Flag for g function way around event time. */
             private final boolean gIncrease;
 
-            /** Simple constructor.
-             * @param t time
-             * @param increase if true, g function increases around event date
+            /**
+             * Simple constructor.
+             * 
+             * @param t
+             *            time
+             * @param increase
+             *            if true, g function increases around event date
              */
-            public EventTime(final double t, final boolean increase) {
+            public EventTime(final double t,
+                             final boolean increase) {
                 this.eventTime = t;
                 this.gIncrease = increase;
             }
 
-            /** Getter for event date.
+            /**
+             * Getter for event date.
+             * 
              * @return event date
              */
             public double getTime() {
                 return eventTime;
             }
 
-            /** Getter for g function way at event time.
+            /**
+             * Getter for g function way at event time.
+             * 
              * @return g function increasing flag
              */
             public boolean isgIncrease() {
@@ -778,32 +892,37 @@ public class DSSTPropagator extends AbstractPropagator {
 
     }
 
-    /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
+    /**
+     * Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
      * <p>
-     * The errors are estimated from partial derivatives properties of orbits,
-     * starting from a scalar position error specified by the user.
-     * Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
-     * we get at constant energy (i.e. on a Keplerian trajectory):
+     * The errors are estimated from partial derivatives properties of orbits, starting from a
+     * scalar position error specified by the user. Considering the energy conservation equation V =
+     * sqrt(mu (2/r - 1/a)), we get at constant energy (i.e. on a Keplerian trajectory):
+     * 
      * <pre>
      * V<sup>2</sup> r |dV| = mu |dr|
      * </pre>
-     * So we deduce a scalar velocity error consistent with the position error.
-     * From here, we apply orbits Jacobians matrices to get consistent errors
-     * on orbital parameters.
+     * 
+     * So we deduce a scalar velocity error consistent with the position error. From here, we apply
+     * orbits Jacobians matrices to get consistent errors on orbital parameters.
      * </p>
      * <p>
-     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances
-     * are only local estimates, not global ones. So some care must be taken when using
-     * these tolerances. Setting 1mm as a position error does NOT mean the tolerances
-     * will guarantee a 1mm error position after several orbits integration.
+     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances are only
+     * local estimates, not global ones. So some care must be taken when using these tolerances.
+     * Setting 1mm as a position error does NOT mean the tolerances will guarantee a 1mm error
+     * position after several orbits integration.
      * </p>
-     * @param dP user specified position error
-     * @param orbit reference orbit
-     * @return a two rows array, row 0 being the absolute tolerance error and row 1
-     * being the relative tolerance error
+     * 
+     * @param dP
+     *            user specified position error
+     * @param orbit
+     *            reference orbit
+     * @return a two rows array, row 0 being the absolute tolerance error and row 1 being the
+     *         relative tolerance error
      */
-    public static double[][] tolerances(final double dP, final Orbit orbit) {
-        
+    public static double[][] tolerances(final double dP,
+                                        final Orbit orbit) {
+
         final double[][] numTol = NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
         final double[][] dssTol = new double[2][6];
         System.arraycopy(numTol[0], 0, dssTol[0], 0, dssTol[0].length);

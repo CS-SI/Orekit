@@ -13,6 +13,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.coefficients.CiSiCoefficient;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
@@ -21,6 +22,15 @@ import org.orekit.propagation.semianalytical.dsst.coefficients.GammaMsnCoefficie
 import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
 import org.orekit.time.AbsoluteDate;
 
+/**
+ * Central body contribution to the {@link DSSTPropagator}. Central body is divided into a mean
+ * contribution, witch is integrated over long step period, and some short periodic variations that
+ * can be analytically computed.
+ * <p>
+ * Mean element rate are the da<sub>i</sub>/dt derivatives.
+ * 
+ * @author Romain Di Costanzo
+ */
 public class DSSTCentralBody implements DSSTForceModel {
 
     /**
@@ -509,7 +519,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         /**
-         * Compute the following elements :
+         * Compute the following elements from expression 3.3 - (4):
          * 
          * <pre>
          * dU / da
@@ -611,8 +621,8 @@ public class DSSTCentralBody implements DSSTForceModel {
                         }
                         gamMsn = gammaMNS.getGammaMsn(n, s, m);
                         dGamma = gammaMNS.getDGammaMsn(n, s, m);
-                        // kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
-                        kjn_1 = hansen.computHKVfromNewcomb(j, -n - 1, s);
+                        kjn_1 = hansen.getHansenKernelValue(j, -n - 1, s);
+                        // kjn_1 = hansen.computHKVfromNewcomb(j, -n - 1, s);
                         dkjn_1 = hansen.getHansenKernelDerivative(j, -n - 1, s);
                         dGdh = GHms.getdGmsdh(m, s, j);
                         dGdk = GHms.getdGmsdk(m, s, j);
@@ -669,11 +679,6 @@ public class DSSTCentralBody implements DSSTForceModel {
                         dudga += ran * Im * vmsn * kjn_1 * (jacobi * dGamma + gamMsn * dJacobi) * (realCosFactor + realSinFactor);
                     }
                 }
-            }
-
-            if (Double.isNaN(duda) || Double.isNaN(dudh) || Double.isNaN(dudk) || Double.isNaN(dudl) || Double.isNaN(dudal)
-                            || Double.isNaN(dudbe) || Double.isNaN(dudga)) {
-                System.out.println();
             }
 
             duda *= -muOa / a;

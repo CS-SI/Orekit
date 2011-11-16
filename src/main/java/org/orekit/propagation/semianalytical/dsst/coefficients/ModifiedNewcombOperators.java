@@ -38,6 +38,8 @@ import org.orekit.errors.OrekitException;
  * <pre>
  *  P<sub>k<sub>j</sub></sub> = &sum;<sub>j=0;&rho;</sub> a<sub>j</sub>s<sup>j</sup>
  * </pre>
+ * 
+ * @author Romain Di Costanzo
  */
 public class ModifiedNewcombOperators {
 
@@ -62,7 +64,6 @@ public class ModifiedNewcombOperators {
                                   int s) throws OrekitException {
         boolean reverse = rho < sigma;
         int maxOrder = (reverse ? NewcombPolynomialsGenerator.COMPUTED_REVERSE_ORDER : NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER);
-
         // If order hasn't been computed yet, update the Newcomb polynomials
         if (reverse && sigma > maxOrder) {
             if (sigma > NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER) {
@@ -75,14 +76,13 @@ public class ModifiedNewcombOperators {
 
         // Initialization :
         double result = 0d;
-        int counter = 0;
         // Compute value from the list of polynomials :
         // First get the Newcomb polynomial for a given couple rho / sigma
         List<PolynomialFunction> poly = NewcombPolynomialsGenerator.NEWCOMB_POLYNOMIALS.get(new Couple(rho, sigma));
-
+        double power = 1;
         for (PolynomialFunction function : poly) {
-            result += function.value(s) * FastMath.pow(n, counter);
-            counter++;
+            result += function.value(s) * power;
+            power = n * power;
         }
 
         return result;

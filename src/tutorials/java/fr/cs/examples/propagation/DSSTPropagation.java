@@ -67,20 +67,20 @@ public class DSSTPropagation {
      */
     // Force model used :
     private static boolean             centralBody        = true;
-    private static boolean             moon               = true;
-    private static boolean             sun                = true;
-    private static boolean             drag               = true;
-    private static boolean             radiationPressure  = true;
+    private static boolean             moon               = false;
+    private static boolean             sun                = false;
+    private static boolean             drag               = false;
+    private static boolean             radiationPressure  = false;
 
     // output file path : example : "D:/DSSTValidation/result/". By default, results will be
-    // generated in the orekit project, if the 'generateFileResult' is set at true.
+    // generated in the Orekit project, if the 'generateFileResult' is set at true.
     private static boolean             generateFileResult = true;
-    private static String              outputFilePath     = "./";
+    private static String              outputFilePath     = new String(".").concat(System.getProperty("file.separator"));
     // print one point every xxx seconds
     private static double              printStep          = 1000;
 
     // extrapolation time
-    private static double              extrapolationTime  = 365*86400d;
+    private static double              extrapolationTime  = 1 * 86400d;
     /**
      * End of tutorial customization
      */
@@ -89,11 +89,12 @@ public class DSSTPropagation {
     private static DSSTPropagator      propaDSST;
     private static NumericalPropagator propaNUM;
 
-    // Print result with the following date : 
+    // Print result with the following date :
     // date (in days, from the initialDate), px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm
     private static String              format             = new String("%14.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f");
 
     /**
+     * @param args
      * @throws OrekitException
      * @throws ParseException
      * @throws IOException
