@@ -8,7 +8,6 @@ import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 

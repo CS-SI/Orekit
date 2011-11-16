@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -16,10 +15,10 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.coefficients.CiSiCoefficient;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.coefficients.GHmsjPolynomials;
 import org.orekit.propagation.semianalytical.dsst.coefficients.GammaMsnCoefficients;
 import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
-import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 public class DSSTCentralBody implements DSSTForceModel {
