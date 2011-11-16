@@ -6,19 +6,39 @@ import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.MNSKey;
 
+/**
+ * Hansen coefficient tool. Hansen coefficient are eccentricity function representation. For a given
+ * eccentricity, every computed element is stored in a map.
+ * 
+ * @author Romain Di Costanzo
+ */
 public class HansenCoefficients {
 
     /** Default convergence parameter used in Hansen coefficient generation. */
     private static final double            DEFAULT_EPSILON           = 1.e-4;
 
+    /** Map to store every Hansen coefficient computed */
     private static TreeMap<MNSKey, Double> HANSEN_KERNEL             = new TreeMap<DSSTCoefficientFactory.MNSKey, Double>();
+
+    /** Map to store every Hansen coefficient derivatives computed */
     private static TreeMap<MNSKey, Double> HANSEN_KERNEL_DERIVATIVES = new TreeMap<DSSTCoefficientFactory.MNSKey, Double>();
 
+    /** Eccentricity */
     private final double                   ecc;
+
+    /** 1 - e<sup>2</sup> */
     private final double                   ome2;
+
+    /** &chi; = 1 / sqrt(1- e<sup>2</sup>) */
     private final double                   chi;
+
+    /** &chi;<sup>2</sup> */
     private final double                   chi2;
 
+    /**
+     * Convergence factor used when analyzing the infinite serie representation from
+     * {@link ModifiedNewcombOperators}
+     */
     private final double                   eps;
 
     /**
@@ -265,21 +285,25 @@ public class HansenCoefficients {
     private double computeHKVNNegative(final int j,
                                        final int n,
                                        final int s) throws OrekitException {
+        double result = 0;
+        if ((n == 3) || (n == s + 1) || (n == 1 - s)) {
+            result = computHKVfromNewcomb(j, -n - 1, s);
+        } else {
+            final double kmN = computHKVfromNewcomb(j, -n, s);
+            HANSEN_KERNEL.put(new MNSKey(j, -n, s), kmN);
+            final double kmNp1 = computHKVfromNewcomb(j, -n + 1, s);
+            HANSEN_KERNEL.put(new MNSKey(j, -n + 1, s), kmNp1);
+            final double kmNp3 = computHKVfromNewcomb(j, -n + 3, s);
+            HANSEN_KERNEL.put(new MNSKey(j, -n + 3, s), kmNp3);
 
-        final double kmN = computHKVfromNewcomb(j, -n, s);
-        HANSEN_KERNEL.put(new MNSKey(j, -n, s), kmN);
-        final double kmNp1 = computHKVfromNewcomb(j, -n + 1, s);
-        HANSEN_KERNEL.put(new MNSKey(j, -n + 1, s), kmNp1);
-        final double kmNp3 = computHKVfromNewcomb(j, -n + 3, s);
-        HANSEN_KERNEL.put(new MNSKey(j, -n + 3, s), kmNp3);
-
-        final double factor = chi2 / ((3. - n) * (1. - n + s) * (1. - n - s));
-        final double factmN = (3. - n) * (1. - n) * (3. - 2. * n);
-        final double factmNp1 = (2. - n) * ((3. - n) * (1. - n) + (2. * j * s) / chi);
-        final double factmNp3 = j * j * (1. - n);
-        final double kJNS = factor * (factmN * kmN - factmNp1 * kmNp1 + factmNp3 * kmNp3);
-        HANSEN_KERNEL.put(new MNSKey(j, -(n + 1), s), kJNS);
-        return kJNS;
+            final double factor = chi2 / ((3. - n) * (1. - n + s) * (1. - n - s));
+            final double factmN = (3. - n) * (1. - n) * (3. - 2. * n);
+            final double factmNp1 = (2. - n) * ((3. - n) * (1. - n) + (2. * j * s) / chi);
+            final double factmNp3 = j * j * (1. - n);
+            result = factor * (factmN * kmN - factmNp1 * kmNp1 + factmNp3 * kmNp3);
+            HANSEN_KERNEL.put(new MNSKey(j, -(n + 1), s), result);
+        }
+        return result;
     }
 
     /**

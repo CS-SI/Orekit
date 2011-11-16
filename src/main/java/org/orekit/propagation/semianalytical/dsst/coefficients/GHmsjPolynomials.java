@@ -8,6 +8,8 @@ import org.apache.commons.math.util.FastMath;
  * and their partial derivatives to k, h, &alpha; and &beta; Those equation are issue from the
  * Danielson paper (Semi-Analytic Satellite Theory). The expression used here are equations at 2.7.5
  * - (1)(2).
+ * 
+ * @author Romain Di Costanzo
  */
 public class GHmsjPolynomials {
 

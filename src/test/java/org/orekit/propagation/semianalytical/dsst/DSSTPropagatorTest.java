@@ -247,7 +247,7 @@ public class DSSTPropagatorTest {
      */
     @Test
     public void testPropagationWithCentralBody() throws Exception {
-        final double dt = 365*86400.;
+        final double dt = 10*86400.;
         final int printStep = 1000;
         boolean printPV = true;
         boolean meanOrbit = false;
@@ -262,7 +262,7 @@ public class DSSTPropagatorTest {
         List<ResonantCouple> listCouple = new ArrayList<ResonantCouple>();
         
 
-        DSSTForceModel force = new DSSTCentralBody(ae, mu,CnmNotNorm, CnmNotNorm, listCouple, 1e-4);
+        DSSTForceModel force = new DSSTCentralBody(ae, mu,CnmNotNorm, CnmNotNorm, null, 1e-4);
         ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
         
 //        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(provider.getAe(), 800000, 1e-3, 0, Math.PI / 2d, Math.PI, provider.getMu(), FramesFactory.getGCRF(), AbsoluteDate.J2000_EPOCH));

@@ -18,6 +18,8 @@ import org.apache.commons.math.complex.Complex;
  * The C<sub>i</sub>(k, h) and the S<sub>i</sub>(k, h) elements are store as an {@link ArrayList} of
  * {@link Complex} number, the C<sub>i</sub>(k, h) being represented by its real part and the
  * S<sub>i</sub>(k, h) by the imaginary part.
+ * 
+ * @author Romain Di Costanzo
  */
 public class CiSiCoefficient {
 
@@ -30,13 +32,20 @@ public class CiSiCoefficient {
     /** List of computed elements */
     private List<Complex> CjSj    = new ArrayList<Complex>();
 
-    /** is the x-component of the S<sub>i</sub>, C<sub>i</sub> series */
+    /** Is the x-component of the S<sub>i</sub>, C<sub>i</sub> series */
     private final double  x;
 
-    /** is the y-component of the S<sub>i</sub>, C<sub>i</sub> series */
+    /** Is the y-component of the S<sub>i</sub>, C<sub>i</sub> series */
     private final double  y;
 
-    /** S<sub>i</sub>(k, h) and C<sub>i</sub>(k, h) constructor */
+    /**
+     * S<sub>i</sub>(k, h) and C<sub>i</sub>(k, h) constructor
+     * 
+     * @param x
+     *            x value
+     * @param y
+     *            y value
+     */
     public CiSiCoefficient(final double x,
                            final double y) {
         this.x = x;
@@ -80,7 +89,7 @@ public class CiSiCoefficient {
     }
 
     /**
-     * Get the dC<sub>i</sub> / d<sub>k</sub> coefficient
+     * Get the dC<sub>i</sub> / dk coefficient
      * 
      * @param i
      *            order
@@ -91,7 +100,7 @@ public class CiSiCoefficient {
     }
 
     /**
-     * Get the dS<sub>i</sub> / d<sub>k</sub> coefficient
+     * Get the dS<sub>i</sub> / dk coefficient
      * 
      * @param i
      *            order
@@ -102,7 +111,7 @@ public class CiSiCoefficient {
     }
 
     /**
-     * Get the dC<sub>i</sub> / d<sub>h</sub> coefficient
+     * Get the dC<sub>i</sub> / dh coefficient
      * 
      * @param i
      *            order
@@ -113,7 +122,7 @@ public class CiSiCoefficient {
     }
 
     /**
-     * Get the dS<sub>i</sub> / d<sub>h</sub> coefficient
+     * Get the dS<sub>i</sub> / dh coefficient
      * 
      * @param i
      *            order

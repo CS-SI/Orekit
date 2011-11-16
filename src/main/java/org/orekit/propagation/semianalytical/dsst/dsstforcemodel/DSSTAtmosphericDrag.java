@@ -77,10 +77,6 @@ public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    public void init(SpacecraftState state) throws OrekitException {
-    }
-
-    /** {@inheritDoc} */
     protected Vector3D getAcceleration(final SpacecraftState state,
                                        final Vector3D position,
                                        final Vector3D velocity) throws OrekitException {

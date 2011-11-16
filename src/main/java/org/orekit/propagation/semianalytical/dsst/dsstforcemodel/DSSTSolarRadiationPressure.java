@@ -89,10 +89,6 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState state) throws OrekitException {
-    }
-
-    /** {@inheritDoc} */
     protected Vector3D getAcceleration(final SpacecraftState state,
                                        final Vector3D position,
                                        final Vector3D velocity) throws OrekitException {

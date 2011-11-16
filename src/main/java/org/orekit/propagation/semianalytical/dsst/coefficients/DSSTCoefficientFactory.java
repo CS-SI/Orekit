@@ -12,11 +12,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
 /**
- * @author rdicosta
+ * This class is designed to provide coefficient from the DSST theory.
+ * 
+ * @author Romain Di Costanzo
  */
 public class DSSTCoefficientFactory {
 
-    /** Internal storage of the polynomial values. Reused for further computation */
+    /** Internal storage of the polynomial values. Reused for further computation. */
     private static TreeMap<NSKey, Double>         VNS            = new TreeMap<NSKey, Double>();
 
     private static int                            LAST_VNS_ORDER = 2;
@@ -24,6 +26,7 @@ public class DSSTCoefficientFactory {
     /** Map of the Qns derivatives, for each (n, s) couple {@link DSSTCoefficientFactory.NSKey} */
     private static Map<NSKey, PolynomialFunction> QNS_MAP        = new TreeMap<NSKey, PolynomialFunction>();
 
+    /** Static initialization for the V<sub>ns</sub> coefficient */
     static {
         // Initialization
         VNS.put(new NSKey(0, 0), 1.);
@@ -64,8 +67,7 @@ public class DSSTCoefficientFactory {
 
     /**
      * Compute the Q<sub>ns</sub> array evaluated at &gamma; from the recurrence formula 2.8.3-(2).
-     * As this method directly evaluate the polynomial at &gamma;, values aren't stored. For single
-     * use, this method is faster than the {@link #getQnsPolynomialValue(double, int, int)}
+     * As this method directly evaluate the polynomial at &gamma;, values aren't stored.
      * 
      * @param gamma
      *            &gamma; angle
@@ -174,7 +176,21 @@ public class DSSTCoefficientFactory {
         return new double[] { asbs.getReal(), asbs.getImaginary() };
     }
 
-    /** relation 3.1-(4) */
+    /**
+     * Get the G<sub>s</sub> coefficient from relation 3.1-(4)
+     * 
+     * @param k
+     *            k
+     * @param h
+     *            h
+     * @param alpha
+     *            &alpha;
+     * @param beta
+     *            &beta;
+     * @param s
+     *            s
+     * @return G<sub>s</sub> coefficient
+     */
     public static double getGsCoefficient(final double k,
                                           final double h,
                                           final double alpha,
@@ -187,7 +203,21 @@ public class DSSTCoefficientFactory {
         return a2.multiply(b2).getReal();
     }
 
-    /** relation 3.1-(4) */
+    /**
+     * Get the H<sub>s</sub> coefficient from relation 3.1-(4)
+     * 
+     * @param k
+     *            k
+     * @param h
+     *            h
+     * @param alpha
+     *            &alpha;
+     * @param beta
+     *            &beta;
+     * @param s
+     *            s
+     * @return H<sub>s</sub> coefficient
+     */
     public static double getHsCoefficient(final double k,
                                           final double h,
                                           final double alpha,
@@ -205,6 +235,7 @@ public class DSSTCoefficientFactory {
      * 
      * @param order
      *            Order of the computation. Computation will be done from order 0 to order -1
+     * @return Map of the V<sub>n, s</sub> coefficient
      */
     public static TreeMap<NSKey, Double> computeVnsCoefficient(final int order) {
 
@@ -238,8 +269,12 @@ public class DSSTCoefficientFactory {
      * <sup>m</sup> expression as function of the V<sub>n, s</sub> coefficients. See text in 2.8.2
      * 
      * @param m
+     *            m
      * @param n
+     *            n
      * @param s
+     *            s
+     * @return The V<sub>n, s</sub> <sup>m</sup> coefficient
      * @throws OrekitException
      *             if m > s
      */
@@ -274,19 +309,34 @@ public class DSSTCoefficientFactory {
         /** s value */
         final int s;
 
-        /** Default constructor */
+        /**
+         * Default constructor
+         * 
+         * @param n
+         *            n
+         * @param s
+         *            s
+         */
         public NSKey(final int n,
                      final int s) {
             this.n = n;
             this.s = s;
         }
 
-        /** Get n */
+        /**
+         * Get n
+         * 
+         * @return n
+         */
         public int getN() {
             return n;
         }
 
-        /** Get s */
+        /**
+         * Get s
+         * 
+         * @return s
+         */
         public int getS() {
             return s;
         }
@@ -326,7 +376,16 @@ public class DSSTCoefficientFactory {
         /** n value */
         final int n;
 
-        /** Default constructor */
+        /**
+         * Default constructor
+         * 
+         * @param m
+         *            m
+         * @param n
+         *            n
+         * @param s
+         *            s
+         */
         public MNSKey(final int m,
                       final int n,
                       final int s) {
@@ -358,6 +417,9 @@ public class DSSTCoefficientFactory {
             return result;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             return new String("[" + m + ", " + n + ", " + s + "]");
