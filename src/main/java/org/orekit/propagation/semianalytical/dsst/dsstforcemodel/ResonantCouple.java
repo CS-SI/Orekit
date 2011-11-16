@@ -39,5 +39,10 @@ public class ResonantCouple {
     public int getJ() {
         return j;
     }
+    
+    
+    public String toString(){
+        return new String("j : " + j + " m : " + m);
+    }
 
 }

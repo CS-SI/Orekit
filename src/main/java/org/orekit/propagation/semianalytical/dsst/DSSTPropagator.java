@@ -561,7 +561,6 @@ public class DSSTPropagator extends AbstractPropagator {
             maxStep = 0.;
         }
 
-        @Override
         public void handleStep(StepInterpolator interpolator, boolean isLast) {
             StRange sr = new StRange(interpolator);
             maxStep = FastMath.max(maxStep, sr.getTmax().durationFrom(sr.getTmin()));
@@ -574,7 +573,6 @@ public class DSSTPropagator extends AbstractPropagator {
             }
         }
 
-        @Override
         public void reset() {
         }
     }
@@ -633,7 +631,6 @@ public class DSSTPropagator extends AbstractPropagator {
             return step;
         }
 
-        @Override
         public int compareTo(StRange st) {
             if (this.tmax.compareTo(st.getTmin()) < 0) {
                 return -1;
@@ -687,7 +684,6 @@ public class DSSTPropagator extends AbstractPropagator {
             this.gTime = Double.NaN;
         }
 
-        @Override
         public double g(double t, double[] y) {
             gTime = t;
             if (currentIndex < 0) {
@@ -698,12 +694,10 @@ public class DSSTPropagator extends AbstractPropagator {
             }
         }
 
-        @Override
         public Action eventOccurred(double t, double[] y, boolean increasing) {
             return Action.STOP;
         }
 
-        @Override
         public void resetState(double t, double[] y) {
             return;
         }

@@ -3,11 +3,14 @@ package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 import java.util.TreeMap;
 
 import org.apache.commons.math.random.MersenneTwister;
+import org.apache.commons.math.util.ArithmeticUtils;
+import org.apache.commons.math.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 
 public class CoefficientFactoryTest {
 
@@ -18,7 +21,7 @@ public class CoefficientFactoryTest {
     @Test
     public void VnsCoefficientComputationTest() {
         final int order = 6;
-        TreeMap<NSKey, Double> Vns = CoefficientFactory.computeVnsCoefficient(order);
+        TreeMap<NSKey, Double> Vns = DSSTCoefficientFactory.computeVnsCoefficient(order);
 
         // Odd terms are null
         for (int i = 0; i < order; i++) {
@@ -46,7 +49,7 @@ public class CoefficientFactoryTest {
         Assert.assertEquals(Vns.lastKey().getS(), 5);
         
         /** Compute Vns coefficient by using the cache process to store those coefficient */
-        TreeMap<NSKey, Double> Vns30 = CoefficientFactory.computeVnsCoefficient(30);
+        TreeMap<NSKey, Double> Vns30 = DSSTCoefficientFactory.computeVnsCoefficient(30);
         NSKey lastKey30 = Vns30.lastKey();
         Assert.assertEquals(lastKey30.getN(), 29);
         Assert.assertEquals(lastKey30.getS(), 29);
@@ -58,12 +61,12 @@ public class CoefficientFactoryTest {
      */
     @Test
     public void VmnsTestFromTwoMethods() throws OrekitException {
-        Assert.assertEquals(CoefficientFactory.getVmns2(0, 0, 0), CoefficientFactory.getVmns(0, 0, 0), eps8);
-        Assert.assertEquals(CoefficientFactory.getVmns2(0, 1, 1), CoefficientFactory.getVmns(0, 1, 1), eps8);
-        Assert.assertEquals(CoefficientFactory.getVmns2(0, 2, 2), CoefficientFactory.getVmns(0, 2, 2), eps8);
-        Assert.assertEquals(CoefficientFactory.getVmns2(0, 3, 1), CoefficientFactory.getVmns(0, 3, 1), eps8);
-        Assert.assertEquals(CoefficientFactory.getVmns2(0, 3, 3), CoefficientFactory.getVmns(0, 3, 3), eps8);
-        Assert.assertEquals(CoefficientFactory.getVmns2(2, 2, 2), CoefficientFactory.getVmns(2, 2, 2), eps8);
+        Assert.assertEquals(getVmns2(0, 0, 0), DSSTCoefficientFactory.getVmns(0, 0, 0), eps8);
+        Assert.assertEquals(getVmns2(0, 1, 1), DSSTCoefficientFactory.getVmns(0, 1, 1), eps8);
+        Assert.assertEquals(getVmns2(0, 2, 2), DSSTCoefficientFactory.getVmns(0, 2, 2), eps8);
+        Assert.assertEquals(getVmns2(0, 3, 1), DSSTCoefficientFactory.getVmns(0, 3, 1), eps8);
+        Assert.assertEquals(getVmns2(0, 3, 3), DSSTCoefficientFactory.getVmns(0, 3, 3), eps8);
+        Assert.assertEquals(getVmns2(2, 2, 2), DSSTCoefficientFactory.getVmns(2, 2, 2), eps8);
 
     }
 
@@ -71,39 +74,16 @@ public class CoefficientFactoryTest {
     @Test(expected = OrekitException.class)
     public void VmnsErrorCallingSequenceWrong_N_S_Test() throws OrekitException {
         // if s > n
-        CoefficientFactory.getVmns2(0, 0, 1);
+        getVmns2(0, 0, 1);
     }
 
     /** Error if m > n */
     @Test(expected = OrekitException.class)
     public void VmnsErrorCallingSequenceWrong_M_S_Test() throws OrekitException {
         // if m > n
-        CoefficientFactory.getVmns2(3, 2, 1);
+        getVmns2(3, 2, 1);
     }
 
-//    @Test
-//    public void testVmnsCoefficientComputation() throws OrekitException {
-//        final int N = 5;
-//        final int M = 5;
-//
-//        @SuppressWarnings("deprecation")
-//        Map<MNSKey, Double> map = CoefficientFactory.computeVmns2(M, N);
-//        Iterator<Entry<MNSKey, Double>> it = map.entrySet().iterator();
-//
-//        while (it.hasNext()) {
-//            Entry<MNSKey, Double> next = it.next();
-//            System.out.println(next.getKey() + " " + next.getValue());
-//        }
-//        // With m = 0,
-//        // final int order = 10;
-//        // CoefficientFactory.getVmns(0, 2, 0);
-//
-//        Assert.assertEquals(map.get(new MNSKey(0, 0, 0)), CoefficientFactory.getVmns(0, 0, 0), eps8);
-//        Assert.assertEquals(map.get(new MNSKey(0, 1, 1)), CoefficientFactory.getVmns(0, 1, 1), eps8);
-//        Assert.assertEquals(map.get(new MNSKey(0, 2, 2)), CoefficientFactory.getVmns(0, 2, 2), eps8);
-//        Assert.assertEquals(map.get(new MNSKey(0, 3, 1)), CoefficientFactory.getVmns(0, 3, 1), eps8);
-//        Assert.assertEquals(map.get(new MNSKey(0, 3, 3)), CoefficientFactory.getVmns(0, 3, 3), eps8);
-//    }
 
     /**
      * Qns test based on two computation method.
@@ -111,16 +91,16 @@ public class CoefficientFactoryTest {
      */
     @Test
     public void testQNS() {
-        Assert.assertEquals(1., CoefficientFactory.getQnsPolynomialValue(0, 0, 0), 0.);
+        Assert.assertEquals(1., DSSTCoefficientFactory.getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
         final int order = 10;
         final MersenneTwister random = new MersenneTwister(123456789);
         for (int g = 0; g < 1000; g++) {
             final double gamma = random.nextDouble();
-            double[][] qns = CoefficientFactory.computeQnsCoefficient(gamma, order);
+            double[][] qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, order);
             for (int n = 0; n < order; n++) {
                 for (int s = 0; s <= n; s++) {
-                    Assert.assertEquals(qns[n][s], CoefficientFactory.getQnsPolynomialValue(gamma, n, s), Math.abs(eps11 * qns[n][s]));
+                    Assert.assertEquals(qns[n][s], DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s), Math.abs(eps11 * qns[n][s]));
                 }
             }
         }
@@ -139,16 +119,34 @@ public class CoefficientFactoryTest {
             final double h = random.nextDouble();
             final double alpha = random.nextDouble();
             final double beta = random.nextDouble();
-            final double[][] GH = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
+            final double[][] GH = DSSTCoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
             for (int j = 1; j < order; j++) {
-                final double[] GsHs = CoefficientFactory.getGsHsCoefficient(k, h, alpha, beta, j);
-                final double Gs = CoefficientFactory.getGsCoefficient(k, h, alpha, beta, j);
-                final double Hs = CoefficientFactory.getHsCoefficient(k, h, alpha, beta, j);
+                final double[] GsHs = DSSTCoefficientFactory.getGsHsCoefficient(k, h, alpha, beta, j);
+                final double Gs = DSSTCoefficientFactory.getGsCoefficient(k, h, alpha, beta, j);
+                final double Hs = DSSTCoefficientFactory.getHsCoefficient(k, h, alpha, beta, j);
                 Assert.assertEquals(GsHs[0], Gs, 0.);
                 Assert.assertEquals(GsHs[1], Hs, 0.);
                 Assert.assertEquals(GsHs[0], GH[0][j], Math.abs(eps12 * Gs));
                 Assert.assertEquals(GsHs[1], GH[1][j], Math.abs(eps12 * Hs));
             }
         }
+    }
+    
+    /**
+     * Direct computation for the Vmns coefficient from equation 2.7.1 - (6)
+     * 
+     * @throws OrekitException
+     */
+    public static double getVmns2(final int m,
+                                  final int n,
+                                  final int s) throws OrekitException {
+        double vmsn = 0d;
+        if ((n - s) % 2 == 0) {
+            final double num = FastMath.pow(-1, (n - s) / 2d) * ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
+            final double den = FastMath.pow(2, n) * ArithmeticUtils.factorial(n - m) * ArithmeticUtils.factorial((n + s) / 2)
+                            * ArithmeticUtils.factorial((n - s) / 2);
+            vmsn = num / den;
+        }
+        return vmsn;
     }
 }

@@ -4,7 +4,7 @@ import org.apache.commons.math.util.ArithmeticUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.HansenCoefficients;
+import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
 
 /**
  * Test on hansen coefficient
@@ -54,8 +54,10 @@ public class HansenCoefficientsTest {
     @Test
     public void testJ1NHigh() throws OrekitException {
         final double ecc = 0.1;
+        
         HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
-        System.out.println(hansen.getHansenKernelValue(1, -31, -20));
+        System.out.println(hansen.getHansenKernelValue(1, -4, -3));
+//        System.out.println(hansen.getHansenKernelValue(1, -31, -20));
 
     }
 

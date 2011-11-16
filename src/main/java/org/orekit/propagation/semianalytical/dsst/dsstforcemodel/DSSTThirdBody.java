@@ -10,7 +10,9 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.CoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 /** Third body attraction contribution for {@link DSSTPropagator}.
@@ -116,7 +118,7 @@ public class DSSTThirdBody implements DSSTForceModel {
         this.gm   = body.getGM();
 
         this.order = order;
-        this.Vns = CoefficientFactory.computeVnsCoefficient(order + 1);
+        this.Vns = DSSTCoefficientFactory.computeVnsCoefficient(order + 1);
     }
 
     /** {@inheritDoc} */
@@ -229,9 +231,9 @@ public class DSSTThirdBody implements DSSTForceModel {
         // Hansen coefficients
         final HansenCoefficients hansen = new HansenCoefficients(state.getE());
         // Gs coefficients
-        final double[][] GsHs = CoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
+        final double[][] GsHs = DSSTCoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
         // Qns coefficients
-        final double[][] Qns = CoefficientFactory.computeQnsCoefficient(gamma, order);
+        final double[][] Qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, order);
         // mu3 / R3
         final double muoR3 = gm / R3;
         // a / R3
