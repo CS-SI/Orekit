@@ -62,7 +62,7 @@ public class DSSTAtmosphericDragTest {
 //        System.out.println("DT1: " + dT1);
 
         for (int i = 0; i < daidt.length; i++) {
-            System.out.println(daidt[i]);
+//            System.out.println(daidt[i]);
         }
 
     }

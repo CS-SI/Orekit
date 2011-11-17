@@ -85,18 +85,24 @@ public class HansenCoefficients {
     public double getHansenKernelValue(final int j,
                                        final int n,
                                        final int s) throws OrekitException {
-        if (j == 0) {
-            if (n >= 0) {
-                // Compute the K0(n,s) coefficients
-                return computeHKVJ0NPositive(n, s);
-            } else {
-                // Compute the K0(-n-1,s) coefficients with n >= 0
-                return computeHKVJ0NNegative(-(n + 1), s);
-            }
+        double result = 0d;
+        if (HANSEN_KERNEL.containsKey(new MNSKey(j, n, s))) {
+            result = HANSEN_KERNEL.get(new MNSKey(j, n, s));
         } else {
-            // Compute the general Kj(-n-1, s) with n >= 0
-            return computeHKVNNegative(j, -(n + 1), s);
+            if (j == 0) {
+                if (n >= 0) {
+                    // Compute the K0(n,s) coefficients
+                    result = computeHKVJ0NPositive(n, s);
+                } else {
+                    // Compute the K0(-n-1,s) coefficients with n >= 0
+                    result = computeHKVJ0NNegative(-(n + 1), s);
+                }
+            } else {
+                // Compute the general Kj(-n-1, s) with n >= 0
+                result = computeHKVNNegative(j, -(n + 1), s);
+            }
         }
+        return result;
     }
 
     /**

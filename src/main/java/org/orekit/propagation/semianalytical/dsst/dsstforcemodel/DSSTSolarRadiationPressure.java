@@ -7,6 +7,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -29,6 +30,9 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     private final static double[] ABSOLUTE_ACCURACY = {1.e-18, 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20};
     /** Maximum number of evaluations. */
     private final static int[] MAX_EVAL = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000};
+    
+    /** Epsilon for quadratic resolution*/
+    private final static double EPSILON = 1e-3;
 
     /** A value smaller than ALMOST_ZERO is considered to be zero (0.0). */
     private final static double ALMOST_ZERO = FastMath.ulp(1.0);
@@ -148,7 +152,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
                         final double t2 = alfa * cL + beta * sL;
                         final double S  = 1. - mm * t1 * t1 - t2 * t2;
                         // The solution must satisfy 3.5-1 and 3.5-3
-                        if (t2 < 0. && FastMath.abs(S) < 1.e-6) {
+                        if (t2 < 0. && FastMath.abs(S) < EPSILON) {
                             // Compute the derivative dS/dL
                             final double dSdL  = -2. * (mm * t1 * (h * cL + k * sL) + t2 * (beta * cL - alfa * sL));
                             if (dSdL > 0.) {
