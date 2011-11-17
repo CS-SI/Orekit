@@ -85,6 +85,12 @@ public abstract class AbstractPropagator implements Propagator {
     /** Internal steps interpolator. */
     private final BasicStepInterpolator interpolator;
 
+    /** Start date of last propagation. */
+    private AbsoluteDate lastPropagationStart;
+
+    /** end date of last propagation. */
+    private AbsoluteDate lastPropagationEnd;
+
     /** Start date. */
     private AbsoluteDate startDate;
 
@@ -109,6 +115,8 @@ public abstract class AbstractPropagator implements Propagator {
         statesInitialized      = false;
         additionalStateProviders = new ArrayList<AdditionalStateProvider>();
         interpolator           = new BasicStepInterpolator();
+        lastPropagationStart   = AbsoluteDate.PAST_INFINITY;
+        lastPropagationEnd     = AbsoluteDate.FUTURE_INFINITY;
         this.pvProvider        = new LocalPVProvider();
         this.attitudeProvider  = attitudeProvider;
         setSlaveMode();
@@ -184,7 +192,7 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public BoundedPropagator getGeneratedEphemeris() {
-        return new UnboundedPropagatorView();
+        return new BoundedPropagatorView(lastPropagationStart, lastPropagationEnd);
     }
 
     /** {@inheritDoc} */
@@ -252,6 +260,8 @@ public abstract class AbstractPropagator implements Propagator {
         throws PropagationException {
         try {
 
+            lastPropagationStart = start;
+
             final double dt      = target.durationFrom(start);
             final double epsilon = FastMath.ulp(dt);
             interpolator.storeDate(start);
@@ -296,7 +306,8 @@ public abstract class AbstractPropagator implements Propagator {
             } while (!isLastStep);
 
             // return the last computed state
-            startDate = state.getDate();
+            lastPropagationEnd = state.getDate();
+            startDate          = state.getDate();
             return state;
 
         } catch (PropagationException pe) {
@@ -500,26 +511,39 @@ public abstract class AbstractPropagator implements Propagator {
         initialState = state;
     }
 
-    /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
-    private class UnboundedPropagatorView extends AbstractPropagator implements BoundedPropagator {
+    /** {@link BoundedPropagator} view of the instance. */
+    private class BoundedPropagatorView extends AbstractPropagator implements BoundedPropagator {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3340036098040553110L;
 
+        /** Min date. */
+        private final AbsoluteDate minDate;
+
+        /** Max date. */
+        private final AbsoluteDate maxDate;
+
         /** Simple constructor.
          */
-        public UnboundedPropagatorView() {
+        public BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate) {
             super(AbstractPropagator.this.getAttitudeProvider());
+            if (startDate.compareTo(endDate) <= 0) {
+                minDate = startDate;
+                maxDate = endDate;
+            } else {
+                minDate = endDate;
+                maxDate = startDate;
+            }
         }
 
         /** {@inheritDoc} */
         public AbsoluteDate getMinDate() {
-            return AbsoluteDate.PAST_INFINITY;
+            return minDate;
         }
 
         /** {@inheritDoc} */
         public AbsoluteDate getMaxDate() {
-            return AbsoluteDate.FUTURE_INFINITY;
+            return maxDate;
         }
 
         /** {@inheritDoc} */

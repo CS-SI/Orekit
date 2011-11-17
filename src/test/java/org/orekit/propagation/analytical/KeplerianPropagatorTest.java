@@ -516,8 +516,8 @@ public class KeplerianPropagatorTest {
         propagator.setEphemerisMode();
         propagator.propagate(farTarget);
         BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
-        Assert.assertTrue(Double.isInfinite(ephemeris.getMinDate().durationFrom(AbsoluteDate.J2000_EPOCH)));
-        Assert.assertTrue(Double.isInfinite(ephemeris.getMaxDate().durationFrom(AbsoluteDate.J2000_EPOCH)));
+        Assert.assertEquals(0.0, ephemeris.getMinDate().durationFrom(orbit.getDate()), 1.0e10);
+        Assert.assertEquals(0.0, ephemeris.getMaxDate().durationFrom(farTarget), 1.0e10);
     }
 
     @Test
