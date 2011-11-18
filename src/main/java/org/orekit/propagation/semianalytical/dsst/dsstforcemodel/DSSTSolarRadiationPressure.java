@@ -153,8 +153,8 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
                     }
                     final double absL = FastMath.acos(cL);
                     // Check both angles: L and -L
-//                    for (int j = 1; j >= -1; j-=2) {
-                        final double L  = /* j * */ absL;
+                    for (int j = 1; j >= -1; j-=2) {
+                        final double L  = j * absL;
                         final double sL = FastMath.sin(L);
                         final double t1 = 1. + k * cL + h * sL;
                         final double t2 = alfa * cL + beta * sL;
@@ -173,7 +173,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
                                 ll[1] = L;
                             }
                         }
-//                    }
+                    }
                 }
             }
             // Must be an entry and an exit or none
