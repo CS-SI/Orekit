@@ -178,9 +178,9 @@ public class DSSTPropagatorTest {
      */
     @Test
     public void testPropagationWithCentralBody() throws Exception {
-        // Extrapolation time
-        final double dt = 50 * 86400.;
-        final double checkStep = 10.;
+        // 10 days extrapolation time
+        final double dt = 10 * 86400.;
+        final double checkStep = 500;
 
         // Central Body Force Model 5x5
         double[][] CnmNotNorm = provider.getC(5, 0, false);
@@ -201,9 +201,9 @@ public class DSSTPropagatorTest {
         setDSSTProp(orbitOsc);
         // Define the maximum shift authorized between the numerical propagator and the DSST
         // The tolerance parameter is expressed in the following way : {da, dex, dey, dhx, dhy, dlm}
-        // Tolerance established thanks to a step control every 10 seconds over 50 days : should not
+        // Tolerance established thanks to a step control every 10 seconds over 10 days : should not
         // exceed :
-        double[] tolerance = new double[] { 1e-15, 1e-15, 1e-15, 1e-15, 1e-15, 1e-10 };
+        double[] tolerance = new double[] { 0d, 0d, 0d, 0d, 0d, 6e-12 };
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
         propaDSST.propagate(initDate.shiftedBy(dt));
 
@@ -224,9 +224,9 @@ public class DSSTPropagatorTest {
         setDSSTProp(mean);
         propaDSST.addForceModel(force);
 
-        // Tolerance established thanks to a step control every 10 seconds over 50 days : should not
+        // Tolerance established thanks to a step control every 10 seconds over 10 days : should not
         // exceed :
-        tolerance = new double[] { 9033, 0.0018, 0.0028, 0.017, 0.02, 6e-3 };
+        tolerance = new double[] { 9027, 0.0011, 0.0017, 0.0039, 0.02, 1.7e-3 };
 
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
@@ -242,15 +242,15 @@ public class DSSTPropagatorTest {
 
         // Tolerance established thanks to a step control every 10 seconds over 50 days : should not
         // exceed :
-        tolerance = new double[] { 0.9, 7.5E-5, 3.8E-5, 1.2E-7, 1.5E-7, 5.1E-6 };
+        tolerance = new double[] { 0.855, 7.45E-5, 3.8E-5, 3.5E-8, 3.3E-8, 1.009E-6 };
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
         propaDSST.propagate(initDate.shiftedBy(dt));
     }
 
     @Test
     public void testPropagationWithThirdBody() throws OrekitException, IOException {
-        // 50 days Extrapolation time
-        final double dt = 50 * 86400.;
+        // 10 days Extrapolation time
+        final double dt = 10 * 86400.;
         final double checkStep = 500;
 
         SpacecraftState state = getGEOrbit();
@@ -271,7 +271,7 @@ public class DSSTPropagatorTest {
 
         // Tolerance established thanks to a step control every 10 seconds over 50 days : should not
         // exceed :
-        double[] tolerance = new double[] { 1912.9, 7.16E-5, 1.41E-4, 6.34E-6, 6.46E-6, 0.0048 };
+        double[] tolerance = new double[] { 1476, 5.2E-5, 7.8E-5, 5.5E-6, 5E-6, 9.4E-4 };
 
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
@@ -289,7 +289,7 @@ public class DSSTPropagatorTest {
         setNumProp(state);
         numProp.addForceModel(nForce);
 
-        tolerance = new double[] { 507.29, 9.43E-5, 5.96E-5, 1.85E-6, 1.62E-6, 0.0011 };
+        tolerance = new double[] { 507.29, 2.3E-5, 2.5E-5, 1.6E-6, 1.55E-6, 2.4e-4 };
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
         propaDSST.propagate(initDate.shiftedBy(dt));
@@ -528,7 +528,7 @@ public class DSSTPropagatorTest {
     private void setDSSTProp(SpacecraftState initialState) throws PropagationException {
         this.initialState = initialState;
         this.initDate = initialState.getDate();
-        final double minStep = 10000.;
+        final double minStep = 100.;
         final double maxStep = 86400.;
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
@@ -621,21 +621,21 @@ public class DSSTPropagatorTest {
             deltaHyMax = (deltaHy > deltaHyMax ? deltaHy : deltaHyMax);
             deltaLmMax = (deltaLm > deltaLmMax ? deltaLm : deltaLmMax);
 
-//            Assert.assertEquals(orbRef.getA(), orb.getA(), tolerance[0]);
-//            Assert.assertEquals(orbRef.getEquinoctialEx(), orb.getEquinoctialEx(), tolerance[1]);
-//            Assert.assertEquals(orbRef.getEquinoctialEy(), orb.getEquinoctialEy(), tolerance[2]);
-//            Assert.assertEquals(orbRef.getHx(), orb.getHx(), tolerance[3]);
-//            Assert.assertEquals(orbRef.getHy(), orb.getHy(), tolerance[4]);
-//            Assert.assertEquals(orbRef.getLM(), orb.getLM(), tolerance[5]);
+            Assert.assertEquals(orbRef.getA(), orb.getA(), tolerance[0]);
+            Assert.assertEquals(orbRef.getEquinoctialEx(), orb.getEquinoctialEx(), tolerance[1]);
+            Assert.assertEquals(orbRef.getEquinoctialEy(), orb.getEquinoctialEy(), tolerance[2]);
+            Assert.assertEquals(orbRef.getHx(), orb.getHx(), tolerance[3]);
+            Assert.assertEquals(orbRef.getHy(), orb.getHy(), tolerance[4]);
+            Assert.assertEquals(orbRef.getLM(), orb.getLM(), tolerance[5]);
 
-             if (isLast) {
-             System.out.println(deltaAMax);
-             System.out.println(deltaExMax);
-             System.out.println(deltaEyMax);
-             System.out.println(deltaHxMax);
-             System.out.println(deltaHyMax);
-             System.out.println(deltaLmMax);
-             }
+//             if (isLast) {
+//             System.out.println(deltaAMax);
+//             System.out.println(deltaExMax);
+//             System.out.println(deltaEyMax);
+//             System.out.println(deltaHxMax);
+//             System.out.println(deltaHyMax);
+//             System.out.println(deltaLmMax);
+//             }
 
         }
     }

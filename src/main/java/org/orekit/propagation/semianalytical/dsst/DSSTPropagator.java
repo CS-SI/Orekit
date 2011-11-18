@@ -9,7 +9,6 @@ import java.util.TreeSet;
 
 import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.events.EventHandler;
 import org.apache.commons.math.ode.sampling.StepHandler;
 import org.apache.commons.math.ode.sampling.StepInterpolator;
 import org.apache.commons.math.util.FastMath;
@@ -117,9 +116,6 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /** Step accumulator. */
     private StepAccumulator                cumulator;
-
-    /** Trigger. */
-    private Trigger                        trigger;
 
     /** Reference date. */
     private AbsoluteDate                   referenceDate;
@@ -279,9 +275,7 @@ public class DSSTPropagator extends AbstractPropagator {
     private void setIntegrator(final FirstOrderIntegrator integrator) {
         this.integrator = integrator;
         this.cumulator = new StepAccumulator();
-        this.trigger = new Trigger();
         this.integrator.addStepHandler(cumulator);
-        this.integrator.addEventHandler(trigger, Double.POSITIVE_INFINITY, 1.e-4, 100);
     }
 
     /** {@inheritDoc} */
@@ -624,10 +618,6 @@ public class DSSTPropagator extends AbstractPropagator {
             cumulatedSteps.add(sr);
             td = cumulatedSteps.first().getTmin();
             tf = cumulatedSteps.last().getTmax();
-            if (sr.compareTo(new StRange(target)) == 0) {
-                double tstop = target.durationFrom(referenceDate) + interpolator.getCurrentTime() - interpolator.getPreviousTime();
-                trigger.addEvent(tstop);
-            }
         }
 
         public void reset() {
@@ -717,178 +707,8 @@ public class DSSTPropagator extends AbstractPropagator {
             }
         }
     }
-
-    /**
-     * Finder for timed event.
-     * <p>
-     * This class finds timed event (i.e. occurrence of some predefined time).
-     * </p>
-     * <p>
-     * It is a kind of delayed trigger:
-     * </p>
-     * <ul>
-     * <li>it is defined without prior target ({@link #Trigger()})</li>
-     * <li>several time targets can be added later ({@link #addEvent(double)})</li>
-     * </ul>
-     * <p>
-     * The default implementation behavior is to {@link EventHandler.Action#STOP stop} propagation
-     * at the first event time occurrence. This can be changed by overriding the
-     * {@link #eventOccurred(double, double[], boolean) eventOccurred} method in a derived class.
-     * </p>
-     */
-    private static class Trigger implements EventHandler {
-
-        /** Last time for g computation. */
-        private double                     gTime;
-
-        /** List of event dates. */
-        private final ArrayList<EventTime> eventTimeList;
-
-        /** Current event time. */
-        private int                        currentIndex;
-
-        /**
-         * Build a new instance.
-         * <p>
-         * This constructor is dedicated to time detection when the event time is not known before
-         * propagating. It can be triggered later by adding some event time, it then acts like a
-         * timer.
-         * </p>
-         * 
-         * @see #addEvent(double)
-         */
-        public Trigger() {
-            this.eventTimeList = new ArrayList<EventTime>();
-            this.currentIndex = -1;
-            this.gTime = Double.NaN;
-        }
-
-        public double g(double t,
-                        double[] y) {
-            gTime = t;
-            if (currentIndex < 0) {
-                return -1.0;
-            } else {
-                final EventTime et = getClosest(gTime);
-                return et.isgIncrease() ? (gTime - et.getTime()) : (et.getTime() - gTime);
-            }
-        }
-
-        public Action eventOccurred(double t,
-                                    double[] y,
-                                    boolean increasing) {
-            return Action.STOP;
-        }
-
-        public void resetState(double t,
-                               double[] y) {
-            return;
-        }
-
-        /**
-         * Add an event time.
-         * 
-         * @param target
-         *            target time
-         */
-        public void addEvent(final double target) {
-            final boolean increasing;
-            if (currentIndex < 0) {
-                increasing = Double.isNaN(gTime) ? true : target > gTime;
-                currentIndex = 0;
-                eventTimeList.add(new EventTime(target, increasing));
-            } else {
-                final int lastIndex = eventTimeList.size() - 1;
-                if (eventTimeList.get(0).getTime() > target) {
-                    increasing = !eventTimeList.get(0).isgIncrease();
-                    eventTimeList.add(0, new EventTime(target, increasing));
-                    currentIndex++;
-                } else if (target > eventTimeList.get(lastIndex).getTime()) {
-                    increasing = !eventTimeList.get(lastIndex).isgIncrease();
-                    eventTimeList.add(new EventTime(target, increasing));
-                } else {
-                    return;
-                }
-            }
-        }
-
-        /**
-         * Get the closest EventTime to the target time.
-         * 
-         * @param target
-         *            target time
-         * @return current EventTime
-         */
-        private EventTime getClosest(final double target) {
-            final double dt = target - eventTimeList.get(currentIndex).getTime();
-            if (dt < 0.0 && currentIndex > 0) {
-                boolean found = false;
-                while (currentIndex > 0 && !found) {
-                    if (target - eventTimeList.get(currentIndex - 1).getTime() < eventTimeList.get(currentIndex).getTime() - target) {
-                        currentIndex--;
-                    } else {
-                        found = true;
-                    }
-                }
-            } else if (dt > 0.0 && currentIndex < eventTimeList.size() - 1) {
-                final int maxIndex = eventTimeList.size() - 1;
-                boolean found = false;
-                while (currentIndex < maxIndex && !found) {
-                    if (target - eventTimeList.get(currentIndex + 1).getTime() > eventTimeList.get(currentIndex).getTime() - target) {
-                        currentIndex++;
-                    } else {
-                        found = true;
-                    }
-                }
-            }
-            return eventTimeList.get(currentIndex);
-        }
-
-        /** Event time specification. */
-        private static class EventTime {
-
-            /** Event time. */
-            private final double  eventTime;
-
-            /** Flag for g function way around event time. */
-            private final boolean gIncrease;
-
-            /**
-             * Simple constructor.
-             * 
-             * @param t
-             *            time
-             * @param increase
-             *            if true, g function increases around event date
-             */
-            public EventTime(final double t,
-                             final boolean increase) {
-                this.eventTime = t;
-                this.gIncrease = increase;
-            }
-
-            /**
-             * Getter for event date.
-             * 
-             * @return event date
-             */
-            public double getTime() {
-                return eventTime;
-            }
-
-            /**
-             * Getter for g function way at event time.
-             * 
-             * @return g function increasing flag
-             */
-            public boolean isgIncrease() {
-                return gIncrease;
-            }
-
-        }
-
-    }
-
+    
+    
     /**
      * Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
      * <p>

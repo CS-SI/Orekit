@@ -140,13 +140,21 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
             boolean exitFound  = false;
             // Test the roots
             for (int i = 0; i < nbRoots; i++) {
-                // Eliminate the extraneous roots
-                if (FastMath.abs(cosL[i]) <= 1.0) {
-                    final double cL = cosL[i];
+                double cL;
+                // Eliminate the extraneous roots : first check if |root| < 1 + eps
+                if (FastMath.abs(cosL[i]) < 1 + EPSILON) {
+                    // Check boundaries :
+                    if (FastMath.abs(cosL[i] + 1) < EPSILON){
+                        cL = -1;
+                    }else if (FastMath.abs(cosL[i] - 1) < EPSILON){
+                        cL = +1;
+                    }else {
+                        cL = cosL[i];
+                    }
                     final double absL = FastMath.acos(cL);
                     // Check both angles: L and -L
-                    for (int j = 1; j >= -1; j-=2) {
-                        final double L  = j * absL;
+//                    for (int j = 1; j >= -1; j-=2) {
+                        final double L  = /* j * */ absL;
                         final double sL = FastMath.sin(L);
                         final double t1 = 1. + k * cL + h * sL;
                         final double t2 = alfa * cL + beta * sL;
@@ -165,12 +173,15 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
                                 ll[1] = L;
                             }
                         }
-                    }
+//                    }
                 }
             }
             // Must be an entry and an exit or none
             if (!(entryFound == exitFound)) {
-                throw new OrekitException(OrekitMessages.DSST_SPR_SHADOW_INCONSISTENT, entryFound, exitFound);
+                // TODO problem with exception : entry or exit found but not both ! In this case, consider there is no eclipse...  
+//                throw new OrekitException(OrekitMessages.DSST_SPR_SHADOW_INCONSISTENT, entryFound, exitFound);
+                ll[0] = -FastMath.PI;
+                ll[1] =  FastMath.PI;
             }
             // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
             if (ll[0] > ll[1]) {
