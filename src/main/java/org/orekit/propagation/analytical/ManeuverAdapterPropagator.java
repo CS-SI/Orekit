@@ -17,6 +17,8 @@
 package org.orekit.propagation.analytical;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
@@ -101,6 +103,13 @@ public class ManeuverAdapterPropagator extends AbstractPropagator {
         throws OrekitException {
         maneuvers.add(new SmallManeuverAnalyticalModel(reference.propagate(date),
                                                        frame, dV, isp));
+    }
+
+    /** Get the maneuvers models.
+     * @return maneuvers models, as an unmodifiable list
+     */
+    public List<SmallManeuverAnalyticalModel> getManeuvers() {
+        return Collections.unmodifiableList(maneuvers);
     }
 
     /** {@inheritDoc} */

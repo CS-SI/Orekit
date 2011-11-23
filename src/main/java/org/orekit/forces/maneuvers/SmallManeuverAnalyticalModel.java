@@ -59,10 +59,16 @@ import org.orekit.utils.Constants;
 public class SmallManeuverAnalyticalModel implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3804833976337652097L;
+    private static final long serialVersionUID = 5046690115016896090L;
 
     /** Maneuver date. */
     final AbsoluteDate t0;
+
+    /** Inertial velocity increment. */
+    final Vector3D inertialDV;
+
+    /** Inertial frame in which the velocity increment is defined. */
+    final Frame inertialFrame;
 
     /** Mass change ratio. */
     private final double massRatio;
@@ -117,12 +123,13 @@ public class SmallManeuverAnalyticalModel implements Serializable {
         orbit0.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
 
         // compute maneuver effect on Keplerian (or equinoctial) elements
-        final Vector3D inertDV = frame.getTransformTo(state0.getFrame(), t0).transformVector(dV);
+        inertialFrame = state0.getFrame();
+        inertialDV = frame.getTransformTo(inertialFrame, t0).transformVector(dV);
         delta = new double[6];
         for (int i = 0; i < delta.length; ++i) {
-            delta[i] = jacobian[i][3] * inertDV.getX() +
-                       jacobian[i][4] * inertDV.getY() +
-                       jacobian[i][5] * inertDV.getZ();
+            delta[i] = jacobian[i][3] * inertialDV.getX() +
+                       jacobian[i][4] * inertialDV.getY() +
+                       jacobian[i][5] * inertialDV.getZ();
         }
 
         // compute mean motion change: dM(t1) = dM(t0) + deltaN * (t1 - t0)
@@ -137,6 +144,22 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      */
     public AbsoluteDate getDate() {
         return t0;
+    }
+
+    /** Get the velocity increment of the maneuver.
+     * @return velocity increment in a state-dependent inertial frame
+     * @see SmallManeuverAnalyticalModel#getInertialFrame()
+     */
+    public Vector3D getInertialDV() {
+        return inertialDV;
+    }
+
+    /** Get the inertial frame in which the velocity increment is defined.
+     * @return inertial frame in which the velocity increment is defined
+     * @see #getInertialDV()
+     */
+    public Frame getInertialFrame() {
+        return inertialFrame;
     }
 
     /** Compute the effect of the maneuver on a spacecraft state.
