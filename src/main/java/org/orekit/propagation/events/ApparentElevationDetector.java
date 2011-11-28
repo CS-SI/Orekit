@@ -20,6 +20,7 @@ import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** Finder for satellite apparent elevation events.
  * <p>This class finds apparent elevation events (i.e. apparent satellite raising
@@ -170,6 +171,10 @@ public class ApparentElevationDetector extends AbstractDetector {
      */
     public double getTemperature() {
         return temperature;
+    }
+
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
     }
 
     /** Handle an apparent elevation event and choose what to do next.

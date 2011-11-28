@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** Wrapper shifting events occurrences times.
  * <p>This class wraps an {@link EventDetector event detector} to slightly
@@ -88,6 +89,10 @@ public class EventShifter extends AbstractDetector {
      */
     public double getDecreasingTimeShift() {
         return decreasingOffset;
+    }
+
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
     }
 
     /** {@inheritDoc} */

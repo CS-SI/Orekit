@@ -266,6 +266,10 @@ public class TrackCorridor {
         }
 
         /** {@inheritDoc} */
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        }
+
+        /** {@inheritDoc} */
         public void handleStep(SpacecraftState currentState, boolean isLast)
             throws PropagationException {
             try {

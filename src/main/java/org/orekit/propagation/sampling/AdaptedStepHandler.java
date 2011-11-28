@@ -100,8 +100,12 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void reset() {
-        handler.reset();
+    public void init(double t0, double[] y0, double t) {
+        try {
+            handler.init(mapArrayToState(t0, y0), initializedReference.shiftedBy(t));
+        } catch (OrekitException oe) {
+            throw new OrekitExceptionWrapper(oe);
+        }
     }
 
     /** {@inheritDoc} */
@@ -161,12 +165,8 @@ public class AdaptedStepHandler
      */
     public SpacecraftState getInterpolatedState() throws OrekitException {
         try {
-            final double[] y = rawInterpolator.getInterpolatedState();
-            final AbsoluteDate interpolatedDate = initializedReference.shiftedBy(rawInterpolator.getInterpolatedTime());
-            final Orbit orbit =
-                orbitType.mapArrayToOrbit(y, angleType, interpolatedDate, initializedMu, initializedFrame);
-            final Attitude attitude = attitudeProvider.getAttitude(orbit, interpolatedDate, initializedFrame);
-            return new SpacecraftState(orbit, attitude, y[6]);
+            return mapArrayToState(rawInterpolator.getInterpolatedTime(),
+                                   rawInterpolator.getInterpolatedState());
         } catch (OrekitExceptionWrapper oew) {
             if (oew.getException() instanceof PropagationException) {
                 throw (PropagationException) oew.getException();
@@ -174,6 +174,22 @@ public class AdaptedStepHandler
                 throw new PropagationException(oew.getException());
             }
         }
+    }
+
+    /** Map array to spacecraft state.
+     * @param t relative date
+     * @param y current state
+     * @return spacecraft state as a flight dynamics object
+     * @exception OrekitException if mapping cannot be done
+     */
+    private SpacecraftState mapArrayToState(final double t, final double[] y)
+        throws OrekitException {
+        final AbsoluteDate date = initializedReference.shiftedBy(t);
+        final Orbit orbit =
+            orbitType.mapArrayToOrbit(y, angleType, date, initializedMu, initializedFrame);
+        final Attitude attitude =
+            attitudeProvider.getAttitude(orbit, date, initializedFrame);
+        return new SpacecraftState(orbit, attitude, y[6]);
     }
 
     /** {@inheritDoc} */

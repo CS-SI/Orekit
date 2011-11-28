@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** This class logs events detectors events during propagation.
  *
@@ -169,6 +170,10 @@ public class EventsLogger implements Serializable {
          */
         public LoggingWrapper(final EventDetector detector) {
             this.detector = detector;
+        }
+
+        /** {@inheritDoc} */
+        public void init(SpacecraftState s0, AbsoluteDate t) {
         }
 
         /** {@inheritDoc} */

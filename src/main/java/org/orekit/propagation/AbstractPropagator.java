@@ -269,9 +269,14 @@ public abstract class AbstractPropagator implements Propagator {
                 stepSize = dt;
             }
 
+            // initialize event detectors
+            for (final EventState es : eventsStates) {
+                es.getEventDetector().init(state, target);
+            }
+
             // initialize step handler
             if (stepHandler != null) {
-                stepHandler.reset();
+                stepHandler.init(state, target);
             }
 
             // iterate over the propagation range

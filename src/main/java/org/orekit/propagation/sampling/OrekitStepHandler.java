@@ -19,6 +19,8 @@ package org.orekit.propagation.sampling;
 import java.io.Serializable;
 
 import org.orekit.errors.PropagationException;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware step handler.
  *
@@ -29,6 +31,17 @@ import org.orekit.errors.PropagationException;
  */
 public interface OrekitStepHandler extends Serializable {
 
+    /** Initialize step handler at the start of a propagation.
+     * <p>
+     * This method is called once at the start of the propagation. It
+     * may be used by the step handler to initialize some internal data
+     * if needed.
+     * </p>
+     * @param s0 initial state
+     * @param t target time for the integration
+     */
+    void init(SpacecraftState s0, AbsoluteDate t);
+
     /** Handle the current step.
      * @param interpolator interpolator set up for the current step
      * @param isLast if true, this is the last integration step
@@ -36,9 +49,5 @@ public interface OrekitStepHandler extends Serializable {
      */
     void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
         throws PropagationException;
-
-    /** Reset the step handler.
-     */
-    void reset();
 
 }

@@ -135,6 +135,9 @@ public class MasterMode {
             //private constructor
         }
 
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        }
+
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             System.out.println(" time : " + currentState.getDate());
             System.out.println(" " + currentState.getOrbit());

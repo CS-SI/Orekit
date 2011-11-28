@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** This interface is a space-dynamics aware fixed size step handler.
  *
@@ -29,6 +30,17 @@ import org.orekit.propagation.SpacecraftState;
  * @author Luc Maisonobe
  */
 public interface OrekitFixedStepHandler extends Serializable {
+
+    /** Initialize step handler at the start of a propagation.
+     * <p>
+     * This method is called once at the start of the propagation. It
+     * may be used by the step handler to initialize some internal data
+     * if needed.
+     * </p>
+     * @param s0 initial state
+     * @param t target time for the integration
+     */
+    void init(SpacecraftState s0, AbsoluteDate t);
 
     /** Handle the current step.
      * @param currentState current state at step time

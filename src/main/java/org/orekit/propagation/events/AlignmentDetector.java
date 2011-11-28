@@ -21,6 +21,7 @@ import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -100,6 +101,10 @@ public class AlignmentDetector extends AbstractDetector {
      */
     public double getAlignAngle() {
         return alignAngle;
+    }
+
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
     }
 
     /** Handle an alignment event and choose what to do next.

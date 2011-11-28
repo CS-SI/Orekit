@@ -58,7 +58,9 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     public OrekitStepNormalizer(final double h, final OrekitFixedStepHandler handler) {
         this.h       = FastMath.abs(h);
         this.handler = handler;
-        reset();
+        lastDate  = null;
+        lastState = null;
+        forward   = true;
     }
 
     /** Determines whether this handler needs dense output.
@@ -71,14 +73,12 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
         return true;
     }
 
-    /** Reset the step handler.
-     * Initialize the internal data as required before the first step is
-     * handled.
-     */
-    public void reset() {
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
         lastDate  = null;
         lastState = null;
         forward   = true;
+        handler.init(s0, t);
     }
 
     /**

@@ -259,6 +259,8 @@ public class NumericalPropagatorTest {
             private static final long serialVersionUID = -6857910416285189873L;
             private int countDown = 3;
             private AbsoluteDate previousCall = null;
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if (previousCall != null) {
@@ -267,8 +269,6 @@ public class NumericalPropagatorTest {
                 if (--countDown == 0) {
                     throw new PropagationException(LocalizedFormats.SIMPLE_MESSAGE, "dummy error");
                 }
-            }
-            public void reset() {
             }
         });
         propagator.propagate(initDate.shiftedBy(-3600));
