@@ -18,7 +18,7 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.analysis.UnivariateRealFunction;
+import org.apache.commons.math.analysis.UnivariateFunction;
 import org.apache.commons.math.analysis.solvers.AllowedSolution;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
 import org.apache.commons.math.analysis.solvers.PegasusSolver;
@@ -158,7 +158,7 @@ public class EventState implements Serializable {
             final int    n = FastMath.max(1, (int) FastMath.ceil(FastMath.abs(dt) / detector.getMaxCheckInterval()));
             final double h = dt / n;
 
-            final UnivariateRealFunction f = new UnivariateRealFunction() {
+            final UnivariateFunction f = new UnivariateFunction() {
                 public double value(final double t) throws LocalWrapperException {
                     try {
                         interpolator.setInterpolatedDate(t0.shiftedBy(t));
