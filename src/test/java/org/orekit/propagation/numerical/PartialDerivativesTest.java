@@ -415,7 +415,7 @@ public class PartialDerivativesTest {
             return dYdY0;
         }
 
-        public void reset() {
+        public void init(SpacecraftState s0, AbsoluteDate t) {
         }
 
         public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)

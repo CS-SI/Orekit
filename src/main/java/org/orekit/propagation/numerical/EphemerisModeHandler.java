@@ -147,8 +147,8 @@ class EphemerisModeHandler implements ModeHandler, StepHandler {
     }
 
     /** {@inheritDoc} */
-    public void reset() {
-        model.reset();
+    public void init(final double t0, final double[] y0, final double t) {
+        model.init(t0, y0, t);
     }
 
 }

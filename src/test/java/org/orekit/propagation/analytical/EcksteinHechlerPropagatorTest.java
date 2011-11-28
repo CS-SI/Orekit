@@ -596,6 +596,8 @@ public class EcksteinHechlerPropagatorTest {
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             private static final long serialVersionUID = 5343978335581094125L;
             private AbsoluteDate previous;
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
             public void handleStep(SpacecraftState currentState, boolean isLast)
             throws PropagationException {
                 if (previous != null) {

@@ -102,6 +102,8 @@ public class DrozinerAttractionModelTest {
 
         private PVCoordinatesProvider sun;
         private double previous;
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+        }
         public void handleStep(SpacecraftState currentState, boolean isLast)
             throws PropagationException {
 
@@ -174,6 +176,9 @@ public class DrozinerAttractionModelTest {
         }
 
         private EcksteinHechlerPropagator referencePropagator;
+
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+        }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {
             try {

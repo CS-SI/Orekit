@@ -100,6 +100,15 @@ public class AdaptedEventDetector implements EventHandler, Serializable {
     }
 
     /** {@inheritDoc} */
+    public void init(double t0, double[] y0, double t) {
+        try {
+            detector.init(mapArrayToState(t0, y0), referenceDate.shiftedBy(t));
+        } catch (OrekitException oe) {
+            throw new OrekitExceptionWrapper(oe);
+        }
+    }
+
+    /** {@inheritDoc} */
     public double g(final double t, final double[] y) {
         try {
             return detector.g(mapArrayToState(t, y));

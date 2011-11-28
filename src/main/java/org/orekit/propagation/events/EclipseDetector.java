@@ -20,6 +20,7 @@ import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
@@ -239,6 +240,10 @@ public class EclipseDetector extends AbstractDetector {
      */
     public boolean getTotalEclipse() {
         return totalEclipse;
+    }
+
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
     }
 
     /** Handle an eclipse event and choose what to do next.

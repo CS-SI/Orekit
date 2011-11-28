@@ -107,6 +107,10 @@ public class ImpulseManeuver implements EventDetector {
     }
 
     /** {@inheritDoc} */
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    }
+
+    /** {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
         return trigger.g(s);
     }
