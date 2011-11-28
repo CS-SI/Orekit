@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor field of view.
@@ -83,6 +84,10 @@ public class CircularFieldOfViewDetector extends AbstractDetector {
      */
     public double getHalfAperture() {
         return halfAperture;
+    }
+
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
     }
 
     /** Handle an fov event and choose what to do next.

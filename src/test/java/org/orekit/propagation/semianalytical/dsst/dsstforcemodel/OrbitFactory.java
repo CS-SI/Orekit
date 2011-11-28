@@ -206,6 +206,10 @@ public class OrbitFactory {
             this.nodeWanded = nodeWanted;
         }
 
+        /** {@inheritDoc} */
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        }
+
         /**
          * {@inheritDoc}
          */
@@ -276,6 +280,10 @@ public class OrbitFactory {
             this.ey = initialOrbit.getEquinoctialEy();
             this.hx = initialOrbit.getHx();
             this.hy = initialOrbit.getHy();
+        }
+
+        /** {@inheritDoc} */
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
 
         /**

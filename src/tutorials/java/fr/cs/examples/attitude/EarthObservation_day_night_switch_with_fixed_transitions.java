@@ -308,6 +308,8 @@ public class EarthObservation_day_night_switch_with_fixed_transitions {
                            " " + f1.format(-r.getQ3()) +
                            " " + f1.format(-r.getQ0());
                 }
+                public void init(final SpacecraftState s0, final AbsoluteDate t) {
+                }
                 public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
                     try {
                         // the Earth position in spacecraft should be along spacecraft Z axis

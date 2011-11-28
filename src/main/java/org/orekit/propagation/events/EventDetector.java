@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
  *
@@ -81,7 +82,17 @@ public interface EventDetector extends Serializable {
 
     }
 
-    
+    /** Initialize event handler at the start of a propagation.
+     * <p>
+     * This method is called once at the start of the propagation. It
+     * may be used by the event handler to initialize some internal data
+     * if needed.
+     * </p>
+     * @param s0 initial state
+     * @param t target time for the integration
+     */
+    void init(SpacecraftState s0, AbsoluteDate t);
+
     /** Compute the value of the switching function.
      * This function must be continuous (at least in its roots neighborhood),
      * as the integrator will need to find its roots to locate the events.

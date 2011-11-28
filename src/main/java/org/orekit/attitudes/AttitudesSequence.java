@@ -188,6 +188,11 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            event.init(s0, t);
+        }
+
+        /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final boolean increasing)
             throws OrekitException {
 

@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** Finder for satellite raising/setting events.
  * <p>This class finds elevation events (i.e. satellite raising and setting).</p>
@@ -103,6 +104,10 @@ public class ElevationDetector extends AbstractDetector {
      */
     public TopocentricFrame getTopocentricFrame() {
         return topo;
+    }
+
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
     }
 
     /** Handle an elevation event and choose what to do next.

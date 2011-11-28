@@ -339,13 +339,13 @@ public class KeplerianPropagatorTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         propagator.setMasterMode(new OrekitStepHandler() {
             private static final long serialVersionUID = 8183822352839222377L;
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if (isLast) {
                     throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
                 }
-            }
-            public void reset() {
             }
         });
 
@@ -469,6 +469,8 @@ public class KeplerianPropagatorTest {
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
             private static final long serialVersionUID = 5343978335581094125L;
             private AbsoluteDate previous;
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
             public void handleStep(SpacecraftState currentState, boolean isLast)
             throws PropagationException {
                 if (previous != null) {
@@ -491,14 +493,14 @@ public class KeplerianPropagatorTest {
         propagator.setMasterMode(new OrekitStepHandler() {
             private static final long serialVersionUID = -7257691813065811595L;
             private AbsoluteDate previous;
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
             public void handleStep(OrekitStepInterpolator interpolator,
                                    boolean isLast) throws PropagationException {
                 if ((previous != null) && !isLast) {
                     Assert.assertEquals(step, interpolator.getCurrentDate().durationFrom(previous), 1.0e-10);
                 }
                 previous = interpolator.getCurrentDate();
-            }
-            public void reset() {
             }
         });
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);

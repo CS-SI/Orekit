@@ -21,6 +21,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /** Finder for satellite altitude crossing events.
@@ -107,6 +108,10 @@ public class AltitudeDetector extends AbstractDetector {
      */
     public BodyShape getBodyShape() {
         return bodyShape;
+    }
+
+    /** {@inheritDoc} */
+    public void init(SpacecraftState s0, AbsoluteDate t) {
     }
 
     /** Handle an altitude event and choose what to do next.
