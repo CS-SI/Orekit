@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.analysis.UnivariateRealFunction;
+import org.apache.commons.math.analysis.UnivariateFunction;
 import org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.apache.commons.math.analysis.solvers.UnivariateRealSolver;
 import org.apache.commons.math.exception.TooManyEvaluationsException;
@@ -260,7 +260,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
             // find the distance such that a point in the specified direction and at the solved-for
             // distance is exactly at the specified radius
-            double distance = solver.solve(1000, new UnivariateRealFunction() {
+            double distance = solver.solve(1000, new UnivariateFunction() {
                 /** {@inheritDoc} */
                 public double value(double x) {
                     try {
