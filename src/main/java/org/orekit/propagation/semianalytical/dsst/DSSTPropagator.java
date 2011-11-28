@@ -611,6 +611,7 @@ public class DSSTPropagator extends AbstractPropagator {
             maxStep = 0.;
         }
 
+        /** {@inheritDoc} */
         public void handleStep(StepInterpolator interpolator,
                                boolean isLast) {
             StRange sr = new StRange(interpolator);
@@ -620,8 +621,10 @@ public class DSSTPropagator extends AbstractPropagator {
             tf = cumulatedSteps.last().getTmax();
         }
 
-        public void reset() {
+        /** {@inheritDoc} */
+        public void init(final double t0, final double[] y0, final double t) {
         }
+
     }
 
     /**

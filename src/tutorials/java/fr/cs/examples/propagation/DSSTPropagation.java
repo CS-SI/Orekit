@@ -290,6 +290,11 @@ public class DSSTPropagation {
             this.dateIni = initDate;
         }
 
+        /** {@inheritDoc} */
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        }
+
+        /** {@inheritDoc} */
         public void handleStep(SpacecraftState currentState,
                                boolean isLast) {
             final StringBuilder sb = new StringBuilder();
