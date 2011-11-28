@@ -65,6 +65,7 @@ public class DSSTPropagation {
      */
     // Force model used :
     private static boolean             centralBody        = true;
+    private static boolean             tesseralTerms      = true;
     private static boolean             moon               = false;
     private static boolean             sun                = false;
     private static boolean             drag               = false;
@@ -78,7 +79,7 @@ public class DSSTPropagation {
     private static double              printStep          = 1000;
 
     // extrapolation time
-    private static double              extrapolationTime  = 365 * 86400d;
+    private static double              extrapolationTime  = 10 * 86400d;
     /**
      * End of tutorial customization
      */
@@ -143,8 +144,15 @@ public class DSSTPropagation {
          */
         if (centralBody) {
             // Central Body Force Model with un-normalized coefficients
-            double[][] CnmNotNorm = provider.getC(5, 0, false);
-            double[][] SnmNotNorm = provider.getS(5, 0, false);
+            double[][] CnmNotNorm;
+            double[][] SnmNotNorm;
+            if (tesseralTerms){
+                CnmNotNorm = provider.getC(5, 5, false);
+                SnmNotNorm = provider.getS(5, 5, false);
+            }else {
+                CnmNotNorm = provider.getC(5, 0, false);
+                SnmNotNorm = provider.getS(5, 0, false);
+            }
 
             // Resonant couple list is here set to null : we're taking in account every tesseral
             // harmonic :
