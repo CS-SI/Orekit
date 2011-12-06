@@ -49,6 +49,7 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
+import org.orekit.propagation.sampling.OrekitStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -337,6 +338,19 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        OrekitStepHandlerMultiplexer multiplexer = new OrekitStepHandlerMultiplexer();
+        propagator.setMasterMode(multiplexer);
+        multiplexer.add(new OrekitStepHandler() {
+            private static final long serialVersionUID = 8183822352839222377L;
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
+            public void handleStep(OrekitStepInterpolator interpolator,
+                                   boolean isLast) throws PropagationException {
+                if (isLast) {
+                    throw new PropagationException((Throwable) null, new DummyLocalizable("dummy error"));
+                }
+            }
+        });
         propagator.setMasterMode(new OrekitStepHandler() {
             private static final long serialVersionUID = 8183822352839222377L;
             public void init(SpacecraftState s0, AbsoluteDate t) {
