@@ -271,9 +271,9 @@ public abstract class AbstractPropagator implements Propagator {
             final double stepSize;
             if (mode == MASTER_MODE) {
                 if (Double.isNaN(fixedStepSize)) {
-                    stepSize = state.getKeplerianPeriod() / 100;
+                    stepSize = FastMath.copySign(state.getKeplerianPeriod() / 100, dt);
                 } else {
-                    stepSize = fixedStepSize;
+                    stepSize = FastMath.copySign(fixedStepSize, dt);
                 }
             } else {
                 stepSize = dt;
@@ -297,7 +297,7 @@ public abstract class AbstractPropagator implements Propagator {
                 // go ahead one step size
                 interpolator.shift();
                 final AbsoluteDate t = interpolator.getCurrentDate().shiftedBy(stepSize);
-                if ((dt > 0) ^ (t.compareTo(target) <= 0)) {
+                if ((dt == 0) || ((dt > 0) ^ (t.compareTo(target) <= 0))) {
                     // current step exceeds target
                     interpolator.storeDate(target);
                 } else {
