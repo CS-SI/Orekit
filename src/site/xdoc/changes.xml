@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        Fixed a problem with propagation over null or negative ranges.
+      </action>
       <action dev="luc" type="add">
         Added a multiplexer for step handlers.
       </action>
