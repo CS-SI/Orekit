@@ -24,7 +24,7 @@ public class HansenCoefficientsTest {
         final double chi2 = chi * chi;
         final double chi3 = chi * chi2;
 
-        HansenCoefficients hansen = new HansenCoefficients(ecc, 1e-15);
+        HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
 
         Assert.assertEquals(0, hansen.getHansenKernelValue(0, -1, 0), epsilonM15);
         Assert.assertEquals(0, hansen.getHansenKernelValue(0, -1, 1), epsilonM15);
