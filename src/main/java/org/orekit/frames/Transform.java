@@ -284,7 +284,7 @@ public class Transform implements Serializable {
      */
     public void getJacobian(final double[][] jacobian) {
 
-        // elementary matrices for rotation and rotation rate
+        // elementary matrix for rotation
         final double[][] mData = rotation.getMatrix();
 
         // dP1/dP0
