@@ -315,6 +315,76 @@ public class TransformTest {
         }
     }
 
+    @Test
+    public void testJacobian() {
+
+        // base directions for finite differences
+        PVCoordinates[] directions = new PVCoordinates[] {
+            new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO),
+            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO),
+            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO),
+            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_I),
+            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_J),
+            new PVCoordinates(Vector3D.ZERO,   Vector3D.PLUS_K)
+        };
+        double h = 0.01;
+
+        Random random = new Random(0xce2bfddfbb9796bel);
+        for (int i = 0; i < 20; ++i) {
+
+            // generate a random transform
+            int n = random.nextInt(20);
+            Transform combined = Transform.IDENTITY;
+            for (int k = 0; k < n; ++k) {
+                Transform t = random.nextBoolean()
+                ? new Transform(randomVector(random), randomVector(random))
+                : new Transform(randomRotation(random), randomVector(random));
+                combined = new Transform(combined, t);
+            }
+
+            // compute Jacobian
+            double[][] jacobian = new double[6][6];
+            combined.getJacobian(jacobian);
+
+            for (int j = 0; j < 100; ++j) {
+
+                PVCoordinates pv0 = new PVCoordinates(randomVector(random), randomVector(random));
+                double epsilonP = 1.0e-11 * pv0.getPosition().getNorm();
+                double epsilonV = 1.0e-7  * pv0.getVelocity().getNorm();
+
+                for (int l = 0; l < directions.length; ++l) {
+
+                    // eight points finite differences estimation of a Jacobian column
+                    PVCoordinates pvm4h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, -4 * h, directions[l]));
+                    PVCoordinates pvm3h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, -3 * h, directions[l]));
+                    PVCoordinates pvm2h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, -2 * h, directions[l]));
+                    PVCoordinates pvm1h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, -1 * h, directions[l]));
+                    PVCoordinates pvp1h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, +1 * h, directions[l]));
+                    PVCoordinates pvp2h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, +2 * h, directions[l]));
+                    PVCoordinates pvp3h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, +3 * h, directions[l]));
+                    PVCoordinates pvp4h = combined.transformPVCoordinates(new PVCoordinates(1.0, pv0, +4 * h, directions[l]));
+                    PVCoordinates d4   = new PVCoordinates(pvm4h, pvp4h);
+                    PVCoordinates d3   = new PVCoordinates(pvm3h, pvp3h);
+                    PVCoordinates d2   = new PVCoordinates(pvm2h, pvp2h);
+                    PVCoordinates d1   = new PVCoordinates(pvm1h, pvp1h);
+                    double c = 1.0 / (840 * h);
+                    PVCoordinates estimatedColumn = new PVCoordinates(-3 * c, d4, 32 * c, d3, -168 * c, d2, 672 * c, d1);
+
+                    // check finite analytical Jacobian against finite difference reference
+                    Assert.assertEquals(estimatedColumn.getPosition().getX(), jacobian[0][l], epsilonP);
+                    Assert.assertEquals(estimatedColumn.getPosition().getY(), jacobian[1][l], epsilonP);
+                    Assert.assertEquals(estimatedColumn.getPosition().getZ(), jacobian[2][l], epsilonP);
+                    Assert.assertEquals(estimatedColumn.getVelocity().getX(), jacobian[3][l], epsilonV);
+                    Assert.assertEquals(estimatedColumn.getVelocity().getY(), jacobian[4][l], epsilonV);
+                    Assert.assertEquals(estimatedColumn.getVelocity().getZ(), jacobian[5][l], epsilonV);
+
+                }
+
+            }
+        }
+
+    }
+
     private void checkVectors(Vector3D v1 , Vector3D v2) {
 
         Vector3D d = v1.subtract(v2);

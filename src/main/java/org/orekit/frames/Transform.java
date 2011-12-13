@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.apache.commons.math.geometry.euclidean.threed.Line;
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
@@ -259,6 +260,60 @@ public class Transform implements Serializable {
                                  rotation.applyTo(v.add(velocity)).subtract(cross));
     }
 
+    /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}
+     * method of the transform.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i
+     * of the transformed {@link PVCoordinates} with respect to Cartesian coordinate j
+     * of the input {@link PVCoordinates} in method {@link #transformPVCoordinates(PVCoordinates)}.
+     * </p>
+     * <p>
+     * This definition implies that if we define position-velocity coordinates
+     * <pre>
+     * PV<sub>1</sub> = transform.transformPVCoordinates(PV<sub>0</sub>), then
+     * </pre>
+     * their differentials dPV<sub>1</sub> and dPV<sub>0</sub> will obey the following relation
+     * where J is the matrix computed by this method:<br/>
+     * <pre>
+     * dPV<sub>1</sub> = J &times; dPV<sub>0</sub>
+     * </pre>
+     * 
+     * </p>
+     * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
+     * is larger than 6x6, only the 6x6 upper left corner will be modified
+     */
+    public void getJacobian(final double[][] jacobian) {
+
+        // elementary matrix for rotation
+        final double[][] mData = rotation.getMatrix();
+
+        // dP1/dP0
+        System.arraycopy(mData[0], 0, jacobian[0], 0, 3);
+        System.arraycopy(mData[1], 0, jacobian[1], 0, 3);
+        System.arraycopy(mData[2], 0, jacobian[2], 0, 3);
+
+        // dP1/dV0
+        Arrays.fill(jacobian[0], 3, 6, 0.0);
+        Arrays.fill(jacobian[1], 3, 6, 0.0);
+        Arrays.fill(jacobian[2], 3, 6, 0.0);
+
+        // dV1/dP0
+        final double mOx = -rotationRate.getX();
+        final double mOy = -rotationRate.getY();
+        final double mOz = -rotationRate.getZ();
+        for (int i = 0; i < 3; ++i) {
+            jacobian[3][i] = mOy * mData[2][i] - mOz * mData[1][i];
+            jacobian[4][i] = mOz * mData[0][i] - mOx * mData[2][i];
+            jacobian[5][i] = mOx * mData[1][i] - mOy * mData[0][i];
+        }
+
+        // dV1/dV0
+        System.arraycopy(mData[0], 0, jacobian[3], 3, 3);
+        System.arraycopy(mData[1], 0, jacobian[4], 3, 3);
+        System.arraycopy(mData[2], 0, jacobian[5], 3, 3);
+
+    }
+
     /** Get the underlying elementary translation.
      * <p>A transform can be uniquely represented as an elementary
      * translation followed by an elementary rotation. This method
@@ -335,6 +390,15 @@ public class Transform implements Serializable {
         @Override
         public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
             return pv;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void getJacobian(final double[][] jacobian) {
+            for (int i = 0; i < 6; ++i) {
+                Arrays.fill(jacobian[i], 0, 6, 0.0);
+                jacobian[i][i] = 1.0;
+            }
         }
 
     };
