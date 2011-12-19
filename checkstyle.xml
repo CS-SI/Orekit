@@ -84,4 +84,9 @@
         <property name="onCommentFormat"  value="CHECKSTYLE\: resume VisibilityModifierCheck"/>
         <property name="checkFormat"      value="VisibilityModifierCheck"/>
     </module>
+    <module name="SuppressionCommentFilter">
+        <property name="offCommentFormat" value="CHECKSTYLE\: stop NoWhitespaceAfter"/>
+        <property name="onCommentFormat"  value="CHECKSTYLE\: resume NoWhitespaceAfter"/>
+        <property name="checkFormat"      value="NoWhitespaceAfter"/>
+    </module>
 </module>

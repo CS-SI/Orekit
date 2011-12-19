@@ -112,7 +112,7 @@ public interface EventDetector extends Serializable {
      * <code>handleStep</code> afterwards. This scheduling allows the propagator to
      * pass <code>true</code> as the <code>isLast</code> parameter to the step
      * handler to make it aware the step will be the last one if this method
-     * returns {@link #STOP}. As the interpolator may be used to navigate back
+     * returns {@link EventDetector.Action#STOP}. As the interpolator may be used to navigate back
      * throughout the last step (as {@link
      * org.orekit.propagation.sampling.OrekitStepNormalizer OrekitStepNormalizer}
      * does for example), user code called by this method and user
@@ -133,8 +133,8 @@ public interface EventDetector extends Serializable {
      * @param increasing if true, the value of the switching function increases
      * when times increases around event (note that increase is measured with respect
      * to physical time, not with respect to propagation which may go backward in time)
-     * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
-     * or {@link #CONTINUE}
+     * @return one of {@link EventDetector.Action#STOP}, {@link EventDetector.Action#RESET_STATE},
+     * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
@@ -142,11 +142,11 @@ public interface EventDetector extends Serializable {
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
      * before the next step is started, but only when {@link
-     * #eventOccurred} has itself returned the {@link #RESET_STATE}
+     * #eventOccurred} has itself returned the {@link EventDetector.Action#RESET_STATE}
      * indicator. It allows the user to reset the state for the next step,
      * without perturbing the step handler of the finishing step. If the
-     * {@link #eventOccurred} never returns the {@link #RESET_STATE} indicator,
-     * this function will never be called, and it is safe to simply return null.</p>
+     * {@link #eventOccurred} never returns the {@link EventDetector.Action#RESET_STATE}
+     * indicator, this function will never be called, and it is safe to simply return null.</p>
      * @param oldState old state
      * @return new state
      * @exception OrekitException if the state cannot be reseted

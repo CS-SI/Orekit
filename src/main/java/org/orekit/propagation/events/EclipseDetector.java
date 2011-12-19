@@ -27,8 +27,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
  * eclipse) or penumbra (partial eclipse).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation when entering the eclipse and to
- * {@link EventDetector#STOP stop} propagation when exiting the eclipse.
+ * EventDetector.Action#CONTINUE continue} propagation when entering the eclipse and to
+ * {@link EventDetector.Action#STOP stop} propagation when exiting the eclipse.
  * This can be changed by overriding the {@link
  * #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
@@ -248,12 +248,12 @@ public class EclipseDetector extends AbstractDetector {
 
     /** Handle an eclipse event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#CONTINUE continue} propagation when entering the eclipse and to
-     * {@link EventDetector#STOP stop} propagation when exiting the eclipse.</p>
+     * EventDetector.Action#CONTINUE continue} propagation when entering the eclipse and to
+     * {@link EventDetector.Action#STOP stop} propagation when exiting the eclipse.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event.
-     * @return {@link #STOP} or {@link #CONTINUE}
+     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)

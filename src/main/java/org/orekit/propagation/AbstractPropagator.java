@@ -696,26 +696,17 @@ public abstract class AbstractPropagator implements Propagator {
         }
 
         /** {@inheritDoc} */
-        public void setInterpolatedDate(final AbsoluteDate date)
-            throws PropagationException {
-            try {
+        public void setInterpolatedDate(final AbsoluteDate date) throws PropagationException {
 
-                // compute the raw spacecraft state
-                interpolatedState = basicPropagate(date);
+            // compute the raw spacecraft state
+            interpolatedState = basicPropagate(date);
 
-                // compute additional states
-                additionalStates.clear();
-                for (final AdditionalStateProvider provider : additionalStateProviders) {
-                    additionalStates.put(provider.getName(), provider.getAdditionalState(interpolatedState));
-                }
-
-            } catch (PropagationException pe) {
-                // simply re-throw this exception which has the required type
-                throw pe;
-            } catch (OrekitException oe) {
-                // wrap other exceptions
-                throw new PropagationException(oe);
+            // compute additional states
+            additionalStates.clear();
+            for (final AdditionalStateProvider provider : additionalStateProviders) {
+                additionalStates.put(provider.getName(), provider.getAdditionalState(interpolatedState));
             }
+
         }
 
         /** Shift one step forward.

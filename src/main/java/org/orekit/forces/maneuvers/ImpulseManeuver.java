@@ -35,9 +35,10 @@ import org.orekit.utils.PVCoordinates;
  * that can be provided to any {@link org.orekit.propagation.Propagator
  * Propagator}.</p>
  * <p>The maneuver is triggered when an underlying event generates a
- * {@link EventDetector#STOP STOP} event, in which case this class will
- * generate a {@link EventDetector#RESET_STATE RESET_STATE} event (the
- * stop event from the underlying object is therefore filtered out).
+ * {@link org.orekit.propagation.events.EventDetector.Action#STOP STOP} event,
+ * in which case this class will generate a {@link
+ * org.orekit.propagation.events.EventDetector.Action#RESET_STATE RESET_STATE}
+ * event (the stop event from the underlying object is therefore filtered out).
  * In the simple cases, the underlying event detector may be a basic
  * {@link org.orekit.propagation.events.DateDetector date event}, but it
  * can also be a more elaborate {@link

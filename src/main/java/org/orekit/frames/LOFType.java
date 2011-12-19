@@ -47,7 +47,7 @@ public enum LOFType {
     /** Constant for QSW frame
      * (X axis aligned with position, Z axis aligned with orbital momentum).
      * <p>
-     * This frame is also known as the {@link LVLH} frame, both constants are equivalent.
+     * This frame is also known as the {@link #LVLH} frame, both constants are equivalent.
      * </p>
      * <p>
      * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:
@@ -70,7 +70,7 @@ public enum LOFType {
     /** Constant for Local Vertical, Local Horizontal frame
      * (X axis aligned with position, Z axis aligned with orbital momentum).
      * <p>
-     * This frame is also known as the {@link QSW} frame, both constants are equivalent.
+     * This frame is also known as the {@link #QSW} frame, both constants are equivalent.
      * </p>
      * <p>
      * The axes of these frames are parallel to the axes of the {@link #VVLH} frame:

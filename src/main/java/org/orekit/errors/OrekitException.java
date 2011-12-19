@@ -105,7 +105,7 @@ public class OrekitException extends Exception {
 
     /** Simple constructor.
      * Build an exception from an Apache Commons Math exception context context
-     * @param context underlying exception context context
+     * @param provider underlying exception context provider
      * @since 6.0
      */
     public OrekitException(final ExceptionContextProvider provider) {

@@ -38,8 +38,8 @@ import org.orekit.time.AbsoluteDate;
  *  variable atmospheric effects become very important.</p>
  * <p>Local pressure and temperature can be set to correct refraction at the viewpoint.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation at raising and to
- * {@link EventDetector#STOP stop} propagation
+ * EventDetector.Action#CONTINUE continue} propagation at raising and to
+ * {@link EventDetector.Action#STOP stop} propagation
  * at setting. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
@@ -179,12 +179,12 @@ public class ApparentElevationDetector extends AbstractDetector {
 
     /** Handle an apparent elevation event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#CONTINUE continue} propagation at raising and to
-     * {@link EventDetector#STOP stop} propagation at setting.</p>
+     * EventDetector.Action#CONTINUE continue} propagation at raising and to
+     * {@link EventDetector.Action#STOP stop} propagation at setting.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event.
-     * @return {@link #STOP} or {@link #CONTINUE}
+     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)

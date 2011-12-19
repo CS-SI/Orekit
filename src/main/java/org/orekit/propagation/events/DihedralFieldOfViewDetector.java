@@ -26,8 +26,8 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Finder for body entering/exiting dihedral fov events.
  * <p>This class finds dihedral field of view events (i.e. body entry and exit in fov).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation at entry and to
- * {@link EventDetector#STOP stop} propagation
+ * EventDetector.Action#CONTINUE continue} propagation at entry and to
+ * {@link EventDetector.Action#STOP stop} propagation
  * at exit. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
@@ -135,8 +135,8 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
 
     /** Handle an fov event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#CONTINUE continue} propagation at entry and to
-     * {@link EventDetector#STOP stop} propagation at exit. This can
+     * EventDetector.Action#CONTINUE continue} propagation at entry and to
+     * {@link EventDetector.Action#STOP stop} propagation at exit. This can
      * be changed by overriding the {@link #eventOccurred(SpacecraftState, boolean)
      * eventOccurred} method in a derived class.</p>
      * @param s the current state information : date, kinematics, attitude
@@ -144,8 +144,8 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
      * when times increases around event, i.e. target enters the fov (note that increase
      * is measured with respect to physical time, not with respect to propagation which
      * may go backward in time)
-     * @return one of {@link #STOP}, {@link #RESET_STATE}, {@link #RESET_DERIVATIVES}
-     * or {@link #CONTINUE}
+     * @return one of {@link EventDetector.Action#STOP}, {@link EventDetector.Action#RESET_STATE},
+     * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)

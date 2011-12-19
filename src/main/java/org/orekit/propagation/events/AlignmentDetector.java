@@ -29,7 +29,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>This class finds alignment events.</p>
  * <p>Alignment means the conjunction, with some threshold angle, between the satellite
  * position and the projection in the orbital plane of some body position.</p>
- * <p>The default implementation behavior is to {@link #STOP stop} propagation when
+ * <p>The default implementation behavior is to {@link EventDetector.Action#STOP stop} propagation when
  * alignment is reached. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
@@ -108,12 +108,12 @@ public class AlignmentDetector extends AbstractDetector {
     }
 
     /** Handle an alignment event and choose what to do next.
-     * <p>The default implementation behavior is to {@link #STOP stop} propagation
+     * <p>The default implementation behavior is to {@link EventDetector.Action#STOP stop} propagation
      * when alignment is reached.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event.
-     * @return {@link #STOP} or {@link #CONTINUE}
+     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)

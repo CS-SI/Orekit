@@ -26,8 +26,8 @@ import org.orekit.time.AbsoluteDate;
  * <p>This class finds equator crossing events (i.e. ascending
  * or descending node crossing).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation at descending node
- * crossing and to {@link EventDetector#STOP stop} propagation
+ * EventDetector.Action#CONTINUE continue} propagation at descending node
+ * crossing and to {@link EventDetector.Action#STOP stop} propagation
  * at ascending node crossing. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
@@ -88,13 +88,13 @@ public class NodeDetector extends AbstractDetector {
 
     /** Handle a node crossing event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#CONTINUE continue} propagation at descending node
-     * crossing and to {@link EventDetector#STOP stop} propagation
+     * EventDetector.Action#CONTINUE continue} propagation at descending node
+     * crossing and to {@link EventDetector.Action#STOP stop} propagation
      * at ascending node crossing.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
-     * @return {@link #STOP} or {@link #CONTINUE}
+     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)
