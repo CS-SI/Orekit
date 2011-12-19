@@ -1,4 +1,5 @@
-/* Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2011 Space Applications Services
+ * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,17 +22,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Locale;
 import java.util.Scanner;
 
+import org.apache.commons.math.exception.util.DummyLocalizable;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.files.OrbitFileParser;
-import org.orekit.files.SatelliteInformation;
-import org.orekit.files.SatelliteTimeCoordinate;
-import org.orekit.files.OrbitFile.TimeSystem;
-import org.orekit.files.sp3.SP3File.FileType;
-import org.orekit.files.sp3.SP3File.OrbitType;
+import org.orekit.files.general.OrbitFileParser;
+import org.orekit.files.general.SatelliteInformation;
+import org.orekit.files.general.SatelliteTimeCoordinate;
+import org.orekit.files.general.OrbitFile.TimeSystem;
+import org.orekit.files.sp3.SP3File.SP3FileType;
+import org.orekit.files.sp3.SP3File.SP3OrbitType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -43,20 +46,30 @@ import org.orekit.utils.PVCoordinates;
  * <b>Note:</b> this parser is thread-safe, so calling {@link #parse} from
  * different threads is allowed.
  * </p>
- * @see http://igscb.jpl.nasa.gov/igscb/data/format/sp3_docu.txt
- * @see http://igscb.jpl.nasa.gov/igscb/data/format/sp3c.txt
+ * @see <a href="http://igscb.jpl.nasa.gov/igscb/data/format/sp3_docu.txt">SP3-a file format</a>
+ * @see <a href="http://igscb.jpl.nasa.gov/igscb/data/format/sp3c.txt">SP3-c file format</a>
  * @author Thomas Neidhart
  */
 public class SP3Parser implements OrbitFileParser {
 
     /** {@inheritDoc} */
     public SP3File parse(final String fileName) throws OrekitException {
+
+        InputStream stream = null;
+
         try {
-            return parse(new FileInputStream(fileName));
+            stream = new FileInputStream(fileName);
+            return parse(stream);
         } catch (FileNotFoundException e) {
-            // TODO: use a different error message, this seems to be used for loading 
-            //       common property file instead of user-defined files.
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException e) {
+                // ignore
+            }
         }
     }
 
@@ -65,8 +78,7 @@ public class SP3Parser implements OrbitFileParser {
         try {
             return parseInternal(stream);
         } catch (IOException e) {
-            // TODO: use a more meaningful error message
-            throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
+            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
         }
     }
 
@@ -80,18 +92,21 @@ public class SP3Parser implements OrbitFileParser {
     private SP3File parseInternal(final InputStream stream)
         throws OrekitException, IOException {
 
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(stream));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
 
         // initialize internal data structures
-        ParseInfo pi = new ParseInfo();
+        final ParseInfo pi = new ParseInfo();
 
         String line = null;
         int lineNumber = 1;
         try {
             while (lineNumber < 23) {
                 line = reader.readLine();
-                parseHeaderLine(lineNumber++, line, pi);
+                if (line == null) {
+                    throw new OrekitException(OrekitMessages.SP3_UNEXPECTED_END_OF_FILE, lineNumber - 1);
+                } else {
+                    parseHeaderLine(lineNumber++, line, pi);
+                }
             }
 
             // now handle the epoch/position/velocity entries
@@ -122,48 +137,50 @@ public class SP3Parser implements OrbitFileParser {
      * @param lineNumber the current line number
      * @param line the line as read from the SP3 file
      * @param pi the current {@link ParseInfo} object
-     * @throws OrekitException
+     * @throws OrekitException if a non-supported construct is found
      */
     private void parseHeaderLine(final int lineNumber, final String line, final ParseInfo pi)
         throws OrekitException {
 
-        SP3File file = pi.file;
-        Scanner scanner = new Scanner(line).useDelimiter("\\s+");
+        final SP3File file = pi.file;
+        final Scanner scanner = new Scanner(line).useDelimiter("\\s+").useLocale(Locale.US);
+
+        // CHECKSTYLE: stop FallThrough check
 
         switch (lineNumber) {
         // version, epoch, data used and agency information
         case 1: {
             scanner.skip("#");
-            String v = scanner.next();
+            final String v = scanner.next();
 
-            char version = v.substring(0, 1).toLowerCase().charAt(0);
+            final char version = v.substring(0, 1).toLowerCase().charAt(0);
             if (version != 'a' && version != 'b' && version != 'c') {
-                // TODO: use a more meaningful error message
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
+                throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_VERSION, version);
             }
 
             pi.hasVelocityEntries = "V".equals(v.substring(1, 2));
 
-            int year = Integer.valueOf(v.substring(2));
-            int month = scanner.nextInt();
-            int day = scanner.nextInt();
-            int hour = scanner.nextInt();
-            int minute = scanner.nextInt();
-            double second = scanner.nextDouble();
+            final int year = Integer.valueOf(v.substring(2));
+            final int month = scanner.nextInt();
+            final int day = scanner.nextInt();
+            final int hour = scanner.nextInt();
+            final int minute = scanner.nextInt();
+            final double second = scanner.nextDouble();
 
-            AbsoluteDate epoch = new AbsoluteDate(year, month, day, hour,
-                    minute, second, TimeScalesFactory.getGPS());
+            final AbsoluteDate epoch = new AbsoluteDate(year, month, day,
+                                                        hour, minute, second,
+                                                        TimeScalesFactory.getGPS());
 
             file.setEpoch(epoch);
 
-            int numEpochs = scanner.nextInt();
+            final int numEpochs = scanner.nextInt();
             file.setNumberOfEpochs(numEpochs);
 
             // data used indicator
             file.setDataUsed(scanner.next());
 
             file.setCoordinateSystem(scanner.next());
-            file.setOrbitType(OrbitType.valueOf(scanner.next()));
+            file.setOrbitType(SP3OrbitType.valueOf(scanner.next()));
             file.setAgency(scanner.next());
         }
             break;
@@ -196,10 +213,11 @@ public class SP3Parser implements OrbitFileParser {
         case 5:
         case 6:
         case 7: {
-            int lineLength = line.length();
-            int count = file.getSatelliteCount(), startIdx = 9;
+            final int lineLength = line.length();
+            int count = file.getSatelliteCount();
+            int startIdx = 9;
             while (count++ < pi.maxSatellites && (startIdx + 3) <= lineLength) {
-                String satId = line.substring(startIdx, startIdx + 3).trim();
+                final String satId = line.substring(startIdx, startIdx + 3).trim();
                 file.addSatellite(satId);
                 startIdx += 3;
             }
@@ -213,15 +231,14 @@ public class SP3Parser implements OrbitFileParser {
         case 10:
         case 11:
         case 12: {
-            int lineLength = line.length();
-            int satIdx = (lineNumber - 8) * 17, startIdx = 9;
+            final int lineLength = line.length();
+            int satIdx = (lineNumber - 8) * 17;
+            int startIdx = 9;
             while (satIdx < pi.maxSatellites && (startIdx + 3) <= lineLength) {
-                SatelliteInformation satInfo = file.getSatellite(satIdx++);
-                int exponent = Integer.valueOf(line.substring(startIdx,
-                        startIdx + 3).trim());
+                final SatelliteInformation satInfo = file.getSatellite(satIdx++);
+                final int exponent = Integer.valueOf(line.substring(startIdx, startIdx + 3).trim());
                 // the accuracy is calculated as 2**exp (in m) -> can be safely
-                // converted to an integer as
-                // there will be no fraction
+                // converted to an integer as there will be no fraction
                 satInfo.setAccuracy((int) Math.pow(2d, exponent));
                 startIdx += 3;
             }
@@ -232,8 +249,8 @@ public class SP3Parser implements OrbitFileParser {
             file.setType(getFileType(line.substring(3, 5).trim()));
 
             // now identify the time system in use
-            String tsStr = line.substring(9, 12).trim();
-            TimeSystem ts = TimeSystem.GPS;
+            final String tsStr = line.substring(9, 12).trim();
+            final TimeSystem ts = TimeSystem.GPS;
             if (!tsStr.equalsIgnoreCase("ccc")) {
                 TimeSystem.valueOf(tsStr);
             }
@@ -250,8 +267,7 @@ public class SP3Parser implements OrbitFileParser {
 
             case GLO:
             case QZS:
-                // TODO: use a more meaningful error message
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
+                throw new OrekitException(OrekitMessages.SP3_UNSUPPORTED_TIMESYSTEM, ts.name());
 
             case TAI:
                 pi.timeScale = TimeScalesFactory.getTAI();
@@ -259,6 +275,10 @@ public class SP3Parser implements OrbitFileParser {
 
             case UTC:
                 pi.timeScale = TimeScalesFactory.getUTC();
+                break;
+
+            default:
+                pi.timeScale = TimeScalesFactory.getGPS();
                 break;
             }
         }
@@ -271,17 +291,17 @@ public class SP3Parser implements OrbitFileParser {
         // load base numbers for the standard deviations of
         // position/velocity/clock components
         case 15: {
-            String base = line.substring(3, 13).trim();
-            if (!base.equals("0.0000000")) {
+            // String base = line.substring(3, 13).trim();
+            // if (!base.equals("0.0000000")) {
                 // (mm or 10**-4 mm/sec)
-                pi.posVelBase = Double.valueOf(base);
-            }
+            //    pi.posVelBase = Double.valueOf(base);
+            // }
 
-            base = line.substring(14, 26).trim();
-            if (!base.equals("0.000000000")) {
+            // base = line.substring(14, 26).trim();
+            // if (!base.equals("0.000000000")) {
                 // (psec or 10**-4 psec/sec)
-                pi.clockBase = Double.valueOf(base);
-            }
+            //    pi.clockBase = Double.valueOf(base);
+            // }
         }
             break;
 
@@ -301,6 +321,9 @@ public class SP3Parser implements OrbitFileParser {
             // ignore -> method should only be called up to line 22
             break;
         }
+
+        // CHECKSTYLE: resume FallThrough check
+
     }
 
     /** Parses a single content line as read from the SP3 file.
@@ -308,18 +331,18 @@ public class SP3Parser implements OrbitFileParser {
      * @param pi the current {@link ParseInfo} object
      */
     private void parseContentLine(final String line, final ParseInfo pi) {
-        // TODO: EP and EV lines are ignored so far
+        // EP and EV lines are ignored so far
 
-        SP3File file = pi.file;
+        final SP3File file = pi.file;
 
         switch (line.charAt(0)) {
         case '*': {
-            int year = Integer.valueOf(line.substring(3, 7).trim());
-            int month = Integer.valueOf(line.substring(8, 10).trim());
-            int day = Integer.valueOf(line.substring(11, 13).trim());
-            int hour = Integer.valueOf(line.substring(14, 16).trim());
-            int minute = Integer.valueOf(line.substring(17, 19).trim());
-            double second = Double.valueOf(line.substring(20, 31).trim());
+            final int year = Integer.valueOf(line.substring(3, 7).trim());
+            final int month = Integer.valueOf(line.substring(8, 10).trim());
+            final int day = Integer.valueOf(line.substring(11, 13).trim());
+            final int hour = Integer.valueOf(line.substring(14, 16).trim());
+            final int minute = Integer.valueOf(line.substring(17, 19).trim());
+            final double second = Double.valueOf(line.substring(20, 31).trim());
 
             pi.latestEpoch = new AbsoluteDate(year, month, day,
                                               hour, minute, second,
@@ -328,22 +351,21 @@ public class SP3Parser implements OrbitFileParser {
             break;
 
         case 'P': {
-            String satelliteId = line.substring(1, 4).trim();
+            final String satelliteId = line.substring(1, 4).trim();
 
             if (!file.containsSatellite(satelliteId)) {
-                // TODO: consider writing a debug log message
                 pi.latestPosition = null;
             } else {
-                double x = Double.valueOf(line.substring(4, 18).trim());
-                double y = Double.valueOf(line.substring(18, 32).trim());
-                double z = Double.valueOf(line.substring(32, 46).trim());
+                final double x = Double.valueOf(line.substring(4, 18).trim());
+                final double y = Double.valueOf(line.substring(18, 32).trim());
+                final double z = Double.valueOf(line.substring(32, 46).trim());
 
                 pi.latestPosition = new Vector3D(x, y, z);
 
                 // clock (microsec)
                 pi.latestClock = Double.valueOf(line.substring(46, 60).trim());
 
-                // TODO: the additional items are optional and not read yet
+                // the additional items are optional and not read yet
 
                 // if (line.length() >= 73) {
                 // // x-sdev (b**n mm)
@@ -372,7 +394,7 @@ public class SP3Parser implements OrbitFileParser {
                 // }
 
                 if (!pi.hasVelocityEntries) {
-                    SatelliteTimeCoordinate coord =
+                    final SatelliteTimeCoordinate coord =
                         new SatelliteTimeCoordinate(pi.latestEpoch,
                                                     pi.latestPosition,
                                                     pi.latestClock);
@@ -383,23 +405,20 @@ public class SP3Parser implements OrbitFileParser {
             break;
 
         case 'V': {
-            String satelliteId = line.substring(1, 4).trim();
+            final String satelliteId = line.substring(1, 4).trim();
 
-            if (!file.containsSatellite(satelliteId)) {
-                // TODO: consider writing a debug log message
-            } else {
-                double xv = Double.valueOf(line.substring(4, 18).trim());
-                double yv = Double.valueOf(line.substring(18, 32).trim());
-                double zv = Double.valueOf(line.substring(32, 46).trim());
+            if (file.containsSatellite(satelliteId)) {
+                final double xv = Double.valueOf(line.substring(4, 18).trim());
+                final double yv = Double.valueOf(line.substring(18, 32).trim());
+                final double zv = Double.valueOf(line.substring(32, 46).trim());
 
                 // the velocity values are in dm/s and have to be converted to
                 // m/s
-                Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
+                final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
 
-                double clockRateChange = Double.valueOf(line.substring(46, 60)
-                        .trim());
+                final double clockRateChange = Double.valueOf(line.substring(46, 60).trim());
 
-                // TODO: the additional items are optional and not read yet
+                // the additional items are optional and not read yet
 
                 // if (line.length() >= 73) {
                 // // xvel-sdev (b**n 10**-4 mm/sec)
@@ -416,41 +435,43 @@ public class SP3Parser implements OrbitFileParser {
                 // 73).trim());
                 // }
 
-                PVCoordinates pv = new PVCoordinates(pi.latestPosition,
-                                                     velocity);
-                SatelliteTimeCoordinate coord =
+                final SatelliteTimeCoordinate coord =
                     new SatelliteTimeCoordinate(pi.latestEpoch,
-                                                pv,
+                                                new PVCoordinates(pi.latestPosition, velocity),
                                                 pi.latestClock,
                                                 clockRateChange);
                 file.addSatelliteCoordinate(satelliteId, coord);
             }
         }
             break;
+
+        default:
+            // ignore everything else
+            break;
         }
     }
 
-    /** Returns the {@link FileType} that corresponds to a given string
+    /** Returns the {@link SP3FileType} that corresponds to a given string
      * in a SP3 file.
      * @param fileType file type as string
      * @return file type as enum
      */
-    private FileType getFileType(final String fileType) {
-        FileType type = FileType.UNDEFINED;
+    private SP3FileType getFileType(final String fileType) {
+        SP3FileType type = SP3FileType.UNDEFINED;
         if ("G".equalsIgnoreCase(fileType)) {
-            type = FileType.GPS;
+            type = SP3FileType.GPS;
         } else if ("M".equalsIgnoreCase(fileType)) {
-            type = FileType.MIXED;
+            type = SP3FileType.MIXED;
         } else if ("R".equalsIgnoreCase(fileType)) {
-            type = FileType.GLONASS;
+            type = SP3FileType.GLONASS;
         } else if ("L".equalsIgnoreCase(fileType)) {
-            type = FileType.LEO;
+            type = SP3FileType.LEO;
         } else if ("E".equalsIgnoreCase(fileType)) {
-            type = FileType.GALILEO;
+            type = SP3FileType.GALILEO;
         } else if ("C".equalsIgnoreCase(fileType)) {
-            type = FileType.COMPASS;
+            type = SP3FileType.COMPASS;
         } else if ("J".equalsIgnoreCase(fileType)) {
-            type = FileType.QZSS;
+            type = SP3FileType.QZSS;
         }
         return type;
     }
@@ -463,32 +484,34 @@ public class SP3Parser implements OrbitFileParser {
     private static class ParseInfo {
 
         /** The corresponding SP3File object. */
-        SP3File file;
+        private SP3File file;
 
         /** The latest epoch as read from the SP3 file. */
-        AbsoluteDate latestEpoch;
+        private AbsoluteDate latestEpoch;
 
         /** The latest position as read from the SP3 file. */
-        Vector3D latestPosition;
+        private Vector3D latestPosition;
 
         /** The latest clock value as read from the SP3 file. */
-        double latestClock;
+        private double latestClock;
 
         /** Indicates if the SP3 file has velocity entries. */
-        boolean hasVelocityEntries;
+        private boolean hasVelocityEntries;
 
         /** The timescale used in the SP3 file. */
-        TimeScale timeScale;
+        private TimeScale timeScale;
 
         /** The number of satellites as contained in the SP3 file. */
-        int maxSatellites;
+        private int maxSatellites;
 
-        @SuppressWarnings("unused")
-        double posVelBase;
-        @SuppressWarnings("unused")
-        double clockBase;
+        /** The base for pos/vel. */
+        //private double posVelBase;
 
-        public ParseInfo() {
+        /** The base for clock/rate. */
+        //private double clockBase;
+
+        /** Create a new {@link ParseInfo} object. */
+        protected ParseInfo() {
             file = new SP3File();
             latestEpoch = null;
             latestPosition = null;
@@ -496,8 +519,8 @@ public class SP3Parser implements OrbitFileParser {
             hasVelocityEntries = false;
             timeScale = TimeScalesFactory.getGPS();
             maxSatellites = 0;
-            posVelBase = 2d;
-            clockBase = 2d;
+            //posVelBase = 2d;
+            //clockBase = 2d;
         }
     }
 }

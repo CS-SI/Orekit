@@ -1,4 +1,5 @@
-/* Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2011 Space Applications Services
+ * Licensed to CS Communication & Systèmes (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,9 +25,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.orekit.files.OrbitFile;
-import org.orekit.files.SatelliteInformation;
-import org.orekit.files.SatelliteTimeCoordinate;
+import org.orekit.files.general.OrbitFile;
+import org.orekit.files.general.SatelliteInformation;
+import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.time.AbsoluteDate;
 
 /** Represents a parsed SP3 orbit file.
@@ -38,7 +39,7 @@ public class SP3File implements OrbitFile, Serializable {
     private static final long serialVersionUID = 3333652174843017654L;
 
     /** File type indicator. */
-    public enum FileType {
+    public enum SP3FileType {
         /** GPS only file. */
         GPS,
         /** Mixed file. */
@@ -58,7 +59,7 @@ public class SP3File implements OrbitFile, Serializable {
     }
 
     /** Orbit type indicator. */
-    public enum OrbitType {
+    public enum SP3OrbitType {
         /** fitted. */
         FIT,
         /** extrapolated or predicted. */
@@ -70,7 +71,7 @@ public class SP3File implements OrbitFile, Serializable {
     }
 
     /** File type. */
-    private FileType type;
+    private SP3FileType type;
 
     /** Time system. */
     private TimeSystem timeSystem;
@@ -103,7 +104,7 @@ public class SP3File implements OrbitFile, Serializable {
     private String dataUsed;
 
     /** Orbit type. */
-    private OrbitType orbitType;
+    private SP3OrbitType orbitType;
 
     /** Agency providing the file. */
     private String agency;
@@ -111,26 +112,30 @@ public class SP3File implements OrbitFile, Serializable {
     /** A list containing additional satellite information. */
     private List<SatelliteInformation> satellites;
 
+    /** A mapping of satellite id to its corresponding {@link SatelliteInformation} object. */
+    private Map<String, SatelliteInformation> satelliteInfo;
+
     /** A map containing all satellite coordinates. */
     private Map<String, List<SatelliteTimeCoordinate>> satelliteCoords;
 
     /** Create a new SP3 file object. */
     public SP3File() {
         satellites = new ArrayList<SatelliteInformation>();
+        satelliteInfo = new HashMap<String, SatelliteInformation>();
         satelliteCoords = new HashMap<String, List<SatelliteTimeCoordinate>>();
     }
 
-    /** Returns the {@link FileType} associated with this SP3 file.
+    /** Returns the {@link SP3FileType} associated with this SP3 file.
      * @return the file type for this SP3 file
      */
-    public FileType getType() {
+    public SP3FileType getType() {
         return type;
     }
 
     /** Set the file type for this SP3 file.
      * @param fileType the file type to be set
      */
-    public void setType(final FileType fileType) {
+    public void setType(final SP3FileType fileType) {
         this.type = fileType;
     }
 
@@ -210,7 +215,7 @@ public class SP3File implements OrbitFile, Serializable {
     /** Set the julian day for this SP3 file.
      * @param day the julian day to be set
      */
-    public void setJulianDay(int day) {
+    public void setJulianDay(final int day) {
         this.julianDay = day;
     }
 
@@ -264,18 +269,18 @@ public class SP3File implements OrbitFile, Serializable {
         this.coordinateSystem = system;
     }
 
-    /** Returns the {@link OrbitType} for this SP3 file.
+    /** Returns the {@link SP3OrbitType} for this SP3 file.
      * @return the orbit type
      */
-    public OrbitType getOrbitType() {
+    public SP3OrbitType getOrbitType() {
         return orbitType;
     }
 
-    /** Set the {@link OrbitType} for this SP3 file.
-     * @param type the orbit type to be set
+    /** Set the {@link SP3OrbitType} for this SP3 file.
+     * @param oType the orbit type to be set
      */
-    public void setOrbitType(final OrbitType type) {
-        this.orbitType = type;
+    public void setOrbitType(final SP3OrbitType oType) {
+        this.orbitType = oType;
     }
 
     /** Returns the agency that prepared this SP3 file.
@@ -297,8 +302,13 @@ public class SP3File implements OrbitFile, Serializable {
      * @param satId the satellite identifier
      */
     public void addSatellite(final String satId) {
-        satellites.add(new SatelliteInformation(satId));
-        satelliteCoords.put(satId, new LinkedList<SatelliteTimeCoordinate>());
+        // only add satellites which have not been added before
+        if (getSatellite(satId) == null) {
+            final SatelliteInformation info = new SatelliteInformation(satId);
+            satellites.add(info);
+            satelliteInfo.put(satId, info);
+            satelliteCoords.put(satId, new LinkedList<SatelliteTimeCoordinate>());
+        }
     }
 
     /** {@inheritDoc} */
@@ -317,16 +327,7 @@ public class SP3File implements OrbitFile, Serializable {
             return null;
         }
 
-        // TODO: the satellite info is currently stored in an ArrayList
-        //       for quick access to the nth satellite.
-        //       Consider using a Set/Map to quickly access satellites by id
-        for (SatelliteInformation sat : satellites) {
-            if (satId.equalsIgnoreCase(sat.getSatelliteId())) {
-                return sat;
-            }
-        }
-
-        return null;
+        return satelliteInfo.get(satId);
     }
 
     /** Returns the nth satellite as contained in the SP3 file.
@@ -351,9 +352,8 @@ public class SP3File implements OrbitFile, Serializable {
      * @param satId the satellite identifier
      * @param coord the P/V coordinate of the satellite
      */
-    public void addSatelliteCoordinate(final String satId,
-            final SatelliteTimeCoordinate coord) {
-        List<SatelliteTimeCoordinate> coords = satelliteCoords.get(satId);
+    public void addSatelliteCoordinate(final String satId, final SatelliteTimeCoordinate coord) {
+        final List<SatelliteTimeCoordinate> coords = satelliteCoords.get(satId);
         if (coords != null) {
             coords.add(coord);
         }
