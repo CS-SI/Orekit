@@ -268,7 +268,7 @@ public class IntegratedEphemeris
 
         /** {@inheritDoc} */
         public double[] getAdditionalState(final SpacecraftState state)
-            throws OrekitException {
+            throws PropagationException {
             try {
 
                 // set the model date

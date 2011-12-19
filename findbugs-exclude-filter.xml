@@ -64,6 +64,13 @@
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
 
+  <!-- The following is a false positive from findbugs -->
+  <Match>
+    <Class name="~.*\.IntegratedEphemeris\$LocalProvider$"/>
+    <Method name="getAdditionalState" />
+    <Bug pattern="BC_VACUOUS_INSTANCEOF" />
+  </Match>
+
   <!-- The following equality tests are intentional and needed for semantic purposes -->
   <Match>
     <Class name="org.orekit.time.TimeComponents" />
