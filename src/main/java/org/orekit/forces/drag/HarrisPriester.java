@@ -53,6 +53,7 @@ public class HarrisPriester implements Atmosphere {
     /** Lag angle in longitude. */
     private static final double LAG = FastMath.toRadians(30.0);
 
+    // CHECKSTYLE: stop NoWhitespaceAfter
     /** Harris-Priester min-max density (kg/m3) vs. altitude (m) table.
      *  These data are valid for a mean solar activity. */
     private static final double[][] ALT_RHO = {
@@ -107,6 +108,7 @@ public class HarrisPriester implements Atmosphere {
         {  960000.0, 1.560e-15, 2.360e-14 },
         { 1000000.0, 1.150e-15, 1.810e-14 }
     };
+    // CHECKSTYLE: resume NoWhitespaceAfter
 
     /** Cosine exponent from 2 to 6 according to inclination. */
     private double n;
@@ -178,7 +180,6 @@ public class HarrisPriester implements Atmosphere {
     /** Constructor for Modified Harris-Priester atmosphere model.
      *  <p>Recommanded values for the cosine exponent spread over the range
      *  2, for low inclination orbits, to 6, for polar orbits.</p>
-     *  </p>
      *  <p>The provided density table must be an array such as:
      *  <ul>
      *   <li>tabAltRho[][0] = altitude (m)</li>
@@ -209,12 +210,12 @@ public class HarrisPriester implements Atmosphere {
     }
 
     /** Set a user define density table to deal with different solar activities.
-     *  @param tabAltRho density vs. altitude table
+     *  @param tab density vs. altitude table
      */
-    private void setTabDensity(final double[][] tabAltRho) {
-        this.tabAltRho = new double[tabAltRho.length][];
-        for (int i = 0; i < tabAltRho.length; i++) {
-            this.tabAltRho[i] = tabAltRho[i].clone();
+    private void setTabDensity(final double[][] tab) {
+        this.tabAltRho = new double[tab.length][];
+        for (int i = 0; i < tab.length; i++) {
+            this.tabAltRho[i] = tab[i].clone();
         }
     }
 
@@ -233,7 +234,7 @@ public class HarrisPriester implements Atmosphere {
      *  @return density vs. altitude table
      */
     public double[][] getTabDensity() {
-        double[][] copy = new double[tabAltRho.length][];
+        final double[][] copy = new double[tabAltRho.length][];
         for (int i = 0; i < tabAltRho.length; i++) {
             copy[i] = tabAltRho[i].clone();
         }
@@ -253,7 +254,7 @@ public class HarrisPriester implements Atmosphere {
      *  @return the maximal altitude (m)
      */
     public double getMaxAlt() {
-        return tabAltRho[tabAltRho.length-1][0];
+        return tabAltRho[tabAltRho.length - 1][0];
     }
 
     /** Get the local density.
@@ -262,7 +263,7 @@ public class HarrisPriester implements Atmosphere {
      * @param satPos  position of s/c in earth frame(m)
      * @param satAlt  height of s/c (m)
      * @return the local density (kg/m<sup>3</sup>)
-     * @exception OrekitException if altitude is below the model minimal altitude 
+     * @exception OrekitException if altitude is below the model minimal altitude
      */
     public double getDensity(final double sunRAsc, final double sunDecl, final Vector3D satPos, final double satAlt)
         throws OrekitException {
@@ -282,24 +283,24 @@ public class HarrisPriester implements Atmosphere {
                                            FastMath.sin(sunDecl));
 
         // Cosine of angle Psi between the diurnal bulge apex and the satellite
-        double cosPsi = dDBA.normalize().dotProduct(satPos.normalize());
+        final double cosPsi = dDBA.normalize().dotProduct(satPos.normalize());
         // (1 + cos(Psi))/2 = cos2(Psi/2)
-        double c2Psi2 = 0.5 + 0.5 * cosPsi;
+        final double c2Psi2 = 0.5 + 0.5 * cosPsi;
 
         // Search altitude index in density table
         int ia = 0;
-        while (ia < tabAltRho.length-2 && satAlt > tabAltRho[ia][0]) {  
-            ia++ ;
+        while (ia < tabAltRho.length - 2 && satAlt > tabAltRho[ia][0]) {
+            ia++;
         }
 
-        // Exponential density interpolation 
-        double altMin = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][1] / tabAltRho[ia][1]);
-        double altMax = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][2] / tabAltRho[ia][2]);
+        // Exponential density interpolation
+        final double altMin = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][1] / tabAltRho[ia][1]);
+        final double altMax = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][2] / tabAltRho[ia][2]);
 
-        double rhoMin = tabAltRho[ia][1] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMin);
-        double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMax);
+        final double rhoMin = tabAltRho[ia][1] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMin);
+        final double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMax);
 
-        return rhoMin + (rhoMax - rhoMin) * FastMath.pow(c2Psi2, n/2);
+        return rhoMin + (rhoMax - rhoMin) * FastMath.pow(c2Psi2, n / 2);
     }
 
     /** Get the local density.
@@ -307,7 +308,7 @@ public class HarrisPriester implements Atmosphere {
      * @param position current position in frame
      * @param frame the frame in which is defined the position
      * @return local density (kg/m<sup>3</sup>)
-     * @exception OrekitException if some frame conversion cannot be performed 
+     * @exception OrekitException if some frame conversion cannot be performed
      *            or if altitude is below the model minimal altitude
      */
     public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
