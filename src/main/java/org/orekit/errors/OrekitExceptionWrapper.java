@@ -17,7 +17,7 @@
 package org.orekit.errors;
 
 
-/** This class allows to wrap {@link OrekitException} instances in {@code RuntimeException=.
+/** This class allows to wrap {@link OrekitException} instances in {@code RuntimeException}.
 
  * <p>Wrapping {@link OrekitException} instances is useful when a low level method throws
  * one such exception and this method must be called from another one which does not allow

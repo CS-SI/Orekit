@@ -28,8 +28,8 @@ import org.orekit.utils.PVCoordinates;
  * <p>This class finds altitude events (i.e. satellite crossing
  * a predefined altitude level above ground).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation when ascending and to
- * {@link EventDetector#STOP stop} propagation
+ * EventDetector.Action#CONTINUE continue} propagation when ascending and to
+ * {@link EventDetector.Action#STOP stop} propagation
  * when descending. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
@@ -116,12 +116,12 @@ public class AltitudeDetector extends AbstractDetector {
 
     /** Handle an altitude event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#CONTINUE continue} propagation when ascending and to
-     * {@link EventDetector#STOP stop} propagationwhen descending.</p>
+     * EventDetector.Action#CONTINUE continue} propagation when ascending and to
+     * {@link EventDetector.Action#STOP stop} propagationwhen descending.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
-     * @return {@link #STOP} or {@link #CONTINUE}
+     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)

@@ -33,7 +33,7 @@ import org.orekit.time.TimeStamped;
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
- * <p>The default implementation behavior is to {@link EventDetector#STOP stop}
+ * <p>The default implementation behavior is to {@link EventDetector.Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by
  * overriding the {@link #eventOccurred(SpacecraftState, boolean) eventOccurred}
  * method in a derived class.</p>
@@ -101,11 +101,11 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
 
     /** Handle a date event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#STOP stop} propagation at date occurrence.</p>
+     * EventDetector.Action#STOP stop} propagation at date occurrence.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing the way of the switching function is not guaranted
      * as it can change according to the added event dates.
-     * @return {@link #STOP}
+     * @return {@link EventDetector.Action#STOP}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)

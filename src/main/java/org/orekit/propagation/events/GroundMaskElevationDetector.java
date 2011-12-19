@@ -53,8 +53,8 @@ import org.orekit.time.AbsoluteDate;
  * <p>No assumption is made on azimuth values and ordering. The only restraint is
  * that only one elevation value can be associated to identical azimuths modulo 2PI.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation at raising and to
- * {@link EventDetector#STOP stop} propagation at setting. This can be changed
+ * EventDetector.Action#CONTINUE continue} propagation at raising and to
+ * {@link EventDetector.Action#STOP stop} propagation at setting. This can be changed
  * by overriding the {@link #eventOccurred(SpacecraftState, boolean) eventOccurred}
  * method in a derived class.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -136,12 +136,12 @@ public class GroundMaskElevationDetector extends AbstractDetector {
 
     /** Handle an azimuth-elevation event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#CONTINUE continue} propagation at raising and to
-     * {@link EventDetector#STOP stop} propagation at setting.</p>
+     * EventDetector.Action#CONTINUE continue} propagation at raising and to
+     * {@link EventDetector.Action#STOP stop} propagation at setting.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event.
-     * @return {@link #STOP} or {@link #CONTINUE}
+     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)

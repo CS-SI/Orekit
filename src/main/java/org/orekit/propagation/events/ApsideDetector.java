@@ -26,8 +26,8 @@ import org.orekit.utils.PVCoordinates;
 /** Finder for apside crossing events.
  * <p>This class finds apside crossing events (i.e. apogee or perigee crossing).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector#CONTINUE continue} propagation at apogee crossing
- * and to {@link EventDetector#STOP stop} propagation
+ * EventDetector.Action#CONTINUE continue} propagation at apogee crossing
+ * and to {@link EventDetector.Action#STOP stop} propagation
  * at perigee crossing. This can be changed by overriding the
  * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
  * derived class.</p>
@@ -71,13 +71,13 @@ public class ApsideDetector extends AbstractDetector {
 
     /** Handle an apside crossing event and choose what to do next.
      * <p>The default implementation behavior is to {@link
-     * EventDetector#CONTINUE continue} propagation at apogee
-     * crossing and to {@link EventDetector#STOP stop} propagation
+     * EventDetector.Action#CONTINUE continue} propagation at apogee
+     * crossing and to {@link EventDetector.Action#STOP stop} propagation
      * at perigee crossing.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param increasing if true, the value of the switching function increases
      * when times increases around event.
-     * @return {@link #STOP} or {@link #CONTINUE}
+     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)
