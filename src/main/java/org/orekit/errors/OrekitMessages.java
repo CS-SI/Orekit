@@ -140,7 +140,10 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_ORBIT("missing orbit in CCSDS Orbit Data Message"),
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
-    NON_RESETABLE_STATE("reset state not allowed {0}");
+    NON_RESETABLE_STATE("reset state not allowed {0}"),
+    SP3_UNSUPPORTED_VERSION("SP3 format version {0} is not supported"),
+    SP3_UNSUPPORTED_TIMESYSTEM("time system {0} it not supported"),
+    SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})");
 
     // CHECKSTYLE: resume JavadocVariable check
 

@@ -107,4 +107,11 @@
     <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
 
+  <!-- the following is an intended switch fall-through in the SP3Parser -->
+  <Match>
+    <Class name="~.*\.SP3Parser$"/>
+    <Method name="parseHeaderLine" />
+    <Bug pattern="SF_SWITCH_FALLTHROUGH" />
+  </Match>
+
 </FindBugsFilter>

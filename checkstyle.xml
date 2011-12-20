@@ -89,4 +89,9 @@
         <property name="onCommentFormat"  value="CHECKSTYLE\: resume NoWhitespaceAfter"/>
         <property name="checkFormat"      value="NoWhitespaceAfter"/>
     </module>
+    <module name="SuppressionCommentFilter">
+    	<property name="offCommentFormat" value="CHECKSTYLE\: stop FallThrough check"/>
+    	<property name="onCommentFormat" value="CHECKSTYLE\: resume FallThrough check"/>
+    	<property name="checkFormat" value="FallThrough"/>
+  	</module>
 </module>
