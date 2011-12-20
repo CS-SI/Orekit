@@ -38,6 +38,7 @@ public enum LOFType {
      * @see #VNC
      */
     TNW {
+        /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
@@ -61,6 +62,7 @@ public enum LOFType {
      * @see #VVLH
      */
     QSW {
+        /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
@@ -84,6 +86,7 @@ public enum LOFType {
      * @see #VVLH
      */
     LVLH {
+        /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_K);
@@ -104,6 +107,7 @@ public enum LOFType {
      * @see #LVLH
      */
     VVLH {
+        /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getPosition(), pv.getMomentum(),
                                 Vector3D.MINUS_K, Vector3D.MINUS_J);
@@ -123,6 +127,7 @@ public enum LOFType {
      * @see #TNW
      */
     VNC {
+        /** {@inheritDoc} */
         protected Rotation rotationFromInertial(final PVCoordinates pv) {
             return new Rotation(pv.getVelocity(), pv.getMomentum(),
                                 Vector3D.PLUS_I, Vector3D.PLUS_J);

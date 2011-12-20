@@ -111,7 +111,7 @@ public class AltitudeDetector extends AbstractDetector {
     }
 
     /** {@inheritDoc} */
-    public void init(SpacecraftState s0, AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle an altitude event and choose what to do next.

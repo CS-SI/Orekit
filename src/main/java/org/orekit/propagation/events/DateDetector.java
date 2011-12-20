@@ -96,7 +96,7 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     }
 
     /** {@inheritDoc} */
-    public void init(SpacecraftState s0, AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle a date event and choose what to do next.

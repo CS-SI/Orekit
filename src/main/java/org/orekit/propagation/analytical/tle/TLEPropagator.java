@@ -73,9 +73,6 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
-    /** TLE frame. */
-    private final Frame frame;
-
     /** Initial state. */
     protected final TLE tle;
 
@@ -169,6 +166,9 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
     protected double t2cof;
 
     // CHECKSTYLE: resume VisibilityModifierCheck
+
+    /** TLE frame. */
+    private final Frame frame;
 
     /** Spacecraft mass (kg). */
     private final double mass;

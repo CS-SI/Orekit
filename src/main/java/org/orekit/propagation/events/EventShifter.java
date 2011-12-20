@@ -92,7 +92,7 @@ public class EventShifter extends AbstractDetector {
     }
 
     /** {@inheritDoc} */
-    public void init(SpacecraftState s0, AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** {@inheritDoc} */

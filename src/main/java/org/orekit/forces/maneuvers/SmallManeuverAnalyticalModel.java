@@ -44,7 +44,7 @@ import org.orekit.utils.Constants;
  * </ol>
  * </p>
  * <p>
- * The second Jacobian, J<sub>1/0</sub></li>, is computed using a simple Keplerian
+ * The second Jacobian, J<sub>1/0</sub>, is computed using a simple Keplerian
  * model, i.e. it is the identity except for the mean motion row which also includes
  * an off-diagonal element due to semi-major axis change.
  * </p>
@@ -62,25 +62,25 @@ public class SmallManeuverAnalyticalModel implements Serializable {
     private static final long serialVersionUID = 5046690115016896090L;
 
     /** Maneuver date. */
-    final AbsoluteDate t0;
+    private final AbsoluteDate t0;
 
     /** Inertial velocity increment. */
-    final Vector3D inertialDV;
+    private final Vector3D inertialDV;
 
     /** Inertial frame in which the velocity increment is defined. */
-    final Frame inertialFrame;
+    private final Frame inertialFrame;
 
     /** Mass change ratio. */
     private final double massRatio;
 
     /** Type of orbit used for internal Jacobians. */
-    final OrbitType type;
+    private final OrbitType type;
 
     /** Keplerian (or equinoctial) differential change due to maneuver. */
-    final double[] delta;
+    private final double[] delta;
 
     /** Mean motion change. */
-    final double deltaN;
+    private final double deltaN;
 
     /** Build a maneuver defined in spacecraft frame.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
@@ -89,7 +89,6 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      * @param isp engine specific impulse (s)
      * @exception OrekitException if spacecraft frame cannot be transformed
      */
-    
     public SmallManeuverAnalyticalModel(final SpacecraftState state0,
                                         final Vector3D dV, final double isp)
         throws OrekitException {
@@ -106,7 +105,6 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      * @param isp engine specific impulse (s)
      * @exception OrekitException if velocity increment frame cannot be transformed
      */
-    
     public SmallManeuverAnalyticalModel(final SpacecraftState state0, final Frame frame,
                                         final Vector3D dV, final double isp)
         throws OrekitException {

@@ -254,18 +254,18 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         try {
             // convergence threshold on point position: 1mm
             final double deltaP = 0.001;
-            UnivariateRealSolver solver =
+            final UnivariateRealSolver solver =
                     new BracketingNthOrderBrentSolver(deltaP / Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       deltaP, deltaP, 5);
 
             // find the distance such that a point in the specified direction and at the solved-for
             // distance is exactly at the specified radius
-            double distance = solver.solve(1000, new UnivariateFunction() {
+            final double distance = solver.solve(1000, new UnivariateFunction() {
                 /** {@inheritDoc} */
-                public double value(double x) {
+                public double value(final double x) {
                     try {
-                        final GeodeticPoint point = pointAtDistance(azimuth, elevation, x);
-                        return parentShape.transform(point).getNorm() - radius;
+                        final GeodeticPoint gp = pointAtDistance(azimuth, elevation, x);
+                        return parentShape.transform(gp).getNorm() - radius;
                     } catch (OrekitException oe) {
                         throw new OrekitExceptionWrapper(oe);
                     }
@@ -281,8 +281,6 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
             throw lwe.getException();
         }
     }
-
-    
 
     /** Compute the point observed from the station at some specified distance.
      * @param azimuth pointing azimuth from station

@@ -44,7 +44,7 @@ public class OrekitStepHandlerMultiplexer implements OrekitStepHandler {
     /** Add a step handler.
      * @param handler step handler to add
      */
-    public void add(OrekitStepHandler handler) {
+    public void add(final OrekitStepHandler handler) {
         handlers.add(handler);
     }
 
@@ -57,7 +57,7 @@ public class OrekitStepHandlerMultiplexer implements OrekitStepHandler {
 
     /** {@inheritDoc} */
     public void handleStep(final OrekitStepInterpolator interpolator, final boolean isLast)
-            throws PropagationException {
+        throws PropagationException {
         for (final OrekitStepHandler handler : handlers) {
             handler.handleStep(interpolator, isLast);
         }
