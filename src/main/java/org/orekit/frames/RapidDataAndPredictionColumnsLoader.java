@@ -127,7 +127,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
 
     /**
      * Build a loader for IERS bulletins B files.
-     * 
+     *
      * @param supportedNames
      *            regular expression for supported files names
      */

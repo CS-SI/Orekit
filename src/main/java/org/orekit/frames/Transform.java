@@ -277,7 +277,6 @@ public class Transform implements Serializable {
      * <pre>
      * dPV<sub>1</sub> = J &times; dPV<sub>0</sub>
      * </pre>
-     * 
      * </p>
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x6, only the 6x6 upper left corner will be modified

@@ -81,7 +81,6 @@ public class ManeuverAdapterPropagator extends AbstractPropagator {
      * @exception OrekitException if spacecraft reference state cannot
      * be determined at maneuver date
      */
-    
     public void addManeuver(final AbsoluteDate date, final Vector3D dV, final double isp)
         throws OrekitException {
         maneuvers.add(new SmallManeuverAnalyticalModel(reference.propagate(date),
@@ -96,7 +95,6 @@ public class ManeuverAdapterPropagator extends AbstractPropagator {
      * @exception OrekitException if spacecraft reference state cannot
      * be determined at maneuver date
      */
-    
     public void addManeuver(final Frame frame, final AbsoluteDate date,
                             final Vector3D dV, final double isp)
         throws OrekitException {

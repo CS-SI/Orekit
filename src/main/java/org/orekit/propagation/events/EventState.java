@@ -189,7 +189,7 @@ public class EventState implements Serializable {
                     increasing = gb >= ga;
 
                     // find the event time making sure we select a solution just at or past the exact root
-                    double dtA = ta.durationFrom(t0);
+                    final double dtA = ta.durationFrom(t0);
                     final double dtB = tb.durationFrom(t0);
                     final double dtBaseRoot = forward ?
                                               nonBracketing.solve(maxIterationcount, f, dtA, dtB) :
@@ -207,7 +207,7 @@ public class EventState implements Serializable {
                         (FastMath.abs(root.durationFrom(previousEventTime)) <= convergence)) {
                         // we have either found nothing or found (again ?) a past event,
                         // retry the substep excluding this value
-                        ta = forward ? ta.shiftedBy(convergence) : ta.shiftedBy(- convergence);
+                        ta = forward ? ta.shiftedBy(convergence) : ta.shiftedBy(-convergence);
                         ga = f.value(ta.durationFrom(t0));
                         --i;
                     } else if ((previousEventTime == null) ||

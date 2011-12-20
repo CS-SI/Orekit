@@ -74,7 +74,7 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void init(SpacecraftState s0, AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
         lastDate  = null;
         lastState = null;
         forward   = true;

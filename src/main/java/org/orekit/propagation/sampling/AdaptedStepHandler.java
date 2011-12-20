@@ -100,7 +100,7 @@ public class AdaptedStepHandler
     }
 
     /** {@inheritDoc} */
-    public void init(double t0, double[] y0, double t) {
+    public void init(final double t0, final double[] y0, final double t) {
         try {
             handler.init(mapArrayToState(t0, y0), initializedReference.shiftedBy(t));
         } catch (OrekitException oe) {

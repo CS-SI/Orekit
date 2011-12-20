@@ -218,9 +218,7 @@ public class EquinoctialOrbit extends Orbit {
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @exception IllegalArgumentException if frame is not a {@link
-     * Frame#isPseudoInertial pseudo-inertial frame}
-     * @exception OrekitException if eccentricity is equal to 1 or larger or
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
     public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
