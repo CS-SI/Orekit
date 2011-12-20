@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        Force impulse maneuver to preserve orbit type and orbit frame.
+      </action>
       <action dev="thomas" type="add">
         Added sp3 file parser.
       </action>

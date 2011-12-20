@@ -16,14 +16,11 @@
  */
 package org.orekit.forces.maneuvers;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
@@ -120,26 +117,24 @@ public class ImpulseManeuver implements EventDetector {
     public SpacecraftState resetState(final SpacecraftState oldState)
         throws OrekitException {
 
-        final Frame eme2000     = FramesFactory.getEME2000();
         final AbsoluteDate date = oldState.getDate();
         final Attitude attitude = oldState.getAttitude();
 
-        // convert velocity increment in EME2000 frame
-        final Rotation refToEME2000 =
-            attitude.getReferenceFrame().getTransformTo(eme2000, date).getRotation();
-        final Rotation satToEME2000 = refToEME2000.applyTo(attitude.getRotation().revert());
-        final Vector3D deltaV = satToEME2000.applyTo(deltaVSat);
+        // convert velocity increment in inertial frame
+        final Vector3D deltaV = attitude.getRotation().applyInverseTo(deltaVSat);
 
         // apply increment to position/velocity
-        final PVCoordinates oldPV = oldState.getPVCoordinates(eme2000);
+        final PVCoordinates oldPV = oldState.getPVCoordinates();
         final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
                                                       oldPV.getVelocity().add(deltaV));
+        final CartesianOrbit newOrbit =
+                new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
 
         // compute new mass
         final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / vExhaust);
 
         // pack everything in a new state
-        return new SpacecraftState(new EquinoctialOrbit(newPV, eme2000, date, oldState.getMu()),
+        return new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
                                    attitude, newMass);
 
     }
