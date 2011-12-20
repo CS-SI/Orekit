@@ -149,12 +149,9 @@ public class DSSTPropagator extends AbstractPropagator {
      * follow a keplerian evolution only.
      * </p>
      * 
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @exception PropagationException
-     *                if initial state cannot be set
+     * @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit initial orbit
+     * @exception PropagationException if initial state cannot be set
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit)
@@ -173,14 +170,10 @@ public class DSSTPropagator extends AbstractPropagator {
      * follow a keplerian evolution only.
      * </p>
      * 
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @param attitudeProv
-     *            attitude provider
-     * @exception PropagationException
-     *                if initial state cannot be set
+     * @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @exception PropagationException if initial state cannot be set
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit,
@@ -200,14 +193,10 @@ public class DSSTPropagator extends AbstractPropagator {
      * follow a keplerian evolution only.
      * </p>
      * 
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @param mass
-     *            spacecraft mass
-     * @exception PropagationException
-     *                if initial state cannot be set
+     * @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit initial orbit
+     * @param mass spacecraft mass
+     * @exception PropagationException if initial state cannot be set
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit,
@@ -224,16 +213,11 @@ public class DSSTPropagator extends AbstractPropagator {
      * follow a keplerian evolution only.
      * </p>
      * 
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @param attitudeProv
-     *            attitude provider
-     * @param mass
-     *            spacecraft mass
-     * @exception PropagationException
-     *                if initial state cannot be set
+     * @param integrator numerical integrator used to integrate mean coefficient defined by the SST theory.
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @exception PropagationException if initial state cannot be set
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit,
@@ -269,8 +253,7 @@ public class DSSTPropagator extends AbstractPropagator {
     /**
      * Set the integrator.
      * 
-     * @param integrator
-     *            numerical integrator to use for propagation.
+     * @param integrator numerical integrator to use for propagation.
      */
     private void setIntegrator(final FirstOrderIntegrator integrator) {
         this.integrator = integrator;
@@ -290,12 +273,11 @@ public class DSSTPropagator extends AbstractPropagator {
     /**
      * Add a force model to the global perturbation model.
      * <p>
-     * If this method is not called at all, the integrated orbit will follow a keplerian evolution
-     * only.
+     * If this method is not called at all, the integrated orbit will
+     * follow a keplerian evolution only.
      * </p>
      * 
-     * @param forcemodel
-     *            perturbing {@link DSSTForceModel} to add
+     * @param forcemodel perturbing {@link DSSTForceModel} to add
      * @see #removeForceModels()
      */
     public void addForceModel(final DSSTForceModel forcemodel) {
@@ -321,8 +303,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * A reasonable value would be 5 times the initial step size of the integrator.
      * </p>
      * 
-     * @param extraTime
-     *            extra time
+     * @param extraTime extra time
      */
     public void setExtraTime(final double extraTime) {
         this.extraTime = extraTime;
@@ -395,8 +376,7 @@ public class DSSTPropagator extends AbstractPropagator {
     /**
      * Compute initial mean elements from osculating elements.
      * 
-     * @param state
-     *            current state information: date, kinematics, attitude
+     * @param state current state information: date, kinematics, attitude
      * @return mean elements
      * @throws OrekitException
      */
@@ -433,12 +413,9 @@ public class DSSTPropagator extends AbstractPropagator {
     /**
      * Extrapolation to tf.
      * 
-     * @param start
-     *            start date for extrapolation
-     * @param startState
-     *            state vector at start date
-     * @param end
-     *            end date for extrapolation
+     * @param start start date for extrapolation
+     * @param startState state vector at start date
+     * @param end end date for extrapolation
      * @return extrapolated state vector at end date
      * @throws PropagationException
      */
@@ -504,10 +481,8 @@ public class DSSTPropagator extends AbstractPropagator {
         /**
          * Initialize derivatives
          * 
-         * @param yDot
-         *            Derivatives array
-         * @param currentOrbit
-         *            current orbit
+         * @param yDot Derivatives array
+         * @param currentOrbit current orbit
          */
         public void initDerivatives(final double[] yDot,
                                     final Orbit currentOrbit) {
@@ -644,8 +619,7 @@ public class DSSTPropagator extends AbstractPropagator {
          * Constructor over a real step interpolator The step interpolator is copied inside the
          * StRange.
          * 
-         * @param si
-         *            step interpolator
+         * @param si step interpolator
          */
         public StRange(StepInterpolator si) {
             this.step = si.copy();
@@ -658,8 +632,7 @@ public class DSSTPropagator extends AbstractPropagator {
         /**
          * Constructor over a single time
          * 
-         * @param t
-         *            time
+         * @param t time
          */
         public StRange(final AbsoluteDate t) {
             this.step = null;
@@ -697,13 +670,13 @@ public class DSSTPropagator extends AbstractPropagator {
         public int compareTo(StRange st) {
             if (this.tmax.compareTo(st.getTmin()) < 0) {
                 return -1;
-            } else if (this.tmin.compareTo(st.getTmin()) < 0 & this.tmax.compareTo(st.getTmax()) < 0) {
+            } else if (this.tmin.compareTo(st.getTmin()) < 0 && this.tmax.compareTo(st.getTmax()) < 0) {
                 return -1;
-            } else if (this.tmin.compareTo(st.getTmin()) < 1 & this.tmax.compareTo(st.getTmax()) > -1) {
+            } else if (this.tmin.compareTo(st.getTmin()) < 1 && this.tmax.compareTo(st.getTmax()) > -1) {
                 return 0;
-            } else if (st.getTmin().compareTo(this.tmin) < 1 & st.getTmax().compareTo(this.tmax) > -1) {
+            } else if (st.getTmin().compareTo(this.tmin) < 1 && st.getTmax().compareTo(this.tmax) > -1) {
                 return 0;
-            } else if (st.getTmin().compareTo(this.tmin) < 0 & st.getTmax().compareTo(this.tmax) < 0) {
+            } else if (st.getTmin().compareTo(this.tmin) < 0 && st.getTmax().compareTo(this.tmax) < 0) {
                 return 1;
             } else { // if (st.getTmax().compareTo(this.tmin) < 0)
                 return 1;
@@ -733,10 +706,8 @@ public class DSSTPropagator extends AbstractPropagator {
      * position after several orbits integration.
      * </p>
      * 
-     * @param dP
-     *            user specified position error
-     * @param orbit
-     *            reference orbit
+     * @param dP user specified position error
+     * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error and row 1 being the
      *         relative tolerance error
      */
