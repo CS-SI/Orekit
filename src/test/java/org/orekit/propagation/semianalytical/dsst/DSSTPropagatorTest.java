@@ -46,6 +46,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
@@ -152,6 +153,35 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(initialState.getHx(), finalState2.getHx(), 0.);
         Assert.assertEquals(initialState.getHy(), finalState2.getHy(), 0.);
         Assert.assertEquals(initialState.getLM() - n * dt, finalState2.getLM(), 1.e-12);
+
+    }
+
+    @Test
+    public void testEphemeris() throws OrekitException {
+        SpacecraftState state = getGEOrbit();
+        setDSSTProp(state);
+
+        // Set ephemeris mode
+        propaDSST.setEphemerisMode();
+
+        // Propagation of the initial state at t + 10 days
+        final double dt = 2. * Constants.JULIAN_DAY;
+        propaDSST.propagate(initDate.shiftedBy(5. * dt));
+
+        // Get ephemeris
+        BoundedPropagator ephem = propaDSST.getGeneratedEphemeris();
+
+        // Propagation of the initial state with ephemeris at t + 2 days
+        final SpacecraftState s = ephem.propagate(initDate.shiftedBy(dt));
+
+        // Check results
+        final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
+        Assert.assertEquals(initialState.getA(), s.getA(), 0.);
+        Assert.assertEquals(initialState.getEquinoctialEx(), s.getEquinoctialEx(), 0.);
+        Assert.assertEquals(initialState.getEquinoctialEy(), s.getEquinoctialEy(), 0.);
+        Assert.assertEquals(initialState.getHx(), s.getHx(), 0.);
+        Assert.assertEquals(initialState.getHy(), s.getHy(), 0.);
+        Assert.assertEquals(initialState.getLM() + n * dt, s.getLM(), 1.5e-14);
 
     }
 
@@ -311,8 +341,8 @@ public class DSSTPropagatorTest {
         // Drag Force Model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF2005());
         earth.setAngularThreshold(1.e-6);
-        // PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        // Atmosphere atm = new HarrisPriester(sun, earth);
+//         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+//         Atmosphere atm = new HarrisPriester(sun, earth);
         Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
         final double cd = 2.0;
         final double sf = 5.0;
