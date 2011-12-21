@@ -17,6 +17,7 @@
 package org.orekit.forces.maneuvers;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.util.FastMath;
@@ -31,16 +32,19 @@ import org.orekit.utils.Constants;
 
 /** Analytical model for small maneuvers.
  * <p>The aim of this model is to compute quickly the effect at date t<sub>1</sub>
- * of a small maneuver performed at an earlier date t<sub>0</sub>. This effect is
- * computed analytically using two Jacobian matrices:
+ * of a small maneuver performed at an earlier date t<sub>0</sub>. Both the
+ * direct effect of the maneuver and the Jacobian of this effect with respect to
+ * maneuver parameters are available.
+ * </p>
+ * <p>These effect are computed analytically using two Jacobian matrices:
  * <ol>
  *   <li>J<sub>0</sub>: Jacobian of Keplerian or equinoctial elements with respect
  *   to cartesian parameters at date t<sub>0</sub></li> allows to compute
- *   maneuver effect as an orbital elements change,
- *   <li>J<sub>1/0</sub></li>: Jacobian of Keplerian or equinoctial elements
+ *   maneuver effect as a change in orbital elements at maneuver date t<sub>0</sub>,
+ *   <li>J<sub>1/0</sub>: Jacobian of Keplerian or equinoctial elements
  *   at date t<sub>1</sub> with respect to Keplerian or equinoctial elements
- *   at date t<sub>0</sub> allows to propagate the orbital elements change to
- *   final date.
+ *   at date t<sub>0</sub></li> allows to propagate the change in orbital elements
+ *   to final date t<sub>1</sub>.
  * </ol>
  * </p>
  * <p>
@@ -61,14 +65,11 @@ public class SmallManeuverAnalyticalModel implements Serializable {
     /** Serializable UID. */
     private static final long serialVersionUID = 5046690115016896090L;
 
-    /** Maneuver date. */
-    private final AbsoluteDate t0;
+    /** State at maneuver date (before maneuver occurrence). */
+    private final SpacecraftState state0;
 
     /** Inertial velocity increment. */
     private final Vector3D inertialDV;
-
-    /** Inertial frame in which the velocity increment is defined. */
-    private final Frame inertialFrame;
 
     /** Mass change ratio. */
     private final double massRatio;
@@ -76,11 +77,14 @@ public class SmallManeuverAnalyticalModel implements Serializable {
     /** Type of orbit used for internal Jacobians. */
     private final OrbitType type;
 
-    /** Keplerian (or equinoctial) differential change due to maneuver. */
-    private final double[] delta;
+    /** Initial Keplerian (or equinoctial) Jacobian with respect to maneuver. */
+    private final double[][] j0;
 
-    /** Mean motion change. */
-    private final double deltaN;
+    /** Time derivative of the initial Keplerian (or equinoctial) Jacobian with respect to maneuver. */
+    private double[][] j0Dot;
+
+    /** Mean anomaly change factor. */
+    private final double ksi;
 
     /** Build a maneuver defined in spacecraft frame.
      * @param state0 state at maneuver date, <em>before</em> the maneuver
@@ -109,31 +113,27 @@ public class SmallManeuverAnalyticalModel implements Serializable {
                                         final Vector3D dV, final double isp)
         throws OrekitException {
 
-        this.t0        = state0.getDate();
+        this.state0    = state0;
         this.massRatio = FastMath.exp(-dV.getNorm() / (Constants.G0_STANDARD_GRAVITY * isp));
 
         // use equinoctial orbit type if possible, Keplerian if nearly hyperbolic orbits
         type = (state0.getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN;
 
         // compute initial Jacobian
-        final double[][] jacobian = new double[6][6];
+        j0 = new double[6][6];
         final Orbit orbit0 = type.convertType(state0.getOrbit());
-        orbit0.getJacobianWrtCartesian(PositionAngle.MEAN, jacobian);
+        orbit0.getJacobianWrtCartesian(PositionAngle.MEAN, j0);
+
+        // use lazy evaluation for j0Dot, as it is used only when Jacobians are evaluated
+        j0Dot = null;
 
         // compute maneuver effect on Keplerian (or equinoctial) elements
-        inertialFrame = state0.getFrame();
-        inertialDV = frame.getTransformTo(inertialFrame, t0).transformVector(dV);
-        delta = new double[6];
-        for (int i = 0; i < delta.length; ++i) {
-            delta[i] = jacobian[i][3] * inertialDV.getX() +
-                       jacobian[i][4] * inertialDV.getY() +
-                       jacobian[i][5] * inertialDV.getZ();
-        }
+        inertialDV = frame.getTransformTo(state0.getFrame(), state0.getDate()).transformVector(dV);
 
-        // compute mean motion change: dM(t1) = dM(t0) + deltaN * (t1 - t0)
+        // compute mean anomaly change: dM(t1) = dM(t0) + ksi * da * (t1 - t0)
         final double mu = state0.getMu();
         final double a  = state0.getA();
-        deltaN = -1.5 * delta[0] * FastMath.sqrt(mu / a) / (a * a);
+        ksi = -1.5 * FastMath.sqrt(mu / a) / (a * a);
 
     }
 
@@ -141,12 +141,13 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      * @return date of the maneuver
      */
     public AbsoluteDate getDate() {
-        return t0;
+        return state0.getDate();
     }
 
-    /** Get the velocity increment of the maneuver.
+    /** Get the inertial velocity increment of the maneuver.
      * @return velocity increment in a state-dependent inertial frame
-     * @see SmallManeuverAnalyticalModel#getInertialFrame()
+     * @see #getDV()
+     * @see #getInertialFrame()
      */
     public Vector3D getInertialDV() {
         return inertialDV;
@@ -154,10 +155,29 @@ public class SmallManeuverAnalyticalModel implements Serializable {
 
     /** Get the inertial frame in which the velocity increment is defined.
      * @return inertial frame in which the velocity increment is defined
+     * @see #getDV()
      * @see #getInertialDV()
      */
     public Frame getInertialFrame() {
-        return inertialFrame;
+        return state0.getFrame();
+    }
+
+    /** Compute the effect of the maneuver on an orbit.
+     * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
+     * @return orbit at t<sub>1</sub>, taking the maneuver
+     * into account if t<sub>1</sub> &gt; t<sub>0</sub>
+     * @see #applyManeuver(SpacecraftState)
+     * @see #getJacobian(Orbit)
+     */
+    public Orbit applyManeuver(final Orbit orbit1) {
+
+        if (orbit1.getDate().compareTo(state0.getDate()) <= 0) {
+            // the maneuver has not occurred yet, don't change anything
+            return orbit1;
+        }
+
+        return updateOrbit(orbit1);
+
     }
 
     /** Compute the effect of the maneuver on a spacecraft state.
@@ -165,33 +185,160 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      * without maneuver
      * @return spacecraft state at t<sub>1</sub>, taking the maneuver
      * into account if t<sub>1</sub> &gt; t<sub>0</sub>
+     * @see #applyManeuver(Orbit)
+     * @see #getJacobian(Orbit)
      */
     public SpacecraftState applyManeuver(final SpacecraftState state1) {
 
-        if (state1.getDate().compareTo(t0) <= 0) {
+        if (state1.getDate().compareTo(state0.getDate()) <= 0) {
             // the maneuver has not occurred yet, don't change anything
             return state1;
         }
 
+        return new SpacecraftState(updateOrbit(state1.getOrbit()),
+                                   state1.getAttitude(), updateMass(state1.getMass()));
+
+    }
+
+    /** Compute the effect of the maneuver on an orbit.
+     * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
+     * @return orbit at t<sub>1</sub>, always taking the maneuver into account
+     */
+    private Orbit updateOrbit(final Orbit orbit1) {
+
+        // compute maneuver effect
+        final double dt = orbit1.getDate().durationFrom(state0.getDate());
+        final double x  = inertialDV.getX();
+        final double y  = inertialDV.getY();
+        final double z  = inertialDV.getZ();
+        final double[] delta = new double[6];
+        for (int i = 0; i < delta.length; ++i) {
+            delta[i] = j0[i][3] * x + j0[i][4] * y + j0[i][5] * z;
+        }
+        delta[5] += ksi * delta[0] * dt;
+
         // convert current orbital state to Keplerian or equinoctial elements
         final double[] parameters = new double[6];
-        type.mapOrbitToArray(type.convertType(state1.getOrbit()),
-                             PositionAngle.MEAN, parameters);
-
-        // add maneuver effect
-        for (int i = 0; i < parameters.length; ++i) {
+        type.mapOrbitToArray(type.convertType(orbit1), PositionAngle.MEAN, parameters);
+        for (int i = 0; i < delta.length; ++i) {
             parameters[i] += delta[i];
         }
-        parameters[5] += deltaN * state1.getDate().durationFrom(t0);
 
         // build updated orbit as Keplerian or equinoctial elements
-        final Orbit updated = type.mapArrayToOrbit(parameters, PositionAngle.MEAN,
-                                                   state1.getDate(), state1.getMu(),
-                                                   state1.getFrame());
+        final Orbit o = type.mapArrayToOrbit(parameters, PositionAngle.MEAN,
+                                             orbit1.getDate(), orbit1.getMu(),
+                                             orbit1.getFrame());
 
-        // return a new state with the same orbit type as provided
-        return new SpacecraftState(state1.getOrbit().getType().convertType(updated),
-                                   state1.getAttitude(), updateMass(state1.getMass()));
+        // convert to required type
+        return orbit1.getType().convertType(o);
+
+    }
+
+    /** Compute the Jacobian of the orbit with respect to maneuver parameters.
+     * <p>
+     * The Jacobian matrix is a 6x4 matrix. Element jacobian[i][j] corresponds to
+     * the partial derivative of orbital parameter i with respect to maneuver
+     * parameter j. The rows order is the same order as used in {@link
+     * Orbit#getJacobianWrtCartesian(PositionAngle, double[][]) Orbit.getJacobianWrtCartesian}
+     * method. Columns (0, 1, 2) correspond to the velocity increment coordinates
+     * (&Delta;V<sub>x</sub>, &Delta;V<sub>y</sub>, &Delta;V<sub>z</sub>) in the
+     * inertial frame returned by {@link #getInertialFrame()}, and column 3
+     * corresponds to the maneuver date t<sub>0</sub>.
+     * </p>
+     * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
+     * @param positionAngle type of the position angle to use
+     * @param jacobian placeholder 6x4 (or larger) matrix to be filled with the Jacobian, if matrix
+     * is larger than 6x4, only the 6x4 upper left corner will be modified
+     * @see #applyManeuver(Orbit)
+     * @exception OrekitException if time derivative of the initial Jacobian cannot be computed
+     */
+    public void getJacobian(final Orbit orbit1, final PositionAngle positionAngle, double[][] jacobian)
+        throws OrekitException {
+
+        final double dt = orbit1.getDate().durationFrom(state0.getDate());
+        if (dt < 0) {
+            // the maneuver has not occurred yet, Jacobian is null
+            for (int i = 0; i < 6; ++i) {
+                Arrays.fill(jacobian[i], 0, 4, 0.0);
+            }
+            return;
+        }
+
+        // derivatives of Keplerian/equinoctial elements with respect to velocity increment
+        double[][] pvType = new double[6][4];
+        final double x  = inertialDV.getX();
+        final double y  = inertialDV.getY();
+        final double z  = inertialDV.getZ();
+        for (int i = 0; i < 6; ++i) {
+            System.arraycopy(j0[i], 3, pvType[i], 0, 3);
+        }
+        for (int j = 0; j < 3; ++j) {
+            pvType[5][j] += ksi * dt * j0[0][j + 3];
+        }
+
+        // derivatives of Keplerian/equinoctial elements with respect to date
+        evaluateJ0Dot();
+        for (int i = 0; i < 6; ++i) {
+            pvType[i][3] = j0Dot[i][3] * x + j0Dot[i][4] * y + j0Dot[i][5] * z;
+        }
+        final double da = j0[0][3] * x + j0[0][4] * y + j0[0][5] * z;
+        pvType[5][3] += ksi * (pvType[0][3] * dt - da);
+
+        // convert to derivatives of cartesian parameters
+        double[][] j2         = new double[6][6];
+        double[][] pvJacobian = new double[6][4];
+        final Orbit updated   = updateOrbit(orbit1);
+        type.convertType(updated).getJacobianWrtParameters(PositionAngle.MEAN, j2);
+        for (int i = 0; i < 6; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                pvJacobian[i][j] = j2[i][0] * pvType[0][j] + j2[i][1] * pvType[1][j] +
+                                   j2[i][2] * pvType[2][j] + j2[i][3] * pvType[3][j] +
+                                   j2[i][4] * pvType[4][j] + j2[i][5] * pvType[5][j];
+            }
+        }
+
+        // convert to derivatives of specified parameters
+        double[][] j3 = new double[6][6];
+        updated.getJacobianWrtCartesian(positionAngle, j3);
+        for (int j = 0; j < 4; ++j) {
+            for (int i = 0; i < 6; ++i) {
+                jacobian[i][j] = j3[i][0] * pvJacobian[0][j] + j3[i][1] * pvJacobian[1][j] +
+                                 j3[i][2] * pvJacobian[2][j] + j3[i][3] * pvJacobian[3][j] +
+                                 j3[i][4] * pvJacobian[4][j] + j3[i][5] * pvJacobian[5][j];
+            }
+        }
+
+    }
+
+    /** Lazy evaluation of the initial Jacobian time derivative.
+     * @return initial Jacobian time derivative
+     * @exception OrekitException if initial orbit cannot be shifted
+     */
+    private void evaluateJ0Dot() throws OrekitException {
+
+        if (j0Dot == null) {
+
+            j0Dot = new double[6][6];
+            final double dt = 1.0e-5 / state0.getKeplerianMeanMotion();
+            final Orbit orbit = type.convertType(state0.getOrbit());
+
+            // compute shifted Jacobians
+            final double[][] j0m1 = new double[6][6];
+            orbit.shiftedBy(-1 * dt).getJacobianWrtCartesian(PositionAngle.MEAN, j0m1);
+            final double[][] j0p1 = new double[6][6];
+            orbit.shiftedBy(+1 * dt).getJacobianWrtCartesian(PositionAngle.MEAN, j0p1);
+
+            // evaluate derivative by finite differences
+            for (int i = 0; i < j0Dot.length; ++i) {
+                final double[] m1Row    = j0m1[i];
+                final double[] p1Row    = j0p1[i];
+                final double[] j0DotRow = j0Dot[i];
+                for (int j = 0; j < j0DotRow.length; ++j) {
+                    j0DotRow[j] = (p1Row[j] - m1Row[j]) / (2 * dt);
+                }
+            }
+
+        }
 
     }
 

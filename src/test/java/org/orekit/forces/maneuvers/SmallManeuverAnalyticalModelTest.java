@@ -28,11 +28,13 @@ import org.orekit.Utils;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
@@ -47,7 +49,7 @@ import org.orekit.utils.PVCoordinates;
 public class SmallManeuverAnalyticalModelTest {
 
     @Test
-    public void testLowEarthOrbit() throws OrekitException {
+    public void testLowEarthOrbit1() throws OrekitException {
 
         Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
                                       FastMath.toRadians(98.0),
@@ -75,6 +77,53 @@ public class SmallManeuverAnalyticalModelTest {
             PVCoordinates pvWithout = withoutManeuver.getPVCoordinates(t, leo.getFrame());
             PVCoordinates pvWith    = withManeuver.getPVCoordinates(t, leo.getFrame());
             PVCoordinates pvModel   = model.applyManeuver(withoutManeuver.propagate(t)).getPVCoordinates(leo.getFrame());
+            double nominalDeltaP    = new PVCoordinates(pvWith, pvWithout).getPosition().getNorm();
+            double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
+            if (t.compareTo(t0) < 0) {
+                // before maneuver, all positions should be equal
+                Assert.assertEquals(0, nominalDeltaP, 1.0e-10);
+                Assert.assertEquals(0, modelError,    1.0e-10);
+            } else {
+                // after maneuver, model error should be less than 0.8m,
+                // despite nominal deltaP exceeds 1 kilometer after less than 3 orbits
+                if (t.durationFrom(t0) > 0.1 * leo.getKeplerianPeriod()) {
+                    Assert.assertTrue(modelError < 0.009 * nominalDeltaP);
+                }
+                Assert.assertTrue(modelError < 0.8);
+            }
+        }
+
+    }
+
+    @Test
+    public void testLowEarthOrbit2() throws OrekitException {
+
+        Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
+                                      FastMath.toRadians(98.0),
+                                      FastMath.toRadians(123.456),
+                                      0.0, PositionAngle.MEAN,
+                                      FramesFactory.getEME2000(),
+                                      new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC()),
+                                      Constants.EIGEN5C_EARTH_MU);
+        double mass     = 5600.0;
+        AbsoluteDate t0 = leo.getDate().shiftedBy(1000.0);
+        Vector3D dV     = new Vector3D(-0.01, 0.02, 0.03);
+        double f        = 20.0;
+        double isp      = 315.0;
+        BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
+        BoundedPropagator withManeuver    = getEphemeris(leo, mass, t0, dV, f, isp);
+        SmallManeuverAnalyticalModel model =
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0), dV, isp);
+        Assert.assertEquals(t0, model.getDate());
+
+        for (AbsoluteDate t = withoutManeuver.getMinDate();
+             t.compareTo(withoutManeuver.getMaxDate()) < 0;
+             t = t.shiftedBy(60.0)) {
+            PVCoordinates pvWithout = withoutManeuver.getPVCoordinates(t, leo.getFrame());
+            PVCoordinates pvWith    = withManeuver.getPVCoordinates(t, leo.getFrame());
+            PVCoordinates pvModel   = model.applyManeuver(withoutManeuver.propagate(t).getOrbit()).getPVCoordinates(leo.getFrame());
             double nominalDeltaP    = new PVCoordinates(pvWith, pvWithout).getPosition().getNorm();
             double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
             if (t.compareTo(t0) < 0) {
@@ -140,12 +189,91 @@ public class SmallManeuverAnalyticalModelTest {
 
     }
 
+    @Test
+    public void testJacobian() throws OrekitException {
+
+        Frame eme2000 = FramesFactory.getEME2000();
+        Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
+                                      FastMath.toRadians(98.0),
+                                      FastMath.toRadians(123.456),
+                                      0.3, PositionAngle.MEAN,
+                                      eme2000,
+                                      new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       new TimeComponents(23, 30, 00.000),
+                                                       TimeScalesFactory.getUTC()),
+                                      Constants.EIGEN5C_EARTH_MU);
+        double mass     = 5600.0;
+        AbsoluteDate t0 = leo.getDate().shiftedBy(1000.0);
+        Vector3D dV0    = new Vector3D(-0.1, 0.2, 0.3);
+        double f        = 400.0;
+        double isp      = 315.0;
+        BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
+
+        SpacecraftState state0 = withoutManeuver.propagate(t0);
+        SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(state0, eme2000, dV0, isp);
+        Assert.assertEquals(t0, model.getDate());
+
+        Vector3D[] velDirs  = new Vector3D[] { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K, Vector3D.ZERO };
+        double[]   timeDirs = new double[] { 0, 0, 0, 1 };
+        double     h        = 1.0;
+        AbsoluteDate t1 = t0.shiftedBy(20.0);
+        for (int i = 0; i < 4; ++i) {
+
+            SmallManeuverAnalyticalModel[] models = new SmallManeuverAnalyticalModel[] {
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-4 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, -4 * h, velDirs[i]), isp),
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-3 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, -3 * h, velDirs[i]), isp),
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-2 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, -2 * h, velDirs[i]), isp),
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-1 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, -1 * h, velDirs[i]), isp),
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+1 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, +1 * h, velDirs[i]), isp),
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+2 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, +2 * h, velDirs[i]), isp),
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+3 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, +3 * h, velDirs[i]), isp),
+                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+4 * h * timeDirs[i])),
+                                                 eme2000, new Vector3D(1, dV0, +4 * h, velDirs[i]), isp),
+            };
+            double[][] array = new double[models.length][6];
+
+            Orbit orbitWithout = withoutManeuver.propagate(t1).getOrbit();
+            OrbitType type = orbitWithout.getType();
+
+            // compute reference orbit gradient by finite differences
+            double c = 1.0 / (840 * h);
+            for (int j = 0; j < models.length; ++j) {
+                type.mapOrbitToArray(models[j].applyManeuver(orbitWithout), PositionAngle.TRUE, array[j]);
+            }
+            double[] orbitGradient = new double[6];
+            for (int k = 0; k < orbitGradient.length; ++k) {
+                double d4 = array[7][k] - array[0][k];
+                double d3 = array[6][k] - array[1][k];
+                double d2 = array[5][k] - array[2][k];
+                double d1 = array[4][k] - array[3][k];
+                orbitGradient[k] = (-3 * d4 + 32 * d3 - 168 * d2 + 672 * d1) * c;
+            }
+
+            // analytical Jacobian to check
+            double[][] jacobian = new double[6][4];
+            model.getJacobian(orbitWithout, PositionAngle.TRUE, jacobian);
+
+            for (int j = 0; j < orbitGradient.length; ++j) {
+                Assert.assertEquals(orbitGradient[j], jacobian[j][i], 2.0e-7 * FastMath.abs(orbitGradient[j]));
+            }
+
+        }
+
+    }
+
     private BoundedPropagator getEphemeris(final Orbit orbit, final double mass,
                                            final AbsoluteDate t0, final Vector3D dV,
                                            final double f, final double isp)
         throws OrekitException {
 
-        final AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH);
+        AttitudeProvider law = new LofOffset(orbit.getFrame(), LOFType.LVLH);
         final SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
 
@@ -157,6 +285,7 @@ public class SmallManeuverAnalyticalModelTest {
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setOrbitType(orbit.getType());
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(law);
 
