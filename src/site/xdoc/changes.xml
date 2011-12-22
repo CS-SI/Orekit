@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update">
+        Improved the small maneuvers analytical model to compute orbit Jacobian
+        with respect to maneuver parameters.
+      </action>
       <action dev="luc" type="fix">
         Force impulse maneuver to preserve orbit type and orbit frame.
       </action>

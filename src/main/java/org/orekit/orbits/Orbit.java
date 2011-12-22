@@ -34,14 +34,7 @@ import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /**
- * This class handles orbital parameters without date.
-
- * <p>
- * The aim of this class is to separate the orbital parameters from the date
- * for cases where dates are managed elsewhere. This occurs for example during
- * numerical integration and interpolation because date is the free parameter
- * whereas the orbital parameters are bound to either differential or
- * interpolation equations.</p>
+ * This class handles orbital parameters.
 
  * <p>
  * For user convenience, both the Cartesian and the equinoctial elements
