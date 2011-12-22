@@ -269,47 +269,50 @@ public class SmallManeuverAnalyticalModel implements Serializable {
         }
 
         // derivatives of Keplerian/equinoctial elements with respect to velocity increment
-        double[][] pvType = new double[6][4];
         final double x  = inertialDV.getX();
         final double y  = inertialDV.getY();
         final double z  = inertialDV.getZ();
         for (int i = 0; i < 6; ++i) {
-            System.arraycopy(j0[i], 0, pvType[i], 0, 3);
+            System.arraycopy(j0[i], 0, jacobian[i], 0, 3);
         }
         for (int j = 0; j < 3; ++j) {
-            pvType[5][j] += ksi * dt * j0[0][j];
+            jacobian[5][j] += ksi * dt * j0[0][j];
         }
 
         // derivatives of Keplerian/equinoctial elements with respect to date
         evaluateJ0Dot();
         for (int i = 0; i < 6; ++i) {
-            pvType[i][3] = j0Dot[i][0] * x + j0Dot[i][1] * y + j0Dot[i][2] * z;
+            jacobian[i][3] = j0Dot[i][0] * x + j0Dot[i][1] * y + j0Dot[i][2] * z;
         }
         final double da = j0[0][0] * x + j0[0][1] * y + j0[0][2] * z;
-        pvType[5][3] += ksi * (pvType[0][3] * dt - da);
+        jacobian[5][3] += ksi * (jacobian[0][3] * dt - da);
 
-        // convert to derivatives of cartesian parameters
-        double[][] j2         = new double[6][6];
-        double[][] pvJacobian = new double[6][4];
-        final Orbit updated   = updateOrbit(orbit1);
-        type.convertType(updated).getJacobianWrtParameters(PositionAngle.MEAN, j2);
-        for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                pvJacobian[i][j] = j2[i][0] * pvType[0][j] + j2[i][1] * pvType[1][j] +
-                                   j2[i][2] * pvType[2][j] + j2[i][3] * pvType[3][j] +
-                                   j2[i][4] * pvType[4][j] + j2[i][5] * pvType[5][j];
-            }
-        }
+        if (orbit1.getType() != type || positionAngle != PositionAngle.MEAN) {
 
-        // convert to derivatives of specified parameters
-        double[][] j3 = new double[6][6];
-        updated.getJacobianWrtCartesian(positionAngle, j3);
-        for (int j = 0; j < 4; ++j) {
+            // convert to derivatives of cartesian parameters
+            double[][] j2         = new double[6][6];
+            double[][] pvJacobian = new double[6][4];
+            final Orbit updated   = updateOrbit(orbit1);
+            type.convertType(updated).getJacobianWrtParameters(PositionAngle.MEAN, j2);
             for (int i = 0; i < 6; ++i) {
-                jacobian[i][j] = j3[i][0] * pvJacobian[0][j] + j3[i][1] * pvJacobian[1][j] +
-                                 j3[i][2] * pvJacobian[2][j] + j3[i][3] * pvJacobian[3][j] +
-                                 j3[i][4] * pvJacobian[4][j] + j3[i][5] * pvJacobian[5][j];
+                for (int j = 0; j < 4; ++j) {
+                    pvJacobian[i][j] = j2[i][0] * jacobian[0][j] + j2[i][1] * jacobian[1][j] +
+                                       j2[i][2] * jacobian[2][j] + j2[i][3] * jacobian[3][j] +
+                                       j2[i][4] * jacobian[4][j] + j2[i][5] * jacobian[5][j];
+                }
             }
+
+            // convert to derivatives of specified parameters
+            double[][] j3 = new double[6][6];
+            updated.getJacobianWrtCartesian(positionAngle, j3);
+            for (int j = 0; j < 4; ++j) {
+                for (int i = 0; i < 6; ++i) {
+                    jacobian[i][j] = j3[i][0] * pvJacobian[0][j] + j3[i][1] * pvJacobian[1][j] +
+                                     j3[i][2] * pvJacobian[2][j] + j3[i][3] * pvJacobian[3][j] +
+                                     j3[i][4] * pvJacobian[4][j] + j3[i][5] * pvJacobian[5][j];
+                }
+            }
+
         }
 
     }

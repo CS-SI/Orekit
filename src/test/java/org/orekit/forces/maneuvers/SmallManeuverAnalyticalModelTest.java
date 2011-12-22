@@ -193,7 +193,7 @@ public class SmallManeuverAnalyticalModelTest {
     public void testJacobian() throws OrekitException {
 
         Frame eme2000 = FramesFactory.getEME2000();
-        Orbit leo = new CircularOrbit(7200000.0, -1.0e-5, 2.0e-4,
+        Orbit leo = new CircularOrbit(7200000.0, -1.0e-2, 2.0e-3,
                                       FastMath.toRadians(98.0),
                                       FastMath.toRadians(123.456),
                                       0.3, PositionAngle.MEAN,
@@ -207,61 +207,67 @@ public class SmallManeuverAnalyticalModelTest {
         Vector3D dV0    = new Vector3D(-0.1, 0.2, 0.3);
         double f        = 400.0;
         double isp      = 315.0;
-        BoundedPropagator withoutManeuver = getEphemeris(leo, mass, t0, Vector3D.ZERO, f, isp);
 
-        SpacecraftState state0 = withoutManeuver.propagate(t0);
-        SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(state0, eme2000, dV0, isp);
-        Assert.assertEquals(t0, model.getDate());
+        for (OrbitType orbitType : OrbitType.values()) {
+            for (PositionAngle positionAngle : PositionAngle.values()) {
+                BoundedPropagator withoutManeuver = getEphemeris(orbitType.convertType(leo), mass, t0, Vector3D.ZERO, f, isp);
 
-        Vector3D[] velDirs  = new Vector3D[] { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K, Vector3D.ZERO };
-        double[]   timeDirs = new double[] { 0, 0, 0, 1 };
-        double     h        = 1.0;
-        AbsoluteDate t1 = t0.shiftedBy(20.0);
-        for (int i = 0; i < 4; ++i) {
+                SpacecraftState state0 = withoutManeuver.propagate(t0);
+                SmallManeuverAnalyticalModel model = new SmallManeuverAnalyticalModel(state0, eme2000, dV0, isp);
+                Assert.assertEquals(t0, model.getDate());
 
-            SmallManeuverAnalyticalModel[] models = new SmallManeuverAnalyticalModel[] {
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-4 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, -4 * h, velDirs[i]), isp),
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-3 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, -3 * h, velDirs[i]), isp),
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-2 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, -2 * h, velDirs[i]), isp),
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-1 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, -1 * h, velDirs[i]), isp),
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+1 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, +1 * h, velDirs[i]), isp),
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+2 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, +2 * h, velDirs[i]), isp),
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+3 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, +3 * h, velDirs[i]), isp),
-                new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+4 * h * timeDirs[i])),
-                                                 eme2000, new Vector3D(1, dV0, +4 * h, velDirs[i]), isp),
-            };
-            double[][] array = new double[models.length][6];
+                Vector3D[] velDirs  = new Vector3D[] { Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_K, Vector3D.ZERO };
+                double[]   timeDirs = new double[] { 0, 0, 0, 1 };
+                double     h        = 1.0;
+                AbsoluteDate t1 = t0.shiftedBy(20.0);
+                for (int i = 0; i < 4; ++i) {
 
-            Orbit orbitWithout = withoutManeuver.propagate(t1).getOrbit();
-            OrbitType type = orbitWithout.getType();
+                    SmallManeuverAnalyticalModel[] models = new SmallManeuverAnalyticalModel[] {
+                        new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-4 * h * timeDirs[i])),
+                                                         eme2000, new Vector3D(1, dV0, -4 * h, velDirs[i]), isp),
+                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-3 * h * timeDirs[i])),
+                                                                                          eme2000, new Vector3D(1, dV0, -3 * h, velDirs[i]), isp),
+                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-2 * h * timeDirs[i])),
+                                                                                          eme2000, new Vector3D(1, dV0, -2 * h, velDirs[i]), isp),
+                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(-1 * h * timeDirs[i])),
+                                                                                          eme2000, new Vector3D(1, dV0, -1 * h, velDirs[i]), isp),
+                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+1 * h * timeDirs[i])),
+                                                                                          eme2000, new Vector3D(1, dV0, +1 * h, velDirs[i]), isp),
+                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+2 * h * timeDirs[i])),
+                                                                                          eme2000, new Vector3D(1, dV0, +2 * h, velDirs[i]), isp),
+                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+3 * h * timeDirs[i])),
+                                                                                          eme2000, new Vector3D(1, dV0, +3 * h, velDirs[i]), isp),
+                                                         new SmallManeuverAnalyticalModel(withoutManeuver.propagate(t0.shiftedBy(+4 * h * timeDirs[i])),
+                                                                                          eme2000, new Vector3D(1, dV0, +4 * h, velDirs[i]), isp),
+                    };
+                    double[][] array = new double[models.length][6];
 
-            // compute reference orbit gradient by finite differences
-            double c = 1.0 / (840 * h);
-            for (int j = 0; j < models.length; ++j) {
-                type.mapOrbitToArray(models[j].applyManeuver(orbitWithout), PositionAngle.TRUE, array[j]);
-            }
-            double[] orbitGradient = new double[6];
-            for (int k = 0; k < orbitGradient.length; ++k) {
-                double d4 = array[7][k] - array[0][k];
-                double d3 = array[6][k] - array[1][k];
-                double d2 = array[5][k] - array[2][k];
-                double d1 = array[4][k] - array[3][k];
-                orbitGradient[k] = (-3 * d4 + 32 * d3 - 168 * d2 + 672 * d1) * c;
-            }
+                    Orbit orbitWithout = withoutManeuver.propagate(t1).getOrbit();
 
-            // analytical Jacobian to check
-            double[][] jacobian = new double[6][4];
-            model.getJacobian(orbitWithout, PositionAngle.TRUE, jacobian);
+                    // compute reference orbit gradient by finite differences
+                    double c = 1.0 / (840 * h);
+                    for (int j = 0; j < models.length; ++j) {
+                        orbitType.mapOrbitToArray(models[j].applyManeuver(orbitWithout), positionAngle, array[j]);
+                    }
+                    double[] orbitGradient = new double[6];
+                    for (int k = 0; k < orbitGradient.length; ++k) {
+                        double d4 = array[7][k] - array[0][k];
+                        double d3 = array[6][k] - array[1][k];
+                        double d2 = array[5][k] - array[2][k];
+                        double d1 = array[4][k] - array[3][k];
+                        orbitGradient[k] = (-3 * d4 + 32 * d3 - 168 * d2 + 672 * d1) * c;
+                    }
 
-            for (int j = 0; j < orbitGradient.length; ++j) {
-                Assert.assertEquals(orbitGradient[j], jacobian[j][i], 2.0e-7 * FastMath.abs(orbitGradient[j]));
+                    // analytical Jacobian to check
+                    double[][] jacobian = new double[6][4];
+                    model.getJacobian(orbitWithout, positionAngle, jacobian);
+
+                    for (int j = 0; j < orbitGradient.length; ++j) {
+                        Assert.assertEquals(orbitGradient[j], jacobian[j][i], 7.0e-6 * FastMath.abs(orbitGradient[j]));
+                    }
+
+                }
+
             }
 
         }
