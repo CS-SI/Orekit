@@ -120,9 +120,13 @@ public class SmallManeuverAnalyticalModel implements Serializable {
         type = (state0.getE() < 0.9) ? OrbitType.EQUINOCTIAL : OrbitType.KEPLERIAN;
 
         // compute initial Jacobian
-        j0 = new double[6][6];
+        final double[][] fullJacobian = new double[6][6];
+        j0 = new double[6][3];
         final Orbit orbit0 = type.convertType(state0.getOrbit());
-        orbit0.getJacobianWrtCartesian(PositionAngle.MEAN, j0);
+        orbit0.getJacobianWrtCartesian(PositionAngle.MEAN, fullJacobian);
+        for (int i = 0; i < j0.length; ++i) {
+            System.arraycopy(fullJacobian[i], 3, j0[i], 0, 3);
+        }
 
         // use lazy evaluation for j0Dot, as it is used only when Jacobians are evaluated
         j0Dot = null;
@@ -213,7 +217,7 @@ public class SmallManeuverAnalyticalModel implements Serializable {
         final double z  = inertialDV.getZ();
         final double[] delta = new double[6];
         for (int i = 0; i < delta.length; ++i) {
-            delta[i] = j0[i][3] * x + j0[i][4] * y + j0[i][5] * z;
+            delta[i] = j0[i][0] * x + j0[i][1] * y + j0[i][2] * z;
         }
         delta[5] += ksi * delta[0] * dt;
 
@@ -270,18 +274,18 @@ public class SmallManeuverAnalyticalModel implements Serializable {
         final double y  = inertialDV.getY();
         final double z  = inertialDV.getZ();
         for (int i = 0; i < 6; ++i) {
-            System.arraycopy(j0[i], 3, pvType[i], 0, 3);
+            System.arraycopy(j0[i], 0, pvType[i], 0, 3);
         }
         for (int j = 0; j < 3; ++j) {
-            pvType[5][j] += ksi * dt * j0[0][j + 3];
+            pvType[5][j] += ksi * dt * j0[0][j];
         }
 
         // derivatives of Keplerian/equinoctial elements with respect to date
         evaluateJ0Dot();
         for (int i = 0; i < 6; ++i) {
-            pvType[i][3] = j0Dot[i][3] * x + j0Dot[i][4] * y + j0Dot[i][5] * z;
+            pvType[i][3] = j0Dot[i][0] * x + j0Dot[i][1] * y + j0Dot[i][2] * z;
         }
-        final double da = j0[0][3] * x + j0[0][4] * y + j0[0][5] * z;
+        final double da = j0[0][0] * x + j0[0][1] * y + j0[0][2] * z;
         pvType[5][3] += ksi * (pvType[0][3] * dt - da);
 
         // convert to derivatives of cartesian parameters
@@ -318,7 +322,7 @@ public class SmallManeuverAnalyticalModel implements Serializable {
 
         if (j0Dot == null) {
 
-            j0Dot = new double[6][6];
+            j0Dot = new double[6][3];
             final double dt = 1.0e-5 / state0.getKeplerianMeanMotion();
             final Orbit orbit = type.convertType(state0.getOrbit());
 
@@ -333,8 +337,8 @@ public class SmallManeuverAnalyticalModel implements Serializable {
                 final double[] m1Row    = j0m1[i];
                 final double[] p1Row    = j0p1[i];
                 final double[] j0DotRow = j0Dot[i];
-                for (int j = 0; j < j0DotRow.length; ++j) {
-                    j0DotRow[j] = (p1Row[j] - m1Row[j]) / (2 * dt);
+                for (int j = 0; j < 3; ++j) {
+                    j0DotRow[j] = (p1Row[j + 3] - m1Row[j + 3]) / (2 * dt);
                 }
             }
 
