@@ -68,6 +68,9 @@ public class ZipJarCrawler implements DataProvider {
     /** Zip archive in the classpath. */
     private final String resource;
 
+    /** Class loader to use. */
+    private final ClassLoader classLoader;
+
     /** Zip archive on network. */
     private final URL url;
 
@@ -78,10 +81,11 @@ public class ZipJarCrawler implements DataProvider {
      * @param file zip file to browse
      */
     public ZipJarCrawler(final File file) {
-        this.file     = file;
-        this.resource = null;
-        this.url      = null;
-        this.name     = file.getAbsolutePath();
+        this.file        = file;
+        this.resource    = null;
+        this.classLoader = null;
+        this.url         = null;
+        this.name        = file.getAbsolutePath();
     }
 
     /** Build a zip crawler for an archive file in classpath.
@@ -106,10 +110,11 @@ public class ZipJarCrawler implements DataProvider {
     public ZipJarCrawler(final ClassLoader classLoader, final String resource)
         throws OrekitException {
         try {
-            this.file     = null;
-            this.resource = resource;
-            this.url      = null;
-            this.name     = classLoader.getResource(resource).toURI().toString();
+            this.file        = null;
+            this.resource    = resource;
+            this.classLoader = classLoader;
+            this.url         = null;
+            this.name        = classLoader.getResource(resource).toURI().toString();
         } catch (URISyntaxException use) {
             throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
         }
@@ -121,10 +126,11 @@ public class ZipJarCrawler implements DataProvider {
      */
     public ZipJarCrawler(final URL url) throws OrekitException {
         try {
-            this.file     = null;
-            this.resource = null;
-            this.url      = url;
-            this.name     = url.toURI().toString();
+            this.file        = null;
+            this.resource    = null;
+            this.classLoader = null;
+            this.url         = url;
+            this.name        = url.toURI().toString();
         } catch (URISyntaxException use) {
             throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
         }
@@ -141,7 +147,7 @@ public class ZipJarCrawler implements DataProvider {
             if (file != null) {
                 rawStream = new FileInputStream(file);
             } else if (resource != null) {
-                rawStream = ZipJarCrawler.class.getClassLoader().getResourceAsStream(resource);
+                rawStream = classLoader.getResourceAsStream(resource);
             } else {
                 rawStream = url.openConnection().getInputStream();
             }
