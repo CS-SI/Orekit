@@ -68,6 +68,8 @@ public class ClasspathCrawler implements DataProvider {
     /** List elements. */
     private final List<String> listElements;
 
+    /** Class loader to use. */
+    private final ClassLoader classLoader;
 
     /** Build a data classpath crawler.
      * <p>
@@ -92,6 +94,7 @@ public class ClasspathCrawler implements DataProvider {
         throws OrekitException {
         
         listElements = new ArrayList<String>();
+        this.classLoader = classLoader;
 
         // check the resources
         for (final String name : list) {
@@ -139,7 +142,6 @@ public class ClasspathCrawler implements DataProvider {
 
                             if (supported.matcher(baseName).matches()) {
 
-                                final ClassLoader classLoader = ClasspathCrawler.class.getClassLoader();
                                 final InputStream stream      = classLoader.getResourceAsStream(name);
                                 final URI uri                 = classLoader.getResource(name).toURI();
 
