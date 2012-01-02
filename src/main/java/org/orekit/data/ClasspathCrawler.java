@@ -68,12 +68,29 @@ public class ClasspathCrawler implements DataProvider {
     /** List elements. */
     private final List<String> listElements;
 
+
     /** Build a data classpath crawler.
+     * <p>
+     * Calling this constructor has the same effect as calling
+     * {@link #ClasspathCrawler(ClassLoader, String...)} with
+     * {@code ClasspathCrawler.class.getClassLoader()} as first
+     * argument.
+     * </p>
      * @param list list of data file names within the classpath
      * @exception OrekitException if a list elements is not an existing resource
      */
     public ClasspathCrawler(final String... list) throws OrekitException {
+        this(ClasspathCrawler.class.getClassLoader(), list);
+    }
 
+    /** Build a data classpath crawler.
+     * @param classLoader class loader to use to retrieve the resources
+     * @param list list of data file names within the classpath
+     * @exception OrekitException if a list elements is not an existing resource
+     */
+    public ClasspathCrawler(final ClassLoader classLoader, final String... list)
+        throws OrekitException {
+        
         listElements = new ArrayList<String>();
 
         // check the resources
@@ -81,7 +98,6 @@ public class ClasspathCrawler implements DataProvider {
             if (!"".equals(name)) {
 
                 final String convertedName = name.replace('\\', '/');
-                final ClassLoader classLoader = ClasspathCrawler.class.getClassLoader();
                 final InputStream stream = classLoader.getResourceAsStream(convertedName);
                 if (stream == null) {
                     throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, name);

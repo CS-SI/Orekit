@@ -85,15 +85,31 @@ public class ZipJarCrawler implements DataProvider {
     }
 
     /** Build a zip crawler for an archive file in classpath.
+     * <p>
+     * Calling this constructor has the same effect as calling
+     * {@link #ZipJarCrawler(ClassLoader, String)} with
+     * {@code ZipJarCrawler.class.getClassLoader()} as first
+     * argument.
+     * </p>
      * @param resource name of the zip file to browse
      * @exception OrekitException if resource name is malformed
      */
     public ZipJarCrawler(final String resource) throws OrekitException {
+        this(ZipJarCrawler.class.getClassLoader(), resource);
+    }
+
+    /** Build a zip crawler for an archive file in classpath.
+     * @param classLoader class loader to use to retrieve the resources
+     * @param resource name of the zip file to browse
+     * @exception OrekitException if resource name is malformed
+     */
+    public ZipJarCrawler(final ClassLoader classLoader, final String resource)
+        throws OrekitException {
         try {
             this.file     = null;
             this.resource = resource;
             this.url      = null;
-            this.name     = ZipJarCrawler.class.getClassLoader().getResource(resource).toURI().toString();
+            this.name     = classLoader.getResource(resource).toURI().toString();
         } catch (URISyntaxException use) {
             throw new OrekitException(use, LocalizedFormats.SIMPLE_MESSAGE, use.getMessage());
         }
