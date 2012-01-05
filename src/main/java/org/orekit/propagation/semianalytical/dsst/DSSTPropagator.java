@@ -137,6 +137,10 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /** Counter for differential equations calls. */
     private int                            calls;
+    
+    
+    /** Modified Newcomb Operator */
+    private static double[][][] newcomb   = null;
 
     /**
      * Build a DSSTPropagator from integrator and orbit.

@@ -21,7 +21,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Romain Di Costanzo
  * @author Pascal Parraud
  */
-public class DSSTThirdBody implements DSSTForceModel {
+public class DSSTThirdBody extends AbstractGravitationalForces {
 
     /** Propagation orbit type. */
     private static final OrbitType     ORBIT_TYPE    = OrbitType.EQUINOCTIAL;

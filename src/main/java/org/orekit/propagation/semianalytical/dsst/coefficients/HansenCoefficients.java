@@ -459,9 +459,7 @@ public class HansenCoefficients {
         double res = 0.;
         double tmp = eps + 1.;
         while (Math.abs(tmp) > eps) {
-            final double newcomb = ModifiedNewcombOperators.getValue(i + a, i +
-                                                                            b,
-                                                                     n, s);
+            final double newcomb = ModifiedNewcombOperators.getValue(i + a, i + b, n, s);
             tmp = newcomb * FastMath.pow(ecc, 2 * i);
             res += tmp;
             i++;
