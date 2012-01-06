@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="thomas" type="update">
+        Added more german translations for error messages.
+      </action>
       <action dev="luc" type="fix">
         Allow ClasspathCrawler and ZipJarCrawler data providers to work in
         OSGi environments by providing an explicit class loader (fixes bug #54).
