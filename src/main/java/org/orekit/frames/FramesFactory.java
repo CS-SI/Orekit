@@ -830,14 +830,14 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
+    public static GTODFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey = applyEOPCorr ?
                                           Predefined.GTOD_WITH_EOP_CORRECTIONS :
                                           Predefined.GTOD_WITHOUT_EOP_CORRECTIONS;
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+            GTODFrame frame = (GTODFrame) FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
@@ -878,14 +878,14 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr) throws OrekitException {
+    public static TODFrame getTOD(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey = applyEOPCorr ?
                                           Predefined.TOD_WITH_EOP_CORRECTIONS :
                                           Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+            TODFrame frame = (TODFrame) FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
