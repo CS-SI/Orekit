@@ -34,6 +34,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScale;
 
 /** Simple parser for key/value files.
@@ -140,6 +141,15 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
         return Integer.parseInt(getString(key));
     }
 
+    /** Get a raw boolean value from a parameters map.
+     * @param key parameter key
+     * @return boolean value corresponding to the key
+     * @exception NoSuchElementException if key is not in the map
+     */
+    public boolean getBoolean(final Key key) throws NoSuchElementException {
+        return Boolean.parseBoolean(getString(key));
+    }
+
     /** Get an angle value from a parameters map.
      * <p>
      * The angle is considered to be in degrees in the file, it will be returned in radians
@@ -163,6 +173,15 @@ public class KeyValueFileParser<Key extends Enum<Key>> {
      */
     public AbsoluteDate getDate(final Key key, TimeScale scale) throws NoSuchElementException {
         return new AbsoluteDate(getString(key), scale);
+    }
+
+    /** Get a time value from a parameters map.
+     * @param key parameter key
+     * @return time value corresponding to the key
+     * @exception NoSuchElementException if key is not in the map
+     */
+    public TimeComponents getTime(final Key key) throws NoSuchElementException {
+        return TimeComponents.parseTime(getString(key));
     }
 
     /** Get a vector value from a parameters map.

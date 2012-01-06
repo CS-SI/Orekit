@@ -41,7 +41,7 @@ import org.orekit.utils.Constants;
  * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  * @author Pascal Parraud
  */
-class TODFrame extends FactoryManagedFrame {
+public class TODFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5889997098421530065L;
@@ -368,7 +368,7 @@ class TODFrame extends FactoryManagedFrame {
 
     /** Get the Equation of the Equinoxes at the current date.
      * @param  date the date
-     * @return euqation of the equinoxes
+     * @return equation of the equinoxes
      * @exception OrekitException if nutation model cannot be computed
      */
     public double getEquationOfEquinoxes(final AbsoluteDate date)

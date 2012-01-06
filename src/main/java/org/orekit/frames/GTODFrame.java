@@ -34,7 +34,7 @@ import org.orekit.utils.Constants;
  * @author Pascal Parraud
  * @author Thierry Ceolin
  */
-class GTODFrame extends FactoryManagedFrame {
+public class GTODFrame extends FactoryManagedFrame {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -1727797229994466102L;
@@ -105,32 +105,11 @@ class GTODFrame extends FactoryManagedFrame {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
-            final TODFrame tod = (TODFrame) getParent();
-
-            // offset from J2000.0 epoch
-            final double eqe = tod.getEquationOfEquinoxes(date);
-
-            // offset in julian centuries from J2000 epoch (UT1 scale)
-            final double dtai = date.durationFrom(GMST_REFERENCE);
-            final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
-            final double dut1 = eopHistory.getUT1MinusUTC(date);
-
-            final double tut1 = dtai + dutc + dut1;
-            final double tt   = tut1 / Constants.JULIAN_CENTURY;
-
-            // Seconds in the day, adjusted by 12 hours because the
-            // UT1 is supplied as a Julian date beginning at noon.
-            final double sd = (tut1 + Constants.JULIAN_DAY / 2.) % Constants.JULIAN_DAY;
-
-            // compute Greenwich mean sidereal time, in radians
-            final double gmst = (((GMST_3 * tt + GMST_2) * tt + GMST_1) * tt + GMST_0 + sd) *
-                                RADIANS_PER_SECOND;
-
             // compute Greenwich apparent sidereal time, in radians
-            final double gast = gmst + eqe;
+            final double gast = getGAST(date);
 
             // compute true angular rotation of Earth, in rad/s
-            final double lod = tod.getLOD(date);
+            final double lod = ((TODFrame) getParent()).getLOD(date);
             final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
             final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
@@ -140,6 +119,52 @@ class GTODFrame extends FactoryManagedFrame {
             cachedDate = date;
 
         }
+    }
+
+    /** Get the Greenwich mean sidereal time, in radians.
+     * @param date current date
+     * @return Greenwich mean sidereal time, in radians
+     * @exception OrekitException if UTS taime scale cannot be retrieved
+     * @see #getGAST(AbsoluteDate)
+     */
+    public double getGMST(final AbsoluteDate date) throws OrekitException {
+
+        // offset in julian centuries from J2000 epoch (UT1 scale)
+        final double dtai = date.durationFrom(GMST_REFERENCE);
+        final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
+        final double dut1 = eopHistory.getUT1MinusUTC(date);
+
+        final double tut1 = dtai + dutc + dut1;
+        final double tt   = tut1 / Constants.JULIAN_CENTURY;
+
+        // Seconds in the day, adjusted by 12 hours because the
+        // UT1 is supplied as a Julian date beginning at noon.
+        final double sd = (tut1 + Constants.JULIAN_DAY / 2.) % Constants.JULIAN_DAY;
+
+        // compute Greenwich mean sidereal time, in radians
+        return (((GMST_3 * tt + GMST_2) * tt + GMST_1) * tt + GMST_0 + sd) * RADIANS_PER_SECOND;
+
+    }
+
+    /** Get the Greenwich apparent sidereal time, in radians.
+     * <p>
+     * Greenwich apparent sidereal time is {@link
+     * #getGMST(AbsoluteDate) Greenwich mean sidereal time} plus {@link
+     * TODFrame#getEquationOfEquinoxes(AbsoluteDate) equation of equinoxes}.
+     * </p>
+     * @param date current date
+     * @return Greenwich apparent sidereal time, in radians
+     * @exception OrekitException if UTS taime scale cannot be retrieved
+     * @see #getGMST(AbsoluteDate)
+     */
+    public double getGAST(final AbsoluteDate date) throws OrekitException {
+
+        // offset from J2000.0 epoch
+        final double eqe = ((TODFrame) getParent()).getEquationOfEquinoxes(date);
+
+        // compute Greenwich apparent sidereal time, in radians
+        return getGMST(date) + eqe;
+
     }
 
 }
