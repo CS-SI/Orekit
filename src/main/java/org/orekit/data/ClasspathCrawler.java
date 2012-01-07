@@ -92,7 +92,7 @@ public class ClasspathCrawler implements DataProvider {
      */
     public ClasspathCrawler(final ClassLoader classLoader, final String... list)
         throws OrekitException {
-        
+
         listElements = new ArrayList<String>();
         this.classLoader = classLoader;
 
