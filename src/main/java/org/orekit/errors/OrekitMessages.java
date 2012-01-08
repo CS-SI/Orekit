@@ -143,7 +143,8 @@ public enum OrekitMessages implements Localizable {
     NON_RESETABLE_STATE("reset state not allowed {0}"),
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_UNSUPPORTED_TIMESYSTEM("unsupported time system {0}"),
-    SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})");
+    SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
+    NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}");
 
     // CHECKSTYLE: resume JavadocVariable check
 
