@@ -117,8 +117,6 @@ public class Phasing {
     /** Input parameter keys. */
     private static enum ParameterKey {
         ORBIT_DATE,
-        ORBIT_EX,
-        ORBIT_EY,
         PHASING_ORBITS_NUMBER,
         PHASING_DAYS_NUMBER,
         SUN_SYNCHRONOUS_REFERENCE_LATITUDE,
@@ -158,8 +156,6 @@ public class Phasing {
 
        // simulation properties
         AbsoluteDate date       = parser.getDate(ParameterKey.ORBIT_DATE, utc);
-        double       ex         = parser.getDouble(ParameterKey.ORBIT_EX);
-        double       ey         = parser.getDouble(ParameterKey.ORBIT_EY);
         int          nbOrbits   = parser.getInt(ParameterKey.PHASING_ORBITS_NUMBER);
         int          nbDays     = parser.getInt(ParameterKey.PHASING_DAYS_NUMBER);
         double       latitude   = parser.getAngle(ParameterKey.SUN_SYNCHRONOUS_REFERENCE_LATITUDE);
@@ -185,8 +181,9 @@ public class Phasing {
 
         // initial guess for orbit
         CircularOrbit orbit = guessOrbit(date, FramesFactory.getEME2000(), nbOrbits, nbDays,
-                                         latitude, ascending, mst, ex, ey);
+                                         latitude, ascending, mst);
         System.out.println("initial orbit: " + orbit);
+        System.out.println("please wait while orbit is adjusted...");
         System.out.println();
 
         // numerical model for improving orbit
@@ -210,19 +207,23 @@ public class Phasing {
 
         int counter = 0;
         DecimalFormat f = new DecimalFormat("0.000E00", new DecimalFormatSymbols(Locale.US));
-        while (deltaP > 1.0e-3 || deltaV > 1.0e-6) {
+        while (deltaP > 1.0e-4 || deltaV > 1.0e-7) {
 
             CircularOrbit previous = orbit;
 
-            CircularOrbit tmp = improveEarthPhasing(previous, nbOrbits, nbDays, propagator);
-            orbit = improveSunSynchronization(tmp, nbOrbits * tmp.getKeplerianPeriod(),
+            CircularOrbit tmp1 = improveEarthPhasing(previous, nbOrbits, nbDays, propagator);
+            CircularOrbit tmp2 = improveSunSynchronization(tmp1, nbOrbits * tmp1.getKeplerianPeriod(),
                                               latitude, ascending, mst, propagator);
-            double da = orbit.getA() - previous.getA();
-            double di = FastMath.toDegrees(orbit.getI() - previous.getI());
-            double dr = FastMath.toDegrees(orbit.getRightAscensionOfAscendingNode() -
+            orbit = improveFrozenEccentricity(tmp2, nbOrbits * tmp2.getKeplerianPeriod(), propagator);
+            double da  = orbit.getA() - previous.getA();
+            double dex = orbit.getCircularEx() - previous.getCircularEx();
+            double dey = orbit.getCircularEy() - previous.getCircularEy();
+            double di  = FastMath.toDegrees(orbit.getI() - previous.getI());
+            double dr  = FastMath.toDegrees(orbit.getRightAscensionOfAscendingNode() -
                                            previous.getRightAscensionOfAscendingNode());
             System.out.println(" iteration " + (++counter) + ": deltaA = " + f.format(da) +
-                               " m, deltaI = " + f.format(di) + " deg, deltaRAAN = " + f.format(dr) +
+                               " m, deltaEx = " + f.format(dex) + ", deltaEy = " + f.format(dey) +
+                               ", deltaI = " + f.format(di) + " deg, deltaRAAN = " + f.format(dr) +
                                " deg");
 
             PVCoordinates delta = new PVCoordinates(previous.getPVCoordinates(),
@@ -236,7 +237,8 @@ public class Phasing {
         System.out.println();
         System.out.println("final orbit: " + orbit);
 
-        PrintStream output = new PrintStream(gridOutput);
+        // generate the ground track grid file
+        PrintStream output = new PrintStream(new File(input.getParent(), gridOutput));
         for (int i = 0; i < gridLatitudes.length; ++i) {
             printGridPoints(output, gridLatitudes[i], gridAscending[i], orbit, propagator, nbOrbits);
         }
@@ -252,14 +254,11 @@ public class Phasing {
      * @param latitude reference latitude for Sun synchronous orbit
      * @param ascending if true, crossing latitude is from South to North
      * @param mst desired mean solar time at reference latitude crossing
-     * @param ex x component of eccentricity vector
-     * @param ey y component of eccentricity vector
      * @return an initial guess of Earth phased, Sun synchronous orbit
      * @exception OrekitException if mean solar time cannot be computed
      */
     private CircularOrbit guessOrbit(AbsoluteDate date, Frame frame, int nbOrbits, int nbDays,
-                                     double latitude, boolean ascending, double mst,
-                                     double ex, double ey)
+                                     double latitude, boolean ascending, double mst)
         throws OrekitException {
 
         double mu = gravityField.getMu();
@@ -270,22 +269,25 @@ public class Phasing {
         double a0      = FastMath.cbrt(mu / (n0 * n0));
 
         // initial inclination guess based on ascending node drift due to J2
+        double[] j      = gravityField.getJ(false, 3);
         double raanRate = 2 * FastMath.PI / Constants.JULIAN_YEAR;
-        double ae   = gravityField.getAe();
-        double j2   = gravityField.getJ(false, 2)[2];
-        double beta = 1 - ex * ex - ey * ey;
-        double i0   = FastMath.acos(-raanRate * a0 * a0 * beta * beta / (1.5 * ae * ae * j2 * n0));
+        double ae       = gravityField.getAe();
+        double i0       = FastMath.acos(-raanRate * a0 * a0 / (1.5 * ae * ae * j[2] * n0));
+
+        // initial eccentricity guess based on J2 and J3
+        double ex0   = 0;
+        double ey0   = -j[3] * ae * FastMath.sin(i0) / (2 * a0 * j[2]);
 
         // initial ascending node guess based on mean solar time
         double alpha0 = FastMath.asin(FastMath.sin(latitude) / FastMath.sin(i0));
         if (!ascending) {
             alpha0 = FastMath.PI - alpha0;
         }
-        double h = meanSolarTime(new CircularOrbit(a0, ex, ey, i0, 0.0, alpha0,
+        double h = meanSolarTime(new CircularOrbit(a0, ex0, ey0, i0, 0.0, alpha0,
                                                    PositionAngle.TRUE, frame, date, mu));
         double raan0 = FastMath.PI * (mst - h) / 12.0;
 
-        return new CircularOrbit(a0, ex, ey, i0, raan0, alpha0,
+        return new CircularOrbit(a0, ex0, ey0, i0, raan0, alpha0,
                                  PositionAngle.TRUE, frame, date, mu);
 
     }
@@ -393,7 +395,9 @@ public class Phasing {
 
         // fit the mean solar time to a linear plus medium periods model
         // we will only use the linear part for the correction
-        double[] fittedH = mstFitter.fit(new LinearAndMediumPeriod(),
+        double[] fittedH = mstFitter.fit(new SecularAndHarmonic(1,
+                                                                2.0 * FastMath.PI / Constants.JULIAN_DAY,
+                                                                4.0 * FastMath.PI / Constants.JULIAN_DAY),
                                          new double[] {
                                              mst, -1.0e-10, 1.0e-5, 1.0e-5, 1.0e-5, 1.0e-5
                                          });
@@ -417,6 +421,69 @@ public class Phasing {
                                  previous.getCircularEx(), previous.getCircularEy(),
                                  previous.getI() + deltaI,
                                  previous.getRightAscensionOfAscendingNode() + deltaRaan,
+                                 previous.getAlphaV(), PositionAngle.TRUE,
+                                 previous.getFrame(), previous.getDate(),
+                                 previous.getMu());
+
+    }
+
+    /** Improve orbit to better match frozen eccentricity property.
+     * @param previous previous orbit
+     * @param duration sampling duration
+     * @param propagator propagator to use
+     * @return an improved Earth phased, Sun synchronous orbit with frozen eccentricity
+     * @exception OrekitException if orbit cannot be propagated
+     */
+    private CircularOrbit improveFrozenEccentricity(CircularOrbit previous, double duration,
+                                                    Propagator propagator)
+        throws OrekitException {
+
+        propagator.resetInitialState(new SpacecraftState(previous));
+        AbsoluteDate start = previous.getDate();
+
+        double a    = previous.getA();
+        double sinI = FastMath.sin(previous.getI());
+        double aeOa = gravityField.getAe() / a;
+        double mu   = gravityField.getMu();
+        double n    = FastMath.sqrt(mu / a) / a;
+        double j2   = gravityField.getJ(false, 2)[2];
+        double frozenPulsation = 3 * n * j2 * aeOa * aeOa * (1 - 1.25 * sinI * sinI);
+
+        // fit the eccentricity to an harmonic model with short and medium periods
+        // we will only use the medium periods part for the correction
+        CurveFitter exFitter = new CurveFitter(new LevenbergMarquardtOptimizer());
+        CurveFitter eyFitter = new CurveFitter(new LevenbergMarquardtOptimizer());
+
+        final double step = previous.getKeplerianPeriod() / 5;
+        for (double dt = 0; dt < duration; dt += step) {
+            final SpacecraftState state = propagator.propagate(start.shiftedBy(dt));
+            final CircularOrbit orbit   = (CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit());
+            exFitter.addObservedPoint(dt, orbit.getCircularEx());
+            eyFitter.addObservedPoint(dt, orbit.getCircularEy());
+        }
+
+        SecularAndHarmonic eModel = new SecularAndHarmonic(0, frozenPulsation, n, 2 * n);
+        double[] fittedEx = exFitter.fit(eModel,
+                                         new double[] {
+                                             previous.getCircularEx(), -1.0e-10, 1.0e-5,
+                                             1.0e-5, 1.0e-5, 1.0e-5, 1.0e-5
+                                         });
+        double[] fittedEy = eyFitter.fit(eModel,
+                                         new double[] {
+                                             previous.getCircularEy(), -1.0e-10, 1.0e-5,
+                                             1.0e-5, 1.0e-5, 1.0e-5, 1.0e-5
+                                         });
+
+
+        // adjust eccentricity
+        double dex = -fittedEx[1];
+        double dey = -fittedEy[1];
+
+        // put the eccentricity at center of frozen center
+        return new CircularOrbit(previous.getA(),
+                                 previous.getCircularEx() + dex,
+                                 previous.getCircularEy() + dey,
+                                 previous.getI(), previous.getRightAscensionOfAscendingNode(),
                                  previous.getAlphaV(), PositionAngle.TRUE,
                                  previous.getFrame(), previous.getDate(),
                                  previous.getMu());
@@ -588,37 +655,79 @@ public class Phasing {
 
     }
 
-    /** Inner class for linear plus medium period motion.
-     * <p>
-     * This function has 6 parameters, two for the linear part
-     * and two for the cosine and sine parts at each pulsation.
-     * </p>
-     */
-    private static class LinearAndMediumPeriod implements ParametricUnivariateFunction {
+    /** Inner class for secular and harmonic models. */
+    private static class SecularAndHarmonic implements ParametricUnivariateFunction {
 
-        /** Medium period model pulsation. */
-        private static final double BASE_PULSATION = 2.0 * FastMath.PI / Constants.JULIAN_DAY;
+        /** Degree of polynomial secular part. */
+        private final int secularDegree;
+
+        /** Pulsations of harmonic part. */
+        private final double[] pulsations;
+
+        /** Simple constructor.
+         * @param secularDegree degree of polynomial secular part
+         * @param pulsations pulsations of harmonic part
+         */
+        public SecularAndHarmonic(final int secularDegree, final double ... pulsations) {
+            this.secularDegree = secularDegree;
+            this.pulsations    = pulsations.clone();
+        }
 
         /** {@inheritDoc} */
         public double[] gradient(double x, double ... parameters) {
-            return new double[] {
-                1.0,                                  // constant term of the linear part
-                x,                                    // slope term of the linear part
-                FastMath.cos(BASE_PULSATION * x),     // cosine part of the first medium period part
-                FastMath.sin(BASE_PULSATION * x),     // sine part of the first medium period part
-                FastMath.cos(2 * BASE_PULSATION * x), // cosine part of the second medium period part
-                FastMath.sin(2 * BASE_PULSATION * x)  // sine part of the second medium period part
-            };
+
+            final double[] gradient = new double[secularDegree + 1 + 2 * pulsations.length];
+
+            // secular part
+            double xN = 1.0;
+            for (int i = 0; i <= secularDegree; ++i) {
+                gradient[i] = xN;
+                xN *= x;
+            }
+
+            // harmonic part
+            for (int i = 0; i < pulsations.length; ++i) {
+                gradient[secularDegree + 2 * i + 1] = FastMath.cos(pulsations[i] * x);
+                gradient[secularDegree + 2 * i + 2] = FastMath.sin(pulsations[i] * x);
+            }
+
+            return gradient;
+
         }
 
         /** {@inheritDoc} */
         public double value(final double x, final double ... parameters) {
-            return parameters[0] +
-                   parameters[1] * x +
-                   parameters[2] * FastMath.cos(BASE_PULSATION * x) +
-                   parameters[3] * FastMath.sin(BASE_PULSATION * x) +
-                   parameters[4] * FastMath.cos(2 * BASE_PULSATION * x) +
-                   parameters[5] * FastMath.sin(2 * BASE_PULSATION * x);
+            return meanValue(secularDegree, pulsations.length, x, parameters);
+        }
+
+        /** Get mean value, truncated to first components.
+         * @param degree degree of polynomial secular part
+         * @param harmonics number of harmonics terms to consider
+         * @param time time parameter
+         * @param parameters models parameters (must include all parameters,
+         * including the ones ignored due to model truncation)
+         * @return mean value
+         */
+        public double meanValue(final int degree, final int harmonics,
+                                final double time, final double ... parameters) {
+
+            double value = 0;
+
+            // secular part
+            double tN = 1.0;
+            for (int i = 0; i <= degree; ++i) {
+                value += parameters[i] * tN;
+                tN    *= time;
+            }
+
+            // harmonic part
+            for (int i = 0; i < harmonics; ++i) {
+                value += parameters[secularDegree + 2 * i + 1] * FastMath.cos(pulsations[i] * time) +
+                         parameters[secularDegree + 2 * i + 2] * FastMath.sin(pulsations[i] * time);
+            }
+
+            return value;
+
         }
 
     }
