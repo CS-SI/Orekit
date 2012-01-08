@@ -236,7 +236,8 @@ public class Phasing {
         System.out.println();
         System.out.println("final orbit: " + orbit);
 
-        PrintStream output = new PrintStream(gridOutput);
+        // generate the ground track grid file
+        PrintStream output = new PrintStream(new File(input.getParent(), gridOutput));
         for (int i = 0; i < gridLatitudes.length; ++i) {
             printGridPoints(output, gridLatitudes[i], gridAscending[i], orbit, propagator, nbOrbits);
         }
