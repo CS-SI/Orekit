@@ -8,8 +8,6 @@
 # file.
 
 orbit.date = 2011-02-25T00:00:00.000
-orbit.ex   = -0.00130
-orbit.ey   = -0.00052
 
 # Earth phasing parameters
 phasing.orbits.number = 412
@@ -21,8 +19,8 @@ sun.synchronous.reference.ascending = false
 sun.synchronous.mean.solar.time     = 09:30:00
 
 # dynamical model
-gravity.field.degree = 10
-gravity.field.order  = 10
+gravity.field.degree   = 10
+gravity.field.order    = 10
 
 # ground track grid
 grid.output      = metop.grd
