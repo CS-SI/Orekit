@@ -418,9 +418,9 @@ public class GeoMagneticField {
 
                 /**
                  * <pre>
-                 *       1 nMax (n+2) n m m m
-                 * By = SUM (a/r) (m) SUM [g cos(m p) + h sin(m p)] dP (sin(phi))
-                 *      n=1 m=0 n n n
+                 *      nMax     (n+2)   n    m            m            m
+                 * By = SUM (a/r)     * SUM [g cos(m p) + h sin(m p)] dP (sin(phi))
+                 *      n=1             m=0   n            n            n
                  * </pre>
                  * Equation 11 in the WMM Technical report. Derivative with respect to longitude, divided by radius.
                  */
@@ -476,9 +476,9 @@ public class GeoMagneticField {
 
             /**
              * <pre>
-             *      nMax     (n+2)     n    m            m            m
-             * By = SUM (a/r)     (m) SUM [g cos(m p) + h sin(m p)] dP (sin(phi))
-             *      n=1               m=0   n            n            n
+             *      nMax     (n+2)   n    m            m            m
+             * By = SUM (a/r)     * SUM [g cos(m p) + h sin(m p)] dP (sin(phi))
+             *      n=1             m=0   n            n            n
              * </pre>
              * Equation 11 in the WMM Technical report. Derivative with respect to longitude, divided by radius.
              */
