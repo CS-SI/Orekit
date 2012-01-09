@@ -32,6 +32,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
 import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 
 public class GeoMagneticFieldTest {
@@ -130,6 +131,36 @@ public class GeoMagneticFieldTest {
             // declination
             Assert.assertEquals(testValues[i][10], result.getDeclination(), eps);
         }
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testUnsupportedTransform() throws Exception {
+        final GeoMagneticField model = GeoMagneticFieldFactory.getIGRF(1910);
+
+        // the IGRF model of 1910 does not have secular variation, thus time transformation is not supported
+        model.transformModel(1950);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testOutsideValidityTransform() throws Exception {
+        final GeoMagneticField model1 = GeoMagneticFieldFactory.getIGRF(2005);
+        final GeoMagneticField model2 = GeoMagneticFieldFactory.getIGRF(2010);
+
+        // the interpolation transformation is only allowed between 2005 and 2010
+        model1.transformModel(model2, 2012);
+    }
+
+    @Test
+    public void testValidTransform() throws Exception {
+        final GeoMagneticField model = GeoMagneticFieldFactory.getWMM(2010);
+
+        Assert.assertTrue(model.supportsTimeTransform());
+
+        final GeoMagneticField transformedModel = model.transformModel(2012);
+
+        Assert.assertEquals(2010, transformedModel.validFrom(), 1e0);
+        Assert.assertEquals(2015, transformedModel.validTo(), 1e0);
+        Assert.assertEquals(2012, transformedModel.getEpoch(), 1e0);
     }
 
     public void runSampleFile(final FieldModel type, final String inputFile, final String outputFile)
