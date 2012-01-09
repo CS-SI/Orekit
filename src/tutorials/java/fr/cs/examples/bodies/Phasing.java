@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
@@ -88,11 +89,21 @@ public class Phasing {
     public static void main(String[] args) {
         try {
 
+            if (args.length != 1) {
+                System.err.println("usage: java fr.cs.examples.bodies.Phasing filename");
+                System.exit(1);
+            }
+
             // configure Orekit
             Autoconfiguration.configureOrekit();
 
             // input/out
-            File input  = new File(Phasing.class.getResource("/phasing.in").toURI().getPath());
+            URL url = Phasing.class.getResource("/" + args[0]);
+            if (url == null) {
+                System.err.println(args[0] + " not found");
+                System.exit(1);
+            }
+            File input  = new File(url.toURI().getPath());
 
             new Phasing().run(input);
 
@@ -235,7 +246,7 @@ public class Phasing {
 
         // final orbit
         System.out.println();
-        System.out.println("final orbit: " + orbit);
+        System.out.println("final orbit (osculating): " + orbit);
 
         // generate the ground track grid file
         PrintStream output = new PrintStream(new File(input.getParent(), gridOutput));
