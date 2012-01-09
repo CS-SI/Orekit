@@ -180,7 +180,7 @@ public class GeoMagneticField {
      * @param gnm the g coefficient at position n,m
      * @param hnm the h coefficient at position n,m
      */
-    public void setMainFieldCoefficients(final int n, final int m,
+    protected void setMainFieldCoefficients(final int n, final int m,
                                          final double gnm, final double hnm) {
         final int index = n * (n + 1) / 2 + m;
         g[index] = gnm;
@@ -193,7 +193,7 @@ public class GeoMagneticField {
      * @param dgnm the dg coefficient at position n,m
      * @param dhnm the dh coefficient at position n,m
      */
-    public void setSecularVariationCoefficients(final int n, final int m,
+    protected void setSecularVariationCoefficients(final int n, final int m,
                                                 final double dgnm, final double dhnm) {
         final int index = n * (n + 1) / 2 + m;
         dg[index] = dgnm;
@@ -238,7 +238,7 @@ public class GeoMagneticField {
     public GeoMagneticField transformModel(final double year) throws OrekitException {
 
         if (!supportsTimeTransform()) {
-            throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_TIME_TRANSFORM, modelName, String.valueOf(epoch));
         }
 
         final double dt = year - epoch;
@@ -282,7 +282,8 @@ public class GeoMagneticField {
 
         // the model can only be transformed within its validity period
         if (year < validityStart || year > validityEnd) {
-            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_BODY_EPHEMERIDES_DATE);
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_TIME_TRANSFORM,
+                                      modelName, String.valueOf(epoch), year, validityStart, validityEnd);
         }
 
         final double factor = (year - epoch) / (otherModel.epoch - epoch);
