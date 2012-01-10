@@ -417,4 +417,8 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
         return(2);
     }
 
+    public void initialize(SpacecraftState initialState) {
+        // Nothing to do
+    }
+
 }

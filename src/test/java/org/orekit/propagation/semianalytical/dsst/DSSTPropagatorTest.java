@@ -217,7 +217,7 @@ public class DSSTPropagatorTest {
         double[][] SnmNotNorm = provider.getS(5, 0, false);
 
         // force expression :
-        DSSTForceModel force = new DSSTCentralBody(ae, mu, CnmNotNorm, CnmNotNorm, null, 1e-4);
+        DSSTForceModel force = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, CnmNotNorm, CnmNotNorm, null);
         ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
 
         /**
@@ -323,7 +323,7 @@ public class DSSTPropagatorTest {
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
         propaDSST.propagate(initDate.shiftedBy(dt));
-        
+
     }
 
     @Test
@@ -341,8 +341,8 @@ public class DSSTPropagatorTest {
         // Drag Force Model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF2005());
         earth.setAngularThreshold(1.e-6);
-//         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-//         Atmosphere atm = new HarrisPriester(sun, earth);
+        // PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+        // Atmosphere atm = new HarrisPriester(sun, earth);
         Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
         final double cd = 2.0;
         final double sf = 5.0;
@@ -471,30 +471,31 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
     }
 
-//    @Test
-//    public void testResetStateEvent() throws OrekitException {
-//        SpacecraftState state = getLEOrbit();
-//        setDSSTProp(state);
-//
-//        final AbsoluteDate resetDate = initDate.shiftedBy(1000);
-//        propaDSST.addEventDetector(new DateDetector(resetDate) {
-//            private static final long serialVersionUID = 6453983658076746705L;
-//
-//            public EventDetector.Action eventOccurred(SpacecraftState s,
-//                                                      boolean increasing) throws OrekitException {
-//                setGotHere(true);
-//                return EventDetector.Action.RESET_STATE;
-//            }
-//
-//            public SpacecraftState resetState(SpacecraftState oldState) {
-//                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
-//            }
-//        });
-//        Assert.assertFalse(gotHere);
-//        final SpacecraftState finalState = propaDSST.propagate(initDate.shiftedBy(3200));
-//        Assert.assertTrue(gotHere);
-//        Assert.assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
-//    }
+    // @Test
+    // public void testResetStateEvent() throws OrekitException {
+    // SpacecraftState state = getLEOrbit();
+    // setDSSTProp(state);
+    //
+    // final AbsoluteDate resetDate = initDate.shiftedBy(1000);
+    // propaDSST.addEventDetector(new DateDetector(resetDate) {
+    // private static final long serialVersionUID = 6453983658076746705L;
+    //
+    // public EventDetector.Action eventOccurred(SpacecraftState s,
+    // boolean increasing) throws OrekitException {
+    // setGotHere(true);
+    // return EventDetector.Action.RESET_STATE;
+    // }
+    //
+    // public SpacecraftState resetState(SpacecraftState oldState) {
+    // return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() -
+    // 200.0);
+    // }
+    // });
+    // Assert.assertFalse(gotHere);
+    // final SpacecraftState finalState = propaDSST.propagate(initDate.shiftedBy(3200));
+    // Assert.assertTrue(gotHere);
+    // Assert.assertEquals(initialState.getMass() - 200, finalState.getMass(), 1.0e-10);
+    // }
 
     @Test
     public void testContinueEvent() throws OrekitException {
@@ -532,7 +533,7 @@ public class DSSTPropagatorTest {
         // No shadow at this date
         initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
         final Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3, FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3), FastMath.tan(0.001745329)
-                        * FastMath.sin(2 * FastMath.PI / 3), 0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), initDate, mu);
+                                                                                                                                        * FastMath.sin(2 * FastMath.PI / 3), 0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), initDate, mu);
         return new SpacecraftState(orbit);
     }
 
@@ -629,7 +630,8 @@ public class DSSTPropagatorTest {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        public void init(final SpacecraftState s0,
+                         final AbsoluteDate t) {
         }
 
         /** {@inheritDoc} */
@@ -663,14 +665,15 @@ public class DSSTPropagatorTest {
             Assert.assertEquals(orbRef.getHy(), orb.getHy(), tolerance[4]);
             Assert.assertEquals(orbRef.getLM(), orb.getLM(), tolerance[5]);
 
-//             if (isLast) {
-//             System.out.println(deltaAMax);
-//             System.out.println(deltaExMax);
-//             System.out.println(deltaEyMax);
-//             System.out.println(deltaHxMax);
-//             System.out.println(deltaHyMax);
-//             System.out.println(deltaLmMax);
-//             }
+            // if (isLast) {
+            // System.out.println(deltaAMax);
+            // System.out.println(deltaExMax);
+            // System.out.println(deltaEyMax);
+            // System.out.println(deltaHxMax);
+            // System.out.println(deltaHyMax);
+            // System.out.println(deltaLmMax);
+            // System.out.println();
+            // }
 
         }
     }

@@ -137,6 +137,9 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /** Counter for differential equations calls. */
     private int                            calls;
+
+    /** Has the force model been initialized*/
+    private boolean                        initialized;
     
     
     /** Modified Newcomb Operator */
@@ -234,7 +237,8 @@ public class DSSTPropagator extends AbstractPropagator {
         this.frame = initialOrbit.getFrame();
         this.referenceDate = null;
         this.mass = mass;
-
+        this.initialized = false;
+        
         setExtraTime(EXTRA_TIME);
 
         setIntegrator(integrator);
@@ -272,6 +276,7 @@ public class DSSTPropagator extends AbstractPropagator {
         this.mass = state.getMass();
         this.referenceDate = state.getDate();
         this.cumulator.resetAccumulator();
+        this.initialized = false;
     }
 
     /**
@@ -333,6 +338,8 @@ public class DSSTPropagator extends AbstractPropagator {
 
     @Override
     protected Orbit propagateOrbit(AbsoluteDate date) throws PropagationException {
+        
+
 
         // Check for completeness
         if (integrator == null) {
@@ -351,6 +358,16 @@ public class DSSTPropagator extends AbstractPropagator {
                 // don't extrapolate, return current orbit
                 return initialState.getOrbit();
             }
+            
+            // Check if the force model had been initialized
+            if (!initialized){
+                for (final DSSTForceModel forceModel : forceModels) {
+                    forceModel.initialize(initialState);
+                }
+                initialized = true;
+            }
+            
+            
             // Initialize mean elements
             double[] meanElements = getInitialMeanElements(initialState);
 

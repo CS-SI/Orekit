@@ -118,8 +118,6 @@ public class ModifiedNewcombOperatorTest {
         Assert.assertEquals(18.375, ModifiedNewcombOperators.getValue(2, 0, 3, 7), 1e-15);
         // (3, 0) : With n = 3, s = 7 -> Newcomb = 48.3
         Assert.assertEquals(48.333333333333, ModifiedNewcombOperators.getValue(3, 0, 3, 7), 1e-12);
-
-        System.out.println(ModifiedNewcombOperators.getValue(3, 0, 6, 3));
     }
 
     @Test

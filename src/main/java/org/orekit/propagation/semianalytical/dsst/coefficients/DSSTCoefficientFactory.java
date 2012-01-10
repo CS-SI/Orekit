@@ -292,7 +292,7 @@ public class DSSTCoefficientFactory {
         // If (n -s) is odd, the Vmsn coefficient is null
         double result = 0;
         if ((n - s) % 2 == 0) {
-            result = ArithmeticUtils.factorial(n + s) * VNS.get(new NSKey(n, s)) / ArithmeticUtils.factorial(n - m);
+            result = (ArithmeticUtils.factorial(n + s) / ArithmeticUtils.factorial(n - m)) * VNS.get(new NSKey(n, s)) ;
         }
         return result;
     }

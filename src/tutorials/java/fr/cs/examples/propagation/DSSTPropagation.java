@@ -36,6 +36,7 @@ import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -66,6 +67,7 @@ public class DSSTPropagation {
     // Force model used :
     private static boolean             centralBody        = true;
     private static boolean             tesseralTerms      = true;
+    private static int                 order              = 22;
     private static boolean             moon               = false;
     private static boolean             sun                = false;
     private static boolean             drag               = false;
@@ -80,17 +82,17 @@ public class DSSTPropagation {
 
     // extrapolation time
     private static double              extrapolationTime  = 10 * 86400d;
+    
     /**
      * End of tutorial customization
      */
-
     private static AbsoluteDate        initDate;
     private static DSSTPropagator      propaDSST;
     private static NumericalPropagator propaNUM;
 
     // Print result with the following date :
-    // date (in days, from the initialDate), px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm
-    private static String              format             = new String("%14.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f");
+    // date (in days, from the initialDate), px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm, e, i, pa, raan
+    private static String              format             = new String("%14.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f");
 
     /**
      * @param args
@@ -112,32 +114,31 @@ public class DSSTPropagation {
          * to use an other orbit, please comment the code below, and uncomment next example :
          */
         // !!! COMMENT THIS UNTIL ...
-        // SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae,
-        // 800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), date));
-        // // Set the numrical propagator to compute the mean orbit from the osculating one :
-        // setNumProp(orbitOsc);
-        // // Add a default gravitational model
-        // propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
-        // provider.getC(2, 0, false), provider.getS(2, 0, false)));
-        // // Create the mean orbit from the osculating :
-        // SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 1 * 86400,
-        // 14, 10);
-        // SpacecraftState mean = orbits[0];
-        // SpacecraftState osc = orbits[1];
-        //
-        // // As the DSST propagator doesn't take short periodic variation in account actually, we
-        // need
-        // // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
-        // // propagator :
-        // setDSSTProp(mean);
-        // // Reset the numerical propagator with new orbit (remove every force model)
-        // setNumProp(osc);
+         SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae,
+         800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), date));
+         // Set the numrical propagator to compute the mean orbit from the osculating one :
+         setNumProp(orbitOsc);
+         // Add a default gravitational model
+         propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
+         provider.getC(2, 0, false), provider.getS(2, 0, false)));
+         // Create the mean orbit from the osculating :
+         SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 1 * 86400,
+         14, 10);
+         SpacecraftState mean = orbits[0];
+         SpacecraftState osc = orbits[1];
+        
+         // As the DSST propagator doesn't take short periodic variation in account actually, we need
+         // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
+         // propagator :
+         setDSSTProp(mean);
+         // Reset the numerical propagator with new orbit (remove every force model)
+         setNumProp(osc);
         // ... HERE //
 
         // UNCOMMENT THIS UNTIL ...
-        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu, FramesFactory.getGCRF(), date));
-        setDSSTProp(orbitOsc);
-        setNumProp(orbitOsc);
+//        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu, FramesFactory.getGCRF(), date));
+//        setDSSTProp(orbitOsc);
+//        setNumProp(orbitOsc);
         // ... HERE //
         /**
          * FORCES :
@@ -147,16 +148,16 @@ public class DSSTPropagation {
             double[][] CnmNotNorm;
             double[][] SnmNotNorm;
             if (tesseralTerms){
-                CnmNotNorm = provider.getC(5, 5, false);
-                SnmNotNorm = provider.getS(5, 5, false);
+                CnmNotNorm = provider.getC(order, order, false);
+                SnmNotNorm = provider.getS(order, order, false);
             }else {
-                CnmNotNorm = provider.getC(5, 0, false);
-                SnmNotNorm = provider.getS(5, 0, false);
+                CnmNotNorm = provider.getC(order, 0, false);
+                SnmNotNorm = provider.getS(order, 0, false);
             }
 
             // Resonant couple list is here set to null : we're taking in account every tesseral
             // harmonic :
-            DSSTForceModel centralBodyDSST = new DSSTCentralBody(ae, mu, CnmNotNorm, CnmNotNorm, null, 1e-4);
+            DSSTForceModel centralBodyDSST = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, CnmNotNorm, CnmNotNorm, null);
             ForceModel centralBodyNUM = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
             propaDSST.addForceModel(centralBodyDSST);
             propaNUM.addForceModel(centralBodyNUM);
@@ -245,8 +246,8 @@ public class DSSTPropagation {
 
     private static void setNumProp(SpacecraftState initialState) {
         final double[][] tol = NumericalPropagator.tolerances(1.0, initialState.getOrbit(), initialState.getOrbit().getType());
-        final double minStep = 10.;
-        final double maxStep = 1000.;
+        final double minStep = 1.;
+        final double maxStep = 200.;
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         integrator.setInitialStepSize(100.);
         propaNUM = new NumericalPropagator(integrator);
@@ -255,7 +256,7 @@ public class DSSTPropagation {
 
     private static void setDSSTProp(SpacecraftState initialState) throws PropagationException {
         initDate = initialState.getDate();
-        final double minStep = 800.;
+        final double minStep = 100.;
         final double maxStep = 86400.;
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
@@ -325,9 +326,16 @@ public class DSSTPropagation {
             final double hx = orb.getHx();
             final double hy = orb.getHy();
             final double lm = orb.getLM();
+            
+            final double ec = orb.getE();
+            final double in = orb.getI();
+            
+            KeplerianOrbit kep = new KeplerianOrbit(orb);
+            final double pa = kep.getPerigeeArgument();
+            final double ra = kep.getRightAscensionOfAscendingNode();
             // Date printer
             final double deltaDay = currentState.getDate().durationFrom(dateIni) / 86400d;
-            formatter.format(this.format, deltaDay, px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm);
+            formatter.format(this.format, deltaDay, px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm, ec, in, pa, ra);
             try {
                 this.buffer.write(formatter.toString());
                 this.buffer.newLine();

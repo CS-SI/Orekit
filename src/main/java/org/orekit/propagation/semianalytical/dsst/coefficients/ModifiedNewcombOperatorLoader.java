@@ -59,7 +59,7 @@ public class ModifiedNewcombOperatorLoader implements DataLoader {
 
         
 
-        this.entries = new TreeMap<Integer>();
+//        this.entries = new TreeMap<Integer>();
 
     }
 
