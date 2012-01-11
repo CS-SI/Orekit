@@ -132,4 +132,8 @@ public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
         return MAX_EVAL[element];
     }
 
+    public void initialize(SpacecraftState initialState) {
+        // Nothing to do        
+    }
+
 }

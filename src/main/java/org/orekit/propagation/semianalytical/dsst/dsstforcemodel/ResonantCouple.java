@@ -6,12 +6,12 @@ package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
  * 
  * @author Romain Di Costanzo
  */
-public class ResonantCouple {
+public class ResonantCouple implements Comparable<ResonantCouple> {
 
     /**
-     * j value
+     * n value
      */
-    private final int j;
+    private final int n;
 
     /**
      * m value
@@ -21,15 +21,15 @@ public class ResonantCouple {
     /**
      * Default constructor
      * 
-     * @param j
-     *            j-value
+     * @param n
+     *            n-value
      * @param m
      *            m-value
      */
-    public ResonantCouple(final int j,
+    public ResonantCouple(final int n,
                           final int m) {
         this.m = m;
-        this.j = j;
+        this.n = n;
     }
 
     /**
@@ -42,16 +42,32 @@ public class ResonantCouple {
     }
 
     /**
-     * Get the j-value
+     * Get the n-value
      * 
-     * @return j-value
+     * @return n-value
      */
-    public int getJ() {
-        return j;
+    public int getN() {
+        return n;
     }
 
     public String toString() {
-        return new String("j : " + j + " m : " + m);
+        return new String("n : " + n + " m : " + m);
     }
 
+    /**
+     * {@inheritDoc} Compare a resonant couple to another one. Comparison is done on the order.
+     */
+    public int compareTo(ResonantCouple couple) {
+        int result = 1;
+        if (n == couple.n) {
+            if (m < couple.m) {
+                result = -1;
+            } else if (m == couple.m) {
+                result = 0;
+            }
+        } else if (n < couple.n) {
+            result = -1;
+        }
+        return result;
+    }
 }

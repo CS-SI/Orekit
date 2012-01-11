@@ -1,6 +1,8 @@
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
@@ -8,7 +10,9 @@ import java.util.TreeMap;
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.orbits.Orbit;
@@ -17,6 +21,7 @@ import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.coefficients.CiSiCoefficient;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTFactorial;
 import org.orekit.propagation.semianalytical.dsst.coefficients.GHmsjPolynomials;
 import org.orekit.propagation.semianalytical.dsst.coefficients.GammaMsnCoefficients;
 import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
@@ -31,11 +36,9 @@ import org.orekit.time.AbsoluteDate;
  * 
  * @author Romain Di Costanzo
  */
-public class DSSTCentralBody implements DSSTForceModel {
+public class DSSTCentralBody extends AbstractGravitationalForces {
 
-    /**
-     * General data
-     */
+    // Analytical central body spherical harmonic models
     /** Equatorial radius of the Central Body. */
     private final double           ae;
 
@@ -48,11 +51,20 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** Second normalized potential tesseral coefficients array. */
     private final double[][]       Snm;
 
-    /** Degree <i>n</i> of C<sub>nm</sub> potential. */
+    /** Degree <i>n</i> of non resonant C<sub>nm</sub> potential. */
     private final int              degree;
 
-    /** Order <i>m</i> of C<sub>nm</sub> potential. */
+    /** Order <i>m</i> of non resonant C<sub>nm</sub> potential. */
     private final int              order;
+
+    /** Maximum resonant order */
+    private int                    maxResonantOrder;
+
+    /** Maximum resonant degree */
+    private int                    maxResonantDegree;
+
+    /** List of resonant tesseral harmonic couple */
+    private List<ResonantCouple>   resonantTesseralHarmonic;
 
     /**
      * DSST model needs equinoctial orbit as internal representation. Classical equinoctial elements
@@ -61,7 +73,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      * expressed in a different way, called "retrograde" orbit. This implies I = -1. As Orekit
      * doesn't implement the retrograde orbit, I = 1 here.
      */
-    private int                    I = 1;
+    private int                    I                         = 1;
 
     /** current orbital state */
     private Orbit                  orbit;
@@ -90,14 +102,28 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** &gamma */
     private double                 gamma;
 
+    /**
+     * Internal variables
+     */
     /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient */
     private TreeMap<NSKey, Double> Vns;
 
+    /**
+     * Minimum period for analytically averaged high-order resonant central body spherical harmonics
+     * in seconds. This value is set to 10 days, but can be overrides by using the
+     * {@link #setResonantMinPeriodInSec(double)} method.
+     */
+    private double                 resonantMinPeriodInSec;
+
+    /**
+     * Minimum period for analytically averaged high-order resonant central body spherical harmonics
+     * in satellite revolutions. This value is set to 10 satellite revolutions, but can be overrides
+     * by using the {@link #setResonantMinPeriodInSatRev(double)} method.
+     */
+    private double                 resonantMinPeriodInSatRev;
+
     /** Geopotential coefficient Jn = -Cn0 */
     private double[]               Jn;
-
-    /** Resonant tesseral coefficient */
-    private List<ResonantCouple>   resonantTesseralsTerm;
 
     /** Hansen coefficient */
     private HansenCoefficients     hansen;
@@ -106,10 +132,48 @@ public class DSSTCentralBody implements DSSTForceModel {
     private GammaMsnCoefficients   gammaMNS;
 
     /**
-     * convergence parameter used in Hansen coefficient generation. 1e-4 seems to be a correct
-     * value.
+     * Highest power of the eccentricity to appear in the truncated analytical power series
+     * expansion for the averaged central-body Zonal harmonic potential. The user can set this value
+     * by using the {@link #setZonalMaximumEccentricityPower(double)} method. If he doesn't, the
+     * software will compute a default value itself, through the
+     * {@link #computeZonalMaxEccentricityPower()} method.
      */
-    private final double           epsilon;
+    private int                    zonalMaxEccentricityPower;
+
+    /**
+     * Maximal value of the geopotential order that will be used in zonal series expansion. This
+     * value won't be used if the {@link #zonalMaxEccentricityPower} is set through the
+     * {@link #computeZonalMaxEccentricityPower()} method. If not, series expansion will
+     * automatically be truncated.
+     */
+    private int                    zonalMaxGeopotentialCoefficient;
+
+    /**
+     * Highest power of the eccentricity to appear in the truncated analytical power series
+     * expansion for the averaged central-body Tesseral harmonic potential. The user can set this
+     * value by using the {@link #setTesseralMaximumEccentricityPower(double)} method. If he
+     * doesn't, the software will compute a default value itself, through the
+     * {@link #computeTesseralMaxEccentricityPower()} method.
+     */
+    private int                    tesseralMaxEccentricityPower;
+
+    /** Central-body rotation period in seconds */
+    private double                 omega;
+
+    /**
+     * Truncation tolerance for analytically averaged central body spherical harmonics for orbits
+     * which are always in vacuum
+     */
+    private final static double    truncationToleranceVacuum = 1e-10;
+
+    /**
+     * Truncation tolerance for analytically averaged central body spherical harmonics for
+     * drag-perturbed orbit
+     */
+    private final static double    truncationToleranceDrag   = 1e-10;
+
+    /** Minimum perturbation period */
+    private double                 minPerturbationPeriod;
 
     /**
      * DSST Central body constructor.
@@ -122,46 +186,63 @@ public class DSSTCentralBody implements DSSTForceModel {
      *            Cosines part of the spherical harmonics
      * @param Snm
      *            Sines part of the spherical harmonics
-     * @param resonantTesserals
-     *            resonant couple term. This parameter can be set to null. If so, all couples will
-     *            be taken in account. If not, only terms included in the resonant couple will be
-     *            considered. If the list is an empty one, only zonal effect will be considered.
-     * @param epsilon
-     *            convergence parameter used in Hansen coefficient generation. 1e-4 seems to be a
-     *            correct value
+     * @param maxPowerOfENonResonant
+     *            Maximum power of the eccentricity in the expansion for the non-resonant potential
+     * @param numberOfResonantTesseralTerms
+     *            Number of resonant tesseral terms
+     * @param maxE2
+     *            Maximum power of the e<sup>2</sup> to be used in the power series expansion for
+     *            the Hansen coefficients Kernel potential
+     * @param resonantTesseral
+     *            Resonant Tesseral harmonic couple term. This parameter can be set to null or be an
+     *            empty list. If so, the program will automatically determine the resonant couple to
+     *            take in account. If not, only the resonant couple given by the user will be taken
+     *            in account.
+     * @param maxEccOrder
+     *            Maximum power of eccentricity used in the expansion of the Hansen coefficient
+     *            Kernel
      */
-    public DSSTCentralBody(final double ae,
+    public DSSTCentralBody(final double centralBodyRotationRate,
+                           final double ae,
                            final double mu,
                            final double[][] Cnm,
                            final double[][] Snm,
-                           final List<ResonantCouple> resonantTesserals,
-                           final double epsilon) {
+                           final List<ResonantCouple> resonantTesseral) {
+        // Get the central-body rotation period :
+        this.omega = MathUtils.TWO_PI / centralBodyRotationRate;
+        this.mu = mu;
+        this.ae = ae;
         this.Cnm = Cnm;
         this.Snm = Snm;
         this.degree = Cnm.length - 1;
         this.order = Cnm[degree].length - 1;
-        this.epsilon = epsilon;
+        // Check potential coefficient consistency
         if ((Cnm.length != Snm.length) || (Cnm[Cnm.length - 1].length != Snm[Snm.length - 1].length)) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH, Cnm.length, Cnm[degree].length, Snm.length, Snm[degree].length);
         }
-        this.ae = ae;
-        this.mu = mu;
-        // Initialize the constant component
+        // Initialize the Jn coefficient for zonal harmonic series expansion
         initializeJn(Cnm);
-        Vns = DSSTCoefficientFactory.computeVnsCoefficient(degree + 1);
-        List<ResonantCouple> resonantList = new ArrayList<ResonantCouple>();
-        if (resonantTesserals == null) {
-            for (int j = 1; j < order + 1; j++) {
-                for (int m = 1; m < j + 1; m++) {
-                    ResonantCouple couple = new ResonantCouple(j, m);
-                    resonantList.add(couple);
-                }
-
+        // Store local variables
+        if (resonantTesseral != null) {
+            resonantTesseralHarmonic = resonantTesseral;
+            if (resonantTesseralHarmonic.size() > 0) {
+                // Get the maximal resonant order
+                ResonantCouple maxCouple = Collections.max(resonantTesseral);
+                maxResonantOrder = maxCouple.getM();
+                maxResonantDegree = maxCouple.getN();
             }
-            resonantTesseralsTerm = resonantList;
         } else {
-            resonantTesseralsTerm = resonantTesserals;
+            resonantTesseralHarmonic = new ArrayList<ResonantCouple>();
+            // Set to a default undefined value
+            maxResonantOrder = Integer.MIN_VALUE;
+            maxResonantDegree = Integer.MIN_VALUE;
         }
+        // Initialize default values
+        this.resonantMinPeriodInSec = 864000d;
+        this.resonantMinPeriodInSatRev = 10d;
+        this.zonalMaxEccentricityPower = Integer.MIN_VALUE;
+        this.tesseralMaxEccentricityPower = Integer.MIN_VALUE;
+
     }
 
     /**
@@ -173,11 +254,12 @@ public class DSSTCentralBody implements DSSTForceModel {
 
         // Store current state :
         orbit = spacecraftState.getOrbit();
-        // Initialisation of A, B, C, Alpha, Beta and Gamma coefficient :
+        // Initialization of A, B, C, Alpha, Beta and Gamma coefficient :
         updateABCAlphaBetaGamma(orbit);
-        hansen = new HansenCoefficients(orbit.getE(), epsilon);
+        // TODO
+        hansen = new HansenCoefficients(orbit.getE(), zonalMaxEccentricityPower);
         gammaMNS = new GammaMsnCoefficients(gamma, I);
-        // Get zonal harmonics contributuion :
+        // Get zonal harmonics contribution :
         ZonalHarmonics zonalHarmonics = new ZonalHarmonics();
         double[] zonalTerms = zonalHarmonics.getZonalContribution(orbit);
 
@@ -294,7 +376,260 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /**
-     * Get the zonal contribution of the central body for the first order mean element rates
+     * {@inheritDoc} This method here will find the resonant tesseral terms in the central body
+     * harmonic field. The routine computes the repetition period of the perturbation caused by each
+     * central-body sectoral and tesseral harmonic term and compares the period to a predetermined
+     * tolerance, the minimum period considered to be resonant.
+     * 
+     * @throws OrekitException
+     */
+    public void initialize(final SpacecraftState initialState) throws OrekitException {
+        updateABCAlphaBetaGamma(initialState.getOrbit());
+
+        // Select central body resonant tesseral harmonic terms
+        selectCentralBodyResonantTesseral(initialState);
+
+        // Set the highest power of the eccentricity in the analytical power series expansion for
+        // the averaged low order central body spherical harmonic perturbation
+        computeZonalMaxEccentricityPower(initialState);
+
+        // Set the highest power of the eccentricity in the analytical power series expansion for
+        // the averaged high order resonant central body spherical harmonic perturbation and compute
+        // the Newcomb operators
+        computeTesseralMaxEccentricityPower();
+
+        Vns = DSSTCoefficientFactory.computeVnsCoefficient(zonalMaxGeopotentialCoefficient + 1);
+    }
+
+    private void computeTesseralMaxEccentricityPower() {
+        // TODO Auto-generated method stub
+
+    }
+
+    /**
+     * This subroutine computes the highest power of the eccentricity to appear in the truncated
+     * analytical power series expansion for the averaged central-body zonal harmonic potential.
+     * 
+     * @throws OrekitException
+     */
+    private void computeZonalMaxEccentricityPower(final SpacecraftState initialState) throws OrekitException {
+        // Did a maximum eccentricity power has been found
+        boolean maxFound = false;
+        // Initialize the current spherical harmonic term to 0.
+        double term = 0.;
+        // Maximal degree of the geopotential expansion :
+        int nMax = Integer.MIN_VALUE;
+        // Maximal power of e
+        int sMax = Integer.MIN_VALUE;
+        // Find the truncation tolerance : set tolerance as a non draged satellite. Operation stops
+        // when term > tolerance
+        final double tolerance = truncationToleranceVacuum;
+        // Check if highest power of E has been given by the user :
+        if (zonalMaxEccentricityPower == Integer.MIN_VALUE) {
+            // Is the degree of the zonal harmonic field too small to allow more than one power of E
+            if (degree == 2) {
+                zonalMaxEccentricityPower = 0;
+            } else {
+                // Auxiliary quantities
+                final double ecc = initialState.getE();
+                final double r2a = ae / (2 * initialState.getA());
+                double x2MuRaN = 2 * mu / (initialState.getA()) * r2a;
+                // Search for the highest power of E for which the computed value is greater than
+                // the truncation tolerance in the power series
+                // s-loop :
+                for (int s = 0; s <= degree - 2; s++) {
+                    // n-loop
+                    for (int n = s + 2; n <= degree; n++) {
+                        // (n - s) must be even
+                        if ((n - s) % 2 == 0) {
+                            // Local values :
+                            final double gam2 = gamma * gamma;
+                            // Compute factorial :
+                            final BigInteger factorialNum = DSSTFactorial.fact(n - s);
+                            final BigInteger factorialDen = DSSTFactorial.fact((n + s) / 2).multiply(DSSTFactorial.fact((n - s) / 2));
+                            final double factorial = factorialNum.doubleValue() / factorialDen.doubleValue();
+                            HansenCoefficients hansen = new HansenCoefficients(ecc);
+                            final double k0 = hansen.getHansenKernelValue(0, -n - 1, s);
+                            // Compute the Qns(bound) upper bound :
+                            final double qns = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s));
+                            final double qns2 = qns * qns;
+                            final double factor = (1 - gam2) / (n * (n + 1) - s * (s + 1));
+                            // Compute dQns/dGamma
+                            final double dQns = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s + 1));
+                            final double dQns2 = dQns * dQns;
+                            final double qnsBound = FastMath.sqrt(qns2 + factor * dQns2);
+
+                            // Get the current potential upper bound for the current (n, s) couple.
+                            term = x2MuRaN * r2a * FastMath.abs(Jn[n]) * factorial * k0 * qnsBound * FastMath.pow(1 - gam2, s / 2)
+                                   * FastMath.pow(ecc, s) / FastMath.pow(2, n);
+
+                            // Compare result with the tolerance parameter :
+                            if (term <= tolerance) {
+                                // Stop here
+                                nMax = Math.max(nMax, n);
+                                sMax = Math.max(sMax, s);
+                                // truncature found
+                                maxFound = true;
+                                // Force a premature end loop
+                                n = degree;
+                                s = degree;
+                            }
+                        }
+                    }
+                    // Prepare next loop :
+                    x2MuRaN = 2 * mu / (initialState.getA()) * FastMath.pow(r2a, s + 1);
+                }
+            }
+            if (maxFound) {
+                zonalMaxGeopotentialCoefficient = nMax;
+                zonalMaxEccentricityPower = sMax;
+            } else {
+                zonalMaxGeopotentialCoefficient = degree;
+                zonalMaxEccentricityPower = degree - 2;
+            }
+        } else {
+            zonalMaxGeopotentialCoefficient = degree;
+        }
+
+    }
+
+    private void selectCentralBodyResonantTesseral(SpacecraftState initialState) {
+        // Initialize resonant order
+        List<Integer> resonantOrder = new ArrayList<Integer>();
+        // Initialize resonant index for each resonant order
+        List<Integer> resonantIndex = new ArrayList<Integer>();
+
+        // Get the satellite period
+        final double satellitePeriod = initialState.getKeplerianPeriod();
+        // Compute ration of satellite period to central body rotation period
+        final double ratio = satellitePeriod / omega;
+
+        // If user didn't define a maximum resonant order, use the maximum central-body's
+        // order
+        if (maxResonantOrder == Integer.MIN_VALUE) {
+            // TODO check +1
+            maxResonantOrder = order;
+        }
+
+        if (maxResonantDegree == Integer.MIN_VALUE) {
+            maxResonantDegree = degree;
+        }
+
+        // Has the user requested a specific set of resonant tesseral harmonic terms ?
+        if (resonantTesseralHarmonic.size() == 0) {
+
+            final int maxResonantOrderTmp = maxResonantOrder;
+            // Reinitialize the maxResonantOrder parameter :
+            maxResonantOrder = 0;
+
+            double tolerance = resonantMinPeriodInSec / satellitePeriod;
+            if (tolerance < resonantMinPeriodInSatRev) {
+                tolerance = resonantMinPeriodInSatRev;
+            }
+            tolerance = 1d / tolerance;
+
+            // Now find the order of the resonant tesseral harmonic field
+            for (int m = 0; m < maxResonantOrderTmp; m++) {
+                double resonance = ratio * m;
+                int j = (int) (resonance + 0.5);
+                if (FastMath.abs(resonance - j) <= tolerance && j > 0d) {
+                    // Update the maximum resonant order found
+                    maxResonantOrder = m;
+
+                    // Store each resonant degrees for each resonant order
+                    resonantOrder.add(m, m);
+                    resonantIndex.add(m, j);
+
+                    // Store each resonant couple for a given order
+                    // TODO check <=
+                    for (int n = m; n <= degree; n++) {
+                        resonantTesseralHarmonic.add(new ResonantCouple(n, m));
+                    }
+                }
+            }
+        }
+        // Have any resonant terms been found ?
+        if (maxResonantOrder > 0) {
+            minPerturbationPeriod = computeMinimumPerturbationPeriod(ratio, satellitePeriod, resonantOrder, resonantIndex);
+        }
+    }
+
+    /**
+     * This method compute the minimum perturbation period from witch a perturbation is considered
+     * to
+     * 
+     * @param ratio
+     * @param satellitePeriod
+     * @param resonantOrder
+     * @param resonantIndex
+     * @return
+     */
+    private double computeMinimumPerturbationPeriod(double ratio,
+                                                    double satellitePeriod,
+                                                    List<Integer> resonantOrder,
+                                                    List<Integer> resonantIndex) {
+
+        double minPerturbationPeriod = Double.POSITIVE_INFINITY;
+        // Compute the minimum perturbation period
+        for (int m = 0; m < maxResonantOrder; m++) {
+            if (resonantOrder.get(m) == m) {
+                double divisor = FastMath.abs(ratio * m - resonantIndex.get(m));
+                if (divisor < 1e-10) {
+                    divisor = 1e-10;
+                    minPerturbationPeriod = FastMath.min(minPerturbationPeriod, satellitePeriod / divisor);
+                }
+            }
+        }
+        return minPerturbationPeriod;
+
+    }
+
+    /**
+     * Set the minimum period for analytically averaged high-order resonant central body spherical
+     * harmonics in seconds. Set to 10 days by default.
+     * 
+     * @param resonantMinPeriodInSec
+     *            minimum period in seconds
+     */
+    public void setResonantMinPeriodInSec(final double resonantMinPeriodInSec) {
+        this.resonantMinPeriodInSec = resonantMinPeriodInSec;
+    }
+
+    /**
+     * Set the minimum period for analytically averaged high-order resonant central body spherical
+     * harmonics in satelliteRevolution. Set to 10 by default.
+     * 
+     * @param resonantMinPeriodInSatRev
+     *            minimum period in satellite revolution
+     */
+    public void setResonantMinPeriodInSatRev(final double resonantMinPeriodInSatRev) {
+        this.resonantMinPeriodInSatRev = resonantMinPeriodInSatRev;
+    }
+
+    /**
+     * This methode set the highest power of the eccentricity to appear in the truncated analytical
+     * power series expansion for the averaged central-body zonal harmonic potential.
+     * 
+     * @param zonalMaxEccPower
+     *            highest power of the eccentricity
+     */
+    public void setZonalMaximumEccentricityPower(final int zonalMaxEccPower) {
+        this.zonalMaxEccentricityPower = zonalMaxEccPower;
+    }
+
+    /**
+     * This methode set the highest power of the eccentricity to appear in the truncated analytical
+     * power series expansion for the averaged central-body tesseral harmonic potential.
+     * 
+     * @param tesseralMaxEccPower
+     *            highest power of the eccentricity
+     */
+    public void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
+        this.tesseralMaxEccentricityPower = tesseralMaxEccPower;
+    }
+
+    /**
+     * Get the zonal contribution of the central body for the first order mean element rates.
      */
     private class ZonalHarmonics {
 
@@ -316,9 +651,9 @@ public class DSSTCentralBody implements DSSTForceModel {
             double q = orbit.getHx();
             double p = orbit.getHy();
 
-            final double[][] GsHs = DSSTCoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, degree + 1);
+            final double[][] GsHs = DSSTCoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, zonalMaxGeopotentialCoefficient + 1);
 
-            final double[][] Qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, degree + 1);
+            final double[][] Qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, zonalMaxGeopotentialCoefficient + 1);
 
             // Compute potential derivative :
             final double[] potentialDerivatives = computePotentialderivatives(Qns, GsHs);
@@ -418,7 +753,7 @@ public class DSSTCentralBody implements DSSTForceModel {
             // Kronecker symbol (2 - delta(0,s))
             double delta0s = 0d;
 
-            for (int s = 0; s < degree - 1; s++) {
+            for (int s = 0; s < zonalMaxEccentricityPower; s++) {
                 // Get the current gs and hs coefficient :
                 gs = GsHs[0][s];
 
@@ -435,7 +770,7 @@ public class DSSTCentralBody implements DSSTForceModel {
                 // get (2 - delta0s)
                 delta0s = (s == 0) ? 1 : 2;
 
-                for (int n = s + 2; n < degree + 1; n++) {
+                for (int n = s + 2; n < zonalMaxGeopotentialCoefficient + 1; n++) {
                     // Extract data from previous computation :
                     jn = Jn[n];
                     vns = Vns.get(new NSKey(n, s));
@@ -511,7 +846,7 @@ public class DSSTCentralBody implements DSSTForceModel {
             final double pDot = C / (2 * A * B) * (p * (Uhk - UAlphaBeta - dudl) - UBetaGamma);
             final double qDot = C / (2 * A * B) * (p * (Uhk - UAlphaBeta - dudl) - I * UAlphaGamma);
             final double lDot = -2 * a * duda / A + B / (A * (1 + B)) * (h * dudh + k * dudk) + (p * UAlphaGamma - I * q * UBetaGamma)
-                            / (A * B);
+                                / (A * B);
 
             return new double[] { aDot, hDot, kDot, pDot, qDot, lDot };
 
@@ -588,11 +923,12 @@ public class DSSTCentralBody implements DSSTForceModel {
             double dHdA = 0d;
             double dHdB = 0d;
 
-            Iterator<ResonantCouple> iterator = resonantTesseralsTerm.iterator();
+            Iterator<ResonantCouple> iterator = resonantTesseralHarmonic.iterator();
             // Iterative process :
+
             while (iterator.hasNext()) {
                 ResonantCouple resonantTesseralCouple = iterator.next();
-                int j = resonantTesseralCouple.getJ();
+                int j = resonantTesseralCouple.getN();
                 int m = resonantTesseralCouple.getM();
 
                 final double jlMmt = j * lambda - m * theta;
@@ -601,14 +937,14 @@ public class DSSTCentralBody implements DSSTForceModel {
 
                 int Im = (int) FastMath.pow(I, m);
                 // Sum(-N, N)
-                for (int s = -degree; s < degree + 1; s++) {
+                for (int s = -maxResonantDegree; s < maxResonantDegree + 1; s++) {
                     // Sum(Max(2, m, |s|))
                     int nmin = Math.max(Math.max(2, m), Math.abs(s));
 
                     // jacobi v, w, indices : see 2.7.1 - (15)
                     v = FastMath.abs(m - s);
                     w = FastMath.abs(m + s);
-                    for (int n = nmin; n < degree + 1; n++) {
+                    for (int n = nmin; n < maxResonantDegree + 1; n++) {
                         // (R / a)^n
                         ran = FastMath.pow(ra, n);
                         // Vmns computation : if s < 0 : V(m, n, s) = (-1)^s * V(m, n, -s). See
@@ -678,16 +1014,16 @@ public class DSSTCentralBody implements DSSTForceModel {
                         dudga += ran * Im * vmsn * kjn_1 * (jacobi * dGamma + gamMsn * dJacobi) * (realCosFactor + realSinFactor);
                     }
                 }
+
+                duda *= -muOa / a;
+                dudh *= muOa;
+                dudk *= muOa;
+                dudl *= muOa;
+                dudal *= muOa;
+                dudbe *= muOa;
+                dudga *= muOa;
+
             }
-
-            duda *= -muOa / a;
-            dudh *= muOa;
-            dudk *= muOa;
-            dudl *= muOa;
-            dudal *= muOa;
-            dudbe *= muOa;
-            dudga *= muOa;
-
             return new double[] { duda, dudh, dudk, dudl, dudal, dudbe, dudga };
         }
     }
