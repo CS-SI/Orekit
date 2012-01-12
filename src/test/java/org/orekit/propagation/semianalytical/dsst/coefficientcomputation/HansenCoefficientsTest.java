@@ -1,5 +1,8 @@
 package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -10,9 +13,6 @@ import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficient
  */
 public class HansenCoefficientsTest {
 
-    final static double epsilonM3  = 1e-3;
-
-    final static double epsilonM4  = 1e-4;
 
     final static double epsilonM15 = 1e-15;
 
@@ -24,7 +24,7 @@ public class HansenCoefficientsTest {
         final double chi2 = chi * chi;
         final double chi3 = chi * chi2;
 
-        HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
+        HansenCoefficients hansen = new HansenCoefficients(ecc, 4);
 
         Assert.assertEquals(0, hansen.getHansenKernelValue(0, -1, 0), epsilonM15);
         Assert.assertEquals(0, hansen.getHansenKernelValue(0, -1, 1), epsilonM15);
@@ -36,11 +36,37 @@ public class HansenCoefficientsTest {
         Assert.assertEquals(chi3 / 2. * (3 * chi2 - 1), hansen.getHansenKernelValue(0, -4, 0), epsilonM15);
         Assert.assertEquals(chi3 * chi2, hansen.getHansenKernelValue(0, -4, 1), epsilonM15);
     }
+    
+    @Test
+    public void test() throws OrekitException{
+        double ecc = 1e-6;
+        double delta = 0d;
+        
+        List<String> list = new ArrayList<String>();
+        
+        for (int i = 0; i < 10; i++){
+            ecc += delta;
+            HansenCoefficients hansen = new HansenCoefficients(ecc);
+            System.out.println("ECC " + ecc);
+            for (int m = 0; m < 10; m++){
+                for (int s = 0; s < 10; s++){
+                    for (int n = 0; n < 10; n++){
+                        System.out.println(hansen.getHansenKernelValue(m, n, s));
+                    }
+                }
+            }
+            System.out.println();
+            
+            
+            
+            delta = 1e-6;
+        }
+    }
 
     @Test
     public void testJ0NPositive() throws OrekitException {
         final double ecc = 0.1;
-        HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
+        HansenCoefficients hansen = new HansenCoefficients(ecc, 4);
 
         Assert.assertEquals(1., hansen.getHansenKernelValue(0, 0, 0), epsilonM15);
         Assert.assertEquals(-1., hansen.getHansenKernelValue(0, 0, 1), epsilonM15);
@@ -56,7 +82,7 @@ public class HansenCoefficientsTest {
     @Test
     public void testJ1NHigh() throws OrekitException {
         final double ecc = 0.1;
-        HansenCoefficients hansen = new HansenCoefficients(ecc, epsilonM4);
+        HansenCoefficients hansen = new HansenCoefficients(ecc, 4);
         Assert.assertEquals(18.505879, hansen.getHansenKernelValue(1, -31, -20), 0.4);
         Assert.assertEquals(56.7, hansen.getHansenKernelValue(1, -32, -20), 0.8);
 
