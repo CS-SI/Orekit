@@ -101,12 +101,12 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
     /** Get the current retrograde factor I.
      *  @return the retrograde factor I
      */
-    public double getRetrogradeFactor() {
+    public final double getRetrogradeFactor() {
         return I;
     }
 
     /** {@inheritDoc} */
-    public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
+    public final double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
         final double[] meanElementRate = new double[6];
         // Constant multiplier for integral
         final double h = state.getOrbit().getEquinoctialEy();
@@ -140,7 +140,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
     /** Compute useful equinoctial parameters: A, B, C, f, g, w.
      *  @param  state current state information: date, kinematics, attitude
      */
-    protected void computeParameters(final SpacecraftState state) {
+    protected final void computeParameters(final SpacecraftState state) {
         // Initialisation of A, B, C coefficients, f, g, w basis
     
         // Get current state vector (equinoctial elements):
@@ -268,7 +268,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         }
  
         /** {@inheritDoc} */
-        public double value(double x) {
+        public double value(final double x) {
             double val = 0;
             final double cosL = FastMath.cos(x);
             final double sinL = FastMath.sin(x);

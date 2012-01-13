@@ -6,7 +6,6 @@ import java.util.TreeMap;
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math.complex.Complex;
-import org.apache.commons.math.util.ArithmeticUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -20,6 +19,7 @@ public class DSSTCoefficientFactory {
     /** Internal storage of the polynomial values. Reused for further computation. */
     private static TreeMap<NSKey, Double>         VNS            = new TreeMap<NSKey, Double>();
 
+    /** Initial order set from static initialization */
     private static int                            LAST_VNS_ORDER = 2;
 
     /** Map of the Qns derivatives, for each (n, s) couple {@link DSSTCoefficientFactory.NSKey} */
@@ -292,7 +292,12 @@ public class DSSTCoefficientFactory {
         // If (n -s) is odd, the Vmsn coefficient is null
         double result = 0;
         if ((n - s) % 2 == 0) {
-            result = (ArithmeticUtils.factorial(n + s) / ArithmeticUtils.factorial(n - m)) * VNS.get(new NSKey(n, s)) ;
+            // if s < 0 : V(m, n, s) = (-1)^s * V(m, n, -s). See equation 2.7.2 - (1)
+            if (s < 0) {
+                result = Math.pow(-1, -s) * DSSTCoefficientFactory.getVmns(m, n, -s);
+            } else {
+                result = (DSSTFactorial.fact(n + s).doubleValue() / DSSTFactorial.fact(n - m).doubleValue()) * VNS.get(new NSKey(n, s));
+            }
         }
         return result;
     }
@@ -327,7 +332,7 @@ public class DSSTCoefficientFactory {
          * 
          * @return n
          */
-        public int getN() {
+        public final int getN() {
             return n;
         }
 
@@ -336,17 +341,17 @@ public class DSSTCoefficientFactory {
          * 
          * @return s
          */
-        public int getS() {
+        public final int getS() {
             return s;
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return new String("[" + n + ", " + s + "]");
         }
 
         /** {@inheritDoc} */
-        public int compareTo(NSKey key) {
+        public final int compareTo(final NSKey key) {
             int result = 1;
             if (n == key.n) {
                 if (s < key.s) {
@@ -394,7 +399,7 @@ public class DSSTCoefficientFactory {
         }
 
         /** {@inheritDoc} */
-        public int compareTo(MNSKey key) {
+        public final int compareTo(final MNSKey key) {
             int result = 1;
             if (m == key.m) {
                 if (n == key.n) {
@@ -420,7 +425,7 @@ public class DSSTCoefficientFactory {
          * {@inheritDoc}
          */
         @Override
-        public String toString() {
+        public final String toString() {
             return new String("[" + m + ", " + n + ", " + s + "]");
         }
     }

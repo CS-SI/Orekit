@@ -37,7 +37,7 @@ public class ResonantCouple implements Comparable<ResonantCouple> {
      * 
      * @return m-value
      */
-    public int getM() {
+    public final int getM() {
         return m;
     }
 
@@ -46,18 +46,21 @@ public class ResonantCouple implements Comparable<ResonantCouple> {
      * 
      * @return n-value
      */
-    public int getN() {
+    public final int getN() {
         return n;
     }
 
-    public String toString() {
+    /**
+     * {@inheritDoc}
+     */
+    public final String toString() {
         return new String("n : " + n + " m : " + m);
     }
 
     /**
      * {@inheritDoc} Compare a resonant couple to another one. Comparison is done on the order.
      */
-    public int compareTo(ResonantCouple couple) {
+    public final int compareTo(final ResonantCouple couple) {
         int result = 1;
         if (n == couple.n) {
             if (m < couple.m) {

@@ -58,10 +58,10 @@ public class ModifiedNewcombOperators {
      * @throws OrekitException
      *             if &rho; < &sigma;
      */
-    public static double getValue(int rho,
-                                  int sigma,
-                                  int n,
-                                  int s) throws OrekitException {
+    public static double getValue(final int rho,
+                                  final int sigma,
+                                  final int n,
+                                  final int s) throws OrekitException {
         boolean reverse = rho < sigma;
         int maxOrder = (reverse ? NewcombPolynomialsGenerator.COMPUTED_REVERSE_ORDER : NewcombPolynomialsGenerator.COMPUTED_DIRECT_ORDER);
         // If order hasn't been computed yet, update the Newcomb polynomials
@@ -176,8 +176,10 @@ public class ModifiedNewcombOperators {
          * 
          * @param rho
          *            degree to reach
-         * @param maxDegree
-         * @param newcombPolynomials
+         * @param maximumOrder
+         *            maximum order
+         * @param reverseOrder
+         *            is computation's done in reverse order
          */
         private static void computeUpToDegree(final int rho,
                                               final int maximumOrder,
@@ -364,8 +366,8 @@ public class ModifiedNewcombOperators {
      * 
      * @param i
      *            order
-     * @param resulting
-     *            list
+     * @param result
+     *            returned initialized list
      */
     private static void initializeListOfPolynomials(final int i,
                                                     List<PolynomialFunction> result) {
@@ -379,9 +381,10 @@ public class ModifiedNewcombOperators {
     private static class RecurrencePolynomialGenerator {
 
         /**
-         * Generate recurrence coefficients.
+         * Generate recurrence coefficients for a couple value set.
          * 
-         * @param
+         * @param couple
+         *            couple value set
          */
         Map<Integer, List<PolynomialFunction>> generateRecurrenceCoefficients(final Couple couple) {
             final int den = 4 * (couple.rho + couple.sigma);
@@ -419,7 +422,7 @@ public class ModifiedNewcombOperators {
     }
 
     /** Private class to define a couple of value */
-    private static class Couple implements Comparable<Couple> {
+    private static final class Couple implements Comparable<Couple> {
 
         /** first couple value */
         private final int rho;
@@ -427,7 +430,14 @@ public class ModifiedNewcombOperators {
         /** second couple value */
         private final int sigma;
 
-        /** Constructor */
+        /**
+         * Constructor
+         * 
+         * @param rho
+         *            rho
+         * @param sigma
+         *            sigma
+         */
         private Couple(final int rho,
                        final int sigma) {
             this.rho = rho;
@@ -435,7 +445,7 @@ public class ModifiedNewcombOperators {
         }
 
         /** {@inheritDoc} */
-        public int compareTo(Couple c) {
+        public int compareTo(final Couple c) {
             int result = 1;
             if (rho == c.rho) {
                 if (sigma < c.sigma) {

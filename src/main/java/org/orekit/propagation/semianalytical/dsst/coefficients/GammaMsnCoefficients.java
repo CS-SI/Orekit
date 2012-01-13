@@ -3,7 +3,6 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.MNSKey;
 
@@ -48,7 +47,7 @@ public class GammaMsnCoefficients {
      *            m
      * @return &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;)
      */
-    public double getGammaMsn(final int n,
+    public final double getGammaMsn(final int n,
                               final int s,
                               final int m) {
         double res = 0d;
@@ -60,9 +59,9 @@ public class GammaMsnCoefficients {
             if (s <= -m) {
                 res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow((1 + I * gamma), -I * m);
             } else if (FastMath.abs(s) <= m) {
-                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n - m)
-                                * FastMath.pow(1 + I * gamma, I * s);
-                den = ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
+                num = FastMath.pow(-1, m - s) * FastMath.pow(2, -m)
+                      * DSSTFactorial.fact(n + m).multiply(DSSTFactorial.fact(n - m)).doubleValue() * FastMath.pow(1 + I * gamma, I * s);
+                den = DSSTFactorial.fact(n + s).multiply(DSSTFactorial.fact(n - s)).doubleValue();
                 res = num / den;
             } else if (s >= m) {
                 res = FastMath.pow(2, -s) * FastMath.pow(1 + I * gamma, I * m);
@@ -84,7 +83,7 @@ public class GammaMsnCoefficients {
      *            m
      * @return d&Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) / d&gamma;
      */
-    public double getDGammaMsn(final int n,
+    public final double getDGammaMsn(final int n,
                                final int s,
                                final int m) {
         double res = 0d;

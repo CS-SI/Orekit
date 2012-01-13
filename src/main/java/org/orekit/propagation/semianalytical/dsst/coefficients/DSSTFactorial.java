@@ -18,7 +18,7 @@ import org.apache.commons.math.util.ArithmeticUtils;
  */
 public class DSSTFactorial {
 
-    // Create cache
+    /** Create cache */
     private static ArrayList<BigInteger> TABLE = new ArrayList<BigInteger>();
     static {
         // Initialize the first elements
@@ -37,10 +37,17 @@ public class DSSTFactorial {
         TABLE.add(BigInteger.valueOf(479001600)); // 12!
     }
 
-    /** Factorial method, using {@link BigInteger} cached in the ArrayList */
-    public static synchronized BigInteger fact(int x) {
-        if (x < 0)
+    /**
+     * Factorial method, using {@link BigInteger} cached in the ArrayList
+     * 
+     * @param x
+     *            integer
+     * @return x! as {@link BigInteger}
+     */
+    public static BigInteger fact(final int x) {
+        if (x < 0) {
             throw new IllegalArgumentException("x must be non-negative.");
+        }
         for (int size = TABLE.size(); size <= x; size++) {
             BigInteger lastfact = (BigInteger) TABLE.get(size - 1);
             BigInteger nextfact = lastfact.multiply(BigInteger.valueOf(size));
