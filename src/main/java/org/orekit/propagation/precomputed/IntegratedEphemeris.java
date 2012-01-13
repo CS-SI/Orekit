@@ -82,9 +82,6 @@ public class IntegratedEphemeris
     /** Position angle type. */
     private final PositionAngle angleType;
 
-    /** Attitude provider. */
-    private final AttitudeProvider attitudeProvider;
-
     /** Reference frame. */
     private final Frame referenceFrame;
 
@@ -125,14 +122,13 @@ public class IntegratedEphemeris
                                final Frame referenceFrame, final double mu)
         throws OrekitException {
 
-        super(DEFAULT_LAW);
+        super(attitudeProvider);
 
         this.startDate        = startDate;
         this.minDate          = minDate;
         this.maxDate          = maxDate;
         this.orbitType        = orbitType;
         this.angleType        = angleType;
-        this.attitudeProvider = attitudeProvider;
         this.model            = model;
         this.referenceFrame   = referenceFrame;
         this.mu               = mu;
@@ -179,7 +175,7 @@ public class IntegratedEphemeris
             final double[] y = model.getInterpolatedState();
             final Orbit orbit =
                 orbitType.mapArrayToOrbit(y, angleType, date, mu, referenceFrame);
-            final Attitude attitude = attitudeProvider.getAttitude(orbit, date, referenceFrame);
+            final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, referenceFrame);
             return new SpacecraftState(orbit, attitude, y[6]);
         } catch (OrekitExceptionWrapper oew) {
             if (oew.getException() instanceof PropagationException) {
