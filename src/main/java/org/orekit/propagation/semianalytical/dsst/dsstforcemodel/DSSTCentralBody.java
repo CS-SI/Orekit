@@ -423,7 +423,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
         computeCentralBodyResonantTesseral(initialState);
 
         // Truncation of the central body tesseral harmonic :
-        if (resonantTesseralHarmonic.size() == 0) {
+        if (resonantTesseralHarmonic.size() == 0 && order > 0) {
             tesseralTruncation(initialState);
         }
         // Set the highest power of the eccentricity in the analytical power series expansion for
@@ -456,9 +456,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      *             if an error occurs when computing Hansen upper bound
      */
     private void tesseralTruncation(final SpacecraftState initialState) throws OrekitException {
-        if (resonantTesseralHarmonic.size() == 0) {
-            // TODO 
-        }
+
         // Check if a value has been entered by the user :
         if (tesseralTruncationTolerance == Double.NEGATIVE_INFINITY) {
             tesseralTruncationTolerance = truncationToleranceVacuum;
