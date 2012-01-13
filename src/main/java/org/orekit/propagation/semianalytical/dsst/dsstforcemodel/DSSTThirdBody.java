@@ -11,8 +11,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
 import org.orekit.time.AbsoluteDate;
 
 /**
@@ -126,7 +126,7 @@ public class DSSTThirdBody extends AbstractGravitationalForces{
     }
 
     /** {@inheritDoc} */
-    public double[] getMeanElementRate(final SpacecraftState currentState) throws OrekitException {
+    public final double[] getMeanElementRate(final SpacecraftState currentState) throws OrekitException {
 
         // Compute useful equinoctial parameters
         computeParameters(currentState);
@@ -161,7 +161,7 @@ public class DSSTThirdBody extends AbstractGravitationalForces{
     }
 
     /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date,
+    public final double[] getShortPeriodicVariations(final AbsoluteDate date,
                                                final double[] meanElements) throws OrekitException {
         // TODO: not implemented yet Short Periodic Variations are set to null
         return new double[] { 0., 0., 0., 0., 0., 0. };
@@ -309,7 +309,7 @@ public class DSSTThirdBody extends AbstractGravitationalForces{
 
     }
 
-    public void initialize(SpacecraftState initialState) {
+    public void initialize(final SpacecraftState initialState) {
         // TODO Auto-generated method stub
         // TODO A faire !!!
     }

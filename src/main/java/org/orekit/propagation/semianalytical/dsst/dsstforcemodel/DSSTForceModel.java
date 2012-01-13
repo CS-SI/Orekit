@@ -50,11 +50,14 @@ public interface DSSTForceModel {
      */
     double[] getShortPeriodicVariations(final AbsoluteDate date,
                                         final double[] meanElements) throws OrekitException;
-    
+
     /**
      * Initialize the current force model. This method has to be triggered just before the first
-     * propagation, i.e, once the force model is completely defined. 
-     * @throws OrekitException 
+     * propagation, i.e, once the force model is completely defined.
+     * 
+     * @param initialState
+     *            initial satellite state
+     * @throws OrekitException
      */
     void initialize(final SpacecraftState initialState) throws OrekitException;
 }

@@ -14,8 +14,9 @@ import org.orekit.propagation.semianalytical.dsst.coefficients.ModifiedNewcombOp
 public abstract class AbstractGravitationalForces implements DSSTForceModel {
 
     /** Maximum gravitational order */
-    protected final static int    MAX_GRAV_ORDER = 50;
+    protected static final  int    MAX_GRAV_ORDER = 50;
 
+    /** {@link ModifiedNewcombOperatorLoader} Unimplemented yet */
     ModifiedNewcombOperatorLoader loader;
 
     /**
@@ -29,16 +30,16 @@ public abstract class AbstractGravitationalForces implements DSSTForceModel {
     /**
      * Get the Modified Newcomb Operator loader
      * 
-     * @return
+     * @return loader
      */
-    public ModifiedNewcombOperatorLoader getLoader() {
+    public final ModifiedNewcombOperatorLoader getLoader() {
         return this.loader;
     }
 
     /**
      * Initialize the Modified Newcomb Operator loader
      */
-    public void initializeLoader() {
+    public final void initializeLoader() {
         if (loader == null) {
 
         }

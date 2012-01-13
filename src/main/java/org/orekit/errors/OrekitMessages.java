@@ -1,18 +1,13 @@
-/* Copyright 2010 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * CS licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+/*
+ * Copyright 2010 CS Communication & Systèmes Licensed to CS Communication & Systèmes (CS) under one
+ * or more contributor license agreements. See the NOTICE file distributed with this work for
+ * additional information regarding copyright ownership. CS licenses this file to You under the
+ * Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.orekit.errors;
 
@@ -25,16 +20,14 @@ import org.apache.commons.math.exception.util.Localizable;
 /**
  * Enumeration for localized messages formats.
  * <p>
- * The constants in this enumeration represent the available
- * formats as localized strings. These formats are intended to be
- * localized using simple properties files, using the constant
- * name as the key and the property value as the message format.
- * The source English format is provided in the constants themselves
- * to serve both as a reminder for developers to understand the parameters
- * needed by each format, as a basis for translators to create
- * localized properties files, and as a default format if some
- * translation is missing.
+ * The constants in this enumeration represent the available formats as localized strings. These
+ * formats are intended to be localized using simple properties files, using the constant name as
+ * the key and the property value as the message format. The source English format is provided in
+ * the constants themselves to serve both as a reminder for developers to understand the parameters
+ * needed by each format, as a basis for translators to create localized properties files, and as a
+ * default format if some translation is missing.
  * </p>
+ * 
  * @since 2.1
  */
 public enum OrekitMessages implements Localizable {
@@ -144,6 +137,7 @@ public enum OrekitMessages implements Localizable {
     DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
     DSST_VMSN_COEFFICIENT_ERROR_MS("Cannot compute the Vmsn coefficient with m > s ({0} > {1})"),
     DSST_SPR_SHADOW_INCONSISTENT("inconsistent shadow computation: entry = {0} whereas exit = {1}"),
+    DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD("The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates"),
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_UNSUPPORTED_TIMESYSTEM("unsupported time system {0}"),
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})");
@@ -154,11 +148,13 @@ public enum OrekitMessages implements Localizable {
     private static final String RESOURCE_BASE_NAME = "META-INF/localization/OrekitMessages";
 
     /** Source English format. */
-    private final String sourceFormat;
+    private final String        sourceFormat;
 
-    /** Simple constructor.
-     * @param sourceFormat source English format to use when no
-     * localized version is available
+    /**
+     * Simple constructor.
+     * 
+     * @param sourceFormat
+     *            source English format to use when no localized version is available
      */
     private OrekitMessages(final String sourceFormat) {
         this.sourceFormat = sourceFormat;
@@ -175,9 +171,7 @@ public enum OrekitMessages implements Localizable {
             final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale);
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 final String translated = bundle.getString(name());
-                if ((translated != null) &&
-                    (translated.length() > 0) &&
-                    (!translated.toLowerCase().contains("missing translation"))) {
+                if ((translated != null) && (translated.length() > 0) && (!translated.toLowerCase().contains("missing translation"))) {
                     // the value of the resource is the translated format
                     return translated;
                 }

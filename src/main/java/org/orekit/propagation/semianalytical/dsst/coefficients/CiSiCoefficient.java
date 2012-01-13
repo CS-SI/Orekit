@@ -59,7 +59,7 @@ public class CiSiCoefficient {
      *            order
      * @return C<sub>i</sub>
      */
-    public double getCi(final int i) {
+    public final double getCi(final int i) {
         if (isDirty) {
             // First computation
             initializeCjSi(i);
@@ -77,7 +77,7 @@ public class CiSiCoefficient {
      *            order
      * @return S<sub>i</sub>
      */
-    public double getSi(final int i) {
+    public final double getSi(final int i) {
         if (isDirty) {
             // First computation
             initializeCjSi(i);
@@ -95,7 +95,7 @@ public class CiSiCoefficient {
      *            order
      * @return dC<sub>i</sub> / d<sub>k</sub>
      */
-    public double getDciDk(final int i) {
+    public final double getDciDk(final int i) {
         return (i == 0 ? 0 : i * getCi(i - 1));
     }
 
@@ -106,7 +106,7 @@ public class CiSiCoefficient {
      *            order
      * @return dS<sub>i</sub> / d<sub>k</sub>
      */
-    public double getDsiDk(final int i) {
+    public final double getDsiDk(final int i) {
         return (i == 0 ? 0 : i * getSi(i - 1));
     }
 
@@ -117,7 +117,7 @@ public class CiSiCoefficient {
      *            order
      * @return dC<sub>i</sub> / d<sub>k</sub>
      */
-    public double getDciDh(final int i) {
+    public final double getDciDh(final int i) {
         return (i == 0 ? 0 : -i * getSi(i - 1));
     }
 
@@ -128,7 +128,7 @@ public class CiSiCoefficient {
      *            order
      * @return dS<sub>i</sub> / d<sub>h</sub>
      */
-    public double getDsiDh(final int i) {
+    public final double getDsiDh(final int i) {
         return (i == 0 ? 0 : i * getCi(i - 1));
     }
 
@@ -138,7 +138,7 @@ public class CiSiCoefficient {
      * @param i
      *            final order to reach
      */
-    private void updateCjSi(int i) {
+    private void updateCjSi(final int i) {
         Complex previous = CjSj.get(CjSj.size() - 1);
         for (int j = last + 1; j <= i; j++) {
             Complex next = previous.multiply(new Complex(x, y));
@@ -154,7 +154,7 @@ public class CiSiCoefficient {
      * @param i
      *            wanted order
      */
-    private void initializeCjSi(int i) {
+    private void initializeCjSi(final int i) {
         // Initialization
         double c0 = 1;
         double s0 = 0;

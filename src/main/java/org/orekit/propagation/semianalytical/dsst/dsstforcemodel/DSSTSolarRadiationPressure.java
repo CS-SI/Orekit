@@ -21,19 +21,19 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
 
     // Quadrature parameters
     /** Number of points desired for quadrature (must be between 2 and 5 inclusive). */
-    private final static int[] NB_POINTS = {5, 5, 5, 5, 5, 5};
+    private static final int[] NB_POINTS = {5, 5, 5, 5, 5, 5};
     /** Relative accuracy of the result. */
-    private final static double[] RELATIVE_ACCURACY = {1.e-5, 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3};
+    private static final double[] RELATIVE_ACCURACY = {1.e-5, 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3};
     /** Absolute accuracy of the result. */
-    private final static double[] ABSOLUTE_ACCURACY = {1.e-18, 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20};
+    private static final double[] ABSOLUTE_ACCURACY = {1.e-18, 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20};
     /** Maximum number of evaluations. */
-    private final static int[] MAX_EVAL = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000};
+    private static final int[] MAX_EVAL = {1000000, 1000000, 1000000, 1000000, 1000000, 1000000};
     
     /** Epsilon for quadratic resolution*/
-    private final static double EPSILON = 1e-3;
+    private static final double EPSILON = 1e-3;
 
     /** A value smaller than ALMOST_ZERO is considered to be zero (0.0). */
-    private final static double ALMOST_ZERO = FastMath.ulp(1.0);
+    private static final double ALMOST_ZERO = FastMath.ulp(1.0);
 
    /** Flux on satellite: kRef = 0.5 * C<sub>R</sub> * Area * P<sub>Ref</sub> * D<sub>Ref</sub><sup>2</sup>. */
    private final double kRef;
@@ -84,7 +84,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     }
 
     /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
+    public final double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
         throws OrekitException {
         // TODO: not implemented yet
         // Short Periodic Variations are set to null
@@ -92,7 +92,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getAcceleration(final SpacecraftState state,
+    protected final Vector3D getAcceleration(final SpacecraftState state,
                                        final Vector3D position,
                                        final Vector3D velocity) throws OrekitException {
     
@@ -105,7 +105,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(SpacecraftState state) throws OrekitException {
+    protected final double[] getLLimits(final SpacecraftState state) throws OrekitException {
         // Default bounds without shadow [-PI, PI]
         double[] ll = {-FastMath.PI, FastMath.PI};
         // Compute useful equinoctial parameters (A, B, C, f, g, w)
@@ -195,22 +195,22 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     }
 
     /** {@inheritDoc} */
-    protected int getNbPoints(int element) {
+    protected final int getNbPoints(final int element) {
         return NB_POINTS[element];
     }
 
     /** {@inheritDoc} */
-    protected double getRelativeAccuracy(int element) {
+    protected final double getRelativeAccuracy(final int element) {
         return RELATIVE_ACCURACY[element];
     }
 
     /** {@inheritDoc} */
-    protected double getAbsoluteAccuracy(int element) {
+    protected final double getAbsoluteAccuracy(final int element) {
         return ABSOLUTE_ACCURACY[element];
     }
 
     /** {@inheritDoc} */
-    protected int getMaxEval(int element) {
+    protected final int getMaxEval(final int element) {
         return MAX_EVAL[element];
     }
 
@@ -417,7 +417,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
         return(2);
     }
 
-    public void initialize(SpacecraftState initialState) {
+    public void initialize(final SpacecraftState initialState) {
         // Nothing to do
     }
 

@@ -56,7 +56,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
  * {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
- * </p>
  * <p>
  * From these configuration parameters, only the initial state is mandatory. The default propagation
  * settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
@@ -244,8 +243,8 @@ public class DSSTPropagator extends AbstractPropagator {
         setIntegrator(integrator);
 
         PVCoordinatesProvider pvProv = new PVCoordinatesProvider() {
-            public PVCoordinates getPVCoordinates(AbsoluteDate date,
-                                                  Frame frame) throws OrekitException {
+            public PVCoordinates getPVCoordinates(final AbsoluteDate date,
+                                                  final Frame frame) throws OrekitException {
                 return initialOrbit.getPVCoordinates();
             }
         };
@@ -270,7 +269,7 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) throws PropagationException {
+    public final void resetInitialState(final SpacecraftState state) throws PropagationException {
         super.resetInitialState(state);
         super.setStartDate(state.getDate());
         this.mass = state.getMass();
@@ -289,7 +288,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * @param forcemodel perturbing {@link DSSTForceModel} to add
      * @see #removeForceModels()
      */
-    public void addForceModel(final DSSTForceModel forcemodel) {
+    public final void addForceModel(final DSSTForceModel forcemodel) {
         forceModels.add(forcemodel);
     }
 
@@ -302,7 +301,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * 
      * @see #addForceModel(DSSTForceModel)
      */
-    public void removeForceModels() {
+    public final void removeForceModels() {
         forceModels.clear();
     }
 
@@ -314,7 +313,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * 
      * @param extraTime extra time
      */
-    public void setExtraTime(final double extraTime) {
+    public final void setExtraTime(final double extraTime) {
         this.extraTime = extraTime;
     }
 
@@ -327,17 +326,17 @@ public class DSSTPropagator extends AbstractPropagator {
      * 
      * @return number of calls to the differential equations computation method
      */
-    public int getCalls() {
+    public final int getCalls() {
         return calls;
     }
 
     /** {@inheritDoc} */
-    protected double getMass(AbsoluteDate date) throws PropagationException {
+    protected final double getMass(final AbsoluteDate date) throws PropagationException {
         return mass;
     }
 
     @Override
-    protected Orbit propagateOrbit(AbsoluteDate date) throws PropagationException {
+    protected final Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
         
 
 
@@ -399,7 +398,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * 
      * @param state current state information: date, kinematics, attitude
      * @return mean elements
-     * @throws OrekitException
+     * @throws OrekitException 
      */
     private double[] getInitialMeanElements(final SpacecraftState state) throws OrekitException {
 
@@ -608,8 +607,8 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(StepInterpolator interpolator,
-                               boolean isLast) {
+        public void handleStep(final StepInterpolator interpolator,
+                               final boolean isLast) {
             StRange sr = new StRange(interpolator);
             maxStep = FastMath.max(maxStep, sr.getTmax().durationFrom(sr.getTmin()));
             cumulatedSteps.add(sr);
@@ -642,7 +641,7 @@ public class DSSTPropagator extends AbstractPropagator {
          * 
          * @param si step interpolator
          */
-        public StRange(StepInterpolator si) {
+        public StRange(final StepInterpolator si) {
             this.step = si.copy();
             final double dtmin = step.isForward() ? step.getPreviousTime() : step.getCurrentTime();
             final double dtmax = step.isForward() ? step.getCurrentTime() : step.getPreviousTime();
@@ -688,7 +687,7 @@ public class DSSTPropagator extends AbstractPropagator {
             return step;
         }
 
-        public int compareTo(StRange st) {
+        public int compareTo(final StRange st) {
             if (this.tmax.compareTo(st.getTmin()) < 0) {
                 return -1;
             } else if (this.tmin.compareTo(st.getTmin()) < 0 && this.tmax.compareTo(st.getTmax()) < 0) {

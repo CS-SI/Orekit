@@ -57,7 +57,7 @@ public class GHmsjPolynomials {
      *            order
      * @return the G<sub>ms</sub><sup>j</sup>
      */
-    public double getGmsj(final int m,
+    public final double getGmsj(final int m,
                           final int s,
                           final int j) {
         final int abssMj = FastMath.abs(s - j);
@@ -84,7 +84,7 @@ public class GHmsjPolynomials {
      *            order
      * @return the H<sub>ms</sub><sup>j</sup>
      */
-    public double getHmsj(final int m,
+    public final double getHmsj(final int m,
                           final int s,
                           final int j) {
 
@@ -112,7 +112,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dG<sub>ms</sub><sup>j</sup> / d<sub>k</sub>
      */
-    public double getdGmsdk(final int m,
+    public final double getdGmsdk(final int m,
                             final int s,
                             final int j) {
         final int sMj = FastMath.abs(s - j);
@@ -140,7 +140,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dG<sub>ms</sub><sup>j</sup> / d<sub>h</sub>
      */
-    public double getdGmsdh(final int m,
+    public final double getdGmsdh(final int m,
                             final int s,
                             final int j) {
         final int mMis = m - I * s;
@@ -168,7 +168,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dG<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub>
      */
-    public double getdGmsdAlpha(final int m,
+    public final double getdGmsdAlpha(final int m,
                                 final int s,
                                 final int j) {
         final int sMj = FastMath.abs(s - j);
@@ -196,7 +196,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dG<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub>
      */
-    public double getdGmsdBeta(final int m,
+    public final double getdGmsdBeta(final int m,
                                final int s,
                                final int j) {
         final int sMj = FastMath.abs(s - j);
@@ -224,7 +224,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>k</sub>
      */
-    public double getdHmsdk(final int m,
+    public final double getdHmsdk(final int m,
                             final int s,
                             final int j) {
         final int abssMj = FastMath.abs(s - j);
@@ -252,7 +252,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>h</sub>
      */
-    public double getdHmsdh(final int m,
+    public final double getdHmsdh(final int m,
                             final int s,
                             final int j) {
         final int abssMj = FastMath.abs(s - j);
@@ -280,7 +280,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub>
      */
-    public double getdHmsdAlpha(final int m,
+    public final double getdHmsdAlpha(final int m,
                                 final int s,
                                 final int j) {
         final int abssMj = FastMath.abs(s - j);
@@ -308,7 +308,7 @@ public class GHmsjPolynomials {
      *            order
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub>
      */
-    public double getdHmsdBeta(final int m,
+    public final double getdHmsdBeta(final int m,
                                final int s,
                                final int j) {
         final int abssMj = FastMath.abs(s - j);

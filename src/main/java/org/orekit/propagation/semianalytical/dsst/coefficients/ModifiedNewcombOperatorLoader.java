@@ -3,18 +3,20 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.DateComponents;
-import org.orekit.time.Month;
 
+/**
+ * {@link ModifiedNewcombOperators} loader. Unimplemented yet.
+ * 
+ * @author rdicosta
+ */
 public class ModifiedNewcombOperatorLoader implements DataLoader {
 
     /** Supported file pattern */
-    private final static String PATTERN = "^ModifidedNewcombOperator\\.txt$";
+    private static final String PATTERN = "^ModifidedNewcombOperator\\.txt$";
 
     /** maximum frequency index used in the tesseral perturbation */
     private int                 maxFreq;
@@ -49,7 +51,7 @@ public class ModifiedNewcombOperatorLoader implements DataLoader {
         this.resonantDegree = resonantDegree;
         this.alembertMax = alembertMax;
         this.powerOfE = powerOfE;
-        
+
         // double pattern
         final String doublePattern = "\\p{Blank}*(-?\\p{Digit}*\\.\\p{Digit}*)";
 
@@ -57,22 +59,24 @@ public class ModifiedNewcombOperatorLoader implements DataLoader {
         final String intPattern = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
         Pattern regularPattern = Pattern.compile(intPattern + intPattern + intPattern + intPattern + intPattern + doublePattern);
 
-        
-
-//        this.entries = new TreeMap<Integer>();
+        // this.entries = new TreeMap<Integer>();
 
     }
 
-    public boolean stillAcceptsData() {
+    /**
+     * 
+     */
+    public final boolean stillAcceptsData() {
         // TODO Auto-generated method stub
         return false;
     }
 
-    public void loadData(InputStream input,
-                         String name) throws IOException, ParseException, OrekitException {
-        
-        
-        
+    /**
+     * {@inheritDoc}
+     */
+    public void loadData(final InputStream input,
+                         final String name) throws IOException, ParseException, OrekitException {
+
     }
 
 }
