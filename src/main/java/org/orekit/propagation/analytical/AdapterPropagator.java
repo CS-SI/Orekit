@@ -20,11 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel;
-import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
@@ -32,15 +31,15 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** Orbit propagator that adapts an underlying propagator, adding {@link
- * SmallManeuverAnalyticalModel small maneuvers}.
+ * DifferentialEffect differential effects}.
  * <p>
  * This propagator is used when a reference propagator does not handle
- * some maneuvers that we need. A typical example would be an ephemeris
+ * some effects that we need. A typical example would be an ephemeris
  * that was computed for a reference orbit, and we want to compute a
  * station-keeping maneuver on top of this ephemeris, changing its
  * final state. The principal is to add one or more {@link
- * SmallManeuverAnalyticalModel small maneuvers} to it and use it as a
- * new propagator, which takes the maneuvers into account.
+ * SmallManeuverAnalyticalModel small maneuvers analytical models} to it
+ * and use it as a new propagator, which takes the maneuvers into account.
  * </p>
  * <p>
  * From a space flight dynamics point of view, this is a differential
@@ -51,62 +50,67 @@ import org.orekit.time.AbsoluteDate;
  * @see SmallManeuverAnalyticalModel
  * @author Luc Maisonobe
  */
-public class ManeuverAdapterPropagator extends AbstractPropagator {
+public class AdapterPropagator extends AbstractPropagator {
+
+    /** Interface for orbit differential effects. */
+    public static interface DifferentialEffect {
+
+        /** Apply the effect to a {@link SpacecraftState spacecraft state}.
+         * <p>
+         * Applying the effect may be a no-op in some cases. A typical example
+         * is maneuvers, for which the state is changed only for time <em>after</em>
+         * the maneuver occurrence.
+         * </p>
+         * @param original original state <em>without</em> the effect
+         * @return updated state at the same date, taking the effect
+         * into account if meaningful
+         * @exception OrekitException if effect cannot be computed
+         */
+        public SpacecraftState apply(SpacecraftState original)
+            throws OrekitException;
+        
+    }
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3844765709317636783L;
+    private static final long serialVersionUID = -5953975769121996528L;
 
     /** Underlying reference propagator. */
     private Propagator reference;
 
-    /** Maneuvers to add. */
-    private List<SmallManeuverAnalyticalModel> maneuvers;
+    /** Effects to add. */
+    private List<DifferentialEffect> effects;
 
     /** Build a propagator from an underlying reference propagator.
      * <p>The reference propagator can be almost anything, numerical,
-     * anlytical, and even an ephemeris. It may already take some maneuvers
+     * analytical, and even an ephemeris. It may already take some maneuvers
      * into account.</p>
      * @param reference reference propagator
      */
-    public ManeuverAdapterPropagator(final Propagator reference) {
+    public AdapterPropagator(final Propagator reference) {
         super(reference.getAttitudeProvider());
         this.reference = reference;
-        this.maneuvers = new ArrayList<SmallManeuverAnalyticalModel>();
+        this.effects = new ArrayList<DifferentialEffect>();
     }
 
-    /** Add a maneuver defined in spacecraft frame.
-     * @param date date at which the maneuver is performed
-     * @param dV velocity increment in spacecraft frame
-     * @param isp engine specific impulse (s)
-     * @exception OrekitException if spacecraft reference state cannot
-     * be determined at maneuver date
+    /** Add a differential effect.
+     * @param effect differential effect
      */
-    public void addManeuver(final AbsoluteDate date, final Vector3D dV, final double isp)
-        throws OrekitException {
-        maneuvers.add(new SmallManeuverAnalyticalModel(reference.propagate(date),
-                                                       dV, isp));
+    public void addEffect(final DifferentialEffect effect) {
+        effects.add(effect);
     }
 
-    /** Add a maneuver defined in user-specified frame.
-     * @param frame frame in which velocity increment is defined
-     * @param date date at which the maneuver is performed
-     * @param dV velocity increment in specified frame
-     * @param isp engine specific impulse (s)
-     * @exception OrekitException if spacecraft reference state cannot
-     * be determined at maneuver date
+    /** Get the reference propagator.
+     * @return reference propagator
      */
-    public void addManeuver(final Frame frame, final AbsoluteDate date,
-                            final Vector3D dV, final double isp)
-        throws OrekitException {
-        maneuvers.add(new SmallManeuverAnalyticalModel(reference.propagate(date),
-                                                       frame, dV, isp));
+    public Propagator getPropagator() {
+        return reference;
     }
 
-    /** Get the maneuvers models.
-     * @return maneuvers models, as an unmodifiable list
+    /** Get the differential effects.
+     * @return differential effects models, as an unmodifiable list
      */
-    public List<SmallManeuverAnalyticalModel> getManeuvers() {
-        return Collections.unmodifiableList(maneuvers);
+    public List<DifferentialEffect> getEffects() {
+        return Collections.unmodifiableList(effects);
     }
 
     /** {@inheritDoc} */
@@ -125,15 +129,29 @@ public class ManeuverAdapterPropagator extends AbstractPropagator {
     @Override
     protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
 
-        // compute reference state
-        SpacecraftState state = reference.propagate(date);
+        try {
+            // compute reference state
+            SpacecraftState state = reference.propagate(date);
 
-        // add the effect of all maneuvers
-        for (final SmallManeuverAnalyticalModel maneuver : maneuvers) {
-            state = maneuver.applyManeuver(state);
+            // add all the effects
+            for (final DifferentialEffect effect : effects) {
+                state = effect.apply(state);
+            }
+
+            return state;
+        } catch (OrekitExceptionWrapper oew) {
+            if (oew.getException() instanceof PropagationException) {
+                throw (PropagationException) oew.getException();
+            } else {
+                throw new PropagationException(oew.getException());
+            }
+        } catch (OrekitException oe) {
+            if (oe instanceof PropagationException) {
+                throw (PropagationException) oe;
+            } else {
+                throw new PropagationException(oe);
+            }
         }
-
-        return state;
 
     }
 
