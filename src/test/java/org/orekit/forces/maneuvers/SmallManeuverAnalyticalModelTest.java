@@ -76,7 +76,7 @@ public class SmallManeuverAnalyticalModelTest {
              t = t.shiftedBy(60.0)) {
             PVCoordinates pvWithout = withoutManeuver.getPVCoordinates(t, leo.getFrame());
             PVCoordinates pvWith    = withManeuver.getPVCoordinates(t, leo.getFrame());
-            PVCoordinates pvModel   = model.applyManeuver(withoutManeuver.propagate(t)).getPVCoordinates(leo.getFrame());
+            PVCoordinates pvModel   = model.apply(withoutManeuver.propagate(t)).getPVCoordinates(leo.getFrame());
             double nominalDeltaP    = new PVCoordinates(pvWith, pvWithout).getPosition().getNorm();
             double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
             if (t.compareTo(t0) < 0) {
@@ -123,7 +123,7 @@ public class SmallManeuverAnalyticalModelTest {
              t = t.shiftedBy(60.0)) {
             PVCoordinates pvWithout = withoutManeuver.getPVCoordinates(t, leo.getFrame());
             PVCoordinates pvWith    = withManeuver.getPVCoordinates(t, leo.getFrame());
-            PVCoordinates pvModel   = model.applyManeuver(withoutManeuver.propagate(t).getOrbit()).getPVCoordinates(leo.getFrame());
+            PVCoordinates pvModel   = model.apply(withoutManeuver.propagate(t).getOrbit()).getPVCoordinates(leo.getFrame());
             double nominalDeltaP    = new PVCoordinates(pvWith, pvWithout).getPosition().getNorm();
             double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
             if (t.compareTo(t0) < 0) {
@@ -170,7 +170,7 @@ public class SmallManeuverAnalyticalModelTest {
              t = t.shiftedBy(600.0)) {
             PVCoordinates pvWithout = withoutManeuver.getPVCoordinates(t, heo.getFrame());
             PVCoordinates pvWith    = withManeuver.getPVCoordinates(t, heo.getFrame());
-            PVCoordinates pvModel   = model.applyManeuver(withoutManeuver.propagate(t)).getPVCoordinates(heo.getFrame());
+            PVCoordinates pvModel   = model.apply(withoutManeuver.propagate(t)).getPVCoordinates(heo.getFrame());
             double nominalDeltaP    = new PVCoordinates(pvWith, pvWithout).getPosition().getNorm();
             double modelError       = new PVCoordinates(pvWith, pvModel).getPosition().getNorm();
             if (t.compareTo(t0) < 0) {
@@ -247,7 +247,7 @@ public class SmallManeuverAnalyticalModelTest {
                     // compute reference orbit gradient by finite differences
                     double c = 1.0 / (840 * h);
                     for (int j = 0; j < models.length; ++j) {
-                        orbitType.mapOrbitToArray(models[j].applyManeuver(orbitWithout), positionAngle, array[j]);
+                        orbitType.mapOrbitToArray(models[j].apply(orbitWithout), positionAngle, array[j]);
                     }
                     double[] orbitGradient = new double[6];
                     for (int k = 0; k < orbitGradient.length; ++k) {

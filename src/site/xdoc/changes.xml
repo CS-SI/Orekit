@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add">
+        Added J2 effect on small maneuvers model.
+      </action>
       <action dev="luc" type="fix">
         Fixed attitudeProvider field masking in IntegratedEphemeris.
       </action>

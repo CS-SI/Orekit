@@ -27,6 +27,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.AdapterPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -58,9 +59,19 @@ import org.orekit.utils.Constants;
  * converted back to appropriate type, which may be different from Keplerian or
  * equinoctial elements.
  * </p>
+ * <p>
+ * Note that this model takes <em>only</em> Keplerian effects into account. This means
+ * that using only this class to compute an inclination maneuver in Low Earth Orbit will
+ * <em>not</em> change ascending node drift rate despite inclination has changed (the
+ * same would be true for a semi-major axis change of course). In order to take this
+ * drift into account, an instance of {@link
+ * org.orekit.propagation.analytical.J2DifferentialEffect J2DifferentialEffect}
+ * must be used together with an instance of this class.
+ * </p>
  * @author Luc Maisonobe
  */
-public class SmallManeuverAnalyticalModel implements Serializable {
+public class SmallManeuverAnalyticalModel
+    implements AdapterPropagator.DifferentialEffect, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 5046690115016896090L;
@@ -170,10 +181,10 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      * @param orbit1 original orbit at t<sub>1</sub>, without maneuver
      * @return orbit at t<sub>1</sub>, taking the maneuver
      * into account if t<sub>1</sub> &gt; t<sub>0</sub>
-     * @see #applyManeuver(SpacecraftState)
+     * @see #apply(SpacecraftState)
      * @see #getJacobian(Orbit)
      */
-    public Orbit applyManeuver(final Orbit orbit1) {
+    public Orbit apply(final Orbit orbit1) {
 
         if (orbit1.getDate().compareTo(state0.getDate()) <= 0) {
             // the maneuver has not occurred yet, don't change anything
@@ -189,10 +200,10 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      * without maneuver
      * @return spacecraft state at t<sub>1</sub>, taking the maneuver
      * into account if t<sub>1</sub> &gt; t<sub>0</sub>
-     * @see #applyManeuver(Orbit)
+     * @see #apply(Orbit)
      * @see #getJacobian(Orbit)
      */
-    public SpacecraftState applyManeuver(final SpacecraftState state1) {
+    public SpacecraftState apply(final SpacecraftState state1) {
 
         if (state1.getDate().compareTo(state0.getDate()) <= 0) {
             // the maneuver has not occurred yet, don't change anything
@@ -253,7 +264,7 @@ public class SmallManeuverAnalyticalModel implements Serializable {
      * @param positionAngle type of the position angle to use
      * @param jacobian placeholder 6x4 (or larger) matrix to be filled with the Jacobian, if matrix
      * is larger than 6x4, only the 6x4 upper left corner will be modified
-     * @see #applyManeuver(Orbit)
+     * @see #apply(Orbit)
      * @exception OrekitException if time derivative of the initial Jacobian cannot be computed
      */
     public void getJacobian(final Orbit orbit1, final PositionAngle positionAngle, double[][] jacobian)
