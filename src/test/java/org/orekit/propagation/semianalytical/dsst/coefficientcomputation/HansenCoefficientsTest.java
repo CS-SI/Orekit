@@ -1,6 +1,7 @@
 package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
@@ -35,6 +36,7 @@ public class HansenCoefficientsTest {
     }
     
     @Test
+    @Ignore
     public void test() throws OrekitException{
         double ecc = 1e-6;
         double delta = 0d;
