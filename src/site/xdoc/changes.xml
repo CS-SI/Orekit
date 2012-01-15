@@ -31,6 +31,9 @@
       <action dev="luc" type="add">
         Added a tutorial to compute Earth phased, Sun synchronous orbits.
       </action>
+      <action dev="luc" type="add">
+        Added a fitter for osculating parameters, allowing conversion to mean parameters.
+      </action>
       <action dev="luc" type="update">
         Made Greenwich mean and apparent sidereal time publicly visible in GTOD frame.
       </action>
