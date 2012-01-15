@@ -1,8 +1,5 @@
 package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -41,8 +38,6 @@ public class HansenCoefficientsTest {
     public void test() throws OrekitException{
         double ecc = 1e-6;
         double delta = 0d;
-        
-        List<String> list = new ArrayList<String>();
         
         for (int i = 0; i < 10; i++){
             ecc += delta;
