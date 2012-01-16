@@ -38,11 +38,13 @@ import org.orekit.utils.Constants;
  * to the {@link org.orekit.data.DataProvidersManager DataProvidersManager} class.
  * The linear models used between 1961 and 1972 are built-in in the class itself.</p>
  * <p>This is intended to be accessed thanks to the {@link TimeScalesFactory} class,
- * so there is no public constructor.</p>
+ * so there is no public constructor. Every call to {@link TimeScalesFactory#getUTC()}
+ * will create a new {@link UTCScale} instance, sharing the UTC-TAI offset table between
+ * all instances.</p>
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public class UTCScale implements TimeScale {
+public class UTCScale implements TimeScale, Cloneable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 1096634108833538374L;
@@ -54,6 +56,9 @@ public class UTCScale implements TimeScale {
     private int current;
 
     /** Package private constructor for the factory.
+     * Used to create the prototype instance of this class that is used to
+     * clone all subsequent instances of {@link UTCScale}. Initializes the offset
+     * table that is shared among all instances.
      * @param entries user supplied entries
      */
     UTCScale(final SortedMap<DateComponents, Integer> entries) {
@@ -100,6 +105,16 @@ public class UTCScale implements TimeScale {
 
     }
 
+    /** Package private constructor for the {@link #clone()} method.
+     * Creates a new {@link UTCScale} instance as clone of the given prototype. The
+     * table containing UTC - TAI offsets is shared among all instances.
+     * @param prototype the prototype {@link UTCScale} instance to be cloned
+     */
+    UTCScale(final UTCScale prototype) {
+        this.offsets = prototype.offsets;
+        this.current = prototype.current;
+    }
+
     /** Add an offset model.
      * <p>
      * This method <em>must</em> be called in chronological order.
@@ -132,8 +147,8 @@ public class UTCScale implements TimeScale {
 
     }
 
-    /** Get the unique instance of this class.
-     * @return the unique instance
+    /** Get a new instance of this class.
+     * @return a new {@link UTCScale} instance
      * @exception OrekitException if the leap seconds cannot be read
      * @deprecated since 4.1 replaced by {@link TimeScalesFactory#getUTC()}
      */
@@ -220,6 +235,15 @@ public class UTCScale implements TimeScale {
             ++current;
         }
         return offsets[current];
+    }
+
+    /** Get a clone of this {@link UTCScale} instance.
+     * @return a clone of this instance
+     * @exception CloneNotSupportedException required by the {@link Cloneable} interface
+     *            but it is not actually thrown
+     */
+    protected UTCScale clone() throws CloneNotSupportedException {
+        return new UTCScale(this);
     }
 
 }
