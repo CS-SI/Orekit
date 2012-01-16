@@ -2,6 +2,7 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.TreeMap;
 
+import org.apache.commons.math.util.ArithmeticUtils;
 import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.MNSKey;
@@ -42,7 +43,7 @@ public class HansenCoefficients {
      * Maximum power of e<sup>2</sup> to use in series expansion for the Hansen coefficient when
      * using modified Newcomb operator
      */
-    private final double            maxEccPower;
+    private final int               maxEccPower;
 
     /**
      * Simple constructor.
@@ -88,7 +89,7 @@ public class HansenCoefficients {
      * @throws OrekitException
      *             if some error occured
      */
-    public double getHansenKernelValue(final int j,
+    public final double getHansenKernelValue(final int j,
                                        final int n,
                                        final int s) throws OrekitException {
         double result = 0d;
@@ -124,7 +125,7 @@ public class HansenCoefficients {
      * @throws OrekitException
      *             if some error occured
      */
-    public double getHansenKernelDerivative(final int j,
+    public final double getHansenKernelDerivative(final int j,
                                             final int n,
                                             final int s) throws OrekitException {
         if (HANSEN_KERNEL_DERIVATIVES.containsKey(new MNSKey(j, n, s))) {
@@ -145,6 +146,7 @@ public class HansenCoefficients {
         }
     }
 
+    /** Kernels initialization */
     private void initializeKernels() {
         HANSEN_KERNEL.put(new MNSKey(0, 0, 0), 1.);
         HANSEN_KERNEL.put(new MNSKey(0, 0, 1), -1.);
@@ -455,7 +457,8 @@ public class HansenCoefficients {
         // e^i
         double eExpI = 1;
         // Expansion until the maximum power in eccentricity is reached
-        for (int k = 0; k < maxEccPower + 1; k += 2) {
+        int k;
+        for (k = 0; k < maxEccPower; k += 2) {
             final double newcomb = ModifiedNewcombOperators.getValue(i + a, i + b, nn, s);
             res += i * newcomb * eExpI;
             eExpI *= e2;
@@ -479,7 +482,7 @@ public class HansenCoefficients {
      * @throws OrekitException
      *             if the Newcomb operator cannot be computed with the current indexes
      */
-    public double computHKVfromNewcomb(final int j,
+    public final double computHKVfromNewcomb(final int j,
                                        final int n,
                                        final int s) throws OrekitException {
 
@@ -500,4 +503,110 @@ public class HansenCoefficients {
         return FastMath.pow(ome2, n + 1.5) * res;
     }
 
+    /**
+     * Compute the upper bound for hansen coefficient of given indexes
+     * 
+     * <pre>
+     *  |K<sub>j</sub><sup>-n-1, s</sup>|<sub>Bound</sub> = Max(|K<sub>j</sub><sup>-n-1, s</sup>(0)|, |K<sub>j</sub><sup>-n-1, s</sup>(1)|)
+     * </pre>
+     * 
+     * @param e
+     *            eccentricity
+     * @param j
+     *            j
+     * @param n
+     *            n
+     * @param s
+     *            s
+     * @return upper bound
+     * @throws OrekitException
+     *             If an error occurs in {@link ModifiedNewcombOperators} computation
+     */
+    public static double computeUpperBound(final double e,
+                                           final int j,
+                                           final int n,
+                                           final int s) throws OrekitException {
+
+        final double commonFactor = FastMath.pow(1 - e * e, n + 1.5);
+
+        // Compute maximum value for e = 0
+        final double kn0 = computeUpperBoundZeroE(j, n, s);
+
+        // Compute maximal value for e = 1
+        double kn1 = 0d;
+        for (int k = 0; k <= (-n - 2); k++) {
+            if (k >= FastMath.abs(s)) {
+                double binomialNK = ArithmeticUtils.binomialCoefficientDouble(-n - 2, k);
+                double binomialKS = ArithmeticUtils.binomialCoefficientDouble(k, (k - s) / 2);
+                kn1 += binomialNK * (1 + FastMath.pow(-1, k + s)) * binomialKS;
+            }
+        }
+        return FastMath.abs(commonFactor * FastMath.max(kn0, kn1));
+    }
+
+    /**
+     * Compute the hansen kernel enveloppe, i.e upper value for null eccentricity. See equation in
+     * 6.3
+     * 
+     * @param j
+     *            j
+     * @param n
+     *            n
+     * @param s
+     *            s
+     * @return The Hansen upper value for 0 eccentricity
+     */
+    private static double computeUpperBoundZeroE(final int j,
+                                                 final int n,
+                                                 final int s) {
+        double result = 0d;
+        double commonFact = 0d;
+        if (s >= j) {
+            commonFact = FastMath.pow(-0.5, s - j);
+            for (int k = 0; k <= (s - j); k++) {
+                final double product = pochhammerProduct(n + j + k + 2, s - j - k);
+                final double jk = FastMath.pow(j, k);
+                final double den = DSSTFactorial.fact(k).multiply(DSSTFactorial.fact(s - j - k)).doubleValue();
+                result += product * jk / den;
+            }
+        } else {
+            commonFact = FastMath.pow(-0.5, j - s);
+            for (int k = 0; k <= (j - s); k++) {
+                final double product = pochhammerProduct(n - j + k + 2, j - s - k);
+                final double jk = FastMath.pow(-j, k);
+                final double den = DSSTFactorial.fact(k).multiply(DSSTFactorial.fact(j - s - k)).doubleValue();
+                result += product * jk / den;
+            }
+        }
+        return commonFact * result;
+    }
+
+    /**
+     * Compute the pochhammer product.
+     * 
+     * <pre>
+     *  (&alpha;)<sub>k</sub> = (&alpha;)(&alpha; + 1)(&alpha; + 2)...(&alpha; + k - 1)
+     * </pre>
+     * 
+     * @param alpha
+     *            alpha
+     * @param k
+     *            k
+     * @return pochhammer product
+     */
+    private static double pochhammerProduct(final int alpha,
+                                            final int k) {
+
+        if (k == 0) {
+            return 1;
+        } else if ((alpha + k - 1) == 0) {
+            return 0;
+        }
+        // Pochhammer product :
+        double product = alpha;
+        for (int sum = 0; sum <= (alpha + k - 1); sum++) {
+            product *= (alpha + sum);
+        }
+        return product;
+    }
 }
