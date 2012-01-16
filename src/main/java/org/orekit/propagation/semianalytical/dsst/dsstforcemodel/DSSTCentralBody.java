@@ -416,6 +416,11 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     public final void initialize(final SpacecraftState initialState) throws OrekitException {
         updateABCAlphaBetaGamma(initialState.getOrbit());
 
+        // Set the highest power of the eccentricity in the analytical power series expansion for
+        // the averaged high order resonant central body spherical harmonic perturbation and compute
+        // the Newcomb operators
+        computeResonantTesseralMaxEccPower(initialState);
+        
         /**
          * Resonant Tesseral parameterization and truncation :
          */
@@ -425,11 +430,13 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
         // Truncation of the central body tesseral harmonic :
         if (resonantTesseralHarmonic.size() == 0 && order > 0) {
             tesseralTruncation(initialState);
+        }else {
+            // Set indexes for tesseral resonant :
+            tessMaxN = degree;
+            tessMaxS = degree;
+            tessMinS = - degree;
         }
-        // Set the highest power of the eccentricity in the analytical power series expansion for
-        // the averaged high order resonant central body spherical harmonic perturbation and compute
-        // the Newcomb operators
-        computeResonantTesseralMaxEccPower(initialState);
+
 
         // Get the maximum power of E to use in Hansen coefficient Kernel expansion
         computeHansenMaximumEccentricity(initialState);
@@ -554,7 +561,6 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
                             sLoop = false;
                             m = order;
                             n = degree;
-
                         }
                     }
                     s++;
@@ -1274,7 +1280,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
             int Im = (int) FastMath.pow(I, m);
             // Sum(-N, N)
-            for (int s = -tessMinS; s <= tessMaxS; s++) {
+            for (int s = tessMinS; s <= tessMaxS; s++) {
                 // Sum(Max(2, m, |s|))
                 int nmin = Math.max(Math.max(2, m), Math.abs(s));
 
