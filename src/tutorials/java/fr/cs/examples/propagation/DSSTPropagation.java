@@ -20,9 +20,11 @@ import java.util.Locale;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
@@ -35,8 +37,11 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
@@ -55,19 +60,21 @@ import org.orekit.utils.PVCoordinatesProvider;
 /**
  * Orekit tutorial for semi-analytical extrapolation using the DSST. Some of the parameters can be
  * set just below, in the class description, to generate comparatives files between a numerical
- * propagator and the DSST propagator.
+ * propagator and the DSST propagator. The orbit can be set from the
+ * {@link DSSTPropagation#orbitDefinition()} method.
  * 
  * @author Romain Di Costanzo
  */
 public class DSSTPropagation {
 
     /**
-     * Customization of the tutorial :
+     * Customization of the tutorial : see also the {@link DSSTPropagation#orbitDefinition()}
+     * submethod
      */
     // Force model used :
     private static boolean             centralBody        = true;
-    private static boolean             tesseralTerms      = true;
-    private static int                 order              = 22;
+    private static int                 degree             = 10;
+    private static int                 order              = 10;
     private static boolean             moon               = false;
     private static boolean             sun                = false;
     private static boolean             drag               = false;
@@ -81,8 +88,8 @@ public class DSSTPropagation {
     private static double              printStep          = 1000;
 
     // extrapolation time
-    private static double              extrapolationTime  = 10 * 86400d;
-    
+    private static double              extrapolationTime  = 1 * 365 * 86400d;
+
     /**
      * End of tutorial customization
      */
@@ -91,7 +98,8 @@ public class DSSTPropagation {
     private static NumericalPropagator propaNUM;
 
     // Print result with the following date :
-    // date (in days, from the initialDate), px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm, e, i, pa, raan
+    // date (in days, from the initialDate), px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm, e, i,
+    // pa, raan
     private static String              format             = new String("%14.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f");
 
     /**
@@ -99,64 +107,192 @@ public class DSSTPropagation {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
+
+        if (order > degree) {
+            throw new Exception("Potential order cannot be higher than potential degree");
+        }
         // Potential data
         Utils.setDataRoot("tutorial-orekit-data");
         PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
-        final double mu = provider.getMu();
-        final double ae = provider.getAe();
 
-        // Orbit definition
-        AbsoluteDate date = new AbsoluteDate("2005-01-01T12:00:00.000", TimeScalesFactory.getUTC());
+        orbitDefinition(provider);
 
-        /**
-         * WARNING !! We are here using an heliosynchronous orbit. As the DSST doen't take yet short
-         * periodic variations create a fake mean orbit from the oscullating parameters. If you want
-         * to use an other orbit, please comment the code below, and uncomment next example :
-         */
-        // !!! COMMENT THIS UNTIL ...
-         SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae,
-         800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), date));
-         // Set the numrical propagator to compute the mean orbit from the osculating one :
-         setNumProp(orbitOsc);
-         // Add a default gravitational model
-         propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
-         provider.getC(2, 0, false), provider.getS(2, 0, false)));
-         // Create the mean orbit from the osculating :
-         SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 1 * 86400,
-         14, 10);
-         SpacecraftState mean = orbits[0];
-         SpacecraftState osc = orbits[1];
-        
-         // As the DSST propagator doesn't take short periodic variation in account actually, we need
-         // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
-         // propagator :
-         setDSSTProp(mean);
-         // Reset the numerical propagator with new orbit (remove every force model)
-         setNumProp(osc);
-        // ... HERE //
-
-        // UNCOMMENT THIS UNTIL ...
-//        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu, FramesFactory.getGCRF(), date));
-//        setDSSTProp(orbitOsc);
-//        setNumProp(orbitOsc);
-        // ... HERE //
         /**
          * FORCES :
          */
+        setForceModel(provider);
+
+        /**
+         * OUTPUT :
+         */
+        initializeOutput();
+
+        // DSST Propagation
+        double dsstStart = System.currentTimeMillis();
+        propaDSST.propagate(initDate.shiftedBy(extrapolationTime));
+        double dsstEnd = System.currentTimeMillis();
+
+        System.out.println("execution time DSST : " + (dsstEnd - dsstStart) / 1000.);
+
+        // Numerical Propagation
+        double NUMStart = System.currentTimeMillis();
+        propaNUM.propagate(initDate.shiftedBy(extrapolationTime));
+        double NUMEnd = System.currentTimeMillis();
+
+        System.out.println("execution time NUM : " + (NUMEnd - NUMStart) / 1000.);
+
+    }
+
+    /**
+     * Define the orbit to use. Just let one of the three possible options available
+     * 
+     * @throws Exception
+     */
+    private static void orbitDefinition(PotentialCoefficientsProvider provider) throws Exception {
+
+        final double mu = provider.getMu();
+        // Orbit definition
+        AbsoluteDate orbitDate = new AbsoluteDate("2011-12-12T11:57:20.000", TimeScalesFactory.getUTC());
+
+        // OPTION 1 : Use a default low orbit :
+         useDefaultOrbit(orbitDate, provider);
+
+        // OPTION 2 : Use a default geostationnary orbit :
+        // SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu,
+        // FramesFactory.getGCRF(), orbitDate));
+        // setDSSTProp(orbitOsc);
+        // setNumProp(orbitOsc);
+
+        // OPTION 3 : Define your own orbit : here a circular orbit is set, by can be any of
+        // KeplerianOrbit, CircularOrbit, CartesianOrbit. Cannot be with null inclination !
+        // You also must define if the orbit you enter is an osculating one or not. If yes, please
+        // indicate the associated force model used. If no do not take the following boolean into
+        // account : sun, moon, solarRadiation
+//        Orbit orbit = new CircularOrbit(7204535.848109436, -4.484755873986251E-4, 0.0011562979012178316, 98.74341600466741, Math.toRadians(43.32990110790338), Math.toRadians(180), PositionAngle.MEAN, FramesFactory.getEME2000(), orbitDate, mu);
+//        boolean isOscullating = true;
+//        // Fill those fields if isOscullating = true :
+//        boolean sun = true;
+//        boolean moon = true;
+//        boolean solarRadiation = false;
+//
+//        setOrbit(provider, orbit, isOscullating, sun, moon, solarRadiation);
+
+    }
+
+    /**
+     * The default orbit is an heliosynchronous orbit. As the DSST doen't take yet short periodic
+     * variations create a fake mean orbit from the oscullating parameters.
+     */
+    private static void useDefaultOrbit(AbsoluteDate orbitDate,
+                                        PotentialCoefficientsProvider provider) throws Exception {
+
+        final double ae = provider.getAe();
+        final double mu = provider.getMu();
+        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae, 800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), orbitDate));
+        // Set the numerical propagator to compute the mean orbit from the osculating one :
+        setNumProp(orbitOsc);
+        // Add a default gravitational model
+        propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, provider.getC(2, 0, false), provider.getS(2, 0, false)));
+        // Create the mean orbit from the osculating :
+        SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 86400, 10);
+        SpacecraftState mean = orbits[0];
+        SpacecraftState osc = orbits[1];
+
+        // As the DSST propagator doesn't take short periodic variation in account actually, we need
+        // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
+        // propagator :
+        setDSSTProp(mean);
+        // Reset the numerical propagator with new orbit (remove every force model)
+        setNumProp(osc);
+
+    }
+
+    /**
+     * Method to be used by user if he wants to define its own orbit
+     * 
+     * @param provider
+     *            {@link PotentialCoefficientsProvider}
+     * @param orbit
+     *            orbit to use
+     * @param isOscullating
+     *            is the orbit osculating
+     * @param sun
+     *            if yes, is the sun in model forces
+     * @param moon
+     *            if yes, is the moon in model forces
+     * @param solarRadiation
+     *            if yes, does it take the solar radiation in account
+     * @throws Exception
+     */
+    private static void setOrbit(PotentialCoefficientsProvider provider,
+                                 Orbit orbit,
+                                 boolean isOscullating,
+                                 boolean sun,
+                                 boolean moon,
+                                 boolean solarRadiation) throws Exception {
+        if (isOscullating) {
+
+            if (orbit.getI() < 1e-10) {
+                throw new Exception("Cannot average the orbit if inclination is null !");
+            }
+            // Initialize the numerical propagator
+            setNumProp(new SpacecraftState(orbit));
+            // Add a default gravitational model
+            propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider.getAe(), orbit.getMu(), provider.getC(degree, order, false), provider.getS(degree, order, false)));
+            if (sun) {
+                propaNUM.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
+            }
+            if (moon) {
+                propaNUM.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
+            }
+            if (solarRadiation) {
+                double sf = 5.0;
+                double kA = 0.5;
+                double kR = 0.5;
+                // NUMERICAL radiation pressure force
+                SphericalSpacecraft spc = new SphericalSpacecraft(sf, 0., kA, kR);
+                ForceModel pressureNUM = new SolarRadiationPressure(CelestialBodyFactory.getSun(), provider.getAe(), spc);
+                propaNUM.addForceModel(pressureNUM);
+            }
+
+            // Create the mean orbit from the osculating by averaging the orbit over half a day
+            SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 43200, 5);
+            SpacecraftState mean = orbits[0];
+            SpacecraftState osc = orbits[1];
+
+            // As the DSST propagator doesn't take short periodic variation in account actually, we
+            // need to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
+            // propagator :
+            setDSSTProp(mean);
+            // Reset the numerical propagator with new orbit (remove every force model)
+            setNumProp(osc);
+
+        } else {
+            // WARNING : no comparison with numerical can be done under this conditions !
+            System.out.println("WARNING : no comparison with numerical can be done under this conditions !");
+            // Mean elements : set propagator
+            setDSSTProp(new SpacecraftState(orbit));
+            setNumProp(new SpacecraftState(orbit));
+        }
+    }
+
+    /**
+     * Update propagator force's model
+     * 
+     * @param provider
+     * @throws OrekitException
+     */
+    private static void setForceModel(PotentialCoefficientsProvider provider) throws OrekitException {
+        final double ae = provider.getAe();
+        final double mu = provider.getMu();
         if (centralBody) {
             // Central Body Force Model with un-normalized coefficients
             double[][] CnmNotNorm;
             double[][] SnmNotNorm;
-            if (tesseralTerms){
-                CnmNotNorm = provider.getC(order, order, false);
-                SnmNotNorm = provider.getS(order, order, false);
-            }else {
-                CnmNotNorm = provider.getC(order, 0, false);
-                SnmNotNorm = provider.getS(order, 0, false);
-            }
+            CnmNotNorm = provider.getC(degree, order, false);
+            SnmNotNorm = provider.getS(degree, order, false);
 
-            // Resonant couple list is here set to null : we're taking in account every tesseral
-            // harmonic :
+            // DSST force model parameters
             DSSTForceModel centralBodyDSST = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, CnmNotNorm, CnmNotNorm, null);
             ForceModel centralBodyNUM = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
             propaDSST.addForceModel(centralBodyDSST);
@@ -205,7 +341,14 @@ public class DSSTPropagation {
             propaDSST.addForceModel(pressureDSST);
             propaNUM.addForceModel(pressureNUM);
         }
+    }
 
+    /**
+     * Output initialization
+     * 
+     * @throws IOException
+     */
+    private static void initializeOutput() throws IOException {
         if (generateFileResult) {
             String fileNameExtention = "";
             if (centralBody) {
@@ -227,23 +370,13 @@ public class DSSTPropagation {
             propaDSST.setMasterMode(printStep, new PrintStepHandler(outputFilePath, fileNameExtention.concat("_DSST"), format, initDate));
             propaNUM.setMasterMode(printStep, new PrintStepHandler(outputFilePath, fileNameExtention.concat("_NUM"), format, initDate));
         }
-
-        // DSST Propagation
-        double dsstStart = System.currentTimeMillis();
-        propaDSST.propagate(initDate.shiftedBy(extrapolationTime));
-        double dsstEnd = System.currentTimeMillis();
-
-        System.out.println("execution time DSST : " + (dsstEnd - dsstStart) / 1000.);
-
-        // Numerical Propagation
-        double NUMStart = System.currentTimeMillis();
-        propaNUM.propagate(initDate.shiftedBy(extrapolationTime));
-        double NUMEnd = System.currentTimeMillis();
-
-        System.out.println("execution time NUM : " + (NUMEnd - NUMStart) / 1000.);
-
     }
 
+    /**
+     * Set up the numerical propagator
+     * 
+     * @param initialState
+     */
     private static void setNumProp(SpacecraftState initialState) {
         final double[][] tol = NumericalPropagator.tolerances(1.0, initialState.getOrbit(), initialState.getOrbit().getType());
         final double minStep = 1.;
@@ -254,10 +387,16 @@ public class DSSTPropagation {
         propaNUM.setInitialState(initialState);
     }
 
+    /**
+     * Set up the DSST Propagator
+     * 
+     * @param initialState
+     * @throws PropagationException
+     */
     private static void setDSSTProp(SpacecraftState initialState) throws PropagationException {
         initDate = initialState.getDate();
-        final double minStep = 100.;
-        final double maxStep = 86400.;
+        final double minStep = initialState.getKeplerianPeriod() / 10;
+        final double maxStep = FastMath.min(initialState.getKeplerianPeriod() * 10, 86400.);
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         integrator.setInitialStepSize(minStep);
@@ -300,7 +439,8 @@ public class DSSTPropagation {
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        public void init(final SpacecraftState s0,
+                         final AbsoluteDate t) {
         }
 
         /** {@inheritDoc} */
@@ -326,10 +466,10 @@ public class DSSTPropagation {
             final double hx = orb.getHx();
             final double hy = orb.getHy();
             final double lm = orb.getLM();
-            
+
             final double ec = orb.getE();
             final double in = orb.getI();
-            
+
             KeplerianOrbit kep = new KeplerianOrbit(orb);
             final double pa = kep.getPerigeeArgument();
             final double ra = kep.getRightAscensionOfAscendingNode();

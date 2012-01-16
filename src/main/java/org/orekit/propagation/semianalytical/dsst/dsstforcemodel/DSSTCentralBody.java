@@ -423,11 +423,18 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
         computeCentralBodyResonantTesseral(initialState);
 
         // Set the highest power of the eccentricity in the analytical power series expansion for
-        // the averaged high order resonant central body spherical harmonic perturbation and compute
-        // the Newcomb operators
-        // Truncation of the central body tesseral harmonic :
-        // tesseralTruncation(initialState);
+        // the averaged high order resonant central body spherical harmonic perturbation
         computeResonantTesseralMaxEccPower(initialState);
+
+        // TODO 
+        // Truncation of the central body tesseral harmonic :
+//        if (resonantTesseralHarmonic.size() > 0) {
+//            tesseralTruncation(initialState);
+//        } else {
+            tessMinS = tesseralMaxEccentricityPower;
+            tessMaxS = tesseralMaxEccentricityPower;
+            tessMaxN = degree;
+//        }
 
         // Get the maximum power of E to use in Hansen coefficient Kernel expansion
         computeHansenMaximumEccentricity(initialState);
@@ -468,96 +475,90 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
         int n;
         final double e = initialState.getE();
         final double a = initialState.getA();
-        boolean jLoop = true;
         boolean sLoop = true;
 
         // J-loop j = 0, +-1, +-2 ...
-        int j = 0;
-        while (jLoop) {
-            int signJ = (int) FastMath.pow(-1, j);
-            j *= signJ;
-            jMin = FastMath.min(jMin, j);
-            jMax = FastMath.max(jMax, j);
+        int j;
+        int m;
+        // Resonant term identified :
+        Iterator<ResonantCouple> iterator = resonantTesseralHarmonic.iterator();
+        // Iterative process :
 
-            // M-loop : m = 0, 1,..., M. M being the maximum potential order
-            for (int m = 1; m <= order; m++) {
-                int sbis = 0;
-                // S-loop : s = j, j+-1, j+-2 ...
-                int s = j;
-                while (sLoop) {
-                    int signS = (int) FastMath.pow(-1, s);
-                    sbis += s * signS;
-                    sMin = FastMath.min(sMin, sbis);
-                    sMax = FastMath.max(sMax, sbis);
+        while (iterator.hasNext()) {
+            ResonantCouple resonantTesseralCouple = iterator.next();
+            j = resonantTesseralCouple.getN();
+            m = resonantTesseralCouple.getM();
+            int sbis = 0;
+            // S-loop : s = j, j+-1, j+-2 ...
+            int s = j;
+            while (sLoop) {
+                int signS = (int) FastMath.pow(-1, s);
+                sbis += s * signS;
+                sMin = FastMath.min(sMin, sbis);
+                sMax = FastMath.max(sMax, sbis);
 
-                    // N-loop : n = Max(2, m, |s|), n-m even and n < N. N being the maximum
-                    // potential degree
-                    n = FastMath.max(FastMath.max(2, m), FastMath.abs(sbis));
+                // N-loop : n = Max(2, m, |s|), n-m even and n < N. N being the maximum
+                // potential degree
+                n = FastMath.max(FastMath.max(2, m), FastMath.abs(sbis));
 
-                    if (n > degree) {
-                        break;
-                    }
-
-                    if ((n - sbis) % 2 == 0) {
-
-                        // Compute the perturbation function upper bound :
-                        final double hansenUp = HansenCoefficients.computeUpperBound(e, j, -n - 1, sbis);
-
-                        // Compute Jacobi polynomials upper bound :
-                        int l = (sbis <= m) ? (n - m) : n - sbis;
-                        int v = FastMath.abs(m - sbis);
-                        int w = FastMath.abs(m + sbis);
-
-                        PolynomialFunction jacobi = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                        final double jacDer = jacobi.derivative().value(gamma);
-                        final double jacDer2 = jacDer * jacDer;
-                        final double jacGam = jacobi.value(gamma);
-                        final double jacGam2 = jacGam * jacGam;
-                        final double jacFact = (1 - gamma * gamma) / (l * (v + w + l + 1));
-                        final double jacobiUp = FastMath.sqrt(jacGam2 + jacFact * jacDer2);
-
-                        // Upper bound for |Cnm - iSnm|
-                        final double cnm = Cnm[n][m];
-                        final double cnm2 = cnm * cnm;
-                        final double snm = Snm[n][m];
-                        final double snm2 = snm * snm;
-                        final double csnmUp = FastMath.sqrt(cnm2 + snm2);
-
-                        // Upper bound for the |Gmsj + iHmsj|
-                        final double maxE = FastMath.pow(e, FastMath.abs(sbis - j));
-                        final double maxG = FastMath.pow(1 - gamma * gamma, FastMath.abs(sbis - I * m) / 2);
-                        final double ghmsUp = maxE * maxG;
-
-                        // Upper bound for Vmns
-                        final double vmnsUp = FastMath.abs(DSSTCoefficientFactory.getVmns(m, n, sbis));
-                        // Upper bound for Gammamsn
-                        final GammaMsnCoefficients gmns = new GammaMsnCoefficients(gamma, I);
-                        final double gmnsUp = FastMath.abs(gmns.getGammaMsn(n, sbis, m));
-
-                        // Upper perturbation function value
-                        final double common = (mu / a) * FastMath.pow(ae / a, n);
-                        final double upperValue = common * vmnsUp * gmnsUp * hansenUp * jacobiUp * csnmUp * ghmsUp;
-
-                        if (upperValue <= tesseralTruncationTolerance) {
-                            // Store values :
-                            tessMinS = sMin;
-                            tessMaxS = sMax;
-                            tessMinJ = jMin;
-                            tessMaxJ = jMax;
-                            tessMaxN = n;
-                            tessMaxM = m;
-
-                            // Force loop to stop :
-                            jLoop = false;
-                            sLoop = false;
-                            m = order;
-                            n = degree;
-                        }
-                    }
-                    s++;
+                if (n > degree) {
+                    break;
                 }
+
+                if ((n - sbis) % 2 == 0) {
+
+                    // Compute the perturbation function upper bound :
+                    final double hansenUp = HansenCoefficients.computeUpperBound(e, j, -n - 1, sbis);
+
+                    // Compute Jacobi polynomials upper bound :
+                    int l = (sbis <= m) ? (n - m) : n - sbis;
+                    int v = FastMath.abs(m - sbis);
+                    int w = FastMath.abs(m + sbis);
+
+                    PolynomialFunction jacobi = PolynomialsUtils.createJacobiPolynomial(l, v, w);
+                    final double jacDer = jacobi.derivative().value(gamma);
+                    final double jacDer2 = jacDer * jacDer;
+                    final double jacGam = jacobi.value(gamma);
+                    final double jacGam2 = jacGam * jacGam;
+                    final double jacFact = (1 - gamma * gamma) / (l * (v + w + l + 1));
+                    final double jacobiUp = FastMath.sqrt(jacGam2 + jacFact * jacDer2);
+
+                    // Upper bound for |Cnm - iSnm|
+                    final double cnm = Cnm[n][m];
+                    final double cnm2 = cnm * cnm;
+                    final double snm = Snm[n][m];
+                    final double snm2 = snm * snm;
+                    final double csnmUp = FastMath.sqrt(cnm2 + snm2);
+
+                    // Upper bound for the |Gmsj + iHmsj|
+                    final double maxE = FastMath.pow(e, FastMath.abs(sbis - j));
+                    final double maxG = FastMath.pow(1 - gamma * gamma, FastMath.abs(sbis - I * m) / 2);
+                    final double ghmsUp = maxE * maxG;
+
+                    // Upper bound for Vmns
+                    final double vmnsUp = FastMath.abs(DSSTCoefficientFactory.getVmns(m, n, sbis));
+                    // Upper bound for Gammamsn
+                    final GammaMsnCoefficients gmns = new GammaMsnCoefficients(gamma, I);
+                    final double gmnsUp = FastMath.abs(gmns.getGammaMsn(n, sbis, m));
+
+                    // Upper perturbation function value
+                    final double common = (mu / a) * FastMath.pow(ae / a, n);
+                    final double upperValue = common * vmnsUp * gmnsUp * hansenUp * jacobiUp * csnmUp * ghmsUp;
+
+                    if (upperValue <= tesseralTruncationTolerance) {
+                        // Store values :
+                        tessMinS = FastMath.abs(sMin);
+                        tessMaxS = sMax;
+                        tessMaxN = n;
+
+                        // Force loop to stop :
+                        sLoop = false;
+                        m = order;
+                        n = degree;
+                    }
+                }
+                s++;
             }
-            j++;
         }
     }
 
@@ -728,11 +729,6 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      *            Initial satellite state
      */
     private void computeCentralBodyResonantTesseral(final SpacecraftState initialState) {
-        // // Initialize resonant order
-        // List<Integer> resonantOrder = new ArrayList<Integer>();
-        // // Initialize resonant index for each resonant order
-        // List<Integer> resonantIndex = new ArrayList<Integer>();
-
         // Get the satellite period
         final double satellitePeriod = initialState.getKeplerianPeriod();
         // Compute ration of satellite period to central body rotation period
@@ -769,54 +765,18 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
                     // Update the maximum resonant order found
                     maxResonantOrder = m;
 
-                    // Store each resonant degrees for each resonant order
-                    // resonantOrder.add(m);
-                    // resonantIndex.add(j);
-
                     // Store each resonant couple for a given order
-                    // TODO check <=
-                    for (int n = m; n <= degree; n++) {
+                    int n = m;
+                    // insert resonant terms into the resonant field until either 10 terms or all of
+                    // the resonant terms are chosen
+                    while (n <= degree && resonantTesseralHarmonic.size() < 10) {
                         resonantTesseralHarmonic.add(new ResonantCouple(n, m));
+                        n++;
                     }
                 }
             }
         }
-        // // Have any resonant terms been found ?
-        // if (maxResonantOrder > 0) {
-        // minPerturbationPeriod = computeMinimumPerturbationPeriod(ratio, satellitePeriod,
-        // resonantOrder, resonantIndex);
-        // }
     }
-
-    // /**
-    // * This method compute the minimum perturbation period from witch a perturbation is considered
-    // * to
-    // *
-    // * @param ratio
-    // * @param satellitePeriod
-    // * @param resonantOrder
-    // * @param resonantIndex
-    // * @return
-    // */
-    // private double computeMinimumPerturbationPeriod(double ratio,
-    // double satellitePeriod,
-    // List<Integer> resonantOrder,
-    // List<Integer> resonantIndex) {
-    //
-    // double minPerturbationPeriod = Double.POSITIVE_INFINITY;
-    // // Compute the minimum perturbation period
-    // for (int m = 0; m < maxResonantOrder; m++) {
-    // if (resonantOrder.get(m) == m + 1) {
-    // double divisor = FastMath.abs(ratio * (m + 1) - resonantIndex.get(m));
-    // if (divisor < 1e-10) {
-    // divisor = 1e-10;
-    // }
-    // minPerturbationPeriod = FastMath.min(minPerturbationPeriod, satellitePeriod / divisor);
-    // }
-    // }
-    // return minPerturbationPeriod;
-    //
-    // }
 
     /**
      * Set the minimum period for analytically averaged high-order resonant central body spherical
@@ -1253,7 +1213,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
             int Im = (int) FastMath.pow(I, m);
             // Sum(-N, N)
-            for (int s = tesseralMaxEccentricityPower; s <= tesseralMaxEccentricityPower; s++) {
+            for (int s = -tessMinS; s <= tessMaxS; s++) {
                 // Sum(Max(2, m, |s|))
                 int nmin = Math.max(Math.max(2, m), Math.abs(s));
 

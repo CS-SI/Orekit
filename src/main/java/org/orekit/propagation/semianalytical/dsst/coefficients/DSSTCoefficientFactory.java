@@ -7,6 +7,7 @@ import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math.complex.Complex;
 import org.apache.commons.math.util.ArithmeticUtils;
+import org.apache.commons.math.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -292,7 +293,13 @@ public class DSSTCoefficientFactory {
         // If (n -s) is odd, the Vmsn coefficient is null
         double result = 0;
         if ((n - s) % 2 == 0) {
-            result = (ArithmeticUtils.factorial(n + s) / ArithmeticUtils.factorial(n - m)) * VNS.get(new NSKey(n, s)) ;
+            if (s >= 0) {
+                result = (ArithmeticUtils.factorial(n + s) / ArithmeticUtils.factorial(n - m)) * VNS.get(new NSKey(n, s));
+            } else {
+                // If s < 0 : Vmn-s = (-1)^(-s) Vmns
+                result = FastMath.pow(-1, -s) * (ArithmeticUtils.factorial(n - s) / ArithmeticUtils.factorial(n - m))
+                         * VNS.get(new NSKey(n, -s));
+            }
         }
         return result;
     }

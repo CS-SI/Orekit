@@ -119,12 +119,14 @@ public class OrbitFactory {
      */
     public static SpacecraftState[] getMeanOrbitFromOsculating(final Propagator numericalPropagator,
                                                                final double deltaT,
-                                                               final int nodeNumberValue,
                                                                final int averageStep) throws Exception {
-        if (nodeNumberValue % 2 != 0) {
-            throw new Exception("need even value for averaging value");
-        }
         SpacecraftState orbit = numericalPropagator.getInitialState();
+
+        int nodeNumberValue = (int) (deltaT / orbit.getKeplerianPeriod());
+        if (nodeNumberValue % 2 != 0){
+            nodeNumberValue--;
+        }
+
         NodeDetectorForMeanOrbit nodeDetector = new NodeDetectorForMeanOrbit(deltaT, orbit.getOrbit(), FramesFactory.getITRF2005(), nodeNumberValue);
         numericalPropagator.addEventDetector(nodeDetector);
 
