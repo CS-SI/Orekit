@@ -241,7 +241,7 @@ public class DSSTPropagatorTest {
         // Create a fake mean orbit from an osculating one
         setNumProp(orbitOsc);
         numProp.addForceModel(nForce);
-        SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(numProp, 2 * 86400, 28, 1);
+        SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(numProp, 2 * 86400, 1);
         SpacecraftState mean = orbits[0];
         SpacecraftState osc = orbits[1];
 
