@@ -35,6 +35,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel;
@@ -166,6 +167,9 @@ public class AdapterPropagatorTest {
         double isp      = 300.0;
         double vExhaust = Constants.G0_STANDARD_GRAVITY * isp;
         double dt       = -(mass * vExhaust / f) * FastMath.expm1(-dV.getNorm() / vExhaust);
+        // setup a specific coefficient file for gravity potential as it will also
+        // try to read a corrupted one otherwise
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         PotentialCoefficientsProvider gravityField = GravityFieldFactory.getPotentialProvider();
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, 10,
                                                          new LofOffset(leo.getFrame(), LOFType.VNC),

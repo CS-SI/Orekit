@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="thomas" type="fix">
+        Fixed performance issues when using the singleton UTCScale instance from
+        multiple threads. Use a prototype pattern instead (fixes bug #33).
+      </action>
       <action dev="luc" type="add">
         Added J2 effect on small maneuvers model.
       </action>
