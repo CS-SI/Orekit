@@ -420,21 +420,22 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
          * Resonant Tesseral parameterization and truncation :
          */
         // Compute the central body resonant tesseral harmonic terms
-        computeCentralBodyResonantTesseral(initialState);
+        computeResonantTesseral(initialState);
 
         // Set the highest power of the eccentricity in the analytical power series expansion for
         // the averaged high order resonant central body spherical harmonic perturbation
         computeResonantTesseralMaxEccPower(initialState);
 
-        // TODO 
+        // TODO Not sure about this part :
         // Truncation of the central body tesseral harmonic :
-//        if (resonantTesseralHarmonic.size() > 0) {
-//            tesseralTruncation(initialState);
-//        } else {
-            tessMinS = tesseralMaxEccentricityPower;
-            tessMaxS = tesseralMaxEccentricityPower;
+        if (resonantTesseralHarmonic.size() > 0) {
+            // tesseralTruncation(initialState);
+            tessMaxN = Collections.max(resonantTesseralHarmonic).getN();
+        } else {
             tessMaxN = degree;
-//        }
+        }
+        tessMinS = tesseralMaxEccentricityPower;
+        tessMaxS = tesseralMaxEccentricityPower;
 
         // Get the maximum power of E to use in Hansen coefficient Kernel expansion
         computeHansenMaximumEccentricity(initialState);
@@ -728,7 +729,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * @param initialState
      *            Initial satellite state
      */
-    private void computeCentralBodyResonantTesseral(final SpacecraftState initialState) {
+    private void computeResonantTesseral(final SpacecraftState initialState) {
         // Get the satellite period
         final double satellitePeriod = initialState.getKeplerianPeriod();
         // Compute ration of satellite period to central body rotation period
@@ -830,6 +831,33 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      */
     public final void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
         this.tesseralMaxEccentricityPower = tesseralMaxEccPower;
+    }
+
+    /**
+     * Get the equatorial radius.
+     * 
+     * @return a<sub>e</sub>
+     */
+    public final double getAe() {
+        return ae;
+    }
+
+    /**
+     * Get the first normalized potential tesseral coefficients array
+     * 
+     * @return First normalized potential tesseral coefficients array
+     */
+    public final double[][] getCnm() {
+        return Cnm;
+    }
+
+    /**
+     * Get the second normalized potential tesseral coefficients array
+     * 
+     * @return Second normalized potential tesseral coefficients array
+     */
+    public final double[][] getSnm() {
+        return Snm;
     }
 
     /**

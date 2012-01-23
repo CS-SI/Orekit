@@ -48,7 +48,7 @@ public class DSSTSolarRadiationPressureTest {
     @Test
     public void testMeanElementRateWithShadow() throws OrekitException {
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final double cR = 2.;
+        final double cR = 1.;
         final double aC = 5.;
         final DSSTSolarRadiationPressure force = new DSSTSolarRadiationPressure(cR, aC, sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
 
@@ -108,12 +108,12 @@ public class DSSTSolarRadiationPressureTest {
 //        System.out.println(daidtRef[4] + " " + daidt[4] + " " + (daidtRef[4] - daidt[4]));
 //        System.out.println(daidtRef[5] + " " + daidt[5] + " " + (daidtRef[5] - daidt[5]));
 
-        Assert.assertEquals(daidtRef[0], daidt[0], 3.e-21);
-        Assert.assertEquals(daidtRef[1], daidt[1], 5.e-17);
-        Assert.assertEquals(daidtRef[2], daidt[2], 1.e-16);
-        Assert.assertEquals(daidtRef[3], daidt[3], 5.e-16);
-        Assert.assertEquals(daidtRef[4], daidt[4], 5.e-16);
-        Assert.assertEquals(daidtRef[5], daidt[5], 2.e-15);
+        Assert.assertEquals(daidtRef[0], daidt[0], 5.e-21);
+        Assert.assertEquals(daidtRef[1], daidt[1], 9.e-12);
+        Assert.assertEquals(daidtRef[2], daidt[2], 6.5e-12);
+        Assert.assertEquals(daidtRef[3], daidt[3], 2.e-14);
+        Assert.assertEquals(daidtRef[4], daidt[4], 5.e-14);
+        Assert.assertEquals(daidtRef[5], daidt[5], 4.5e-14);
 
     }
 

@@ -21,7 +21,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Romain Di Costanzo
  * @author Pascal Parraud
  */
-public class DSSTThirdBody extends AbstractGravitationalForces{
+public class DSSTThirdBody extends AbstractGravitationalForces {
 
     /** Propagation orbit type. */
     private static final OrbitType     ORBIT_TYPE    = OrbitType.EQUINOCTIAL;
@@ -167,6 +167,11 @@ public class DSSTThirdBody extends AbstractGravitationalForces{
         return new double[] { 0., 0., 0., 0., 0., 0. };
     }
 
+    /** Get third body */
+    public final CelestialBody getBody() {
+        return body;
+    }
+
     /**
      * Compute useful parameters: A, B, C, &alpha;, &beta;, &gamma;.
      * 
@@ -281,7 +286,7 @@ public class DSSTThirdBody extends AbstractGravitationalForces{
                 final double coef1 = coef0 * qns;
                 // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
                 // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
-                final double dqns  = (n == s) ? 0. : Qns[n][s+1];
+                final double dqns = (n == s) ? 0. : Qns[n][s + 1];
 
                 // Compute dU / da :
                 dUda += coef1 * n * kns * gs;

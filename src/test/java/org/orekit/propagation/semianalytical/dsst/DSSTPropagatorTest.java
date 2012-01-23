@@ -197,7 +197,7 @@ public class DSSTPropagatorTest {
 
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
         FirstOrderIntegrator integrator = new DormandPrince853Integrator(10., 1000., tol[0], tol[1]);
-        DSSTPropagator propagator = new DSSTPropagator(integrator, initialOrbit, new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
+        DSSTPropagator propagator = new DSSTPropagator(integrator, initialOrbit, false, 86400., new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
         propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()), new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
         Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
@@ -403,7 +403,7 @@ public class DSSTPropagatorTest {
         double sf = 5.0;
         double kA = 0.5;
         double kR = 0.5;
-        double cR = 2. * (1. + (1. - kA) * (1. - kR) * 4. / 9.);
+        double cR =  (1. + (1. - kA) * (1. - kR) * 4. / 9.);
         DSSTForceModel srp = new DSSTSolarRadiationPressure(cR, sf, sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
         SphericalSpacecraft spc = new SphericalSpacecraft(sf, 0., kA, kR);
         ForceModel nsrp = new SolarRadiationPressure(sun, Constants.WGS84_EARTH_EQUATORIAL_RADIUS, spc);
@@ -430,7 +430,6 @@ public class DSSTPropagatorTest {
         // + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
         // System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
         // + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
-
         Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 40.0);
         Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 50.0);
         Assert.assertEquals(pv.getPosition().getZ(), pvd.getPosition().getZ(), 0.2);
@@ -556,7 +555,7 @@ public class DSSTPropagatorTest {
         // numProp.setMasterMode(300., new PrintStepHandler());
     }
 
-    private void setDSSTProp(SpacecraftState initialState) throws PropagationException {
+    private void setDSSTProp(SpacecraftState initialState) throws OrekitException {
         this.initialState = initialState;
         this.initDate = initialState.getDate();
         final double minStep = 100.;
@@ -564,7 +563,7 @@ public class DSSTPropagatorTest {
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         integrator.setInitialStepSize(minStep);
-        propaDSST = new DSSTPropagator(integrator, initialState.getOrbit());
+        propaDSST = new DSSTPropagator(integrator, initialState.getOrbit(), false, 864000.);
 
     }
 
