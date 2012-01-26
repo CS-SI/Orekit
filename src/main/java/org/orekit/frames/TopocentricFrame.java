@@ -18,7 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math.analysis.UnivariateFunction;
 import org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math.analysis.solvers.UnivariateRealSolver;
+import org.apache.commons.math.analysis.solvers.UnivariateSolver;
 import org.apache.commons.math.exception.TooManyEvaluationsException;
 import org.apache.commons.math.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
@@ -254,7 +254,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         try {
             // convergence threshold on point position: 1mm
             final double deltaP = 0.001;
-            final UnivariateRealSolver solver =
+            final UnivariateSolver solver =
                     new BracketingNthOrderBrentSolver(deltaP / Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       deltaP, deltaP, 5);
 
