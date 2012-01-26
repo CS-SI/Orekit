@@ -22,7 +22,7 @@ import org.apache.commons.math.analysis.UnivariateFunction;
 import org.apache.commons.math.analysis.solvers.AllowedSolution;
 import org.apache.commons.math.analysis.solvers.BrentSolver;
 import org.apache.commons.math.analysis.solvers.PegasusSolver;
-import org.apache.commons.math.analysis.solvers.UnivariateRealSolverUtils;
+import org.apache.commons.math.analysis.solvers.UnivariateSolverUtils;
 import org.apache.commons.math.exception.NoBracketingException;
 import org.apache.commons.math.exception.TooManyEvaluationsException;
 import org.apache.commons.math.util.FastMath;
@@ -196,10 +196,10 @@ public class EventState implements Serializable {
                                               nonBracketing.solve(maxIterationcount, f, dtB, dtA);
                     final int remainingEval = maxIterationcount - nonBracketing.getEvaluations();
                     final double dtRoot     = forward ?
-                                              UnivariateRealSolverUtils.forceSide(remainingEval, f, bracketing,
-                                                                                  dtBaseRoot, dtA, dtB, AllowedSolution.RIGHT_SIDE) :
-                                              UnivariateRealSolverUtils.forceSide(remainingEval, f, bracketing,
-                                                                                  dtBaseRoot, dtB, dtA, AllowedSolution.LEFT_SIDE);
+                                              UnivariateSolverUtils.forceSide(remainingEval, f, bracketing,
+                                                                              dtBaseRoot, dtA, dtB, AllowedSolution.RIGHT_SIDE) :
+                                              UnivariateSolverUtils.forceSide(remainingEval, f, bracketing,
+                                                                              dtBaseRoot, dtB, dtA, AllowedSolution.LEFT_SIDE);
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((previousEventTime != null) &&

@@ -29,9 +29,9 @@ import java.text.ParseException;
 import java.util.Locale;
 
 import org.apache.commons.math.analysis.UnivariateFunction;
-import org.apache.commons.math.analysis.solvers.BaseUnivariateRealSolver;
+import org.apache.commons.math.analysis.solvers.BaseUnivariateSolver;
 import org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math.analysis.solvers.UnivariateRealSolverUtils;
+import org.apache.commons.math.analysis.solvers.UnivariateSolverUtils;
 import org.apache.commons.math.exception.NoBracketingException;
 import org.apache.commons.math.exception.util.LocalizedFormats;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
@@ -643,11 +643,11 @@ public class Phasing {
             span = shift;
         }
 
-        while (!UnivariateRealSolverUtils.isBracketing(latitudeFunction, -span, span)) {
+        while (!UnivariateSolverUtils.isBracketing(latitudeFunction, -span, span)) {
 
             if (2 * span > maxShift) {
                 // let the Apache Commons Math exception be thrown
-                UnivariateRealSolverUtils.verifyBracketing(latitudeFunction, -span, span);
+                UnivariateSolverUtils.verifyBracketing(latitudeFunction, -span, span);
             } else if (guessDate.shiftedBy(2 * span).compareTo(endDate) > 0) {
                 // Out of range :
                 return null;
@@ -659,7 +659,7 @@ public class Phasing {
         }
 
         // find the encounter in the bracketed interval
-        final BaseUnivariateRealSolver<UnivariateFunction> solver =
+        final BaseUnivariateSolver<UnivariateFunction> solver =
                 new BracketingNthOrderBrentSolver(0.1, 5);
         final double dt = solver.solve(1000, latitudeFunction,-span, span);
         return propagator.propagate(guessDate.shiftedBy(dt));
