@@ -33,6 +33,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.analytical.tle.TLE;
 import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -99,6 +100,12 @@ public class TLETest {
                           tleRef.getRevolutionNumberAtEpoch(), tleRef.getBStar());
         Assert.assertEquals(line1, tle.getLine1());
         Assert.assertEquals(line2, tle.getLine2());
+    }
+
+    @Test
+    public void testBug74() throws OrekitException {
+        checkSymmetry("1 00001U 00001A   12026.45833333 2.94600864  39565-9  16165-7 1    12",
+                      "2 00001 627.0796 454.4522 0000000 624.9662   0.4817  0.00000000    12");
     }
 
     @Test(expected=OrekitException.class)
