@@ -291,7 +291,7 @@ public class TLE implements TimeStamped, Serializable {
         throws OrekitException {
 
         final StringBuffer buffer = new StringBuffer();
-        final DecimalFormat f38  = new DecimalFormat("##0.00000000", SYMBOLS);
+        final DecimalFormat f38  = new DecimalFormat("000.00000000", SYMBOLS);
         final DecimalFormat fExp = new DecimalFormat(".00000E0", SYMBOLS);
 
         buffer.append('1');
