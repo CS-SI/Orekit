@@ -22,6 +22,7 @@ import java.text.ParseException;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -96,6 +97,7 @@ public class JPLEphemeridesLoaderTest {
     }
 
     @Test
+    @Ignore
     public void testDerivative414() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data/de414-ephemerides");
         checkDerivative(new AbsoluteDate(1950, 1, 12, TimeScalesFactory.getTT()));
