@@ -43,27 +43,33 @@ import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
-/** Loader for JPL ephemerides binary files (DE 405, DE 406).
+/** Loader for JPL ephemerides binary files (DE 4xx) and similar formats (INPOP 06/08/10).
  * <p>JPL ephemerides binary files contain ephemerides for all solar system planets.</p>
  * <p>The JPL ephemerides binary files are recognized thanks to their base names,
- * which must match the pattern <code>unx[mp]####.ddd</code> (or
- * <code>unx[mp]####.ddd.gz</code> for gzip-compressed files) where # stands for a
+ * which must match the pattern <code>[lu]nx[mp]####.ddd</code> (or
+ * <code>[lu]nx[mp]####.ddd.gz</code> for gzip-compressed files) where # stands for a
  * digit character and where ddd is an ephemeris type (typically 405 or 406).</p>
+ * <p>The loader supports files encoded in big-endian as well as in little-endian notation.
+ * Usually, big-endian files are named <code>unx[mp]####.ddd</code>, while little-endian files
+ * are named <code>lnx[mp]####.ddd</code>.</p>
  * @author Luc Maisonobe
  */
 public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
-    /** Binary record size in bytes for DE 405. */
-    private static final int DE405_RECORD_SIZE = 1018 * 8;
-
-    /** Binary record size in bytes for DE 406. */
-    private static final int DE406_RECORD_SIZE =  728 * 8;
-
     /** Default supported files name pattern. */
-    private static final String DEFAULT_SUPPORTED_NAMES = "^unx[mp](\\d\\d\\d\\d)\\.(?:(?:405)|(?:406))$";
+    private static final String DEFAULT_SUPPORTED_NAMES = "^[lu]nx[mp](\\d\\d\\d\\d)\\.(?:4\\d\\d)$";
 
     /** 50 days in seconds. */
     private static final double FIFTY_DAYS = 50 * Constants.JULIAN_DAY;
+
+    /** DE number used by INPOP files. */
+    private static final int INPOP_DE_NUMBER = 100;
+
+    /** The constant name for the astronomical unit. */
+    private static final String CONSTANT_AU = "AU";
+
+    /** The constant name for the earth-moon mass ratio. */
+    private static final String CONSTANT_EMRAT = "EMRAT";
 
     /** List of supported ephemerides types. */
     public enum EphemerisType {
@@ -147,6 +153,9 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** Number of chunks for the selected body. */
     private int chunks;
+
+    /** Number of components contained in the file. */
+    private int components;
 
     /** Create a loader for JPL ephemerides binary files.
      * <p>
@@ -332,7 +341,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             loadConstants();
         }
 
-        return 1000.0 * getLoadedConstant("AU");
+        return 1000.0 * getLoadedConstant(CONSTANT_AU);
 
     }
 
@@ -361,7 +370,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             loadConstants();
         }
 
-        return getLoadedConstant("EMRAT");
+        return getLoadedConstant(CONSTANT_EMRAT);
 
     }
 
@@ -569,7 +578,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final byte[] record = readFirstRecord(input, name);
 
         // parse first header record
-        parseFirstHeaderRecord(record, name);
+        final boolean bigEndian = parseFirstHeaderRecord(record, name);
 
         synchronized (this) {
             if (centralDate == null) {
@@ -594,7 +603,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         // read ephemerides data
         while (readInRecord(input, record, 0)) {
-            parseDataRecord(record);
+            parseDataRecord(record, bigEndian);
         }
 
     }
@@ -602,25 +611,53 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Parse the first header record.
      * @param record first header record
      * @param name name of the file (or zip entry)
+     * @return <code>true</code> if the JPL file header is encoded in big-endian notation,
+     * <code>false</code> otherwise
      * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private void parseFirstHeaderRecord(final byte[] record, final String name)
+    private boolean parseFirstHeaderRecord(final byte[] record, final String name)
         throws OrekitException {
 
+        // detect the endianess of the file
+        final boolean bigEndian = detectEndianess(record);
+
+        // get the ephemerides type
+        final int deNum = extractInt(record, 2840, bigEndian);
+
+        // as default, 3 polynomial coefficients for the cartesian coordinates
+        // (x, y, z) are contained in the file
+        components = 3;
+
+        if (deNum == INPOP_DE_NUMBER) {
+            // an INPOP file may contain 6 components (including coefficients for the velocity vector)
+            final double format = getLoadedConstant("FORMAT");
+            if (!Double.isNaN(format) && (int) FastMath.IEEEremainder(format, 10) != 1) {
+                components = 6;
+            }
+
+            // INPOP files may have their polynomials expressed in AU
+            final double unite = getLoadedConstant("UNITE");
+            if (!Double.isNaN(unite) && (int) unite == 0) {
+                // proper handling in this case: the resulting PV coordinates from
+                // the PosVelChebyshev model needs to be scaled
+            }
+        }
+
         // extract covered date range
-        startEpoch = extractDate(record, 2652);
-        finalEpoch = extractDate(record, 2660);
+        startEpoch = extractDate(record, 2652, bigEndian);
+        finalEpoch = extractDate(record, 2660, bigEndian);
         boolean ok = finalEpoch.compareTo(startEpoch) > 0;
 
         // check astronomical unit consistency
-        final double au = 1000 * extractDouble(record, 2680);
+        final double au = 1000 * extractDouble(record, 2680, bigEndian);
         ok = ok && (au > 1.4e11) && (au < 1.6e11);
         if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 0.001) {
             throw new OrekitException(OrekitMessages.INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES,
                                       getLoadedAstronomicalUnit(), au);
         }
 
-        final double emRat = extractDouble(record, 2688);
+        // check earth-moon mass ratio consistency
+        final double emRat = extractDouble(record, 2688, bigEndian);
         ok = ok && (emRat > 80) && (emRat < 82);
         if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-8) {
             throw new OrekitException(OrekitMessages.INCONSISTENT_EARTH_MOON_RATIO_IN_FILES,
@@ -631,10 +668,10 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
             // indices of the Chebyshev coefficients for each ephemeris
             for (int i = 0; i < 12; ++i) {
-                final int row1 = extractInt(record, 2696 + 12 * i);
-                final int row2 = extractInt(record, 2700 + 12 * i);
-                final int row3 = extractInt(record, 2704 + 12 * i);
-                ok = ok && (row1 > 0) && (row2 >= 0) && (row3 >= 0);
+                final int row1 = extractInt(record, 2696 + 12 * i, bigEndian);
+                final int row2 = extractInt(record, 2700 + 12 * i, bigEndian);
+                final int row3 = extractInt(record, 2704 + 12 * i, bigEndian);
+                ok = ok && (row1 >= 0) && (row2 >= 0) && (row3 >= 0);
                 if (((i ==  0) && (loadType == EphemerisType.MERCURY))    ||
                         ((i ==  1) && (loadType == EphemerisType.VENUS))      ||
                         ((i ==  2) && (loadType == EphemerisType.EARTH_MOON)) ||
@@ -653,7 +690,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             }
 
             // compute chunks duration
-            final double timeSpan = extractDouble(record, 2668);
+            final double timeSpan = extractDouble(record, 2668, bigEndian);
             ok = ok && (timeSpan > 0) && (timeSpan < 100);
             chunksDuration = Constants.JULIAN_DAY * (timeSpan / chunks);
             if (Double.isNaN(maxChunksDuration)) {
@@ -669,21 +706,24 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
         }
 
+        return bigEndian;
     }
 
     /** Parse regular ephemeris record.
      * @param record record to parse
+     * @param bigEndian indicates whether the data record contains data in
+     *                  big-endian or little-endian notation
      * @exception OrekitException if the header is not a JPL ephemerides binary file header
      */
-    private void parseDataRecord(final byte[] record) throws OrekitException {
+    private void parseDataRecord(final byte[] record, final boolean bigEndian) throws OrekitException {
 
         // extract time range covered by the record
-        final AbsoluteDate rangeStart = extractDate(record, 0);
+        final AbsoluteDate rangeStart = extractDate(record, 0, bigEndian);
         if (rangeStart.compareTo(startEpoch) < 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeStart, startEpoch, finalEpoch);
         }
 
-        final AbsoluteDate rangeEnd   = extractDate(record, 8);
+        final AbsoluteDate rangeEnd   = extractDate(record, 8, bigEndian);
         if (rangeEnd.compareTo(finalEpoch) > 0) {
             throw new OrekitException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, rangeEnd, startEpoch, finalEpoch);
         }
@@ -714,11 +754,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 final double[] xCoeffs = new double[nbCoeffs];
                 final double[] yCoeffs = new double[nbCoeffs];
                 final double[] zCoeffs = new double[nbCoeffs];
+
                 for (int k = 0; k < nbCoeffs; ++k) {
-                    final int index = first + 3 * i * nbCoeffs + k - 1;
-                    xCoeffs[k] = 1000.0 * extractDouble(record, 8 * index);
-                    yCoeffs[k] = 1000.0 * extractDouble(record, 8 * (index +  nbCoeffs));
-                    zCoeffs[k] = 1000.0 * extractDouble(record, 8 * (index + 2 * nbCoeffs));
+                    // by now, only use the position components
+                    // if there are also velocity components contained in the file, ignore them
+                    final int index = first + components * i * nbCoeffs + k - 1;
+                    xCoeffs[k] = 1000.0 * extractDouble(record, 8 * index, bigEndian);
+                    yCoeffs[k] = 1000.0 * extractDouble(record, 8 * (index +  nbCoeffs), bigEndian);
+                    zCoeffs[k] = 1000.0 * extractDouble(record, 8 * (index + 2 * nbCoeffs), bigEndian);
                 }
 
                 // build the position-velocity model for current chunk
@@ -741,22 +784,30 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         throws OrekitException, IOException {
 
         // read first part of record, up to the ephemeris type
-        final byte[] firstPart = new byte[2844];
+        final byte[] firstPart = new byte[2860];
         if (!readInRecord(input, firstPart, 0)) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
         }
 
-        // get the ephemeris type, deduce the record size
+        // detect the endian format
+        final boolean bigEndian = detectEndianess(firstPart);
+
+        // get the ephemerides type
+        final int deNum = extractInt(firstPart, 2840, bigEndian);
+
+        // the record size for this file
         int recordSize = 0;
-        switch (extractInt(firstPart, 2840)) {
-        case 405 :
-            recordSize = DE405_RECORD_SIZE;
-            break;
-        case 406 :
-            recordSize = DE406_RECORD_SIZE;
-            break;
-        default :
-            throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
+
+        if (deNum == INPOP_DE_NUMBER) {
+            // INPOP files have an extended DE format, which includes also the record size
+            recordSize = extractInt(firstPart, 2856, bigEndian) << 3;
+        } else {
+            // compute the record size for original JPL files
+            recordSize = computeRecordSize(firstPart, bigEndian, name);
+        }
+
+        if (recordSize <= 0) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
         }
 
         // build a record with the proper size and finish read of the first complete record
@@ -792,13 +843,95 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         return true;
     }
 
+    /** Detect whether the JPL ephemerides file is stored in big-endian or
+     * little-endian notation.
+     * @param record the array containing the binary JPL header
+     * @return <code>true</code> if the file is stored in big-endian,
+     * <code>false</code> otherwise
+     */
+    private static boolean detectEndianess(final byte[] record) {
+
+        // default to big-endian
+        boolean bigEndian = true;
+
+        // first try to read the DE number in big-endian format
+        final int deNum = extractInt(record, 2840, true);
+
+        // simple heuristic: if the read value is larger than half the range of an integer
+        //                   assume the file is in little-endian format
+        if ((deNum & 0xffffffffL) > (1 << 15)) {
+            bigEndian = false;
+        }
+
+        return bigEndian;
+
+    }
+
+    /** Calculate the record size of a JPL ephemerides file.
+     * @param record the byte array containing the header record
+     * @param bigEndian indicates the endianess of the file
+     * @param name the name of the data file
+     * @return the record size for this file
+     * @throws OrekitException if the file contains unexpected data
+     */
+    private static int computeRecordSize(final byte[] record,
+                                         final boolean bigEndian,
+                                         final String name)
+        throws OrekitException {
+
+        int recordSize = 0;
+        boolean ok = true;
+        // JPL files always have 3 position components
+        final int nComp = 3;
+
+        // iterate over the coefficient ptr array and sum up the record size
+        // the coeffPtr array has the dimensions [12][nComp]
+        for (int j = 0; j < 12; j++) {
+            final int nCompCur = (j == 11) ? 2 : nComp;
+
+            // the coeffPtr array starts at offset 2696
+            // Note: the array element coeffPtr[j][0] is not needed for the calculation
+            final int idx = 2696 + j * nComp * 4;
+            final int coeffPtr1 = extractInt(record, idx + 4, bigEndian);
+            final int coeffPtr2 = extractInt(record, idx + 8, bigEndian);
+
+            // sanity checks
+            ok = ok && (coeffPtr1 >= 0 || coeffPtr2 >= 0);
+
+            recordSize += coeffPtr1 * coeffPtr2 * nCompCur;
+        }
+
+        // the libration ptr array starts at offset 2844 and has the dimension [3]
+        // Note: the array element libratPtr[0] is not needed for the calculation
+        final int libratPtr1 = extractInt(record, 2844 + 4, bigEndian);
+        final int libratPtr2 = extractInt(record, 2844 + 8, bigEndian);
+
+        // sanity checks
+        ok = ok && (libratPtr1 >= 0 || libratPtr2 >= 0);
+
+        recordSize += libratPtr1 * libratPtr2 * nComp + 2;
+        recordSize <<= 3;
+
+        if (!ok || recordSize <= 0) {
+            throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
+        }
+
+        return recordSize;
+
+    }
+
     /** Extract a date from a record.
      * @param record record to parse
      * @param offset offset of the double within the record
+     * @param bigEndian if <code>true</code> the parsed date is extracted in big-endian
+     * format, otherwise it is extracted in little-endian format
      * @return extracted date
      */
-    private static AbsoluteDate extractDate(final byte[] record, final int offset) {
-        final double t       = extractDouble(record, offset);
+    private static AbsoluteDate extractDate(final byte[] record,
+                                            final int offset,
+                                            final boolean bigEndian) {
+
+        final double t       = extractDouble(record, offset, bigEndian);
         int    jDay    = (int) FastMath.floor(t);
         double seconds = (t + 0.5 - jDay) * Constants.JULIAN_DAY;
         if (seconds >= Constants.JULIAN_DAY) {
@@ -816,9 +949,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      * most significant byte first.</p>
      * @param record record to parse
      * @param offset offset of the double within the record
+     * @param bigEndian if <code>true</code> the parsed double is extracted in big-endian
+     * format, otherwise it is extracted in little-endian format
      * @return extracted double
      */
-    private static double extractDouble(final byte[] record, final int offset) {
+    private static double extractDouble(final byte[] record, final int offset, final boolean bigEndian) {
         final long l8 = ((long) record[offset + 0]) & 0xffl;
         final long l7 = ((long) record[offset + 1]) & 0xffl;
         final long l6 = ((long) record[offset + 2]) & 0xffl;
@@ -827,22 +962,35 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final long l3 = ((long) record[offset + 5]) & 0xffl;
         final long l2 = ((long) record[offset + 6]) & 0xffl;
         final long l1 = ((long) record[offset + 7]) & 0xffl;
-        final long l = (l8 << 56) | (l7 << 48) | (l6 << 40) | (l5 << 32) |
-                       (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;
+        long l;
+        if (bigEndian) {
+            l = (l8 << 56) | (l7 << 48) | (l6 << 40) | (l5 << 32) |
+                (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;
+        } else {
+            l = (l1 << 56) | (l2 << 48) | (l3 << 40) | (l4 << 32) |
+                (l5 << 24) | (l6 << 16) | (l7 <<  8) | l8;
+        }
         return Double.longBitsToDouble(l);
     }
 
     /** Extract an int from a record.
      * @param record record to parse
      * @param offset offset of the double within the record
+     * @param bigEndian if <code>true</code> the parsed int is extracted in big-endian
+     * format, otherwise it is extracted in little-endian format
      * @return extracted int
      */
-    private static int extractInt(final byte[] record, final int offset) {
+    private static int extractInt(final byte[] record, final int offset, final boolean bigEndian) {
         final int l4 = ((int) record[offset + 0]) & 0xff;
         final int l3 = ((int) record[offset + 1]) & 0xff;
         final int l2 = ((int) record[offset + 2]) & 0xff;
         final int l1 = ((int) record[offset + 3]) & 0xff;
-        return (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;
+
+        if (bigEndian) {
+            return (l4 << 24) | (l3 << 16) | (l2 <<  8) | l1;
+        } else {
+            return (l1 << 24) | (l2 << 16) | (l3 <<  8) | l4;
+        }
     }
 
     /** Extract a String from a record.
@@ -879,15 +1027,42 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 throw new OrekitException(OrekitMessages.UNABLE_TO_READ_JPL_HEADER, name);
             }
 
+            final boolean bigEndian = detectEndianess(first);
+
             // constants defined in the file
             for (int i = 0; i < 400; ++i) {
+                // Note: for extracting the strings from the binary file, it makes no difference
+                //       if the file is stored in big-endian or little-endian notation
                 final String constantName = extractString(first, 252 + i * 6, 6);
                 if (constantName.length() == 0) {
                     // no more constants to read
-                    return;
+                    break;
                 }
-                final double constantValue = extractDouble(second, 8 * i);
+                final double constantValue = extractDouble(second, 8 * i, bigEndian);
                 constants.put(constantName, constantValue);
+            }
+
+            // INPOP files do not have constants for AU and EMRAT, thus extract them from
+            // the header record and create a constant for them to be consistent with JPL files
+
+            double au = getLoadedAstronomicalUnit();
+            if (Double.isNaN(au)) {
+                au = extractDouble(first, 2680, bigEndian);
+                if (au < 1.4e8 || au > 1.6e8) {
+                    throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
+                } else {
+                    constants.put(CONSTANT_AU, au);
+                }
+            }
+
+            double emRat = getLoadedEarthMoonMassRatio();
+            if (Double.isNaN(emRat)) {
+                emRat = extractDouble(first, 2688, bigEndian);
+                if (emRat < 80 || emRat > 82) {
+                    throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
+                } else {
+                    constants.put(CONSTANT_EMRAT, emRat);
+                }
             }
 
         }
