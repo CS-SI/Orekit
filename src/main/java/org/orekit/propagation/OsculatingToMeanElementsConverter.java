@@ -47,9 +47,9 @@ public class OsculatingToMeanElementsConverter {
      * @throws OrekitException
      */
     public OsculatingToMeanElementsConverter(final SpacecraftState state,
-                                           final int satelliteRevolution,
-                                           final Propagator propagator)
-                                                                       throws OrekitException {
+                                             final int satelliteRevolution,
+                                             final Propagator propagator)
+                                                                         throws OrekitException {
         this.state = state;
         this.satelliteRevolution = satelliteRevolution;
         this.propagator = propagator;
@@ -68,7 +68,7 @@ public class OsculatingToMeanElementsConverter {
      */
     public final SpacecraftState convert() throws IllegalArgumentException, OrekitException {
         // Tolerance list
-        double[][] tolerance = NumericalPropagator.tolerances(1e-3, state.getOrbit(), state.getOrbit().getType());
+         double[][] tolerance = NumericalPropagator.tolerances(1e-3, state.getOrbit(), state.getOrbit().getType());
         final double aMean = computeSemiMajorAxis(state, tolerance[0][0], tolerance[1][0]);
         // Get eccentric longitude
         final double l = state.getLE();
@@ -152,7 +152,6 @@ public class OsculatingToMeanElementsConverter {
             this.delta = satelliteRevolution * state.getKeplerianPeriod() * 0.5;
             this.periodFunction = new AlphaFunction(state, satelliteRevolution, state.getKeplerianPeriod());
             this.integrator = new SimpsonIntegrator(relativeTolerance, absoluteTolerance, SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT, SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
-
         }
 
         /** Set the satellite period at i<sup>th</sup> iteration */
@@ -258,8 +257,8 @@ public class OsculatingToMeanElementsConverter {
             this.initialDate = initialState.getDate();
             propagator.setEphemerisMode();
             double delta = satelliteRevolution * orbitalPeriod * 0.5;
-            // Take a 1% security margin
-            delta += 1E-3 * delta;
+            // Take a 10% security margin
+            delta += 1e-2 * delta;
             propagator.propagate(initialDate.shiftedBy(-delta), initialDate.shiftedBy(delta));
             ephemeris = propagator.getGeneratedEphemeris();
         }
