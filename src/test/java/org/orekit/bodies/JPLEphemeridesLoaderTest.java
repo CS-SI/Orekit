@@ -22,6 +22,7 @@ import java.text.ParseException;
 import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -34,6 +35,8 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testConstants() throws OrekitException {
+        Utils.setDataRoot("regular-data/de405-ephemerides");
+
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
         Assert.assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
@@ -42,6 +45,8 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testGM() throws OrekitException {
+        Utils.setDataRoot("regular-data/de405-ephemerides");
+
         JPLEphemeridesLoader loader =
             new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
         Assert.assertEquals(22032.080e9,
@@ -81,12 +86,21 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testDerivative405() throws OrekitException, ParseException {
+        Utils.setDataRoot("regular-data/de405-ephemerides");
         checkDerivative(new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
     }
 
     @Test
     public void testDerivative406() throws OrekitException, ParseException {
+        Utils.setDataRoot("regular-data/de406-ephemerides");
         checkDerivative(new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()));
+    }
+
+    @Test
+    @Ignore
+    public void testDerivative414() throws OrekitException, ParseException {
+        Utils.setDataRoot("regular-data/de414-ephemerides");
+        checkDerivative(new AbsoluteDate(1950, 1, 12, TimeScalesFactory.getTT()));
     }
 
     private void checkDerivative(AbsoluteDate date) throws OrekitException, ParseException {
@@ -114,7 +128,6 @@ public class JPLEphemeridesLoaderTest {
 
         Vector3D loadedV = body.getPVCoordinates(date, eme2000).getVelocity();
         Assert.assertEquals(0, loadedV.subtract(estimatedV).getNorm(), 5.0e-11 * loadedV.getNorm());
-
     }
 
     @Before

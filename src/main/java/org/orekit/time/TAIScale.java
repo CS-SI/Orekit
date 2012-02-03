@@ -32,15 +32,6 @@ public class TAIScale implements TimeScale {
     TAIScale() {
     }
 
-    /** Get the unique instance of this class.
-     * @return the unique instance
-     * @deprecated since 4.1 replaced by {@link TimeScalesFactory#getTAI()}
-     */
-    @Deprecated
-    public static TAIScale getInstance() {
-        return TimeScalesFactory.getTAI();
-    }
-
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate taiTime) {
         return 0;

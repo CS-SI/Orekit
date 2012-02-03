@@ -19,7 +19,6 @@ package org.orekit.time;
 import java.util.Map;
 import java.util.SortedMap;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
 
 /** Coordinated Universal Time.
@@ -145,16 +144,6 @@ public class UTCScale implements TimeScale, Cloneable {
         previous.setValidityEnd(leapStart);
         offsets[++current] = new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope);
 
-    }
-
-    /** Get a new instance of this class.
-     * @return a new {@link UTCScale} instance
-     * @exception OrekitException if the leap seconds cannot be read
-     * @deprecated since 4.1 replaced by {@link TimeScalesFactory#getUTC()}
-     */
-    @Deprecated
-    public static UTCScale getInstance() throws OrekitException {
-        return TimeScalesFactory.getUTC();
     }
 
     /** {@inheritDoc} */

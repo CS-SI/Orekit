@@ -204,7 +204,7 @@ public class SecularAndHarmonic {
      * @param end end date of the approximation time range
      * @param step sampling step
      * @return coefficients of the approximate polynomial (in increasing degree order),
-     * using the same {@link #getReferenceDate() reference date} as the instance
+     * using the user provided reference date
      */
     public double[] approximateAsPolynomialOnly(final int combinedDegree, final AbsoluteDate combinedReference,
                                                 final int meanDegree, final int meanHarmonics,

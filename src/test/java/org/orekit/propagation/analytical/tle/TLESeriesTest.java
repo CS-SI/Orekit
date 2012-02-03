@@ -18,7 +18,6 @@ package org.orekit.propagation.analytical.tle;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 
 import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
@@ -40,15 +39,6 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class TLESeriesTest {
-
-    @Deprecated
-    @Test(expected=OrekitException.class)
-    public void testDeprecated() throws IOException, OrekitException {
-        InputStream in =
-            TLETest.class.getResourceAsStream("/regular-data/tle/spot-5.tle");
-        TLESeries series = new TLESeries(in);
-        series.loadTLEData(22076);
-    }
 
     @Test(expected=OrekitException.class)
     public void testNoData() throws IOException, OrekitException {

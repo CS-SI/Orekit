@@ -146,7 +146,7 @@ class PosVelChebyshev implements TimeStamped, Serializable {
             pKm1 = pK;
             pK   = twoT * pKm1 - pKm2;
 
-            // compute nex Chebyshev polynomial derivative
+            // compute next Chebyshev polynomial derivative
             final double qKm2 = qKm1;
             qKm1 = qK;
             qK   = twoT * qKm1 + 2 * pKm1 - qKm2;
