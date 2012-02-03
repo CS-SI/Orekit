@@ -112,22 +112,19 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class DSSTPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long              serialVersionUID     = -1217566398912634178L;
+    private static final long              serialVersionUID = -1217566398912634178L;
 
     /** Propagation orbit type. */
-    private static final OrbitType         ORBIT_TYPE           = OrbitType.EQUINOCTIAL;
+    private static final OrbitType         ORBIT_TYPE       = OrbitType.EQUINOCTIAL;
 
     /** Position angle type. */
-    private static final PositionAngle     ANGLE_TYPE           = PositionAngle.MEAN;
+    private static final PositionAngle     ANGLE_TYPE       = PositionAngle.MEAN;
 
     /** Position error tolerance (m). */
-    private static final double            POSITION_ERROR       = 1.0;
+    private static final double            POSITION_ERROR   = 1.0;
 
     /** Position error tolerance (m). */
-    private static final double            EXTRA_TIME           = Constants.JULIAN_DAY;
-
-    /** number of satellite revolutions in the averaging interval */
-    private static final int               SATELLITE_REVOLUTION = 1;
+    private static final double            EXTRA_TIME       = Constants.JULIAN_DAY;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
     private transient FirstOrderIntegrator integrator;
@@ -178,8 +175,11 @@ public class DSSTPropagator extends AbstractPropagator {
     /** Is the orbital state in osculating parameters */
     private boolean                        isOsculating;
 
+    /** number of satellite revolutions in the averaging interval */
+    private int                            satelliteRevolution;
+
     /** Modified Newcomb Operator */
-    private static double[][][]            newcomb              = null;
+    private static double[][][]            newcomb          = null;
 
     /**
      * Build a DSSTPropagator from integrator and orbit.
@@ -324,7 +324,8 @@ public class DSSTPropagator extends AbstractPropagator {
         this.initialized = false;
         this.timeShiftToInitialize = timeShiftToInitialize;
         this.isOsculating = isOsculating;
-
+        // Average osculating elements over 2 orbits
+        this.satelliteRevolution = 2;
         setExtraTime(EXTRA_TIME);
 
         setIntegrator(integrator);
@@ -409,6 +410,19 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /**
+     * Override the default value of the {@link DSSTPropagator#satelliteRevolution} parameter. By
+     * default, if the given orbit is an osculating one, it will be averaged over a specific number
+     * of revolution (2 revolution). This can be changed by using this method.
+     * 
+     * @param satelliteRevolution
+     *            number of satellite revolution to use for averaging process (osculating to mean
+     *            elements)
+     */
+    public void setSatelliteRevolution(final int satelliteRevolution) {
+        this.satelliteRevolution = satelliteRevolution;
+    }
+
+    /**
      * Get the number of calls to the differential equations computation method.
      * <p>
      * The number of calls is reset each time the {@link #propagateOrbit(AbsoluteDate)} method is
@@ -462,7 +476,7 @@ public class DSSTPropagator extends AbstractPropagator {
             if (!initialized && isOsculating) {
                 Propagator propagator = createPropagator(initialState);
 
-                SpacecraftState state = new OsculatingToMeanElementsConverter(initialState, SATELLITE_REVOLUTION, propagator).convert();
+                SpacecraftState state = new OsculatingToMeanElementsConverter(initialState, satelliteRevolution, propagator).convert();
                 meanElements = new double[] { state.getA(), state.getEquinoctialEx(), state.getEquinoctialEy(), state.getHx(),
                                 state.getHy(), state.getLM() };
                 initialized = true;
