@@ -35,15 +35,6 @@ public class TTScale implements TimeScale {
     TTScale() {
     }
 
-    /** Get the unique instance of this class.
-     * @return the unique instance
-     * @deprecated since 4.1 replaced by {@link TimeScalesFactory#getTT()}
-     */
-    @Deprecated
-    public static TTScale getInstance() {
-        return TimeScalesFactory.getTT();
-    }
-
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
         return 32.184;
