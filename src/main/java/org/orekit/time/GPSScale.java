@@ -33,15 +33,6 @@ public class GPSScale implements TimeScale {
     GPSScale() {
     }
 
-    /** Get the unique instance of this class.
-     * @return the unique instance
-     * @deprecated since 4.1 replaced by {@link TimeScalesFactory#getGPS()}
-     */
-    @Deprecated
-    public static GPSScale getInstance() {
-        return TimeScalesFactory.getGPS();
-    }
-
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
         return -19;

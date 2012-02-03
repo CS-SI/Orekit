@@ -317,21 +317,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     }
 
     /** Get astronomical unit.
-     * <p>
-     * This method loads its constants from the files using the default JPL
-     * names only.
-     * </p>
-     * @return astronomical unit in meters
-     * @exception OrekitException if constants cannot be loaded
-     * @deprecated as of 4.2, replaced by the non-static method
-     * {@link #getLoadedAstronomicalUnit()}
-     */
-    @Deprecated
-    public static double getAstronomicalUnit() throws OrekitException {
-        return new JPLEphemeridesLoader(null, EphemerisType.SUN, null).getLoadedAstronomicalUnit();
-    }
-
-    /** Get astronomical unit.
      * @return astronomical unit in meters
      * @exception OrekitException if constants cannot be loaded
      */
@@ -346,21 +331,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     }
 
     /** Get Earth/Moon mass ratio.
-     * <p>
-     * This method loads its constants from the files using the default JPL
-     * names only.
-     * </p>
-     * @return Earth/Moon mass ratio
-     * @exception OrekitException if constants cannot be loaded
-     * @deprecated as of 4.2, replaced by the non-static method
-     * {@link #getLoadedEarthMoonMassRatio()}
-     */
-    @Deprecated
-    public static double getEarthMoonMassRatio() throws OrekitException {
-        return new JPLEphemeridesLoader(null, EphemerisType.EARTH_MOON, null).getLoadedEarthMoonMassRatio();
-    }
-
-    /** Get Earth/Moon mass ratio.
      * @return Earth/Moon mass ratio
      * @exception OrekitException if constants cannot be loaded
      */
@@ -372,23 +342,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         return getLoadedConstant(CONSTANT_EMRAT);
 
-    }
-
-    /** Get the gravitational coefficient of a body.
-     * <p>
-     * This method loads its constants from the files using the default JPL
-     * names only.
-     * </p>
-     * @param body body for which the gravitational coefficient is requested
-     * @return gravitational coefficient in m<sup>3</sup>/s<sup>2</sup>
-     * @exception OrekitException if constants cannot be loaded
-     * @deprecated as of 4.2, replaced by the non-static method
-     * {@link #getLoadedGravitationalCoefficient(EphemerisType)}
-     */
-    @Deprecated
-    public static double getGravitationalCoefficient(final EphemerisType body)
-        throws OrekitException {
-        return new JPLEphemeridesLoader(null, EphemerisType.SUN, null).getLoadedGravitationalCoefficient(body);
     }
 
     /** Get the gravitational coefficient of a body.
@@ -460,26 +413,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final double au    = getLoadedAstronomicalUnit();
         return rawGM * au * au * au / (Constants.JULIAN_DAY * Constants.JULIAN_DAY);
 
-    }
-
-    /** Get a constant defined in the ephemerides headers.
-     * <p>
-     * This method loads its constants from the files using the default JPL
-     * names only.
-     * </p>
-     * <p>Note that since constants are defined in the JPL headers
-     * files, they are available as soon as one file is available, even
-     * if it doesn't match the desired central date. This is because the
-     * header must be parsed before the dates can be checked.</p>
-     * @param name name of the constant
-     * @return value of the constant of NaN if the constant is not defined
-     * @exception OrekitException if constants cannot be loaded
-     * @deprecated as of 4.2, replaced by the non-static method
-     * {@link #getLoadedConstant(String)}
-     */
-    @Deprecated
-    public static double getConstant(final String name) throws OrekitException {
-        return new JPLEphemeridesLoader(null, EphemerisType.SUN, null).getLoadedConstant(name);
     }
 
     /** Get a constant defined in the ephemerides headers.

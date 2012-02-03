@@ -53,15 +53,6 @@ public class TCGScale implements TimeScale {
     TCGScale() {
     }
 
-    /** Get the unique instance of this class.
-     * @return the unique instance
-     * @deprecated since 4.1 replaced by {@link TimeScalesFactory#getTCG()}
-     */
-    @Deprecated
-    public static TCGScale getInstance() {
-        return TimeScalesFactory.getTCG();
-    }
-
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
         return TT_OFFSET + LG_RATE * date.durationFrom(REFERENCE_DATE);
