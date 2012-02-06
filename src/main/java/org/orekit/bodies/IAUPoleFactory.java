@@ -22,12 +22,12 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** Factory class for IAU poles.
- * <p>The pole models provided here come from <a
- * href="http://astrogeology.usgs.gov/Projects/WGCCRE/constants/iau2000_table1.html">
- * table 1</a> of the IAU/IAG Working Group on Cartographic Coordinates
- * and Rotational Elements of the Planets and Satellites (WGCCRE) site. The
- * constants have been retrieved on 2010-12-18. They seem to have last been updated
- * around 2005.
+ * <p>The pole models provided here come from the <a
+ * href="http://astropedia.astrogeology.usgs.gov/alfresco/d/d/workspace/SpacesStore/28fd9e81-1964-44d6-a58b-fbbf61e64e15/WGCCRE2009reprint.pdf">
+ * 2009 report</a> and the <a href="http://astropedia.astrogeology.usgs.gov/alfresco/d/d/workspace/SpacesStore/04d348b0-eb2b-46a2-abe9-6effacb37763/WGCCRE-Erratum-2011reprint.pdf">
+ * 2011 erratum</a> of the IAU/IAG Working Group on Cartographic Coordinates
+ * and Rotational Elements of the Planets and Satellites (WGCCRE). Note that these value
+ * differ from earliest reports (before 2005).
  *</p>
  * @author Luc Maisonobe
  * @since 5.1
@@ -63,7 +63,7 @@ class IAUPoleFactory {
 
                 /** {@inheritDoc }*/
                 public double getPrimeMeridianAngle(final AbsoluteDate date) {
-                    return FastMath.toRadians(84.10 + 14.1844000 * d(date));
+                    return FastMath.toRadians(84.176 + 14.1844000 * d(date));
                 }
 
             };
@@ -76,15 +76,35 @@ class IAUPoleFactory {
                 /** {@inheritDoc }*/
                 public Vector3D getPole(final AbsoluteDate date) {
                     final double t = t(date);
-                    return new Vector3D(FastMath.toRadians(281.01 - 0.033 * t),
-                                        FastMath.toRadians( 61.45 - 0.005 * t));
+                    return new Vector3D(FastMath.toRadians(281.0097 - 0.0328 * t),
+                                        FastMath.toRadians( 61.4143 - 0.0049 * t));
                 }
 
                 /** {@inheritDoc }*/
                 public double getPrimeMeridianAngle(final AbsoluteDate date) {
-                    return FastMath.toRadians(329.548 + 6.1385025 * d(date));
+                    final double[] m = computeMi(date);
+                    return FastMath.toRadians(329.5469 + 6.1385025 * d(date) +
+                                              0.00993822 * FastMath.sin(m[0]) -
+                                              0.00104581 * FastMath.sin(m[1]) -
+                                              0.00010280 * FastMath.sin(m[2]) -
+                                              0.00002364 * FastMath.sin(m[3]) -
+                                              0.00000532 * FastMath.sin(m[4]));
                 }
 
+                /** Compute the Mercury angles M<sub>i</sub>.
+                 * @param date date
+                 * @return array of Mercury angles, with M<sub>i</sub> stored at index i-1
+                 */
+                private double[] computeMi(final AbsoluteDate date) {
+                    final double d = d(date);
+                    return new double[] {
+                        FastMath.toRadians(174.791096 +  4.092335 * d), // M1
+                        FastMath.toRadians(349.582171 +  8.184670 * d), // M2
+                        FastMath.toRadians(164.373257 + 12.277005 * d), // M3
+                        FastMath.toRadians(339.164343 + 16.369340 * d), // M4
+                        FastMath.toRadians(153.955429 + 20.461675 * d), // M5
+                    };
+                }
             };
         case VENUS:
             return new IAUPole() {
@@ -209,14 +229,31 @@ class IAUPoleFactory {
 
                 /** {@inheritDoc }*/
                 public Vector3D getPole(final AbsoluteDate date) {
+
                     final double t = t(date);
-                    return new Vector3D(FastMath.toRadians(268.05 - 0.009 * t),
-                                        FastMath.toRadians( 64.49 + 0.003 * t));
+                    final double ja = FastMath.toRadians( 99.360714 + 4850.4046 * t);
+                    final double jb = FastMath.toRadians(175.895369 + 1191.9605 * t);
+                    final double jc = FastMath.toRadians(300.323162 +  262.5475 * t);
+                    final double jd = FastMath.toRadians(114.012305 + 6070.2476 * t);
+                    final double je = FastMath.toRadians( 49.511251 +   64.3000 * t);
+
+                    return new Vector3D(FastMath.toRadians(268.056595 - 0.006499 * t +
+                                                           0.000117 * FastMath.sin(ja) +
+                                                           0.000938 * FastMath.sin(jb) +
+                                                           0.001432 * FastMath.sin(jc) +
+                                                           0.000030 * FastMath.sin(jd) +
+                                                           0.002150 * FastMath.sin(je)),
+                                        FastMath.toRadians( 64.495303 + 0.002413 * t) +
+                                                           0.000050 * FastMath.cos(ja) +
+                                                           0.000404 * FastMath.cos(jb) +
+                                                           0.000617 * FastMath.cos(jc) -
+                                                           0.000013 * FastMath.cos(jd) +
+                                                           0.000926 * FastMath.cos(je));
                 }
 
                 /** {@inheritDoc }*/
                 public double getPrimeMeridianAngle(final AbsoluteDate date) {
-                    return FastMath.toRadians(284.95 + 870.5366420 * d(date));
+                    return FastMath.toRadians(284.95 + 870.5360000 * d(date));
                 }
 
             };
@@ -285,13 +322,13 @@ class IAUPoleFactory {
 
                 /** {@inheritDoc }*/
                 public Vector3D getPole(final AbsoluteDate date) {
-                    return new Vector3D(FastMath.toRadians(313.02),
-                                        FastMath.toRadians(9.09));
+                    return new Vector3D(FastMath.toRadians(132.993),
+                                        FastMath.toRadians(-6.163));
                 }
 
                 /** {@inheritDoc }*/
                 public double getPrimeMeridianAngle(final AbsoluteDate date) {
-                    return FastMath.toRadians(236.77 - 56.3623195 * d(date));
+                    return FastMath.toRadians(302.695 + 56.3625225 * d(date));
                 }
 
             };
