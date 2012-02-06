@@ -162,15 +162,6 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /** Maximal integer value for the s index truncation in tesseral harmonic expansion */
     private int                    tessMaxS;
 
-    /** Minimal integer value for the j index truncation in tesseral harmonic expansion */
-    private int                    tessMinJ;
-
-    /** Maximal integer value for the J index truncation in tesseral harmonic expansion */
-    private int                    tessMaxJ;
-
-    /** Maximal integer value for the M index truncation in tesseral harmonic expansion */
-    private int                    tessMaxM;
-
     /** Minimal integer value for the N index truncation in tesseral harmonic expansion */
     private int                    tessMaxN;
 
@@ -206,8 +197,6 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      */
     private double                 tesseralTruncationTolerance;
 
-    /** Minimum perturbation period */
-    private double                 minPerturbationPeriod;
 
     /**
      * DSST Central body constructor.
@@ -469,8 +458,6 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
         }
 
         // Temporary variables :
-        int jMin = Integer.MAX_VALUE;
-        int jMax = Integer.MIN_VALUE;
         int sMin = Integer.MAX_VALUE;
         int sMax = Integer.MIN_VALUE;
         int n;

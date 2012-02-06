@@ -25,7 +25,6 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
@@ -179,7 +178,7 @@ public class DSSTPropagation {
          0.0011562979012178316, 98.74341600466741, Math.toRadians(43.32990110790338),
          Math.toRadians(180), PositionAngle.MEAN, FramesFactory.getEME2000(), orbitDate, mu);
          boolean isOscullating = true;
-         // Fill those fields if isOscullating = true :
+         // Fill those fields if (isOscullating = true) :
          boolean sun = true;
          boolean moon = true;
          boolean solarRadiation = false;
@@ -240,42 +239,9 @@ public class DSSTPropagation {
                                  boolean moon,
                                  boolean solarRadiation) throws Exception {
         if (isOsculating) {
-            // TODO clean this mess up !
-//            if (orbit.getI() < 1e-10) {
-//                throw new Exception("Cannot average the orbit if inclination is null !");
-//            }
-//            // Initialize the numerical propagator
-//            setNumProp(new SpacecraftState(orbit));
-//            // Add a default gravitational model
-//            propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider.getAe(), orbit.getMu(), provider.getC(degree, order, false), provider.getS(degree, order, false)));
-//            if (sun) {
-//                propaNUM.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
-//            }
-//            if (moon) {
-//                propaNUM.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
-//            }
-//            if (solarRadiation) {
-//                double sf = 5.0;
-//                double kA = 0.5;
-//                double kR = 0.5;
-//                // NUMERICAL radiation pressure force
-//                SphericalSpacecraft spc = new SphericalSpacecraft(sf, 0., kA, kR);
-//                ForceModel pressureNUM = new SolarRadiationPressure(CelestialBodyFactory.getSun(), provider.getAe(), spc);
-//                propaNUM.addForceModel(pressureNUM);
-//            }
-//
-//            // Create the mean orbit from the osculating by averaging the orbit over half a day
-//            SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 43200, 5);
-//            SpacecraftState mean = orbits[0];
-//            SpacecraftState osc = orbits[1];
 
-            // As the DSST propagator doesn't take short periodic variation in account actually, we
-            // need to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
-            // propagator :
-//            setDSSTProp(mean, isOsculating, TIME_SHIFT_TO_INITIALIZE);
             setDSSTProp(new SpacecraftState(orbit), isOsculating, TIME_SHIFT_TO_INITIALIZE);
             // Reset the numerical propagator with new orbit (remove every force model)
-//            setNumProp(osc);
             setNumProp(new SpacecraftState(orbit));
             
 
