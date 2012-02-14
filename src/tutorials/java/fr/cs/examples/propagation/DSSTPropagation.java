@@ -17,10 +17,10 @@ import java.io.IOException;
 import java.util.Formatter;
 import java.util.Locale;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;

@@ -3,7 +3,7 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math.complex.Complex;
+import org.apache.commons.math3.complex.Complex;
 
 /**
  * Compute the S<sub>i</sub>(k, h) and the C<sub>i</sub>(k, h) series and their partial derivatives

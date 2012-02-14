@@ -3,8 +3,8 @@ package org.orekit.propagation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

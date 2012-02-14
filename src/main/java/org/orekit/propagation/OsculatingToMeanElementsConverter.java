@@ -1,11 +1,11 @@
 package org.orekit.propagation;
 
-import org.apache.commons.math.analysis.DifferentiableUnivariateFunction;
-import org.apache.commons.math.analysis.UnivariateFunction;
-import org.apache.commons.math.analysis.integration.SimpsonIntegrator;
-import org.apache.commons.math.analysis.solvers.NewtonSolver;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.analysis.DifferentiableUnivariateFunction;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.integration.SimpsonIntegrator;
+import org.apache.commons.math3.analysis.solvers.NewtonSolver;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;

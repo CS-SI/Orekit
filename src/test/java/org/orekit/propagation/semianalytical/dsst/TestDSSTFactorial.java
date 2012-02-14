@@ -2,7 +2,7 @@ package org.orekit.propagation.semianalytical.dsst;
 
 import junit.framework.Assert;
 
-import org.apache.commons.math.util.ArithmeticUtils;
+import org.apache.commons.math3.util.ArithmeticUtils;
 import org.junit.Test;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTFactorial;
 

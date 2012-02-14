@@ -3,8 +3,8 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.math.util.ArithmeticUtils;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.MNSKey;
 
 /**

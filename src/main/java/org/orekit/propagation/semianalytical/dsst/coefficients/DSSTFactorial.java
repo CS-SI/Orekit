@@ -3,7 +3,7 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.apache.commons.math.util.ArithmeticUtils;
+import org.apache.commons.math3.util.ArithmeticUtils;
 
 /**
  * This class has been created for DSST purpose. The DSST needs large factorial values (for high

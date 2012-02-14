@@ -1,6 +1,6 @@
 package org.orekit.propagation.semianalytical.dsst.coefficients;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 
 /**
  * Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup> polynomials function in

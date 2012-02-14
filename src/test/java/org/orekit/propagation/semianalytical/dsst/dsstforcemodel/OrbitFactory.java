@@ -3,7 +3,7 @@ package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;

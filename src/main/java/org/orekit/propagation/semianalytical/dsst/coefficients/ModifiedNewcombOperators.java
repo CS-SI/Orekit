@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math.analysis.polynomials.PolynomialsUtils;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 
 /**

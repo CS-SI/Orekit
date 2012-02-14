@@ -3,7 +3,7 @@ package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
