@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;

@@ -17,8 +17,8 @@
 package org.orekit.forces.gravity;
 
 
-import org.apache.commons.math.ode.nonstiff.GraggBulirschStoerIntegrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.ode.nonstiff.GraggBulirschStoerIntegrator;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

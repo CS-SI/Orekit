@@ -2,7 +2,7 @@ package org.orekit.propagation.precomputed;
 
 import junit.framework.Assert;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;

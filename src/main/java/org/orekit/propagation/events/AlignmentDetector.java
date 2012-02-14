@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;

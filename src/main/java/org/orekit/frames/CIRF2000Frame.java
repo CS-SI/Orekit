@@ -18,9 +18,9 @@ package org.orekit.frames;
 
 import java.io.InputStream;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;

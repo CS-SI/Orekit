@@ -19,8 +19,8 @@ package org.orekit.propagation.sampling;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.math.ode.sampling.StepHandler;
-import org.apache.commons.math.ode.sampling.StepInterpolator;
+import org.apache.commons.math3.ode.sampling.StepHandler;
+import org.apache.commons.math3.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;

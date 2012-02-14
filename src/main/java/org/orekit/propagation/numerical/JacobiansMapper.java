@@ -18,10 +18,10 @@ package org.orekit.propagation.numerical;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.linear.Array2DRowRealMatrix;
-import org.apache.commons.math.linear.DecompositionSolver;
-import org.apache.commons.math.linear.QRDecomposition;
-import org.apache.commons.math.linear.RealMatrix;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.QRDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;

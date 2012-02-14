@@ -18,9 +18,9 @@ package org.orekit.propagation.numerical;
 
 import java.util.List;
 
-import org.apache.commons.math.ode.ContinuousOutputModel;
-import org.apache.commons.math.ode.sampling.StepHandler;
-import org.apache.commons.math.ode.sampling.StepInterpolator;
+import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.math3.ode.sampling.StepHandler;
+import org.apache.commons.math3.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;

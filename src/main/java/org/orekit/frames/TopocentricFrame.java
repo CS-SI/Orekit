@@ -16,14 +16,14 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.analysis.UnivariateFunction;
-import org.apache.commons.math.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math.analysis.solvers.UnivariateSolver;
-import org.apache.commons.math.exception.TooManyEvaluationsException;
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
+import org.apache.commons.math3.analysis.solvers.UnivariateSolver;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;

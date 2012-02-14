@@ -16,7 +16,7 @@
  */
 package org.orekit.time;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Barycentric Dynamic Time.

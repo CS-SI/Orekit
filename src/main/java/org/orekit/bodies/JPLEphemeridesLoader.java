@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;

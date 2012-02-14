@@ -1,8 +1,8 @@
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

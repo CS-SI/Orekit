@@ -20,8 +20,8 @@ package org.orekit.forces.drag;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

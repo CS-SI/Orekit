@@ -19,7 +19,7 @@ package org.orekit.files.sp3;
 import java.io.InputStream;
 import java.util.List;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

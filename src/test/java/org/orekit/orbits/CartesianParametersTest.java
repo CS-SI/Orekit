@@ -22,9 +22,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -200,8 +200,8 @@ public class CartesianParametersTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assert.assertTrue(bos.size () >  1400);
-        Assert.assertTrue(bos.size () <  1500);
+        Assert.assertTrue(bos.size () >  1450);
+        Assert.assertTrue(bos.size () <  1550);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

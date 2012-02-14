@@ -28,9 +28,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math.exception.NoBracketingException;
-import org.apache.commons.math.exception.TooManyEvaluationsException;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.exception.NoBracketingException;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;

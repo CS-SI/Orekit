@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.math.exception.util.DummyLocalizable;
+import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 

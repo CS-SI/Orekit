@@ -16,8 +16,8 @@
  */
 package org.orekit.forces.drag;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;

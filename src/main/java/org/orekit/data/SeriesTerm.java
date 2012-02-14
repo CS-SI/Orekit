@@ -18,7 +18,7 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 
 /** Base class for nutation series terms.
  * @author Luc Maisonobe

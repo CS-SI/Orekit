@@ -16,7 +16,7 @@
  */
 package org.orekit.utils;
 
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.util.MathUtils;
 
 /** Set of useful physical constants.
 

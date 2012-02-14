@@ -20,9 +20,9 @@ package org.orekit.forces.radiation;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

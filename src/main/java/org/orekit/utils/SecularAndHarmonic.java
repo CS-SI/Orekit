@@ -16,11 +16,11 @@
  */
 package org.orekit.utils;
 
-import org.apache.commons.math.analysis.ParametricUnivariateFunction;
-import org.apache.commons.math.optimization.fitting.CurveFitter;
-import org.apache.commons.math.optimization.fitting.PolynomialFitter;
-import org.apache.commons.math.optimization.general.LevenbergMarquardtOptimizer;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
+import org.apache.commons.math3.optimization.fitting.CurveFitter;
+import org.apache.commons.math3.optimization.fitting.PolynomialFitter;
+import org.apache.commons.math3.optimization.general.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
 /** Class for fitting evolution of osculating orbital parameters.

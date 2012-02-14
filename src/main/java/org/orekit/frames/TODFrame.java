@@ -16,10 +16,10 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
