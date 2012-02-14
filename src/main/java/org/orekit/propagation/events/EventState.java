@@ -18,14 +18,14 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.analysis.UnivariateFunction;
-import org.apache.commons.math.analysis.solvers.AllowedSolution;
-import org.apache.commons.math.analysis.solvers.BrentSolver;
-import org.apache.commons.math.analysis.solvers.PegasusSolver;
-import org.apache.commons.math.analysis.solvers.UnivariateSolverUtils;
-import org.apache.commons.math.exception.NoBracketingException;
-import org.apache.commons.math.exception.TooManyEvaluationsException;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.AllowedSolution;
+import org.apache.commons.math3.analysis.solvers.BrentSolver;
+import org.apache.commons.math3.analysis.solvers.PegasusSolver;
+import org.apache.commons.math3.analysis.solvers.UnivariateSolverUtils;
+import org.apache.commons.math3.exception.NoBracketingException;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;

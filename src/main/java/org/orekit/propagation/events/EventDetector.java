@@ -24,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
  *
- * <p>It mirrors the {@link org.apache.commons.math.ode.events.EventHandler
+ * <p>It mirrors the {@link org.apache.commons.math3.ode.events.EventHandler
  * EventHandler} interface from <a href="http://commons.apache.org/math/">
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
  *

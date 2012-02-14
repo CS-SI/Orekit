@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.orbits.EquinoctialOrbit;

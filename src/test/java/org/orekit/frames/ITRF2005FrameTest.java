@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

@@ -18,7 +18,7 @@ package org.orekit.time;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.utils.Constants;
 
 /** Holder for date and time components.

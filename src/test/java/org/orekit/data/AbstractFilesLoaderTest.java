@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOPHistory;

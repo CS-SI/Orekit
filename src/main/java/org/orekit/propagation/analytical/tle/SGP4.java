@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.

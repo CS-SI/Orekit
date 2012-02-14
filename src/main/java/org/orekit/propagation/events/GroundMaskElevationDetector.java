@@ -19,8 +19,8 @@ package org.orekit.propagation.events;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
@@ -32,8 +32,8 @@ import org.orekit.time.AbsoluteDate;
  * respect to an azimuth-elevation mask.</p>
  * <p>An azimuth-elevation mask defines the physical horizon for a local point,
  * origin of some topocentric frame.</p>
- * <p>Azimuth is defined according to {@link TopocentricFrame#getAzimuth(org.apache.commons.math.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getAzimuth}.
- *  Elevation is defined according to {@link TopocentricFrame#getElevation(org.apache.commons.math.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getElevation}.</p>
+ * <p>Azimuth is defined according to {@link TopocentricFrame#getAzimuth(org.apache.commons.math3.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getAzimuth}.
+ *  Elevation is defined according to {@link TopocentricFrame#getElevation(org.apache.commons.math3.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getElevation}.</p>
  * <p>The azimuth elevation mask must be supplied as a twodimensional array with
  *  multiples lines of pairs of azimuth-elevation angles. First row will be filled with
  *  azimuth values, second row with elevation values, as in the following snippet:

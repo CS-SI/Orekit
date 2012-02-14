@@ -23,7 +23,7 @@ import java.io.InputStreamReader;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.commons.math.exception.util.LocalizedFormats;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;

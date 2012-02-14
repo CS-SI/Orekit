@@ -17,11 +17,11 @@
 package org.orekit.attitudes;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.CardanEulerSingularityException;
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.CardanEulerSingularityException;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

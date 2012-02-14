@@ -18,7 +18,7 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.ode.events.EventHandler;
+import org.apache.commons.math3.ode.events.EventHandler;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -31,7 +31,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** Adapt an {@link org.orekit.propagation.events.EventDetector}
- * to commons-math {@link org.apache.commons.math.ode.events.EventHandler} interface.
+ * to commons-math {@link org.apache.commons.math3.ode.events.EventHandler} interface.
  * @author Fabien Maussion
  */
 public class AdaptedEventDetector implements EventHandler, Serializable {

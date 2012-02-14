@@ -19,7 +19,7 @@ package org.orekit.forces.drag;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
