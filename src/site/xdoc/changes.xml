@@ -23,6 +23,9 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="update">
+        Improved testing of error messages.
+      </action>
+      <action dev="luc" type="update">
         Updated IAU poles for celestial bodies according to the 2009 report and the
         2011 erratum from the IAU/IAG Working Group on Cartographic Coordinates and
         Rotational Elements of the Planets and Satellites (WGCCRE).
