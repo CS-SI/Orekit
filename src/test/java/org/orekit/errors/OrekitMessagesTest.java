@@ -47,11 +47,24 @@ public class OrekitMessagesTest {
                 Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language,
                                   keyPresent);
             }
-            int nbKeys = 0;
-            for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements(); keys.nextElement()) {
-                ++nbKeys;
+            Assert.assertEquals(language, bundle.getLocale().getLanguage());
+        }
+
+    }
+
+    @Test
+    public void testAllPropertiesCorrespondToKeys() {
+        for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
+            ResourceBundle bundle =
+                ResourceBundle.getBundle("META-INF/localization/OrekitMessages", new Locale(language));
+            for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
+                final String propertyKey = keys.nextElement();
+                try {
+                    Assert.assertNotNull(OrekitMessages.valueOf(propertyKey));
+                } catch (IllegalArgumentException iae) {
+                    Assert.fail("unknown key \"" + propertyKey + "\" in language " + language);
+                }
             }
-            Assert.assertEquals(OrekitMessages.values().length, nbKeys);
             Assert.assertEquals(language, bundle.getLocale().getLanguage());
         }
 
