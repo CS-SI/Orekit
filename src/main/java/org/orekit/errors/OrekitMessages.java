@@ -147,7 +147,8 @@ public enum OrekitMessages implements Localizable {
     DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD("The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates"),
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_UNSUPPORTED_TIMESYSTEM("unsupported time system {0}"),
-    SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})");
+    SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
+    NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})");
 
     // CHECKSTYLE: resume JavadocVariable check
 
