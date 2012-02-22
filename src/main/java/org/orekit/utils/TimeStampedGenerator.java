@@ -16,6 +16,8 @@
  */
 package org.orekit.utils;
 
+import java.util.List;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -76,13 +78,14 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
     AbsoluteDate getLatest() throws OrekitException;
 
     /** Generate an array of entries to be cached.
-     * @param date central date around which entries should be generated (guaranteed to lie
-     * between {@link #getEarliest()} and {@link #getLatest()})
-     * @param n minimum number of entries to generate
-     * @return generated entry (it should have at least n entries surrounding the specified date;
-     * it may have more than n entries)
+     * @param existing closest already existing entry (may be null)
+     * @param date date that must be covered by the range of the generated array
+     * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
+     * @return list of generated entries (it should cover from {@code existing} (excluded)
+     * to {@code date} (included), it may be even larger if the generator prefers to
+     * generate large chunks of data at once
      * @exception OrekitException if entry generation fails
      */
-    T[] generate(AbsoluteDate date, int n) throws OrekitException;
+    List<T> generate(T existing, AbsoluteDate date) throws OrekitException;
 
 }
