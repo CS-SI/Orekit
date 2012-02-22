@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -91,13 +92,16 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @param neighborsSize fixed size of the arrays to be returned by {@link
      * #getNeighbors(AbsoluteDate)}, must be at least 2
      * @exception OrekitException if generator cannot provide supported range, or
-     * the number of neighbors is too small
+     * the number of neighbors is too small, or the number of slots is too small
      */
     public TimeStampedCache(final int maxSlots, final double maxSpan, final Class<T> entriesClass,
                             final TimeStampedGenerator<T> generator, final int neighborsSize)
         throws OrekitException {
 
         // safety check
+        if (maxSlots < 1) {
+            throw new OrekitException(LocalizedFormats.NUMBER_TOO_SMALL, maxSlots, 1);
+        }
         if (neighborsSize < 2) {
             throw new OrekitException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
                                       neighborsSize, 2);
@@ -155,6 +159,76 @@ public class TimeStampedCache<T extends TimeStamped> {
      */
     public int getSlotsEvictions() {
         return evictions.get();
+    }
+
+    /** Get the number of slots in use.
+     * @return number of slots in use
+     */
+    public int getSlots() {
+        
+        globalLock.readLock().lock();
+        try {
+            return slots.size();
+        } finally {
+            globalLock.readLock().unlock();
+        }
+
+    }
+
+    /** Get the total number of entries cached.
+     * @return total number of entries cached
+     */
+    public int getEntries() {
+        
+        globalLock.readLock().lock();
+        try {
+            int entries = 0;
+            for (final Slot slot : slots) {
+                entries += slot.getEntries();
+            }
+            return entries;
+        } finally {
+            globalLock.readLock().unlock();
+        }
+
+    }
+
+    /** Get the earliest cached entry.
+     * @return earliest cached entry
+     * @exception IllegalStateException if the cache has no slots at all
+     * @see #getSlots()
+     */
+    public T getEarliest() throws IllegalStateException {
+        
+        globalLock.readLock().lock();
+        try {
+            if (slots.isEmpty()) {
+                throw OrekitException.createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
+            }
+            return slots.get(0).getEarliest();
+        } finally {
+            globalLock.readLock().unlock();
+        }
+
+    }
+
+    /** Get the latest cached entry.
+     * @return latest cached entry
+     * @exception IllegalStateException if the cache has no slots at all
+     * @see #getSlots()
+     */
+    public T getLatest() throws IllegalStateException {
+        
+        globalLock.readLock().lock();
+        try {
+            if (slots.isEmpty()) {
+                throw OrekitException.createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
+            }
+            return slots.get(slots.size() - 1).getLatest();
+        } finally {
+            globalLock.readLock().unlock();
+        }
+
     }
 
     /** Get the fixed size of the arrays to be returned by {@link #getNeighbors(AbsoluteDate)}.
@@ -245,23 +319,16 @@ public class TimeStampedCache<T extends TimeStamped> {
                         slots.get(index).getLatestQuantum() < dateQuantum - NEW_RANGE_FACTOR * neighborsSize) {
                         ++index;
                     }
-                    slots.add(index, new Slot(date));
 
-                    if (slots.size() > maxSlots) {
-                        // we have exceeded the allowed maximum
+                    if (slots.size() >= maxSlots) {
+                        // we must prevent exceeding allowed max
 
                         // select the oldest accessed slot for eviction
-                        int evict = index;
+                        int evict = 0;
                         for (int i = 0; i < slots.size(); ++i) {
                             if (slots.get(i).getLastAccess() < slots.get(evict).getLastAccess()) {
                                 evict = i;
                             }
-                        }
-
-                        if (evict == index) {
-                            // all slots have been accessed earlier than the one just created!
-                            // select arbitrarily the preceding one to preserve the newly created slot
-                            evict = (index + slots.size() - 1) % slots.size();
                         }
 
                         // evict the selected slot
@@ -272,8 +339,9 @@ public class TimeStampedCache<T extends TimeStamped> {
                             // adjust index of created slot as it was shifted by the eviction
                             index--;
                         }
-
                     }
+
+                    slots.add(index, new Slot(date));
 
                 }
 
@@ -291,12 +359,12 @@ public class TimeStampedCache<T extends TimeStamped> {
 
     }
 
-    /** Get the index of the slot in which a date should be cached.
+    /** Get the index of the slot in which a date could be cached.
      * <p>
      * We own a global read lock while calling this method.
      * </p>
      * @param dateQuantum quantum of the date to search for
-     * @param index of the slot in which the date should be cached (may not exist yet)
+     * @param index of the slot in which the date could be cached
      */
     private int slotIndex(final int dateQuantum) {
 
@@ -353,7 +421,7 @@ public class TimeStampedCache<T extends TimeStamped> {
             this.localLock = new ReentrantReadWriteLock();
 
             // set up first entries
-            final AbsoluteDate generationDate;
+            AbsoluteDate generationDate;
             if (date.compareTo(earliest) < 0) {
                 generationDate = earliest;
             } else if (date.compareTo(latest) > 0) {
@@ -361,9 +429,40 @@ public class TimeStampedCache<T extends TimeStamped> {
             } else {
                 generationDate = date;
             }
+
             calls.incrementAndGet();
-            for (final T entry : generator.generate(generationDate, neighborsSize)) {
+            for (final T entry : generator.generate(null, generationDate)) {
                 cache.add(new Entry(entry, quantum(entry.getDate())));
+            }
+
+            while (cache.size() < neighborsSize) {
+                // we need to generate more entries
+
+                final T entry0 = cache.get(0).getData();
+                final T entryN = cache.get(cache.size() - 1).getData();
+
+                final T existing;
+                if (latest.durationFrom(entryN.getDate()) >= entry0.getDate().durationFrom(earliest)) {
+                    // generate additional point at the end of the slot
+                    existing = entryN;
+                    generationDate = entryN.getDate().shiftedBy(getMeanStep() * (neighborsSize - cache.size()));
+                    if (generationDate.compareTo(latest) > 0) {
+                        generationDate = latest;
+                    }
+                } else {
+                    // generate additional point at the start of the slot
+                    existing = entry0;
+                    generationDate = entry0.getDate().shiftedBy(-getMeanStep() * (neighborsSize - cache.size()));
+                    if (generationDate.compareTo(earliest) < 0) {
+                        generationDate = earliest;
+                    }
+                }
+
+                calls.incrementAndGet();
+                for (final T entry : generator.generate(existing, generationDate)) {
+                    cache.add(new Entry(entry, quantum(entry.getDate())));
+                }
+
             }
 
             earliestQuantum = new AtomicInteger(cache.get(0).getQuantum());
@@ -371,6 +470,18 @@ public class TimeStampedCache<T extends TimeStamped> {
             guessedIndex    = new AtomicInteger(cache.size() / 2);
             lastAccess      = new AtomicLong(System.currentTimeMillis());
 
+        }
+
+        /** Get the earliest entry contained in the slot.
+         * @return earliest entry contained in the slot
+         */
+        public T getEarliest() {
+            localLock.readLock().lock();
+            try {
+                return cache.get(0).getData();
+            } finally {
+                localLock.readLock().unlock();
+            }
         }
 
         /** Get the quantum of the earliest date contained in the slot.
@@ -381,12 +492,55 @@ public class TimeStampedCache<T extends TimeStamped> {
             return earliestQuantum.get();
         }
 
+        /** Get the latest entry contained in the slot.
+         * @return latest entry contained in the slot
+         */
+        public T getLatest() {
+            localLock.readLock().lock();
+            try {
+                return cache.get(cache.size() - 1).getData();
+            } finally {
+                localLock.readLock().unlock();
+            }
+        }
+
         /** Get the quantum of the latest date contained in the slot.
          * @return quantum of the latest date contained in the slot
          */
         public int getLatestQuantum() {
             // there is no need to get a lock here, atomic read access is sufficient
             return latestQuantum.get();
+        }
+
+        /** Get the number of entries contained din the slot.
+         * @return number of entries contained din the slot
+         */
+        public int getEntries() {
+            localLock.readLock().lock();
+            try {
+                return cache.size();
+            } finally {
+                localLock.readLock().unlock();
+            }
+        }
+
+        /** Get the mean step between entries.
+         * @return mean step between entries (or an arbitrary non-null value
+         * if there are fewer than 2 entries)
+         */
+        private double getMeanStep() {
+            localLock.readLock().lock();
+            try {
+                if (cache.size() < 2) {
+                    return 1.0;
+                } else {
+                    final AbsoluteDate t0 = cache.get(0).getData().getDate();
+                    final AbsoluteDate tn = cache.get(cache.size() - 1).getData().getDate();
+                    return tn.durationFrom(t0) / (cache.size() - 1);
+                }
+            } finally {
+                localLock.readLock().unlock();
+            }
         }
 
         /** Get last access time of slot.
@@ -442,17 +596,21 @@ public class TimeStampedCache<T extends TimeStamped> {
                             if (firstNeighbor < 0 || firstNeighbor + neighborsSize > cache.size()) {
 
                                 // generate data at the appropriate slot end
+                                final double step = getMeanStep();
+                                final T existing;
                                 AbsoluteDate generationDate;
                                 if (firstNeighbor < 0) {
-                                    final AbsoluteDate t0 = cache.get(0).getData().getDate();
-                                    final AbsoluteDate t1 = cache.get(1).getData().getDate();
-                                    final double deltaT = t1.durationFrom(t0);
-                                    generationDate = t0.shiftedBy(- neighborsSize * deltaT / 2);
+                                    existing       = cache.get(0).getData();
+                                    generationDate = central.shiftedBy(-step * neighborsSize / 2);
+                                    if (generationDate.compareTo(existing.getDate()) >= 0) {
+                                        generationDate = existing.getDate().shiftedBy(-step);
+                                    }
                                 } else {
-                                    final AbsoluteDate t0 = cache.get(cache.size() - 2).getData().getDate();
-                                    final AbsoluteDate t1 = cache.get(cache.size() - 1).getData().getDate();
-                                    final double deltaT = t1.durationFrom(t0);
-                                    generationDate = t1.shiftedBy(neighborsSize * deltaT / 2);
+                                    existing       = cache.get(cache.size() - 1).getData();
+                                    generationDate = central.shiftedBy(-step * neighborsSize / 2);
+                                    if (generationDate.compareTo(existing.getDate()) <= 0) {
+                                        generationDate = existing.getDate().shiftedBy(step);
+                                    }
                                 }
                                 if (generationDate.compareTo(earliest) < 0) {
                                     generationDate = earliest;
@@ -462,7 +620,7 @@ public class TimeStampedCache<T extends TimeStamped> {
                                     loop = false;
                                 }
                                 calls.incrementAndGet();
-                                final T[] generated = generator.generate(generationDate, neighborsSize);
+                                final List<T> generated = generator.generate(existing, generationDate);
 
                                 // add generated data to the slot
                                 if (firstNeighbor < 0) {
@@ -573,14 +731,14 @@ public class TimeStampedCache<T extends TimeStamped> {
         /** Insert data at slot start.
          * @param data data to insert
          */
-        private void insertAtStart(final T[] data) {
+        private void insertAtStart(final List<T> data) {
 
             // insert data at start
             final int q0 = earliestQuantum.get();
-            for (int i = 0; i < data.length; ++i) {
-                final int quantum = quantum(data[i].getDate());
+            for (int i = 0; i < data.size(); ++i) {
+                final int quantum = quantum(data.get(i).getDate());
                 if (quantum < q0) {
-                    cache.add(i, new Entry(data[i], quantum));
+                    cache.add(i, new Entry(data.get(i), quantum));
                 } else {
                     break;
                 }
@@ -597,15 +755,15 @@ public class TimeStampedCache<T extends TimeStamped> {
         /** Append data at slot end.
          * @param data data to append
          */
-        private void appendAtEnd(final T[] data) {
+        private void appendAtEnd(final List<T> data) {
 
             // append data at end
             final int qn = latestQuantum.get();
             final int n  = cache.size();
-            for (int i = data.length - 1; i >= 0; --i) {
-                final int quantum = quantum(data[i].getDate());
+            for (int i = data.size() - 1; i >= 0; --i) {
+                final int quantum = quantum(data.get(i).getDate());
                 if (quantum > qn) {
-                    cache.add(n, new Entry(data[i], quantum));
+                    cache.add(n, new Entry(data.get(i), quantum));
                 } else {
                     break;
                 }

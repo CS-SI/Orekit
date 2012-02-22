@@ -148,7 +148,8 @@ public enum OrekitMessages implements Localizable {
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_UNSUPPORTED_TIMESYSTEM("unsupported time system {0}"),
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
-    NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})");
+    NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
+    NO_CACHED_ENTRIES("no cached entries");
 
     // CHECKSTYLE: resume JavadocVariable check
 
