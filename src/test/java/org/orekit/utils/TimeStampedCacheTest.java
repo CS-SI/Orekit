@@ -28,7 +28,6 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well1024a;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -42,7 +41,7 @@ public class TimeStampedCacheTest {
         TimeStampedCache<AbsoluteDate> cache = createCache(10, 3600.0, 13);
         List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
         list.add(AbsoluteDate.GALILEO_EPOCH);
-        Assert.assertEquals(1, checkDatesSingleThread(list, cache, 1));
+        Assert.assertEquals(1, checkDatesSingleThread(list, cache));
         Assert.assertEquals(4, cache.getGenerateCalls());
         Assert.assertEquals(0, cache.getSlotsEvictions());
     }
@@ -50,7 +49,7 @@ public class TimeStampedCacheTest {
     @Test
     public void testRegularCalls() throws OrekitException {
         TimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
-        Assert.assertEquals(2000, testMultiple(cache, new SequentialMode(), 2, 1, false));
+        Assert.assertEquals(2000, testMultipleSingleThread(cache, new SequentialMode(), 2));
         Assert.assertEquals(44, cache.getGenerateCalls());
         Assert.assertEquals(0, cache.getSlotsEvictions());
     }
@@ -58,7 +57,7 @@ public class TimeStampedCacheTest {
     @Test
     public void testAlternateCallsGoodConfiguration() throws OrekitException {
         TimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
-        Assert.assertEquals(2000, testMultiple(cache, new AlternateMode(), 2, 1, false));
+        Assert.assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
         Assert.assertEquals(44, cache.getGenerateCalls());
         Assert.assertEquals(0, cache.getSlotsEvictions());
     }
@@ -66,7 +65,7 @@ public class TimeStampedCacheTest {
     @Test
     public void testAlternateCallsBadConfiguration() throws OrekitException {
         TimeStampedCache<AbsoluteDate> cache = createCache(1, 3600, 13);
-        Assert.assertEquals(2000, testMultiple(cache, new AlternateMode(), 2, 1, false));
+        Assert.assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
         Assert.assertEquals(8000, cache.getGenerateCalls());
         Assert.assertEquals(1999, cache.getSlotsEvictions());
     }
@@ -74,7 +73,7 @@ public class TimeStampedCacheTest {
     @Test
     public void testRandomCallsGoodConfiguration() throws OrekitException {
         TimeStampedCache<AbsoluteDate> cache = createCache(30, 3600, 13);
-        Assert.assertEquals(5000, testMultiple(cache, new RandomMode(64394632125212l), 5, 1, false));
+        Assert.assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
         Assert.assertTrue(cache.getGenerateCalls() < 250);
         Assert.assertEquals(0, cache.getSlotsEvictions());
     }
@@ -82,43 +81,37 @@ public class TimeStampedCacheTest {
     @Test
     public void testRandomCallsBadConfiguration() throws OrekitException {
         TimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
-        Assert.assertEquals(5000, testMultiple(cache, new RandomMode(64394632125212l), 5, 1, false));
+        Assert.assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
         Assert.assertTrue(cache.getGenerateCalls()  > 400);
         Assert.assertTrue(cache.getSlotsEvictions() > 300);
     }
 
-    @Ignore
     @Test
     public void testMultithreadedGoodConfiguration() throws OrekitException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(300, 3600, 13);
-        int n = testMultiple(cache, new RandomMode(64394632125212l), 1000, 30, true);
+        TimeStampedCache<AbsoluteDate> cache = createCache(50, 3600, 13);
+        int n = testMultipleMultiThread(cache, new AlternateMode(), 50, 30);
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
-                          " (n = " + n +
-                          ", calls = " + cache.getGenerateCalls() +
+                          " (n = " + n + ", calls = " + cache.getGenerateCalls() +
                           ", ratio = " + (n / cache.getGenerateCalls()) + ")",
-                          cache.getGenerateCalls() < n / 80);
+                          cache.getGenerateCalls() < n / 40);
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
-                          " (n = " + n +
-                           ", evictions = " + cache.getSlotsEvictions() +
-                          ", ratio = " + (n / cache.getSlotsEvictions()) + ")",
-                          cache.getSlotsEvictions() < n / 80);
+                          " (n = " + n + ", evictions = " + cache.getSlotsEvictions() +
+                          (cache.getSlotsEvictions() == 0 ? "" : (", ratio = " + (n / cache.getSlotsEvictions()))) + ")",
+                          cache.getSlotsEvictions() < n / 1000);
     }
 
-    @Ignore
     @Test
     public void testMultithreadedBadConfiguration() throws OrekitException {
         TimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
-        int n = testMultiple(cache, new RandomMode(64394632125212l), 1000, 1000, true);
+        int n = testMultipleMultiThread(cache, new AlternateMode(), 50, 100);
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
-                          " (n = " + n +
-                          ", calls = " + cache.getGenerateCalls() +
+                          " (n = " + n + ", calls = " + cache.getGenerateCalls() +
                           ", ratio = " + (n / cache.getGenerateCalls()) + ")",
-                          cache.getGenerateCalls() > n / 30);
+                          cache.getGenerateCalls() > n / 15);
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
-                          " (n = " + n +
-                          ", evictions = " + cache.getSlotsEvictions() +
+                          " (n = " + n + ", evictions = " + cache.getSlotsEvictions() +
                           ", ratio = " + (n / cache.getSlotsEvictions()) + ")",
-                          cache.getSlotsEvictions() > n / 120);
+                          cache.getSlotsEvictions() > n / 60);
     }
 
     @Test
@@ -168,8 +161,7 @@ public class TimeStampedCacheTest {
         createCache(10, 3600.0, 3).getLatest();
     }
 
-    private int testMultiple(TimeStampedCache<AbsoluteDate> cache, Mode mode,
-                             int slots, int poolSize, boolean multiThread)
+    private int testMultipleSingleThread(TimeStampedCache<AbsoluteDate> cache, Mode mode, int slots)
         throws OrekitException {
         double step = ((Generator) cache.getGenerator()).getStep();
         AbsoluteDate[] base = new AbsoluteDate[slots];
@@ -177,11 +169,19 @@ public class TimeStampedCacheTest {
         for (int i = 1; i < base.length; ++i) {
             base[i] = base[i - 1].shiftedBy(10 * Constants.JULIAN_DAY);
         }
-        if (multiThread) {
-            return checkDatesMultiThread(mode.generateDates(base, 25 * step, 0.025 * step), cache, poolSize);
-        } else {
-            return checkDatesSingleThread(mode.generateDates(base, 25 * step, 0.025 * step), cache, poolSize);
+        return checkDatesSingleThread(mode.generateDates(base, 25 * step, 0.025 * step), cache);
+    }
+
+    private int testMultipleMultiThread(TimeStampedCache<AbsoluteDate> cache, Mode mode,
+                                        int slots, int threadPoolSize)
+        throws OrekitException {
+        double step = ((Generator) cache.getGenerator()).getStep();
+        AbsoluteDate[] base = new AbsoluteDate[slots];
+        base[0] = AbsoluteDate.GALILEO_EPOCH;
+        for (int i = 1; i < base.length; ++i) {
+            base[i] = base[i - 1].shiftedBy(10 * Constants.JULIAN_DAY);
         }
+        return checkDatesMultiThread(mode.generateDates(base, 25 * step, 0.025 * step), cache, threadPoolSize);
     }
 
     private TimeStampedCache<AbsoluteDate> createCache(int maxSlots, double step, int neighborsSize)
@@ -195,8 +195,7 @@ public class TimeStampedCacheTest {
     }
 
     private int checkDatesSingleThread(final List<AbsoluteDate> centralDates,
-                                       final TimeStampedCache<AbsoluteDate> cache,
-                                       final int poolSize)
+                                       final TimeStampedCache<AbsoluteDate> cache)
         throws OrekitException {
 
         final int n = cache.getNeighborsSize();
@@ -217,14 +216,14 @@ public class TimeStampedCacheTest {
 
     private int checkDatesMultiThread(final List<AbsoluteDate> centralDates,
                                       final TimeStampedCache<AbsoluteDate> cache,
-                                      final int poolSize)
+                                      final int threadPoolSize)
         throws OrekitException {
 
         final int n = cache.getNeighborsSize();
         final double step = ((Generator) cache.getGenerator()).getStep();
         final AtomicReference<AbsoluteDate[]> failedDates = new AtomicReference<AbsoluteDate[]>();
         final AtomicReference<OrekitException> caught    = new AtomicReference<OrekitException>();
-        ExecutorService executorService = Executors.newFixedThreadPool(poolSize);
+        ExecutorService executorService = Executors.newFixedThreadPool(threadPoolSize);
 
         for (final AbsoluteDate central : centralDates) {
             executorService.execute(new Runnable() {
