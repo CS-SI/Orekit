@@ -93,7 +93,7 @@ public class TimeStampedCacheTest {
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
                           " (n = " + n + ", calls = " + cache.getGenerateCalls() +
                           ", ratio = " + (n / cache.getGenerateCalls()) + ")",
-                          cache.getGenerateCalls() < n / 40);
+                          cache.getGenerateCalls() < n / 20);
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
                           " (n = " + n + ", evictions = " + cache.getSlotsEvictions() +
                           (cache.getSlotsEvictions() == 0 ? "" : (", ratio = " + (n / cache.getSlotsEvictions()))) + ")",
@@ -125,19 +125,19 @@ public class TimeStampedCacheTest {
         Assert.assertEquals(1, cache.getSlots());
         Assert.assertEquals(20, cache.getEntries());
         Assert.assertEquals(4, cache.getGenerateCalls());
-        Assert.assertEquals( -1 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
+        Assert.assertEquals( -7 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
         Assert.assertEquals(+12 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
         cache.getNeighbors(start.shiftedBy(6 * 3600));
         Assert.assertEquals(1, cache.getSlots());
         Assert.assertEquals(20, cache.getEntries());
         Assert.assertEquals(4, cache.getGenerateCalls());
-        Assert.assertEquals( -1 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
+        Assert.assertEquals( -7 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
         Assert.assertEquals(+12 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
         cache.getNeighbors(start.shiftedBy(7 * 3600));
         Assert.assertEquals(1, cache.getSlots());
         Assert.assertEquals(21, cache.getEntries());
         Assert.assertEquals(5, cache.getGenerateCalls());
-        Assert.assertEquals( -1 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
+        Assert.assertEquals( -7 * hour, cache.getEarliest().durationFrom(start), 1.0e-10);
         Assert.assertEquals(+13 * hour, cache.getLatest().durationFrom(start), 1.0e-10);
     }
 
@@ -159,6 +159,103 @@ public class TimeStampedCacheTest {
     @Test(expected=IllegalStateException.class)
     public void testNoLatestEntry() throws OrekitException {
         createCache(10, 3600.0, 3).getLatest();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testUnsortedEntries() throws OrekitException {
+        TimeStampedGenerator<AbsoluteDate> reversedGenerator =
+                new TimeStampedGenerator<AbsoluteDate>() {
+            /** {@inheritDoc} */
+            public AbsoluteDate getLatest() {
+                return AbsoluteDate.J2000_EPOCH.shiftedBy(+Constants.JULIAN_CENTURY);
+            }
+
+            /** {@inheritDoc} */
+            public AbsoluteDate getEarliest() {
+                return AbsoluteDate.J2000_EPOCH.shiftedBy(-Constants.JULIAN_CENTURY);
+            }
+
+            /** {@inheritDoc} */
+            public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date) {
+                List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
+                list.add(date);
+                list.add(date.shiftedBy(-10.0));
+                return list;
+            }
+        };
+
+        new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                                           reversedGenerator, 3).getNeighbors(AbsoluteDate.J2000_EPOCH);
+
+    }
+
+    @Test
+    public void testDuplicatingGenerator() throws OrekitException {
+
+        final double step = 3600.0;
+
+        TimeStampedGenerator<AbsoluteDate> duplicatingGenerator =
+                new TimeStampedGenerator<AbsoluteDate>() {
+
+            /** {@inheritDoc} */
+            public AbsoluteDate getLatest()
+                    throws OrekitException {
+                return AbsoluteDate.J2000_EPOCH.shiftedBy(+Constants.JULIAN_CENTURY);
+            }
+
+            /** {@inheritDoc} */
+            public AbsoluteDate getEarliest()
+                    throws OrekitException {
+                return AbsoluteDate.J2000_EPOCH.shiftedBy(-Constants.JULIAN_CENTURY);
+            }
+
+            /** {@inheritDoc} */
+            public List<AbsoluteDate> generate(AbsoluteDate existing, AbsoluteDate date)
+                    throws OrekitException {
+                List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
+                if (existing == null) {
+                    list.add(date);
+                } else {
+                    if (date.compareTo(existing) > 0) {
+                        AbsoluteDate t = existing.shiftedBy(-10 * step);
+                        do {
+                            t = t.shiftedBy(step);
+                            list.add(list.size(), t);
+                        } while (t.compareTo(date) <= 0);
+                    } else {
+                        AbsoluteDate t = existing.shiftedBy(10 * step);
+                        do {
+                            t = t.shiftedBy(-step);
+                            list.add(0, t);
+                        } while (t.compareTo(date) >= 0);         
+                    }
+                }
+                return list;
+            }
+
+        };
+ 
+        final TimeStampedCache<AbsoluteDate> cache =
+                new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                                                   duplicatingGenerator, 5);
+
+        final AbsoluteDate start = AbsoluteDate.GALILEO_EPOCH;
+        final AbsoluteDate[] firstSet = cache.getNeighbors(start);
+        Assert.assertEquals(5, firstSet.length);
+        Assert.assertEquals(4, cache.getGenerateCalls());
+        Assert.assertEquals(9, cache.getEntries());
+        for (int i = 1; i < firstSet.length; ++i) {
+            Assert.assertEquals(step, firstSet[i].durationFrom(firstSet[i - 1]), 1.0e-10);
+        }
+
+        final AbsoluteDate[] secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step));
+        Assert.assertEquals(5, secondSet.length);
+        Assert.assertEquals(8, cache.getGenerateCalls());
+        Assert.assertEquals(18, cache.getEntries());
+        for (int i = 1; i < secondSet.length; ++i) {
+            Assert.assertEquals(step, firstSet[i].durationFrom(firstSet[i - 1]), 1.0e-10);
+        }
+
     }
 
     private int testMultipleSingleThread(TimeStampedCache<AbsoluteDate> cache, Mode mode, int slots)
@@ -234,7 +331,10 @@ public class TimeStampedCacheTest {
                         for (final AbsoluteDate date : neighbors) {
                             if (date.durationFrom(central) < -(n + 1) * step ||
                                 date.durationFrom(central) > n * step) {
-                                failedDates.set(new AbsoluteDate[] { date, central });
+                                AbsoluteDate[] dates = new AbsoluteDate[n + 1];
+                                dates[0] = central;
+                                System.arraycopy(neighbors, 0, dates, 1, n);
+                                failedDates.set(dates);
                             }
                         }
                     } catch (OrekitException oe) {
@@ -256,7 +356,15 @@ public class TimeStampedCacheTest {
 
         if (failedDates.get() != null) {
             AbsoluteDate[] dates = failedDates.get();
-            Assert.fail(dates[0] + " <-> " + dates[1]);
+            StringBuilder builder = new StringBuilder();
+            String eol = System.getProperty("line.separator");
+            builder.append("central = ").append(dates[0]).append(eol);
+            builder.append("step = ").append(step).append(eol);
+            builder.append("neighbors =").append(eol);
+            for (int i = 1; i < dates.length; ++i) {
+                builder.append("    ").append(dates[i]).append(eol);
+            }
+            Assert.fail(builder.toString());                
         }
 
         return centralDates.size();
@@ -295,13 +403,13 @@ public class TimeStampedCacheTest {
                 AbsoluteDate previous = existing;
                 while (date.compareTo(previous) > 0) {
                     previous = previous.shiftedBy(step);
-                    dates.add(previous);
+                    dates.add(dates.size(), previous);
                 }
             } else {
                 AbsoluteDate previous = existing;
                 while (date.compareTo(previous) < 0) {
                     previous = previous.shiftedBy(-step);
-                    dates.add(previous);
+                    dates.add(0, previous);
                 }
             }
             return dates;

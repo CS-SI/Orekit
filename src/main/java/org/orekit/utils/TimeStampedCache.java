@@ -408,10 +408,11 @@ public class TimeStampedCache<T extends TimeStamped> {
         private AtomicLong lastAccess;
 
         /** Simple constructor.
-         * @param initial initial entries to insert in the slot
+         * @param date central date for initial entries to insert in the slot
          * @exception OrekitException if the first entries cannot be generated
+         * @exception IllegalStateException if entries are not chronologically sorted
          */
-        public Slot(final AbsoluteDate date) throws OrekitException {
+        public Slot(final AbsoluteDate date) throws OrekitException, IllegalStateException {
 
             // allocate cache
             this.cache = new ArrayList<Entry>();
@@ -427,15 +428,18 @@ public class TimeStampedCache<T extends TimeStamped> {
             }
 
             calls.incrementAndGet();
-            for (final T entry : generator.generate(null, generationDate)) {
+            for (final T entry : generateAndCheck(null, generationDate)) {
                 cache.add(new Entry(entry, quantum(entry.getDate())));
             }
+            earliestQuantum = new AtomicInteger(cache.get(0).getQuantum());
+            latestQuantum   = new AtomicInteger(cache.get(cache.size() - 1).getQuantum() + 1);
 
             while (cache.size() < neighborsSize) {
                 // we need to generate more entries
 
                 final T entry0 = cache.get(0).getData();
                 final T entryN = cache.get(cache.size() - 1).getData();
+                calls.incrementAndGet();
 
                 final T existing;
                 if (latest.durationFrom(entryN.getDate()) >= entry0.getDate().durationFrom(earliest)) {
@@ -445,6 +449,7 @@ public class TimeStampedCache<T extends TimeStamped> {
                     if (generationDate.compareTo(latest) > 0) {
                         generationDate = latest;
                     }
+                    appendAtEnd(generateAndCheck(existing, generationDate));
                 } else {
                     // generate additional point at the start of the slot
                     existing = entry0;
@@ -452,17 +457,11 @@ public class TimeStampedCache<T extends TimeStamped> {
                     if (generationDate.compareTo(earliest) < 0) {
                         generationDate = earliest;
                     }
-                }
-
-                calls.incrementAndGet();
-                for (final T entry : generator.generate(existing, generationDate)) {
-                    cache.add(new Entry(entry, quantum(entry.getDate())));
+                    insertAtStart(generateAndCheck(existing, generationDate));
                 }
 
             }
 
-            earliestQuantum = new AtomicInteger(cache.get(0).getQuantum());
-            latestQuantum   = new AtomicInteger(cache.get(cache.size() - 1).getQuantum() + 1);
             guessedIndex    = new AtomicInteger(cache.size() / 2);
             lastAccess      = new AtomicLong(System.currentTimeMillis());
 
@@ -540,10 +539,12 @@ public class TimeStampedCache<T extends TimeStamped> {
          * @return a new array containing date neighbors
          * @exception OrekitException if the underlying {@link TimeStampedGenerator
          * generator} triggers one
+         * @exception IllegalStateException if entries are not chronologically sorted
          * @see #getBefore(AbsoluteDate)
          * @see #getAfter(AbsoluteDate)
          */
-        public T[] getNeighbors(final AbsoluteDate central, final int dateQuantum) throws OrekitException {
+        public T[] getNeighbors(final AbsoluteDate central, final int dateQuantum)
+            throws OrekitException, IllegalStateException {
 
             int index         = entryIndex(central, dateQuantum);
             int firstNeighbor = index - (neighborsSize - 1) / 2;
@@ -588,18 +589,13 @@ public class TimeStampedCache<T extends TimeStamped> {
                                 loop = false;
                             }
                             calls.incrementAndGet();
-                            final List<T> generated = generator.generate(existing, generationDate);
 
                             // add generated data to the slot
                             if (firstNeighbor < 0) {
-                                insertAtStart(generated);
+                                insertAtStart(generateAndCheck(existing, generationDate));
                             } else {
-                                appendAtEnd(generated);
+                                appendAtEnd(generateAndCheck(existing, generationDate));
                             }
-
-                            // update boundaries
-                            earliestQuantum.set(cache.get(0).getQuantum());
-                            latestQuantum.set(cache.get(cache.size() - 1).getQuantum());
 
                         } else {
                             loop = false;
@@ -713,6 +709,10 @@ public class TimeStampedCache<T extends TimeStamped> {
                 cache.remove(cache.size() - 1);
             }
 
+            // update boundaries
+            earliestQuantum.set(cache.get(0).getQuantum());
+            latestQuantum.set(cache.get(cache.size() - 1).getQuantum());
+
         }
 
         /** Append data at slot end.
@@ -738,6 +738,31 @@ public class TimeStampedCache<T extends TimeStamped> {
                 cache.remove(0);
             }
 
+            // update boundaries
+            earliestQuantum.set(cache.get(0).getQuantum());
+            latestQuantum.set(cache.get(cache.size() - 1).getQuantum());
+
+        }
+
+        /** Generate entries and check ordering.
+         * @param existing closest already existing entry (may be null)
+         * @param date date that must be covered by the range of the generated array
+         * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
+         * @return chronologically sorted list of generated entries 
+         * @exception OrekitException if entry generation fails
+         * @exception IllegalStateException if entries are not chronologically sorted
+         */
+        private List<T> generateAndCheck(T existing, AbsoluteDate date)
+            throws OrekitException, IllegalStateException {
+            final List<T> entries = generator.generate(existing, date);
+            for (int i = 1; i < entries.size(); ++i) {
+                if (entries.get(i).getDate().compareTo(entries.get(i - 1).getDate()) < 0) {
+                    throw OrekitException.createIllegalStateException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
+                                                                      entries.get(i - 1).getDate(),
+                                                                      entries.get(i).getDate());
+                }
+            }
+            return entries;
         }
 
         /** Container for entries. */
