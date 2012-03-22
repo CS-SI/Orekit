@@ -12,6 +12,7 @@
 package fr.cs.examples.propagation;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Formatter;
@@ -79,10 +80,9 @@ public class DSSTPropagation {
     private static boolean             drag                     = false;
     private static boolean             radiationPressure        = false;
 
-    // output file path : example : "D:/DSSTValidation/result/". By default, results will be
-    // generated in the Orekit project, if the 'generateFileResult' is set at true.
+    // generate output file on user home directory
     private static boolean             generateFileResult       = true;
-    private static String              outputFilePath           = new String(".").concat(System.getProperty("file.separator"));
+    private static File                outputFile               = new File(System.getProperty("user.home"));
     // print one point every xxx seconds
     private static double              printStep                = 1000;
 
@@ -345,8 +345,8 @@ public class DSSTPropagation {
                 fileNameExtention = fileNameExtention.concat("_radPres");
             }
 
-            propaDSST.setMasterMode(printStep, new PrintStepHandler(outputFilePath, fileNameExtention.concat("_DSST"), format, initDate));
-            propaNUM.setMasterMode(printStep, new PrintStepHandler(outputFilePath, fileNameExtention.concat("_NUM"), format, initDate));
+            propaDSST.setMasterMode(printStep, new PrintStepHandler(outputFile, fileNameExtention.concat("_DSST"), format, initDate));
+            propaNUM.setMasterMode(printStep, new PrintStepHandler(outputFile, fileNameExtention.concat("_NUM"), format, initDate));
         }
     }
 
@@ -409,12 +409,12 @@ public class DSSTPropagation {
         /** Serializable UID. */
         private static final long    serialVersionUID = -8909135870522456848L;
 
-        private PrintStepHandler(final String outputPath,
+        private PrintStepHandler(final File outputFile,
                                  final String name,
                                  final String format,
                                  final AbsoluteDate initDate)
                                                              throws IOException {
-            this.buffer = new BufferedWriter(new FileWriter(outputPath + name));
+            this.buffer = new BufferedWriter(new FileWriter(new File(outputFile, name)));
             this.format = format;
             this.dateIni = initDate;
         }
