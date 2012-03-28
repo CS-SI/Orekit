@@ -183,10 +183,14 @@ Propagation
   on first sight, it is in  fact quite clear and intuitive.
 
   The mathematical problem to integrate is a dimension seven time derivative equations
-  system. The six first elements of the state vector are the <EquinoctialOrbit> parameters,
-  i.e a, ex, ey, hx, hy, lv in meters and radians, and the last element is the mass in
-  kilograms. The time derivatives are computed automatically by the Orekit using the
-  Gauss equations for the first parameters and the flow rate for mass evolution
+  system. The six first elements of the state vector are the orbital parameters, which
+  may be any orbit type (<KeplerianOrbit>, <CircularOrbit>, <EquinoctialOrbit> or
+  <CartesianOrbit>) in meters and radians, and the last element is the mass in
+  kilograms. It is possible to have more elements in the state vector if <AdditionalEquations>
+  have been added (typically <PartialDerivativesEquations> which is an implementation of
+  <AdditionalEquations> devoted to integration of Jacobian matrices). The time derivatives are
+  computed automatically by the Orekit using the Gauss equations for the first parameters
+  corresponding to the selected orbit type and the flow rate for mass evolution
   during maneuvers. The users only needs to register the various force models needed for
   the simulation. Various force models are already available in the library and specialized
   ones can be added by users easily for specific needs.
@@ -219,9 +223,11 @@ integrator.setInitialStepSize(initStep);
 propagator = new NumericalPropagator(integrator);
 +---------------------
 
-  In addition, the <NumericalPropagatorWithJacobians> class enables to compute the sensitivity
-  of the state vector to the initial state or some parameter of the force models. It computes
-  the jacobians dy(t)/dy0 and dy(t)/dp where y0 is the initial state and p some parameter.
+  The following sequence diagram show the internal calls triggered during a numerical propagation.
+  The important thing to note is that the force model are decoupled from the integration process,
+  they only need to compute an acceleration.
+
+[../images/design/numerical-propagation-sequence-diagram.png]
 
 ** Semianalytical propagation
 
