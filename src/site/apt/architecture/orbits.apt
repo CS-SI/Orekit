@@ -19,7 +19,7 @@ Orbits
   It builds the base of all the other space mechanics tools. 
   It provides an abstract class, Orbit, extended in four different ways 
   corresponding to the different possible representations of orbital parameters.
-  As of version 3.0, keplerian, circular, equinoctial and cartesian representations 
+  Since version 3.0, keplerian, circular, equinoctial and cartesian representations 
   are supported.
 
 * Design History
@@ -155,6 +155,10 @@ Orbits
 
      ** (Vx, Vy, Vz) (m/s) : velocity vector of the point in given frame
 
+  Note that Two-Lines Elements are <not> considered orbits representation here. This is
+  because TLE are in fact a merge between orbital state and a propagation model. The state
+  is <only> meaningful with respect to the associated SGP4/SDP4 propagation model, and cannot
+  be used in any other model.
 
 * Representations Conversions
 
@@ -189,7 +193,7 @@ Orbits
 
 * Package organization
  
-[../images/design/OrekitModel_orbitsPackage.png]
+[../images/design/orbits-class-diagram.png]
 
 * Authors
 

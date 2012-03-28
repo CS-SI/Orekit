@@ -1,0 +1,104 @@
+' Copyright 2002-2012 CS Communication & Systèmes
+' Licensed to CS Communication & Systèmes (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.orekit #ECEBD8
+
+    package utils #DDEBD8
+      interface PVCoordinatesProvider {
+        +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+      }
+    end package
+ 
+    package propagation #DDEBD8
+      interface Propagator {
+        +int getMode()
+        +void setSlaveMode()
+        +void setMasterMode(double h, OrekitFixedStepHandler handler)
+        +void setMasterMode(OrekitStepHandler handler)
+        +void setEphemerisMode()
+        +BoundedPropagator getGeneratedEphemeris()
+        +SpacecraftState getInitialState()
+        +void resetInitialState(SpacecraftState state)
+        +void addEventDetector(EventDetector detector)
+        +Collection<EventDetector> getEventsDetectors()
+        +void clearEventsDetectors()
+        +AttitudeProvider getAttitudeProvider()
+        +void setAttitudeProvider(AttitudeProvider attitudeProvider)
+        +Frame getFrame()
+        +SpacecraftState propagate(AbsoluteDate target)
+        +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
+      }
+
+      interface BoundedPropagator {
+        +AbsoluteDate getMinDate()
+        +AbsoluteDate getMaxDate()
+      }
+
+      Propagator <|.. BoundedPropagator
+      abstract class AbstractPropagator {
+        +PVCoordinatesProvider getPvProvider()
+        +SpacecraftState getInitialState()
+        +void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider)
+      }
+
+      package analytical #DDDBD8
+
+        AbstractPropagator <|-- AdapterPropagator
+        AbstractPropagator <|-- EcksteinHechlerPropagator
+        AbstractPropagator <|-- KeplerianPropagator
+
+        package tle
+          AbstractPropagator <|-- TLEPropagator
+        end package
+
+     end package
+
+     package semianalytical #DDDBD8
+
+       package dsst #DDDBC8
+         AbstractPropagator <|-- DSSTPropagator
+       end package
+
+     end package
+
+     package numerical #DDDBD8
+       Propagator <|-- NumericalPropagator
+     end package
+
+     package precomputed #DDDBD8
+       AbstractPropagator <|-- Ephemeris
+       BoundedPropagator  <|.. Ephemeris
+       BoundedPropagator  <|.. IntegratedEphemeris
+       NumericalPropagator o-down-> IntegratedEphemeris : creates
+     end package
+
+     PVCoordinatesProvider <|.down. Propagator
+     Propagator <|.right. AbstractPropagator
+
+   end package
+
+@enduml

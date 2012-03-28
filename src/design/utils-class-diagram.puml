@@ -1,0 +1,85 @@
+' Copyright 2002-2012 CS Communication & Systèmes
+' Licensed to CS Communication & Systèmes (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam ClassFontSize         11
+
+  package org.orekit #ECEBD8
+
+    package utils #DDEBD8
+
+      class PVCoordinates {
+        +PVCoordinates ZERO
+        +Vector3D estimateVelocity(Vector3D start, Vector3D end, double dt)
+        +PVCoordinates shiftedBy(double dt)
+        +Vector3D getPosition()
+        +Vector3D getVelocity()
+        +Vector3D getMomentum()
+      }
+
+      interface PVCoordinatesProvider {
+        +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+      }
+
+      PVCoordinatesProvider -up-> PVCoordinates
+
+      class SecularAndHarmonic {
+        +void addPoint()
+        +void fit()
+        +double[] getFittedParameters()
+        +double osculatingValue()
+        +double meanValue()
+      }
+
+      interface Constants {
+        +double SPEED_OF_LIGHT
+        +double JULIAN_DAY
+        +double WGS84_EARTH_EQUATORIAL_RADIUS
+        +double WGS84_EARTH_FLATTENING
+        +double WGS84_EARTH_...
+        +double EIGEN5C_EARTH_...
+        +double JPL_SSD_ASTRONOMICAL_UNIT
+        +double JPL_SSD_...
+        +double G0_STANDARD_GRAVITY
+      }
+
+    end package
+
+    package frames #DDEBD8
+      class SpacecraftFrame
+      class TopocentricFrame
+      PVCoordinatesProvider <|-- SpacecraftFrame
+      PVCoordinatesProvider <|-- TopocentricFrame
+   end package
+
+    package propagation #DDEBD8
+      interface Propagator
+      PVCoordinatesProvider <|.. Propagator
+    end package
+
+    package bodies #DDEBD8
+      interface CelestialBody
+      PVCoordinatesProvider <|.. CelestialBody
+    end package
+
+ end package
+
+@enduml

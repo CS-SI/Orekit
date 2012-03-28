@@ -210,6 +210,10 @@ Overview
 
     * spanish
 
+  ** The top level packages provided by Orekit are the following one:
+
+[./images/design/top-packages.png]
+
 * Free software
 
   Orekit is freely available both in source and binary formats, with all related
@@ -226,7 +230,10 @@ Overview
 
   Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Communication
   & Syst\u00e8mes}} and is still used and maintained by its space dynamics experts.
+
   It has already been successfully used during the real time monitoring of the rendez-vous
   phase between the Automated Transfer Vehicle (ATV) and the International Space Station
   (ISS) by the Centre National d'\u00c9tudes Spatiales (CNES, the French space agency) and
-  European Space Agency (ESA).
+  European Space Agency (ESA). It has been selected as the basis of CNES next generation
+  space flight dynamics systems. It has been used in numerous studies and for operational
+  systems among the world.

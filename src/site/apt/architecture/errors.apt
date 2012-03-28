@@ -15,11 +15,8 @@ Errors
 
   The "Errors" package provides classes to generate and handle errors, which are based on
   the classical mechanism of exceptions. Errors messages generated are automatically 
-  translated, the languages available are english, french, italian, norse and spanish.
-
-* Package organization
- 
-[../images/design/OrekitModel_errorsPackage.png]
+  translated, the languages available are English, French, Galician, German, Italian,
+  Norse and Spanish.
 
 * Authors
 
