@@ -70,6 +70,11 @@
       PVCoordinatesProvider <|-- TopocentricFrame
    end package
 
+    package orbits #DDEBD8
+      abstract class Orbit
+      PVCoordinatesProvider <|.. Orbit
+    end package
+
     package propagation #DDEBD8
       interface Propagator
       PVCoordinatesProvider <|.. Propagator
