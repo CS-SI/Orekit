@@ -514,7 +514,7 @@ public class Phasing {
                                  final double latitude, final boolean ascending,
                                  final Orbit orbit, final Propagator propagator, int nbOrbits)
         throws OrekitException {
-        
+
         propagator.resetInitialState(new SpacecraftState(orbit));
         AbsoluteDate start = orbit.getDate();
 
@@ -567,7 +567,7 @@ public class Phasing {
 
     }
 
-    /** 
+    /**
      * Find the first crossing of the reference latitude.
      * @param latitude latitude to search for
      * @param ascending indicator for desired crossing direction
@@ -599,14 +599,14 @@ public class Phasing {
                                   "latitude " + FastMath.toDegrees(latitude) + " never crossed");
 
     }
-    
-    
+
+
     /**
      * Find the state at which the reference latitude is crossed.
      * @param latitude latitude to search for
      * @param guessDate guess date for the crossing
      * @param endDate maximal date not to overtake
-     * @param shift shift value used to evaluate the latitude function bracketing around the guess date  
+     * @param shift shift value used to evaluate the latitude function bracketing around the guess date
      * @param maxShift maximum value that the shift value can take
      * @param propagator propagator used
      * @return state at latitude crossing time

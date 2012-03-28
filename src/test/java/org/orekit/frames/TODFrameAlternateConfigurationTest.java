@@ -109,7 +109,7 @@ public class TODFrameAlternateConfigurationTest {
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
         final boolean withNutationCorrection = true;
-        
+
         TODFrame interpolatingFrame =
             new TODFrame(withNutationCorrection, Predefined.TOD_WITH_EOP_CORRECTIONS);
         NonInterpolatingTODFrame nonInterpolatingFrame =

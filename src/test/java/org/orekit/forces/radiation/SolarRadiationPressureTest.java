@@ -61,7 +61,7 @@ public class SolarRadiationPressureTest {
         OneAxisEllipsoid earth =
             new OneAxisEllipsoid(6378136.46, 1.0 / 298.25765,
                                  FramesFactory.getITRF2005());
-        SolarRadiationPressure SRP = 
+        SolarRadiationPressure SRP =
             new SolarRadiationPressure(sun, earth.getEquatorialRadius(),
                                        (RadiationSensitive) new SphericalSpacecraft(50.0, 0.5, 0.5, 0.5));
 

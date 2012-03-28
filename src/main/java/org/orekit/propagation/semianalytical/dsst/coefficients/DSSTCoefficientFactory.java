@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.Map;
@@ -13,7 +29,7 @@ import org.orekit.errors.OrekitMessages;
 
 /**
  * This class is designed to provide coefficient from the DSST theory.
- * 
+ *
  * @author Romain Di Costanzo
  */
 public class DSSTCoefficientFactory {
@@ -39,7 +55,7 @@ public class DSSTCoefficientFactory {
      * Legendre polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method
      * allows to store the polynomials value in a static map. If the Q<sub>ns</sub> had been
      * computed already, they just will be evaluated at &gamma;
-     * 
+     *
      * @param gamma
      *            &gamma; angle for which Q<sub>ns</sub> is evaluated
      * @param n
@@ -68,7 +84,7 @@ public class DSSTCoefficientFactory {
     /**
      * Compute the Q<sub>ns</sub> array evaluated at &gamma; from the recurrence formula 2.8.3-(2).
      * As this method directly evaluate the polynomial at &gamma;, values aren't stored.
-     * 
+     *
      * @param gamma
      *            &gamma; angle
      * @param order
@@ -105,7 +121,7 @@ public class DSSTCoefficientFactory {
 
     /**
      * Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5)
-     * 
+     *
      * @param k
      *            x-component of the eccentricity vector
      * @param h
@@ -149,7 +165,7 @@ public class DSSTCoefficientFactory {
 
     /**
      * Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4)
-     * 
+     *
      * @param k
      *            x-component of the eccentricity vector
      * @param h
@@ -178,7 +194,7 @@ public class DSSTCoefficientFactory {
 
     /**
      * Get the G<sub>s</sub> coefficient from relation 3.1-(4)
-     * 
+     *
      * @param k
      *            k
      * @param h
@@ -205,7 +221,7 @@ public class DSSTCoefficientFactory {
 
     /**
      * Get the H<sub>s</sub> coefficient from relation 3.1-(4)
-     * 
+     *
      * @param k
      *            k
      * @param h
@@ -232,7 +248,7 @@ public class DSSTCoefficientFactory {
 
     /**
      * Compute the V<sub>n, s</sub> coefficient from 2.8.2 - (1)(2).
-     * 
+     *
      * @param order
      *            Order of the computation. Computation will be done from order 0 to order -1
      * @return Map of the V<sub>n, s</sub> coefficient
@@ -267,7 +283,7 @@ public class DSSTCoefficientFactory {
     /**
      * Initialize the V<sub>n, s</sub> <sup>m</sup> coefficient from the V<sub>n, s</sub>
      * <sup>m</sup> expression as function of the V<sub>n, s</sub> coefficients. See text in 2.8.2
-     * 
+     *
      * @param m
      *            m
      * @param n
@@ -317,7 +333,7 @@ public class DSSTCoefficientFactory {
 
         /**
          * Default constructor
-         * 
+         *
          * @param n
          *            n
          * @param s
@@ -331,7 +347,7 @@ public class DSSTCoefficientFactory {
 
         /**
          * Get n
-         * 
+         *
          * @return n
          */
         public int getN() {
@@ -340,7 +356,7 @@ public class DSSTCoefficientFactory {
 
         /**
          * Get s
-         * 
+         *
          * @return s
          */
         public int getS() {
@@ -384,7 +400,7 @@ public class DSSTCoefficientFactory {
 
         /**
          * Default constructor
-         * 
+         *
          * @param m
          *            m
          * @param n

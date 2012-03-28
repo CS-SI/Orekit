@@ -66,7 +66,7 @@ public class TabulatedEphemerisTest {
                                                   TimeScalesFactory.getUTC());
         double deltaT = finalDate.durationFrom(initDate);
 
-        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE, 
+        Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                             FramesFactory.getEME2000(), initDate, mu);
 
         int nbIntervals = 720;

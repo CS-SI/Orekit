@@ -278,7 +278,7 @@ public class DateComponentsTest {
             Assert.assertEquals(i, date1.getJ2000Day());
             DateComponents date2 = new DateComponents(date1.getYear(), date1.getMonth(), date1.getDay());
             Assert.assertEquals(i, date2.getJ2000Day());
-        }        
+        }
     }
 
     @Test

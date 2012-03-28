@@ -59,7 +59,7 @@ public class TEMEFrameTest {
         PVCoordinates pvEME2000Ref =
             new PVCoordinates(new Vector3D(-9059941.5224999374914, 4659697.1225837596648, 813957.72947647583351),
                               new Vector3D(-2233.3476939179299769, -4110.1362849403413335, -3157.3941963060194738));
-        
+
         Transform t = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), t0);
 
         PVCoordinates pvEME2000Computed = t.transformPVCoordinates(pvTEME);

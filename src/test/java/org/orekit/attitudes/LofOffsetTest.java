@@ -49,18 +49,18 @@ import org.orekit.utils.PVCoordinates;
 
 public class LofOffsetTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-    // Body mu 
+
+    // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C 
+    // Reference frame = ITRF 2005C
     private Frame frameITRF2005;
-        
+
     // Earth shape
     OneAxisEllipsoid earthSpheric;
-    
+
     //  Satellite position
     CircularOrbit orbit;
     PVCoordinates pvSatEME2000;
@@ -75,13 +75,13 @@ public class LofOffsetTest {
         // Lof aligned attitude provider
         final LofOffset lofAlignedLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH);
         final Rotation lofOffsetRot = lofAlignedLaw.getAttitude(orbit, date, orbit.getFrame()).getRotation();
-        
-        // Check that 
+
+        // Check that
         final Vector3D momentumEME2000 = pvSatEME2000.getMomentum();
         final Vector3D momentumLof = lofOffsetRot.applyTo(momentumEME2000);
         final double cosinus = FastMath.cos(Vector3D.dotProduct(momentumLof, Vector3D.PLUS_K));
         Assert.assertEquals(1., cosinus, Utils.epsilonAngle);
-        
+
     }
     /** Test if the lof offset is the one expected
      */
@@ -91,21 +91,21 @@ public class LofOffsetTest {
         //  Satellite position
         final CircularOrbit circ =
            new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create target pointing attitude provider
-        // ************************************  
+        // ************************************
         // Elliptic earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
         final GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
-            
-        // Attitude law definition from geodetic point target 
+
+        // Attitude law definition from geodetic point target
         final TargetPointing targetLaw = new TargetPointing(geoTargetITRF2005, earthShape);
-        final Rotation targetRot = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();       
-        
+        final Rotation targetRot = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
+
         // Create lof aligned attitude provider
-        // *******************************  
+        // *******************************
         final LofOffset lofAlignedLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH);
         final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
@@ -115,9 +115,9 @@ public class LofOffsetTest {
         final double yaw = angles[0];
         final double pitch = angles[1];
         final double roll = angles[2];
-        
+
         // Create lof offset attitude provider with computed roll, pitch, yaw
-        // **************************************************************  
+        // **************************************************************
         final LofOffset lofOffsetLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.ZYX, yaw, pitch, roll);
         final Rotation lofOffsetRot = lofOffsetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
@@ -125,18 +125,18 @@ public class LofOffsetTest {
         final double angleCompo = targetRot.applyInverseTo(lofOffsetRot).getAngle();
         Assert.assertEquals(0., angleCompo, Utils.epsilonAngle);
 
-    } 
-    
+    }
+
     /** Test is the target pointed is the one expected
      */
     @Test
-    public void testTarget() 
+    public void testTarget()
         throws OrekitException, CardanEulerSingularityException {
-        
+
         // Create target point and target pointing law towards that point
         final GeodeticPoint targetDef  = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(-40.), 0.);
         final TargetPointing targetLaw = new TargetPointing(targetDef, earthSpheric);
-       
+
         // Get roll, pitch, yaw angles corresponding to this pointing law
         final LofOffset lofAlignedLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH);
         final Rotation lofAlignedRot = lofAlignedLaw.getAttitude(orbit, date, orbit.getFrame()).getRotation();
@@ -146,7 +146,7 @@ public class LofOffsetTest {
         final double yaw   = angles[0];
         final double pitch = angles[1];
         final double roll  = angles[2];
-        
+
         // Create a lof offset law from those values
         final LofOffset lofOffsetLaw = new LofOffset(orbit.getFrame(), LOFType.VVLH, RotationOrder.ZYX, yaw, pitch, roll);
         final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
@@ -154,10 +154,10 @@ public class LofOffsetTest {
         // Check target pointed by this law : shall be the same as defined
         final Vector3D pTargetRes = lofOffsetPtLaw.getTargetPoint(orbit, date, earthSpheric.getBodyFrame());
         final GeodeticPoint targetRes = earthSpheric.transform(pTargetRes, earthSpheric.getBodyFrame(), date);
-        
+
         Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);
-        
+
     }
 
     @Test
@@ -171,7 +171,7 @@ public class LofOffsetTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -210,7 +210,7 @@ public class LofOffsetTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-8, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(0.), PositionAngle.MEAN, 
+                              FastMath.toRadians(0.), PositionAngle.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         double alpha = 0.1;
@@ -245,7 +245,7 @@ public class LofOffsetTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         RotationOrder order = RotationOrder.ZXY;
@@ -257,9 +257,9 @@ public class LofOffsetTest {
         Rotation alignedAtt = new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, date, orbit.getFrame()).getRotation();
         Rotation offsetProper = offsetAtt.applyTo(alignedAtt.revert());
         double[] angles = offsetProper.revert().getAngles(order);
-        Assert.assertEquals(alpha1, angles[0], 1.0e-11);  
-        Assert.assertEquals(alpha2, angles[1], 1.0e-11);  
-        Assert.assertEquals(alpha3, angles[2], 1.0e-11);  
+        Assert.assertEquals(alpha1, angles[0], 1.0e-11);
+        Assert.assertEquals(alpha2, angles[1], 1.0e-11);
+        Assert.assertEquals(alpha3, angles[2], 1.0e-11);
     }
 
     private void checkSatVector(Orbit o, Attitude a, Vector3D satVector,
@@ -288,22 +288,22 @@ public class LofOffsetTest {
 
             // Body mu
             mu = 3.9860047e14;
-            
+
             // Reference frame = ITRF 2005
             frameITRF2005 = FramesFactory.getITRF2005(true);
 
             // Elliptic earth shape
             earthSpheric =
                 new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
-            
+
             //  Satellite position
             orbit =
                 new CircularOrbit(7178000.0, 0.5e-8, -0.5e-8, FastMath.toRadians(50.), FastMath.toRadians(150.),
-                                       FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                       FastMath.toRadians(5.300), PositionAngle.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
             pvSatEME2000 = orbit.getPVCoordinates();
 
-            
+
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
         }

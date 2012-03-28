@@ -92,9 +92,9 @@ public class J2DifferentialEffect
          * @param gravityField gravity field to use
          * @exception OrekitException if gravity field does not contain J2 coefficient
          */
-        public J2DifferentialEffect(final Orbit orbit0, final Orbit orbit1, final boolean applyBefore,
-                                    final PotentialCoefficientsProvider gravityField)
-            throws OrekitException {
+    public J2DifferentialEffect(final Orbit orbit0, final Orbit orbit1, final boolean applyBefore,
+                                final PotentialCoefficientsProvider gravityField)
+        throws OrekitException {
         this(orbit0, orbit1, applyBefore,
              gravityField.getAe(), gravityField.getMu(), gravityField.getJ(false, 2)[2]);
     }
@@ -214,7 +214,7 @@ public class J2DifferentialEffect
     private Orbit updateOrbit(final Orbit orbit1) {
 
         // convert current orbital state to equinoctial elements
-        EquinoctialOrbit original =
+        final EquinoctialOrbit original =
                 (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit1);
 
         // compute differential effect

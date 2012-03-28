@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst;
 
 import java.io.Serializable;
@@ -38,7 +54,6 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.OsculatingToMeanElementsConverter;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -103,7 +118,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * state without modifying the other configuration parameters. However, the same instance cannot be
  * used simultaneously by different threads, the class is <em>not</em> thread-safe.
  * </p>
- * 
+ *
  * @see SpacecraftState
  * @see DSSTForceModel
  * @author Romain Di Costanzo
@@ -156,7 +171,7 @@ public class DSSTPropagator extends AbstractPropagator {
     /** Counter for differential equations calls. */
     private int                            calls;
 
-    /** Has the force model been initialized */
+    /** Has the force model been initialized. */
     private boolean                        initialized;
 
     /**
@@ -172,13 +187,13 @@ public class DSSTPropagator extends AbstractPropagator {
      */
     private double                         timeShiftToInitialize;
 
-    /** Is the orbital state in osculating parameters */
+    /** Is the orbital state in osculating parameters. */
     private boolean                        isOsculating;
 
-    /** number of satellite revolutions in the averaging interval */
+    /** number of satellite revolutions in the averaging interval. */
     private int                            satelliteRevolution;
 
-    /** Modified Newcomb Operator */
+    /** Modified Newcomb Operator. */
     private static double[][][]            newcomb          = null;
 
     /**
@@ -191,7 +206,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
      * follow a keplerian evolution only.
      * </p>
-     * 
+     *
      * @param integrator
      *            numerical integrator used to integrate mean coefficient defined by the SST theory.
      * @param initialOrbit
@@ -209,7 +224,7 @@ public class DSSTPropagator extends AbstractPropagator {
                           final Orbit initialOrbit,
                           final boolean isOsculating,
                           final double timeShiftToInitialize)
-                                                             throws OrekitException {
+        throws OrekitException {
         this(integrator, initialOrbit, isOsculating, timeShiftToInitialize, DEFAULT_LAW, DEFAULT_MASS);
     }
 
@@ -223,7 +238,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
      * follow a keplerian evolution only.
      * </p>
-     * 
+     *
      * @param integrator
      *            numerical integrator used to integrate mean coefficient defined by the SST theory.
      * @param initialOrbit
@@ -244,7 +259,7 @@ public class DSSTPropagator extends AbstractPropagator {
                           final boolean isOsculating,
                           final double timeShiftToInitialize,
                           final AttitudeProvider attitudeProv)
-                                                              throws OrekitException {
+        throws OrekitException {
         this(integrator, initialOrbit, isOsculating, timeShiftToInitialize, attitudeProv, DEFAULT_MASS);
     }
 
@@ -258,7 +273,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
      * follow a keplerian evolution only.
      * </p>
-     * 
+     *
      * @param integrator
      *            numerical integrator used to integrate mean coefficient defined by the SST theory.
      * @param initialOrbit
@@ -279,7 +294,7 @@ public class DSSTPropagator extends AbstractPropagator {
                           final boolean isOsculating,
                           final double timeShiftToInitialize,
                           final double mass)
-                                            throws OrekitException {
+        throws OrekitException {
         this(integrator, initialOrbit, isOsculating, timeShiftToInitialize, DEFAULT_LAW, mass);
     }
 
@@ -290,7 +305,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
      * follow a keplerian evolution only.
      * </p>
-     * 
+     *
      * @param integrator
      *            numerical integrator used to integrate mean coefficient defined by the SST theory.
      * @param initialOrbit
@@ -314,7 +329,7 @@ public class DSSTPropagator extends AbstractPropagator {
                           final double timeShiftToInitialize,
                           final AttitudeProvider attitudeProv,
                           final double mass)
-                                            throws OrekitException {
+        throws OrekitException {
         super(attitudeProv);
         this.forceModels = new ArrayList<DSSTForceModel>();
         this.mu = initialOrbit.getMu();
@@ -341,7 +356,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /**
      * Set the integrator.
-     * 
+     *
      * @param integrator
      *            numerical integrator to use for propagation.
      */
@@ -352,8 +367,8 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /**
-     * Reset the initial state
-     * 
+     * Reset the initial state.
+     *
      * @param state
      *            new initial state
      * @throws PropagationException
@@ -374,7 +389,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * If this method is not called at all, the integrated orbit will follow a keplerian evolution
      * only.
      * </p>
-     * 
+     *
      * @param forcemodel
      *            perturbing {@link DSSTForceModel} to add
      * @see #removeForceModels()
@@ -389,7 +404,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * Once all perturbing forces have been removed (and as long as no new force model is added),
      * the integrated orbit will follow a keplerian evolution only.
      * </p>
-     * 
+     *
      * @see #addForceModel(DSSTForceModel)
      */
     public void removeForceModels() {
@@ -401,7 +416,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * <p>
      * A reasonable value would be 5 times the initial step size of the integrator.
      * </p>
-     * 
+     *
      * @param extraTime
      *            extra time
      */
@@ -413,7 +428,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * Override the default value of the {@link DSSTPropagator#satelliteRevolution} parameter. By
      * default, if the given orbit is an osculating one, it will be averaged over a specific number
      * of revolution (2 revolution). This can be changed by using this method.
-     * 
+     *
      * @param satelliteRevolution
      *            number of satellite revolution to use for averaging process (osculating to mean
      *            elements)
@@ -428,7 +443,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * The number of calls is reset each time the {@link #propagateOrbit(AbsoluteDate)} method is
      * called.
      * </p>
-     * 
+     *
      * @return number of calls to the differential equations computation method
      */
     public int getCalls() {
@@ -440,6 +455,7 @@ public class DSSTPropagator extends AbstractPropagator {
         return mass;
     }
 
+    /** {@inheritDoc} */
     @Override
     protected Orbit propagateOrbit(AbsoluteDate date) throws PropagationException {
 
@@ -496,7 +512,7 @@ public class DSSTPropagator extends AbstractPropagator {
             }
 
             // Add short periodic variations to mean elements to get osculating elements
-            double[] osculatingElements = meanElements.clone();
+            final double[] osculatingElements = meanElements.clone();
             for (final DSSTForceModel forceModel : forceModels) {
                 double[] shortPeriodicVariations = forceModel.getShortPeriodicVariations(date, meanElements);
                 for (int i = 0; i < shortPeriodicVariations.length; i++) {
@@ -511,7 +527,15 @@ public class DSSTPropagator extends AbstractPropagator {
         }
     }
 
-    private Propagator createPropagator(SpacecraftState initialState) throws IllegalArgumentException, OrekitException {
+    /**
+     * Create the propagator.
+     * @param initialState initial state
+     * @return propagator
+     * @throws IllegalArgumentException
+     * @throws OrekitException
+     */
+    private Propagator createPropagator(final SpacecraftState initialState)
+        throws IllegalArgumentException, OrekitException {
         final Orbit initialOrbit = initialState.getOrbit();
         final double[][] tol = NumericalPropagator.tolerances(1.0, initialOrbit, initialOrbit.getType());
         final double minStep = 1.;
@@ -560,7 +584,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /**
      * Compute initial mean elements from osculating elements.
-     * 
+     *
      * @param state
      *            current state information: date, kinematics, attitude
      * @return mean elements
@@ -598,7 +622,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /**
      * Extrapolation to tf.
-     * 
+     *
      * @param start
      *            start date for extrapolation
      * @param startState
@@ -669,7 +693,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Initialize derivatives
-         * 
+         *
          * @param yDot
          *            Derivatives array
          * @param currentOrbit
@@ -733,7 +757,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Get the maximum step size.
-         * 
+         *
          * @return the maximum step size
          */
         public double getMaxStepSize() {
@@ -742,7 +766,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Get the first time.
-         * 
+         *
          * @return the first time
          */
         public AbsoluteDate getTd() {
@@ -751,7 +775,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Get the last time.
-         * 
+         *
          * @return the last time
          */
         public AbsoluteDate getTf() {
@@ -760,7 +784,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Get the cumulated step interpolators.
-         * 
+         *
          * @return the cumulated step interpolators
          */
         public SortedSet<StRange> getCumulatedSteps() {
@@ -811,7 +835,7 @@ public class DSSTPropagator extends AbstractPropagator {
         /**
          * Constructor over a real step interpolator The step interpolator is copied inside the
          * StRange.
-         * 
+         *
          * @param si
          *            step interpolator
          */
@@ -825,7 +849,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Constructor over a single time
-         * 
+         *
          * @param t
          *            time
          */
@@ -837,7 +861,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Get the min time in the range
-         * 
+         *
          * @return the min time of the range
          */
         public AbsoluteDate getTmin() {
@@ -846,7 +870,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Get the max time in the range
-         * 
+         *
          * @return the max time of the range
          */
         public AbsoluteDate getTmax() {
@@ -855,7 +879,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /**
          * Get the step interpolator over the range
-         * 
+         *
          * @return the step interpolator
          */
         public StepInterpolator getStep() {
@@ -885,11 +909,11 @@ public class DSSTPropagator extends AbstractPropagator {
      * The errors are estimated from partial derivatives properties of orbits, starting from a
      * scalar position error specified by the user. Considering the energy conservation equation V =
      * sqrt(mu (2/r - 1/a)), we get at constant energy (i.e. on a Keplerian trajectory):
-     * 
+     *
      * <pre>
      * V<sup>2</sup> r |dV| = mu |dr|
      * </pre>
-     * 
+     *
      * So we deduce a scalar velocity error consistent with the position error. From here, we apply
      * orbits Jacobians matrices to get consistent errors on orbital parameters.
      * </p>
@@ -899,7 +923,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * Setting 1mm as a position error does NOT mean the tolerances will guarantee a 1mm error
      * position after several orbits integration.
      * </p>
-     * 
+     *
      * @param dP
      *            user specified position error
      * @param orbit

@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * <p>
  * This class allows conversion from osculating parameters to mean parameters.
  * </p>
- * 
+ *
  * @author Luc Maisonobe
  */
 public class SecularAndHarmonic {
@@ -103,12 +103,12 @@ public class SecularAndHarmonic {
         fitted = fitter.fit(new ParametricUnivariateFunction() {
 
             /** {@inheritDoc} */
-            public double value(double x, double... parameters) {
+            public double value(final double x, final double... parameters) {
                 return truncatedValue(secularDegree, pulsations.length, x, parameters);
             }
-            
+
             /** {@inheritDoc} */
-            public double[] gradient(double x, double... parameters) {
+            public double[] gradient(final double x, final double... parameters) {
                 final double[] gradient = new double[secularDegree + 1 + 2 * pulsations.length];
 
                 // secular part
@@ -210,13 +210,13 @@ public class SecularAndHarmonic {
                                                 final int meanDegree, final int meanHarmonics,
                                                 final AbsoluteDate start, final AbsoluteDate end,
                                                 final double step) {
-        final PolynomialFitter fitter = new PolynomialFitter(combinedDegree,
-                                                             new LevenbergMarquardtOptimizer());
+        final PolynomialFitter pf =
+                new PolynomialFitter(combinedDegree, new LevenbergMarquardtOptimizer());
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(step)) {
-            fitter.addObservedPoint(date.durationFrom(combinedReference),
+            pf.addObservedPoint(date.durationFrom(combinedReference),
                                     meanValue(date, meanDegree, meanHarmonics));
         }
-        return fitter.fit();
+        return pf.fit();
     }
 
     /** Get mean second derivative, truncated to first components.

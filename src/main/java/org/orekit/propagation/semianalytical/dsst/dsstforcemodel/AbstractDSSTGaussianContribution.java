@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -142,29 +158,29 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
      */
     protected void computeParameters(final SpacecraftState state) {
         // Initialisation of A, B, C coefficients, f, g, w basis
-    
+
         // Get current state vector (equinoctial elements):
         double[] stateVector = new double[6];
         ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, stateVector);
-    
+
         // Equinoctial elements
         a = stateVector[0];
         k = stateVector[1];
         h = stateVector[2];
         q = stateVector[3];
         p = stateVector[4];
-    
+
         // Factors
         final double k2 = k * k;
         final double h2 = h * h;
         final double q2 = q * q;
         final double p2 = p * p;
-    
+
         // Equinoctial coefficients
         A = FastMath.sqrt(state.getMu() * a);
         B = FastMath.sqrt(1 - k2 - h2);
         C = 1 + q2 + p2;
-    
+
         // Equinoctial reference frame basis vectors
         final double ooC =  1. / C;
         final double fx  =  1. - p2 + q2;
@@ -179,10 +195,10 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         f = new Vector3D( ooC, new Vector3D(fx, fy, fz));
         g = new Vector3D( ooC, new Vector3D(gx, gy, gz));
         w = new Vector3D( ooC, new Vector3D(wx, wy, wz));
-    
+
         // Kepler mean motion
         n = A / (a * a);
-    
+
         // Common factors
         ton2a = 2. / (n * n * a);
         ooA   = 1. / A ;
@@ -197,7 +213,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
      *  @param state current state information: date, kinematics, attitude
      *  @param position spacecraft position
      *  @param velocity spacecraft velocity
-     *  @return the perturbing acceleration 
+     *  @return the perturbing acceleration
      *  @exception OrekitException if some specific error occurs
      */
     protected abstract Vector3D getAcceleration(final SpacecraftState state,
@@ -266,7 +282,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         public void setElement(final int element) {
             this.element = element;
         }
- 
+
         /** {@inheritDoc} */
         public double value(double x) {
             double val = 0;
@@ -378,6 +394,6 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             Vector3D v2  = new Vector3D(k, getHoV(X, Y, Xdot, Ydot), -h, getKoV(X, Y, Xdot, Ydot));
             return new Vector3D(-2. * ooA, pos, ooBpo, v2, (I * q * Y - p * X) * ooA, w);
         }
-        
+
     }
 }

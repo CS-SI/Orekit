@@ -191,7 +191,7 @@ public class TrackCorridor {
         throws OrekitException {
 
         // create orbit
-        Orbit initialOrbit = new CircularOrbit(a, ex, ey, i, raan, alpha, PositionAngle.MEAN, 
+        Orbit initialOrbit = new CircularOrbit(a, ex, ey, i, raan, alpha, PositionAngle.MEAN,
                                                FramesFactory.getEME2000(), date,
                                                Constants.EIGEN5C_EARTH_MU);
 
@@ -323,7 +323,7 @@ public class TrackCorridor {
         private final GeodeticPoint right;
 
         /** Simple constructor.
-         * @param date point date 
+         * @param date point date
          * @param left left limit
          * @param center central track point
          * @param right right limit

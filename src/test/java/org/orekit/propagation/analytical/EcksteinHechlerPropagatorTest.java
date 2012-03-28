@@ -111,9 +111,9 @@ public class EcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE, 
+                                                6.2, PositionAngle.TRUE,
                                                 FramesFactory.getEME2000(), initDate, mu);
- 
+
         // Extrapolator definition
         // -----------------------
         EcksteinHechlerPropagator extrapolator =
@@ -308,7 +308,7 @@ public class EcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                              6.2, PositionAngle.TRUE, 
+                                              6.2, PositionAngle.TRUE,
                                               FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -403,7 +403,7 @@ public class EcksteinHechlerPropagatorTest {
         Orbit initialOrbit = new EquinoctialOrbit(a, ex, ey,
                                                 FastMath.tan(i / 2) * FastMath.cos(gom),
                                                 FastMath.tan(i / 2) * FastMath.sin(gom),
-                                                pso_M + gom, PositionAngle.MEAN, 
+                                                pso_M + gom, PositionAngle.MEAN,
                                                 FramesFactory.getEME2000(), initDate, mu);
         // Extrapolator definition
         // -----------------------

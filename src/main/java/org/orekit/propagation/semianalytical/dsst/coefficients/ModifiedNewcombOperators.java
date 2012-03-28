@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.ArrayList;
@@ -15,37 +31,37 @@ import org.orekit.errors.OrekitException;
  * Implementation of the Modified Newcomb Operators. <br>
  * From equation 2.7.3 - (12)(13) of the Danielson paper for the Satellite Semianalytical Theory,
  * those operators are defined as follow :
- * 
+ *
  * <pre>
  * 4(&rho; + &sigma;)Y<sub>&rho;,&sigma;</sub><sup>n,s</sup> = 2(2s - n)Y<sub>&rho;-1,&sigma;</sub><sup>n,s+1</sup> + (s - n)Y<sub>&rho;-2,&sigma;</sub><sup>n,s+2</sup>
  * - 2(2s + n)Y<sub>&rho;,&sigma;-1</sub><sup>n,s-1</sup> - (s+n)Y<sub>&rho;,&sigma;-2</sub><sup>n,s-2</sup> + 2(2&rho; + 2&sigma; + 2 + 3n)Y<sub>&rho;-1,&sigma;-1</sub><sup>n,s</sup>
  * </pre>
- * 
+ *
  * With &rho; >= &sigma;. Initialization is given by :
- * 
+ *
  * <pre>
  * Y<sub>0,0</sub><sup>n,s</sup> = 1 & Y<sub>1,0</sub><sup>n,s</sup> = s - n / 2
  * </pre>
- * 
+ *
  * Internally, the Modified Newcomb Operators are stored as an array of {@link PolynomialFunction} :
- * 
+ *
  * <pre>
  * Y<sub>&rho;,&sigma;</sub><sup>n,s</sup> = P<sub>k<sub>0</sub></sub> + P<sub>k<sub>1</sub></sub>n + ... + P<sub>k<sub>j</sub></sub>n<sup>j</sup>
  * </pre>
- * 
+ *
  * where the P<sub>k<sub>j</sub></sub> are given by
- * 
+ *
  * <pre>
  *  P<sub>k<sub>j</sub></sub> = &sum;<sub>j=0;&rho;</sub> a<sub>j</sub>s<sup>j</sup>
  * </pre>
- * 
+ *
  * @author Romain Di Costanzo
  */
 public class ModifiedNewcombOperators {
 
     /**
      * Get the polynomial value for the couple (&rho;, &sigma;), at n,s
-     * 
+     *
      * @param rho
      *            gives the polynomial first index
      * @param sigma
@@ -91,7 +107,7 @@ public class ModifiedNewcombOperators {
     /**
      * Get the list of polynomials representing the Modified Newcomb Operator for the
      * (&rho;,&sigma;) couple
-     * 
+     *
      * @param rho
      *            &rho;
      * @param sigma
@@ -162,7 +178,7 @@ public class ModifiedNewcombOperators {
         /**
          * Compute the Modified Newcomb Operators. The computation sequence is the following one
          * (for more clarity, only the subscript are written here.
-         * 
+         *
          * <pre>
          * Y<sub>0, 0</sub>
          * Y<sub>1, 0</sub>
@@ -171,9 +187,9 @@ public class ModifiedNewcombOperators {
          * Y<sub>4, 0</sub> Y<sub>3, 1</sub> Y<sub>2, 2</sub>
          * Y<sub>5, 0</sub> Y<sub>4, 1</sub> Y<sub>3, 2</sub>
          * .....
-         * 
+         *
          * </pre>
-         * 
+         *
          * @param rho
          *            degree to reach
          * @param maxDegree
@@ -268,14 +284,14 @@ public class ModifiedNewcombOperators {
         /**
          * Multiply two list of polynomial defined as the internal representation of the Modified
          * Newcomb Operator. Let's call R<sub>s</sub>(n) the result returned by the method :
-         * 
+         *
          * <pre>
          * R<sub>s</sub>(n) = (P<sub>s<sub>0</sub></sub> + P<sub>s<sub>1</sub></sub>n + ... + P<sub>s<sub>j</sub></sub>n<sup>j</sup>) *(Q<sub>s<sub>0</sub></sub> + Q<sub>s<sub>1</sub></sub>n + ... + Q<sub>s<sub>k</sub></sub>n<sup>k</sup>
          * </pre>
-         * 
+         *
          * * where the P<sub>s<sub>j</sub></sub> and Q<sub>s<sub>k</sub></sub> are polynomials in s,
          * s being the index of the Y<sub>&rho;,&sigma;</sub><sup>n,s</sup> function
-         * 
+         *
          * @param poly1
          *            first list of polynomial function
          * @param poly2
@@ -307,7 +323,7 @@ public class ModifiedNewcombOperators {
 
         /**
          * Sum two list of {@link PolynomialFunction}
-         * 
+         *
          * @param poly1
          *            first list
          * @param poly2
@@ -341,7 +357,7 @@ public class ModifiedNewcombOperators {
         /**
          * Shift a list of {@link PolynomialFunction}, from the
          * {@link PolynomialsUtils#shift(double[], double)} method.
-         * 
+         *
          * @param polynomialList
          *            list of {@link PolynomialFunction}
          * @param shift
@@ -361,7 +377,7 @@ public class ModifiedNewcombOperators {
 
     /**
      * Initialize an empty list of polynomial
-     * 
+     *
      * @param i
      *            order
      * @param resulting
@@ -380,7 +396,7 @@ public class ModifiedNewcombOperators {
 
         /**
          * Generate recurrence coefficients.
-         * 
+         *
          * @param
          */
         Map<Integer, List<PolynomialFunction>> generateRecurrenceCoefficients(final Couple couple) {

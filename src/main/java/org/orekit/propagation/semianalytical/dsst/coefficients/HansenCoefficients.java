@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.TreeMap;
@@ -10,7 +26,7 @@ import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFa
 /**
  * Hansen coefficient tool. Hansen coefficient are eccentricity function representation. For a given
  * eccentricity, every computed element is stored in a map.
- * 
+ *
  * @author Romain Di Costanzo
  */
 public class HansenCoefficients {
@@ -47,7 +63,7 @@ public class HansenCoefficients {
 
     /**
      * Simple constructor.
-     * 
+     *
      * @param ecc
      *            eccentricity
      */
@@ -57,7 +73,7 @@ public class HansenCoefficients {
 
     /**
      * Simple constructor.
-     * 
+     *
      * @param ecc
      *            eccentricity
      * @param maxEccPower
@@ -78,7 +94,7 @@ public class HansenCoefficients {
 
     /**
      * Get the K<sub>j</sub><sup>n,s</sup> coefficient value for any (j, n, s).
-     * 
+     *
      * @param j
      *            j value
      * @param n
@@ -114,7 +130,7 @@ public class HansenCoefficients {
 
     /**
      * Get the dK<sub>j</sub><sup>n,s</sup> / d&chi; coefficient derivative for any (j, n, s).
-     * 
+     *
      * @param j
      *            j value
      * @param n
@@ -165,7 +181,7 @@ public class HansenCoefficients {
 
     /**
      * Compute K<sub>0</sub><sup>n,s</sup> from Equation 2.7.3-(7)(8).
-     * 
+     *
      * @param n
      *            n value
      * @param s
@@ -227,7 +243,7 @@ public class HansenCoefficients {
 
     /**
      * Compute the K<sub>0</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(6).
-     * 
+     *
      * @param n
      *            n value, must be positive. For a given 'n', the K<sub>0</sub><sup>-n-1,s</sup>
      *            will be returned
@@ -289,7 +305,7 @@ public class HansenCoefficients {
     /**
      * Compute the K<sub>j</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(9). Not to be
      * used for j = 0 !
-     * 
+     *
      * @param j
      *            j value
      * @param n
@@ -327,7 +343,7 @@ public class HansenCoefficients {
 
     /**
      * Compute dK<sub>0</sub><sup>n,s</sup> / d&chi; from Equation 3.2-(3)
-     * 
+     *
      * @param n
      *            n value
      * @param s
@@ -377,7 +393,7 @@ public class HansenCoefficients {
 
     /**
      * Compute dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; from Equation 3.1-(7)
-     * 
+     *
      * @param n
      *            np value, must be positive. For a given 'np', the dK<sub>0</sub><sup>-np-1,s</sup>
      *            / d&chi; will be returned
@@ -429,7 +445,7 @@ public class HansenCoefficients {
     /**
      * Compute dK<sub>j</sub><sup>n,s</sup> / de<sup>2</sup>; from equation 3.3-(5) This coefficient
      * is always calculated for a negative n = -np-1 with np > 0
-     * 
+     *
      * @param j
      *            j value
      * @param n
@@ -471,7 +487,7 @@ public class HansenCoefficients {
      * Compute the Hansen coefficient K<sub>j</sub><sup>ns</sup> from equation 2.7.3-(10). The
      * coefficient value is evaluated from the {@link ModifiedNewcombOperators} elements. This
      * coefficient is always calculated for a negative n = -np-1 with np > 0
-     * 
+     *
      * @param j
      *            j value
      * @param n
@@ -505,11 +521,11 @@ public class HansenCoefficients {
 
     /**
      * Compute the upper bound for hansen coefficient of given indexes
-     * 
+     *
      * <pre>
      *  |K<sub>j</sub><sup>-n-1, s</sup>|<sub>Bound</sub> = Max(|K<sub>j</sub><sup>-n-1, s</sup>(0)|, |K<sub>j</sub><sup>-n-1, s</sup>(1)|)
      * </pre>
-     * 
+     *
      * @param e
      *            eccentricity
      * @param j
@@ -547,7 +563,7 @@ public class HansenCoefficients {
     /**
      * Compute the hansen kernel enveloppe, i.e upper value for null eccentricity. See equation in
      * 6.3
-     * 
+     *
      * @param j
      *            j
      * @param n
@@ -583,11 +599,11 @@ public class HansenCoefficients {
 
     /**
      * Compute the pochhammer product.
-     * 
+     *
      * <pre>
      *  (&alpha;)<sub>k</sub> = (&alpha;)(&alpha; + 1)(&alpha; + 2)...(&alpha; + k - 1)
      * </pre>
-     * 
+     *
      * @param alpha
      *            alpha
      * @param k

@@ -77,7 +77,7 @@ public class DrozinerAttractionModelTest {
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, poleAligned, date, mu);
-        
+
         propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, 6378136.460, mu,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));

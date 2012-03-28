@@ -40,7 +40,7 @@ public class VEISFrameTest {
 
         Transform t0 = FramesFactory.getEME2000().getTransformTo(FramesFactory.getVeis1950(), date0);
 
-        // J2000   
+        // J2000
         PVCoordinates pvJ2000 =
             new PVCoordinates(new Vector3D(5102509.6000, 6123011.5200, 6378136.3000),
                               new Vector3D(-4743.219600, 790.536600, 5533.756190));

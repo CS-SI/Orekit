@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import java.math.BigInteger;
@@ -32,7 +48,7 @@ import org.orekit.time.AbsoluteDate;
  * can be analytically computed.
  * <p>
  * Mean element rate are the da<sub>i</sub>/dt derivatives.
- * 
+ *
  * @author Romain Di Costanzo
  */
 public class DSSTCentralBody extends AbstractGravitationalForces {
@@ -200,7 +216,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * DSST Central body constructor.
-     * 
+     *
      * @param centralBodyRotationRate
      *            central body rotation rate in rad / s
      * @param ae
@@ -264,7 +280,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * {@inheritDoc} From equation 3.1 - (1)
-     * 
+     *
      * @throws OrekitException
      */
     public final double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
@@ -301,7 +317,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /**
      * Initialize the J<sub>n</sub> geopotential coefficients. See page 55 of the Danielson paper.
      * J<sub>n</sub> = - C<sub>n0</sub>
-     * 
+     *
      * @param Cnm
      *            Geopotential coefficient
      */
@@ -314,7 +330,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * Update values used by the {@link DSSTCentralBody}
-     * 
+     *
      * @param orbit
      *            orbit from which values are computed
      */
@@ -344,7 +360,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /**
      * Compute the equinoctioal reference frame defined by the (f, g, w) vector. f and g lie in the
      * satellite orbit plane. w is parallel to the angular momentum vector of the satellite.
-     * 
+     *
      * @param orbit
      *            orbit
      * @return the equinoctial reference frame
@@ -378,7 +394,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /**
      * Compute the &theta; angle for the current orbit. The &theta; angle is the central body
      * rotation angle, defined from the equinoctial reference frame. See equation 2.7.1 - (3)(4)
-     * 
+     *
      * @param orbit
      *            current orbital state
      * @return the central body rotation angle
@@ -399,7 +415,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * harmonic field. The routine computes the repetition period of the perturbation caused by each
      * central-body sectoral and tesseral harmonic term and compares the period to a predetermined
      * tolerance, the minimum period considered to be resonant.
-     * 
+     *
      * @throws OrekitException
      */
     public final void initialize(final SpacecraftState initialState) throws OrekitException {
@@ -444,7 +460,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * algorithm is to determine the maximum value of each of those indices by computing the upper
      * |R<sub>jmsn</sub>| perturbation function value for every indices. <br>
      * Algorithm description can be found in the D.A Danielson paper at paragraph 6.3
-     * 
+     *
      * @param initialState
      *            Initial satellite State
      * @throws OrekitException
@@ -552,7 +568,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * Compute the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion
-     * 
+     *
      * @param initialState
      *            initial satellite state
      */
@@ -571,7 +587,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * potential.<br>
      * Analytical averaging should not be used for resonant harmonics if the eccentricity is greater
      * than 0.5.
-     * 
+     *
      * @param initialState
      *            initial satellite state
      * @throws OrekitException
@@ -614,7 +630,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * the maximal values from with upper values gives geopotential terms inferior to a defined
      * tolerance. <br>
      * Algorithm description can be found in the D.A Danielson paper at paragraph 6.2
-     * 
+     *
      * @param initialState
      *            initial satellite state
      * @throws OrekitException
@@ -712,7 +728,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * field. The routine computes the repetition period of the perturbation caused by each central
      * body sectoral and tesseral harmonic term and compares the period to a predetermined
      * tolerance, the minimum period considered to be resonant.
-     * 
+     *
      * @param initialState
      *            Initial satellite state
      */
@@ -769,7 +785,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /**
      * Set the minimum period for analytically averaged high-order resonant central body spherical
      * harmonics in seconds. Set to 10 days by default.
-     * 
+     *
      * @param resonantMinPeriodInSec
      *            minimum period in seconds
      */
@@ -780,7 +796,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /**
      * Set the minimum period for analytically averaged high-order resonant central body spherical
      * harmonics in satelliteRevolution. Set to 10 by default.
-     * 
+     *
      * @param resonantMinPeriodInSatRev
      *            minimum period in satellite revolution
      */
@@ -791,7 +807,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /**
      * This methode set the highest power of the eccentricity to appear in the truncated analytical
      * power series expansion for the averaged central-body zonal harmonic potential.
-     * 
+     *
      * @param zonalMaxEccPower
      *            highest power of the eccentricity
      */
@@ -801,7 +817,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * Set the Zonal truncature tolerance
-     * 
+     *
      * @param zonalTruncatureTolerance
      *            Zonal truncature tolerance
      */
@@ -812,7 +828,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
     /**
      * This methode set the highest power of the eccentricity to appear in the truncated analytical
      * power series expansion for the averaged central-body tesseral harmonic potential.
-     * 
+     *
      * @param tesseralMaxEccPower
      *            highest power of the eccentricity
      */
@@ -822,7 +838,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * Get the equatorial radius.
-     * 
+     *
      * @return a<sub>e</sub>
      */
     public final double getAe() {
@@ -831,7 +847,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * Get the first normalized potential tesseral coefficients array
-     * 
+     *
      * @return First normalized potential tesseral coefficients array
      */
     public final double[][] getCnm() {
@@ -840,7 +856,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
     /**
      * Get the second normalized potential tesseral coefficients array
-     * 
+     *
      * @return Second normalized potential tesseral coefficients array
      */
     public final double[][] getSnm() {
@@ -861,7 +877,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
         /**
          * Get zonal contribution
-         * 
+         *
          * @param orbit
          *            orbit
          * @return orbital elements variation rate
@@ -927,7 +943,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
          * dU/ d&beta; <br>
          * dU/d&gamma;<br>
          * Where U is the gravitational potential.
-         * 
+         *
          * @param Qns
          *            Qns array
          * @param GsHs
@@ -1050,7 +1066,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
         /**
          * Get tesseral contribution
-         * 
+         *
          * @param orbit
          *            orbit
          * @return orbital elements variation rate
@@ -1098,7 +1114,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
          * identified (automatically or set by user), they are the only one to be taken in account.
          * If no resonant term have been found, we compute non resonant tessral term from those
          * found by the {@link DSSTCentralBody#tesseralTruncation(SpacecraftState)} method.
-         * 
+         *
          * <pre>
          * dU / da
          * dU / dh
@@ -1107,9 +1123,9 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
          * dU / d&alpha;
          * dU / d&beta;
          * dU / d&gamma;
-         * 
+         *
          * </pre>
-         * 
+         *
          * @param orbit
          *            initial orbit
          * @return potential derivatives
@@ -1163,7 +1179,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
         /**
          * Compute potential for tesseral harmonic terms
-         * 
+         *
          * @param j
          *            j-index
          * @param m

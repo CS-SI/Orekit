@@ -56,7 +56,7 @@ public class BackAndForthDetectorTest {
         final double w = Math.toRadians(0.);
         final double raan = Math.toRadians(12.5);
         final double lM = Math.toRadians(60.);
-        Orbit iniOrb = new KeplerianOrbit(a, e, i, w, raan, lM, 
+        Orbit iniOrb = new KeplerianOrbit(a, e, i, w, raan, lM,
                                           PositionAngle.MEAN, FramesFactory.getEME2000(), date0,
                                           Constants.WGS84_EARTH_MU);
 
@@ -65,7 +65,7 @@ public class BackAndForthDetectorTest {
 
         // Station
         final GeodeticPoint stationPosition = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(100.), 110.);
-        final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, 
+        final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                      Constants.WGS84_EARTH_FLATTENING,
                                                      FramesFactory.getITRF2005());
         final TopocentricFrame stationFrame = new TopocentricFrame(earth, stationPosition, "");
@@ -75,12 +75,12 @@ public class BackAndForthDetectorTest {
         propagator.addEventDetector(visiDetector);
 
         // Forward propagation (AOS + LOS)
-        propagator.propagate(date1);           
+        propagator.propagate(date1);
         propagator.propagate(date2);
         // Backward propagation (AOS + LOS)
-        propagator.propagate(date1);            
+        propagator.propagate(date1);
         propagator.propagate(date0);
-        
+
         Assert.assertEquals(4, visiDetector.getVisiNb());
 
     }
@@ -94,7 +94,7 @@ public class BackAndForthDetectorTest {
             _visiNb = 0;
         }
 
-        @Override 
+        @Override
         public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException
         {
             _visiNb++;

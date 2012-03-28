@@ -74,7 +74,7 @@ public class PartialDerivativesTest {
         double dP = 0.001;
         for (OrbitType orbitType : OrbitType.values()) {
             for (PositionAngle angleType : PositionAngle.values()) {
-                
+
                 // compute state Jacobian using PartialDerivatives
                 NumericalPropagator propagator =
                     setUpPropagator(initialState, dP, orbitType, angleType, gravityField);
@@ -115,7 +115,7 @@ public class PartialDerivativesTest {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
                         Assert.assertEquals(0, error, 3.0e-4);
-                        
+
                     }
                 }
 
@@ -141,7 +141,7 @@ public class PartialDerivativesTest {
         double dP = 0.001;
         for (OrbitType orbitType : new OrbitType[] { OrbitType.KEPLERIAN, OrbitType.CARTESIAN }) {
             for (PositionAngle angleType : PositionAngle.values()) {
-                
+
                 // compute state Jacobian using PartialDerivatives
                 NumericalPropagator propagator =
                     setUpPropagator(initialState, dP, orbitType, angleType, gravityField);
@@ -182,7 +182,7 @@ public class PartialDerivativesTest {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
                         Assert.assertEquals(0, error, 9.0e-4);
-                        
+
                     }
                 }
 

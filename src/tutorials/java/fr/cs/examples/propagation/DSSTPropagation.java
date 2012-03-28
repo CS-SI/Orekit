@@ -62,7 +62,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * set just below, in the class description, to generate comparatives files between a numerical
  * propagator and the DSST propagator. The orbit can be set from the
  * {@link DSSTPropagation#orbitDefinition()} method.
- * 
+ *
  * @author Romain Di Costanzo
  */
 public class DSSTPropagation {
@@ -150,7 +150,7 @@ public class DSSTPropagation {
 
     /**
      * Define the orbit to use. Just let one of the three possible options available
-     * 
+     *
      * @throws Exception
      */
     private static void orbitDefinition(PotentialCoefficientsProvider provider) throws Exception {
@@ -182,7 +182,7 @@ public class DSSTPropagation {
          boolean sun = true;
          boolean moon = true;
          boolean solarRadiation = false;
-        
+
          setOrbit(provider, orbit, isOscullating, sun, moon, solarRadiation);
 
     }
@@ -217,7 +217,7 @@ public class DSSTPropagation {
 
     /**
      * Method to be used by user if he wants to define its own orbit
-     * 
+     *
      * @param provider
      *            {@link PotentialCoefficientsProvider}
      * @param orbit
@@ -243,7 +243,7 @@ public class DSSTPropagation {
             setDSSTProp(new SpacecraftState(orbit), isOsculating, TIME_SHIFT_TO_INITIALIZE);
             // Reset the numerical propagator with new orbit (remove every force model)
             setNumProp(new SpacecraftState(orbit));
-            
+
 
         } else {
             // WARNING : no comparison with numerical can be done under this conditions !
@@ -256,7 +256,7 @@ public class DSSTPropagation {
 
     /**
      * Update propagator force's model
-     * 
+     *
      * @param provider
      * @throws OrekitException
      */
@@ -323,7 +323,7 @@ public class DSSTPropagation {
 
     /**
      * Output initialization
-     * 
+     *
      * @throws IOException
      */
     private static void initializeOutput() throws IOException {
@@ -352,7 +352,7 @@ public class DSSTPropagation {
 
     /**
      * Set up the numerical propagator
-     * 
+     *
      * @param initialState
      */
     private static void setNumProp(SpacecraftState initialState) {
@@ -367,7 +367,7 @@ public class DSSTPropagation {
 
     /**
      * Set up the DSST Propagator
-     * 
+     *
      * @param initialState
      * @param isOsculating
      * @throws OrekitException

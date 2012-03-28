@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import java.util.ArrayList;
@@ -10,15 +26,15 @@ import org.apache.commons.math3.complex.Complex;
  * with respect to <i>k, h</i>. Those series are used in the DSST theory and given by expression
  * 2.5.3-(5)(6) of the Danielson paper (Semi-Analytic Satellite Theory). The expression used here is
  * equation (5):
- * 
+ *
  * <pre>
  * C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup>
  * </pre>
- * 
+ *
  * The C<sub>i</sub>(k, h) and the S<sub>i</sub>(k, h) elements are store as an {@link ArrayList} of
  * {@link Complex} number, the C<sub>i</sub>(k, h) being represented by its real part and the
  * S<sub>i</sub>(k, h) by the imaginary part.
- * 
+ *
  * @author Romain Di Costanzo
  */
 public class CiSiCoefficient {
@@ -40,7 +56,7 @@ public class CiSiCoefficient {
 
     /**
      * S<sub>i</sub>(k, h) and C<sub>i</sub>(k, h) constructor
-     * 
+     *
      * @param x
      *            x value
      * @param y
@@ -54,7 +70,7 @@ public class CiSiCoefficient {
 
     /**
      * Get the C<sub>i</sub> coefficient
-     * 
+     *
      * @param i
      *            order
      * @return C<sub>i</sub>
@@ -72,7 +88,7 @@ public class CiSiCoefficient {
 
     /**
      * Get the S<sub>i</sub> coefficient
-     * 
+     *
      * @param i
      *            order
      * @return S<sub>i</sub>
@@ -90,7 +106,7 @@ public class CiSiCoefficient {
 
     /**
      * Get the dC<sub>i</sub> / dk coefficient
-     * 
+     *
      * @param i
      *            order
      * @return dC<sub>i</sub> / d<sub>k</sub>
@@ -101,7 +117,7 @@ public class CiSiCoefficient {
 
     /**
      * Get the dS<sub>i</sub> / dk coefficient
-     * 
+     *
      * @param i
      *            order
      * @return dS<sub>i</sub> / d<sub>k</sub>
@@ -112,7 +128,7 @@ public class CiSiCoefficient {
 
     /**
      * Get the dC<sub>i</sub> / dh coefficient
-     * 
+     *
      * @param i
      *            order
      * @return dC<sub>i</sub> / d<sub>k</sub>
@@ -123,7 +139,7 @@ public class CiSiCoefficient {
 
     /**
      * Get the dS<sub>i</sub> / dh coefficient
-     * 
+     *
      * @param i
      *            order
      * @return dS<sub>i</sub> / d<sub>h</sub>
@@ -134,7 +150,7 @@ public class CiSiCoefficient {
 
     /**
      * Update the CjSo at wanted order from previous computation
-     * 
+     *
      * @param i
      *            final order to reach
      */
@@ -150,7 +166,7 @@ public class CiSiCoefficient {
 
     /**
      * Initialize the computation at wanted order i
-     * 
+     *
      * @param i
      *            wanted order
      */

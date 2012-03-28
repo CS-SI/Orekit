@@ -71,7 +71,7 @@ public class EphemerisMode {
             // Orbit construction as Keplerian
             Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
                                                     inertialFrame, initialDate, mu);
-            
+
             // Initialize state
             SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
@@ -83,10 +83,10 @@ public class EphemerisMode {
 
             // Set the propagator to ephemeris mode
             propagator.setEphemerisMode();
-            
+
             // Initialize propagation
             propagator.setInitialState(initialState);
-            
+
             // Propagation with storage of the results in an integrated ephemeris
             SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(6000));
 
@@ -96,20 +96,20 @@ public class EphemerisMode {
 
             // Getting the integrated ephemeris
             BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
-            
+
             System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() + " to " + ephemeris.getMaxDate());
-            
+
             System.out.println(" Ephemeris propagation :");
             AbsoluteDate intermediateDate = initialDate.shiftedBy(3000);
             SpacecraftState intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
-            
+
             intermediateDate = finalState.getDate();
             intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
-            
+
             intermediateDate = initialDate.shiftedBy(-1000);
             System.out.println();
             System.out.println("Attempting to propagate to date " + intermediateDate +

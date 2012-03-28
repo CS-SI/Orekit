@@ -121,7 +121,7 @@ public class DataProvidersManagerTest {
         List<DataProvider> providers = manager.getProviders();
         Assert.assertEquals(1, providers.size());
         for (DataProvider provider : providers) {
-            Assert.assertTrue(manager.isSupported(provider));            
+            Assert.assertTrue(manager.isSupported(provider));
         }
         Assert.assertNotNull(manager.removeProvider(providers.get(0)));
         Assert.assertEquals(0, manager.getProviders().size());

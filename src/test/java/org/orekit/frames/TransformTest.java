@@ -242,7 +242,7 @@ public class TransformTest {
 
             Vector3D resultvel = tr.getInverse().transformPVCoordinates(pvTwo).getVelocity();
 
-            checkVectors(resultvel , vel); 
+            checkVectors(resultvel , vel);
 
         }
 
@@ -278,7 +278,7 @@ public class TransformTest {
 
             PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
             Vector3D result  = (pvTwo.getPosition().add(
-                                                        new Vector3D(dt ,pvTwo.getVelocity()))); 
+                                                        new Vector3D(dt ,pvTwo.getVelocity())));
             checkVectors( good , result);
 
             // test inverse

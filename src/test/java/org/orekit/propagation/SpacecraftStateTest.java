@@ -156,7 +156,7 @@ public class SpacecraftStateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
-        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE, 
+        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
         attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2005());
         propagator =

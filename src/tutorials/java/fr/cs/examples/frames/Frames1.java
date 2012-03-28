@@ -73,7 +73,7 @@ public class Frames1 {
             // The local orbital frame (LOF) is related to the orbit propagated by the kepler propagator.
             LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
 
-            // Earth and frame  
+            // Earth and frame
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
             Frame ITRF2005 = FramesFactory.getITRF2005(true); // terrestrial frame at an arbitrary date

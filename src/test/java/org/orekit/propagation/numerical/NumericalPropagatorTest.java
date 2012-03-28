@@ -100,7 +100,7 @@ public class NumericalPropagatorTest {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
-        final SpacecraftState finalState = 
+        final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
 
         // Check results
@@ -120,7 +120,7 @@ public class NumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final double dt = 3200;
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        final PVCoordinates finalState = 
+        final PVCoordinates finalState =
             propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
         final Vector3D pFin = finalState.getPosition();
         final Vector3D vFin = finalState.getVelocity();
@@ -324,7 +324,7 @@ public class NumericalPropagatorTest {
         });
         final double dt = 3200;
         Assert.assertFalse(gotHere);
-        final SpacecraftState finalState = 
+        final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
@@ -348,7 +348,7 @@ public class NumericalPropagatorTest {
         });
         final double dt = 3200;
         Assert.assertFalse(gotHere);
-        final SpacecraftState finalState = 
+        final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
@@ -376,13 +376,13 @@ public class NumericalPropagatorTest {
         Frame EME2000 = FramesFactory.getEME2000();
 
 
-        // Initial orbit            
+        // Initial orbit
         double a = 35786000. + 6378137.0;
         double e = 0.70;
         double rApogee = a*(1+e);
         double vApogee = FastMath.sqrt(mu*(1-e)/(a*(1+e)));
-        Orbit geo = new CartesianOrbit(new PVCoordinates(new Vector3D(rApogee, 0., 0.), 
-                                                         new Vector3D(0., vApogee, 0.)), EME2000, 
+        Orbit geo = new CartesianOrbit(new PVCoordinates(new Vector3D(rApogee, 0., 0.),
+                                                         new Vector3D(0., vApogee, 0.)), EME2000,
                                                          initialDate, mu);
 
 
@@ -415,7 +415,7 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(event1);
 
         // Set the propagation mode
-        propagator.setSlaveMode();          
+        propagator.setSlaveMode();
 
         // Propagate
         SpacecraftState finalState = propagator.propagate(endDate);

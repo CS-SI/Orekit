@@ -155,7 +155,7 @@ public class ConstantThrustManeuverTest {
 
         // Body mu
         mu = 3.9860047e14;
-        
+
     }
 
 }

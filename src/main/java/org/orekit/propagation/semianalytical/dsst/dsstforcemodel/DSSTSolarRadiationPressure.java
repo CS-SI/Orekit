@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -16,7 +32,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * &gamma; = (1/2 C<sub>R</sub> A / m) * (p<sub>ref</sub> * d<sup>2</sup><sub>ref</sub>) *
  * (r<sub>sat</sub> - R<sub>sun</sub>) / |r<sub>sat</sub> - R<sub>sun</sub>|<sup>3</sup>
  * </p>
- * 
+ *
  * @author Pascal Parraud
  */
 public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution {
@@ -64,7 +80,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
      * <li>d<sub>ref</sub> = 149597870000.0 m</li>
      * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
      * </ul>
-     * 
+     *
      * @param cr
      *            satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area
@@ -89,7 +105,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
      * (299792458 m/s). So at 1UA a 1367 W/m<sup>2</sup> solar flux is a 4.56 10<sup>-6</sup>
      * N/m<sup>2</sup> solar radiation pressure.
      * </p>
-     * 
+     *
      * @param dRef
      *            reference distance for the solar radiation pressure (m)
      * @param pRef
@@ -266,7 +282,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
 
     /**
      * Compute Sun-sat vector in SpacecraftState frame.
-     * 
+     *
      * @param state
      *            current spacecraft state
      * @param position
@@ -283,11 +299,11 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
 
     /**
      * Compute the real roots of a quartic equation:
-     * 
+     *
      * <pre>
      * a[0] * x<sup>4</sup> + a[1] * x<sup>3</sup> + a[2] * x<sup>2</sup> + a[3] * x + a[4] = 0.
      * </pre>
-     * 
+     *
      * @param a
      *            the 5 coefficients
      * @param y
@@ -380,11 +396,11 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
 
     /**
      * Compute the real roots of a cubic equation:
-     * 
+     *
      * <pre>
      * a[0] * x<sup>3</sup> + a[1] * x<sup>2</sup> + a[2] * x + a[3] = 0.
      * </pre>
-     * 
+     *
      * @param a
      *            the 4 coefficients
      * @param y
@@ -446,11 +462,11 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
 
     /**
      * Compute the real roots of a quadratic equation:
-     * 
+     *
      * <pre>
      * a[0] * x<sup>2</sup> + a[1] * x + a[2] = 0.
      * </pre>
-     * 
+     *
      * @param a
      *            the 3 coefficients
      * @param y
