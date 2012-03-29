@@ -39,40 +39,34 @@ import org.apache.commons.math3.complex.Complex;
  */
 public class CiSiCoefficient {
 
-    /** true if no previous computation has been done */
-    private boolean       isDirty = true;
+    /** true if no previous computation has been done. */
+    private boolean       isDirty;
 
-    /** Last computation done */
+    /** Last computation done. */
     private int           last;
 
-    /** List of computed elements */
-    private List<Complex> CjSj    = new ArrayList<Complex>();
+    /** List of computed elements. */
+    private final List<Complex> CjSj;
 
-    /** Is the x-component of the S<sub>i</sub>, C<sub>i</sub> series */
+    /** Is the x-component of the S<sub>i</sub>, C<sub>i</sub> series. */
     private final double  x;
 
-    /** Is the y-component of the S<sub>i</sub>, C<sub>i</sub> series */
+    /** Is the y-component of the S<sub>i</sub>, C<sub>i</sub> series. */
     private final double  y;
 
-    /**
-     * S<sub>i</sub>(k, h) and C<sub>i</sub>(k, h) constructor
-     *
-     * @param x
-     *            x value
-     * @param y
-     *            y value
+    /** S<sub>i</sub>(k, h) and C<sub>i</sub>(k, h) constructor.
+     * @param x x value
+     * @param y y value
      */
-    public CiSiCoefficient(final double x,
-                           final double y) {
-        this.x = x;
-        this.y = y;
+    public CiSiCoefficient(final double x, final double y) {
+        this.x       = x;
+        this.y       = y;
+        this.isDirty = true;
+        this.CjSj    = new ArrayList<Complex>();
     }
 
-    /**
-     * Get the C<sub>i</sub> coefficient
-     *
-     * @param i
-     *            order
+    /** Get the C<sub>i</sub> coefficient.
+     * @param i order
      * @return C<sub>i</sub>
      */
     public double getCi(final int i) {
@@ -86,11 +80,8 @@ public class CiSiCoefficient {
         return CjSj.get(i).getReal();
     }
 
-    /**
-     * Get the S<sub>i</sub> coefficient
-     *
-     * @param i
-     *            order
+    /** Get the S<sub>i</sub> coefficient.
+     * @param i order
      * @return S<sub>i</sub>
      */
     public double getSi(final int i) {
@@ -104,82 +95,62 @@ public class CiSiCoefficient {
         return CjSj.get(i).getImaginary();
     }
 
-    /**
-     * Get the dC<sub>i</sub> / dk coefficient
-     *
-     * @param i
-     *            order
+    /** Get the dC<sub>i</sub> / dk coefficient.
+     * @param i order
      * @return dC<sub>i</sub> / d<sub>k</sub>
      */
     public double getDciDk(final int i) {
-        return (i == 0 ? 0 : i * getCi(i - 1));
+        return i == 0 ? 0 : i * getCi(i - 1);
     }
 
-    /**
-     * Get the dS<sub>i</sub> / dk coefficient
-     *
-     * @param i
-     *            order
+    /** Get the dS<sub>i</sub> / dk coefficient.
+     * @param i order
      * @return dS<sub>i</sub> / d<sub>k</sub>
      */
     public double getDsiDk(final int i) {
-        return (i == 0 ? 0 : i * getSi(i - 1));
+        return i == 0 ? 0 : i * getSi(i - 1);
     }
 
-    /**
-     * Get the dC<sub>i</sub> / dh coefficient
-     *
-     * @param i
-     *            order
+    /** Get the dC<sub>i</sub> / dh coefficient.
+     * @param i order
      * @return dC<sub>i</sub> / d<sub>k</sub>
      */
     public double getDciDh(final int i) {
-        return (i == 0 ? 0 : -i * getSi(i - 1));
+        return i == 0 ? 0 : -i * getSi(i - 1);
     }
 
-    /**
-     * Get the dS<sub>i</sub> / dh coefficient
-     *
-     * @param i
-     *            order
+    /** Get the dS<sub>i</sub> / dh coefficient.
+     * @param i order
      * @return dS<sub>i</sub> / d<sub>h</sub>
      */
     public double getDsiDh(final int i) {
-        return (i == 0 ? 0 : i * getCi(i - 1));
+        return i == 0 ? 0 : i * getCi(i - 1);
     }
 
-    /**
-     * Update the CjSo at wanted order from previous computation
-     *
-     * @param i
-     *            final order to reach
+    /** Update the CjSo at wanted order from previous computation.
+     * @param i final order to reach
      */
-    private void updateCjSi(int i) {
+    private void updateCjSi(final int i) {
         Complex previous = CjSj.get(CjSj.size() - 1);
         for (int j = last + 1; j <= i; j++) {
-            Complex next = previous.multiply(new Complex(x, y));
+            final Complex next = previous.multiply(new Complex(x, y));
             CjSj.add(next);
             previous = next;
             last = j;
         }
     }
 
-    /**
-     * Initialize the computation at wanted order i
-     *
-     * @param i
-     *            wanted order
+    /** Initialize the computation at wanted order i.
+     * @param i wanted order
      */
-    private void initializeCjSi(int i) {
+    private void initializeCjSi(final int i) {
         // Initialization
-        double c0 = 1;
-        double s0 = 0;
-        Complex previous = new Complex(c0, s0);
+        Complex previous = new Complex(1, 0);
         CjSj.add(previous);
 
         // First computation :
         for (int j = 1; j <= i; j++) {
-            Complex next = previous.multiply(new Complex(x, y));
+            final Complex next = previous.multiply(new Complex(x, y));
             CjSj.add(next);
             previous = next;
         }

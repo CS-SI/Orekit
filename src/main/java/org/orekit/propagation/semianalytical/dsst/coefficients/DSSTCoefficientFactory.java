@@ -37,12 +37,13 @@ public class DSSTCoefficientFactory {
     /** Internal storage of the polynomial values. Reused for further computation. */
     private static TreeMap<NSKey, Double>         VNS            = new TreeMap<NSKey, Double>();
 
+    /** Last computed order for V<sub>ns</sub> coefficients. */
     private static int                            LAST_VNS_ORDER = 2;
 
-    /** Map of the Qns derivatives, for each (n, s) couple {@link DSSTCoefficientFactory.NSKey} */
+    /** Map of the Qns derivatives, for each (n, s) couple. */
     private static Map<NSKey, PolynomialFunction> QNS_MAP        = new TreeMap<NSKey, PolynomialFunction>();
 
-    /** Static initialization for the V<sub>ns</sub> coefficient */
+    /** Static initialization for the V<sub>ns</sub> coefficient. */
     static {
         // Initialization
         VNS.put(new NSKey(0, 0), 1.);
@@ -50,28 +51,27 @@ public class DSSTCoefficientFactory {
         VNS.put(new NSKey(1, 1), 0.5);
     }
 
-    /**
-     * Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma; This method is using the
+    /** Private constructor as the class is a utility class.
+     */
+    private DSSTCoefficientFactory() {
+    }
+
+    /** Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma; This method is using the
      * Legendre polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method
      * allows to store the polynomials value in a static map. If the Q<sub>ns</sub> had been
      * computed already, they just will be evaluated at &gamma;
      *
-     * @param gamma
-     *            &gamma; angle for which Q<sub>ns</sub> is evaluated
-     * @param n
-     *            n value
-     * @param s
-     *            s value
+     * @param gamma &gamma; angle for which Q<sub>ns</sub> is evaluated
+     * @param n n value
+     * @param s s value
      * @return the polynomial value evaluated at &gamma;
      */
-    public static double getQnsPolynomialValue(final double gamma,
-                                               final int n,
-                                               final int s) {
+    public static double getQnsPolynomialValue(final double gamma, final int n, final int s) {
         PolynomialFunction derivative;
         if (QNS_MAP.containsKey(new NSKey(n, s))) {
             derivative = QNS_MAP.get(new NSKey(n, s));
         } else {
-            PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
+            final PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
             derivative = legendre;
             for (int i = 0; i < s; i++) {
                 derivative = (PolynomialFunction) derivative.derivative();
@@ -81,21 +81,16 @@ public class DSSTCoefficientFactory {
         return derivative.value(gamma);
     }
 
-    /**
-     * Compute the Q<sub>ns</sub> array evaluated at &gamma; from the recurrence formula 2.8.3-(2).
+    /** Compute the Q<sub>ns</sub> array evaluated at &gamma; from the recurrence formula 2.8.3-(2).
      * As this method directly evaluate the polynomial at &gamma;, values aren't stored.
-     *
-     * @param gamma
-     *            &gamma; angle
-     * @param order
-     *            order N of computation
+     * @param gamma &gamma; angle
+     * @param order order N of computation
      * @return Q<sub>ns</sub> array
      */
-    public static double[][] computeQnsCoefficient(final double gamma,
-                                                   final int order) {
+    public static double[][] computeQnsCoefficient(final double gamma, final int order) {
 
         // Initialization
-        double[][] Qns = new double[order + 1][];
+        final double[][] Qns = new double[order + 1][];
         for (int i = 0; i < order + 1; i++) {
             Qns[i] = new double[i + 1];
         }
@@ -111,7 +106,7 @@ public class DSSTCoefficientFactory {
                     Qns[n][s] = (2. * s + 1.) * gamma * Qns[s][s];
                 } else {
                     Qns[n][s] = (2. * n - 1.) * gamma * Qns[n - 1][s] - (n + s - 1.) * Qns[n - 2][s];
-                    Qns[n][s] /= (n - s);
+                    Qns[n][s] /= n - s;
                 }
             }
         }
@@ -119,39 +114,29 @@ public class DSSTCoefficientFactory {
         return Qns;
     }
 
-    /**
-     * Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5)
-     *
-     * @param k
-     *            x-component of the eccentricity vector
-     * @param h
-     *            y-component of the eccentricity vector
-     * @param alpha
-     *            1st direction cosine
-     * @param beta
-     *            2nd direction cosine
-     * @param order
-     *            development order
+    /** Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5).
+     * @param k x-component of the eccentricity vector
+     * @param h y-component of the eccentricity vector
+     * @param alpha 1st direction cosine
+     * @param beta 2nd direction cosine
+     * @param order development order
      * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order. The 1st
      *         column contains the G<sub>s</sub> values. The 2nd column contains the H<sub>s</sub>
      *         values.
      * @see getGsHsCoefficient
      */
-    public static double[][] computeGsHsCoefficient(final double k,
-                                                    final double h,
-                                                    final double alpha,
-                                                    final double beta,
-                                                    final int order) {
+    public static double[][] computeGsHsCoefficient(final double k, final double h,
+                                                    final double alpha, final double beta, final int order) {
         // Initialization
-        double[][] GsHs = new double[2][order + 1];
+        final double[][] GsHs = new double[2][order + 1];
         // First Gs coefficient
         GsHs[0][0] = 1.;
         // First Hs coefficient
         GsHs[1][0] = 0.;
 
         // Constant terms
-        final double hamkb = (h * alpha - k * beta);
-        final double kaphb = (k * alpha + h * beta);
+        final double hamkb = h * alpha - k * beta;
+        final double kaphb = k * alpha + h * beta;
 
         for (int s = 1; s <= order; s++) {
             // Gs coefficient
@@ -163,94 +148,57 @@ public class DSSTCoefficientFactory {
         return GsHs;
     }
 
-    /**
-     * Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4)
-     *
-     * @param k
-     *            x-component of the eccentricity vector
-     * @param h
-     *            y-component of the eccentricity vector
-     * @param alpha
-     *            1st direction cosine
-     * @param beta
-     *            2nd direction cosine
-     * @param s
-     *            development order
+    /** Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4).
+     * @param k x-component of the eccentricity vector
+     * @param h y-component of the eccentricity vector
+     * @param alpha 1st direction cosine
+     * @param beta 2nd direction cosine
+     * @param s development order
      * @return Array of G<sub>s</sub> and H<sub>s</sub> values for s. The 1st column contains the
      *         G<sub>s</sub> value. The 2nd column contains the H<sub>s</sub> value.
      */
-    public static double[] getGsHsCoefficient(final double k,
-                                              final double h,
-                                              final double alpha,
-                                              final double beta,
-                                              final int s) {
-        Complex a = new Complex(k, h);
-        Complex as = a.pow(s);
-        Complex b = new Complex(alpha, -beta);
-        Complex bs = b.pow(s);
-        Complex asbs = as.multiply(bs);
-        return new double[] { asbs.getReal(), asbs.getImaginary() };
+    public static double[] getGsHsCoefficient(final double k, final double h,
+                                              final double alpha, final double beta, final int s) {
+        final Complex as   = new Complex(k, h).pow(s);
+        final Complex bs   = new Complex(alpha, -beta).pow(s);
+        final Complex asbs = as.multiply(bs);
+        return new double[] {
+            asbs.getReal(), asbs.getImaginary()
+        };
     }
 
-    /**
-     * Get the G<sub>s</sub> coefficient from relation 3.1-(4)
-     *
-     * @param k
-     *            k
-     * @param h
-     *            h
-     * @param alpha
-     *            &alpha;
-     * @param beta
-     *            &beta;
-     * @param s
-     *            s
+    /** Get the G<sub>s</sub> coefficient from relation 3.1-(4).
+     * @param k k
+     * @param h h
+     * @param alpha &alpha;
+     * @param beta &beta;
+     * @param s s
      * @return G<sub>s</sub> coefficient
      */
-    public static double getGsCoefficient(final double k,
-                                          final double h,
-                                          final double alpha,
-                                          final double beta,
-                                          final int s) {
-        Complex a = new Complex(k, h);
-        Complex a2 = a.pow(s);
-        Complex b = new Complex(alpha, -beta);
-        Complex b2 = b.pow(s);
-        return a2.multiply(b2).getReal();
+    public static double getGsCoefficient(final double k, final double h,
+                                          final double alpha, final double beta, final int s) {
+        final Complex as = new Complex(k, h).pow(s);
+        final Complex bs = new Complex(alpha, -beta).pow(s);
+        return as.multiply(bs).getReal();
     }
 
-    /**
-     * Get the H<sub>s</sub> coefficient from relation 3.1-(4)
-     *
-     * @param k
-     *            k
-     * @param h
-     *            h
-     * @param alpha
-     *            &alpha;
-     * @param beta
-     *            &beta;
-     * @param s
-     *            s
+    /** Get the H<sub>s</sub> coefficient from relation 3.1-(4).
+     * @param k k
+     * @param h h
+     * @param alpha &alpha;
+     * @param beta &beta;
+     * @param s s
      * @return H<sub>s</sub> coefficient
      */
-    public static double getHsCoefficient(final double k,
-                                          final double h,
-                                          final double alpha,
-                                          final double beta,
-                                          final int s) {
-        Complex a = new Complex(k, h);
-        Complex a2 = a.pow(s);
-        Complex b = new Complex(alpha, -beta);
-        Complex b2 = b.pow(s);
-        return a2.multiply(b2).getImaginary();
+    public static double getHsCoefficient(final double k, final double h,
+                                          final double alpha, final double beta, final int s) {
+        final Complex as = new Complex(k, h).pow(s);
+        final Complex bs = new Complex(alpha, -beta).pow(s);
+        return as.multiply(bs).getImaginary();
     }
 
-    /**
-     * Compute the V<sub>n, s</sub> coefficient from 2.8.2 - (1)(2).
-     *
-     * @param order
-     *            Order of the computation. Computation will be done from order 0 to order -1
+    /** Compute the V<sub>n, s</sub> coefficient from 2.8.2 - (1)(2).
+     * @param order Order of the computation. Computation will be done from order 0 to order -1
      * @return Map of the V<sub>n, s</sub> coefficient
      */
     public static TreeMap<NSKey, Double> computeVnsCoefficient(final int order) {
@@ -258,7 +206,7 @@ public class DSSTCoefficientFactory {
         if (order > LAST_VNS_ORDER) {
             // Compute coefficient
             // Need previous computation as recurrence relation is done at s + 1 and n + 2
-            int min = (LAST_VNS_ORDER - 2 < 0) ? 0 : (LAST_VNS_ORDER - 2);
+            final int min = (LAST_VNS_ORDER - 2 < 0) ? 0 : (LAST_VNS_ORDER - 2);
             for (int n = min; n < order; n++) {
                 for (int s = 0; s < n + 1; s++) {
                     if ((n - s) % 2 != 0) {
@@ -280,23 +228,16 @@ public class DSSTCoefficientFactory {
         return VNS;
     }
 
-    /**
-     * Initialize the V<sub>n, s</sub> <sup>m</sup> coefficient from the V<sub>n, s</sub>
+    /** Initialize the V<sub>n, s</sub> <sup>m</sup> coefficient from the V<sub>n, s</sub>
      * <sup>m</sup> expression as function of the V<sub>n, s</sub> coefficients. See text in 2.8.2
-     *
-     * @param m
-     *            m
-     * @param n
-     *            n
-     * @param s
-     *            s
+     * @param m m
+     * @param n n
+     * @param s s
      * @return The V<sub>n, s</sub> <sup>m</sup> coefficient
-     * @throws OrekitException
-     *             if m > s
+     * @throws OrekitException if m > s
      */
-    public static double getVmns(final int m,
-                                 final int n,
-                                 final int s) throws OrekitException {
+    public static double getVmns(final int m, final int n, final int s)
+        throws OrekitException {
         if (m > n) {
             throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_MS, m, s);
         }
@@ -310,66 +251,50 @@ public class DSSTCoefficientFactory {
         double result = 0;
         if ((n - s) % 2 == 0) {
             if (s >= 0) {
-                result = (ArithmeticUtils.factorial(n + s) / ArithmeticUtils.factorial(n - m)) * VNS.get(new NSKey(n, s));
+                result = ArithmeticUtils.factorial(n + s)  * VNS.get(new NSKey(n, s)) / ArithmeticUtils.factorial(n - m);
             } else {
                 // If s < 0 : Vmn-s = (-1)^(-s) Vmns
-                result = FastMath.pow(-1, -s) * (ArithmeticUtils.factorial(n - s) / ArithmeticUtils.factorial(n - m))
-                         * VNS.get(new NSKey(n, -s));
+                result = FastMath.pow(-1, -s) * ArithmeticUtils.factorial(n - s) * VNS.get(new NSKey(n, -s)) /
+                        ArithmeticUtils.factorial(n - m);
             }
         }
         return result;
     }
 
-    /**
-     * Key formed by two integer values
-     */
+    /** Key formed by two integer values. */
     public static class NSKey implements Comparable<NSKey> {
 
-        /** n value */
-        final int n;
+        /** n value. */
+        private final int n;
 
-        /** s value */
-        final int s;
+        /** s value. */
+        private final int s;
 
-        /**
-         * Default constructor
-         *
-         * @param n
-         *            n
-         * @param s
-         *            s
+        /** Simple constructor.
+         * @param n n
+         * @param s s
          */
-        public NSKey(final int n,
-                     final int s) {
+        public NSKey(final int n, final int s) {
             this.n = n;
             this.s = s;
         }
 
-        /**
-         * Get n
-         *
+        /** Get n.
          * @return n
          */
         public int getN() {
             return n;
         }
 
-        /**
-         * Get s
-         *
+        /** Get s.
          * @return s
          */
         public int getS() {
             return s;
         }
 
-        @Override
-        public String toString() {
-            return new String("[" + n + ", " + s + "]");
-        }
-
         /** {@inheritDoc} */
-        public int compareTo(NSKey key) {
+        public int compareTo(final NSKey key) {
             int result = 1;
             if (n == key.n) {
                 if (s < key.s) {
@@ -384,40 +309,31 @@ public class DSSTCoefficientFactory {
         }
     }
 
-    /**
-     * MNS couple's key
-     */
+    /** MNS couple's key. */
     public static class MNSKey implements Comparable<MNSKey> {
 
-        /** m value */
-        final int m;
+        /** m value. */
+        private final int m;
 
-        /** s value */
-        final int s;
+        /** s value. */
+        private final int s;
 
-        /** n value */
-        final int n;
+        /** n value. */
+        private final int n;
 
-        /**
-         * Default constructor
-         *
-         * @param m
-         *            m
-         * @param n
-         *            n
-         * @param s
-         *            s
+        /** Simpleconstructor.
+         * @param m m
+         * @param n n
+         * @param s s
          */
-        public MNSKey(final int m,
-                      final int n,
-                      final int s) {
+        public MNSKey(final int m, final int n, final int s) {
             this.m = m;
             this.s = s;
             this.n = n;
         }
 
         /** {@inheritDoc} */
-        public int compareTo(MNSKey key) {
+        public int compareTo(final MNSKey key) {
             int result = 1;
             if (m == key.m) {
                 if (n == key.n) {
@@ -439,13 +355,6 @@ public class DSSTCoefficientFactory {
             return result;
         }
 
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public String toString() {
-            return new String("[" + m + ", " + n + ", " + s + "]");
-        }
     }
 
 }

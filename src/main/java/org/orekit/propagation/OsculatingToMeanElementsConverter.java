@@ -26,6 +26,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
@@ -57,7 +58,6 @@ public class OsculatingToMeanElementsConverter {
      * @param state initial orbit to convert
      * @param satelliteRevolution number of satellite revolutions in the averaging interval
      * @param propagator propagator used to compute mean orbit
-     * @throws OrekitException
      */
     public OsculatingToMeanElementsConverter(final SpacecraftState state,
                                              final int satelliteRevolution,
@@ -70,13 +70,17 @@ public class OsculatingToMeanElementsConverter {
     /**
      * Convert an osculating orbit into a mean orbit, in DSST sense.
      * @return mean orbit state, in DSST sense
-     * @throws OrekitException
-     * @throws IllegalArgumentException
+     * @throws OrekitException if state cannot be propagated throughout range
+     * @throws IllegalArgumentException if eccentricity is out of range
      */
     public final SpacecraftState convert() throws IllegalArgumentException, OrekitException {
-        // Tolerance list
-        final double[][] tolerance = NumericalPropagator.tolerances(1e-3, state.getOrbit(), state.getOrbit().getType());
-        final double aMean = computeSemiMajorAxis(state, tolerance[0][0], tolerance[1][0]);
+
+        // tolerances
+        final double[][] tolerance =
+                NumericalPropagator.tolerances(1e-3, state.getOrbit(), OrbitType.EQUINOCTIAL);
+
+        final double aMean = computeSemiMajorAxis(tolerance[0][0], tolerance[1][0]);
+
         // Get eccentric longitude
         final double l = state.getLE();
         final double[] results = new double[5];
@@ -93,20 +97,16 @@ public class OsculatingToMeanElementsConverter {
     /**
      * Compute the semi-major axis from a quadrature evaluation.
      *
-     * @param state
-     *            state
      * @param absoluteTolerance
      *            absolute tolerance
      * @param relativeTolerance
      *            relative tolerance
      * @return mean semi-major axis
-     * @throws IllegalArgumentException
-     * @throws OrekitException
+     * @throws PropagationException  if initial state cannot be propagated throughout desired period
      */
-    private double computeSemiMajorAxis(final SpacecraftState state,
-                                        final double absoluteTolerance,
+    private double computeSemiMajorAxis(final double absoluteTolerance,
                                         final double relativeTolerance)
-        throws IllegalArgumentException, OrekitException {
+        throws PropagationException {
         final double a = state.getA();
         final SemiMajorAxisFunction function = new SemiMajorAxisFunction(state, absoluteTolerance, relativeTolerance);
         final NewtonSolverImp solver = new NewtonSolverImp(function);
@@ -123,7 +123,7 @@ public class OsculatingToMeanElementsConverter {
     private class SemiMajorAxisFunction implements DifferentiableUnivariateFunction {
 
         /** Satellite initial state. */
-        private final SpacecraftState state;
+        private final SpacecraftState initialState;
 
         /** Period function used to compute the semi major axis evolution. */
         private final AlphaFunction   periodFunction;
@@ -145,22 +145,21 @@ public class OsculatingToMeanElementsConverter {
         /**
          * {@link DifferentiableUnivariateFunction} used to compute the semi-major axis.
          *
-         * @param state
+         * @param initialState
          *            initial state
          * @param absoluteTolerance
          *            absolute tolerance
          * @param relativeTolerance
          *            relative tolerance
-         * @throws PropagationException
-         *             if an exception occurs in orbit propagation
+         * @throws PropagationException if initial state cannot be propagated throughout desired period
          */
-        private SemiMajorAxisFunction(final SpacecraftState state,
+        private SemiMajorAxisFunction(final SpacecraftState initialState,
                                       final double absoluteTolerance,
                                       final double relativeTolerance)
             throws PropagationException {
-            this.state = state;
-            this.delta = satelliteRevolution * state.getKeplerianPeriod() * 0.5;
-            this.periodFunction = new AlphaFunction(state, satelliteRevolution, state.getKeplerianPeriod());
+            this.initialState = initialState;
+            this.delta = satelliteRevolution * initialState.getKeplerianPeriod() * 0.5;
+            this.periodFunction = new AlphaFunction(initialState, satelliteRevolution, initialState.getKeplerianPeriod());
             this.integrator = new SimpsonIntegrator(relativeTolerance, absoluteTolerance, SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT, SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
         }
 
@@ -209,9 +208,9 @@ public class OsculatingToMeanElementsConverter {
          * Simple constructor.
          * @param function function to solve
          */
-        private NewtonSolverImp(SemiMajorAxisFunction function) {
+        private NewtonSolverImp(final SemiMajorAxisFunction function) {
             this.function = function;
-            this.mu = function.state.getMu();
+            this.mu = function.initialState.getMu();
         }
 
         /**
@@ -252,7 +251,7 @@ public class OsculatingToMeanElementsConverter {
          * @param initialState initial state
          * @param orbitalPeriod orbital period
          * @param satelliteRevolution Number of satellite revolutions in the averaging interval
-         * @throws PropagationException if an exception occurs in orbit propagation
+         * @throws PropagationException if initial state cannot be propagated throughout desired period
          */
         private AlphaFunction(final SpacecraftState initialState,
                               final int satelliteRevolution,
@@ -280,9 +279,7 @@ public class OsculatingToMeanElementsConverter {
         }
     }
 
-    /**
-     * Quadrature used to average orbital parameters.
-     */
+    /** Quadrature used to average orbital parameters. */
     private class QuatratureComputation implements UnivariateFunction {
 
         /** Initial date. */
@@ -291,35 +288,24 @@ public class OsculatingToMeanElementsConverter {
         /** Index of orbital element. */
         private int          index;
 
-        /**
-         * Initialize the quadrature computation.
+        /** Initialize the quadrature computation.
          * @param state initial state
          */
         private QuatratureComputation(final SpacecraftState state) {
             this.initialDate = state.getDate();
         }
 
-        /**
-         * Integrate the function from lower to upper interval.
-         *
-         * @param index
-         *            orbital element index
-         * @param lower
-         *            lower bound
-         * @param upper
-         *            upper bound
-         * @param absoluteTolerance
-         *            absolute tolerance
-         * @param relativeTolerance
-         *            relative tolerance
+        /** Integrate the function from lower to upper interval.
+         * @param i orbital element index
+         * @param lower lower bound
+         * @param upper upper bound
+         * @param absoluteTolerance absolute tolerance
+         * @param relativeTolerance relative tolerance
          * @return element averaged
          */
-        public double solve(final int index,
-                            final double lower,
-                            final double upper,
-                            final double absoluteTolerance,
-                            final double relativeTolerance) {
-            this.index = index;
+        public double solve(final int i, final double lower, final double upper,
+                            final double absoluteTolerance, final double relativeTolerance) {
+            this.index = i;
             final SimpsonIntegrator simpson = new SimpsonIntegrator(relativeTolerance, absoluteTolerance, SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT, SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
             final double integral = simpson.integrate(MAX_EVALUATION, this, lower, upper);
             return integral / (MathUtils.TWO_PI * satelliteRevolution);

@@ -19,13 +19,14 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.orekit.errors.OrekitException;
 
 /**
  * This class has been created for DSST purpose. The DSST needs large factorial values (for high
- * central body potential) and the {@link ArithmeticUtils#factorial(int)} method only admit integer
- * inferior to 20, due to the {@link Long} java upper value. This method is based on
- * {@link BigInteger} numbers which can have infinite precision, and so factorial can be computed
+ * central body potential) and the {@link org.apache.commons.math3.util.ArithmeticUtils#factorial(int)}
+ * method only admit integer inferior to 20, due to the {@link Long} java upper value. This method is
+ * based on {@link BigInteger} numbers which can have infinite precision, and so factorial can be computed
  * with large integer input. <br>
  * Data computed are stored in a static map, filled when needed. The 12th first terms are
  * pre-computed.
@@ -34,8 +35,9 @@ import org.apache.commons.math3.util.ArithmeticUtils;
  */
 public class DSSTFactorial {
 
-    // Create cache
+    /** Cache. */
     private static ArrayList<BigInteger> TABLE = new ArrayList<BigInteger>();
+
     static {
         // Initialize the first elements
         TABLE.add(BigInteger.valueOf(1)); // 0!
@@ -53,16 +55,26 @@ public class DSSTFactorial {
         TABLE.add(BigInteger.valueOf(479001600)); // 12!
     }
 
-    /** Factorial method, using {@link BigInteger} cached in the ArrayList */
-    public static synchronized BigInteger fact(int x) {
-        if (x < 0)
-            throw new IllegalArgumentException("x must be non-negative.");
-        for (int size = TABLE.size(); size <= x; size++) {
-            BigInteger lastfact = (BigInteger) TABLE.get(size - 1);
-            BigInteger nextfact = lastfact.multiply(BigInteger.valueOf(size));
+    /** Private constructor, as class is a utility.
+     */
+    private DSSTFactorial() {
+    }
+
+    /** Factorial method, using {@link BigInteger} cached in the ArrayList.
+     * @param n integer for which we want factorial
+     * @return n!
+     */
+    public static synchronized BigInteger fact(final int n) {
+        if (n < 0) {
+            throw OrekitException.createIllegalArgumentException(LocalizedFormats.FACTORIAL_NEGATIVE_PARAMETER,
+                                                                 n);
+        }
+        for (int size = TABLE.size(); size <= n; size++) {
+            final BigInteger lastfact = (BigInteger) TABLE.get(size - 1);
+            final BigInteger nextfact = lastfact.multiply(BigInteger.valueOf(size));
             TABLE.add(nextfact);
         }
-        return (BigInteger) TABLE.get(x);
+        return TABLE.get(n);
     }
 
 }

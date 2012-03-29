@@ -62,53 +62,53 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
      *  be expressed in a different way, called "retrograde" orbit. This implies I = -1.
      *  As Orekit doesn't implement the retrograde orbit, I = +1 here.
      */
-    protected double I = 1;
+    private double I = 1;
 
     // Equinoctial elements (according to DSST notation)
-    /** a */
-    protected double a;
-    /** ex */
-    protected double k;
-    /** ey */
-    protected double h;
-    /** hx */
-    protected double q;
-    /** hy */
-    protected double p;
+    /** a. */
+    private double a;
+    /** ex. */
+    private double k;
+    /** ey. */
+    private double h;
+    /** hx. */
+    private double q;
+    /** hy. */
+    private double p;
 
     // Kepler mean motion
-    /** n = sqrt(&mu; / a<sup>3</sup>) */
-    protected double n;
+    /** n = sqrt(&mu; / a<sup>3</sup>). */
+    private double n;
 
     // Equinoctial reference frame vectors (according to DSST notation)
-    /** f */
-    protected Vector3D f;
-    /** g */
-    protected Vector3D g;
-    /** w */
-    protected Vector3D w;
+    /** f. */
+    private Vector3D f;
+    /** g. */
+    private Vector3D g;
+    /** w. */
+    private Vector3D w;
 
     // Useful equinoctial coefficients
-    /** A = sqrt(&mu; * a) */
-    protected double A;
-    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>) */
-    protected double B;
-    /** C = 1 + p<sup>2</sup> + q<sup>2</sup> */
-    protected double C;
+    /** A = sqrt(&mu; * a). */
+    private double A;
+    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>). */
+    private double B;
+    /** C = 1 + p<sup>2</sup> + q<sup>2</sup>. */
+    private double C;
 
     // Common factors
-    /** 2. / (n<sup>2</sup> * a) */
-    protected double ton2a;
-    /** 1. / A */
-    protected double ooA;
-    /** 1. / (A * B) */
-    protected double ooAB;
-    /** C / (2. * A * B) */
-    protected double Co2AB;
-    /** 1. / (1. + B) */
-    protected double ooBpo;
-    /** 1. / &mu; */
-    protected double ooMu;
+    /** 2 / (n<sup>2</sup> * a). */
+    private double ton2a;
+    /** 1 / A. */
+    private double ooA;
+    /** 1 / (A * B). */
+    private double ooAB;
+    /** C / (2 * A * B). */
+    private double Co2AB;
+    /** 1 / (1 + B). */
+    private double ooBpo;
+    /** 1 / &mu;. */
+    private double ooMu;
 
     /** Build a new instance. */
     protected AbstractDSSTGaussianContribution() {
@@ -117,17 +117,52 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
     /** Get the current retrograde factor I.
      *  @return the retrograde factor I
      */
-    public double getRetrogradeFactor() {
+    protected double getRetrogradeFactor() {
         return I;
+    }
+
+    /** Get semi major axis.
+     * @return semi major axis
+     */
+    protected double getSemiMajorAxis() {
+        return a;
+    }
+
+    /** Get h coordinate of eccentricity.
+     * @return h
+     */
+    protected double getH() {
+        return h;
+    }
+
+    /** Get k coordinate of eccentricity.
+     * @return k
+     */
+    protected double getK() {
+        return k;
+    }
+
+    /** Get first vector of equinoctial reference frame.
+     * @return f
+     */
+    protected Vector3D getF() {
+        return f;
+    }
+
+    /** Get second vector of equinoctial reference frame.
+     * @return g
+     */
+    protected Vector3D getG() {
+        return g;
     }
 
     /** {@inheritDoc} */
     public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
         final double[] meanElementRate = new double[6];
         // Constant multiplier for integral
-        final double h = state.getOrbit().getEquinoctialEy();
-        final double k = state.getOrbit().getEquinoctialEx();
-        final double coef = 1. / (2. * FastMath.PI * FastMath.sqrt(1. - h * h - k * k));
+        final double ex = state.getOrbit().getEquinoctialEx();
+        final double ey = state.getOrbit().getEquinoctialEy();
+        final double coef = 1. / (2. * FastMath.PI * FastMath.sqrt(1 - ex * ex  - ey * ey));
         final double[] ll = getLLimits(state);
         // Define integrable functions
         final IntegrableFunction iFct = new IntegrableFunction(state);
@@ -160,7 +195,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         // Initialisation of A, B, C coefficients, f, g, w basis
 
         // Get current state vector (equinoctial elements):
-        double[] stateVector = new double[6];
+        final double[] stateVector = new double[6];
         ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, stateVector);
 
         // Equinoctial elements
@@ -201,7 +236,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
 
         // Common factors
         ton2a = 2. / (n * n * a);
-        ooA   = 1. / A ;
+        ooA   = 1. / A;
         ooAB  = ooA / B;
         Co2AB = C * ooAB / 2.;
         ooBpo = 1. / (1. + B);
@@ -276,7 +311,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             setElement(0);
         }
 
-        /** Set the equinoctial element to consider for integration
+        /** Set the equinoctial element to consider for integration.
          *  @param element equinoctial element indice (0: a ; 1: ex, 2: ey, 3: hx, 4: hy, 5: &lambda;)
          */
         public void setElement(final int element) {
@@ -284,7 +319,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         }
 
         /** {@inheritDoc} */
-        public double value(double x) {
+        public double value(final double x) {
             double val = 0;
             final double cosL = FastMath.cos(x);
             final double sinL = FastMath.sin(x);
@@ -305,32 +340,32 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
                 throw new OrekitExceptionWrapper(oe);
             }
             switch(this.element) {
-                case 0: // element da/dt
-                    val = roa2 * getAoV(vel).dotProduct(acc);
-                    break;
-                case 1: // element dex/dt
-                    val = roa2 * getKoV(X, Y, Xdot, Ydot).dotProduct(acc);
-                    break;
-                case 2: // element dey/dt
-                    val = roa2 * getHoV(X, Y, Xdot, Ydot).dotProduct(acc);
-                    break;
-                case 3: // element dhx/dt
-                    val = roa2 * getQoV(X).dotProduct(acc);
-                    break;
-                case 4: // element dhy/dt
-                    val = roa2 * getPoV(Y).dotProduct(acc);
-                    break;
-                case 5: // element d&lambda;/dt
-                    val = roa2 * getLoV(X, Y, Xdot, Ydot).dotProduct(acc);
-                    break;
-                default: // element da/dt
-                    val = roa2 * getAoV(vel).dotProduct(acc);
-                    break;
+            case 0: // element da/dt
+                val = roa2 * getAoV(vel).dotProduct(acc);
+                break;
+            case 1: // element dex/dt
+                val = roa2 * getKoV(X, Y, Xdot, Ydot).dotProduct(acc);
+                break;
+            case 2: // element dey/dt
+                val = roa2 * getHoV(X, Y, Xdot, Ydot).dotProduct(acc);
+                break;
+            case 3: // element dhx/dt
+                val = roa2 * getQoV(X).dotProduct(acc);
+                break;
+            case 4: // element dhy/dt
+                val = roa2 * getPoV(Y).dotProduct(acc);
+                break;
+            case 5: // element d&lambda;/dt
+                val = roa2 * getLoV(X, Y, Xdot, Ydot).dotProduct(acc);
+                break;
+            default: // element da/dt
+                val = roa2 * getAoV(vel).dotProduct(acc);
+                break;
             }
             return val;
         }
 
-        /** Compute &delta;a/&delta;v
+        /** Compute &delta;a/&delta;v.
          *  @param vel satellite velocity
          *  @return &delta;a/&delta;v
          */
@@ -338,7 +373,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             return new Vector3D(ton2a, vel);
         }
 
-        /** Compute &delta;h/&delta;v
+        /** Compute &delta;h/&delta;v.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @param Xdot satellite velocity component along f, equinoctial reference frame 1st vector
@@ -352,7 +387,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             return new Vector3D(kf, f, -kg, g, kw, w);
         }
 
-        /** Compute &delta;k/&delta;v
+        /** Compute &delta;k/&delta;v.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @param Xdot satellite velocity component along f, equinoctial reference frame 1st vector
@@ -366,7 +401,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             return new Vector3D(-kf, f, kg, g, -kw, w);
         }
 
-        /** Compute &delta;p/&delta;v
+        /** Compute &delta;p/&delta;v.
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @return &delta;p/&delta;v
          */
@@ -374,7 +409,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             return new Vector3D(Co2AB * Y, w);
         }
 
-        /** Compute &delta;q/&delta;v
+        /** Compute &delta;q/&delta;v.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @return &delta;q/&delta;v
          */
@@ -382,7 +417,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
             return new Vector3D(I * Co2AB * X, w);
         }
 
-        /** Compute &delta;&lambda;/&delta;v
+        /** Compute &delta;&lambda;/&delta;v.
          *  @param X satellite position component along f, equinoctial reference frame 1st vector
          *  @param Y satellite position component along g, equinoctial reference frame 2nd vector
          *  @param Xdot satellite velocity component along f, equinoctial reference frame 1st vector
@@ -390,8 +425,8 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
          *  @return &delta;&lambda;/&delta;v
          */
         private Vector3D getLoV(final double X, final double Y, final double Xdot, final double Ydot) {
-            Vector3D pos = new Vector3D(X, f, Y, g);
-            Vector3D v2  = new Vector3D(k, getHoV(X, Y, Xdot, Ydot), -h, getKoV(X, Y, Xdot, Ydot));
+            final Vector3D pos = new Vector3D(X, f, Y, g);
+            final Vector3D v2  = new Vector3D(k, getHoV(X, Y, Xdot, Ydot), -h, getKoV(X, Y, Xdot, Ydot));
             return new Vector3D(-2. * ooA, pos, ooBpo, v2, (I * q * Y - p * X) * ooA, w);
         }
 

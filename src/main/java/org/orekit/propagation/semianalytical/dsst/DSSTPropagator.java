@@ -55,8 +55,6 @@ import org.orekit.propagation.OsculatingToMeanElementsConverter;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
-import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
@@ -85,11 +83,13 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <li>the various force models ({@link #addForceModel(DSSTForceModel)},
  * {@link #removeForceModels()})</li>
  * <li>the discrete events that should be triggered during propagation (
- * {@link #addEventDetector(EventDetector)}, {@link #clearEventsDetectors()})</li>
+ * {@link #addEventDetector(org.orekit.propagation.eventsEventDetector)},
+ * {@link #clearEventsDetectors()})</li>
  * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- * {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
+ * {@link #setMasterMode(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
+ * {@link #setMasterMode(org.orekit.propagation.sampling.OrekitStepHandler)},
+ * {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
- * </p>
  * <p>
  * From these configuration parameters, only the initial state is mandatory. The default propagation
  * settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
@@ -192,9 +192,6 @@ public class DSSTPropagator extends AbstractPropagator {
 
     /** number of satellite revolutions in the averaging interval. */
     private int                            satelliteRevolution;
-
-    /** Modified Newcomb Operator. */
-    private static double[][][]            newcomb          = null;
 
     /**
      * Build a DSSTPropagator from integrator and orbit.
@@ -345,13 +342,17 @@ public class DSSTPropagator extends AbstractPropagator {
 
         setIntegrator(integrator);
 
-        PVCoordinatesProvider pvProv = new PVCoordinatesProvider() {
-            public PVCoordinates getPVCoordinates(AbsoluteDate date,
-                                                  Frame frame) throws OrekitException {
+        final PVCoordinatesProvider pvProv = new PVCoordinatesProvider() {
+            /** {@inheritDoc} */
+            public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f) {
                 return initialOrbit.getPVCoordinates();
             }
         };
-        resetInitialState(new SpacecraftState(initialOrbit, attitudeProv.getAttitude(pvProv, initialOrbit.getDate(), initialOrbit.getFrame()), mass));
+        resetInitialState(new SpacecraftState(initialOrbit,
+                                              attitudeProv.getAttitude(pvProv,
+                                                                       initialOrbit.getDate(),
+                                                                       initialOrbit.getFrame()),
+                                                                       mass));
     }
 
     /**
@@ -371,7 +372,7 @@ public class DSSTPropagator extends AbstractPropagator {
      *
      * @param state
      *            new initial state
-     * @throws PropagationException
+     * @throws PropagationException if initial state cannot be reset
      */
     public void resetInitialState(final SpacecraftState state) throws PropagationException {
         super.setStartDate(state.getDate());
@@ -451,13 +452,13 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    protected double getMass(AbsoluteDate date) throws PropagationException {
+    protected double getMass(final AbsoluteDate date) throws PropagationException {
         return mass;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected Orbit propagateOrbit(AbsoluteDate date) throws PropagationException {
+    protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
 
         // Check for completeness
         if (integrator == null) {
@@ -490,15 +491,20 @@ public class DSSTPropagator extends AbstractPropagator {
             double[] meanElements;
             // Convert osculating to mean element
             if (!initialized && isOsculating) {
-                Propagator propagator = createPropagator(initialState);
+                final Propagator propagator = createPropagator(initialState);
 
-                SpacecraftState state = new OsculatingToMeanElementsConverter(initialState, satelliteRevolution, propagator).convert();
-                meanElements = new double[] { state.getA(), state.getEquinoctialEx(), state.getEquinoctialEy(), state.getHx(),
-                                state.getHy(), state.getLM() };
+                final SpacecraftState state =
+                        new OsculatingToMeanElementsConverter(initialState, satelliteRevolution, propagator).convert();
+                meanElements = new double[] {
+                    state.getA(), state.getEquinoctialEx(), state.getEquinoctialEy(),
+                    state.getHx(), state.getHy(), state.getLM()
+                };
                 initialized = true;
             } else {
-                meanElements = new double[] { initialState.getA(), initialState.getEquinoctialEx(), initialState.getEquinoctialEy(),
-                                initialState.getHx(), initialState.getHy(), initialState.getLM() };
+                meanElements = new double[] {
+                    initialState.getA(), initialState.getEquinoctialEx(), initialState.getEquinoctialEy(),
+                    initialState.getHx(), initialState.getHy(), initialState.getLM()
+                };
             }
 
             // Initialize mean elements
@@ -514,7 +520,8 @@ public class DSSTPropagator extends AbstractPropagator {
             // Add short periodic variations to mean elements to get osculating elements
             final double[] osculatingElements = meanElements.clone();
             for (final DSSTForceModel forceModel : forceModels) {
-                double[] shortPeriodicVariations = forceModel.getShortPeriodicVariations(date, meanElements);
+                final double[] shortPeriodicVariations =
+                        forceModel.getShortPeriodicVariations(date, meanElements);
                 for (int i = 0; i < shortPeriodicVariations.length; i++) {
                     osculatingElements[i] += shortPeriodicVariations[i];
                 }
@@ -528,26 +535,25 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /**
-     * Create the propagator.
+     * Create a reference numerical propagator to convert orbit to mean elements.
      * @param initialState initial state
      * @return propagator
-     * @throws IllegalArgumentException
-     * @throws OrekitException
+     * @throws OrekitException if some numerical force model cannot be built
      */
     private Propagator createPropagator(final SpacecraftState initialState)
-        throws IllegalArgumentException, OrekitException {
+        throws OrekitException {
         final Orbit initialOrbit = initialState.getOrbit();
         final double[][] tol = NumericalPropagator.tolerances(1.0, initialOrbit, initialOrbit.getType());
         final double minStep = 1.;
         final double maxStep = 200.;
-        final AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
-        integrator.setInitialStepSize(100.);
+        final AdaptiveStepsizeIntegrator integ = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+        integ.setInitialStepSize(100.);
 
-        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        final NumericalPropagator propagator = new NumericalPropagator(integ);
         propagator.setInitialState(initialState);
 
         // Define the same force model as the DSST
-        for (DSSTForceModel force : forceModels) {
+        for (final DSSTForceModel force : forceModels) {
             if (force instanceof DSSTCentralBody) {
                 // Central body
                 final double[][] cnm = ((DSSTCentralBody) force).getCnm();
@@ -583,44 +589,6 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /**
-     * Compute initial mean elements from osculating elements.
-     *
-     * @param state
-     *            current state information: date, kinematics, attitude
-     * @return mean elements
-     * @throws OrekitException
-     */
-    private double[] getInitialMeanElements(final SpacecraftState state) throws OrekitException {
-
-        final double[][] tolerances = DSSTPropagator.tolerances(POSITION_ERROR, state.getOrbit());
-        double[] osculatingElements = new double[6];
-        ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, osculatingElements);
-        double[] meanElements = osculatingElements.clone();
-
-        double epsilon;
-        do {
-            double[] meanPrec = meanElements.clone();
-            double[] shortPeriodicVariations = new double[6];
-            // Compute short periodic variations from current mean elements
-            for (final DSSTForceModel forceModel : forceModels) {
-                double[] spv = forceModel.getShortPeriodicVariations(state.getDate(), meanElements);
-                for (int i = 0; i < shortPeriodicVariations.length; i++) {
-                    shortPeriodicVariations[i] += spv[i];
-                }
-            }
-            // Remove short periodic variations from osculating elements to get mean elements
-            epsilon = 0.0;
-            for (int i = 0; i < meanElements.length; i++) {
-                meanElements[i] = osculatingElements[i] - shortPeriodicVariations[i];
-                epsilon += FastMath.pow((meanElements[i] - meanPrec[i]) / tolerances[0][i], 2);
-            }
-            epsilon = FastMath.sqrt(epsilon);
-        } while (epsilon > POSITION_ERROR);
-
-        return meanElements;
-    }
-
-    /**
      * Extrapolation to tf.
      *
      * @param start
@@ -630,11 +598,11 @@ public class DSSTPropagator extends AbstractPropagator {
      * @param end
      *            end date for extrapolation
      * @return extrapolated state vector at end date
-     * @throws PropagationException
+     * @throws PropagationException if state cannot be computed at some intermediate date
      */
-    private double[] extrapolate(final AbsoluteDate start,
-                                 final double[] startState,
-                                 final AbsoluteDate end) throws PropagationException {
+    private double[] extrapolate(final AbsoluteDate start, final double[] startState,
+                                 final AbsoluteDate end)
+        throws PropagationException {
 
         target = end;
         double t0 = start.durationFrom(referenceDate);
@@ -642,12 +610,12 @@ public class DSSTPropagator extends AbstractPropagator {
         double[] stateIn = startState.clone();
 
         /** Step accumulation */
-        SortedSet<StRange> steps = cumulator.getCumulatedSteps();
+        final SortedSet<StRange> steps = cumulator.getCumulatedSteps();
 
         if (target.compareTo(cumulator.getTd()) < 0 || target.compareTo(cumulator.getTf()) > 0) {
             double moreTime;
             if (!steps.isEmpty()) {
-                StepInterpolator si;
+                final StepInterpolator si;
                 if (target.compareTo(cumulator.getTd()) < 0) {
                     t0 = cumulator.getTd().durationFrom(referenceDate);
                     si = steps.first().getStep();
@@ -673,7 +641,7 @@ public class DSSTPropagator extends AbstractPropagator {
             }
         }
 
-        StepInterpolator si = steps.tailSet(new StRange(target)).first().getStep();
+        final StepInterpolator si = steps.tailSet(new StRange(target)).first().getStep();
         si.setInterpolatedTime(target.durationFrom(referenceDate));
         return si.getInterpolatedState();
     }
@@ -692,7 +660,7 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /**
-         * Initialize derivatives
+         * Initialize derivatives.
          *
          * @param yDot
          *            Derivatives array
@@ -742,9 +710,16 @@ public class DSSTPropagator extends AbstractPropagator {
     /** Specialized step handler to add up all step interpolators. */
     private class StepAccumulator implements StepHandler {
 
+        /** Cumulated step interpolators. */
         private SortedSet<StRange> cumulatedSteps;
+
+        /** First time. */
         private AbsoluteDate       td;
+
+        /** Last time. */
         private AbsoluteDate       tf;
+
+        /** MAximal step. */
         private double             maxStep;
 
         /** Simple constructor. */
@@ -802,9 +777,8 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(StepInterpolator interpolator,
-                               boolean isLast) {
-            StRange sr = new StRange(interpolator);
+        public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
+            final StRange sr = new StRange(interpolator);
             maxStep = FastMath.max(maxStep, sr.getTmax().durationFrom(sr.getTmin()));
             cumulatedSteps.add(sr);
             td = cumulatedSteps.first().getTmin();
@@ -812,9 +786,7 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void init(final double t0,
-                         final double[] y0,
-                         final double t) {
+        public void init(final double t0, final double[] y0, final double t) {
         }
 
     }
@@ -828,8 +800,13 @@ public class DSSTPropagator extends AbstractPropagator {
         /** Serializable UID. */
         private static final long serialVersionUID = -6209093963711616737L;
 
+        /** Min time in the range. */
         private AbsoluteDate      tmin;
+
+        /** Max time in the range. */
         private AbsoluteDate      tmax;
+
+        /** Step interpolator in the range. */
         private StepInterpolator  step;
 
         /**
@@ -839,7 +816,7 @@ public class DSSTPropagator extends AbstractPropagator {
          * @param si
          *            step interpolator
          */
-        public StRange(StepInterpolator si) {
+        public StRange(final StepInterpolator si) {
             this.step = si.copy();
             final double dtmin = step.isForward() ? step.getPreviousTime() : step.getCurrentTime();
             final double dtmax = step.isForward() ? step.getCurrentTime() : step.getPreviousTime();
@@ -848,7 +825,7 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /**
-         * Constructor over a single time
+         * Constructor over a single time.
          *
          * @param t
          *            time
@@ -860,7 +837,7 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /**
-         * Get the min time in the range
+         * Get the min time in the range.
          *
          * @return the min time of the range
          */
@@ -869,7 +846,7 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /**
-         * Get the max time in the range
+         * Get the max time in the range.
          *
          * @return the max time of the range
          */
@@ -878,7 +855,7 @@ public class DSSTPropagator extends AbstractPropagator {
         }
 
         /**
-         * Get the step interpolator over the range
+         * Get the step interpolator over the range.
          *
          * @return the step interpolator
          */
@@ -886,18 +863,19 @@ public class DSSTPropagator extends AbstractPropagator {
             return step;
         }
 
-        public int compareTo(StRange st) {
-            if (this.tmax.compareTo(st.getTmin()) < 0) {
+        /** {@inheritDoc} */
+        public int compareTo(final StRange st) {
+            if (tmax.compareTo(st.getTmin()) < 0) {
                 return -1;
-            } else if (this.tmin.compareTo(st.getTmin()) < 0 && this.tmax.compareTo(st.getTmax()) < 0) {
+            } else if (tmin.compareTo(st.getTmin()) < 0 && tmax.compareTo(st.getTmax()) < 0) {
                 return -1;
-            } else if (this.tmin.compareTo(st.getTmin()) < 1 && this.tmax.compareTo(st.getTmax()) > -1) {
+            } else if (tmin.compareTo(st.getTmin()) < 1 && tmax.compareTo(st.getTmax()) > -1) {
                 return 0;
-            } else if (st.getTmin().compareTo(this.tmin) < 1 && st.getTmax().compareTo(this.tmax) > -1) {
+            } else if (st.getTmin().compareTo(tmin) < 1 && st.getTmax().compareTo(tmax) > -1) {
                 return 0;
-            } else if (st.getTmin().compareTo(this.tmin) < 0 && st.getTmax().compareTo(this.tmax) < 0) {
+            } else if (st.getTmin().compareTo(tmin) < 0 && st.getTmax().compareTo(tmax) < 0) {
                 return 1;
-            } else { // if (st.getTmax().compareTo(this.tmin) < 0)
+            } else { // if (st.getTmax().compareTo(tmin) < 0)
                 return 1;
             }
         }

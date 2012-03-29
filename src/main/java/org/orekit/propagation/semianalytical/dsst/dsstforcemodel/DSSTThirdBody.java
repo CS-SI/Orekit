@@ -25,14 +25,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
 import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
 import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * Third body attraction contribution for {@link DSSTPropagator}.
+ * Third body attraction contribution for {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator}.
  *
  * @author Romain Di Costanzo
  * @author Pascal Parraud
@@ -61,46 +60,46 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
     private TreeMap<NSKey, Double>     Vns;
 
     // Equinoctial elements (according to DSST notation)
-    /** a */
+    /** a. */
     private double                     a;
-    /** ex */
+    /** ex. */
     private double                     k;
-    /** ey */
+    /** ey. */
     private double                     h;
-    /** hx */
+    /** hx. */
     private double                     q;
-    /** hy */
+    /** hy. */
     private double                     p;
 
-    /** Distance from center of mass of the central body to the 3rd body */
+    /** Distance from center of mass of the central body to the 3rd body. */
     private double                     R3;
 
     // Useful equinoctial coefficients
-    /** A = sqrt(&mu; * a) */
+    /** A = sqrt(&mu; * a). */
     private double                     A;
-    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>) */
+    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>). */
     private double                     B;
-    /** C = 1 + p<sup>2</sup> + q<sup>2</sup> */
+    /** C = 1 + p<sup>2</sup> + q<sup>2</sup>. */
     private double                     C;
 
     // Direction cosines of the symmetry axis
-    /** &alpha; */
+    /** &alpha;. */
     private double                     alpha;
-    /** &beta; */
+    /** &beta;. */
     private double                     beta;
-    /** &gamma; */
+    /** &gamma;. */
     private double                     gamma;
 
     // Common factors
-    /** 1 / A */
+    /** 1 / A. */
     private double                     ooA;
-    /** B / A */
+    /** B / A. */
     private double                     BoA;
-    /** 1 / (A * B) */
+    /** 1 / (A * B). */
     private double                     ooAB;
-    /** C / (2 * A * B) */
+    /** C / (2 * A * B). */
     private double                     Co2AB;
-    /** 1 / (1 + B) */
+    /** 1 / (1 + B). */
     private double                     ooBpo;
 
     /**
@@ -112,28 +111,20 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
      */
     private int                        I             = 1;
 
-    /**
-     * Simple constructor.
-     *
-     * @param body
-     *            the 3rd body to consider
+    /** Simple constructor.
+     * @param body the 3rd body to consider
      * @see org.orekit.bodies.CelestialBodyFactory
      */
     public DSSTThirdBody(final CelestialBody body) {
         this(body, DEFAULT_ORDER);
     }
 
-    /**
-     * Complete constructor.
-     *
-     * @param body
-     *            the 3rd body to consider
-     * @param order
-     *            N order for summation
+    /** Complete constructor.
+     * @param body the 3rd body to consider
+     * @param order  N order for summation
      * @see org.orekit.bodies.CelestialBodyFactory
      */
-    public DSSTThirdBody(final CelestialBody body,
-                         final int order) {
+    public DSSTThirdBody(final CelestialBody body, final int order) {
         this.body = body;
         this.gm = body.getGM();
 
@@ -172,7 +163,9 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         final double dq = -I * Co2AB * UAlphaGamma;
         final double dM = -2 * a * ooA * dUda + BoA * ooBpo * (h * dUdh + k * dUdk) + pUmIqUoAB;
 
-        return new double[] { da, dk, dh, dq, dp, dM };
+        return new double[] {
+            da, dk, dh, dq, dp, dM
+        };
 
     }
 
@@ -180,24 +173,25 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
                                                final double[] meanElements) throws OrekitException {
         // TODO: not implemented yet Short Periodic Variations are set to null
-        return new double[] { 0., 0., 0., 0., 0., 0. };
+        return new double[] {
+            0., 0., 0., 0., 0., 0.
+        };
     }
 
-    /** Get third body */
+    /** Get third body.
+     * @return third body
+     */
     public final CelestialBody getBody() {
         return body;
     }
 
-    /**
-     * Compute useful parameters: A, B, C, &alpha;, &beta;, &gamma;.
-     *
-     * @param state
-     *            current state information: date, kinematics, attitude
-     * @throws OrekitException
+    /** Compute useful parameters: A, B, C, &alpha;, &beta;, &gamma;.
+     * @param state current state information: date, kinematics, attitude
+     * @throws OrekitException if some frame conversion caanot be computed
      */
     private void computeParameters(final SpacecraftState state) throws OrekitException {
         // Get current state vector as equinoctial elements:
-        double[] stateVector = new double[6];
+        final double[] stateVector = new double[6];
         ORBIT_TYPE.mapOrbitToArray(state.getOrbit(), ANGLE_TYPE, stateVector);
 
         // Equinoctial elements
@@ -252,6 +246,11 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         ooBpo = 1. / (1. + B);
     }
 
+    /** Compute potential derivatives.
+     * @param state current state
+     * @return derivatives of the potential with respect to orbital parameters
+     * @throws OrekitException if Hansen coefficients cannot be computed
+     */
     private double[] computeUDerivatives(final SpacecraftState state) throws OrekitException {
 
         // Hansen coefficients
@@ -278,12 +277,12 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         for (int s = 0; s <= order; s++) {
             // Get the current Gs and Hs coefficient
             final double gs = GsHs[0][s];
-            final double gsm1 = (s > 0 ? GsHs[0][s - 1] : 0.);
-            final double hsm1 = (s > 0 ? GsHs[1][s - 1] : 0.);
+            final double gsm1 = s > 0 ? GsHs[0][s - 1] : 0.;
+            final double hsm1 = s > 0 ? GsHs[1][s - 1] : 0.;
 
             // Compute partial derivatives of Gs from 3.1-(9)
-            final double dGsdh = s * beta * gsm1 - s * alpha * hsm1;
-            final double dGsdk = s * alpha * gsm1 + s * beta * hsm1;
+            final double dGsdh  = s * beta * gsm1 - s * alpha * hsm1;
+            final double dGsdk  = s * alpha * gsm1 + s * beta * hsm1;
             final double dGsdAl = s * k * gsm1 - s * h * hsm1;
             final double dGsdBe = s * h * gsm1 + s * k * hsm1;
 
@@ -319,20 +318,22 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
             }
         }
 
-        dUda *= (muoR3 / a);
+        dUda *= muoR3 / a;
         dUdk *= muoR3;
         dUdh *= muoR3;
         dUdAl *= muoR3;
         dUdBe *= muoR3;
         dUdGa *= muoR3;
 
-        return new double[] { dUda, dUdk, dUdh, dUdAl, dUdBe, dUdGa };
+        return new double[] {
+            dUda, dUdk, dUdh, dUdAl, dUdBe, dUdGa
+        };
 
     }
 
-    public void initialize(SpacecraftState initialState) {
-        // TODO Auto-generated method stub
-        // TODO A faire !!!
+    /** {@inheritDoc} */
+    public void initialize(final SpacecraftState initialState) {
+        // TODO is there something to initialized here ?
     }
 
 }

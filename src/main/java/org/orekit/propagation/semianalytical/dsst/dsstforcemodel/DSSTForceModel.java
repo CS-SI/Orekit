@@ -42,35 +42,28 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface DSSTForceModel {
 
-    /**
-     * Compute the mean element rates
+    /** Compute the mean element rates.
      *
-     * @param state
-     *            current state information: date, kinematics, attitude
+     * @param state current state information: date, kinematics, attitude
      * @return the mean element rates dai/dt
-     * @exception OrekitException
-     *                if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
-    double[] getMeanElementRate(final SpacecraftState state) throws OrekitException;
+    double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
 
-    /**
-     * Compute the short periodic variations
-     *
-     * @param date
-     *            current date
-     * @param meanElements
-     *            current mean elements
+    /** Compute the short periodic variations.
+     * @param date current date
+     * @param meanElements current mean elements
      * @return the short periodic variations
-     * @exception OrekitException
-     *                if some specific error occurs
+     * @exception OrekitException if some specific error occurs
      */
-    double[] getShortPeriodicVariations(final AbsoluteDate date,
-                                        final double[] meanElements) throws OrekitException;
+    double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
+        throws OrekitException;
 
-    /**
-     * Initialize the current force model. This method has to be triggered just before the first
+    /** Initialize the current force model.
+     * This method has to be triggered just before the first
      * propagation, i.e, once the force model is completely defined.
-     * @throws OrekitException
+     * @param initialState initial state
+     * @exception OrekitException if some specific error occurs
      */
-    void initialize(final SpacecraftState initialState) throws OrekitException;
+    void initialize(SpacecraftState initialState) throws OrekitException;
 }
