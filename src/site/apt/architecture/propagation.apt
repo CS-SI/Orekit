@@ -22,6 +22,12 @@ Propagation
   simple container for all needed information : orbit, mass, kinematics, attitude, date, 
   frame.
 
+  Propagation is based on a top level <Propagation> interface (which in facts extends
+  the <PVCoordinatesProvider> interface) and several implementations.
+
+[../images/design/propagation-class-diagram.png]
+
+
 ** Propagation modes
 
   Depending on the needs of the calling application, all propagators can be used in
@@ -49,15 +55,36 @@ Propagation
   Beware that since this mode stores <<all>> intermediate results, it may be memory 
   intensive for long integration ranges and high precision/short time steps.
 
+  The recommended mode is master mode. It is very simple to use and allow user to get
+  rid of concerns about synchronizing force models, file output, discrete events. All
+  these parts are handled separately in different user code parts, and Orekit takes
+  care of all management. The following class diagram shows the main interfaces used
+  for master mode.
+
+[../images/design/sampling-class-diagram.png]
+
+  This mode also lets the propagator choose its own step size,
+  but still let user choose a different step size for its output, which greatly increases
+  performances. The following sequence diagram shows how a user-provided step handler is
+  called when propagation is done in master mode.
+
+[../images/design/master-mode-sequence-diagram.png]
 
 ** Events management
 
   All propagators, including analytical ones, support discrete events handling during
   propagation. This feature is activated by registering events detectors as defined by
-  the <EventDetector> interface to the propagator. At each propagation step, the
-  propagator checks the registered events detectors for the occurrence of some event.
-  If an event occurs, then the corresponding action is triggered, which can ask the
-  propagator to resume propagation, possibly with an updated state or to stop propagation.
+  the <EventDetector> interface to the propagator. The following class diagram shows
+  the main interfaces used for event handling.
+
+[../images/design/events-class-diagram.png]
+
+  At each propagation step, the propagator checks the registered events detectors for
+  the occurrence of some event, as shown in the following squence diagram. If an event
+  occurs, then the corresponding action is triggered, which can ask the propagator to
+  resume propagation, possibly with an updated state or to stop propagation.
+
+[../images/design/events-sequence-diagram.png]
 
   Resuming propagation with changed state is used for example in the <ImpulseManeuver>
   class. When the maneuver is triggered, the orbit is changed according to the velocity increment
@@ -72,12 +99,16 @@ Propagation
   event is triggered, it asks the propagator to stop and the returned value is the state
   exactly at the event time.
 
-  Several events detectors are available, amongst which :
+  Users can define their own events, typically by extending the <AbstractDetector> abstract class.
+  There are also several predefined events detectors already available, amongst which :
 
-  * a simple <DateDetector>, which is simply triggered at a predefined date,
+  * a simple <DateDetector>, which is simply triggered at a predefined date, and can be
+    reset to add new dates on the run (which is useful to set up delays starting when a
+    previous event is been detected),
 
-  * an <ElevationDetector>, which is triggered at raising or setting time of a satellite with
-    respect to a ground point,
+  * an <ApparentElevationDetector>, which is triggered at raising or setting time of a
+    satellite with respect to a ground point, taking atmospheric refraction into account
+    (an <ElevationDetector> detector is also available which does not consider refraction),
 
   * a <GroundMaskElevationDetector>, which is similar to the previous one but adds a ground mask
     to be used when threshold elevation is azimuth-dependent,
@@ -91,6 +122,10 @@ Propagation
   * an <EclipseDetector>, which is triggered when some body enters or exits the umbra or the
     penumbra of an other occulting body,
 
+  * an <ApsideDetector>, which is triggered at apogee and perigee,
+
+  * a <NodeDetector>, which is triggered at ascending and descending nodes,
+
   * an <AlignmentDetector>, which is triggered when satellite and some body are aligned
     in the orbital plane...
 
@@ -100,10 +135,18 @@ Propagation
   A typical use case is for handling operational delays before or after some physical event
   really occurs.
 
+  Event occurring can be automatically logged using the <EventsLogger> class.
+
 * Available propagators
 
+  The following class diagram shows the available propagators
 
-** Keplerian propagation
+[../images/design/available-propagators-class-diagram.png]
+
+
+** Analytical propagation
+
+*** Keplerian propagation
 
  The <KeplerianPropagator> implements the <Propagator> interface, which ensures 
  that we can obtain a propagated SpacecraftState at any time once the instance 
@@ -111,12 +154,25 @@ Propagation
  motion. It depends on \u00b5.
 
 
-** Eckstein-Hechler propagation	
+*** Eckstein-Hechler propagation	
 
   This analytical model is suited for near circular orbits and inclination neither 
   equatorial nor critical. It considers J2 to J6 potential zonal coefficients, 
   and uses mean parameters to compute the new position. As the keplerian propagator, 
-  it implements the <Propagator> interface. 
+  it implements the <Propagator> interface.
+
+*** SGP4/SDP4 propagation
+
+  This analytical model is dedicated to Two-Lines Elements (TLE) propagation.
+
+*** Differential effects adapter
+
+  This model is used to add to an underlying propagator some effects it does not
+  take into account. A typical exemple is to add small station-keeping maneuvers
+  to a pre-computed ephemeris or reference orbit which does not take these maneuvers
+  into account. The additive maneuvers can take both the direct effect (Keplerian part)
+  and the induced effect due for example to J2 which changes ascending node rate when
+  a maneuver changed inclination or semi-major axis of a Sun-Synchronous satellite.
 
 	
 ** Numerical propagation
@@ -127,10 +183,14 @@ Propagation
   on first sight, it is in  fact quite clear and intuitive.
 
   The mathematical problem to integrate is a dimension seven time derivative equations
-  system. The six first elements of the state vector are the <EquinoctialOrbit> parameters,
-  i.e a, ex, ey, hx, hy, lv in meters and radians, and the last element is the mass in
-  kilograms. The time derivatives are computed automatically by the Orekit using the
-  Gauss equations for the first parameters and the flow rate for mass evolution
+  system. The six first elements of the state vector are the orbital parameters, which
+  may be any orbit type (<KeplerianOrbit>, <CircularOrbit>, <EquinoctialOrbit> or
+  <CartesianOrbit>) in meters and radians, and the last element is the mass in
+  kilograms. It is possible to have more elements in the state vector if <AdditionalEquations>
+  have been added (typically <PartialDerivativesEquations> which is an implementation of
+  <AdditionalEquations> devoted to integration of Jacobian matrices). The time derivatives are
+  computed automatically by the Orekit using the Gauss equations for the first parameters
+  corresponding to the selected orbit type and the flow rate for mass evolution
   during maneuvers. The users only needs to register the various force models needed for
   the simulation. Various force models are already available in the library and specialized
   ones can be added by users easily for specific needs.
@@ -151,30 +211,32 @@ final double maxStep  = 1000;
 final double initStep = 60;
 
 // error control parameters (absolute and relative)
-final double[] absoluteTolerance = {
-    0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
-};
-final double[] relativeTolerance = {
-    1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
-};
+final double positionError = 10.0;
+final double[][] tolerances = NumericalPropagator.tolerances(positionError, orbit, orbit.getType());
 
 // set up mathematical integrator
 AdaptiveStepsizeIntegrator integrator =
-    new DormandPrince853Integrator(minStep, maxStep,
-                                   absoluteTolerance, relativeTolerance);
+    new DormandPrince853Integrator(minStep, maxStep, tolerances[0], tolerances[1]);
 integrator.setInitialStepSize(initStep);
 
 // set up space dynamics propagator
 propagator = new NumericalPropagator(integrator);
 +---------------------
 
-  In addition, the <NumericalPropagatorWithJacobians> class enables to compute the sensitivity
-  of the state vector to the initial state or some parameter of the force models. It computes
-  the jacobians dy(t)/dy0 and dy(t)/dp where y0 is the initial state and p some parameter.
+  The following sequence diagram show the internal calls triggered during a numerical propagation.
+  The important thing to note is that the force model are decoupled from the integration process,
+  they only need to compute an acceleration.
 
-* Package organization
- 
-[../images/design/OrekitModel_propagationPackage.png]
+[../images/design/numerical-propagation-sequence-diagram.png]
+
+** Semianalytical propagation
+
+  Semianalytical propagation is an intermediate beween anaytical and numerical propagation.
+  It retains the best of both worlds, speed from analytical models and accuracy from numerical models.
+  Semianalytical propagation is implemented using Draper Semianalytical Satellite Theory (DSST).
+
+  As of writing (March 2012), only the mean element equation of motion models have been implemented;
+  the short periodic terms are still missing. They will be added later on.
 
 * Authors
 
@@ -183,4 +245,5 @@ propagator = new NumericalPropagator(integrator);
   ** Fabien Maussion
   
   ** Pascal Parraud
-  
+
+  ** Romain Di Costanzo

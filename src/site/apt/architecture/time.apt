@@ -73,6 +73,13 @@ Time
     and stayed parallel to TAI since then (i.e. UTC is now offset from GPS due to
     leap seconds). TGPS = TAI - 19 s,
 
+    ** <<Galileo System reference scale>>. This scale
+    is equal to UTC + 13s at Galileo epoch (1999-08-22T00:00:00Z). Galileo System Time
+    and GPS time are very close scales. Without any errors, they should be identical.
+    The offset between these two scales is the GGTO, it depends on the clocks used to
+    realize the time scales. It is of the order of a few tens nanoseconds. This class
+    does not implement this offset,
+
     ** <<Greenwich Mean Sidereal Time scale>>. The Greenwich Mean Sidereal Time
     is the hour angle between the meridian of Greenwich and mean equinox of
     date at 0h UT1.
@@ -206,7 +213,7 @@ public class Ephemeris {
 
 * Package organization
  
-[../images/design/OrekitModel_timePackage.png]
+[../images/design/time-class-diagram.png]
 
 * Authors
 

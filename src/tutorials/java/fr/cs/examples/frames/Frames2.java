@@ -71,7 +71,7 @@ public class Frames2 {
             // Considering the following Computing/Measurement date in UTC time scale
             TimeScale utc = TimeScalesFactory.getUTC();
             AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
-            
+
             // Let's get the satellite position and velocity in ITRF2005 as measured by GPS antenna at this moment:
             final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
             final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);

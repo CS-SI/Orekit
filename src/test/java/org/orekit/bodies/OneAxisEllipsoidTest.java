@@ -120,8 +120,8 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005();    
-        
+        Frame frame = FramesFactory.getITRF2005();
+
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point         = new Vector3D(0.0, 93.7139699, 3.5930796);
         Vector3D direction     = new Vector3D(0.0, 1.0, 1.0);
@@ -157,7 +157,7 @@ public class OneAxisEllipsoidTest {
         line = new Line(point, point.add(direction));
         gp = model.getIntersectionPoint(line, point, frame, date);
         Assert.assertEquals(gp.getLatitude(), FastMath.PI/2, 1.0e-12);
-        
+
         point = new Vector3D(0.0, 110, 0);
         direction = new Vector3D(0.0, 1.0, 0.0);
         line = new Line(point, point.add(direction));
@@ -169,7 +169,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testNoLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005(true);    
+        Frame frame = FramesFactory.getITRF2005(true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point     = new Vector3D(0.0, 93.7139699, 3.5930796);
         Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
@@ -182,23 +182,23 @@ public class OneAxisEllipsoidTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 03, 21),
                                              TimeComponents.H12,
                                              TimeScalesFactory.getUTC());
-        
+
         Frame frame = FramesFactory.getITRF2005();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frame);
-        
+
         // Satellite on polar position
         // ***************************
         final double mu = 3.9860047e14;
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(90.), FastMath.toRadians(60.),
-                                   FastMath.toRadians(90.), PositionAngle.MEAN, 
+                                   FastMath.toRadians(90.), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-      
+
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
         PVCoordinates pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         Vector3D pSatItrf  = pvSatItrf.getPosition();
-        
+
         // Test first visible surface points
         GeodeticPoint geoPoint = new GeodeticPoint(FastMath.toRadians(70.), FastMath.toRadians(60.), 0.);
         Vector3D pointItrf     = earth.transform(geoPoint);
@@ -206,7 +206,7 @@ public class OneAxisEllipsoidTest {
         GeodeticPoint geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
-        
+
         // Test second visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(65.), FastMath.toRadians(-120.), 0.);
         pointItrf     = earth.transform(geoPoint);
@@ -214,30 +214,30 @@ public class OneAxisEllipsoidTest {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
-        
+
         // Test non visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(30.), FastMath.toRadians(60.), 0.);
         pointItrf     = earth.transform(geoPoint);
         line = new Line(pSatItrf, pointItrf);
-        
+
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
-        
+
         // For polar satellite position, intersection point is at the same longitude but different latitude
         Assert.assertEquals(1.04437199, geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(1.36198012, geoInter.getLatitude(),  Utils.epsilonAngle);
-        
+
         // Satellite on equatorial position
         // ********************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(1.e-4), FastMath.toRadians(0.),
-                                   FastMath.toRadians(0.), PositionAngle.MEAN, 
+                                   FastMath.toRadians(0.), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-      
+
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
         pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
-        
+
         // Test first visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(5.), FastMath.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
@@ -246,12 +246,12 @@ public class OneAxisEllipsoidTest {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
-        
+
         // With the point opposite to satellite point along the line
         GeodeticPoint geoInter2 = earth.getIntersectionPoint(line, line.toSpace(new Vector1D(-line.toSubSpace(pSatItrf).getX())), frame, date);
         Assert.assertTrue(FastMath.abs(geoInter.getLongitude() - geoInter2.getLongitude()) > FastMath.toRadians(0.1));
         Assert.assertTrue(FastMath.abs(geoInter.getLatitude() - geoInter2.getLatitude()) > FastMath.toRadians(0.1));
-        
+
         // Test second visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(-5.), FastMath.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
@@ -259,7 +259,7 @@ public class OneAxisEllipsoidTest {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
-        
+
         // Test non visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(40.), FastMath.toRadians(0.), 0.);
         pointItrf     = earth.transform(geoPoint);
@@ -273,14 +273,14 @@ public class OneAxisEllipsoidTest {
         // *************************
         circ =
             new CircularOrbit(7178000.0, 0.5e-4, 0., FastMath.toRadians(50.), FastMath.toRadians(0.),
-                                   FastMath.toRadians(90.), PositionAngle.MEAN, 
+                                   FastMath.toRadians(90.), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        
+
         // Transform satellite position to position/velocity parameters in EME2000 and ITRF200B
         pvSatEME2000 = circ.getPVCoordinates();
         pvSatItrf  = frame.getTransformTo(FramesFactory.getEME2000(), date).transformPVCoordinates(pvSatEME2000);
         pSatItrf  = pvSatItrf.getPosition();
-        
+
         // Test first visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(40.), FastMath.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
@@ -288,7 +288,7 @@ public class OneAxisEllipsoidTest {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
-        
+
         // Test second visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(60.), FastMath.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
@@ -296,7 +296,7 @@ public class OneAxisEllipsoidTest {
         geoInter = earth.getIntersectionPoint(line, pSatItrf, frame, date);
         Assert.assertEquals(geoPoint.getLongitude(), geoInter.getLongitude(), Utils.epsilonAngle);
         Assert.assertEquals(geoPoint.getLatitude(), geoInter.getLatitude(), Utils.epsilonAngle);
-        
+
         // Test non visible surface points
         geoPoint = new GeodeticPoint(FastMath.toRadians(0.), FastMath.toRadians(90.), 0.);
         pointItrf     = earth.transform(geoPoint);
@@ -314,7 +314,7 @@ public class OneAxisEllipsoidTest {
         throws OrekitException {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005(true);    
+        Frame frame = FramesFactory.getITRF2005(true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
         Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);

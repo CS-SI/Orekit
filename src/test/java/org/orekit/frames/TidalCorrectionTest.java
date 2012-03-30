@@ -29,7 +29,7 @@ import org.orekit.time.TimeScalesFactory;
 
 public class TidalCorrectionTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
 
     @Test

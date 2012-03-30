@@ -23,7 +23,6 @@ import java.util.List;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
@@ -38,8 +37,9 @@ import org.orekit.time.AbsoluteDate;
  * that was computed for a reference orbit, and we want to compute a
  * station-keeping maneuver on top of this ephemeris, changing its
  * final state. The principal is to add one or more {@link
- * SmallManeuverAnalyticalModel small maneuvers analytical models} to it
- * and use it as a new propagator, which takes the maneuvers into account.
+ * org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel small maneuvers
+ * analytical models} to it and use it as a new propagator, which takes the
+ * maneuvers into account.
  * </p>
  * <p>
  * From a space flight dynamics point of view, this is a differential
@@ -47,7 +47,7 @@ import org.orekit.time.AbsoluteDate;
  * a use of the decorator design pattern.
  * </p>
  * @see Propagator
- * @see SmallManeuverAnalyticalModel
+ * @see org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel
  * @author Luc Maisonobe
  */
 public class AdapterPropagator extends AbstractPropagator {
@@ -66,9 +66,8 @@ public class AdapterPropagator extends AbstractPropagator {
          * into account if meaningful
          * @exception OrekitException if effect cannot be computed
          */
-        public SpacecraftState apply(SpacecraftState original)
-            throws OrekitException;
-        
+        SpacecraftState apply(SpacecraftState original) throws OrekitException;
+
     }
 
     /** Serializable UID. */

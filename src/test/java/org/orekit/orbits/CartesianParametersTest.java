@@ -41,10 +41,10 @@ import org.orekit.utils.PVCoordinates;
 
 public class CartesianParametersTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-    // Body mu 
+
+    // Body mu
     private double mu;
 
     @Test

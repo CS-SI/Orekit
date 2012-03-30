@@ -105,7 +105,7 @@ public class KeplerianPropagatorTest {
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE, 
+                                                6.2, PositionAngle.TRUE,
                                                 FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -234,7 +234,7 @@ public class KeplerianPropagatorTest {
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE, 
+                                                6.2, PositionAngle.TRUE,
                                                 FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -554,7 +554,7 @@ public class KeplerianPropagatorTest {
 
         Assert.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-15);
-                           
+
     }
 
     private static double tangLEmLv(double Lv,double ex,double ey){
@@ -573,6 +573,6 @@ public class KeplerianPropagatorTest {
     public void tearDown() {
         mu   = Double.NaN;
     }
-    
+
 }
 

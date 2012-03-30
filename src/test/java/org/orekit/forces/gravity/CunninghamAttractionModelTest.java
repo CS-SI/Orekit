@@ -170,7 +170,7 @@ public class CunninghamAttractionModelTest {
         /** Body mu */
         private static final double mu =  3.986004415e+14;
 
-        private EckStepHandler(Orbit initialOrbit, double ae, 
+        private EckStepHandler(Orbit initialOrbit, double ae,
                                double c20, double c30, double c40, double c50, double c60)
         throws FileNotFoundException, OrekitException {
             referencePropagator =
@@ -221,7 +221,7 @@ public class CunninghamAttractionModelTest {
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
-        
+
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,
                                                                new double[][] {

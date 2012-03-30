@@ -64,7 +64,7 @@ public class ApparentElevationDetectorTest {
         Propagator propagator =
             new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
 
-        // Earth and frame  
+        // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
         Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
@@ -104,7 +104,7 @@ public class ApparentElevationDetectorTest {
         Propagator propagator =
             new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
 
-        // Earth and frame  
+        // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
         Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date

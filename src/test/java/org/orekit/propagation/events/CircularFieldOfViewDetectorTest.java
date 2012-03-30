@@ -28,17 +28,17 @@ public class CircularFieldOfViewDetectorTest {
 
     // Body mu
     private double mu;
-    
-    // Computation date 
+
+    // Computation date
     private AbsoluteDate initDate;
-    
-    // Orbit 
+
+    // Orbit
     private Orbit initialOrbit;
 
     // Reference frame = ITRF 2005
     private Frame itrf;
 
-    // Earth center pointing attitude provider 
+    // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
@@ -65,12 +65,12 @@ public class CircularFieldOfViewDetectorTest {
         propagator.propagate(initDate.shiftedBy(6000.));
 
     }
-    
+
     @Before
     public void setUp() {
         try {
 
-            Utils.setDataRoot("regular-data");            
+            Utils.setDataRoot("regular-data");
 
             // Computation date
             // Satellite position as circular parameters
@@ -79,7 +79,7 @@ public class CircularFieldOfViewDetectorTest {
             initDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
                                                      TimeComponents.H00,
                                                      TimeScalesFactory.getUTC());
-            
+
             Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
             Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
             initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
@@ -91,14 +91,14 @@ public class CircularFieldOfViewDetectorTest {
 
             // Create earth center pointing attitude provider */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
-            
+
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
         }
-          
+
     }
 
-   
+
     /** Finder for visibility event.
      * <p>This class extends the elevation detector modifying the event handler.<p>
      */
@@ -107,7 +107,7 @@ public class CircularFieldOfViewDetectorTest {
         /** Serializable UID. */
         private static final long serialVersionUID = 1181779674621070074L;
 
-        public CircularSunVisiDetector(final double maxCheck, 
+        public CircularSunVisiDetector(final double maxCheck,
                                final PVCoordinatesProvider pvTarget, final Vector3D center, final double aperture) {
             super(maxCheck, pvTarget, center, aperture);
         }

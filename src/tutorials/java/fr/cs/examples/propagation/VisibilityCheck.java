@@ -66,7 +66,7 @@ public class VisibilityCheck {
             // Propagator : consider a simple keplerian motion (could be more elaborate)
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
-            // Earth and frame  
+            // Earth and frame
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
             Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
@@ -79,7 +79,7 @@ public class VisibilityCheck {
             final GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
             final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
-            // Event definition 
+            // Event definition
             final double maxcheck  = 1.;
             final double elevation = FastMath.toRadians(5.);
             final EventDetector sta1Visi = new VisibilityDetector(maxcheck, elevation, sta1Frame);

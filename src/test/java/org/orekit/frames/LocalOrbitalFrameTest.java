@@ -41,7 +41,7 @@ public class LocalOrbitalFrameTest {
                    Vector3D.crossProduct(pv.getMomentum(), pv.getVelocity()),
                    pv.getMomentum(),
                    pv.getMomentum().negate());
-    }    
+    }
 
     @Test
     public void testQSW() throws OrekitException {
@@ -120,7 +120,7 @@ public class LocalOrbitalFrameTest {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         initialOrbit =
-                new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9, 6.2, PositionAngle.TRUE, 
+                new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9, 6.2, PositionAngle.TRUE,
                                    inertialFrame, initDate, 3.986004415e14);
         provider = new KeplerianPropagator(initialOrbit);
 

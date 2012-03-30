@@ -64,13 +64,13 @@ public class AbsoluteDateTest {
     @Test
     public void testParse() throws OrekitException {
         Assert.assertEquals(AbsoluteDate.MODIFIED_JULIAN_EPOCH,
-                            new AbsoluteDate("1858-W46-3", TimeScalesFactory.getTT()));        
+                            new AbsoluteDate("1858-W46-3", TimeScalesFactory.getTT()));
         Assert.assertEquals(AbsoluteDate.JULIAN_EPOCH,
-                            new AbsoluteDate("-4712-01-01T12:00:00.000", TimeScalesFactory.getTT()));        
+                            new AbsoluteDate("-4712-01-01T12:00:00.000", TimeScalesFactory.getTT()));
         Assert.assertEquals(AbsoluteDate.FIFTIES_EPOCH,
-                            new AbsoluteDate("1950-01-01", TimeScalesFactory.getTT()));        
+                            new AbsoluteDate("1950-01-01", TimeScalesFactory.getTT()));
         Assert.assertEquals(AbsoluteDate.CCSDS_EPOCH,
-                            new AbsoluteDate("1958-001", TimeScalesFactory.getTAI()));        
+                            new AbsoluteDate("1958-001", TimeScalesFactory.getTAI()));
     }
 
     @Test
@@ -230,7 +230,7 @@ public class AbsoluteDateTest {
         TimeComponents time = new TimeComponents(11, 59, 10);
         TimeScale[] scales = {
             TimeScalesFactory.getTAI(), TimeScalesFactory.getUTC(),
-            TimeScalesFactory.getTT(), TimeScalesFactory.getTCG()      
+            TimeScalesFactory.getTT(), TimeScalesFactory.getTCG()
         };
         for (int i = 0; i < scales.length; ++i) {
             AbsoluteDate in = new AbsoluteDate(date, time, scales[i]);
@@ -276,7 +276,7 @@ public class AbsoluteDateTest {
                 } catch (OrekitException iae) {
                     // expected
                 }
-                
+
             }
         }
 
@@ -316,7 +316,7 @@ public class AbsoluteDateTest {
                 } catch (OrekitException iae) {
                     // expected
                 }
-                
+
             }
         }
 
@@ -366,7 +366,7 @@ public class AbsoluteDateTest {
                     // since there is no day 1303 (= 5 * 256 + 23) in any year ...
                     Assert.assertEquals(preamble & 0x08, 0x08);
                 }
-                
+
             }
         }
 
@@ -388,7 +388,7 @@ public class AbsoluteDateTest {
                     // since there is no month 0 in any year ...
                     Assert.assertEquals(preamble & 0x08, 0x00);
                 }
-                
+
             }
         }
 

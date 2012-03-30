@@ -1,3 +1,19 @@
+/* Copyright 2002-2011 CS Communication & Systèmes
+ * Licensed to CS Communication & Systèmes (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -8,99 +24,102 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * Atmospheric drag contribution for {@link DSSTPropagator}.
+ * Atmospheric drag contribution for {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator}.
  * <p>
  * The drag acceleration is computed as follows:<br>
  * &gamma; = (1/2 &rho; C<sub>D</sub> A<sub>Ref</sub> / m) * |v<sub>atm</sub> - v<sub>sat</sub>| *
  * (v<sub>atm</sub> - v<sub>sat</sub>)
  * </p>
- * 
+ *
  * @author Pascal Parraud
  */
 public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
 
     // Quadrature parameters
     /** Number of points desired for quadrature (must be between 2 and 5 inclusive). */
-    private final static int[]    NB_POINTS         = { 5, 5, 5, 5, 5, 5 };
+    private static final int[]    NB_POINTS         = {
+        5, 5, 5, 5, 5, 5
+    };
+
     /** Relative accuracy of the result. */
-    private final static double[] RELATIVE_ACCURACY = { 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3 };
+    private static final double[] RELATIVE_ACCURACY = {
+        1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3
+    };
+
     /** Absolute accuracy of the result. */
-    private final static double[] ABSOLUTE_ACCURACY = { 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20 };
+    private static final double[] ABSOLUTE_ACCURACY = {
+        1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20
+    };
+
     /** Maximum number of evaluations. */
-    private final static int[]    MAX_EVAL          = { 1000000, 1000000, 1000000, 1000000, 1000000, 1000000 };
+    private static final int[]    MAX_EVAL          = {
+        1000000, 1000000, 1000000, 1000000, 1000000, 1000000
+    };
 
     /** Atmospheric model. */
     private final Atmosphere      atmosphere;
 
-    /** Coefficient 1/2 * C<sub>D</sub> * A<sub>Ref</sub> */
+    /** Coefficient 1/2 * C<sub>D</sub> * A<sub>Ref</sub>. */
     private final double          kRef;
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private double                rbar;
 
-    /** Cross sectionnal area of satellite */
+    /** Cross sectionnal area of satellite. */
     private final double          area;
 
-    /**
-     * Simple constructor.
-     * 
-     * @param atmosphere
-     *            atmospheric model
-     * @param cd
-     *            drag coefficient
-     * @param area
-     *            cross sectionnal area of satellite
+    /** Simple constructor.
+     * @param atmosphere atmospheric model
+     * @param cd drag coefficient
+     * @param area cross sectionnal area of satellite
      */
-    public DSSTAtmosphericDrag(final Atmosphere atmosphere,
-                               final double cd,
-                               final double area) {
+    public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd, final double area) {
         this.atmosphere = atmosphere;
         this.area = area;
         this.kRef = 0.5 * cd * area;
         this.rbar = Double.NEGATIVE_INFINITY;
     }
 
-    /**
-     * Get the critical distance.
-     * 
+    /** Get the critical distance.
      * @return the critical distance from the center of the central body
      */
     public double getRbar() {
         return rbar;
     }
 
-    /** Get the atmospheric model */
+    /** Get the atmospheric model.
+     * @return atmosphere model
+     */
     public final Atmosphere getAtmosphere() {
         return atmosphere;
     }
 
-    /**
-     * Set the critical distance. The critical distance from the center of the central body aims at
+    /** Set the critical distance.
+     * The critical distance from the center of the central body aims at
      * defining the atmosphere entry/exit.
-     * 
-     * @param rbar
-     *            the critical distance to set
+     * @param rbar the critical distance to set
      */
-    public void setRbar(double rbar) {
+    public void setRbar(final double rbar) {
         this.rbar = rbar;
     }
 
     /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date,
-                                               final double[] meanElements) throws OrekitException {
+    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
+        throws OrekitException {
         // TODO: not implemented yet
         // Short Periodic Variations are set to null
-        return new double[] { 0., 0., 0., 0., 0., 0. };
+        return new double[] {
+            0., 0., 0., 0., 0., 0.
+        };
     }
 
     /** {@inheritDoc} */
     protected Vector3D getAcceleration(final SpacecraftState state,
-                                       final Vector3D position,
-                                       final Vector3D velocity) throws OrekitException {
+                                       final Vector3D position, final Vector3D velocity)
+        throws OrekitException {
         final AbsoluteDate date = state.getDate();
         final Frame frame = state.getFrame();
         // compute atmospheric density (assuming it doesn't depend on the date)
@@ -116,8 +135,10 @@ public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected double[] getLLimits(SpacecraftState state) throws OrekitException {
-        double[] ll = { -FastMath.PI, FastMath.PI };
+    protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
+        final double[] ll = {
+            -FastMath.PI, FastMath.PI
+        };
         final double r = state.getOrbit().getPVCoordinates().getPosition().getNorm();
         // TODO : to be validated
         if (r < rbar) {
@@ -134,36 +155,41 @@ public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    protected int getNbPoints(int element) {
+    protected int getNbPoints(final int element) {
         return NB_POINTS[element];
     }
 
     /** {@inheritDoc} */
-    protected double getRelativeAccuracy(int element) {
+    protected double getRelativeAccuracy(final int element) {
         return RELATIVE_ACCURACY[element];
     }
 
     /** {@inheritDoc} */
-    protected double getAbsoluteAccuracy(int element) {
+    protected double getAbsoluteAccuracy(final int element) {
         return ABSOLUTE_ACCURACY[element];
     }
 
     /** {@inheritDoc} */
-    protected int getMaxEval(int element) {
+    protected int getMaxEval(final int element) {
         return MAX_EVAL[element];
     }
 
-    /** Get the cross sectionnal area of satellite */
+    /** Get the cross sectional area of satellite.
+     * @return cross sectional area
+     */
     public double getArea() {
         return area;
     }
 
-    /** Get the drag coefficient */
+    /** Get the drag coefficient.
+     * @return drag coefficient
+     */
     public final double getCd() {
         return 2 * kRef / area;
     }
 
-    public void initialize(SpacecraftState initialState) {
+    /** {@inheritDoc} */
+    public void initialize(final SpacecraftState initialState) {
         // Nothing to do
     }
 

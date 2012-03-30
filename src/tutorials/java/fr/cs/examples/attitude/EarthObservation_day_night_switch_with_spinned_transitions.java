@@ -114,7 +114,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endDayNightRdV2Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
@@ -139,7 +139,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endDayNightRdV1Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
@@ -178,7 +178,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endNightDayRdV2Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
@@ -203,7 +203,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endNightDayRdV1Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {

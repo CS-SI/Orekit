@@ -267,7 +267,8 @@ public class SmallManeuverAnalyticalModel
      * @see #apply(Orbit)
      * @exception OrekitException if time derivative of the initial Jacobian cannot be computed
      */
-    public void getJacobian(final Orbit orbit1, final PositionAngle positionAngle, double[][] jacobian)
+    public void getJacobian(final Orbit orbit1, final PositionAngle positionAngle,
+                            final double[][] jacobian)
         throws OrekitException {
 
         final double dt = orbit1.getDate().durationFrom(state0.getDate());
@@ -301,9 +302,9 @@ public class SmallManeuverAnalyticalModel
         if (orbit1.getType() != type || positionAngle != PositionAngle.MEAN) {
 
             // convert to derivatives of cartesian parameters
-            double[][] j2         = new double[6][6];
-            double[][] pvJacobian = new double[6][4];
-            final Orbit updated   = updateOrbit(orbit1);
+            final double[][] j2         = new double[6][6];
+            final double[][] pvJacobian = new double[6][4];
+            final Orbit updated         = updateOrbit(orbit1);
             type.convertType(updated).getJacobianWrtParameters(PositionAngle.MEAN, j2);
             for (int i = 0; i < 6; ++i) {
                 for (int j = 0; j < 4; ++j) {
@@ -314,7 +315,7 @@ public class SmallManeuverAnalyticalModel
             }
 
             // convert to derivatives of specified parameters
-            double[][] j3 = new double[6][6];
+            final double[][] j3 = new double[6][6];
             updated.getJacobianWrtCartesian(positionAngle, j3);
             for (int j = 0; j < 4; ++j) {
                 for (int i = 0; i < 6; ++i) {
@@ -329,7 +330,6 @@ public class SmallManeuverAnalyticalModel
     }
 
     /** Lazy evaluation of the initial Jacobian time derivative.
-     * @return initial Jacobian time derivative
      * @exception OrekitException if initial orbit cannot be shifted
      */
     private void evaluateJ0Dot() throws OrekitException {

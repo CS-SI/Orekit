@@ -45,27 +45,27 @@ import org.orekit.utils.PVCoordinates;
 
 public class BodyCenterPointingTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-    // Orbit 
+
+    // Orbit
     private CircularOrbit circ;
 
     // Reference frame = ITRF 2005
     private Frame itrf;
-    
+
     // Transform from EME2000 to ITRF2005
     private Transform eme2000ToItrf;
-    
-    // Earth center pointing attitude provider 
+
+    // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     /** Test if target is body center
      */
     @Test
     public void testTarget() throws OrekitException {
-        
-        // Call get target method 
+
+        // Call get target method
         Vector3D target = earthCenterAttitudeLaw.getTargetPoint(circ, date, circ.getFrame());
 
         // Check that target is body center
@@ -78,32 +78,32 @@ public class BodyCenterPointingTest {
      */
     @Test
     public void testBodyCenterInPointingDirection() throws OrekitException {
-        
+
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        
+
         //  Pointing direction
-        // ******************** 
+        // ********************
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
         Rotation rotSatEME2000 = earthCenterAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
-        // Transform Z axis from satellite frame to EME2000 
+
+        // Transform Z axis from satellite frame to EME2000
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
-        
+
         // Transform Z axis from EME2000 to ITRF2005
         Vector3D zSatITRF2005C = eme2000ToItrf.transformVector(zSatEME2000);
-        
-        // Transform satellite position/velocity from EME2000 to ITRF2005 
+
+        // Transform satellite position/velocity from EME2000 to ITRF2005
         PVCoordinates pvSatITRF2005C = eme2000ToItrf.transformPVCoordinates(pvSatEME2000);
-                
+
        // Line containing satellite point and following pointing direction
         Line pointingLine = new Line(pvSatITRF2005C.getPosition(),
                                      pvSatITRF2005C.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                       zSatITRF2005C));
-        
+
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.ZERO);
-        
+
         Assert.assertTrue(distance < 1.e-8);
     }
 
@@ -156,8 +156,8 @@ public class BodyCenterPointingTest {
                 new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(raan),
                                        FastMath.toRadians(5.300 - raan), PositionAngle.MEAN,
                                        FramesFactory.getEME2000(), date, mu);
-            
-            
+
+
             // Reference frame = ITRF 2005
             itrf = FramesFactory.getITRF2005(true);
 
@@ -166,7 +166,7 @@ public class BodyCenterPointingTest {
 
             // Create earth center pointing attitude provider */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
-            
+
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
         }

@@ -70,7 +70,7 @@ public class MasterMode {
             double omega = FastMath.toRadians(180); // perigee argument
             double raan = FastMath.toRadians(261); // right ascention of ascending node
             double lM = 0; // mean anomaly
-            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, 
+            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
                                                     inertialFrame, initialDate, mu);
 
             // Initial state definition
@@ -116,12 +116,12 @@ public class MasterMode {
             SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(630.));
             System.out.println(" Final date  : " + finalState.getDate());
             System.out.println(" Final state : " + finalState.getOrbit());
-            
+
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
         }
     }
-    
+
     /** Specialized step handler.
      * <p>This class extends the step handler in order to print on the output stream at the given step.<p>
      * @author Pascal Parraud

@@ -52,7 +52,7 @@ public class TODFrameTest {
                     // about 1.06 micro arcsecond per second
                     Assert.assertEquals(-1.06 * h, deltaMicroAS, 0.0003 * h);
                 } else {
-                    // around switch date, there should be a -1.63 micro arcsecond discontinuity 
+                    // around switch date, there should be a -1.63 micro arcsecond discontinuity
                     Assert.assertEquals(-1.63, deltaMicroAS, 0.01);
                 }
             }
@@ -133,7 +133,7 @@ public class TODFrameTest {
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
         final boolean withNutationCorrection = true;
-        
+
         TODFrame interpolatingFrame =
             new TODFrame(withNutationCorrection, Predefined.TOD_WITH_EOP_CORRECTIONS);
         NonInterpolatingTODFrame nonInterpolatingFrame =

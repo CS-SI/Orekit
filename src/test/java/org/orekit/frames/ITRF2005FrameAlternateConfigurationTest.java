@@ -39,7 +39,7 @@ public class ITRF2005FrameAlternateConfigurationTest {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
-        // Reference position & velocity from : "Fundamentals of Astrodynamics and Applications", Third edition, David A. Vallado 
+        // Reference position & velocity from : "Fundamentals of Astrodynamics and Applications", Third edition, David A. Vallado
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
@@ -57,14 +57,14 @@ public class ITRF2005FrameAlternateConfigurationTest {
         checkPV(pvGcrfIau2000A,
                 itrfA.getTransformTo(FramesFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
                 0.01, 2.e-5);
-        
+
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
         checkPV(pvEME2000EqA,
                 itrfA.getTransformTo(FramesFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
                 0.01, 2.e-5);
-        
+
     }
 
     @Test

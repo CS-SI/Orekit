@@ -99,7 +99,7 @@ public class AdapterPropagatorTest {
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             Assert.assertEquals(0, revertError, 0.45);
         }
- 
+
     }
 
     @Test
@@ -149,7 +149,7 @@ public class AdapterPropagatorTest {
 
     @Test
     public void testNonKeplerian() throws OrekitException, ParseException, IOException {
-        
+
         Orbit leo = new CircularOrbit(7204319.233600575, 4.434564637450575E-4, 0.0011736728299091088,
                                       1.7211611441767323, 5.5552084166959474,
                                       24950.321259193086, PositionAngle.TRUE,
@@ -205,7 +205,7 @@ public class AdapterPropagatorTest {
         }
         Assert.assertTrue(maxDelta   < 120);
         Assert.assertTrue(maxNominal > 2800);
- 
+
     }
 
     private BoundedPropagator getEphemeris(final Orbit orbit, final double mass, final int nbOrbits,

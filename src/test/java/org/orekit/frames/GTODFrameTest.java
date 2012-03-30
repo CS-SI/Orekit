@@ -52,7 +52,7 @@ public class GTODFrameTest {
         PVCoordinates pvTOD =
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
-        
+
         Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
 
         // this test gives worse result than GTODFrameAlternateConfigurationTest because

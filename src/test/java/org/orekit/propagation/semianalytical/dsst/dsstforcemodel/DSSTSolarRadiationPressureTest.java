@@ -63,7 +63,7 @@ public class DSSTSolarRadiationPressureTest {
 
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
-        
+
 //        System.out.println(daidtRef[0] + " " + daidt[0] + " " + (daidtRef[0] - daidt[0]));
 //        System.out.println(daidtRef[1] + " " + daidt[1] + " " + (daidtRef[1] - daidt[1]));
 //        System.out.println(daidtRef[2] + " " + daidt[2] + " " + (daidtRef[2] - daidt[2]));
@@ -117,7 +117,7 @@ public class DSSTSolarRadiationPressureTest {
 
     }
 
-    /** Direct computation of the mean element rates without shadow 
+    /** Direct computation of the mean element rates without shadow
      *  @param state current state information: date, kinematics, attitude
      *  @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      *  @param area cross sectionnal area of satellite
@@ -129,7 +129,7 @@ public class DSSTSolarRadiationPressureTest {
                                              final double cr, final double area,
                                              final PVCoordinatesProvider sun) throws OrekitException {
         final double[] meanElementRate = new double[6];
- 
+
         // Equinoctial elements
         double[] stateVector = new double[6];
         OrbitType.EQUINOCTIAL.mapOrbitToArray(state.getOrbit(), PositionAngle.MEAN, stateVector);
@@ -188,7 +188,7 @@ public class DSSTSolarRadiationPressureTest {
         meanElementRate[4] =  cvgo2ab * h;
         // dλ/dt = −(2 + B)*V*(k*α + h*β)/A*(1 + B) − (V*γ/A*B)*(k*p − I*h*q)
         meanElementRate[5] = -(kpihqvgoab + (2. + B) * V * (k * alpha + h * beta) / (A * (1. + B)));
-    
+
         return meanElementRate;
     }
 

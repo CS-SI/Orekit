@@ -52,7 +52,7 @@ public class GTODFrameAlternateConfigurationTest {
         PVCoordinates pvTOD =
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
-        
+
         Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0094, 4.9e-6);
 

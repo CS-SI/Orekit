@@ -167,7 +167,7 @@
   	<dependency>
   		<groupId>org.apache.commons</groupId>
   		<artifactId>commons-math3</artifactId>
-  		<version>3.0-SNAPSHOT</version>
+  		<version>3.0</version>
   		<type>jar</type>
   		<optional>false</optional>
   	</dependency>
@@ -223,6 +223,39 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.github.jeluard</groupId>
+        <artifactId>maven-plantuml-plugin</artifactId>
+        <version>7232</version>
+        <configuration>
+          <sourceFiles>
+            <directory>${basedir}</directory>
+            <includes>
+              <include>
+                src/design/**/*.puml
+              </include>
+            </includes>
+          </sourceFiles>
+          <outputDirectory>
+            ${basedir}/target/site/images/design
+          </outputDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>net.sourceforge.plantuml</groupId>
+            <artifactId>plantuml</artifactId>
+            <version>7707</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

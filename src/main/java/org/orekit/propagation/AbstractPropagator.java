@@ -88,7 +88,7 @@ public abstract class AbstractPropagator implements Propagator {
     /** Start date of last propagation. */
     private AbsoluteDate lastPropagationStart;
 
-    /** end date of last propagation. */
+    /** End date of last propagation. */
     private AbsoluteDate lastPropagationEnd;
 
     /** Start date. */
@@ -529,6 +529,8 @@ public abstract class AbstractPropagator implements Propagator {
         private final AbsoluteDate maxDate;
 
         /** Simple constructor.
+         * @param startDate start date of the propagation
+         * @param endDate end date of the propagation
          */
         public BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate) {
             super(AbstractPropagator.this.getAttitudeProvider());

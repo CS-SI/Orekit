@@ -613,7 +613,7 @@ public class DSSTPropagatorTest {
 
         /**
          * Constructor
-         * 
+         *
          * @param propagatorRef
          *            Reference propagator
          * @param tolerance
