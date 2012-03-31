@@ -59,9 +59,6 @@ import org.orekit.errors.OrekitException;
  */
 public class ZipJarCrawler implements DataProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6907774815393561820L;
-
     /** Zip archive on the filesystem. */
     private final File file;
 

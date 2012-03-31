@@ -16,7 +16,6 @@
  */
 package org.orekit.data;
 
-import java.io.Serializable;
 import java.util.regex.Pattern;
 
 import org.orekit.errors.OrekitException;
@@ -41,7 +40,7 @@ import org.orekit.errors.OrekitException;
  * @see DataProvidersManager
  * @author Luc Maisonobe
  */
-public interface DataProvider extends Serializable {
+public interface DataProvider {
 
     /** Pattern for name of gzip files. */
     Pattern GZIP_FILE_PATTERN = Pattern.compile("(.*)\\.gz$");

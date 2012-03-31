@@ -75,9 +75,6 @@ import org.orekit.errors.OrekitException;
  */
 public class NetworkCrawler implements DataProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -5915903845414026286L;
-
     /** URLs list. */
     private final List<URL> urls;
 

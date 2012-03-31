@@ -62,9 +62,6 @@ import org.orekit.errors.OrekitMessages;
  */
 public class ClasspathCrawler implements DataProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -3939904780908615752L;
-
     /** List elements. */
     private final List<String> listElements;
 

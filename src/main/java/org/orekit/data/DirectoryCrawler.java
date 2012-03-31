@@ -53,9 +53,6 @@ import org.orekit.errors.OrekitMessages;
  */
 public class DirectoryCrawler implements DataProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 2070309080843098057L;
-
     /** Root directory. */
     private final File root;
 
