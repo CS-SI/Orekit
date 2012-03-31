@@ -12,15 +12,15 @@
 </p>
 
 <p>
-  The {@link org.orekit.bodies.SolarSystemBody} class is a factory providing several
+  The {@link org.orekit.bodies.CelestialBodyFactory} class is a factory providing several
   predefined instances implementing the {@link org.orekit.bodies.CelestialBody}
   interface for the main solar system bodies. The Sun, the Moon, the eight planets and
   the Pluto dwarf planet are the supported bodies. In addition to these real bodies,
   two points are supported for convenience as if they were real bodies: the solar system
-  barycenter and the Earth-Moon barycenter. The {@link org.orekit.bodies.SolarSystemBody}
-  factory relies on the JPL DE 405 binary ephemerides files to compute all positions and
-  velocities. Note that the binary files are used, not the ASCII ones, regardless of the
-  processor endianness.
+  barycenter and the Earth-Moon barycenter. The {@link org.orekit.bodies.CelestialBodyFactory}
+  factory relies on the JPL DE 405, 406 or similar binary ephemerides files to compute all
+  positions and velocities. Note that the binary files are used, not the ASCII ones,
+  regardless of the processor endianness.
 </p>
 
 <p>
@@ -29,8 +29,8 @@
 </p>
 
 <pre>
-CelestialBody sun  = SolarSystemBody.getSun();
-CelestialBody moon = SolarSystemBody.getMoon();
+CelestialBody sun  = CelestialBodyFactory.getSun();
+CelestialBody moon = CelestialBodyFactory.getMoon();
 Vector3D sunInEME2000 =
     sun.getPVCoordinates(date, Frame.getEME2000()).getPosition();
 Vector3D moonInEME2000 =
