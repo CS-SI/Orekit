@@ -161,7 +161,6 @@ public class SmallManeuverAnalyticalModel
 
     /** Get the inertial velocity increment of the maneuver.
      * @return velocity increment in a state-dependent inertial frame
-     * @see #getDV()
      * @see #getInertialFrame()
      */
     public Vector3D getInertialDV() {
@@ -170,7 +169,6 @@ public class SmallManeuverAnalyticalModel
 
     /** Get the inertial frame in which the velocity increment is defined.
      * @return inertial frame in which the velocity increment is defined
-     * @see #getDV()
      * @see #getInertialDV()
      */
     public Frame getInertialFrame() {
@@ -182,7 +180,7 @@ public class SmallManeuverAnalyticalModel
      * @return orbit at t<sub>1</sub>, taking the maneuver
      * into account if t<sub>1</sub> &gt; t<sub>0</sub>
      * @see #apply(SpacecraftState)
-     * @see #getJacobian(Orbit)
+     * @see #getJacobian(Orbit, PositionAngle, double[][])
      */
     public Orbit apply(final Orbit orbit1) {
 
@@ -201,7 +199,7 @@ public class SmallManeuverAnalyticalModel
      * @return spacecraft state at t<sub>1</sub>, taking the maneuver
      * into account if t<sub>1</sub> &gt; t<sub>0</sub>
      * @see #apply(Orbit)
-     * @see #getJacobian(Orbit)
+     * @see #getJacobian(Orbit, PositionAngle, double[][])
      */
     public SpacecraftState apply(final SpacecraftState state1) {
 

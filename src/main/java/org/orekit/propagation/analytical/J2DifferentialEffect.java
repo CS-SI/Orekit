@@ -181,7 +181,6 @@ public class J2DifferentialEffect
      * @return orbit at t<sub>1</sub>, taking the maneuver
      * into account if t<sub>1</sub> &gt; t<sub>0</sub>
      * @see #apply(SpacecraftState)
-     * @see #getJacobian(Orbit)
      */
     public Orbit apply(final Orbit orbit1) {
 

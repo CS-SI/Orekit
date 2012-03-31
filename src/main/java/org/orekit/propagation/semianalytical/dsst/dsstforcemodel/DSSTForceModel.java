@@ -21,10 +21,12 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * This interface represents a force modifying spacecraft motion for a {@link DSSTPropagator}.
+ * This interface represents a force modifying spacecraft motion for a {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
  * <p>
- * Objects implementing this interface are intended to be added to a {@link DSSTPropagator
- * semianalytical DSST propagator} before the propagation is started.
+ * Objects implementing this interface are intended to be added to a {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator semianalytical DSST propagator}
+ * before the propagation is started.
  * </p>
  * <p>
  * The propagator will call at each step the {@link #getMeanElementRate(SpacecraftState)} method.

@@ -34,12 +34,11 @@ import org.orekit.errors.OrekitMessages;
  * <a href="http://www.gfz-potsdam.de/grace/results/"> Potsdam university
  * website</a>.
  *
- * <p> The proper way to use this class is to call the
- *  {@link PotentialReaderFactory}
+ * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
  *
- * @see PotentialReaderFactory
+ * @see GravityFieldFactory
  * @author Fabien Maussion
  */
 public class SHMFormatReader extends PotentialCoefficientsReader {

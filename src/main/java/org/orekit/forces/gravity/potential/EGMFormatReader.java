@@ -30,11 +30,11 @@ import org.orekit.errors.OrekitMessages;
 
 /**This reader is adapted to the EGM Format.
  *
- * <p> The proper way to use this class is to call the {@link PotentialReaderFactory}
+ * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
  *
- * @see org.orekit.forces.gravity.potential.PotentialReaderFactory
+ * @see GravityFieldFactory
  * @author Fabien Maussion
  */
 public class EGMFormatReader extends PotentialCoefficientsReader {

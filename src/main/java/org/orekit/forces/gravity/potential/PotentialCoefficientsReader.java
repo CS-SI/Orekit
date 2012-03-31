@@ -29,11 +29,11 @@ import org.orekit.errors.OrekitMessages;
  *
  * <p> As it exits many different coefficients models and containers this
  *  interface represents all the methods that should be implemented by a reader.
- *  The proper way to use this interface is to call the {@link PotentialReaderFactory}
+ *  The proper way to use this interface is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file.<p>
  *
- * @see PotentialReaderFactory
+ * @see GravityFieldFactory
  * @author Fabien Maussion
  */
 public abstract class PotentialCoefficientsReader

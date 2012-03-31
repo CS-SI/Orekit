@@ -19,7 +19,7 @@ package org.orekit.forces.gravity.potential;
 import org.orekit.errors.OrekitException;
 
 /** Interface used to provide gravity field coefficients.
- * @see PotentialReaderFactory
+ * @see GravityFieldFactory
  * @author Luc Maisonobe
  */
 public interface PotentialCoefficientsProvider {

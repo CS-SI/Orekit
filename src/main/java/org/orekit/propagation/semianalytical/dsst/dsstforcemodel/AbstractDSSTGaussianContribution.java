@@ -43,7 +43,8 @@ import org.orekit.propagation.SpacecraftState;
  * over the true longitude L possibly taking into account some limits.
  * </p><p>
  * Only two methods must be implemented by derived classes:
- * {@link #getAcceleration(SpacecraftState)} and {@link #getLLimits(SpacecraftState)}.
+ * {@link #getAcceleration(SpacecraftState, Vector3D, Vector3D)} and
+ * {@link #getLLimits(SpacecraftState)}.
  * </p>
  * @author Pascal Parraud
  */

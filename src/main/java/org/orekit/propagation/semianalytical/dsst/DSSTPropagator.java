@@ -83,7 +83,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <li>the various force models ({@link #addForceModel(DSSTForceModel)},
  * {@link #removeForceModels()})</li>
  * <li>the discrete events that should be triggered during propagation (
- * {@link #addEventDetector(org.orekit.propagation.eventsEventDetector)},
+ * {@link #addEventDetector(org.orekit.propagation.events.EventDetector)},
  * {@link #clearEventsDetectors()})</li>
  * <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
  * {@link #setMasterMode(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},

@@ -490,7 +490,7 @@ public class TODFrame extends FactoryManagedFrame {
 
     /** Compute nutation elements.
      * <p>This method applies the IAU-1980 theory and hence is rather slow.
-     * It is called by the {@link #setInterpolatedNutationElements(double)}
+     * It is indirectly called by the {@link #getInterpolatedNutationElements(double)}
      * on a small number of reference points only.</p>
      * @param t offset from J2000.0 epoch in seconds
      * @return computed nutation elements in a two elements array,

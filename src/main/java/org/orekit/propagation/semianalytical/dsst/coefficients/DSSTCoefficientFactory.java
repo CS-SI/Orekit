@@ -123,7 +123,7 @@ public class DSSTCoefficientFactory {
      * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order. The 1st
      *         column contains the G<sub>s</sub> values. The 2nd column contains the H<sub>s</sub>
      *         values.
-     * @see getGsHsCoefficient
+     * @see #getGsCoefficient(double, double, double, double, int)
      */
     public static double[][] computeGsHsCoefficient(final double k, final double h,
                                                     final double alpha, final double beta, final int order) {

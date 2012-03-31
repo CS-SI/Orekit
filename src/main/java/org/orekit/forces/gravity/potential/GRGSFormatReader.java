@@ -33,12 +33,11 @@ import org.orekit.errors.OrekitMessages;
  *
  * <p> This format was used to describe various gravity fields at GRGS (Toulouse).
  *
- * <p> The proper way to use this class is to call the
- *  {@link PotentialReaderFactory}
+ * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
  *
- * @see PotentialReaderFactory
+ * @see GravityFieldFactory
  * @author Luc Maisonobe
  */
 public class GRGSFormatReader extends PotentialCoefficientsReader {

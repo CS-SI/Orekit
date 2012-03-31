@@ -34,12 +34,11 @@ import org.orekit.errors.OrekitMessages;
  * <a href="http://op.gfz-potsdam.de/grace/results/grav/g005_ICGEM-Format.pdf">the
  * ICGEM-format</a>.
  *
- * <p> The proper way to use this class is to call the
- *  {@link PotentialReaderFactory}
+ * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file <p>
  *
- * @see PotentialReaderFactory
+ * @see GravityFieldFactory
  * @author Luc Maisonobe
  */
 public class ICGEMFormatReader extends PotentialCoefficientsReader {
