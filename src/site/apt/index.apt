@@ -1,4 +1,4 @@
-~~ Copyright 2002-2011 CS Communication & Systèmes
+~~ Copyright 2002-2012 CS Systèmes d'Information
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -228,8 +228,8 @@ Overview
 
 * Maintained library
 
-  Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Communication
-  & Syst\u00e8mes}} and is still used and maintained by its space dynamics experts.
+  Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Syst\u00e8mes
+  d'Information}} and is still used and maintained by its space dynamics experts.
 
   It has already been successfully used during the real time monitoring of the rendez-vous
   phase between the Automated Transfer Vehicle (ATV) and the International Space Station
