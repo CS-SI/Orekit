@@ -201,6 +201,8 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
         this.mass = mass;
         initializeCommons();
         sxpInitialize();
+        // set the initial state
+        super.resetInitialState(new SpacecraftState(propagateOrbit(initialTLE.getDate())));
     }
 
     /** Selects the extrapolator to use with the selected TLE.

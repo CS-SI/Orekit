@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="thomas" type="fix">
+        Set the initial state for a TLEPropagator (fixes bug #85).
+      </action>
       <action dev="luc" type="update">
         Improved testing of error messages.
       </action>
