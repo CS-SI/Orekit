@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
+
 /**
  * Resonant couple used in the expression of the Tesseral resonant term for the
  * {@link DSSTCentralBody}.
@@ -35,8 +36,8 @@ public class ResonantCouple implements Comparable<ResonantCouple> {
      * @param m m-value
      */
     public ResonantCouple(final int n, final int m) {
-        this.m = m;
         this.n = n;
+        this.m = m;
     }
 
     /** Get the m-value.
@@ -70,4 +71,27 @@ public class ResonantCouple implements Comparable<ResonantCouple> {
         }
         return result;
     }
+
+    /** {@inheritDoc} */
+    public boolean equals(final Object couple) {
+
+        if (couple == this) {
+            // first fast check
+            return true;
+        }
+
+        if ((couple != null) && (couple instanceof ResonantCouple)) {
+            return (n == ((ResonantCouple) couple).n) &&
+                   (m == ((ResonantCouple) couple).m);
+        }
+
+        return false;
+
+    }
+
+    /** {@inheritDoc} */
+    public int hashCode() {
+        return 0xd3dc54ce ^ (n << 8) ^ m;
+    }
+
 }

@@ -482,5 +482,26 @@ public class ModifiedNewcombOperators {
             return result;
         }
 
+        /** {@inheritDoc} */
+        public boolean equals(final Object couple) {
+
+            if (couple == this) {
+                // first fast check
+                return true;
+            }
+
+            if ((couple != null) && (couple instanceof Couple)) {
+                return (rho == ((Couple) couple).rho) && (sigma == ((Couple) couple).sigma);
+            }
+
+            return false;
+
+        }
+
+        /** {@inheritDoc} */
+        public int hashCode() {
+            return 0x7ab17c0c ^ (rho << 8) ^ sigma;
+        }
+
     }
 }

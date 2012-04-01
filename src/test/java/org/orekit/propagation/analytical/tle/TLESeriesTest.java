@@ -30,8 +30,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.analytical.tle.TLESeries;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;

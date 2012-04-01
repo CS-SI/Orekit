@@ -136,9 +136,6 @@ public class DSSTPropagator extends AbstractPropagator {
     private static final PositionAngle     ANGLE_TYPE       = PositionAngle.MEAN;
 
     /** Position error tolerance (m). */
-    private static final double            POSITION_ERROR   = 1.0;
-
-    /** Position error tolerance (m). */
     private static final double            EXTRA_TIME       = Constants.JULIAN_DAY;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
@@ -378,6 +375,7 @@ public class DSSTPropagator extends AbstractPropagator {
         super.setStartDate(state.getDate());
         this.mass = state.getMass();
         this.referenceDate = state.getDate();
+        cumulator.setReferenceDate(referenceDate);
         this.cumulator.resetAccumulator();
         this.initialized = false;
         this.resetDate = state.getDate();
@@ -708,10 +706,16 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /** Specialized step handler to add up all step interpolators. */
-    private class StepAccumulator implements StepHandler {
+    private static class StepAccumulator implements StepHandler, Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 8081411926415691239L;
 
         /** Cumulated step interpolators. */
         private SortedSet<StRange> cumulatedSteps;
+
+        /** Reference date. */
+        private AbsoluteDate referenceDate;
 
         /** First time. */
         private AbsoluteDate       td;
@@ -719,15 +723,23 @@ public class DSSTPropagator extends AbstractPropagator {
         /** Last time. */
         private AbsoluteDate       tf;
 
-        /** MAximal step. */
+        /** Maximal step. */
         private double             maxStep;
 
-        /** Simple constructor. */
+        /** Simple constructor.
+         */
         public StepAccumulator() {
             cumulatedSteps = new TreeSet<StRange>();
             td = AbsoluteDate.FUTURE_INFINITY;
             tf = AbsoluteDate.PAST_INFINITY;
             maxStep = 0.;
+        }
+
+        /** Set reference date.
+         * @param referenceDate reference date
+         */
+        public void setReferenceDate(final AbsoluteDate referenceDate) {
+            this.referenceDate = referenceDate;
         }
 
         /**
@@ -778,7 +790,7 @@ public class DSSTPropagator extends AbstractPropagator {
 
         /** {@inheritDoc} */
         public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
-            final StRange sr = new StRange(interpolator);
+            final StRange sr = new StRange(interpolator, referenceDate);
             maxStep = FastMath.max(maxStep, sr.getTmax().durationFrom(sr.getTmin()));
             cumulatedSteps.add(sr);
             td = cumulatedSteps.first().getTmin();
@@ -795,7 +807,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * Internal class for step interpolator encapsulation before accumulation. This class allows
      * step interpolators ordering in a sorted set.
      */
-    private class StRange implements Comparable<StRange>, Serializable {
+    private static class StRange implements Comparable<StRange>, Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -6209093963711616737L;
@@ -813,10 +825,10 @@ public class DSSTPropagator extends AbstractPropagator {
          * Constructor over a real step interpolator The step interpolator is copied inside the
          * StRange.
          *
-         * @param si
-         *            step interpolator
+         * @param si step interpolator
+         * @param referenceDate reference date
          */
-        public StRange(final StepInterpolator si) {
+        public StRange(final StepInterpolator si, final AbsoluteDate referenceDate) {
             this.step = si.copy();
             final double dtmin = step.isForward() ? step.getPreviousTime() : step.getCurrentTime();
             final double dtmax = step.isForward() ? step.getCurrentTime() : step.getPreviousTime();
@@ -879,6 +891,29 @@ public class DSSTPropagator extends AbstractPropagator {
                 return 1;
             }
         }
+
+        /** {@inheritDoc} */
+        public boolean equals(final Object st) {
+
+            if (st == this) {
+                // first fast check
+                return true;
+            }
+
+            if ((st != null) && (st instanceof StRange)) {
+                return tmin.equals(((StRange) st).tmin) &&
+                       tmax.equals(((StRange) st).tmax);
+            }
+
+            return false;
+
+        }
+
+        /** {@inheritDoc} */
+        public int hashCode() {
+            return 0xb22aebd5 ^ (tmin.hashCode() << 8) ^ tmax.hashCode();
+        }
+
     }
 
     /**

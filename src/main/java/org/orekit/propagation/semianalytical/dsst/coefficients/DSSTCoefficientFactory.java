@@ -307,6 +307,28 @@ public class DSSTCoefficientFactory {
             }
             return result;
         }
+
+        /** {@inheritDoc} */
+        public boolean equals(final Object key) {
+
+            if (key == this) {
+                // first fast check
+                return true;
+            }
+
+            if ((key != null) && (key instanceof NSKey)) {
+                return (n == ((NSKey) key).n) && (s == ((NSKey) key).s);
+            }
+
+            return false;
+
+        }
+
+        /** {@inheritDoc} */
+        public int hashCode() {
+            return 0x998493a6 ^ (n << 8) ^ s;
+        }
+
     }
 
     /** MNS couple's key. */
@@ -315,11 +337,11 @@ public class DSSTCoefficientFactory {
         /** m value. */
         private final int m;
 
-        /** s value. */
-        private final int s;
-
         /** n value. */
         private final int n;
+
+        /** s value. */
+        private final int s;
 
         /** Simpleconstructor.
          * @param m m
@@ -328,8 +350,8 @@ public class DSSTCoefficientFactory {
          */
         public MNSKey(final int m, final int n, final int s) {
             this.m = m;
-            this.s = s;
             this.n = n;
+            this.s = s;
         }
 
         /** {@inheritDoc} */
@@ -353,6 +375,29 @@ public class DSSTCoefficientFactory {
                 result = -1;
             }
             return result;
+        }
+
+        /** {@inheritDoc} */
+        public boolean equals(final Object key) {
+
+            if (key == this) {
+                // first fast check
+                return true;
+            }
+
+            if ((key != null) && (key instanceof MNSKey)) {
+                return (m == ((MNSKey) key).m) &&
+                       (n == ((MNSKey) key).n) &&
+                       (s == ((MNSKey) key).s);
+            }
+
+            return false;
+
+        }
+
+        /** {@inheritDoc} */
+        public int hashCode() {
+            return 0x25baa451 ^ (m << 16) ^ (n << 8) ^ s;
         }
 
     }

@@ -515,7 +515,8 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
 
                     // Upper bound for the |Gmsj + iHmsj|
                     final double maxE = FastMath.pow(e, FastMath.abs(sbis - j));
-                    final double maxG = FastMath.pow(1 - gamma * gamma, FastMath.abs(sbis - I * m) / 2);
+                    final int p = FastMath.abs(sbis - I * m) / 2;
+                    final double maxG = FastMath.pow(1 - gamma * gamma, p);
                     final double ghmsUp = maxE * maxG;
 
                     // Upper bound for Vmns
@@ -658,8 +659,9 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
                             final double qnsBound = FastMath.sqrt(qns2 + factor * dQns2);
 
                             // Get the current potential upper bound for the current (n, s) couple.
+                            final int sO2 = s / 2;
                             term = x2MuRaN * r2a * FastMath.abs(Jn[n]) * factorial * k0 * qnsBound *
-                                   FastMath.pow(1 - gam2, s / 2) * FastMath.pow(ecc, s) / FastMath.pow(2, n);
+                                   FastMath.pow(1 - gam2, sO2) * FastMath.pow(ecc, s) / FastMath.pow(2, n);
 
                             // Compare result with the tolerance parameter :
                             if (term <= zonalTruncationTolerance) {
