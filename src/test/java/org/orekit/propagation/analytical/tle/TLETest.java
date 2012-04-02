@@ -193,31 +193,19 @@ public class TLETest {
                             Vector3D testVel = new Vector3D(vX, vY, vZ);
 
                             AbsoluteDate date = tle.getDate().shiftedBy(minFromStart * 60);
-                            PVCoordinates results = null;
-                            try {
-                                results = ex.getPVCoordinates(date);
-                            }
-                            catch(OrekitException e)  {
-                                if (satNum==28872  || satNum==23333 || satNum==29141 ) {
-                                    // expected behavior
-                                } else {
-                                    Assert.fail("exception not expected " + e.getMessage());
-                                }
-                            }
-                            if (results != null) {
-                                double normDifPos = testPos.subtract(results.getPosition()).getNorm();
-                                double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+                            PVCoordinates results = ex.getPVCoordinates(date);
+                            double normDifPos = testPos.subtract(results.getPosition()).getNorm();
+                            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
-                                cumulated += normDifPos;
-                                Assert.assertEquals(0, normDifPos, 2e-3);;
-                                Assert.assertEquals(0, normDifVel, 1e-5);
+                            cumulated += normDifPos;
+                            Assert.assertEquals(0, normDifPos, 2e-3);;
+                            Assert.assertEquals(0, normDifVel, 1e-5);
 
-                            }
 
                         }
                     }
                 }
-                Assert.assertEquals(0, cumulated, 0.024);
+                Assert.assertEquals(0, cumulated, 0.026);
             } finally {
                 if (rResults != null) {
                     rResults.close();
