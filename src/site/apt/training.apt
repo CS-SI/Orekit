@@ -20,18 +20,18 @@ Training
   the experts who design, develop, maintain and use Orekit.
 
   The available training programs have been prepared for an audience of
-  people willing to use object oriented technology in their projects and
-  having a space flight dynamics background rather than information
-  technology background. These programs differ from classical object oriented
+  people willing to use object-oriented technology in their projects and
+  who have a space flight dynamics background rather than information
+  technology background. These programs differ from classical object-oriented
   training sessions due to this strong orientation towards numerical computation
-  and its focus on practical problems encountered in this field like reliability,
-  numerical robustness and performances.
+  and its focus on practical problems encountered in this field, such as reliability,
+  numerical robustness and performance.
 
 * Training programs
 
   The complete set is split in three sessions
 
-** Object oriented technology for numerical computing
+** Object-oriented technology for numerical computing
 
    This session is oriented towards trainees who are not computer science
    experts. The following concepts are taught:
@@ -55,7 +55,7 @@ Training
 session 1
 
   At the end of this session, trainees will have a clear understanding of the differences
-  between functional programming, imperative (procedural) programming, and object oriented
+  between functional programming, imperative (procedural) programming, and object-oriented
   programming. They will know about primitive types, user types, dynamic memory allocation,
   data abstraction, classes and inheritance.
 
@@ -87,8 +87,8 @@ session 1
 *--------------------*-----------------------------------------*-----------*
 session 2
 
-  At the end of this session, trainees will know the syntax of the Java language and have a
-  first development experience which is sufficient to read and understand existing Java source
+  At the end of this session, trainees will know the syntax of the Java language and have gained
+  an initial development experience that equips them to read and understand existing Java source
   and to develop small standalone Java applications.
 
 ** Developing numerical applications in the Java language - using Apache commons-math and Orekit
@@ -96,10 +96,10 @@ session 2
   This session is also oriented towards trainees who are not computer science
   experts but rather space flight dynamics engineers and numerical analysts. It adds the
   necessary do's and don'ts that apply to high performance and robust numerical applications
-  development, especially in mathematics and space flight dynamics fields. The following concepts
-  are taught:
+  development, especially in mathematics and space flight dynamics fields. The following topics
+  are covered:
 
-   * Setting up Eclipse integrated development environment
+   * Setting up the Eclipse integrated development environment
 
    * Setting up the free software libraries Apache commons-math and Orekit
 
@@ -121,12 +121,12 @@ session 2
 *--------------------*-------------------------------------------------------------------*-----------*
 session 3
 
-  At the end of this session, trainees have a pragmatic knowledge of the benefits of object
-  oriented paradigm for the development of scientific algorithms. They understand some common
-  pitfalls and know how to avoid them and develop robust and high performance code.. They know
-  the available concepts and algorithms in the Apache commons-math and Orekit libraries. They
-  have a first development experience of space flight dynamics applications in an integrated
-  development environment with these libraries.
+  At the end of this session, trainees will have a pragmatic knowledge of the benefits of
+  object-oriented paradigm for the development of scientific algorithms. They will understand
+  some common pitfalls and know how to avoid them and develop robust and high performance code.
+  They will know the available concepts and algorithms in the Apache commons-math and Orekit
+  libraries. They have their first development experience of space flight dynamics applications
+  in an integrated development environment with these libraries.
 
 * Training sessions organization
 
@@ -149,8 +149,8 @@ session 3
 *--------------------*------------------------------------*----------------------*-----------------------*------------*
 prices for training sessions at CS premises
 
-  The prices above include training fees, an USB stick containing lecture material and exercises,
-  and lunches. They do neither include travel nor hotel fees.
+  The prices above include training fees, a USB stick containing lecture material and exercises,
+  and lunches. They include neither travel nor hotel fees.
 
   For information about scheduled sessions or if you want to set up a session at your premises,
   please use the general orekit email address: {{{mailto:orekit@c-s.fr}orekit@c-s.fr}} or ask

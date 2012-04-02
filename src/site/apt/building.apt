@@ -32,7 +32,7 @@ Building Orekit
   {{http://maven.apache.org/download.html}}, this page also explains the
   installation procedure.
 
-  As all maven enabled projects, building Orekit is straigthforward, simply
+  As with all maven enabled projects, building Orekit is straightforward. Simply
   run:
 
 +-------
@@ -65,8 +65,8 @@ mvn install
 
 * Building with Ant
 
-  {{{http://ant.apache.org/}Ant}} is another well known build tool. It is
-  more ancient than maven and widely used. It does not provide as much
+  {{{http://ant.apache.org/}Ant}} is another well-known build tool. It is
+  older than maven and widely used. It does not provide as many
   features as maven (no site generation for example) but is very extensible.
 
   For systems not providing ant as a package, it can be downloaded from its
@@ -85,7 +85,7 @@ mvn install
 ant
 +-------
 
-  Just as maven does, this command also retrieve the dependencies from
+  Just as with maven, this command also retrieves the dependencies from
   public repositories, compiles the sources and creates a file named
   build/orekit-x.y.jar where x.y is the version number.
 
