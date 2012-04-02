@@ -25,8 +25,11 @@
       <action dev="luc" type="fix">
         Improved testing of error messages.
       </action>
-      <action dev="thomas" type="fix">
+      <action dev="luc" type="fix">
         Removed too stringent test on trajectory in TLE propagator (fixes bug #86).
+      </action>      
+      <action dev="thomas" type="fix">
+      	Set the initial state for a TLEPropagator (fixes bug #85).
       </action>
       <action dev="luc" type="update">
         Improved testing of error messages.
