@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,10 +21,12 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /**
- * This interface represents a force modifying spacecraft motion for a {@link DSSTPropagator}.
+ * This interface represents a force modifying spacecraft motion for a {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
  * <p>
- * Objects implementing this interface are intended to be added to a {@link DSSTPropagator
- * semianalytical DSST propagator} before the propagation is started.
+ * Objects implementing this interface are intended to be added to a {@link
+ * org.orekit.propagation.semianalytical.dsst.DSSTPropagator semianalytical DSST propagator}
+ * before the propagation is started.
  * </p>
  * <p>
  * The propagator will call at each step the {@link #getMeanElementRate(SpacecraftState)} method.

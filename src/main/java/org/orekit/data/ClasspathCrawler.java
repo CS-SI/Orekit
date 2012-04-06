@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -61,9 +61,6 @@ import org.orekit.errors.OrekitMessages;
  * @author Luc Maisonobe
  */
 public class ClasspathCrawler implements DataProvider {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -3939904780908615752L;
 
     /** List elements. */
     private final List<String> listElements;

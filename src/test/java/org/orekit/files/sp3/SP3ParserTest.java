@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 Space Applications Services
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 Space Applications Services
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,10 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.files.general.OrbitFile.TimeSystem;
-import org.orekit.files.sp3.SP3File;
-import org.orekit.files.sp3.SP3Parser;
+import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.files.sp3.SP3File.SP3OrbitType;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;

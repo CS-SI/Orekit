@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -201,6 +201,8 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
         this.mass = mass;
         initializeCommons();
         sxpInitialize();
+        // set the initial state
+        super.resetInitialState(new SpacecraftState(propagateOrbit(initialTLE.getDate())));
     }
 
     /** Selects the extrapolator to use with the selected TLE.
@@ -365,9 +367,6 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
 
         if (e > (1 - 1e-6)) {
             throw new OrekitException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, e);
-        }
-        if ((a * (1.0 - e) < 1.0) || (a * (1.0 + e) < 1.0)) {
-            throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, a * (1.0 - e));
         }
 
         // Solve Kepler's' Equation.

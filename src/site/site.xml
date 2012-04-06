@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright 2002-2011 CS Communication & Systèmes
+  Copyright 2002-2012 CS Systèmes d'Information
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
@@ -15,7 +15,7 @@
  -->
 <project name="Orekit">
   <bannerLeft>
-    <name>CS Communication &amp; Syst&#232;mes</name>
+    <name>CS Syst&#232;mes d&#039;Information</name>
     <src>/images/logo_cs_2008_ang.jpg</src>
     <href>http://uk.c-s.fr/</href>
   </bannerLeft>

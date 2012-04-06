@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,8 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -195,31 +193,19 @@ public class TLETest {
                             Vector3D testVel = new Vector3D(vX, vY, vZ);
 
                             AbsoluteDate date = tle.getDate().shiftedBy(minFromStart * 60);
-                            PVCoordinates results = null;
-                            try {
-                                results = ex.getPVCoordinates(date);
-                            }
-                            catch(OrekitException e)  {
-                                if (satNum==28872  || satNum==23333 || satNum==29141 ) {
-                                    // expected behavior
-                                } else {
-                                    Assert.fail("exception not expected " + e.getMessage());
-                                }
-                            }
-                            if (results != null) {
-                                double normDifPos = testPos.subtract(results.getPosition()).getNorm();
-                                double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+                            PVCoordinates results = ex.getPVCoordinates(date);
+                            double normDifPos = testPos.subtract(results.getPosition()).getNorm();
+                            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
-                                cumulated += normDifPos;
-                                Assert.assertEquals(0, normDifPos, 2e-3);;
-                                Assert.assertEquals(0, normDifVel, 1e-5);
+                            cumulated += normDifPos;
+                            Assert.assertEquals(0, normDifPos, 2e-3);;
+                            Assert.assertEquals(0, normDifVel, 1e-5);
 
-                            }
 
                         }
                     }
                 }
-                Assert.assertEquals(0, cumulated, 0.024);
+                Assert.assertEquals(0, cumulated, 0.026);
             } finally {
                 if (rResults != null) {
                     rResults.close();
