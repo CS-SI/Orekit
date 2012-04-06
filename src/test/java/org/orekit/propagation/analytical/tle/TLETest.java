@@ -218,6 +218,16 @@ public class TLETest {
         }
     }
 
+    @Test
+    public void testZeroInclination() throws OrekitException{
+        TLE tle = new TLE("1 26451U 00043A   10130.13784012 -.00000276  00000-0  10000-3 0  3866",
+                          "2 26451 000.0000 266.1044 0001893 160.7642 152.5985 01.00271160 35865");
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        PVCoordinates pv = propagator.propagate(tle.getDate().shiftedBy(100)).getPVCoordinates();
+        Assert.assertEquals(42171546.979560345, pv.getPosition().getNorm(), 1.0e-3);
+        Assert.assertEquals(3074.1890089357994, pv.getVelocity().getNorm(), 1.0e-6);
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");

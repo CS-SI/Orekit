@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix">
+        Fixed TLE propagation in deep space when inclination is exactly 0 (fixes bug #88).
+      </action>
       <action dev="luc" type="add" due-to="Francesco Rocca">
         Added two different fitters to fit Two-Line Elements against a sample of
         spacecraft states.

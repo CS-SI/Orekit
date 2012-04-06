@@ -314,7 +314,7 @@ class DeepSDP4 extends SDP4 {
                 sse = se;
                 ssi = si;
                 ssl = sl;
-                ssh = sh / sini0;
+                ssh = (tle.getI() < (FastMath.PI / 60.0)) ? 0 : sh / sini0;
                 ssg = sgh - cosi0 * ssh;
                 se2 = ee2;
                 si2 = xi2;
@@ -343,8 +343,8 @@ class DeepSDP4 extends SDP4 {
         sse += se;
         ssi += si;
         ssl += sl;
-        ssg += sgh - cosi0 / sini0 * sh;
-        ssh += sh / sini0;
+        ssg += sgh - ((tle.getI() < (FastMath.PI / 60.0)) ? 0 : (cosi0 / sini0 * sh));
+        ssh += (tle.getI() < (FastMath.PI / 60.0)) ? 0 : sh / sini0;
 
 
 
