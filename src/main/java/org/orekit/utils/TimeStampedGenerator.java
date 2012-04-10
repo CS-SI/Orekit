@@ -18,7 +18,6 @@ package org.orekit.utils;
 
 import java.util.List;
 
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -64,18 +63,14 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
     /** Get the date of the earliest entry that can be generated.
      * @return date of the earliest entry that can be generated (must be a finite
      * date, date at infinity in the past direction is <em>not</em> allowed)
-     * @exception OrekitException if earliest date cannot be estimated
-     * @see #getLatest()
      */
-    AbsoluteDate getEarliest() throws OrekitException;
+    AbsoluteDate getEarliest();
 
     /** Get the date of the latest entry that can be generated.
      * @return date of the latest entry that can be generated (must be a finite
      * date, date at infinity in the future direction is <em>not</em> allowed)
-     * @exception OrekitException if latest date cannot be estimated
-     * @see #getEarliest()
      */
-    AbsoluteDate getLatest() throws OrekitException;
+    AbsoluteDate getLatest();
 
     /** Generate a chronologically sorted list of entries to be cached.
      * <p>
@@ -98,8 +93,7 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
      * @param date date that must be covered by the range of the generated array
      * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
      * @return chronologically sorted list of generated entries 
-     * @exception OrekitException if entry generation fails
      */
-    List<T> generate(T existing, AbsoluteDate date) throws OrekitException;
+    List<T> generate(T existing, AbsoluteDate date);
 
 }
