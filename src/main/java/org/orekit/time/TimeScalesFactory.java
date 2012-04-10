@@ -163,12 +163,7 @@ public class TimeScalesFactory implements Serializable {
                 utc = new UTCScale(entries);
             }
 
-            try {
-                return utc.clone();
-            } catch (CloneNotSupportedException e) {
-                // should not happen, but throw an internal error just in case
-                throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
-            }
+            return utc;
         }
     }
 
