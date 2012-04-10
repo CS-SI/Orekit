@@ -87,24 +87,22 @@ public class TimeStampedCache<T extends TimeStamped> {
     /** Simple constructor.
      * @param maxSlots maximum number of independent cached time slots
      * @param maxSpan maximum duration span in seconds of one slot
+     * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
      * @param entriesClass class of the cached entries
      * @param generator generator to use for yet non-existent data
      * @param neighborsSize fixed size of the arrays to be returned by {@link
      * #getNeighbors(AbsoluteDate)}, must be at least 2
-     * @exception OrekitException if generator cannot provide supported range, or
-     * the number of neighbors is too small, or the number of slots is too small
      */
     public TimeStampedCache(final int maxSlots, final double maxSpan, final Class<T> entriesClass,
-                            final TimeStampedGenerator<T> generator, final int neighborsSize)
-        throws OrekitException {
+                            final TimeStampedGenerator<T> generator, final int neighborsSize) {
 
         // safety check
         if (maxSlots < 1) {
-            throw new OrekitException(LocalizedFormats.NUMBER_TOO_SMALL, maxSlots, 1);
+            throw OrekitException.createIllegalArgumentException(LocalizedFormats.NUMBER_TOO_SMALL, maxSlots, 1);
         }
         if (neighborsSize < 2) {
-            throw new OrekitException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
-                                      neighborsSize, 2);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.NOT_ENOUGH_CACHED_NEIGHBORS,
+                                                                 neighborsSize, 2);
         }
 
         // compute boundaries
@@ -253,12 +251,10 @@ public class TimeStampedCache<T extends TimeStamped> {
      * of the array is fixed to the one specified in the {@link #TimeStampedCache(int,
      * double, Class, TimeStampedGenerator, int) constructor})
      * @return a new array containing date neighbors
-     * @exception OrekitException if the underlying {@link TimeStampedGenerator
-     * generator} triggers one
      * @see #getBefore(AbsoluteDate)
      * @see #getAfter(AbsoluteDate)
      */
-    public T[] getNeighbors(final AbsoluteDate central) throws OrekitException {
+    public T[] getNeighbors(final AbsoluteDate central) {
 
         lock.readLock().lock();
         try {
@@ -288,10 +284,8 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @param date target date
      * @param dateQuantum global quantum of the date
      * @return slot covering the date
-     * @exception OrekitException if the generator triggers one
      */
-    private Slot selectSlot(final AbsoluteDate date, final int dateQuantum)
-        throws OrekitException {
+    private Slot selectSlot(final AbsoluteDate date, final int dateQuantum) {
 
         Slot selected = null;
 
@@ -409,10 +403,9 @@ public class TimeStampedCache<T extends TimeStamped> {
 
         /** Simple constructor.
          * @param date central date for initial entries to insert in the slot
-         * @exception OrekitException if the first entries cannot be generated
          * @exception IllegalStateException if entries are not chronologically sorted
          */
-        public Slot(final AbsoluteDate date) throws OrekitException, IllegalStateException {
+        public Slot(final AbsoluteDate date) throws IllegalStateException {
 
             // allocate cache
             this.cache = new ArrayList<Entry>();
@@ -537,14 +530,12 @@ public class TimeStampedCache<T extends TimeStamped> {
          * @param central central date
          * @param dateQuantum global quantum of the date
          * @return a new array containing date neighbors
-         * @exception OrekitException if the underlying {@link TimeStampedGenerator
-         * generator} triggers one
          * @exception IllegalStateException if entries are not chronologically sorted
          * @see #getBefore(AbsoluteDate)
          * @see #getAfter(AbsoluteDate)
          */
         public T[] getNeighbors(final AbsoluteDate central, final int dateQuantum)
-            throws OrekitException, IllegalStateException {
+            throws IllegalStateException {
 
             int index         = entryIndex(central, dateQuantum);
             int firstNeighbor = index - (neighborsSize - 1) / 2;
@@ -611,6 +602,11 @@ public class TimeStampedCache<T extends TimeStamped> {
 
             @SuppressWarnings("unchecked")
             final T[] array = (T[]) Array.newInstance(entriesClass, neighborsSize);
+            if (firstNeighbor + neighborsSize > cache.size()) {
+                // we end up with a non-balanced neighborhood,
+                // adjust the start point to fit within the cache
+                firstNeighbor = cache.size() - neighborsSize;
+            }
             for (int i = 0; i < neighborsSize; ++i) {
                 array[i] = cache.get(firstNeighbor + i).getData();
             }
@@ -632,22 +628,24 @@ public class TimeStampedCache<T extends TimeStamped> {
 
             // first quick guesses, assuming a recent search was close enough
             final int guess = guessedIndex.get();
-            if (cache.get(guess).getQuantum() <= dateQuantum) {
-                if (guess + 1 < cache.size() && cache.get(guess + 1).getQuantum() > dateQuantum) {
-                    // good guess!
-                    return guess;
-                } else {
-                    // perhaps we have simply shifted just one point forward ?
-                    if (guess + 2 < cache.size() && cache.get(guess + 2).getQuantum() > dateQuantum) {
-                        guessedIndex.set(guess + 1);
-                        return guess + 1;
+            if (guess > 0 && guess < cache.size()) {
+                if (cache.get(guess).getQuantum() <= dateQuantum) {
+                    if (guess + 1 < cache.size() && cache.get(guess + 1).getQuantum() > dateQuantum) {
+                        // good guess!
+                        return guess;
+                    } else {
+                        // perhaps we have simply shifted just one point forward ?
+                        if (guess + 2 < cache.size() && cache.get(guess + 2).getQuantum() > dateQuantum) {
+                            guessedIndex.set(guess + 1);
+                            return guess + 1;
+                        }
                     }
-                }
-            } else {
-                // perhaps we have simply shifted just one point backward ? 
-                if (guess > 1 && cache.get(guess - 1).getQuantum() <= dateQuantum) {
-                    guessedIndex.set(guess - 1);
-                    return guess - 1;
+                } else {
+                    // perhaps we have simply shifted just one point backward ? 
+                    if (guess > 1 && cache.get(guess - 1).getQuantum() <= dateQuantum) {
+                        guessedIndex.set(guess - 1);
+                        return guess - 1;
+                    }
                 }
             }
 
@@ -705,7 +703,8 @@ public class TimeStampedCache<T extends TimeStamped> {
 
             // evict excess data at end
             final AbsoluteDate t0 = cache.get(0).getData().getDate();
-            while (cache.get(cache.size() - 1).getData().getDate().durationFrom(t0) > maxSpan) {
+            while (cache.size() > neighborsSize &&
+                   cache.get(cache.size() - 1).getData().getDate().durationFrom(t0) > maxSpan) {
                 cache.remove(cache.size() - 1);
             }
 
@@ -734,7 +733,8 @@ public class TimeStampedCache<T extends TimeStamped> {
 
             // evict excess data at start
             final AbsoluteDate tn = cache.get(cache.size() - 1).getData().getDate();
-            while (tn.durationFrom(cache.get(0).getData().getDate()) > maxSpan) {
+            while (cache.size() > neighborsSize &&
+                   tn.durationFrom(cache.get(0).getData().getDate()) > maxSpan) {
                 cache.remove(0);
             }
 
@@ -749,11 +749,10 @@ public class TimeStampedCache<T extends TimeStamped> {
          * @param date date that must be covered by the range of the generated array
          * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
          * @return chronologically sorted list of generated entries 
-         * @exception OrekitException if entry generation fails
          * @exception IllegalStateException if entries are not chronologically sorted
          */
         private List<T> generateAndCheck(T existing, AbsoluteDate date)
-            throws OrekitException, IllegalStateException {
+            throws IllegalStateException {
             final List<T> entries = generator.generate(existing, date);
             for (int i = 1; i < entries.size(); ++i) {
                 if (entries.get(i).getDate().compareTo(entries.get(i - 1).getDate()) < 0) {
