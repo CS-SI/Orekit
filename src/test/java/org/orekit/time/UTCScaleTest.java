@@ -18,6 +18,14 @@ package org.orekit.time;
 
 
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well1024a;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -160,6 +168,43 @@ public class UTCScaleTest {
         Assert.assertEquals(2, new AbsoluteDate("2009-01-01T00:00:01", utc).durationFrom(ad0), 1.0e-15);
     }
 
+    @Test
+    public void testMultithreading() {
+
+        // generate reference offsets using a single thread
+        RandomGenerator random = new Well1024a(6392073424l);
+        List<AbsoluteDate> datesList = new ArrayList<AbsoluteDate>();
+        List<Double> offsetsList = new ArrayList<Double>();
+        AbsoluteDate reference = utc.getFirstKnownLeapSecond().shiftedBy(-Constants.JULIAN_YEAR);
+        double testRange = utc.getLastKnownLeapSecond().durationFrom(reference) + Constants.JULIAN_YEAR;
+        for (int i = 0; i < 10000; ++i) {
+            AbsoluteDate randomDate = reference.shiftedBy(random.nextDouble() * testRange);
+            datesList.add(randomDate);
+            offsetsList.add(utc.offsetFromTAI(randomDate));
+        }
+
+        // check the offsets in multi-threaded mode
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+
+        for (int i = 0; i < datesList.size(); ++i) {
+            final AbsoluteDate date = datesList.get(i);
+            final double offset = offsetsList.get(i);
+            executorService.execute(new Runnable() {
+                public void run() {
+                    Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12);
+                }
+            });
+        }
+
+        try {
+            executorService.shutdown();
+            executorService.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException ie) {
+            Assert.fail(ie.getLocalizedMessage());
+        }
+
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
@@ -171,6 +216,6 @@ public class UTCScaleTest {
         utc = null;
     }
 
-    private TimeScale utc;
+    private UTCScale utc;
 
 }
