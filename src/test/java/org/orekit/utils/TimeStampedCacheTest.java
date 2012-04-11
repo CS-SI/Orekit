@@ -336,7 +336,8 @@ public class TimeStampedCacheTest {
         }
 
         try {
-            executorService.awaitTermination(100, TimeUnit.MILLISECONDS);
+            executorService.shutdown();
+            executorService.awaitTermination(3, TimeUnit.SECONDS);
         } catch (InterruptedException ie) {
             Assert.fail(ie.getLocalizedMessage());
         }
