@@ -169,6 +169,20 @@ public class UTCScaleTest {
     }
 
     @Test
+    public void testDisplayDuringLeap() throws OrekitException {
+        AbsoluteDate t0 = utc.getLastKnownLeapSecond().shiftedBy(-1.0);
+        for (double dt = 0.0; dt < 3.0; dt += 0.375) {
+            AbsoluteDate t = t0.shiftedBy(dt);
+            double seconds = t.getComponents(utc).getTime().getSecond();
+            if (dt < 2.0) {
+                Assert.assertEquals(dt + 59.0, seconds, 1.0e-12);
+            } else {
+                Assert.assertEquals(dt - 2.0, seconds, 1.0e-12);
+            }
+        }
+    }
+
+    @Test
     public void testMultithreading() {
 
         // generate reference offsets using a single thread
@@ -203,6 +217,13 @@ public class UTCScaleTest {
             Assert.fail(ie.getLocalizedMessage());
         }
 
+    }
+
+    @Test
+    public void testIssue89() throws OrekitException {
+        AbsoluteDate firstDayLastLeap = utc.getLastKnownLeapSecond().shiftedBy(10.0);
+        AbsoluteDate rebuilt = new AbsoluteDate(firstDayLastLeap.toString(utc), utc);
+        Assert.assertEquals(0.0, rebuilt.durationFrom(firstDayLastLeap), 1.0e-12);
     }
 
     @Before

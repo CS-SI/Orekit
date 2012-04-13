@@ -89,9 +89,6 @@ public class UTCScale implements TimeScale {
 
             offsets = new ArrayList<UTCTAIOffset>();
 
-            // set up a first entry covering the far past before first offset
-            offsets.add(new UTCTAIOffset(AbsoluteDate.PAST_INFINITY, Integer.MIN_VALUE, 0, 0));
-
             // set up the linear offsets used between 1961-01-01 and 1971-12-31
             // excerpt from UTC-TAI.history file:
             //  1961  Jan.  1 - 1961  Aug.  1     1.422 818 0s + (MJD - 37 300) x 0.001 296s
@@ -128,16 +125,17 @@ public class UTCScale implements TimeScale {
 
         }
 
+        /** {@inheritDoc} */
         public AbsoluteDate getEarliest() {
-            // set earliest date 6 months before first finite entry
-            return offsets.get(1).getDate().shiftedBy(-0.5 * Constants.JULIAN_YEAR);
+            return offsets.get(0).getDate();
         }
 
+        /** {@inheritDoc} */
         public AbsoluteDate getLatest() {
-            // set latest date 6 months after last entry
-            return offsets.get(offsets.size() - 1).getDate().shiftedBy(0.5 * Constants.JULIAN_YEAR);
+            return offsets.get(offsets.size() - 1).getDate();
         }
 
+        /** {@inheritDoc} */
         public List<UTCTAIOffset> generate(final UTCTAIOffset existing, final AbsoluteDate date) {
             // everything has been generated at construction
             return offsets;
@@ -152,14 +150,14 @@ public class UTCScale implements TimeScale {
          * @param offset offset at reference date in seconds (TAI minus UTC)
          * @param slope offset slope in seconds per UTC day (TAI minus UTC / dUTC)
          */
-        private synchronized void addOffsetModel(final DateComponents date, final int mjdRef,
-                                                 final double offset, final double slope) {
+        private void addOffsetModel(final DateComponents date, final int mjdRef,
+                                    final double offset, final double slope) {
 
             final TimeScale tai = TimeScalesFactory.getTAI();
 
             // start of the leap
-            final UTCTAIOffset previous    = offsets.get(offsets.size() - 1);
-            final double previousOffset    = previous.getOffset(date, TimeComponents.H00);
+            final UTCTAIOffset previous    = offsets.isEmpty() ? null : offsets.get(offsets.size() - 1);
+            final double previousOffset    = (previous == null) ? 0.0 : previous.getOffset(date, TimeComponents.H00);
             final AbsoluteDate leapStart   = new AbsoluteDate(date, tai).shiftedBy(previousOffset);
 
             // end of the leap
@@ -170,7 +168,9 @@ public class UTCScale implements TimeScale {
             final double normalizedSlope   = slope / Constants.JULIAN_DAY;
             final double leap              = leapEnd.durationFrom(leapStart) / (1 + normalizedSlope);
 
-            previous.setValidityEnd(leapStart);
+            if (previous != null) {
+                previous.setValidityEnd(leapStart);
+            }
             offsets.add(new UTCTAIOffset(leapStart, date.getMJD(), leap, offset, mjdRef, normalizedSlope));
 
         }
@@ -180,7 +180,16 @@ public class UTCScale implements TimeScale {
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
         final UTCTAIOffset[] neighbors = cache.getNeighbors(date);
-        return -neighbors[0].getOffset(date);
+        if (neighbors[0].getDate().compareTo(date) > 0) {
+            // the date is before the first neighbor, hence it is before the first known leap
+            return 0;
+        } else if (neighbors[1].getDate().compareTo(date) < 0) {
+            // the date is after the second neighbor, hence it is after the last known leap
+            return -neighbors[1].getOffset(date);
+        } else {
+            // the date is nominally bracketed by the neighbors
+            return -neighbors[0].getOffset(date);
+        }
     }
 
     /** {@inheritDoc} */
@@ -191,7 +200,7 @@ public class UTCScale implements TimeScale {
         final UTCTAIOffset[] neighbors =
                 cache.getNeighbors(new AbsoluteDate(date, time, TimeScalesFactory.getTAI()));
 
-        if (neighbors[1].getMJD() == date.getMJD()) {
+        if (neighbors[1].getMJD() <= date.getMJD()) {
             // the date is in fact just after a leap second!
             return neighbors[1].getOffset(date, time);
         } else {
@@ -213,7 +222,7 @@ public class UTCScale implements TimeScale {
      * @return date of the first known leap second
      */
     public AbsoluteDate getFirstKnownLeapSecond() {
-        return cache.getEarliest().getValidityEnd();
+        return cache.getEarliest().getDate();
     }
 
     /** Get the date of the last known leap second.
@@ -228,7 +237,17 @@ public class UTCScale implements TimeScale {
      * @return true if time is within a leap second introduction
      */
     public boolean insideLeap(final AbsoluteDate date) {
-        return date.compareTo(cache.getNeighbors(date)[0].getValidityStart()) < 0;
+        final UTCTAIOffset[] neighbors = cache.getNeighbors(date);
+        if (neighbors[0].getDate().compareTo(date) > 0) {
+            // the date is before the first neighbor, hence it is before the first known leap
+            return false;
+        } else if (neighbors[1].getDate().compareTo(date) < 0) {
+            // the date is after the second neighbor, hence it is after the last known leap
+            return date.compareTo(cache.getNeighbors(date)[1].getValidityStart()) < 0;
+        } else {
+            // the date is nominally bracketed by the neighbors
+            return date.compareTo(cache.getNeighbors(date)[0].getValidityStart()) < 0;
+        }
     }
 
     /** Get the value of the previous leap.
