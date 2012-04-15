@@ -788,11 +788,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         boolean bigEndian = true;
 
         // first try to read the DE number in big-endian format
-        final int deNum = extractInt(record, 2840, true);
+        // the number is stored as unsigned int, so we have to convert it properly
+        final long deNum = extractInt(record, 2840, true) & 0xffffffffL;
 
         // simple heuristic: if the read value is larger than half the range of an integer
         //                   assume the file is in little-endian format
-        if ((deNum & 0xffffffffL) > (1 << 15)) {
+        if (deNum > (1 << 15)) {
             bigEndian = false;
         }
 
