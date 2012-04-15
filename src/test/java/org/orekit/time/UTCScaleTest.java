@@ -18,6 +18,7 @@ package org.orekit.time;
 
 
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeStampedCache;
 
 public class UTCScaleTest {
 
@@ -196,7 +198,7 @@ public class UTCScaleTest {
             datesList.add(randomDate);
             offsetsList.add(utc.offsetFromTAI(randomDate));
         }
-
+        
         // check the offsets in multi-threaded mode
         ExecutorService executorService = Executors.newFixedThreadPool(100);
 
@@ -226,6 +228,30 @@ public class UTCScaleTest {
         Assert.assertEquals(0.0, rebuilt.durationFrom(firstDayLastLeap), 1.0e-12);
     }
 
+    @Test
+    public void testInternalCache() throws Exception {
+
+        // request UTC-TAI offsets for random dates
+        RandomGenerator random = new Well1024a(6392073424l);
+        AbsoluteDate reference = utc.getFirstKnownLeapSecond().shiftedBy(-Constants.JULIAN_YEAR);
+        double testRange = utc.getLastKnownLeapSecond().durationFrom(reference) + Constants.JULIAN_YEAR;
+        for (int i = 0; i < 10000; ++i) {
+            AbsoluteDate randomDate = reference.shiftedBy(random.nextDouble() * testRange);
+            utc.offsetFromTAI(randomDate);
+        }
+        
+        // get the internal cache through reflection as it is of scope "private"
+        Field field = utc.getClass().getDeclaredField("cache");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        TimeStampedCache<UTCTAIOffset> cache = (TimeStampedCache<UTCTAIOffset>) field.get(utc);
+        
+        // the UTCScale should not have any evictions and only 1 slot with 1 generate call
+        Assert.assertEquals(1, cache.getGenerateCalls());
+        Assert.assertEquals(0, cache.getSlotsEvictions());        
+        Assert.assertEquals(1, cache.getSlots());
+    }
+    
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");

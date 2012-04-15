@@ -250,10 +250,18 @@ public class TimeStampedCache<T extends TimeStamped> {
      * of the array is fixed to the one specified in the {@link #TimeStampedCache(int,
      * double, Class, TimeStampedGenerator, int) constructor})
      * @return a new array containing date neighbors
+     * @exception IllegalArgumentException if the requested date is outside the supported range
      * @see #getBefore(AbsoluteDate)
      * @see #getAfter(AbsoluteDate)
+     * @see #getEarliest()
+     * @see #getLatest()
      */
     public T[] getNeighbors(final AbsoluteDate central) {
+
+        if (central.compareTo(earliest) < 0 || central.compareTo(latest) > 0) {
+            OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_CACHE,
+                                                           central, earliest, latest);
+        }
 
         lock.readLock().lock();
         try {
@@ -538,6 +546,20 @@ public class TimeStampedCache<T extends TimeStamped> {
 
             int index         = entryIndex(central, dateQuantum);
             int firstNeighbor = index - (neighborsSize - 1) / 2;
+            
+            // if the request for neighbors is outside the supported generator limits,
+            // adjust the firstNeighbor index to match the current available cache entries
+            // without requesting more data from the generator
+            // as the slot will always contain entries after initialization, there is no
+            // need to do a null check for the data returned from getLatest() or getEarliest()
+            if (firstNeighbor + neighborsSize > cache.size() &&
+                getLatest().getDate().compareTo(generator.getLatest()) >= 0) {
+                firstNeighbor = cache.size() - neighborsSize;
+            } else if (firstNeighbor < 0 &&
+                       getEarliest().getDate().compareTo(generator.getEarliest()) <= 0) {
+                firstNeighbor = 0;
+            }
+
             if (firstNeighbor < 0 || firstNeighbor + neighborsSize > cache.size()) {
                 // the cache is not balanced around the desired date, we can try to generate new data
 

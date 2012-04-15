@@ -150,7 +150,8 @@ public enum OrekitMessages implements Localizable {
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
     NO_CACHED_ENTRIES("no cached entries"),
-    NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}");
+    NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),
+    OUT_OF_RANGE_CACHE("out of range date for cache entry: {0}, [{1}, {2}]");
 
     // CHECKSTYLE: resume JavadocVariable check
 

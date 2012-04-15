@@ -176,10 +176,10 @@ public class UTCScale implements TimeScale {
         }
 
     }
-
+    
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        final UTCTAIOffset[] neighbors = cache.getNeighbors(date);
+        final UTCTAIOffset[] neighbors = getNeighbors(date);
         if (neighbors[0].getDate().compareTo(date) > 0) {
             // the date is before the first neighbor, hence it is before the first known leap
             return 0;
@@ -198,7 +198,7 @@ public class UTCScale implements TimeScale {
 
         // find close neighbors, assuming date in TAI, i.e a date earlier than real UTC date
         final UTCTAIOffset[] neighbors =
-                cache.getNeighbors(new AbsoluteDate(date, time, TimeScalesFactory.getTAI()));
+                getNeighbors(new AbsoluteDate(date, time, TimeScalesFactory.getTAI()));
 
         if (neighbors[1].getMJD() <= date.getMJD()) {
             // the date is in fact just after a leap second!
@@ -237,16 +237,16 @@ public class UTCScale implements TimeScale {
      * @return true if time is within a leap second introduction
      */
     public boolean insideLeap(final AbsoluteDate date) {
-        final UTCTAIOffset[] neighbors = cache.getNeighbors(date);
+        final UTCTAIOffset[] neighbors = getNeighbors(date);
         if (neighbors[0].getDate().compareTo(date) > 0) {
             // the date is before the first neighbor, hence it is before the first known leap
             return false;
         } else if (neighbors[1].getDate().compareTo(date) < 0) {
             // the date is after the second neighbor, hence it is after the last known leap
-            return date.compareTo(cache.getNeighbors(date)[1].getValidityStart()) < 0;
+            return date.compareTo(getNeighbors(date)[1].getValidityStart()) < 0;
         } else {
             // the date is nominally bracketed by the neighbors
-            return date.compareTo(cache.getNeighbors(date)[0].getValidityStart()) < 0;
+            return date.compareTo(getNeighbors(date)[0].getValidityStart()) < 0;
         }
     }
 
@@ -255,7 +255,28 @@ public class UTCScale implements TimeScale {
      * @return value of the previous leap
      */
     public double getLeap(final AbsoluteDate date) {
-        return cache.getNeighbors(date)[0].getLeap();
+        return getNeighbors(date)[0].getLeap();
+    }
+
+    /** Gets the entries from the cache surrounding the given {@code date}.
+     * The input {@code date} is bound to the limits of the {@link Generator} providing
+     * the {@link UTCTAIOffset} entries.
+     *
+     * @param date the date for which to retrieve {@link UTCTAIOffset} entries
+     * @return the {@link UTCTAIOffset} neighbor entries for the given {@code date}
+     */
+    private UTCTAIOffset[] getNeighbors(final AbsoluteDate date) {
+        AbsoluteDate boundedDate;
+        final AbsoluteDate latest = cache.getLatest().getDate();
+        final AbsoluteDate earliest = cache.getEarliest().getDate();
+        if (date.compareTo(earliest) < 0) {
+            boundedDate = earliest;
+        } else if (date.compareTo(latest) > 0) {
+            boundedDate = latest;
+        } else {
+            boundedDate = date;
+        }
+        return cache.getNeighbors(boundedDate);
     }
 
 }
