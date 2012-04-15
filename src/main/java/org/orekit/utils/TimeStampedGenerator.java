@@ -27,7 +27,7 @@ import org.orekit.time.TimeStamped;
  * guaranteed to be called in a thread-safe way, even if the cache is used in a multi-threaded
  * environment. The cache takes care of scheduling the calls to all the methods defined in
  * this interface so only one thread uses them at any time. There is no need for the
- * implementing classes to handle synchronization or locks by themselves. 
+ * implementing classes to handle synchronization or locks by themselves.
  * </p>
  * <p>
  * The generator is provided by the user of the {@link TimeStampedCache cache} and should
@@ -92,7 +92,7 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
      * @param existing closest already existing entry (may be null)
      * @param date date that must be covered by the range of the generated array
      * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
-     * @return chronologically sorted list of generated entries 
+     * @return chronologically sorted list of generated entries
      */
     List<T> generate(T existing, AbsoluteDate date);
 

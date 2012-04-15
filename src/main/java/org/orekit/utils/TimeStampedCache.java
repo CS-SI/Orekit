@@ -43,7 +43,7 @@ public class TimeStampedCache<T extends TimeStamped> {
     public static final int DEFAULT_CACHED_SLOTS_NUMBER = 10;
 
     /** Threshold factor for creating new slot or extending existing ones. */
-    private static final int NEW_RANGE_FACTOR = 10;
+    private static final long NEW_RANGE_FACTOR = 10;
 
     /** Quantum step. */
     private static final double QUANTUM_STEP = 1.0e-6;
@@ -162,7 +162,7 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @return number of slots in use
      */
     public int getSlots() {
-        
+
         lock.readLock().lock();
         try {
             return slots.size();
@@ -176,7 +176,7 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @return total number of entries cached
      */
     public int getEntries() {
-        
+
         lock.readLock().lock();
         try {
             int entries = 0;
@@ -196,7 +196,7 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @see #getSlots()
      */
     public T getEarliest() throws IllegalStateException {
-        
+
         lock.readLock().lock();
         try {
             if (slots.isEmpty()) {
@@ -215,7 +215,7 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @see #getSlots()
      */
     public T getLatest() throws IllegalStateException {
-        
+
         lock.readLock().lock();
         try {
             if (slots.isEmpty()) {
@@ -249,7 +249,6 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @return array of cached entries surrounding specified date (the size
      * of the array is fixed to the one specified in the {@link #TimeStampedCache(int,
      * double, Class, TimeStampedGenerator, int) constructor})
-     * @return a new array containing date neighbors
      * @exception IllegalArgumentException if the requested date is outside the supported range
      * @see #getBefore(AbsoluteDate)
      * @see #getAfter(AbsoluteDate)
@@ -316,7 +315,7 @@ public class TimeStampedCache<T extends TimeStamped> {
 
                     // we really need to create a new slot in the current thread
                     // (no other threads have created it while we were waiting for the lock)
-                    if ((! slots.isEmpty()) &&
+                    if ((!slots.isEmpty()) &&
                         slots.get(index).getLatestQuantum() < dateQuantum - NEW_RANGE_FACTOR * neighborsSize) {
                         ++index;
                     }
@@ -365,14 +364,14 @@ public class TimeStampedCache<T extends TimeStamped> {
      * We own a global read lock while calling this method.
      * </p>
      * @param dateQuantum quantum of the date to search for
-     * @param index of the slot in which the date could be cached
+     * @return the slot in which the date could be cached
      */
     private int slotIndex(final long dateQuantum) {
 
         int  iInf = 0;
-        long qInf = slots.get(iInf).getEarliestQuantum();
+        final long qInf = slots.get(iInf).getEarliestQuantum();
         int  iSup = slots.size() - 1;
-        long qSup = slots.get(iSup).getLatestQuantum();
+        final long qSup = slots.get(iSup).getLatestQuantum();
         while (iSup - iInf > 0) {
             final int iInterp = (int) ((iInf * (qSup - dateQuantum) + iSup * (dateQuantum - qInf)) / (qSup - qInf));
             final int iMed    = FastMath.max(iInf, FastMath.min(iInterp, iSup));
@@ -546,7 +545,7 @@ public class TimeStampedCache<T extends TimeStamped> {
 
             int index         = entryIndex(central, dateQuantum);
             int firstNeighbor = index - (neighborsSize - 1) / 2;
-            
+
             // if the request for neighbors is outside the supported generator limits,
             // adjust the firstNeighbor index to match the current available cache entries
             // without requesting more data from the generator
@@ -665,7 +664,7 @@ public class TimeStampedCache<T extends TimeStamped> {
                         }
                     }
                 } else {
-                    // perhaps we have simply shifted just one point backward ? 
+                    // perhaps we have simply shifted just one point backward ?
                     if (guess > 1 && cache.get(guess - 1).getQuantum() <= dateQuantum) {
                         guessedIndex.set(guess - 1);
                         return guess - 1;
@@ -684,9 +683,9 @@ public class TimeStampedCache<T extends TimeStamped> {
 
                 // try to get an existing entry
                 int  iInf = 0;
-                long qInf = cache.get(iInf).getQuantum();
+                final long qInf = cache.get(iInf).getQuantum();
                 int  iSup = cache.size() - 1;
-                long qSup = cache.get(iSup).getQuantum();
+                final long qSup = cache.get(iSup).getQuantum();
                 while (iSup - iInf > 0) {
                     // within a continuous slot, entries are expected to be roughly linear
                     final int iInterp = (int) ((iInf * (qSup - dateQuantum) + iSup * (dateQuantum - qInf)) / (qSup - qInf));
@@ -706,7 +705,7 @@ public class TimeStampedCache<T extends TimeStamped> {
                 return iInf;
 
             }
-            
+
         }
 
         /** Insert data at slot start.
@@ -772,10 +771,10 @@ public class TimeStampedCache<T extends TimeStamped> {
          * @param existing closest already existing entry (may be null)
          * @param date date that must be covered by the range of the generated array
          * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
-         * @return chronologically sorted list of generated entries 
+         * @return chronologically sorted list of generated entries
          * @exception IllegalStateException if entries are not chronologically sorted
          */
-        private List<T> generateAndCheck(T existing, AbsoluteDate date)
+        private List<T> generateAndCheck(final T existing, final AbsoluteDate date)
             throws IllegalStateException {
             final List<T> entries = generator.generate(existing, date);
             for (int i = 1; i < entries.size(); ++i) {

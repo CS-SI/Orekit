@@ -39,7 +39,7 @@ public class OrekitConfiguration {
     }
 
     /** Set the default maximum number of slots to use in caches.
-     * @param default maximum number of slots to use in caches
+     * @param defaultMaxSlotsNumber maximum number of slots to use in caches
      */
     public static void setDefaultMaxSlotsNumber(final int defaultMaxSlotsNumber) {
         OrekitConfiguration.DEFAULT_MAX_SLOTS_NUMBER = defaultMaxSlotsNumber;

@@ -80,6 +80,7 @@ public class UTCScale implements TimeScale {
     /** Generator for leap seconds entries. */
     private static class Generator implements TimeStampedGenerator<UTCTAIOffset> {
 
+        /** List of {@link UTCTAIOffset} entries. */
         private final List<UTCTAIOffset> offsets;
 
         /** Simple constructor.
@@ -176,7 +177,7 @@ public class UTCScale implements TimeScale {
         }
 
     }
-    
+
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
         final UTCTAIOffset[] neighbors = getNeighbors(date);
