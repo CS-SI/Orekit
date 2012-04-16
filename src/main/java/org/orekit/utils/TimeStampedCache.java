@@ -250,8 +250,6 @@ public class TimeStampedCache<T extends TimeStamped> {
      * of the array is fixed to the one specified in the {@link #TimeStampedCache(int,
      * double, Class, TimeStampedGenerator, int) constructor})
      * @exception IllegalArgumentException if the requested date is outside the supported range
-     * @see #getBefore(AbsoluteDate)
-     * @see #getAfter(AbsoluteDate)
      * @see #getEarliest()
      * @see #getLatest()
      */
