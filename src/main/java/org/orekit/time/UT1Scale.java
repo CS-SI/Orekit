@@ -29,9 +29,6 @@ import org.orekit.frames.EOPHistory;
  */
 public class UT1Scale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6263529270396325640L;
-
     /** UTC scale. */
     private final UTCScale utc;
 

@@ -27,9 +27,6 @@ package org.orekit.time;
  */
 public class TTScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 1639825861717557918L;
-
     /** Package private constructor for the factory.
      */
     TTScale() {

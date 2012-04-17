@@ -51,9 +51,6 @@ import org.orekit.utils.TimeStampedGenerator;
  */
 public class UTCScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 1096634108833538374L;
-
     /** Time steps. */
     private TimeStampedCache<UTCTAIOffset> cache;
 

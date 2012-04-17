@@ -33,9 +33,6 @@ import org.orekit.utils.Constants;
  */
 public class TDBScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -4138483908215161856L;
-
     /** Package private constructor for the factory.
      */
     TDBScale() {

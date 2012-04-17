@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
-
 /** Interface for time scales.
  * <p>This is the interface representing all time scales. Time scales are related
  * to each other by some offsets that may be discontinuous (for example
@@ -26,7 +24,7 @@ import java.io.Serializable;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public interface TimeScale extends Serializable {
+public interface TimeScale {
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
      * @param date conversion date

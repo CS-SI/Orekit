@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update">
+        Time scales are not serializable anymore (this induced problems for the UTC scale
+        and its caching feature).
+      </action>
       <action dev="luc" type="fix">
         Fixed TLE propagation in deep space when inclination is exactly 0 (fixes bug #88).
       </action>

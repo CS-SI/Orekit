@@ -32,9 +32,6 @@ package org.orekit.time;
  */
 public class GalileoScale implements TimeScale {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -4616255323363980510L;
-
     /** Package private constructor for the factory.
      */
     GalileoScale() {
