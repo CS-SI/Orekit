@@ -29,8 +29,12 @@ package org.orekit.time;
  *     sortedOrbits.add(orbit2);
  *     ...
  * </pre>
+ * <p>This interface is also the base interface used to {@link
+ * org.orekit.utils.TimeStampedCache cache} series of time-dependent
+ * objects for interpolation in a thread-safe manner.</p>
  * @see AbsoluteDate
  * @see ChronologicalComparator
+ * @see org.orekit.utils.TimeStampedCache
  * @author Luc Maisonobe
  */
 public interface TimeStamped {
