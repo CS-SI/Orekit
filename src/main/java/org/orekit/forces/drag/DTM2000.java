@@ -34,7 +34,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -850,11 +849,8 @@ public class DTM2000 implements Atmosphere {
         // check if data are available :
         if ((date.compareTo(inputParams.getMaxDate()) > 0) ||
             (date.compareTo(inputParams.getMinDate()) < 0)) {
-            final TimeScale utcScale = TimeScalesFactory.getUTC();
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
-                                      date.toString(utcScale),
-                                      inputParams.getMinDate().toString(utcScale),
-                                      inputParams.getMaxDate().toString(utcScale));
+                                      date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
 
         // compute day number in current year
