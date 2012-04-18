@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 
 
@@ -44,7 +45,7 @@ import org.orekit.time.TimeStamped;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class Attitude implements TimeStamped, Serializable {
+public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -947817502698754209L;
@@ -98,10 +99,6 @@ public class Attitude implements TimeStamped, Serializable {
      * </p>
      * @param dt time shift in seconds
      * @return a new attitude, shifted with respect to the instance (which is immutable)
-     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public Attitude shiftedBy(final double dt) {
         final double rate = spin.getNorm();

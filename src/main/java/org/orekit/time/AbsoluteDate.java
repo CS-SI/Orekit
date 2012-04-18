@@ -91,7 +91,8 @@ import org.orekit.utils.Constants;
  * @see TimeStamped
  * @see ChronologicalComparator
  */
-public class AbsoluteDate implements TimeStamped, Comparable<AbsoluteDate>, Serializable {
+public class AbsoluteDate
+    implements TimeStamped, TimeShiftable<AbsoluteDate>, Comparable<AbsoluteDate>, Serializable {
 
     /** Reference epoch for julian dates: -4712-01-01T12:00:00 Terrestrial Time.
      * <p>Both <code>java.util.Date</code> and {@link DateComponents} classes

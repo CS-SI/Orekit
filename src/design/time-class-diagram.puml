@@ -28,7 +28,11 @@
   package org.orekit.time #ECEBD8
 
     interface TimeStamped {
-      +AbsoluteDate getDate
+      +AbsoluteDate getDate()
+    }
+
+    interface "TimeShiftable<T>" as TimeShiftable_T_ {
+      +T shiftedBy(double dt)
     }
 
     class AbsoluteDate {
@@ -101,6 +105,7 @@
     class GMSTScale
 
     TimeStamped               <|.left. AbsoluteDate
+    TimeShiftable_T_          <|.left. AbsoluteDate
     TimeScalesFactory         *-down-> TimeScale : creates
     Comparable_AbsoluteDate_  <|..     AbsoluteDate
     Comparator_TimeStamped_   <-up-    ChronologicalComparator

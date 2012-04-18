@@ -23,6 +23,11 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="update">
+        The existing general mechanism for shifting objects in time has been
+        formalized as a parameterized interface implemented by AbsoluteDate, Attitude,
+        Orbit, PVCoordinates and SpacecraftState.
+      </action>
+      <action dev="luc" type="update">
         Time scales are not serializable anymore (this induced problems for the UTC scale
         and its caching feature).
       </action>

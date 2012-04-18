@@ -211,6 +211,20 @@ public class Ephemeris {
 }
 +---------------------
 
+* Time shift
+
+  Lots of space flight dynamics objects are date related (dates themselves, of course,
+  but also attitudes, orbits, position-velocity coordinates or spacecraft states). In some
+  cases, it is useful to be able to slightly shift these objects by very small time offsets,
+  for example when computing finite differences. In these cases, it would be cumbersome
+  to be forced to set up complete propagation models. The time package provide a simple
+  parameterized interface: <<TimeShiftable>> which defines a single <<shiftedBy>> method
+  that should be implemented by classes allowing such small shifts. The method returns
+  a new instance shifted in time without changing the original object.
+
+  This feature should not be used for large shifts where complex propagation models are
+  needed.
+
 * Package organization
  
 [../images/design/time-class-diagram.png]
