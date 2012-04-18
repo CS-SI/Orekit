@@ -24,6 +24,12 @@
 
   package org.orekit #ECEBD8
 
+    package time #DDEBD8
+      interface "TimeShiftable<T>" as TimeShiftable_T_ {
+        +T shiftedBy(double dt)
+      }
+    end package
+
     package utils #DDEBD8
 
       class PVCoordinates {
@@ -40,6 +46,7 @@
       }
 
       PVCoordinatesProvider -up-> PVCoordinates
+      TimeShiftable_T_      <|..  PVCoordinates
 
       class SecularAndHarmonic {
         +void addPoint()
