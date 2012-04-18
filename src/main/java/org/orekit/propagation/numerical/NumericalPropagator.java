@@ -33,7 +33,6 @@ import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -225,7 +224,7 @@ public class NumericalPropagator implements Propagator {
         referenceDate       = null;
         currentState        = null;
         addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
-        attitudeProvider    = InertialProvider.EME2000_ALIGNED;
+        attitudeProvider    = DEFAULT_LAW;
         stateVector         = new double[7];
         setMu(Double.NaN);
         setIntegrator(integrator);
