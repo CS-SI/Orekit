@@ -280,9 +280,11 @@ Configuration
 |         finals.*.xml[.gz]       | IERS standard and |         Earth Orientation Parameters         |   {{http://data.iers.org/products/12/1386/output/54458/finals.daily.xml}}   |
 |                                 |     daily EOP     |     (daily and final data) model IAU 1980    |     {{http://data.iers.org/products/7/1378/output/54351/finals.all.xml}}    |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|       unx(m/p)####.405[.gz]     |   DE 405 binary   |        JPL DE 405 planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/SunOS/de405}}          |
+|     (l/u)nx(m/p)####.4##[.gz]   |   DE 4xx binary   |        JPL DE 4xx planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/SunOS}}                |
+|     (l/u)nxm####p####.4##[.gz]  | big/little endian |                                              |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux}}                |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|       unx(m/p)####.406[.gz]     |   DE 406 binary   |        JPL DE 406 planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/SunOS/de406}}          |
+|    inpop*_m####_p####*.dat[.gz] |   DE 4xx binary   |        IMCCE inpop planets ephemerides       |             {{ftp://ftp.imcce.fr/pub/ephem/planets/}}                       |
+|                                 | big/little endian |                                              |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |            eigen_*_coef         |     SHM format    |        Eigen gravity field (old format)      |     {{http://op.gfz-potsdam.de/grace/results/main_RESULTS.html#gravity}}    |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
@@ -293,6 +295,8 @@ Configuration
 |            egm##_to#*           |     EGM format    |             EGM gravity field                |             {{ftp://cddis.gsfc.nasa.gov/pub/egm96/general_info}}            |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |            grim#_*              |    GRGS format    |            GRGS gravity field                |                                                                             |
+*---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
+|Jan####F10.txt to Dec####F10.txt |    MSAFE format   |   Marshall Solar Activity Future Estimation  |             {{http://sail.msfc.nasa.gov/archive_index.htm}}                 |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 Supported data types
 
