@@ -27,6 +27,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -79,18 +80,16 @@ public class MasterMode {
             // Adaptive step integrator with a minimum step of 0.001 and a maximum step of 1000
             final double minStep = 0.001;
             final double maxstep = 1000.0;
-            final double[] absoluteTolerance = {
-                0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
-            };
-            final double[] relativeTolerance = {
-                1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
-            };
-            AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep,
-                                                                                   absoluteTolerance,
-                                                                                   relativeTolerance);
+            final double positionTolerance = 10.0;
+            final OrbitType propagationType = OrbitType.KEPLERIAN;
+            final double[][] tolerances =
+                    NumericalPropagator.tolerances(positionTolerance, initialOrbit, propagationType);
+            AdaptiveStepsizeIntegrator integrator =
+                    new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
             // Propagator
             NumericalPropagator propagator = new NumericalPropagator(integrator);
+            propagator.setOrbitType(propagationType);
 
             // Force Model (reduced to perturbing gravity field)
             Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
