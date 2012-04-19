@@ -177,10 +177,13 @@ Propagation
 	
 ** Numerical propagation
 
-  It is the most important part of the Orekit project. Based on commons-math
-  integrators, the <NumericalPropagator> class realizes the interface between 
-  space mechanics and mathematical resolutions. If its utilization seems difficult 
-  on first sight, it is in  fact quite clear and intuitive.
+  Numerical propagation is one of the most important parts of the Orekit project.
+  Based on Apache Commons Math ordinary differential equations integrators, the
+  <NumericalPropagator> class realizes the interface between  space mechanics and
+  mathematical resolutions. Despite its utilization seems daunting on first sight,
+  it is in fact quite straigthforward to use.
+
+*** Simple propagation of equations of motion
 
   The mathematical problem to integrate is a dimension seven time derivative equations
   system. The six first elements of the state vector are the orbital parameters, which
@@ -228,6 +231,39 @@ propagator = new NumericalPropagator(integrator);
   they only need to compute an acceleration.
 
 [../images/design/numerical-propagation-sequence-diagram.png]
+
+*** Propagating both equations of motions and additional equations
+
+  Sometimes, simple equations of motion are not enough. Some additional parameters can be useful
+  alongside with the trajectory, like dual parameters in optimal control or Jacobians (also
+  called state-transition matrices). This second case especially useful for computing sensitivity
+  of a trajectory with respect to initial state changes or with respect to force models parameters
+  changes.
+
+  Orekit provides a common way to handle both cases: additional equations. Users can register sets
+  of additional equations alongside with additional initial states. These equations will be propagated
+  by the numerical integrator. They will not be used for step control, though, so integrating with
+  or without these equations should not change the trajectory and no tolerance setting is needed for
+  them.
+
+  One specific implementation of additional equations is the partial derivatives equations which
+  propagate Jacobian matrices, both with respect to initial state and with respect to force model
+  parameters.
+
+[../images/design/partial-derivatives-class-diagram.png]
+
+  The above class diagram shows the design of the partial derivatives equations. As can be seen,
+  the PartialDerivativesEquations class implements the AdditionalEquations interface and as such
+  can be registered by user in a numerical propagator. the propagator will propagate both the
+  main set of equations corresponding to the equations of motion and the additional set corresponding
+  to the Jacobians of the main set. This additional set is therefore tightly linked to the main set
+  and in particular depends on the selected force models. The various force models add their
+  direct contribution directly to the main set, just as in simple propagation. They also add a
+  contribution to the Jacobians thanks to the AccelerationJacobiansProvider interface, each force
+  model being associated with an acceleration Jacobians provider. Some force models like solar
+  radiation pressure implement this interface by themselves. Some more complex force model do not
+  implement the interface and will be automatically wrapped inside a Jacobianizer class which will
+  use finite differences to compute the local Jacobians.
 
 ** Semianalytical propagation
 
