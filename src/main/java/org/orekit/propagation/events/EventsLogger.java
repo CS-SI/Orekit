@@ -174,6 +174,7 @@ public class EventsLogger implements Serializable {
 
         /** {@inheritDoc} */
         public void init(final SpacecraftState s0, final AbsoluteDate t) {
+            detector.init(s0, t);
         }
 
         /** {@inheritDoc} */
