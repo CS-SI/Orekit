@@ -18,6 +18,7 @@ package org.orekit.propagation.events;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 
 /** Common parts shared by several orbital events finders.
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -47,6 +48,11 @@ public abstract class AbstractDetector implements EventDetector {
     protected AbstractDetector(final double maxCheck, final double threshold) {
         this.maxCheck  = maxCheck;
         this.threshold = threshold;
+    }
+
+    /** {inheritDoc} */
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        // do nothing by default
     }
 
     /** {@inheritDoc} */
