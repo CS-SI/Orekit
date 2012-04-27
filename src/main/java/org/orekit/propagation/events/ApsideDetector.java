@@ -20,7 +20,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /** Finder for apside crossing events.
@@ -63,10 +62,6 @@ public class ApsideDetector extends AbstractDetector {
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
         super(orbit.getKeplerianPeriod() / 3, threshold);
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle an apside crossing event and choose what to do next.

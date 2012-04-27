@@ -20,7 +20,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
@@ -80,10 +79,6 @@ public class NodeDetector extends AbstractDetector {
      */
     public Frame getFrame() {
         return frame;
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle a node crossing event and choose what to do next.

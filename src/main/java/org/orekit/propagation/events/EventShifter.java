@@ -62,7 +62,7 @@ public class EventShifter extends AbstractDetector {
      * on the <code>useShiftedStates</code> parameter).</p>
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
-     * #eventOccurred(SpacecraftState, boolean) eventOccurreed} method of
+     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method of
      * the <code>detector</code> will remain shifted, otherwise it will
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
@@ -93,6 +93,7 @@ public class EventShifter extends AbstractDetector {
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        detector.init(s0, t);
     }
 
     /** {@inheritDoc} */

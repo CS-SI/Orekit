@@ -20,7 +20,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for body entering/exiting dihedral fov events.
@@ -127,10 +126,6 @@ public class DihedralFieldOfViewDetector extends AbstractDetector {
      */
     public Vector3D getAxis2() {
         return Vector3D.crossProduct(center, normalCenterPlane2);
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle an fov event and choose what to do next.

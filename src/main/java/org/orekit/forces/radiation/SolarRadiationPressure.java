@@ -302,10 +302,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        }
-
-        /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
             return Action.RESET_DERIVATIVES;
         }
@@ -340,10 +336,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         /** Build a new instance. */
         public PenumbraDetector() {
             super(60.0, 1.0e-3);
-        }
-
-        /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
 
         /** {@inheritDoc} */

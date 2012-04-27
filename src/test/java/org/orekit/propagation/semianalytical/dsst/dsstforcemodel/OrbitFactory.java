@@ -208,10 +208,6 @@ public class OrbitFactory {
             this.nodeWanded = nodeWanted;
         }
 
-        /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        }
-
         /**
          * {@inheritDoc}
          */

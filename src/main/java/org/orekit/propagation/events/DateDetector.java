@@ -95,10 +95,6 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
         this(10.e9, 10.e-10, target);
     }
 
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
-    }
-
     /** Handle a date event and choose what to do next.
      * <p>The default implementation behavior is to {@link
      * EventDetector.Action#STOP stop} propagation at date occurrence.</p>
