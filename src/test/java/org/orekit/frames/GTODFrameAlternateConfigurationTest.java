@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class GTODFrameAlternateConfigurationTest {
         PVCoordinates pvTOD =
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
-        
+
         Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0094, 4.9e-6);
 

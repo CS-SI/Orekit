@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -41,7 +41,7 @@ public class LocalOrbitalFrameTest {
                    Vector3D.crossProduct(pv.getMomentum(), pv.getVelocity()),
                    pv.getMomentum(),
                    pv.getMomentum().negate());
-    }    
+    }
 
     @Test
     public void testQSW() throws OrekitException {
@@ -120,7 +120,7 @@ public class LocalOrbitalFrameTest {
         inertialFrame = FramesFactory.getGCRF();
         initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         initialOrbit =
-                new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9, 6.2, PositionAngle.TRUE, 
+                new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9, 6.2, PositionAngle.TRUE,
                                    inertialFrame, initDate, 3.986004415e14);
         provider = new KeplerianPropagator(initialOrbit);
 

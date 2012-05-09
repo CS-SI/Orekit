@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -29,11 +29,11 @@ import org.orekit.errors.OrekitMessages;
  *
  * <p> As it exits many different coefficients models and containers this
  *  interface represents all the methods that should be implemented by a reader.
- *  The proper way to use this interface is to call the {@link PotentialReaderFactory}
+ *  The proper way to use this interface is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
  *  coefficients file.<p>
  *
- * @see PotentialReaderFactory
+ * @see GravityFieldFactory
  * @author Fabien Maussion
  */
 public abstract class PotentialCoefficientsReader

@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,8 +17,8 @@
 
 package fr.cs.examples.propagation;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -66,7 +66,7 @@ public class VisibilityCheck {
             // Propagator : consider a simple keplerian motion (could be more elaborate)
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
-            // Earth and frame  
+            // Earth and frame
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
             Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
@@ -79,7 +79,7 @@ public class VisibilityCheck {
             final GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
             final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
-            // Event definition 
+            // Event definition
             final double maxcheck  = 1.;
             final double elevation = FastMath.toRadians(5.);
             final EventDetector sta1Visi = new VisibilityDetector(maxcheck, elevation, sta1Frame);

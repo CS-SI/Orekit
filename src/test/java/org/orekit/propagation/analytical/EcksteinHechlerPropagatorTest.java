@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,10 +19,10 @@ package org.orekit.propagation.analytical;
 
 import java.util.Collection;
 
-import org.apache.commons.math.exception.util.DummyLocalizable;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -111,9 +111,9 @@ public class EcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE, 
+                                                6.2, PositionAngle.TRUE,
                                                 FramesFactory.getEME2000(), initDate, mu);
- 
+
         // Extrapolator definition
         // -----------------------
         EcksteinHechlerPropagator extrapolator =
@@ -308,7 +308,7 @@ public class EcksteinHechlerPropagatorTest {
         // -----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                              6.2, PositionAngle.TRUE, 
+                                              6.2, PositionAngle.TRUE,
                                               FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -403,7 +403,7 @@ public class EcksteinHechlerPropagatorTest {
         Orbit initialOrbit = new EquinoctialOrbit(a, ex, ey,
                                                 FastMath.tan(i / 2) * FastMath.cos(gom),
                                                 FastMath.tan(i / 2) * FastMath.sin(gom),
-                                                pso_M + gom, PositionAngle.MEAN, 
+                                                pso_M + gom, PositionAngle.MEAN,
                                                 FramesFactory.getEME2000(), initDate, mu);
         // Extrapolator definition
         // -----------------------

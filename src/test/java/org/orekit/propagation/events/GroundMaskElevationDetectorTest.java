@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -64,7 +64,7 @@ public class GroundMaskElevationDetectorTest {
         Propagator propagator =
             new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
 
-        // Earth and frame  
+        // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
         Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
@@ -106,7 +106,7 @@ public class GroundMaskElevationDetectorTest {
     @Test
     public void testMasque() throws OrekitException {
 
-        // Earth and frame  
+        // Earth and frame
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
                                                FramesFactory.getITRF2005());
@@ -125,7 +125,7 @@ public class GroundMaskElevationDetectorTest {
     @Test(expected=IllegalArgumentException.class)
     public void testException() throws OrekitException {
 
-        // Earth and frame  
+        // Earth and frame
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
                                                FramesFactory.getITRF2005());

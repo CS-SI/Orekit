@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,9 +28,6 @@ import org.orekit.frames.EOPHistory;
  * @since 5.1
  */
 public class UT1Scale implements TimeScale {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6263529270396325640L;
 
     /** UTC scale. */
     private final UTCScale utc;

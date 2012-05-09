@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,14 +54,14 @@ public class SpacecraftFrameTest {
 
         Assert.assertEquals(0, p1.subtract(p0).getNorm(), Utils.epsilonTest);
         Assert.assertEquals(0, v1.subtract(v0).getNorm(), Utils.epsilonTest);
-    }    
+    }
 
     @Test
     public void testYawSteering() throws OrekitException {
         AbsoluteDate stopDate = iniDate.shiftedBy(3000.0);
         Vector3D sunSat = sun.getPVCoordinates(stopDate, scFrame).getPosition();
         Assert.assertEquals(0, (sunSat.getY()/sunSat.getNorm()), Utils.epsilonTest);
-    }    
+    }
 
     @Before
     public void setUp() {
@@ -106,7 +106,7 @@ public class SpacecraftFrameTest {
 
             // The spacecraft frame is associated with the propagator.
             scFrame = new SpacecraftFrame(propagator, "Spacecraft");
-            
+
         } catch (OrekitException oe) {
             Assert.fail(oe.getLocalizedMessage());
         }

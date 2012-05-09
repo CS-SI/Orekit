@@ -113,12 +113,15 @@
       <name>Silvia R&#237;os Berganti&#241;os</name>
     </contributor>
     <contributor>
+      <name>Francesco Rocca</name>
+    </contributor>
+    <contributor>
       <name>Mathieu Rom&#233;ro</name>
     </contributor>
   </contributors>
 
   <organization>
-    <name>CS Communication &amp; Syst&#232;mes</name>
+    <name>CS Syst&#232;mes d&#039;Information</name>
     <url>http://www.c-s.fr/</url>
   </organization>
 
@@ -166,8 +169,8 @@
   <dependencies>
   	<dependency>
   		<groupId>org.apache.commons</groupId>
-  		<artifactId>commons-math</artifactId>
-  		<version>3.0-SNAPSHOT</version>
+  		<artifactId>commons-math3</artifactId>
+  		<version>3.0</version>
   		<type>jar</type>
   		<optional>false</optional>
   	</dependency>
@@ -223,6 +226,46 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <configuration>
+          <encoding>UTF-8</encoding>
+        </configuration>
+        </plugin>
+      <plugin>
+        <groupId>com.github.jeluard</groupId>
+        <artifactId>maven-plantuml-plugin</artifactId>
+        <version>7232</version>
+        <configuration>
+          <sourceFiles>
+            <directory>${basedir}</directory>
+            <includes>
+              <include>
+                src/design/**/*.puml
+              </include>
+            </includes>
+          </sourceFiles>
+          <outputDirectory>
+            ${basedir}/target/site/images/design
+          </outputDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>net.sourceforge.plantuml</groupId>
+            <artifactId>plantuml</artifactId>
+            <version>7707</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

@@ -1,4 +1,4 @@
-~~ Copyright 2002-2011 CS Communication & Systèmes
+~~ Copyright 2002-2012 CS Systèmes d'Information
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -33,6 +33,8 @@ Bodies
   are used, not the ASCII ones, regardless of the processor endianness). This can be
   overridden by defining a user specific loader for JPL ephemerides.
 
+[../images/design/celestial-bodies-class-diagram.png]
+
   As an example, computing the position of the Sun and the Moon in the EME2000 frame,
   this done as follows:
 
@@ -58,6 +60,8 @@ Vector3D moonInEME2000 =
  
   The shape of celestial bodies is represented by the <BodyShape> interface. 
 
+[../images/design/bodyshape-class-diagram.png]
+
 ** Implementations
 
   Only one implementation is provided by OREKIT for now: the <OneAxisEllipsoid>
@@ -74,11 +78,7 @@ Vector3D moonInEME2000 =
   associated body frame, by so-called <geodetic> coordinates (longitude, latitude, altitude). 
   The <GeodeticPoint> class allows handling of such coordinates. It is a simple container
   that does not provide processing methods.
-
-* Package organization
  
-[../images/design/OrekitModel_bodiesPackage.png]
-
 * Authors
 
   ** Luc Maisonobe

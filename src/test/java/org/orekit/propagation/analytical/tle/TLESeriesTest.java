@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,10 +18,9 @@ package org.orekit.propagation.analytical.tle;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Set;
 
-import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +30,6 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Predefined;
 import org.orekit.propagation.Propagator;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
-import org.orekit.propagation.analytical.tle.TLESeries;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -40,15 +37,6 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class TLESeriesTest {
-
-    @Deprecated
-    @Test(expected=OrekitException.class)
-    public void testDeprecated() throws IOException, OrekitException {
-        InputStream in =
-            TLETest.class.getResourceAsStream("/regular-data/tle/spot-5.tle");
-        TLESeries series = new TLESeries(in);
-        series.loadTLEData(22076);
-    }
 
     @Test(expected=OrekitException.class)
     public void testNoData() throws IOException, OrekitException {

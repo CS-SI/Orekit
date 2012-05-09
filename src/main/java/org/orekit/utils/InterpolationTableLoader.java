@@ -25,8 +25,8 @@ import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.math.analysis.BivariateRealFunction;
-import org.apache.commons.math.analysis.interpolation.BicubicSplineInterpolator;
+import org.apache.commons.math3.analysis.BivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 
@@ -36,13 +36,13 @@ import org.orekit.errors.OrekitException;
 public class InterpolationTableLoader implements DataLoader {
 
     /** The bi-variate interpolation function read from the file. */
-    private BivariateRealFunction function;
+    private BivariateFunction function;
 
     /** Returns the interpolation function.
      * @return the interpolation function, or <code>null</code> if the file
      *         could not be read
      */
-    public BivariateRealFunction getInterpolationFunction() {
+    public BivariateFunction getInterpolationFunction() {
         return function;
     }
 

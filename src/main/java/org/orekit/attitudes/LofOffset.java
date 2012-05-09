@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.attitudes;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -102,7 +102,7 @@ public class LofOffset implements AttitudeProvider {
      * An important thing to note is that the rotation order and angles signs used here
      * are compliant with an <em>attitude</em> definition, i.e. they correspond to
      * a frame that rotate in a field of fixed vectors. The underlying definitions used
-     * in commons-math {@link org.apache.commons.math.geometry.euclidean.threed.Rotation#Rotation(RotationOrder,
+     * in commons-math {@link org.apache.commons.math3.geometry.euclidean.threed.Rotation#Rotation(RotationOrder,
      * double, double, double) Rotation(RotationOrder, double, double, double)} use
      * <em>reversed</em> definition, i.e. they correspond to a vectors field rotating
      * with respect to a fixed frame. So to retrieve the angles provided here from the

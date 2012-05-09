@@ -1,5 +1,5 @@
 /* Copyright 2010-2011 Centre National d'Études Spatiales
- * Licensed to CS Communication & Systèmes (CS) under one or more
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.forces.gravity;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;

@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
@@ -80,10 +79,6 @@ public class NodeDetector extends AbstractDetector {
      */
     public Frame getFrame() {
         return frame;
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle a node crossing event and choose what to do next.

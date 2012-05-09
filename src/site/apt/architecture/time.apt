@@ -1,4 +1,4 @@
-~~ Copyright 2002-2011 CS Communication & Systèmes
+~~ Copyright 2002-2012 CS Systèmes d'Information
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -72,6 +72,13 @@ Time
     was equal to UTC at start of the GPS Epoch when UTC was 19 seconds behind TAI,
     and stayed parallel to TAI since then (i.e. UTC is now offset from GPS due to
     leap seconds). TGPS = TAI - 19 s,
+
+    ** <<Galileo System reference scale>>. This scale
+    is equal to UTC + 13s at Galileo epoch (1999-08-22T00:00:00Z). Galileo System Time
+    and GPS time are very close scales. Without any errors, they should be identical.
+    The offset between these two scales is the GGTO, it depends on the clocks used to
+    realize the time scales. It is of the order of a few tens nanoseconds. This class
+    does not implement this offset,
 
     ** <<Greenwich Mean Sidereal Time scale>>. The Greenwich Mean Sidereal Time
     is the hour angle between the meridian of Greenwich and mean equinox of
@@ -204,9 +211,23 @@ public class Ephemeris {
 }
 +---------------------
 
+* Time shift
+
+  Lots of space flight dynamics objects are date related (dates themselves, of course,
+  but also attitudes, orbits, position-velocity coordinates or spacecraft states). In some
+  cases, it is useful to be able to slightly shift these objects by very small time offsets,
+  for example when computing finite differences. In these cases, it would be cumbersome
+  to be forced to set up complete propagation models. The time package provide a simple
+  parameterized interface: <<TimeShiftable>> which defines a single <<shiftedBy>> method
+  that should be implemented by classes allowing such small shifts. The method returns
+  a new instance shifted in time without changing the original object.
+
+  This feature should not be used for large shifts where complex propagation models are
+  needed.
+
 * Package organization
  
-[../images/design/OrekitModel_timePackage.png]
+[../images/design/time-class-diagram.png]
 
 * Authors
 

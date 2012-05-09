@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -93,10 +93,6 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
      */
     public DateDetector(final AbsoluteDate target) {
         this(10.e9, 10.e-10, target);
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle a date event and choose what to do next.

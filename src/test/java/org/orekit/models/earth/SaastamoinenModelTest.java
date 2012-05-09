@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math.util.Precision;
+import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;

@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,9 +19,9 @@ package org.orekit.frames;
 
 import java.util.Random;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.utils.Constants;
@@ -242,7 +242,7 @@ public class TransformTest {
 
             Vector3D resultvel = tr.getInverse().transformPVCoordinates(pvTwo).getVelocity();
 
-            checkVectors(resultvel , vel); 
+            checkVectors(resultvel , vel);
 
         }
 
@@ -278,7 +278,7 @@ public class TransformTest {
 
             PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
             Vector3D result  = (pvTwo.getPosition().add(
-                                                        new Vector3D(dt ,pvTwo.getVelocity()))); 
+                                                        new Vector3D(dt ,pvTwo.getVelocity())));
             checkVectors( good , result);
 
             // test inverse

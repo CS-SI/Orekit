@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -29,8 +29,12 @@ package org.orekit.time;
  *     sortedOrbits.add(orbit2);
  *     ...
  * </pre>
+ * <p>This interface is also the base interface used to {@link
+ * org.orekit.utils.TimeStampedCache cache} series of time-dependent
+ * objects for interpolation in a thread-safe manner.</p>
  * @see AbsoluteDate
  * @see ChronologicalComparator
+ * @see org.orekit.utils.TimeStampedCache
  * @author Luc Maisonobe
  */
 public interface TimeStamped {

@@ -1,4 +1,4 @@
-~~ Copyright 2002-2011 CS Communication & Systèmes
+~~ Copyright 2002-2012 CS Systèmes d'Information
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -13,7 +13,7 @@
 
 Overview
 
-  OREKIT (ORbits Extrapolation KIT) is a free low level space dynamics library
+  OREKIT (ORbits Extrapolation KIT) is a free low-level space dynamics library
   written in Java.
 
   It provides basic elements (orbits, dates, attitude, frames ...) and
@@ -41,7 +41,7 @@ Overview
       Earth-Moon barycenter)
 
     * user extensible (used operationally in real time with a set of about 60 frames on
-      several spacecrafts)
+      several spacecraft)
 
     * transparent handling of IERS Earth Orientation Parameters (for both new
       CIO-based frames and old equinox-based frames)
@@ -54,13 +54,13 @@ Overview
 
     * extensible central body shapes models (with predefined spherical and ellipsoidic shapes)
 
-    * cartesian and geodesic coordinates, kinematics
+    * Cartesian and geodesic coordinates, kinematics
 
   ** Spacecraft state
 
-    * cartesian, elliptical keplerian, circular and equinoctial parameters
+    * Cartesian, elliptical Keplerian, circular and equinoctial parameters
 
-    * Two-Lines Elements
+    * Two-Line Elements
 
     * transparent conversion between all parameters
 
@@ -106,7 +106,7 @@ Overview
       * state of the art ODE integrators (adaptive stepsize with error control,
         continuous output, switching functions, G-stop, step normalization ...)
 
-      * computation of jacobians with respect to orbital parameters and selected
+      * computation of Jacobians with respect to orbital parameters and selected
         force models parameters
 
       * serialization mechanism to store complete results on persistent storage for
@@ -160,7 +160,7 @@ Overview
 
       * impulse maneuvers occurrence
 
-    * possibility to slightly shift events in time (for example to switch from
+    * possibility of slightly shifting events in time (for example to switch from
       solar pointing mode to something else a few minutes before eclipse entry and
       reverting to solar pointing mode a few minutes after eclipse exit)
 
@@ -178,7 +178,7 @@ Overview
         (LOF aligned, offset on all axes),
 
       * space referenced attitudes
-        (inertial, celestial body pointed, spin stabilized)
+        (inertial, celestial body-pointed, spin-stabilized)
 
   ** Customizable data loading
 
@@ -210,6 +210,10 @@ Overview
 
     * spanish
 
+  ** The top level packages provided by Orekit are the following one:
+
+[./images/design/top-packages.png]
+
 * Free software
 
   Orekit is freely available both in source and binary formats, with all related
@@ -219,14 +223,17 @@ Overview
   is a well known business-friendly license. This means anybody can use it to build
   any application, free or not. There are no strings attached to your own code.
 
-  Everybody is encouraged to use Orekit as a common low level layer to help
+  Everybody is encouraged to use Orekit as a common low level layer to improve
   interoperability in space systems.
 
 * Maintained library
 
-  Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Communication
-  & Syst\u00e8mes}} and is still used and maintained by its space dynamics experts.
+  Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Syst\u00e8mes
+  d'Information}} and is still used and maintained by its space dynamics experts.
+
   It has already been successfully used during the real time monitoring of the rendez-vous
   phase between the Automated Transfer Vehicle (ATV) and the International Space Station
   (ISS) by the Centre National d'\u00c9tudes Spatiales (CNES, the French space agency) and
-  European Space Agency (ESA).
+  European Space Agency (ESA). It has been selected as the basis of CNES next generation
+  space flight dynamics systems. It has been used in numerous studies and for operational
+  systems among the world.

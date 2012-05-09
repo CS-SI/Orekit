@@ -26,8 +26,7 @@ import java.util.StringTokenizer;
 
 import junit.framework.Assert;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.Precision;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;

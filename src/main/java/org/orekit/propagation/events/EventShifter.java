@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -62,7 +62,7 @@ public class EventShifter extends AbstractDetector {
      * on the <code>useShiftedStates</code> parameter).</p>
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
-     * #eventOccurred(SpacecraftState, boolean) eventOccurreed} method of
+     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method of
      * the <code>detector</code> will remain shifted, otherwise it will
      * be <i>unshifted</i> to correspond to the underlying raw event.
      * @param increasingTimeShift increasing events time shift.
@@ -93,6 +93,7 @@ public class EventShifter extends AbstractDetector {
 
     /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        detector.init(s0, t);
     }
 
     /** {@inheritDoc} */

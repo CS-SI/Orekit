@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,14 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -65,7 +69,7 @@ class TIRF2000Frame extends FactoryManagedFrame {
     private final EOP2000History eopHistory;
 
     /** UT1 time scale. */
-    private final UT1Scale ut1;
+    private transient UT1Scale ut1;
 
     /** Simple constructor, ignoring tidal effects.
      * @param factoryKey key of the frame within the factory
@@ -143,6 +147,28 @@ class TIRF2000Frame extends FactoryManagedFrame {
     public double getEarthRotationAngle(final AbsoluteDate date) throws OrekitException {
         updateFrame(date);
         return era;
+    }
+
+    /** Serialize an instance.
+     * @param out stream to serialize instance to
+     * @throws IOException if instance cannot be serialized to the stream
+     */
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
+
+    /** Deserialize an instance.
+     * @param in stream to deserialize the instance from
+     * @throws IOException if instance cannot be serialized from the stream
+     * @throws ClassNotFoundException if class cannot be built
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            ut1 = TimeScalesFactory.getUT1();
+            in.defaultReadObject();
+        } catch (OrekitException oe) {
+            throw OrekitException.createIllegalStateException(oe.getSpecifier(), oe.getParts());
+        }
     }
 
 }

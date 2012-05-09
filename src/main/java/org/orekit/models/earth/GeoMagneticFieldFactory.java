@@ -17,10 +17,10 @@
 package org.orekit.models.earth;
 
 import java.util.Collection;
-import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -158,22 +158,22 @@ public class GeoMagneticFieldFactory {
         throws OrekitException {
 
         final int epoch = (int) FastMath.round(year * 100d);
-        final Entry<Integer, GeoMagneticField> entry = models.floorEntry(epoch);
+        final SortedMap<Integer, GeoMagneticField> head = models.headMap(epoch + 1);
 
-        if (entry == null) {
+        if (head.isEmpty()) {
             throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
         }
 
-        GeoMagneticField model = entry.getValue();
+        GeoMagneticField model = models.get(head.lastKey());
         if (model.getEpoch() < year) {
             if (model.supportsTimeTransform()) {
                 model = model.transformModel(year);
             } else {
-                final Entry<Integer, GeoMagneticField> nextEntry = models.ceilingEntry(epoch);
-                if (nextEntry == null) {
+                final SortedMap<Integer, GeoMagneticField> tail = models.tailMap(epoch);
+                if (tail.isEmpty()) {
                     throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
                 }
-                model = model.transformModel(nextEntry.getValue(), year);
+                model = model.transformModel(models.get(tail.firstKey()), year);
             }
         }
         return model;

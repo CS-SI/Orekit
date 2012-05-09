@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -39,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * vector (say the direction of a distant star for example) has coordinates
  * u<sub>A</sub> in frame<sub>A</sub> and u<sub>B</sub> in frame<sub>B</sub>,
  * then u<sub>B</sub>={@link
- * Transform#transformVector(org.apache.commons.math.geometry.euclidean.threed.Vector3D)
+ * Transform#transformVector(org.apache.commons.math3.geometry.euclidean.threed.Vector3D)
  * t.transformVector(u<sub>A</sub>)}.
  * <p>The transforms may be constant or varying. For simple fixed transforms,
  * using this base class is sufficient. For varying transforms (time-dependent
@@ -431,76 +431,6 @@ public class Frame implements Serializable {
                                 final String frozenName) throws OrekitException {
         return new Frame(reference, reference.getTransformTo(this, freezingDate).freeze(),
                          frozenName, reference.isPseudoInertial());
-    }
-
-    /** Get the unique J2000 frame.
-     * <p>The J2000 frame is also called the EME2000 frame.
-     * The latter denomination is preferred in Orekit.</p>
-     * @return the unique instance of the J2000 frame
-     * @deprecated as of 4.0, replaced by {@link FramesFactory#getEME2000()}
-     * @see FramesFactory#getEME2000()
-     */
-    @Deprecated
-    public static Frame getJ2000() {
-        return FramesFactory.getEME2000();
-    }
-
-    /** Get the unique EME2000 frame.
-     * <p>The EME2000 frame is also called the J2000 frame.
-     * The former denomination is preferred in Orekit.</p>
-     * @return the unique instance of the EME2000 frame
-     * @deprecated as of 4.1, replaced by {@link FramesFactory#getEME2000()}
-     */
-    @Deprecated
-    public static Frame getEME2000() {
-        return FramesFactory.getEME2000();
-    }
-
-    /** Get the ITRF2005 reference frame.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 4.1, replaced by {@link FramesFactory#getITRF2005()}
-     */
-    @Deprecated
-    public static Frame getITRF2005()
-        throws OrekitException {
-        return FramesFactory.getITRF2005();
-    }
-
-    /** Get the TIRF2000 reference frame.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 4.1, replaced by {@link FramesFactory#getTIRF2000()}
-     */
-    @Deprecated
-    public static Frame getTIRF2000()
-        throws OrekitException {
-        return FramesFactory.getTIRF2000();
-    }
-
-    /** Get the CIRF2000 reference frame.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     * @deprecated as of 4.1, replaced by {@link FramesFactory#getCIRF2000()}
-     */
-    @Deprecated
-    public static Frame getCIRF2000()
-        throws OrekitException {
-        return FramesFactory.getCIRF2000();
-    }
-
-    /** Get the VEIS 1950 reference frame.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if data data embedded in the
-     * library cannot be read.
-     * @deprecated as of 4.1, replaced by {@link FramesFactory#getVeis1950()}
-     */
-    @Deprecated
-    public static Frame getVeis1950() throws OrekitException {
-        return FramesFactory.getVeis1950();
     }
 
     // We use the Initialization on demand holder idiom to store

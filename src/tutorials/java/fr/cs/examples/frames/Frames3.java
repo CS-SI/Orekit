@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,8 +24,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.NadirPointing;
 import org.orekit.attitudes.YawSteering;
 import org.orekit.bodies.BodyShape;
@@ -88,7 +88,7 @@ public class Frames3 {
             // Attitude laws
             // *************
 
-            // Earth  
+            // Earth
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
             Frame itrf2005 = FramesFactory.getITRF2005(true); // terrestrial frame at an arbitrary date
@@ -96,7 +96,7 @@ public class Frames3 {
 
             // Target pointing attitude provider over satellite nadir at date, without yaw compensation
             NadirPointing nadirLaw = new NadirPointing(earth);
-     
+
             // Target pointing attitude provider with yaw compensation
             PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             YawSteering yawSteeringLaw =
@@ -115,7 +115,7 @@ public class Frames3 {
             // The spacecraft frame is associated with the propagator.
             SpacecraftFrame scFrame = new SpacecraftFrame(propagator, "Spacecraft");
 
-            // Let's write the results in a file in order to draw some plots. 
+            // Let's write the results in a file in order to draw some plots.
             final String homeRep = System.getProperty("user.home");
             FileWriter fileRes = new FileWriter(new File(homeRep, "XYZ.dat"));
 
@@ -133,7 +133,7 @@ public class Frames3 {
                 // We can simply get the position of the Sun in spacecraft frame at any time
                 Vector3D sunSat = sun.getPVCoordinates(extrapDate, scFrame).getPosition();
 
-                // and the spacecraft rotational rate also 
+                // and the spacecraft rotational rate also
                 Vector3D spin = eme2000.getTransformTo(scFrame, extrapDate).getRotationRate();
 
                 // Lets calculate the reduced coordinates

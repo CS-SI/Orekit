@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2011 CS Communication & Systèmes
-  Licensed to CS Communication & Systèmes (CS) under one or more
+<!-- Copyright 2002-2012 CS Systèmes d'Information
+  Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   CS licenses this file to You under the Apache License, Version 2.0
@@ -24,6 +24,67 @@
              description="TBD.">
       <action dev="thomas" type="add">
         Added models for tropospheric delay and geomagnetic field.
+      </action>
+      <action dev="luc" type="update">
+        The existing general mechanism for shifting objects in time has been
+        formalized as a parameterized interface implemented by AbsoluteDate, Attitude,
+        Orbit, PVCoordinates and SpacecraftState.
+      </action>
+      <action dev="luc" type="update">
+        Time scales are not serializable anymore (this induced problems for the UTC scale
+        and its caching feature).
+      </action>
+      <action dev="luc" type="fix">
+        Fixed TLE propagation in deep space when inclination is exactly 0 (fixes bug #88).
+      </action>
+      <action dev="luc" type="add" due-to="Francesco Rocca">
+        Added two different fitters to fit Two-Line Elements against a sample of
+        spacecraft states.
+      </action>
+      <action dev="luc" type="fix">
+        Improved testing of error messages.
+      </action>
+      <action dev="luc" type="fix">
+        Removed too stringent test on trajectory in TLE propagator (fixes bug #86).
+      </action>      
+      <action dev="thomas" type="fix">
+      	Set the initial state for a TLEPropagator (fixes bug #85).
+      </action>
+      <action dev="luc" type="update">
+        Improved testing of error messages.
+      </action>
+      <action dev="luc" type="update">
+        Updated IAU poles for celestial bodies according to the 2009 report and the
+        2011 erratum from the IAU/IAG Working Group on Cartographic Coordinates and
+        Rotational Elements of the Planets and Satellites (WGCCRE).
+      </action>
+      <action dev="luc" type="update">
+        Removed code deprecated before 5.0.
+      </action>
+      <action dev="thomas" type="add">
+        Added support for more recent JPL DExxx and INPOP ephemerides files (fixes feature #23).
+      </action>
+      <action dev="luc" type="fix">
+        Fixed formatting of very small values in TLE lines (fixes bug #77).
+      </action>
+      <action dev="thomas" type="fix">
+        Fixed formatting of TLE epoch (fixes bug #74).
+      </action>
+      <action dev="thomas" type="fix">
+        Fixed performance issues when using the singleton UTCScale instance from
+        multiple threads. Use a prototype pattern instead (fixes bug #33).
+      </action>
+      <action dev="luc" type="add">
+        Added J2 effect on small maneuvers model.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed attitudeProvider field masking in IntegratedEphemeris.
+      </action>
+      <action dev="luc" type="add">
+        Added a tutorial to compute Earth phased, Sun synchronous orbits.
+      </action>
+      <action dev="luc" type="add">
+        Added a fitter for osculating parameters, allowing conversion to mean parameters.
       </action>
       <action dev="luc" type="update">
         Made Greenwich mean and apparent sidereal time publicly visible in GTOD frame.

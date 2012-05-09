@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,10 +17,10 @@
 package org.orekit.propagation.analytical;
 
 
-import org.apache.commons.math.exception.util.DummyLocalizable;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -105,7 +105,7 @@ public class KeplerianPropagatorTest {
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE, 
+                                                6.2, PositionAngle.TRUE,
                                                 FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -234,7 +234,7 @@ public class KeplerianPropagatorTest {
         //-----------------------------------------------------------
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
         Orbit initialOrbit = new KeplerianOrbit(7209668.0, 0.5e-4, 1.7, 2.1, 2.9,
-                                                6.2, PositionAngle.TRUE, 
+                                                6.2, PositionAngle.TRUE,
                                                 FramesFactory.getEME2000(), initDate, mu);
 
         // Extrapolator definition
@@ -532,8 +532,8 @@ public class KeplerianPropagatorTest {
         propagator.setEphemerisMode();
         propagator.propagate(farTarget);
         BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
-        Assert.assertTrue(Double.isInfinite(ephemeris.getMinDate().durationFrom(AbsoluteDate.J2000_EPOCH)));
-        Assert.assertTrue(Double.isInfinite(ephemeris.getMaxDate().durationFrom(AbsoluteDate.J2000_EPOCH)));
+        Assert.assertEquals(0.0, ephemeris.getMinDate().durationFrom(orbit.getDate()), 1.0e10);
+        Assert.assertEquals(0.0, ephemeris.getMaxDate().durationFrom(farTarget), 1.0e10);
     }
 
     @Test
@@ -554,7 +554,7 @@ public class KeplerianPropagatorTest {
 
         Assert.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-15);
-                           
+
     }
 
     private static double tangLEmLv(double Lv,double ex,double ey){
@@ -573,6 +573,6 @@ public class KeplerianPropagatorTest {
     public void tearDown() {
         mu   = Double.NaN;
     }
-    
+
 }
 

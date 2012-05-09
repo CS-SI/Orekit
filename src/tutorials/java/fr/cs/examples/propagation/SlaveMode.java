@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 
 package fr.cs.examples.propagation;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -77,10 +77,10 @@ public class SlaveMode {
 
             // Overall duration in seconds for extrapolation
             double duration = 600.;
-            
+
             // Stop date
             final AbsoluteDate finalDate =  new AbsoluteDate(initialDate, duration, utc);
-            
+
             // Step duration in seconds
             double stepT = 60.;
 
@@ -95,7 +95,7 @@ public class SlaveMode {
                 System.out.println(" " + currentState.getOrbit());
 
                 extrapDate = new AbsoluteDate(extrapDate, stepT, utc);
-           
+
             }
 
         } catch (OrekitException oe) {

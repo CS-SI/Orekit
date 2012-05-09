@@ -1,4 +1,4 @@
-~~ Copyright 2002-2011 CS Communication & Systèmes
+~~ Copyright 2002-2012 CS Systèmes d'Information
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -16,17 +16,29 @@ Utils
   The "Utils" package provides useful objects for mathematical or geometrical handlings.
 
 * Utils Presentation
-
-  Implemented classes are :
   
-  * <<Position/Velocity>> object, used to describe moving points by their position/velocity 
-  coordinates in a given frame, and associated useful operations.
+  The <PVCoordinates> class is a mere container for a position and a velocity vector.
+  It is a very low level object which ought to be used associated with other objects.
+  In particular, it does not hold by itself any reference to the frame in which it is
+  define and the time at which it has this value. These data should be hold elsewhere.
+  
+  The <PVCoordinatesProvider> is probably the most ubiquitous interface provided by Orekit.
+  It is used to represent almost anything that moves, be it a spacecraft (orbit propagators
+  extend this interface), some specific frames (spacecraft frame and topocentric frames
+  both implement this interface) or celestial bodies that can be retrieved from ephemerides.
 
-  * <<Line>> object, used to represent a geometric line and associated useful operations.
+  The <Constants> interface only defines useful constants like Julian day duration,
+  standard gravity or Earth physical parameters for several models, it does not define
+  any processing method.
+
+  The <SecularAndHarmonic> class is a utility used for fitting orbital parameters
+  to linear combination of polynomials and periodic functions, and to either retrieve
+  the fitting parameters or compute osculating or mean values (including first and
+  second derivatives).
 
 * Package organization
  
-[../images/design/OrekitModel_utilsPackage.png]
+[../images/design/utils-class-diagram.png]
 
 * Author 
 

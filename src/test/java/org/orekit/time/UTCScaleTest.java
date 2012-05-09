@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,6 +18,15 @@ package org.orekit.time;
 
 
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well1024a;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,6 +34,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeStampedCache;
 
 public class UTCScaleTest {
 
@@ -160,6 +170,88 @@ public class UTCScaleTest {
         Assert.assertEquals(2, new AbsoluteDate("2009-01-01T00:00:01", utc).durationFrom(ad0), 1.0e-15);
     }
 
+    @Test
+    public void testDisplayDuringLeap() throws OrekitException {
+        AbsoluteDate t0 = utc.getLastKnownLeapSecond().shiftedBy(-1.0);
+        for (double dt = 0.0; dt < 3.0; dt += 0.375) {
+            AbsoluteDate t = t0.shiftedBy(dt);
+            double seconds = t.getComponents(utc).getTime().getSecond();
+            if (dt < 2.0) {
+                Assert.assertEquals(dt + 59.0, seconds, 1.0e-12);
+            } else {
+                Assert.assertEquals(dt - 2.0, seconds, 1.0e-12);
+            }
+        }
+    }
+
+    @Test
+    public void testMultithreading() {
+
+        // generate reference offsets using a single thread
+        RandomGenerator random = new Well1024a(6392073424l);
+        List<AbsoluteDate> datesList = new ArrayList<AbsoluteDate>();
+        List<Double> offsetsList = new ArrayList<Double>();
+        AbsoluteDate reference = utc.getFirstKnownLeapSecond().shiftedBy(-Constants.JULIAN_YEAR);
+        double testRange = utc.getLastKnownLeapSecond().durationFrom(reference) + Constants.JULIAN_YEAR;
+        for (int i = 0; i < 10000; ++i) {
+            AbsoluteDate randomDate = reference.shiftedBy(random.nextDouble() * testRange);
+            datesList.add(randomDate);
+            offsetsList.add(utc.offsetFromTAI(randomDate));
+        }
+        
+        // check the offsets in multi-threaded mode
+        ExecutorService executorService = Executors.newFixedThreadPool(100);
+
+        for (int i = 0; i < datesList.size(); ++i) {
+            final AbsoluteDate date = datesList.get(i);
+            final double offset = offsetsList.get(i);
+            executorService.execute(new Runnable() {
+                public void run() {
+                    Assert.assertEquals(offset, utc.offsetFromTAI(date), 1.0e-12);
+                }
+            });
+        }
+
+        try {
+            executorService.shutdown();
+            executorService.awaitTermination(3, TimeUnit.SECONDS);
+        } catch (InterruptedException ie) {
+            Assert.fail(ie.getLocalizedMessage());
+        }
+
+    }
+
+    @Test
+    public void testIssue89() throws OrekitException {
+        AbsoluteDate firstDayLastLeap = utc.getLastKnownLeapSecond().shiftedBy(10.0);
+        AbsoluteDate rebuilt = new AbsoluteDate(firstDayLastLeap.toString(utc), utc);
+        Assert.assertEquals(0.0, rebuilt.durationFrom(firstDayLastLeap), 1.0e-12);
+    }
+
+    @Test
+    public void testInternalCache() throws Exception {
+
+        // request UTC-TAI offsets for random dates
+        RandomGenerator random = new Well1024a(6392073424l);
+        AbsoluteDate reference = utc.getFirstKnownLeapSecond().shiftedBy(-Constants.JULIAN_YEAR);
+        double testRange = utc.getLastKnownLeapSecond().durationFrom(reference) + Constants.JULIAN_YEAR;
+        for (int i = 0; i < 10000; ++i) {
+            AbsoluteDate randomDate = reference.shiftedBy(random.nextDouble() * testRange);
+            utc.offsetFromTAI(randomDate);
+        }
+        
+        // get the internal cache through reflection as it is of scope "private"
+        Field field = utc.getClass().getDeclaredField("cache");
+        field.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        TimeStampedCache<UTCTAIOffset> cache = (TimeStampedCache<UTCTAIOffset>) field.get(utc);
+        
+        // the UTCScale should not have any evictions and only 1 slot with 1 generate call
+        Assert.assertEquals(1, cache.getGenerateCalls());
+        Assert.assertEquals(0, cache.getSlotsEvictions());        
+        Assert.assertEquals(1, cache.getSlots());
+    }
+    
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
@@ -171,6 +263,6 @@ public class UTCScaleTest {
         utc = null;
     }
 
-    private TimeScale utc;
+    private UTCScale utc;
 
 }

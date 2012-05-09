@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,11 +16,11 @@
  */
 package org.orekit.errors;
 
-import org.apache.commons.math.exception.util.Localizable;
+import org.apache.commons.math3.exception.util.Localizable;
 
 /** This class is the base class for exception thrown by
  * the {@link org.orekit.frames.Frame#updateTransform(Frame,
- * Frame,Transform,AbsoluteDate) Frame.updateTransform} method.
+ * Frame,Transform,org.orekit.time.AbsoluteDate) Frame.updateTransform} method.
  */
 public class FrameAncestorException extends OrekitException {
 

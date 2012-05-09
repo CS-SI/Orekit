@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.forces.radiation;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.AbstractParameterizable;
@@ -302,10 +302,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
-        }
-
-        /** {@inheritDoc} */
         public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
             return Action.RESET_DERIVATIVES;
         }
@@ -340,10 +336,6 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         /** Build a new instance. */
         public PenumbraDetector() {
             super(60.0, 1.0e-3);
-        }
-
-        /** {@inheritDoc} */
-        public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
 
         /** {@inheritDoc} */

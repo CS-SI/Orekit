@@ -1,0 +1,105 @@
+' Copyright 2002-2012 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.orekit #ECEBD8
+
+  package utils #DDEBD8
+    interface PVCoordinatesProvider {
+      +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
+    }
+  end package
+
+  package data #DDEBD8
+    interface DataLoader {
+      +boolean stillAcceptsData()
+      +void loadData(InputStream input, String name)
+    }
+  end package
+
+  package frames #DDEBD8
+    class Frame
+  end package
+
+  package bodies #DDEBD8
+    interface CelestialBody {
+      +Frame getFrame()
+      +Frame getInertiallyOrientedFrame()
+      +Frame getBodyOrientedFrame()
+      +String getName()
+      +double getGM()
+    }
+
+    class CelestialBodyFactory {
+      +CelestialBody getSolarSystemBarycenter()
+      +CelestialBody getSun()
+      +CelestialBody getMercury()
+      +CelestialBody getVenus()
+      +CelestialBody getEarthMoonBarycenter()
+      +CelestialBody getEarth()
+      +CelestialBody getMoon()
+      +CelestialBody getMars()
+      +CelestialBody getJupiter()
+      +CelestialBody getSaturn()
+      +CelestialBody getUranus()
+      +CelestialBody getNeptune()
+      +CelestialBody getPluto()
+      +CelestialBody getBody(String name)
+    }
+
+    interface CelestialBodyLoader {
+      +CelestialBody loadCelestialBody(String name)
+    }
+
+    class JPLEphemeridesLoader
+
+    interface IAUPole {
+      +Vector3D getPole(AbsoluteDate date)
+      +double getPrimeMeridianAngle(AbsoluteDate date)
+    }
+
+    class IAUPoleFactory {
+      +IAUPole getIAUPole(JPLEphemeridesLoader.EphemerisType body)
+    }
+
+    abstract class AbstractCelestialBody
+
+    CelestialBodyLoader  ..|> DataLoader
+    CelestialBodyLoader  <|-- JPLEphemeridesLoader
+    CelestialBody "*"       <--o "1" CelestialBodyFactory
+    CelestialBodyLoader "*" <-left-o "1" CelestialBodyFactory
+    PVCoordinatesProvider <|.. CelestialBody
+    CelestialBody         -up-> Frame
+    CelestialBody         <|-- AbstractCelestialBody
+    IAUPoleFactory "1" *--> "*" IAUPole  : creates
+    AbstractCelestialBody "1" *--> IAUPole
+    AbstractCelestialBody <-left- JPLEphemeridesLoader : creates
+
+  end package
+
+end package
+
+@enduml

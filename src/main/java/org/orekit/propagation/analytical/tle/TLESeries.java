@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -100,34 +100,6 @@ public class TLESeries implements DataLoader, Serializable {
 
     /** Indicator for non-TLE extra lines. */
     private final boolean ignoreNonTLELines;
-
-    /** Simple constructor with a TLE file.
-     * <p>Read TLE entries, if they match, are stored for later use. <p>
-     * @param in the input to read (it can be compressed)
-     * @exception IOException when the {@link InputStream} cannot be buffered.
-     * @exception OrekitException when a file format error occurs
-     * @deprecated since 4.2 replaced by "new {@link
-     * #TLESeries(String, boolean)}.{@link #loadTLEData()}"
-     */
-    @Deprecated
-    public TLESeries(final InputStream in)
-        throws IOException, OrekitException {
-
-        supportedNames        = DEFAULT_SUPPORTED_NAMES;
-        availableSatNums      = new TreeSet<Integer>();
-        ignoreNonTLELines     = false;
-        filterSatelliteNumber = -1;
-        filterLaunchYear      = -1;
-        filterLaunchNumber    = -1;
-        filterLaunchPiece     = null;
-
-        tles     = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        previous = null;
-        next     = null;
-
-        loadData(in, "");
-
-    }
 
     /** Simple constructor with a TLE file.
      * <p>This constructor does not load any data by itself. Data must be

@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,9 @@
  */
 package org.orekit.orbits;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,10 +35,10 @@ import org.orekit.utils.PVCoordinates;
 
 public class KeplerianParametersTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-   // Body mu 
+
+   // Body mu
     private double mu;
 
     @Test
@@ -79,13 +79,13 @@ public class KeplerianParametersTest {
         // elliptic orbit
         KeplerianOrbit kep =
             new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                                    0.048363, PositionAngle.MEAN, 
+                                    0.048363, PositionAngle.MEAN,
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D pos = kep.getPVCoordinates().getPosition();
         Vector3D vit = kep.getPVCoordinates().getVelocity();
 
-        KeplerianOrbit param = new KeplerianOrbit(new PVCoordinates(pos,vit), 
+        KeplerianOrbit param = new KeplerianOrbit(new PVCoordinates(pos,vit),
                                                   FramesFactory.getEME2000(), date, mu);
         Assert.assertEquals(param.getA(), kep.getA(), Utils.epsilonTest * kep.getA());
         Assert.assertEquals(param.getE(), kep.getE(), Utils.epsilonE * FastMath.abs(kep.getE()));
@@ -97,13 +97,13 @@ public class KeplerianParametersTest {
         // circular orbit
         KeplerianOrbit kepCir =
             new KeplerianOrbit(24464560.0, 0.0, 0.122138, 3.10686, 1.00681,
-                                    0.048363, PositionAngle.MEAN, 
+                                    0.048363, PositionAngle.MEAN,
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D posCir = kepCir.getPVCoordinates().getPosition();
         Vector3D vitCir = kepCir.getPVCoordinates().getVelocity();
 
-        KeplerianOrbit paramCir = new KeplerianOrbit(new PVCoordinates(posCir,vitCir),  
+        KeplerianOrbit paramCir = new KeplerianOrbit(new PVCoordinates(posCir,vitCir),
                                                      FramesFactory.getEME2000(), date, mu);
         Assert.assertEquals(paramCir.getA(), kepCir.getA(), Utils.epsilonTest * kepCir.getA());
         Assert.assertEquals(paramCir.getE(), kepCir.getE(), Utils.epsilonE * FastMath.max(1.,FastMath.abs(kepCir.getE())));
@@ -115,13 +115,13 @@ public class KeplerianParametersTest {
         // hyperbolic orbit
         KeplerianOrbit kepHyp =
             new KeplerianOrbit(-24464560.0, 1.7311, 0.122138, 3.10686, 1.00681,
-                                    0.048363, PositionAngle.MEAN, 
+                                    0.048363, PositionAngle.MEAN,
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D posHyp = kepHyp.getPVCoordinates().getPosition();
         Vector3D vitHyp = kepHyp.getPVCoordinates().getVelocity();
 
-        KeplerianOrbit paramHyp = new KeplerianOrbit(new PVCoordinates(posHyp,vitHyp), 
+        KeplerianOrbit paramHyp = new KeplerianOrbit(new PVCoordinates(posHyp,vitHyp),
                                                   FramesFactory.getEME2000(), date, mu);
         Assert.assertEquals(paramHyp.getA(), kepHyp.getA(), Utils.epsilonTest * FastMath.abs(kepHyp.getA()));
         Assert.assertEquals(paramHyp.getE(), kepHyp.getE(), Utils.epsilonE * FastMath.abs(kepHyp.getE()));
@@ -136,7 +136,7 @@ public class KeplerianParametersTest {
 
         KeplerianOrbit kep =
             new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                                    0.048363, PositionAngle.MEAN, 
+                                    0.048363, PositionAngle.MEAN,
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D pos = kep.getPVCoordinates().getPosition();
@@ -155,7 +155,7 @@ public class KeplerianParametersTest {
 
         KeplerianOrbit kep =
             new KeplerianOrbit(24464560.0, 0.7311, 0.122138, 3.10686, 1.00681,
-                                    0.048363, PositionAngle.MEAN, 
+                                    0.048363, PositionAngle.MEAN,
                                     FramesFactory.getEME2000(), date, mu);
 
         Assert.assertEquals(24464560.0, kep.getA(), Utils.epsilonTest * kep.getA());
@@ -173,7 +173,7 @@ public class KeplerianParametersTest {
         Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         double mu = 3.9860047e14;
 
-        KeplerianOrbit p = new KeplerianOrbit(new PVCoordinates(position, velocity), 
+        KeplerianOrbit p = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                               FramesFactory.getEME2000(), date, mu);
 
         // elliptic orbit
@@ -186,23 +186,23 @@ public class KeplerianParametersTest {
         double M = E - e * FastMath.sin(E);
 
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), v , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), v , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
         Assert.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assert.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), E , PositionAngle.ECCENTRIC, 
+                                    p.getRightAscensionOfAscendingNode(), E , PositionAngle.ECCENTRIC,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
         Assert.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assert.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
@@ -214,20 +214,20 @@ public class KeplerianParametersTest {
 
         // circular orbit
         p = new KeplerianOrbit(p.getA(),0, p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), p.getLv() , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), p.getLv() , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
         E = v;
         M = E;
 
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), v , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), v , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assert.assertEquals(p.getTrueAnomaly(), v, Utils.epsilonAngle * FastMath.abs(v));
         Assert.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assert.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
@@ -236,7 +236,7 @@ public class KeplerianParametersTest {
         Assert.assertEquals(p.getEccentricAnomaly(), E, Utils.epsilonAngle * FastMath.abs(E));
         Assert.assertEquals(p.getMeanAnomaly(), M, Utils.epsilonAngle * FastMath.abs(M));
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), 0 , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
 
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
@@ -255,7 +255,7 @@ public class KeplerianParametersTest {
         // elliptic and non equatorial orbit
         KeplerianOrbit p =
             new KeplerianOrbit(24464560.0, 0.7311, 2.1, 3.10686, 1.00681,
-                                    0.67, PositionAngle.TRUE, 
+                                    0.67, PositionAngle.TRUE,
                                     FramesFactory.getEME2000(), date, mu);
 
         double e       = p.getE();
@@ -281,7 +281,7 @@ public class KeplerianParametersTest {
         //  circular and equatorial orbit
         KeplerianOrbit pCirEqua =
             new KeplerianOrbit(24464560.0, 0.1e-10, 0.1e-8, 3.10686, 1.00681,
-                                    0.67, PositionAngle.TRUE, 
+                                    0.67, PositionAngle.TRUE,
                                     FramesFactory.getEME2000(), date, mu);
 
         e       = pCirEqua.getE();
@@ -311,7 +311,7 @@ public class KeplerianParametersTest {
         // elliptic and non equatorial orbit
         KeplerianOrbit p =
             new KeplerianOrbit(24464560.0, 0.7311, 2.1, 3.10686, 1.00681,
-                                    0.67, PositionAngle.TRUE, 
+                                    0.67, PositionAngle.TRUE,
                                     FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPVCoordinates().getPosition();
@@ -323,7 +323,7 @@ public class KeplerianParametersTest {
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                        p.getRightAscensionOfAscendingNode(), lv , PositionAngle.TRUE, 
+                                        p.getRightAscensionOfAscendingNode(), lv , PositionAngle.TRUE,
                                         p.getFrame(), p.getDate(), p.getMu());
             position = p.getPVCoordinates().getPosition();
 
@@ -356,14 +356,14 @@ public class KeplerianParametersTest {
         // nodes
         // descending node
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(), FastMath.PI - p.getPerigeeArgument() , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(), FastMath.PI - p.getPerigeeArgument() , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assert.assertTrue(FastMath.abs(p.getPVCoordinates().getPosition().getZ()) < p.getPVCoordinates().getPosition().getNorm() * Utils.epsilonTest);
         Assert.assertTrue(p.getPVCoordinates().getVelocity().getZ() < 0);
 
         // ascending node
         p = new KeplerianOrbit(p.getA(),p.getE(), p.getI(), p.getPerigeeArgument(),
-                                    p.getRightAscensionOfAscendingNode(),2.0 * FastMath.PI - p.getPerigeeArgument() , PositionAngle.TRUE, 
+                                    p.getRightAscensionOfAscendingNode(),2.0 * FastMath.PI - p.getPerigeeArgument() , PositionAngle.TRUE,
                                     p.getFrame(), p.getDate(), p.getMu());
         Assert.assertTrue(FastMath.abs(p.getPVCoordinates().getPosition().getZ()) < p.getPVCoordinates().getPosition().getNorm() * Utils.epsilonTest);
         Assert.assertTrue(p.getPVCoordinates().getVelocity().getZ() > 0);
@@ -385,7 +385,7 @@ public class KeplerianParametersTest {
 
         for (double lv = 0; lv <= 2 * FastMath.PI; lv += 2 * FastMath.PI/100.) {
             pCirEqua = new KeplerianOrbit(pCirEqua.getA(),pCirEqua.getE(),pCirEqua.getI(), pCirEqua.getPerigeeArgument(),
-                                               pCirEqua.getRightAscensionOfAscendingNode(), lv, PositionAngle.TRUE, 
+                                               pCirEqua.getRightAscensionOfAscendingNode(), lv, PositionAngle.TRUE,
                                                pCirEqua.getFrame(), pCirEqua.getDate(), pCirEqua.getMu());
             position = pCirEqua.getPVCoordinates().getPosition();
 
@@ -416,7 +416,7 @@ public class KeplerianParametersTest {
         Vector3D velocity = new Vector3D(-2079., 5291., -7842.);
         double mu = 3.9860047e14;
 
-        KeplerianOrbit p = new KeplerianOrbit(new PVCoordinates(position, velocity),  
+        KeplerianOrbit p = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                               FramesFactory.getEME2000(), date, mu);
         Vector3D positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         Vector3D velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
@@ -429,7 +429,7 @@ public class KeplerianParametersTest {
         velocity = new Vector3D(4026.2, 287.479, -3.e-6);
 
 
-        p = new KeplerianOrbit(new PVCoordinates(position, velocity),  
+        p = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                FramesFactory.getEME2000(), date, mu);
         positionOffset = p.getPVCoordinates().getPosition().subtract(position);
         velocityOffset = p.getPVCoordinates().getVelocity().subtract(velocity);
@@ -488,7 +488,7 @@ public class KeplerianParametersTest {
         for (double M = -6 * FastMath.PI; M < 6 * FastMath.PI; M += 0.01) {
             KeplerianOrbit pElliptic =
                 new KeplerianOrbit(24464560.0, 0.7311, 2.1, 3.10686, 1.00681,
-                                   M, PositionAngle.MEAN, 
+                                   M, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
             double E = pElliptic.getEccentricAnomaly();
             double e = pElliptic.getE();
@@ -498,7 +498,7 @@ public class KeplerianParametersTest {
         for (double M = -6 * FastMath.PI; M < 6 * FastMath.PI; M += 0.01) {
             KeplerianOrbit pAlmostParabolic =
                 new KeplerianOrbit(24464560.0, 0.9999, 2.1, 3.10686, 1.00681,
-                                   M, PositionAngle.MEAN, 
+                                   M, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
             double E = pAlmostParabolic.getEccentricAnomaly();
             double e = pAlmostParabolic.getE();

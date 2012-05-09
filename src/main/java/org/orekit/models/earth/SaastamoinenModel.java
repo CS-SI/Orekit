@@ -16,11 +16,11 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math.analysis.BivariateRealFunction;
-import org.apache.commons.math.analysis.UnivariateFunction;
-import org.apache.commons.math.analysis.interpolation.BicubicSplineInterpolator;
-import org.apache.commons.math.analysis.interpolation.LinearInterpolator;
-import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.analysis.BivariateFunction;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
+import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
@@ -154,7 +154,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         private final PolynomialFunction e;
 
         /** Interpolation function for the delta R correction term. */
-        private final BivariateRealFunction deltaR;
+        private final BivariateFunction deltaR;
 
         /** Initialize the functions. */
         private Functions() {
@@ -168,7 +168,7 @@ public class SaastamoinenModel implements TroposphericDelayModel {
 
             // read the delta R interpolation function from the config file
             final InterpolationTableLoader loader = new InterpolationTableLoader();
-            BivariateRealFunction func = null;
+            BivariateFunction func = null;
             try {
                 DataProvidersManager.getInstance().feed("^saastamoinen-correction\\.txt$", loader);
                 if (!loader.stillAcceptsData()) {

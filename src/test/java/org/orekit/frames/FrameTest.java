@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,9 +18,9 @@ package org.orekit.frames;
 
 import java.util.Random;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,7 +122,7 @@ public class FrameTest {
         // check if a frame which belongs to the same branch than the 2nd frame is a branch of it
         Assert.assertEquals(true, f5.isChildOf(f1));
 
-        // check if a random frame is the child of the root frame 
+        // check if a random frame is the child of the root frame
         Assert.assertEquals(true, f9.isChildOf(eme2000));
 
         // check that a frame is not its own child
@@ -180,7 +180,7 @@ public class FrameTest {
         }
         Assert.assertEquals(0, maxA1 - minA1, 1.0e-12);
         Assert.assertEquals(FastMath.PI, maxA2 - minA2, 0.01);
-        
+
     }
 
     @Test
@@ -202,7 +202,7 @@ public class FrameTest {
         checkFrameAncestorException(f6, f8, f9, randomTransform(random), date);
         checkFrameAncestorException(f6, f3, f5, randomTransform(random), date);
         checkFrameAncestorException(eme2000, f5, f9, randomTransform(random), date);
-        checkFrameAncestorException(f3, eme2000, f6, randomTransform(random), date);    
+        checkFrameAncestorException(f3, eme2000, f6, randomTransform(random), date);
 
         checkUpdateTransform(f1, f5, f9, date, random);
         checkUpdateTransform(f7, f6, f9, date, random);

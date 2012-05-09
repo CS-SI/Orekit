@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 Space Applications Services
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 Space Applications Services
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -25,8 +25,8 @@ import java.io.InputStreamReader;
 import java.util.Locale;
 import java.util.Scanner;
 
-import org.apache.commons.math.exception.util.DummyLocalizable;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFileParser;

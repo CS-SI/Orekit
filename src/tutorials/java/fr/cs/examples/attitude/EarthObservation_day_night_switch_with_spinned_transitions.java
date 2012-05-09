@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systemes
- * Licensed to CS Communication & Systemes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package fr.cs.examples.attitude;
 
 import java.text.DecimalFormat;
@@ -23,11 +22,11 @@ import java.util.Locale;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3DFormat;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3DFormat;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.AttitudesSequence;
 import org.orekit.attitudes.LofOffset;
@@ -43,9 +42,9 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -114,7 +113,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endDayNightRdV2Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
@@ -139,7 +138,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endDayNightRdV1Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
@@ -178,7 +177,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endNightDayRdV2Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
@@ -203,7 +202,7 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
                     return Action.CONTINUE;
                 }
             };
-            
+
             final DateDetector endNightDayRdV1Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {

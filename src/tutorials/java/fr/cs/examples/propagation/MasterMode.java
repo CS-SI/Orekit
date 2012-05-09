@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,9 @@
 
 package fr.cs.examples.propagation;
 
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
@@ -27,6 +27,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -70,7 +71,7 @@ public class MasterMode {
             double omega = FastMath.toRadians(180); // perigee argument
             double raan = FastMath.toRadians(261); // right ascention of ascending node
             double lM = 0; // mean anomaly
-            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, 
+            Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
                                                     inertialFrame, initialDate, mu);
 
             // Initial state definition
@@ -79,18 +80,16 @@ public class MasterMode {
             // Adaptive step integrator with a minimum step of 0.001 and a maximum step of 1000
             final double minStep = 0.001;
             final double maxstep = 1000.0;
-            final double[] absoluteTolerance = {
-                0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
-            };
-            final double[] relativeTolerance = {
-                1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
-            };
-            AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxstep,
-                                                                                   absoluteTolerance,
-                                                                                   relativeTolerance);
+            final double positionTolerance = 10.0;
+            final OrbitType propagationType = OrbitType.KEPLERIAN;
+            final double[][] tolerances =
+                    NumericalPropagator.tolerances(positionTolerance, initialOrbit, propagationType);
+            AdaptiveStepsizeIntegrator integrator =
+                    new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
 
             // Propagator
             NumericalPropagator propagator = new NumericalPropagator(integrator);
+            propagator.setOrbitType(propagationType);
 
             // Force Model (reduced to perturbing gravity field)
             Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
@@ -116,12 +115,12 @@ public class MasterMode {
             SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(630.));
             System.out.println(" Final date  : " + finalState.getDate());
             System.out.println(" Final state : " + finalState.getOrbit());
-            
+
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
         }
     }
-    
+
     /** Specialized step handler.
      * <p>This class extends the step handler in order to print on the output stream at the given step.<p>
      * @author Pascal Parraud

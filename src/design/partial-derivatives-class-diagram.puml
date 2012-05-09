@@ -1,0 +1,111 @@
+' Copyright 2002-2012 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.orekit #ECEBD8
+
+    package forces #DDEBD8
+
+      interface Parameterizable
+
+      interface ForceModel {
+        +void addContribution()
+      }
+
+      ForceModel        ..|> Parameterizable
+
+      package complex #DDDBD8
+        class ComplexForceModel
+        ForceModel      <|.. ComplexForceModel
+        Parameterizable <|.. ComplexForceModel
+      end package
+
+      package radiation #DDDBD8
+        class SolarRadiationPressure
+        ForceModel      <|.. SolarRadiationPressure
+        Parameterizable <|.. SolarRadiationPressure
+      end package
+
+    end package
+ 
+    package propagation #DDEBD8
+
+      interface Propagator {
+        + SpacecraftState propagate(AbsoluteDate target)
+      }
+
+      package numerical #DDDBD8
+
+        interface TimeDerivativesEquations {
+          +void initDerivatives()
+          +void addKeplerContribution()
+          +void addXYZAcceleration()
+          +void addAcceleration()
+          +void addMassDerivative()
+        }
+
+       class NumericalPropagator {
+         +void addAdditionalEquations(AdditionalEquations addEqu)
+         +void setInitialAdditionalState(String name, double[] addState)
+         +void addForceModel(ForceModel model)
+       }
+
+        interface AdditionalEquations {
+          +String getName()
+          +void computeDerivatives()
+        }
+
+        class PartialDerivativesEquations {
+          +List<String> getAvailableParameters()
+          +void selectParameters(String ... parameters)
+          +void selectParamAndStep(String parameter, double hP)
+          +void setInitialJacobians()
+       }
+
+       interface AccelerationJacobiansProvider
+
+       class Jacobianizer
+
+       TimeDerivativesEquations    <--      AdditionalEquations
+       TimeDerivativesEquations    <--      ForceModel : contributes
+       AdditionalEquations         <|..     PartialDerivativesEquations
+       PartialDerivativesEquations *-->     AccelerationJacobiansProvider : providers
+       AccelerationJacobiansProvider <|..   Jacobianizer
+       Parameterizable             <|--     AccelerationJacobiansProvider
+       Propagator                  <|--     NumericalPropagator
+       NumericalPropagator         "1..*" *--> ForceModel
+       NumericalPropagator         "*" o--> AdditionalEquations      : additional
+       NumericalPropagator         "1" *--> TimeDerivativesEquations : main
+
+       AccelerationJacobiansProvider <|.. SolarRadiationPressure
+       Jacobianizer                  -->  ComplexForceModel
+
+      end package
+    end package
+
+  end package
+
+@enduml

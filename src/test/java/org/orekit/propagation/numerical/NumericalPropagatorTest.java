@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,12 +19,12 @@ package org.orekit.propagation.numerical;
 import java.io.IOException;
 import java.text.ParseException;
 
-import org.apache.commons.math.exception.util.LocalizedFormats;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -100,7 +100,7 @@ public class NumericalPropagatorTest {
 
         // Propagation of the initial at t + dt
         final double dt = 3200;
-        final SpacecraftState finalState = 
+        final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
 
         // Check results
@@ -120,7 +120,7 @@ public class NumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final double dt = 3200;
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        final PVCoordinates finalState = 
+        final PVCoordinates finalState =
             propagator.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
         final Vector3D pFin = finalState.getPosition();
         final Vector3D vFin = finalState.getVelocity();
@@ -324,7 +324,7 @@ public class NumericalPropagatorTest {
         });
         final double dt = 3200;
         Assert.assertFalse(gotHere);
-        final SpacecraftState finalState = 
+        final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
@@ -348,7 +348,7 @@ public class NumericalPropagatorTest {
         });
         final double dt = 3200;
         Assert.assertFalse(gotHere);
-        final SpacecraftState finalState = 
+        final SpacecraftState finalState =
             propagator.propagate(initDate.shiftedBy(dt));
         Assert.assertTrue(gotHere);
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
@@ -376,13 +376,13 @@ public class NumericalPropagatorTest {
         Frame EME2000 = FramesFactory.getEME2000();
 
 
-        // Initial orbit            
+        // Initial orbit
         double a = 35786000. + 6378137.0;
         double e = 0.70;
         double rApogee = a*(1+e);
         double vApogee = FastMath.sqrt(mu*(1-e)/(a*(1+e)));
-        Orbit geo = new CartesianOrbit(new PVCoordinates(new Vector3D(rApogee, 0., 0.), 
-                                                         new Vector3D(0., vApogee, 0.)), EME2000, 
+        Orbit geo = new CartesianOrbit(new PVCoordinates(new Vector3D(rApogee, 0., 0.),
+                                                         new Vector3D(0., vApogee, 0.)), EME2000,
                                                          initialDate, mu);
 
 
@@ -415,7 +415,7 @@ public class NumericalPropagatorTest {
         propagator.addEventDetector(event1);
 
         // Set the propagation mode
-        propagator.setSlaveMode();          
+        propagator.setSlaveMode();
 
         // Propagate
         SpacecraftState finalState = propagator.propagate(endDate);

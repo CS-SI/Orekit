@@ -1,4 +1,4 @@
-~~ Copyright 2002-2011 CS Communication & Systèmes
+~~ Copyright 2002-2012 CS Systèmes d'Information
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -226,16 +226,19 @@ SpacecraftState initialState = new SpacecraftState(initialOrbit);
 // with a minimum step of 0.001 and a maximum step of 1000
 double minStep = 0.001;
 double maxstep = 1000.0;
-double[] absoluteTolerance = {
-    0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
-};
-double[] relativeTolerance = {
-    1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
-};
+double positionTolerance = 10.0;
+OrbitType propagationType = OrbitType.KEPLERIAN;
+double[][] tolerances =
+    NumericalPropagator.tolerances(positionTolerance, initialOrbit, propagationType);
 AdaptiveStepsizeIntegrator integrator =
-    new DormandPrince853Integrator(minStep, maxstep,
-                                   absoluteTolerance, relativeTolerance);
+    new DormandPrince853Integrator(minStep, maxstep, tolerances[0], tolerances[1]);
++---------------------
+
+  We set up the integrator, and force it to use Keplerian parameters for propagation.
+
++---------------------
 NumericalPropagator propagator = new NumericalPropagator(integrator);
+propagator.setOrbitType(propagationType);
 +---------------------
 
   A force model, reduced here to a single perturbing gravity field, is taken into account.\
@@ -311,68 +314,30 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
 +---------------------
  time : 2004-01-01T23:30:00.000
- equinoctial parameters: {a: 2.4396159E7;
-                          ex: 0.11393312156755062; ey: 0.719345418868777;
-                          hx: -0.009567941763699867; hy: -0.06040960680288257;
-                          lv: 441.0;}
+ keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 0.0;}
  time : 2004-01-01T23:31:00.000
- equinoctial parameters: {a: 2.43956442447147E7;
-                          ex: 0.11379555463005957; ey: 0.7193603780367466;
-                          hx: -0.009567899603538911; hy: -0.06040916627598484;
-                          lv: 446.281396252324;}
+ keplerian parameters: {a: 2.439564424480015E7; e: 0.7283054179012741; i: 6.999949573716115; pa: 180.01089879431635; raan: 260.9999744509341; v: 5.270522984259634;}
  time : 2004-01-01T23:32:00.000
- equinoctial parameters: {a: 2.4394130981128443E7;
-                          ex: 0.1136592209017635; ey: 0.7193618943111063;
-                          hx: -0.009567880963307815; hy: -0.06040784657447202;
-                          lv: 451.5253608293239;}
+ keplerian parameters: {a: 2.4394130981544524E7; e: 0.7282856263106472; i: 6.999800432744152; pa: 180.02168751826343; raan: 260.9997982967906; v: 10.50387496695558;}
  time : 2004-01-01T23:33:00.000
- equinoctial parameters: {a: 2.43917106643025E7;
-                          ex: 0.11352728523102393; ey: 0.7193506733385568;
-                          hx: -0.009568040191295672; hy: -0.0604057162729131;
-                          lv: 456.6962051211052;}
+ keplerian parameters: {a: 2.4391710665289845E7; e: 0.7282539637676634; i: 6.999563066306985; pa: 180.03226220891892; raan: 260.99933874845317; v: 15.664604011799053;}
  time : 2004-01-01T23:34:00.000
- equinoctial parameters: {a: 2.438852139218653E7;
-                          ex: 0.11340245896040695; ey: 0.719328108923199;
-                          hx: -0.009568504032782268; hy: -0.060402895325632394;
-                          lv: 461.76152443974274;}
+ keplerian parameters: {a: 2.438852138985819E7; e: 0.7282122258929671; i: 6.9992532645274546; pa: 180.04252939476373; raan: 260.9984960696569; v: 20.720499012905563;}
  time : 2004-01-01T23:35:00.000
- equinoctial parameters: {a: 2.4384730095000014E7;
-                          ex: 0.11328681468263016; ey: 0.7192960781495514;
-                          hx: -0.009569360025726937; hy: -0.060399538106672035;
-                          lv: 466.69337761753326;}
+ keplerian parameters: {a: 2.438473009191154E7; e: 0.7281625851163973; i: 6.998890000900681; pa: 180.05240967921347; raan: 260.9972118041821; v: 25.643756282394765;}
  time : 2004-01-01T23:36:00.000
- equinoctial parameters: {a: 2.4380513630602702E7;
-                          ex: 0.1131817075460741; ey: 0.719256704937947;
-                          hx: -0.009570652226141946; hy: -0.06039581413595108;
-                          lv: 471.4690168499321;}
+ keplerian parameters: {a: 2.4380513619406037E7; e: 0.7281073453198131; i: 6.998493179635541; pa: 180.06183982161005; raan: 260.9954699357843; v: 30.411707875362936;}
  time : 2004-01-01T23:37:00.000
- equinoctial parameters: {a: 2.4376042191173874E7;
-                          ex: 0.11308779626346281; ey: 0.7192121378362317;
-                          hx: -0.009572383735759913; hy: -0.06039189021718959;
-                          lv: 476.0711590450501;}
+ keplerian parameters: {a: 2.4376042162606522E7; e: 0.7280487266192758; i: 6.998081669198389; pa: 180.0707733525973; raan: 260.9932919569584; v: 35.00709604303499;}
  time : 2004-01-01T23:38:00.000
- equinoctial parameters: {a: 2.437146715705459E7;
-                          ex: 0.11300513750428136; ey: 0.7191643744054912;
-                          hx: -0.0095745241076911; hy: -0.06038791660587941;
-                          lv: 480.48785948784604;}
+ keplerian parameters: {a: 2.4371467133870374E7; e: 0.727988707383731; i: 6.997671877833683; pa: 180.07917999091737; raan: 260.99072804117174; v: 39.41795154717632;}
  time : 2004-01-01T23:39:00.000
- equinoctial parameters: {a: 2.436691418568236E7;
-                          ex: 0.11293331934941137; ey: 0.7191151481891875;
-                          hx: -0.009577019067983016; hy: -0.06038401850862352;
-                          lv: 484.71206392270483;}
+ keplerian parameters: {a: 2.4366914169719197E7; e: 0.7279289324335715; i: 6.99727695633292; pa: 180.08704419756123; raan: 260.98784670576674; v: 43.63716855903322;}
  time : 2004-01-01T23:40:00.000
- equinoctial parameters: {a: 2.4362480759924155E7;
-                          ex: 0.11287160608332707; ey: 0.7190658726134559;
-                          hx: -0.009579800635231736; hy: -0.060380292373369754;
-                          lv: 488.7409705510215;}
+ keplerian parameters: {a: 2.436248074752743E7; e: 0.7278706810843818; i: 6.996906568384245; pa: 180.09436319418123; raan: 260.9847250080804; v: 47.66188030915512;}
  this was the last step 
  Final date  : 2004-01-01T23:40:30.000
- Final state : equinoctial parameters: {a: 2.4360331842829864E7;
-                                        ex: 0.11284425291236964;
-                                        ey: 0.7190415678613115;
-                                        hx: -0.009581276101643383;
-                                        hy: -0.06037851608173257;
-                                        lv: 490.68230357067466;}
+ Final state : keplerian parameters: {a: 2.4360331834936075E7; e: 0.7278424290862751; i: 6.996732681960374; pa: 180.097820317503; raan: 260.98309840201875; v: 49.6013850854552;}
 +---------------------
 
 *** Source code

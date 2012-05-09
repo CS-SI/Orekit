@@ -1,5 +1,5 @@
-/* Copyright 2010 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,7 +20,7 @@ import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-import org.apache.commons.math.exception.util.Localizable;
+import org.apache.commons.math3.exception.util.Localizable;
 
 /**
  * Enumeration for localized messages formats.
@@ -141,12 +141,20 @@ public enum OrekitMessages implements Localizable {
     CCSDS_ORBIT_DATA_MESSAGE_MISSING_COVARIANCE("missing covariance in CCSDS Orbit Data Message"),
     ADDITIONAL_STATE_NAME_ALREADY_IN_USE("name \"{0}\" is already used for an additional state"),
     NON_RESETABLE_STATE("reset state not allowed {0}"),
+    DSST_NEWCOMB_OPERATORS_COMPUTATION("Cannot compute Newcomb operators for sigma > rho ({0} > {1})"),
+    DSST_VMSN_COEFFICIENT_ERROR_MS("Cannot compute the Vmsn coefficient with m > s ({0} > {1})"),
+    DSST_SPR_SHADOW_INCONSISTENT("inconsistent shadow computation: entry = {0} whereas exit = {1}"),
+    DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD("The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates"),
     SP3_UNSUPPORTED_VERSION("unsupported sp3 file version {0}"),
     SP3_UNSUPPORTED_TIMESYSTEM("unsupported time system {0}"),
     SP3_UNEXPECTED_END_OF_FILE("unexpected end of sp3 file (after line {0})"),
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM("geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
-    OUT_OF_RANGE_TIME_TRANSFORM("time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]");
+    OUT_OF_RANGE_TIME_TRANSFORM("time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]"),
+    NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
+    NO_CACHED_ENTRIES("no cached entries"),
+    NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),
+    OUT_OF_RANGE_CACHE("out of range date for cache entry: {0}, [{1}, {2}]");
 
     // CHECKSTYLE: resume JavadocVariable check
 

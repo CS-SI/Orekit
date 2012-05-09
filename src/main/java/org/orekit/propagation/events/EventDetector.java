@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -24,7 +24,7 @@ import org.orekit.time.AbsoluteDate;
 
 /** This interface represents space-dynamics aware events detectors.
  *
- * <p>It mirrors the {@link org.apache.commons.math.ode.events.EventHandler
+ * <p>It mirrors the {@link org.apache.commons.math3.ode.events.EventHandler
  * EventHandler} interface from <a href="http://commons.apache.org/math/">
  * commons-math</a> but provides a space-dynamics interface to the methods.</p>
  *

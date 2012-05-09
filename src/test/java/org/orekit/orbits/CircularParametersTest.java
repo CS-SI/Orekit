@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,9 +16,9 @@
  */
 package org.orekit.orbits;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,10 +35,10 @@ import org.orekit.utils.PVCoordinates;
 
 public class CircularParametersTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-    // Body mu 
+
+    // Body mu
     private double mu;
 
     @Test
@@ -62,7 +62,7 @@ public class CircularParametersTest {
             try {
                 // elliptic orbit
                 CircularOrbit circ =
-                    new CircularOrbit(42166.712, 0.5, -0.5, i, raan, 5.300 - raan, type, 
+                    new CircularOrbit(42166.712, 0.5, -0.5, i, raan, 5.300 - raan, type,
                                       FramesFactory.getEME2000(), date, mu);
                 Vector3D pos = circ.getPVCoordinates().getPosition();
                 Vector3D vit = circ.getPVCoordinates().getVelocity();
@@ -94,7 +94,7 @@ public class CircularParametersTest {
         // elliptic orbit
         CircularOrbit circ =
             new CircularOrbit(42166.712, 0.5, -0.5, i, raan,
-                                   5.300 - raan, PositionAngle.MEAN, 
+                                   5.300 - raan, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPVCoordinates().getPosition();
         Vector3D vit = circ.getPVCoordinates().getVelocity();
@@ -122,7 +122,7 @@ public class CircularParametersTest {
         // circular orbit
         EquinoctialOrbit circCir =
             new EquinoctialOrbit(42166.712, 0.1e-10, -0.1e-10, i, raan,
-                                      5.300 - raan, PositionAngle.MEAN, 
+                                      5.300 - raan, PositionAngle.MEAN,
                                       FramesFactory.getEME2000(), date, mu);
         Vector3D posCir = circCir.getPVCoordinates().getPosition();
         Vector3D vitCir = circCir.getPVCoordinates().getVelocity();
@@ -155,7 +155,7 @@ public class CircularParametersTest {
 
         CircularOrbit circ=
             new CircularOrbit(42166.712, ex, ey, i, raan,
-                                   5.300 - raan, PositionAngle.MEAN, 
+                                   5.300 - raan, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         Vector3D pos = circ.getPVCoordinates().getPosition();
         Vector3D vel = circ.getPVCoordinates().getVelocity();
@@ -191,7 +191,7 @@ public class CircularParametersTest {
 
         CircularOrbit circ=
             new CircularOrbit(42166.712, ex, ey, i, raan,
-                                   5.300 - raan, PositionAngle.MEAN, 
+                                   5.300 - raan, PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         KeplerianOrbit kep = new KeplerianOrbit(circ);
 
@@ -326,7 +326,7 @@ public class CircularParametersTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit p =
             new CircularOrbit(42166.712, 0.5, -0.5, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE, 
+                                   0.67 - raan, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         double ex = p.getEquinoctialEx();
@@ -383,7 +383,7 @@ public class CircularParametersTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit pCirEqua =
             new CircularOrbit(42166.712, 0.1e-8, 0.1e-8, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE, 
+                                   0.67 - raan, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         double ex = pCirEqua.getEquinoctialEx();
@@ -414,7 +414,7 @@ public class CircularParametersTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit p =
             new CircularOrbit(42166.712, 0.5, -0.5, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE, 
+                                   0.67 - raan, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = p.getPVCoordinates().getPosition();
@@ -458,7 +458,7 @@ public class CircularParametersTest {
         double raan = FastMath.atan2(hy, hx);
         CircularOrbit pCirEqua =
             new CircularOrbit(42166.712, 0.1e-8, 0.1e-8, i, raan,
-                                   0.67 - raan, PositionAngle.TRUE, 
+                                   0.67 - raan, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
         Vector3D position = pCirEqua.getPVCoordinates().getPosition();

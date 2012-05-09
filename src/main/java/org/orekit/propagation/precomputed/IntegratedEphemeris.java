@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.propagation.precomputed;
 
 import java.util.List;
 
-import org.apache.commons.math.ode.ContinuousOutputModel;
+import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -82,9 +82,6 @@ public class IntegratedEphemeris
     /** Position angle type. */
     private final PositionAngle angleType;
 
-    /** Attitude provider. */
-    private final AttitudeProvider attitudeProvider;
-
     /** Reference frame. */
     private final Frame referenceFrame;
 
@@ -125,14 +122,13 @@ public class IntegratedEphemeris
                                final Frame referenceFrame, final double mu)
         throws OrekitException {
 
-        super(DEFAULT_LAW);
+        super(attitudeProvider);
 
         this.startDate        = startDate;
         this.minDate          = minDate;
         this.maxDate          = maxDate;
         this.orbitType        = orbitType;
         this.angleType        = angleType;
-        this.attitudeProvider = attitudeProvider;
         this.model            = model;
         this.referenceFrame   = referenceFrame;
         this.mu               = mu;
@@ -179,7 +175,7 @@ public class IntegratedEphemeris
             final double[] y = model.getInterpolatedState();
             final Orbit orbit =
                 orbitType.mapArrayToOrbit(y, angleType, date, mu, referenceFrame);
-            final Attitude attitude = attitudeProvider.getAttitude(orbit, date, referenceFrame);
+            final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, referenceFrame);
             return new SpacecraftState(orbit, attitude, y[6]);
         } catch (OrekitExceptionWrapper oew) {
             if (oew.getException() instanceof PropagationException) {

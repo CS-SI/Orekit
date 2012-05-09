@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,7 +22,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -291,8 +291,7 @@ public class TLE implements TimeStamped, Serializable {
         throws OrekitException {
 
         final StringBuffer buffer = new StringBuffer();
-        final DecimalFormat f38  = new DecimalFormat("##0.00000000", SYMBOLS);
-        final DecimalFormat fExp = new DecimalFormat(".00000E0", SYMBOLS);
+        final DecimalFormat f38  = new DecimalFormat("000.00000000", SYMBOLS);
 
         buffer.append('1');
 
@@ -319,13 +318,10 @@ public class TLE implements TimeStamped, Serializable {
 
         buffer.append(' ');
         final double n2 = meanMotionSecondDerivative * 5.3747712e13 / FastMath.PI;
-        final String doubleDash = "--";
-        final String sn2 = fExp.format(n2).replace('E', '-').replace(doubleDash, "-").replace(".", "");
-        buffer.append(addPadding(sn2, ' ', 8, true));
+        buffer.append(addPadding(formatExponentMarkerFree(n2, 5), ' ', 8, true));
 
         buffer.append(' ');
-        final String sB = fExp.format(bStar).replace('E', '-').replace(doubleDash, "-").replace(".", "");
-        buffer.append(addPadding(sB, ' ', 8, true));
+        buffer.append(addPadding(formatExponentMarkerFree(bStar, 5), ' ', 8, true));
 
         buffer.append(' ');
         buffer.append(ephemerisType);
@@ -337,6 +333,23 @@ public class TLE implements TimeStamped, Serializable {
 
         line1 = buffer.toString();
 
+    }
+
+    /** Format a real number without 'e' exponent marker.
+     * @param d number to format
+     * @param mantissaSize size of the mantissa (not counting initial '-' or ' ' for sign)
+     * @return formatted number
+     */
+    private String formatExponentMarkerFree(final double d, final int mantissaSize) {
+        final double dAbs = FastMath.abs(d);
+        int exponent = (dAbs < 1.0e-9) ? -9 : (int) FastMath.ceil(FastMath.log10(dAbs));
+        final long mantissa = FastMath.round(dAbs * FastMath.pow(10.0, mantissaSize - exponent));
+        if (mantissa == 0) {
+            exponent = 0;
+        }
+        final String sMantissa = addPadding((int) mantissa, '0', mantissaSize, true);
+        final String sExponent = Integer.toString(FastMath.abs(exponent));
+        return (d <  0 ? '-' : ' ') + sMantissa + (exponent <= 0 ? '-' : '+') + sExponent;
     }
 
     /** Build the line 2 from the parsed elements.

@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,10 +21,10 @@ import java.text.ParseException;
 
 import junit.framework.Assert;
 
-import org.apache.commons.math.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -156,7 +156,7 @@ public class SpacecraftStateTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                                  TimeComponents.H00,
                                                  TimeScalesFactory.getUTC());
-        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE, 
+        orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
         attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2005());
         propagator =

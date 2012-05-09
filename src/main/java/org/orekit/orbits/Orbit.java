@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,17 +18,18 @@ package org.orekit.orbits;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.linear.DecompositionSolver;
-import org.apache.commons.math.linear.MatrixUtils;
-import org.apache.commons.math.linear.QRDecomposition;
-import org.apache.commons.math.linear.RealMatrix;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.QRDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -56,7 +57,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesProvider {
+public abstract class Orbit implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 438733454597999578L;
@@ -302,10 +303,6 @@ public abstract class Orbit implements TimeStamped, Serializable, PVCoordinatesP
      * </p>
      * @param dt time shift in seconds
      * @return a new orbit, shifted with respect to the instance (which is immutable)
-     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public abstract Orbit shiftedBy(final double dt);
 

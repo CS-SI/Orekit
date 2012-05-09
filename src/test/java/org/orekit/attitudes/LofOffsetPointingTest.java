@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,10 +17,10 @@
 package org.orekit.attitudes;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.RotationOrder;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,15 +45,15 @@ import org.orekit.time.TimeScalesFactory;
 
 public class LofOffsetPointingTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-    // Body mu 
+
+    // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C 
+    // Reference frame = ITRF 2005C
     private Frame frameItrf2005;
-        
+
     // Earth shape
     OneAxisEllipsoid earthSpheric;
 
@@ -65,7 +65,7 @@ public class LofOffsetPointingTest {
         //  Satellite position
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
 
         // Create lof aligned law
@@ -73,7 +73,7 @@ public class LofOffsetPointingTest {
         final LofOffset lofLaw = new LofOffset(circ.getFrame(), LOFType.VVLH);
         final LofOffsetPointing lofPointing = new LofOffsetPointing(earthSpheric, lofLaw, Vector3D.PLUS_K);
         final Rotation lofRot = lofPointing.getAttitude(circ, date, circ.getFrame()).getRotation();
- 
+
         // Compare to body center pointing law
         //*************************************
         final BodyCenterPointing centerLaw = new BodyCenterPointing(earthSpheric.getBodyFrame());
@@ -88,13 +88,13 @@ public class LofOffsetPointingTest {
         final double angleNadir = nadirRot.applyInverseTo(lofRot).getAngle();
         Assert.assertEquals(0., angleNadir, Utils.epsilonAngle);
 
-    } 
+    }
 
     @Test(expected=OrekitException.class)
     public void testMiss() throws OrekitException {
         final CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(0.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
         final LofOffset upsideDown = new LofOffset(circ.getFrame(), LOFType.VVLH, RotationOrder.XYX, FastMath.PI, 0, 0);
         final LofOffsetPointing pointing = new LofOffsetPointing(earthSpheric, upsideDown, Vector3D.PLUS_K);
@@ -110,7 +110,7 @@ public class LofOffsetPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         final AttitudeProvider law =
@@ -159,14 +159,14 @@ public class LofOffsetPointingTest {
 
             // Body mu
             mu = 3.9860047e14;
-            
+
             // Reference frame = ITRF 2005
             frameItrf2005 = FramesFactory.getITRF2005(true);
 
             // Elliptic earth shape
             earthSpheric =
                 new OneAxisEllipsoid(6378136.460, 0., frameItrf2005);
-            
+
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
         }

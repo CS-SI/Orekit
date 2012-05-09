@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -22,12 +22,12 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
@@ -55,7 +55,7 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class SpacecraftState implements TimeStamped, Serializable {
+public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftState>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3141803003950085500L;
@@ -176,13 +176,8 @@ public class SpacecraftState implements TimeStamped, Serializable {
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      * except for the mass which stay unchanged
-     * @exception PropagationException if orbit cannot be propagated
-     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
      */
-    public SpacecraftState shiftedBy(final double dt) throws PropagationException {
+    public SpacecraftState shiftedBy(final double dt) {
         return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt), mass);
     }
 

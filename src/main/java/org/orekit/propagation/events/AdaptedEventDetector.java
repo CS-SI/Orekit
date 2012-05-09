@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,7 @@ package org.orekit.propagation.events;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.ode.events.EventHandler;
+import org.apache.commons.math3.ode.events.EventHandler;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -31,7 +31,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
 /** Adapt an {@link org.orekit.propagation.events.EventDetector}
- * to commons-math {@link org.apache.commons.math.ode.events.EventHandler} interface.
+ * to commons-math {@link org.apache.commons.math3.ode.events.EventHandler} interface.
  * @author Fabien Maussion
  */
 public class AdaptedEventDetector implements EventHandler, Serializable {

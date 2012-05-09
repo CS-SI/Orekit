@@ -1,0 +1,55 @@
+' Copyright 2002-2012 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.orekit.bodies #ECEBD8
+
+    class GeodeticPoint {
+      +double getLatitude()
+      +double getLongitude()
+      +double getAltitude()
+      +Vector3D getZenith()
+      +Vector3D getNadir()
+      +Vector3D getNorth()
+      +Vector3D getSouth()
+      +Vector3D getEast()
+      +Vector3D getWest()
+    }
+
+    interface BodyShape {
+      +Frame getBodyFrame()
+      +GeodeticPoint getIntersectionPoint(Line line, Vector3D close, Frame frame, AbsoluteDate date)
+      +GeodeticPoint transform(Vector3D point, Frame frame, AbsoluteDate date)
+      +Vector3D transform(GeodeticPoint point)
+    }
+
+    class OneAxisEllipsoid
+    BodyShape <|-- OneAxisEllipsoid
+    BodyShape --> GeodeticPoint
+
+end package
+
+@enduml

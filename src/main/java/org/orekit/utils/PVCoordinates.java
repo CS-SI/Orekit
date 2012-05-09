@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,7 +18,8 @@ package org.orekit.utils;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.orekit.time.TimeShiftable;
 
 /** Simple container for Position/Velocity pairs.
  * <p>
@@ -31,7 +32,7 @@ import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class PVCoordinates implements Serializable {
+public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable {
 
     /** Fixed position/velocity at origin (both p and v are zero vectors). */
     public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO);

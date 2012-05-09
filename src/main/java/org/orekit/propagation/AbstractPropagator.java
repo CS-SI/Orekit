@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,9 +28,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.commons.math.exception.NoBracketingException;
-import org.apache.commons.math.exception.TooManyEvaluationsException;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.exception.NoBracketingException;
+import org.apache.commons.math3.exception.TooManyEvaluationsException;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -85,6 +85,12 @@ public abstract class AbstractPropagator implements Propagator {
     /** Internal steps interpolator. */
     private final BasicStepInterpolator interpolator;
 
+    /** Start date of last propagation. */
+    private AbsoluteDate lastPropagationStart;
+
+    /** End date of last propagation. */
+    private AbsoluteDate lastPropagationEnd;
+
     /** Start date. */
     private AbsoluteDate startDate;
 
@@ -109,6 +115,8 @@ public abstract class AbstractPropagator implements Propagator {
         statesInitialized      = false;
         additionalStateProviders = new ArrayList<AdditionalStateProvider>();
         interpolator           = new BasicStepInterpolator();
+        lastPropagationStart   = AbsoluteDate.PAST_INFINITY;
+        lastPropagationEnd     = AbsoluteDate.FUTURE_INFINITY;
         this.pvProvider        = new LocalPVProvider();
         this.attitudeProvider  = attitudeProvider;
         setSlaveMode();
@@ -184,7 +192,7 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public BoundedPropagator getGeneratedEphemeris() {
-        return new UnboundedPropagatorView();
+        return new BoundedPropagatorView(lastPropagationStart, lastPropagationEnd);
     }
 
     /** {@inheritDoc} */
@@ -252,6 +260,8 @@ public abstract class AbstractPropagator implements Propagator {
         throws PropagationException {
         try {
 
+            lastPropagationStart = start;
+
             final double dt      = target.durationFrom(start);
             final double epsilon = FastMath.ulp(dt);
             interpolator.storeDate(start);
@@ -301,7 +311,8 @@ public abstract class AbstractPropagator implements Propagator {
             } while (!isLastStep);
 
             // return the last computed state
-            startDate = state.getDate();
+            lastPropagationEnd = state.getDate();
+            startDate          = state.getDate();
             return state;
 
         } catch (PropagationException pe) {
@@ -505,26 +516,41 @@ public abstract class AbstractPropagator implements Propagator {
         initialState = state;
     }
 
-    /** {@link BoundedPropagator} (but not really bounded) view of the instance. */
-    private class UnboundedPropagatorView extends AbstractPropagator implements BoundedPropagator {
+    /** {@link BoundedPropagator} view of the instance. */
+    private class BoundedPropagatorView extends AbstractPropagator implements BoundedPropagator {
 
         /** Serializable UID. */
         private static final long serialVersionUID = -3340036098040553110L;
 
+        /** Min date. */
+        private final AbsoluteDate minDate;
+
+        /** Max date. */
+        private final AbsoluteDate maxDate;
+
         /** Simple constructor.
+         * @param startDate start date of the propagation
+         * @param endDate end date of the propagation
          */
-        public UnboundedPropagatorView() {
+        public BoundedPropagatorView(final AbsoluteDate startDate, final AbsoluteDate endDate) {
             super(AbstractPropagator.this.getAttitudeProvider());
+            if (startDate.compareTo(endDate) <= 0) {
+                minDate = startDate;
+                maxDate = endDate;
+            } else {
+                minDate = endDate;
+                maxDate = startDate;
+            }
         }
 
         /** {@inheritDoc} */
         public AbsoluteDate getMinDate() {
-            return AbsoluteDate.PAST_INFINITY;
+            return minDate;
         }
 
         /** {@inheritDoc} */
         public AbsoluteDate getMaxDate() {
-            return AbsoluteDate.FUTURE_INFINITY;
+            return maxDate;
         }
 
         /** {@inheritDoc} */

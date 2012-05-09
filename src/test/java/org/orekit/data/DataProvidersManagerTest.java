@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.commons.math.exception.util.DummyLocalizable;
+import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -121,7 +121,7 @@ public class DataProvidersManagerTest {
         List<DataProvider> providers = manager.getProviders();
         Assert.assertEquals(1, providers.size());
         for (DataProvider provider : providers) {
-            Assert.assertTrue(manager.isSupported(provider));            
+            Assert.assertTrue(manager.isSupported(provider));
         }
         Assert.assertNotNull(manager.removeProvider(providers.get(0)));
         Assert.assertEquals(0, manager.getProviders().size());

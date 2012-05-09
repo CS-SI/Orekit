@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -64,7 +64,10 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
         //       Jul.  1 - 1973  Jan.  1    11s
         // 1973  Jan.  1 - 1974  Jan.  1    12s
         //  ...
-        // 2006  Jan.  1.-                  33s
+        // 2006  Jan.  1.- 2009  Jan.  1    33s
+        // 2009  Jan.  1.- 2012  Jul   1    34s
+        // 2012  Jul   1 -                  35s
+
         // we ignore the non-constant and non integer offsets before 1972-01-01
         final String start = "^";
 
@@ -78,7 +81,7 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
             builder.append('|');
         }
         builder.delete(builder.length() - 1, builder.length());
-        builder.append(")\\.");
+        builder.append(")\\.?");
         final String monthField = builder.toString();
 
         // day group

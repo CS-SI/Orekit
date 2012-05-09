@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,17 +23,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math.exception.MathIllegalArgumentException;
-import org.apache.commons.math.exception.MathIllegalStateException;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.events.EventHandler;
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.MathIllegalStateException;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.events.EventHandler;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.attitudes.InertialProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -225,7 +224,7 @@ public class NumericalPropagator implements Propagator {
         referenceDate       = null;
         currentState        = null;
         addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
-        attitudeProvider    = InertialProvider.EME2000_ALIGNED;
+        attitudeProvider    = DEFAULT_LAW;
         stateVector         = new double[7];
         setMu(Double.NaN);
         setIntegrator(integrator);
@@ -385,7 +384,7 @@ public class NumericalPropagator implements Propagator {
      * of the underlying integrator set up in the {@link
      * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
      * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
+     * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
         integrator.clearStepHandlers();

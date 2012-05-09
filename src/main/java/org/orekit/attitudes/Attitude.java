@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -18,12 +18,13 @@ package org.orekit.attitudes;
 
 import java.io.Serializable;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 
 
@@ -44,7 +45,7 @@ import org.orekit.time.TimeStamped;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class Attitude implements TimeStamped, Serializable {
+public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -947817502698754209L;
@@ -98,10 +99,6 @@ public class Attitude implements TimeStamped, Serializable {
      * </p>
      * @param dt time shift in seconds
      * @return a new attitude, shifted with respect to the instance (which is immutable)
-     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
-     * @see org.orekit.utils.PVCoordinates#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public Attitude shiftedBy(final double dt) {
         final double rate = spin.getNorm();

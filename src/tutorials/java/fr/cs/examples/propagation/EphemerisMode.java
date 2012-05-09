@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,9 @@
 
 package fr.cs.examples.propagation;
 
-import org.apache.commons.math.ode.FirstOrderIntegrator;
-import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -71,7 +71,7 @@ public class EphemerisMode {
             // Orbit construction as Keplerian
             Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN,
                                                     inertialFrame, initialDate, mu);
-            
+
             // Initialize state
             SpacecraftState initialState = new SpacecraftState(initialOrbit);
 
@@ -83,10 +83,10 @@ public class EphemerisMode {
 
             // Set the propagator to ephemeris mode
             propagator.setEphemerisMode();
-            
+
             // Initialize propagation
             propagator.setInitialState(initialState);
-            
+
             // Propagation with storage of the results in an integrated ephemeris
             SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(6000));
 
@@ -96,20 +96,20 @@ public class EphemerisMode {
 
             // Getting the integrated ephemeris
             BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
-            
+
             System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() + " to " + ephemeris.getMaxDate());
-            
+
             System.out.println(" Ephemeris propagation :");
             AbsoluteDate intermediateDate = initialDate.shiftedBy(3000);
             SpacecraftState intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
-            
+
             intermediateDate = finalState.getDate();
             intermediateState = ephemeris.propagate(intermediateDate);
             System.out.println("  date :  " + intermediateState.getDate());
             System.out.println("  " + intermediateState.getOrbit());
-            
+
             intermediateDate = initialDate.shiftedBy(-1000);
             System.out.println();
             System.out.println("Attempting to propagate to date " + intermediateDate +

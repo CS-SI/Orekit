@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.forces.drag;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
@@ -25,8 +25,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -727,11 +725,8 @@ public class JB2006 implements Atmosphere {
         // check if data are available :
         if (date.compareTo(inputParams.getMaxDate()) > 0 ||
             date.compareTo(inputParams.getMinDate()) < 0) {
-            final TimeScale utcScale = TimeScalesFactory.getUTC();
             throw new OrekitException(OrekitMessages.NO_SOLAR_ACTIVITY_AT_DATE,
-                                      date.toString(utcScale),
-                                      inputParams.getMinDate().toString(utcScale),
-                                      inputParams.getMaxDate().toString(utcScale));
+                                      date, inputParams.getMinDate(), inputParams.getMaxDate());
         }
 
         // compute modified julian days date

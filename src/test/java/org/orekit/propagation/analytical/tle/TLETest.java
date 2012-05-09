@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -23,15 +23,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.analytical.tle.TLE;
-import org.orekit.propagation.analytical.tle.TLEPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -99,6 +97,18 @@ public class TLETest {
                           tleRef.getRevolutionNumberAtEpoch(), tleRef.getBStar());
         Assert.assertEquals(line1, tle.getLine1());
         Assert.assertEquals(line2, tle.getLine2());
+    }
+
+    @Test
+    public void testBug74() throws OrekitException {
+        checkSymmetry("1 00001U 00001A   12026.45833333 2.94600864  39565-9  16165-7 1    12",
+                      "2 00001 627.0796 454.4522 0000000 624.9662   0.4817  0.00000000    12");
+    }
+
+    @Test
+    public void testBug77() throws OrekitException {
+        checkSymmetry("1 05555U 71086J   12026.96078249 -.00000004  00001-9  01234-9 0  9082",
+                      "2 05555  74.0161 228.9750 0075476 328.9888  30.6709 12.26882470804545");
     }
 
     @Test(expected=OrekitException.class)
@@ -183,31 +193,19 @@ public class TLETest {
                             Vector3D testVel = new Vector3D(vX, vY, vZ);
 
                             AbsoluteDate date = tle.getDate().shiftedBy(minFromStart * 60);
-                            PVCoordinates results = null;
-                            try {
-                                results = ex.getPVCoordinates(date);
-                            }
-                            catch(OrekitException e)  {
-                                if (satNum==28872  || satNum==23333 || satNum==29141 ) {
-                                    // expected behavior
-                                } else {
-                                    Assert.fail("exception not expected " + e.getMessage());
-                                }
-                            }
-                            if (results != null) {
-                                double normDifPos = testPos.subtract(results.getPosition()).getNorm();
-                                double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
+                            PVCoordinates results = ex.getPVCoordinates(date);
+                            double normDifPos = testPos.subtract(results.getPosition()).getNorm();
+                            double normDifVel = testVel.subtract(results.getVelocity()).getNorm();
 
-                                cumulated += normDifPos;
-                                Assert.assertEquals(0, normDifPos, 2e-3);;
-                                Assert.assertEquals(0, normDifVel, 1e-5);
+                            cumulated += normDifPos;
+                            Assert.assertEquals(0, normDifPos, 2e-3);;
+                            Assert.assertEquals(0, normDifVel, 1e-5);
 
-                            }
 
                         }
                     }
                 }
-                Assert.assertEquals(0, cumulated, 0.024);
+                Assert.assertEquals(0, cumulated, 0.026);
             } finally {
                 if (rResults != null) {
                     rResults.close();
@@ -218,6 +216,16 @@ public class TLETest {
                 rEntry.close();
             }
         }
+    }
+
+    @Test
+    public void testZeroInclination() throws OrekitException{
+        TLE tle = new TLE("1 26451U 00043A   10130.13784012 -.00000276  00000-0  10000-3 0  3866",
+                          "2 26451 000.0000 266.1044 0001893 160.7642 152.5985 01.00271160 35865");
+        TLEPropagator propagator = TLEPropagator.selectExtrapolator(tle);
+        PVCoordinates pv = propagator.propagate(tle.getDate().shiftedBy(100)).getPVCoordinates();
+        Assert.assertEquals(42171546.979560345, pv.getPosition().getNorm(), 1.0e-3);
+        Assert.assertEquals(3074.1890089357994, pv.getVelocity().getNorm(), 1.0e-6);
     }
 
     @Before

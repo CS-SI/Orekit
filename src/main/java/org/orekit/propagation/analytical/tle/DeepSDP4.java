@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -314,7 +314,7 @@ class DeepSDP4 extends SDP4 {
                 sse = se;
                 ssi = si;
                 ssl = sl;
-                ssh = sh / sini0;
+                ssh = (tle.getI() < (FastMath.PI / 60.0)) ? 0 : sh / sini0;
                 ssg = sgh - cosi0 * ssh;
                 se2 = ee2;
                 si2 = xi2;
@@ -343,8 +343,8 @@ class DeepSDP4 extends SDP4 {
         sse += se;
         ssi += si;
         ssl += sl;
-        ssg += sgh - cosi0 / sini0 * sh;
-        ssh += sh / sini0;
+        ssg += sgh - ((tle.getI() < (FastMath.PI / 60.0)) ? 0 : (cosi0 / sini0 * sh));
+        ssh += (tle.getI() < (FastMath.PI / 60.0)) ? 0 : sh / sini0;
 
 
 

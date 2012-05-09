@@ -1,7 +1,7 @@
 package org.orekit.propagation.events;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,17 +28,17 @@ public class DihedralFieldOfViewDetectorTest {
 
     // Body mu
     private double mu;
-    
-    // Computation date 
+
+    // Computation date
     private AbsoluteDate initDate;
-    
-    // Orbit 
+
+    // Orbit
     private Orbit initialOrbit;
 
     // Reference frame = ITRF 2005
     private Frame itrf;
 
-    // Earth center pointing attitude provider 
+    // Earth center pointing attitude provider
     private BodyCenterPointing earthCenterAttitudeLaw;
 
     @Test
@@ -68,12 +68,12 @@ public class DihedralFieldOfViewDetectorTest {
         propagator.propagate(initDate.shiftedBy(6000.));
 
     }
-    
+
     @Before
     public void setUp() {
         try {
 
-            Utils.setDataRoot("regular-data");            
+            Utils.setDataRoot("regular-data");
 
             // Computation date
             // Satellite position as circular parameters
@@ -82,7 +82,7 @@ public class DihedralFieldOfViewDetectorTest {
             initDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
                                                      TimeComponents.H00,
                                                      TimeScalesFactory.getUTC());
-            
+
             Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
             Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
             initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
@@ -94,14 +94,14 @@ public class DihedralFieldOfViewDetectorTest {
 
             // Create earth center pointing attitude provider */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);
-            
+
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
         }
-          
+
     }
 
-    
+
     /** Finder for visibility event.
      * <p>This class extends the elevation detector modifying the event handler.<p>
      */
@@ -110,7 +110,7 @@ public class DihedralFieldOfViewDetectorTest {
         /** Serializable UID. */
         private static final long serialVersionUID = 1181779674621070074L;
 
-        public DihedralSunVisiDetector(final double maxCheck, 
+        public DihedralSunVisiDetector(final double maxCheck,
                                        final PVCoordinatesProvider pvTarget, final Vector3D center, final Vector3D axis1, final double aperture1,
                                        final Vector3D axis2, final double aperture2) {
             super(maxCheck, pvTarget, center, axis1, aperture1, axis2, aperture2);
@@ -123,7 +123,7 @@ public class DihedralFieldOfViewDetectorTest {
                 AbsoluteDate startVisiDate = new AbsoluteDate(new DateComponents(1969, 8, 28),
                                                               new TimeComponents(1, 19, 00.381),
                                                               TimeScalesFactory.getUTC());
-                
+
                 Assert.assertTrue(s.getDate().durationFrom(startVisiDate) <= 1);
                 return Action.CONTINUE;
             } else {

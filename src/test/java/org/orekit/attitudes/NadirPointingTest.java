@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,9 +17,9 @@
 package org.orekit.attitudes;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -44,51 +44,51 @@ import org.orekit.time.TimeScalesFactory;
 
 public class NadirPointingTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-    // Body mu 
+
+    // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C 
+    // Reference frame = ITRF 2005C
     private Frame frameITRF2005;
 
-    /** Test in the case of a spheric earth : nadir pointing shall be 
+    /** Test in the case of a spheric earth : nadir pointing shall be
      * the same as earth center pointing
      */
     @Test
     public void testSphericEarth() throws OrekitException {
 
-        // Spheric earth shape 
+        // Spheric earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
-                
-        // Create nadir pointing attitude provider 
+
+        // Create nadir pointing attitude provider
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
-        // Create earth center pointing attitude provider 
+        // Create earth center pointing attitude provider
         BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(frameITRF2005);
-        
-        // Create satellite position as circular parameters 
+
+        // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        
+
         // Get nadir attitude
         Rotation rotNadir = nadirAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
+
         // Get earth center attitude
         Rotation rotCenter = earthCenterAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
+
         // For a spheric earth, earth center pointing attitude and nadir pointing attitude
         // shall be the same, i.e the composition of inverse earth pointing rotation
-        // with nadir pointing rotation shall be identity. 
+        // with nadir pointing rotation shall be identity.
         Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
     }
-    
+
     /** Test in the case of an elliptic earth : nadir pointing shall be :
      *   - the same as earth center pointing in case of equatorial or polar position
      *   - different from earth center pointing in any other case
@@ -96,78 +96,78 @@ public class NadirPointingTest {
     @Test
     public void testNonSphericEarth() throws OrekitException {
 
-        // Elliptic earth shape 
+        // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-                
-        // Create nadir pointing attitude provider 
+
+        // Create nadir pointing attitude provider
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
-        // Create earth center pointing attitude provider 
+        // Create earth center pointing attitude provider
         BodyCenterPointing earthCenterAttitudeLaw = new BodyCenterPointing(frameITRF2005);
-        
+
         //  Satellite on equatorial position
-        // ********************************** 
+        // **********************************
         KeplerianOrbit kep =
             new KeplerianOrbit(7178000.0, 1.e-8, FastMath.toRadians(50.), 0., 0.,
                                     0., PositionAngle.TRUE, FramesFactory.getEME2000(), date, mu);
- 
-        // Get nadir attitude 
+
+        // Get nadir attitude
         Rotation rotNadir = nadirAttitudeLaw.getAttitude(kep, date, kep.getFrame()).getRotation();
-        
-        // Get earth center attitude 
+
+        // Get earth center attitude
         Rotation rotCenter = earthCenterAttitudeLaw.getAttitude(kep, date, kep.getFrame()).getRotation();
-        
-        // For a satellite at equatorial position, earth center pointing attitude and nadir pointing 
+
+        // For a satellite at equatorial position, earth center pointing attitude and nadir pointing
         // attitude shall be the same, i.e the composition of inverse earth pointing rotation
-        // with nadir pointing rotation shall be identity. 
+        // with nadir pointing rotation shall be identity.
         Rotation rotCompo = rotCenter.applyInverseTo(rotNadir);
         double angle = rotCompo.getAngle();
         Assert.assertEquals(0.0, angle, 5.e-6);
-       
+
         //  Satellite on polar position
-        // ***************************** 
+        // *****************************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(90.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE, 
+                                   FastMath.toRadians(90.), PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
- 
-       // Get nadir attitude 
+
+       // Get nadir attitude
         rotNadir = nadirAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
-        // Get earth center attitude 
+
+        // Get earth center attitude
         rotCenter = earthCenterAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
-        // For a satellite at polar position, earth center pointing attitude and nadir pointing 
-        // attitude shall be the same, i.e the composition of inverse earth pointing rotation 
+
+        // For a satellite at polar position, earth center pointing attitude and nadir pointing
+        // attitude shall be the same, i.e the composition of inverse earth pointing rotation
         // with nadir pointing rotation shall be identity.
         rotCompo = rotCenter.applyInverseTo(rotNadir);
         angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, 5.e-6);
-       
+
         //  Satellite on any position
-        // *************************** 
+        // ***************************
         circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE, 
+                                   FastMath.toRadians(90.), PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
- 
-        // Get nadir attitude 
+
+        // Get nadir attitude
         rotNadir = nadirAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
+
         // Get earth center attitude
         rotCenter = earthCenterAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
-        // For a satellite at any position, earth center pointing attitude and nadir pointing 
-        // and nadir pointing attitude shall not be the same, i.e the composition of inverse earth 
+
+        // For a satellite at any position, earth center pointing attitude and nadir pointing
+        // and nadir pointing attitude shall not be the same, i.e the composition of inverse earth
         // pointing rotation with nadir pointing rotation shall be different from identity.
         rotCompo = rotCenter.applyInverseTo(rotNadir);
         angle = rotCompo.getAngle();
         Assert.assertEquals(angle, FastMath.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
-       
+
     /** Vertical test : check that Z satellite axis is colinear to local vertical axis,
-        which direction is : (cos(lon)*cos(lat), sin(lon)*cos(lat), sin(lat)), 
-        where lon et lat stand for observed point coordinates 
+        which direction is : (cos(lon)*cos(lat), sin(lon)*cos(lat), sin(lat)),
+        where lon et lat stand for observed point coordinates
         (i.e satellite ones, since they are the same by construction,
         but that's what is to test.
      */
@@ -176,21 +176,21 @@ public class NadirPointingTest {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-                
+
         // Create earth center pointing attitude provider
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         //  Satellite on any position
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE, 
+                                   FastMath.toRadians(90.), PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
- 
+
         //  Vertical test
-        // *************** 
-        // Get observed ground point position/velocity 
+        // ***************
+        // Get observed ground point position/velocity
         Vector3D pTargetItrf = nadirAttitudeLaw.getTargetPoint(circ, date, frameITRF2005);
-        
+
         // Convert to geodetic coordinates
         GeodeticPoint geoTarget = earthShape.transform(pTargetItrf, frameITRF2005, date);
 
@@ -199,18 +199,18 @@ public class NadirPointingTest {
         double yVert = FastMath.sin(geoTarget.getLongitude())*FastMath.cos(geoTarget.getLatitude());
         double zVert = FastMath.sin(geoTarget.getLatitude());
         Vector3D targetVertical = new Vector3D(xVert, yVert, zVert);
-        
+
         // Get attitude rotation state
         Rotation rotSatEME2000 = nadirAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-                
+
         // Get satellite Z axis in EME2000 frame
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
         Vector3D zSatItrf = FramesFactory.getEME2000().getTransformTo(frameITRF2005, date).transformVector(zSatEME2000);
-        
+
         // Check that satellite Z axis is colinear to local vertical axis
-        double angle= Vector3D.angle(zSatItrf, targetVertical);        
+        double angle= Vector3D.angle(zSatItrf, targetVertical);
         Assert.assertEquals(0.0, FastMath.sin(angle), Utils.epsilonTest);
-        
+
     }
 
     @Test
@@ -226,7 +226,7 @@ public class NadirPointingTest {
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN,
                               FramesFactory.getEME2000(), date, mu);
 
         Propagator propagator = new KeplerianPropagator(orbit, law, mu, 2500.0);
@@ -270,7 +270,7 @@ public class NadirPointingTest {
 
             // Body mu
             mu = 3.9860047e14;
-            
+
             // Reference frame = ITRF 2005
             frameITRF2005 = FramesFactory.getITRF2005(true);
 

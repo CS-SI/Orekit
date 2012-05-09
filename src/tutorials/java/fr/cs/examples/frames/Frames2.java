@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,10 +21,10 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3DFormat;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3DFormat;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -71,7 +71,7 @@ public class Frames2 {
             // Considering the following Computing/Measurement date in UTC time scale
             TimeScale utc = TimeScalesFactory.getUTC();
             AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
-            
+
             // Let's get the satellite position and velocity in ITRF2005 as measured by GPS antenna at this moment:
             final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
             final Vector3D velocity = new Vector3D(505.8479685, 942.7809215, 7435.922231);

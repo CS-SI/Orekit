@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -21,8 +21,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
@@ -73,7 +73,7 @@ public class Frames1 {
             // The local orbital frame (LOF) is related to the orbit propagated by the kepler propagator.
             LocalOrbitalFrame lof = new LocalOrbitalFrame(inertialFrame, LOFType.QSW, kepler, "QSW");
 
-            // Earth and frame  
+            // Earth and frame
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
             Frame ITRF2005 = FramesFactory.getITRF2005(true); // terrestrial frame at an arbitrary date

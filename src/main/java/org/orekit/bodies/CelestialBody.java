@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -33,7 +33,7 @@ public interface CelestialBody extends Serializable, PVCoordinatesProvider {
      * <p>The frame is always bound to the body center, and its axes have a
      * fixed orientation with respect to other inertial frames.</p>
      * @return an inertially oriented body centered frame
-     * @deprecated as of 5.2 replaced by {@link #getInertiallyOrientedFrame()}
+     * @deprecated as of 6.0 replaced by {@link #getInertiallyOrientedFrame()}
      */
     @Deprecated
     Frame getFrame();

@@ -1,5 +1,5 @@
-/* Copyright 2010 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -30,7 +30,7 @@ public class OrekitMessagesTest {
 
     @Test
     public void testMessageNumber() {
-        Assert.assertEquals(106, OrekitMessages.values().length);
+        Assert.assertEquals(114, OrekitMessages.values().length);
     }
 
     @Test
@@ -47,11 +47,24 @@ public class OrekitMessagesTest {
                 Assert.assertTrue("missing key \"" + message.name() + "\" for language " + language,
                                   keyPresent);
             }
-            int nbKeys = 0;
-            for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements(); keys.nextElement()) {
-                ++nbKeys;
+            Assert.assertEquals(language, bundle.getLocale().getLanguage());
+        }
+
+    }
+
+    @Test
+    public void testAllPropertiesCorrespondToKeys() {
+        for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
+            ResourceBundle bundle =
+                ResourceBundle.getBundle("META-INF/localization/OrekitMessages", new Locale(language));
+            for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
+                final String propertyKey = keys.nextElement();
+                try {
+                    Assert.assertNotNull(OrekitMessages.valueOf(propertyKey));
+                } catch (IllegalArgumentException iae) {
+                    Assert.fail("unknown key \"" + propertyKey + "\" in language " + language);
+                }
             }
-            Assert.assertEquals(OrekitMessages.values().length, nbKeys);
             Assert.assertEquals(language, bundle.getLocale().getLanguage());
         }
 

@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,8 +19,8 @@ package org.orekit.frames;
 
 import java.io.FileNotFoundException;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +52,7 @@ public class TODFrameTest {
                     // about 1.06 micro arcsecond per second
                     Assert.assertEquals(-1.06 * h, deltaMicroAS, 0.0003 * h);
                 } else {
-                    // around switch date, there should be a -1.63 micro arcsecond discontinuity 
+                    // around switch date, there should be a -1.63 micro arcsecond discontinuity
                     Assert.assertEquals(-1.63, deltaMicroAS, 0.01);
                 }
             }
@@ -133,7 +133,7 @@ public class TODFrameTest {
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
         final boolean withNutationCorrection = true;
-        
+
         TODFrame interpolatingFrame =
             new TODFrame(withNutationCorrection, Predefined.TOD_WITH_EOP_CORRECTIONS);
         NonInterpolatingTODFrame nonInterpolatingFrame =

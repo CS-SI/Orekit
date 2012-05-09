@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,8 +16,6 @@
  */
 package org.orekit.time;
 
-import java.io.Serializable;
-
 /** Interface for time scales.
  * <p>This is the interface representing all time scales. Time scales are related
  * to each other by some offsets that may be discontinuous (for example
@@ -26,7 +24,7 @@ import java.io.Serializable;
  * @author Luc Maisonobe
  * @see AbsoluteDate
  */
-public interface TimeScale extends Serializable {
+public interface TimeScale {
 
     /** Get the offset to convert locations from {@link TAIScale} to instance.
      * @param date conversion date

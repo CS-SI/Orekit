@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,11 +52,11 @@ public class MODFrameTest {
         PVCoordinates pvMODiau76Wcorr =
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
-        
+
         checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.6e-5, 7.2e-7);
 
         Transform tf = FramesFactory.getEME2000().getTransformTo(FramesFactory.getMOD(false), t0);
-        //J2000 iau76   
+        //J2000 iau76
         PVCoordinates pvJ2000iau76 =
             new PVCoordinates(new Vector3D(5102509.6000, 6123011.5200, 6378136.3000),
                               new Vector3D(-4743.219600, 790.536600, 5533.756190));

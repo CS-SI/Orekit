@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class TEMEFrameTest {
         PVCoordinates pvEME2000Ref =
             new PVCoordinates(new Vector3D(-9059941.5224999374914, 4659697.1225837596648, 813957.72947647583351),
                               new Vector3D(-2233.3476939179299769, -4110.1362849403413335, -3157.3941963060194738));
-        
+
         Transform t = FramesFactory.getTEME().getTransformTo(FramesFactory.getEME2000(), t0);
 
         PVCoordinates pvEME2000Computed = t.transformPVCoordinates(pvTEME);

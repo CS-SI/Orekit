@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,12 +16,12 @@
  */
 package org.orekit.propagation.precomputed;
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.linear.Array2DRowRealMatrix;
-import org.apache.commons.math.linear.MatrixUtils;
-import org.apache.commons.math.linear.RealMatrix;
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,13 +102,13 @@ public class IntegratedEphemerisTest {
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
         BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
         ephemeris.setMasterMode(new OrekitStepHandler() {
-            
+
             private static final long serialVersionUID = -5825020344303732268L;
             private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
 
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
-            
+
             public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
             throws PropagationException {
                 try {

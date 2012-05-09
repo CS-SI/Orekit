@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -20,12 +20,12 @@ package org.orekit.forces.gravity;
 import java.io.FileNotFoundException;
 import java.text.ParseException;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.ode.nonstiff.AdaptiveStepsizeIntegrator;
-import org.apache.commons.math.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -170,7 +170,7 @@ public class CunninghamAttractionModelTest {
         /** Body mu */
         private static final double mu =  3.986004415e+14;
 
-        private EckStepHandler(Orbit initialOrbit, double ae, 
+        private EckStepHandler(Orbit initialOrbit, double ae,
                                double c20, double c30, double c40, double c50, double c60)
         throws FileNotFoundException, OrekitException {
             referencePropagator =
@@ -221,7 +221,7 @@ public class CunninghamAttractionModelTest {
         double OMEGA = FastMath.toRadians(15.0 * 22.5);
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
-        
+
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,
                                                                new double[][] {

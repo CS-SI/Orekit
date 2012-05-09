@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -16,10 +16,10 @@
  */
 package org.orekit.frames;
 
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -490,7 +490,7 @@ public class TODFrame extends FactoryManagedFrame {
 
     /** Compute nutation elements.
      * <p>This method applies the IAU-1980 theory and hence is rather slow.
-     * It is called by the {@link #setInterpolatedNutationElements(double)}
+     * It is indirectly called by the {@link #getInterpolatedNutationElements(double)}
      * on a small number of reference points only.</p>
      * @param t offset from J2000.0 epoch in seconds
      * @return computed nutation elements in a two elements array,

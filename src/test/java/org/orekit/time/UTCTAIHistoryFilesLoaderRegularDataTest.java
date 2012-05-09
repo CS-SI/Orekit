@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -34,15 +34,19 @@ public class UTCTAIHistoryFilesLoaderRegularDataTest {
     @Test
     public void testFirstLeap() throws OrekitException {
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
-        Assert.assertEquals("1960-12-31T23:59:60.000", utc.getFirstKnownLeapSecond().toString(utc));
+        AbsoluteDate afterLeap = new AbsoluteDate(1961, 1, 1, 0, 0, 0.0, utc);
+        Assert.assertEquals(1.4228180,
+                            afterLeap.durationFrom(utc.getFirstKnownLeapSecond()),
+                            1.0e-12);
     }
 
     @Test
     public void testLaststLeap() throws OrekitException {
-        // the data files ends at 2006-01-01,
-        // but predefined data also contain the leap second from 2009-01-01
         UTCScale utc = (UTCScale) TimeScalesFactory.getUTC();
-        Assert.assertEquals("2008-12-31T23:59:60.000", utc.getLastKnownLeapSecond().toString(utc));
+        AbsoluteDate afterLeap = new AbsoluteDate(2012, 7, 1, 0, 0, 0.0, utc);
+        Assert.assertEquals(1.0,
+                            afterLeap.durationFrom(utc.getLastKnownLeapSecond()),
+                            1.0e-12);
     }
 
     @Before

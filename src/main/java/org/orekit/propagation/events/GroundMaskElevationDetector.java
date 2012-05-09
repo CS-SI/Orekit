@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -19,21 +19,20 @@ package org.orekit.propagation.events;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.apache.commons.math.util.FastMath;
-import org.apache.commons.math.util.MathUtils;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.time.AbsoluteDate;
 
 /** Finder for satellite azimuth-elevation events with respect to a mask.
  * <p>This class finds elevation events (i.e. satellite raising and setting) with
  * respect to an azimuth-elevation mask.</p>
  * <p>An azimuth-elevation mask defines the physical horizon for a local point,
  * origin of some topocentric frame.</p>
- * <p>Azimuth is defined according to {@link TopocentricFrame#getAzimuth(org.apache.commons.math.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getAzimuth}.
- *  Elevation is defined according to {@link TopocentricFrame#getElevation(org.apache.commons.math.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getElevation}.</p>
+ * <p>Azimuth is defined according to {@link TopocentricFrame#getAzimuth(org.apache.commons.math3.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getAzimuth}.
+ *  Elevation is defined according to {@link TopocentricFrame#getElevation(org.apache.commons.math3.geometry.euclidean.threed.Vector3D, org.orekit.frames.Frame, org.orekit.time.AbsoluteDate) getElevation}.</p>
  * <p>The azimuth elevation mask must be supplied as a twodimensional array with
  *  multiples lines of pairs of azimuth-elevation angles. First row will be filled with
  *  azimuth values, second row with elevation values, as in the following snippet:
@@ -128,10 +127,6 @@ public class GroundMaskElevationDetector extends AbstractDetector {
      */
     public TopocentricFrame getTopocentricFrame() {
         return topo;
-    }
-
-    /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
     }
 
     /** Handle an azimuth-elevation event and choose what to do next.

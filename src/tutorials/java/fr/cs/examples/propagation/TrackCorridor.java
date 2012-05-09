@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -28,9 +28,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.math.geometry.euclidean.threed.Line;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Line;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
@@ -191,7 +191,7 @@ public class TrackCorridor {
         throws OrekitException {
 
         // create orbit
-        Orbit initialOrbit = new CircularOrbit(a, ex, ey, i, raan, alpha, PositionAngle.MEAN, 
+        Orbit initialOrbit = new CircularOrbit(a, ex, ey, i, raan, alpha, PositionAngle.MEAN,
                                                FramesFactory.getEME2000(), date,
                                                Constants.EIGEN5C_EARTH_MU);
 
@@ -323,7 +323,7 @@ public class TrackCorridor {
         private final GeodeticPoint right;
 
         /** Simple constructor.
-         * @param date point date 
+         * @param date point date
          * @param left left limit
          * @param center central track point
          * @param right right limit

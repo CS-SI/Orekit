@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,10 +17,10 @@
 package org.orekit.attitudes;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.Line;
-import org.apache.commons.math.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math.util.FastMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Line;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,16 +49,16 @@ import org.orekit.utils.PVCoordinates;
 
 public class TargetPointingTest {
 
-    // Computation date 
+    // Computation date
     private AbsoluteDate date;
-    
-    // Body mu 
+
+    // Body mu
     private double mu;
 
-    // Reference frame = ITRF 2005C 
+    // Reference frame = ITRF 2005C
     private Frame frameITRF2005;
-        
-    // Transform from EME2000 to ITRF2005C 
+
+    // Transform from EME2000 to ITRF2005C
     private Transform eme2000ToItrf;
 
     /** Test if both constructors are equivalent
@@ -70,26 +70,26 @@ public class TargetPointingTest {
         // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        
+
         //  Attitude laws
-        // *************** 
+        // ***************
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-                
+
         // Target definition as a geodetic point AND as a position/velocity vector
         GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
         Vector3D pTargetITRF2005C = earthShape.transform(geoTargetITRF2005C);
-            
-        // Attitude law definition from geodetic point target 
+
+        // Attitude law definition from geodetic point target
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005C, earthShape);
-        
+
         //  Attitude law definition from position/velocity target
         TargetPointing pvTargetAttitudeLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
-        
-        // Check that both attitude are the same 
-        // Get satellite rotation for target pointing law 
+
+        // Check that both attitude are the same
+        // Get satellite rotation for target pointing law
         Rotation rotPv = pvTargetAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
 
         // Get satellite rotation for nadir pointing law
@@ -108,25 +108,25 @@ public class TargetPointingTest {
     public void testGeodeticConstructor() throws OrekitException {
 
         //  Satellite position
-        // ******************** 
+        // ********************
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        
+
         //  Attitude law
-        // ************** 
-        
-        // Elliptic earth shape 
+        // **************
+
+        // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-                
-        // Target definition as a geodetic point 
+
+        // Target definition as a geodetic point
         GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
-            
-        //  Attitude law definition 
+
+        //  Attitude law definition
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005, earthShape);
-        
-        // Check that observed ground point is the same as defined target 
+
+        // Check that observed ground point is the same as defined target
         Vector3D pObservedEME2000 = geoTargetAttitudeLaw.getTargetPoint(circ, date, FramesFactory.getEME2000());
         GeodeticPoint geoObserved = earthShape.transform(pObservedEME2000, FramesFactory.getEME2000(), date);
 
@@ -144,31 +144,31 @@ public class TargetPointingTest {
 
         // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-                
-        // Satellite on any position 
+
+        // Satellite on any position
         CircularOrbit circOrbit =
             new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
-                                   FastMath.toRadians(90.), PositionAngle.TRUE, 
+                                   FastMath.toRadians(90.), PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
 
-        //  Target attitude provider with target under satellite nadir 
-        // ******************************************************* 
-        // Definition of nadir target 
-        // Create nadir pointing attitude provider 
+        //  Target attitude provider with target under satellite nadir
+        // *******************************************************
+        // Definition of nadir target
+        // Create nadir pointing attitude provider
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
-        
-        // Check nadir target 
+
+        // Check nadir target
         Vector3D pNadirTarget  = nadirAttitudeLaw.getTargetPoint(circOrbit, date, frameITRF2005);
         GeodeticPoint geoNadirTarget = earthShape.transform(pNadirTarget, frameITRF2005, date);
-        
-        // Create target attitude provider 
+
+        // Create target attitude provider
         TargetPointing targetAttitudeLaw = new TargetPointing(geoNadirTarget, earthShape);
 
         //  1/ Test that attitudes are the same at date
         // *********************************************
         // i.e the composition of inverse earth pointing rotation
-        // with nadir pointing rotation shall be identity. 
-        
+        // with nadir pointing rotation shall be identity.
+
         // Get satellite rotation from target pointing law at date
         Rotation rotTarget = targetAttitudeLaw.getAttitude(circOrbit, date, circOrbit.getFrame()).getRotation();
 
@@ -180,7 +180,7 @@ public class TargetPointingTest {
         double angle = rotCompo.getAngle();
         Assert.assertEquals(angle, 0.0, Utils.epsilonAngle);
 
-        
+
         //  2/ Test that attitudes are different at a different date
         // **********************************************************
 
@@ -189,11 +189,11 @@ public class TargetPointingTest {
         double delta_t = 60.0; // extrapolation duration in seconds
         AbsoluteDate extrapDate = date.shiftedBy(delta_t);
         Orbit extrapOrbit = extrapolator.propagate(extrapDate).getOrbit();
-        
-        
+
+
         // Get satellite rotation from target pointing law at date + 1min
         Rotation extrapRotTarget = targetAttitudeLaw.getAttitude(extrapOrbit, extrapDate, extrapOrbit.getFrame()).getRotation();
-        
+
         // Get satellite rotation from nadir pointing law at date
         Rotation extrapRotNadir = nadirAttitudeLaw.getAttitude(extrapOrbit, extrapDate, extrapOrbit.getFrame()).getRotation();
 
@@ -201,54 +201,54 @@ public class TargetPointingTest {
         Rotation extrapRotCompo = extrapRotTarget.applyInverseTo(extrapRotNadir);
         double extrapAngle = extrapRotCompo.getAngle();
         Assert.assertEquals(extrapAngle, FastMath.toRadians(24.684793905118823), Utils.epsilonAngle);
-        
+
     }
-       
+
     /** Test if defined target belongs to the direction pointed by the satellite
      */
     @Test
     public void testTargetInPointingDirection() throws OrekitException {
 
-        // Create computation date 
+        // Create computation date
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2008, 04, 07),
                                              TimeComponents.H00,
                                              TimeScalesFactory.getUTC());
-        
+
         // Reference frame = ITRF 2005
         Frame frameITRF2005 = FramesFactory.getITRF2005(true);
 
-        // Elliptic earth shape 
+        // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-                
-        // Create target pointing attitude provider 
+
+        // Create target pointing attitude provider
         GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
         TargetPointing targetAttitudeLaw = new TargetPointing(geoTarget, earthShape);
-        
+
         //  Satellite position
         // ********************
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4, FastMath.toRadians(50.), FastMath.toRadians(270.),
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        
+
         // Transform satellite position to position/velocity parameters in EME2000 frame
         PVCoordinates pvSatEME2000 = circ.getPVCoordinates();
-        
+
         //  Pointing direction
         // ********************
         // Get satellite attitude rotation, i.e rotation from EME2000 frame to satellite frame
         Rotation rotSatEME2000 = targetAttitudeLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
-        // Transform Z axis from satellite frame to EME2000 
+
+        // Transform Z axis from satellite frame to EME2000
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
-        
+
         // Line containing satellite point and following pointing direction
         Vector3D p = eme2000ToItrf.transformPosition(pvSatEME2000.getPosition());
         Line pointingLine = new Line(p,
                                      p.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            eme2000ToItrf.transformVector(zSatEME2000)));
-        
+
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
 
@@ -260,74 +260,74 @@ public class TargetPointingTest {
     @Test
     public void testSlewedTarget() throws OrekitException {
 
-        // Spheric earth shape 
+        // Spheric earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
-        
+
         //  Satellite position
         // ********************
         // Create satellite position as circular parameters
         CircularOrbit circ =
             new CircularOrbit(42164000.0, 0.5e-8, -0.5e-8, 0., 0.,
-                                   FastMath.toRadians(5.300), PositionAngle.MEAN, 
+                                   FastMath.toRadians(5.300), PositionAngle.MEAN,
                                    FramesFactory.getEME2000(), date, mu);
-        
-        // Create nadir pointing attitude provider 
-        // ********************************** 
+
+        // Create nadir pointing attitude provider
+        // **********************************
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
-        
+
         // Get observed ground point from nadir pointing law
         Vector3D pNadirObservedEME2000 = nadirAttitudeLaw.getTargetPoint(circ, date, FramesFactory.getEME2000());
         Vector3D pNadirObservedITRF2005 = eme2000ToItrf.transformPosition(pNadirObservedEME2000);
-        
+
         GeodeticPoint geoNadirObserved = earthShape.transform(pNadirObservedITRF2005, frameITRF2005, date);
 
-        // Create target pointing attitude provider with target equal to nadir target 
-        // ********************************************************************* 
+        // Create target pointing attitude provider with target equal to nadir target
+        // *********************************************************************
         TargetPointing targetLawRef = new TargetPointing(frameITRF2005, pNadirObservedITRF2005);
-        
+
         // Get attitude rotation in EME2000
         Rotation rotSatRefEME2000 = targetLawRef.getAttitude(circ, date, circ.getFrame()).getRotation();
-      
-        // Create target pointing attitude provider with target 5° from nadir target 
-        // ******************************************************************** 
+
+        // Create target pointing attitude provider with target 5° from nadir target
+        // ********************************************************************
         GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLatitude(),
                                                     geoNadirObserved.getLongitude() - FastMath.toRadians(5), geoNadirObserved.getAltitude());
         Vector3D pTargetITRF2005C = earthShape.transform(geoTarget);
         TargetPointing targetLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
-        
-        // Get attitude rotation 
+
+        // Get attitude rotation
         Rotation rotSatEME2000 = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
-        
-        // Compute difference between both attitude providers 
+
+        // Compute difference between both attitude providers
         // *********************************************
         // Difference between attitudes
         //  expected
         double tanDeltaExpected = (6378136.460/(42164000.0-6378136.460))*FastMath.tan(FastMath.toRadians(5));
         double deltaExpected = FastMath.atan(tanDeltaExpected);
-         
+
         //  real
         double deltaReal = rotSatEME2000.applyInverseTo(rotSatRefEME2000).getAngle();
-        
+
         Assert.assertEquals(deltaReal, deltaExpected, 1.e-4);
-        
-    } 
+
+    }
 
     @Test
     public void testSpin() throws OrekitException {
 
         Frame frameITRF2005 = FramesFactory.getITRF2005(true);
 
-        // Elliptic earth shape 
+        // Elliptic earth shape
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
-                
-        // Create target pointing attitude provider 
+
+        // Create target pointing attitude provider
         GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
         AttitudeProvider law = new TargetPointing(geoTarget, earthShape);
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
                               FastMath.toRadians(10.), FastMath.toRadians(20.),
-                              FastMath.toRadians(30.), PositionAngle.MEAN, 
+                              FastMath.toRadians(30.), PositionAngle.MEAN,
                               FramesFactory.getEME2000(), date, 3.986004415e14);
 
         Propagator propagator = new KeplerianPropagator(orbit, law);
@@ -370,7 +370,7 @@ public class TargetPointingTest {
 
             // Body mu
             mu = 3.9860047e14;
-            
+
             // Reference frame = ITRF 2005
             frameITRF2005 = FramesFactory.getITRF2005(true);
 

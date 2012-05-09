@@ -1,5 +1,5 @@
-/* Copyright 2002-2011 CS Communication & Systèmes
- * Licensed to CS Communication & Systèmes (CS) under one or more
+/* Copyright 2002-2012 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * CS licenses this file to You under the Apache License, Version 2.0
@@ -17,7 +17,7 @@
 package org.orekit.frames;
 
 
-import org.apache.commons.math.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class ITRF2005FrameAlternateConfigurationTest {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
-        // Reference position & velocity from : "Fundamentals of Astrodynamics and Applications", Third edition, David A. Vallado 
+        // Reference position & velocity from : "Fundamentals of Astrodynamics and Applications", Third edition, David A. Vallado
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
@@ -57,14 +57,14 @@ public class ITRF2005FrameAlternateConfigurationTest {
         checkPV(pvGcrfIau2000A,
                 itrfA.getTransformTo(FramesFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
                 0.01, 2.e-5);
-        
+
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
         checkPV(pvEME2000EqA,
                 itrfA.getTransformTo(FramesFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
                 0.01, 2.e-5);
-        
+
     }
 
     @Test

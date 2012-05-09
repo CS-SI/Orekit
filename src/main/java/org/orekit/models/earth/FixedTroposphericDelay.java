@@ -16,7 +16,7 @@
  */
 package org.orekit.models.earth;
 
-import org.apache.commons.math.analysis.BivariateRealFunction;
+import org.apache.commons.math3.analysis.BivariateFunction;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -37,7 +37,7 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
     private static FixedTroposphericDelay defaultModel;
 
     /** Interpolation function for the tropospheric delays. */
-    private final BivariateRealFunction delayFunction;
+    private final BivariateFunction delayFunction;
 
     /** Creates a new {@link FixedTroposphericDelay} instance, and loads the
      * delay values from the given resource via the {@link DataProvidersManager}.
