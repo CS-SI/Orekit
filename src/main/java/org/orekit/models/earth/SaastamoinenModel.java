@@ -21,6 +21,7 @@ import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
 import org.apache.commons.math3.analysis.interpolation.LinearInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
@@ -94,26 +95,26 @@ public class SaastamoinenModel implements TroposphericDelayModel {
         // the corrected temperature using a temperature gradient of -6.5 K/km
         final double T = t0 - 6.5e-3 * height;
         // the corrected pressure
-        final double P = p0 * Math.pow(1.0 - 2.26e-5 * height, 5.225);
+        final double P = p0 * FastMath.pow(1.0 - 2.26e-5 * height, 5.225);
         // the corrected humidity
-        final double R = r0 * Math.exp(-6.396e-4 * height);
+        final double R = r0 * FastMath.exp(-6.396e-4 * height);
 
         // interpolate the b correction term
         final double B = Functions.INSTANCE.b.value(height / 1e3);
         // calculate e
-        final double e = R * Math.exp(Functions.INSTANCE.e.value(T));
+        final double e = R * FastMath.exp(Functions.INSTANCE.e.value(T));
 
         // calculate the zenith angle from the elevation and convert to radians
-        final double zInDegree = Math.abs(90.0 - elevation);
-        final double z = Math.toRadians(zInDegree);
+        final double zInDegree = FastMath.abs(90.0 - elevation);
+        final double z = FastMath.toRadians(zInDegree);
 
         // get correction factor
         final double deltaR = getDeltaR(height, zInDegree);
 
         // calculate the path delay in m
+        final double tan = FastMath.tan(z);
         final double delta = 2.277e-3 / Math.cos(z) *
-                             (P + (1255d / T + 5e-2) * e - B * Math.pow(Math.tan(z), 2.0)) +
-                             deltaR;
+                             (P + (1255d / T + 5e-2) * e - B * tan * tan) + deltaR;
 
         return delta;
     }
@@ -130,10 +131,10 @@ public class SaastamoinenModel implements TroposphericDelayModel {
      */
     private double getDeltaR(final double height, final double zenith) {
         // limit the height to a range of [0, 5000] m
-        final double h = Math.min(Math.max(0, height), 5000);
+        final double h = FastMath.min(Math.max(0, height), 5000);
         // limit the zenith angle to 90 degree
         // Note: the function is symmetric for negative zenith angles
-        final double z = Math.min(Math.abs(zenith), 90);
+        final double z = FastMath.min(Math.abs(zenith), 90);
         return Functions.INSTANCE.deltaR.value(h, z);
     }
 

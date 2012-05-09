@@ -345,7 +345,7 @@ public class GeoMagneticField {
 
         // compute the local radius of curvature on the reference ellipsoid
 
-        final double rc = a / Math.sqrt(1.0d - epssq * FastMath.pow(sinLat, 2d));
+        final double rc = a / Math.sqrt(1.0d - epssq * sinLat * sinLat);
 
         // compute ECEF Cartesian coordinates of specified point (for longitude=0)
 
@@ -354,7 +354,7 @@ public class GeoMagneticField {
 
         // compute spherical radius and angle lambda and phi of specified point
 
-        final double r = FastMath.sqrt(FastMath.pow(xp, 2d) + FastMath.pow(zp, 2d));
+        final double r = FastMath.hypot(xp, zp);
         return new SphericalCoordinates(r, gp.getLongitude(), FastMath.asin(zp / r));
     }
 
@@ -535,7 +535,8 @@ public class GeoMagneticField {
             // Compute a table of (EARTH_REFERENCE_RADIUS_KM / radius)^n for i in
             // 0 .. maxN (this is much faster than calling FastMath.pow maxN+1 times).
 
-            relativeRadiusPower[0] = FastMath.pow(ellipsoidRadius / sph.r, 2d);
+            final double p = ellipsoidRadius / sph.r;
+            relativeRadiusPower[0] = p * p;
             for (int n = 1; n <= maxN; n++) {
                 relativeRadiusPower[n] = relativeRadiusPower[n - 1] * (ellipsoidRadius / sph.r);
             }

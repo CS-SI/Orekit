@@ -52,7 +52,7 @@ public class GeoMagneticElements implements Serializable {
     public GeoMagneticElements(final Vector3D b) {
         this.b = b;
 
-        horizontalIntensity = FastMath.sqrt(FastMath.pow(b.getX(), 2d) + FastMath.pow(b.getY(), 2d));
+        horizontalIntensity = FastMath.hypot(b.getX(), b.getY());
         totalIntensity = b.getNorm();
         declination = FastMath.toDegrees(FastMath.atan2(b.getY(), b.getX()));
         inclination = FastMath.toDegrees(FastMath.atan2(b.getZ(), horizontalIntensity));
