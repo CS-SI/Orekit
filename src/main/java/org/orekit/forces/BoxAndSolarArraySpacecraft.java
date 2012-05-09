@@ -372,15 +372,14 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
     private Vector3D facetRadiationAcceleration(final Facet facet, final Vector3D fluxSat,
                                                 final double dot) {
         final double area = facet.getArea();
-        final double dOa  = dot / area;
         final double psr  = fluxSat.getNorm();
 
         // Vallado's equation 8-44 uses different parameters which are related to our parameters as:
         // cos (phi) = -dot / (psr * area)
         // n         = facet / area
         // s         = -fluxSat / psr
-        final double cN = 2 * dOa * (diffuseReflectionCoeff / 3 - specularReflectionCoeff * dOa / psr);
-        final double cS = (dot / psr) * (specularReflectionCoeff - 1);
+        final double cN = 2 * area * dot * (diffuseReflectionCoeff / 3 - specularReflectionCoeff * dot / psr);
+        final double cS = (area * dot / psr) * (specularReflectionCoeff - 1);
         return new Vector3D(cN, facet.getNormal(), cS, fluxSat);
 
     }
