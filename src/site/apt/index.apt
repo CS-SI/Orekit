@@ -46,7 +46,7 @@ Overview
     * transparent handling of IERS Earth Orientation Parameters (for both new
       CIO-based frames and old equinox-based frames)
 
-    * transparent handling of JPL DE 405 and DE 406 ephemerides
+    * transparent handling of JPL DE 4xx (405, 406 and more recent) and INPOP ephemerides
 
     * transforms including kinematic combination effects
 
@@ -180,6 +180,16 @@ Overview
       * space referenced attitudes
         (inertial, celestial body-pointed, spin-stabilized)
 
+  ** Orbit file handling
+  
+    * loading of SP3-a and SP3-c orbit files
+
+  ** Atmosphere models
+  
+    * tropospheric delay (modified Saastamoinen)
+    
+    * geomagnetic field (WMM, IGRF)
+    
   ** Customizable data loading
 
     * loading from local disk

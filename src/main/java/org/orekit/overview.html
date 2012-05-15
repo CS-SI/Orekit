@@ -48,7 +48,7 @@ discrete events. Here is a short list of the features offered by the library:</p
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecrafts)</li>
       <li>transparent handling of IERS Earth Orientation Parameters (for both new CIO-based frames and
           old equinox-based frames)</li>
-      <li>transparent handling of JPL DE 405 and DE 406 ephemerides</li>
+      <li>transparent handling of JPL DE 4xx (405, 406 and more recent) and INPOP ephemerides</li>
       <li>transforms including kinematic combination effects</li>
       <li>composite transforms reduction and caching for efficiency</li>
       <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
@@ -152,6 +152,17 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>space referenced attitudes (inertial, celestial body pointed, spin stabilized)</li>
         </ul>
       </li>
+    </ul>
+  </li>
+  <li>Orbit file handling
+    <ul>
+      <li>loading of SP3-a and SP3-c orbit files</li>
+    </ul>
+  </li>
+  <li>Atmosphere models
+    <ul>
+      <li>tropospheric delay (modified Saastamoinen)</li>
+      <li>geomagnetic field (WMM, IGRF)</li>
     </ul>
   </li>
   <li>Customizable data loading
