@@ -1,0 +1,50 @@
+# global setting: let git identify text files by itself
+*                                   text=auto
+
+# general pattern for files known to be text: End Of Line transformations will be done
+*.apt                               text
+*.html                              text
+*.java                              text
+*.properties                        text
+*.puml                              text
+*.svg                               text
+*.tle                               text
+*.txt                               text
+*.xml                               text
+*.fml                               text
+
+# general pattern for files known to not be text: no End Of Line transformations will be done
+*.gz                               -text
+*.zip                              -text
+*.ico                              -text
+*.xcf                              -text
+*.jpg                              -text
+*.odg                              -text
+*.png                              -text
+
+# specific data files known to be text: End Of Line transformations will be done
+.gitattributes                      text
+.gitignore                          text
+.checkstyle                         text
+
+src/*/resources/*/*.in              text
+src/*/resources/*/*/*.in            text
+src/*/resources/*/*.COF             text
+src/*/resources/*/*/*.COF           text
+src/*/resources/*/*.daily           text
+src/*/resources/*/*/*.daily         text
+src/*/resources/*/*.dat             text
+src/*/resources/*/*/*.dat           text
+src/*/resources/*/*.data            text
+src/*/resources/*/*/*.data          text
+src/*/resources/*/*.gfc             text
+src/*/resources/*/*/*.gfc           text
+src/*/resources/*/UTC-TAI.history   text
+src/*/resources/*/*/UTC-TAI.history text
+
+# specific data files known to not be text: no End Of Line transformations will be done
+src/*/resources/*/unx*.405         -text
+src/*/resources/*/*/unx*.405       -text
+src/*/resources/*/unx*.406         -text
+src/*/resources/*/*/unx*.406       -text
+

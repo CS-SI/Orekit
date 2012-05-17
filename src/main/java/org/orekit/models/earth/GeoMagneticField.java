@@ -335,25 +335,22 @@ public class GeoMagneticField {
      * @return the spherical coordinates wrt to the reference ellipsoid of the model
      */
     private SphericalCoordinates transformToSpherical(final GeodeticPoint gp) {
+
         // Convert geodetic coordinates (defined by the WGS-84 reference ellipsoid)
         // to Earth Centered Earth Fixed Cartesian coordinates, and then to spherical coordinates.
 
         final double lat = gp.getLatitude();
         final double heightAboveEllipsoid = gp.getAltitude() / 1000d;
-        final double cosLat = FastMath.cos(lat);
         final double sinLat = FastMath.sin(lat);
 
         // compute the local radius of curvature on the reference ellipsoid
-
-        final double rc = a / Math.sqrt(1.0d - epssq * sinLat * sinLat);
+        final double rc = a / FastMath.sqrt(1.0d - epssq * sinLat * sinLat);
 
         // compute ECEF Cartesian coordinates of specified point (for longitude=0)
-
-        final double xp = (rc + heightAboveEllipsoid) * cosLat;
+        final double xp = (rc + heightAboveEllipsoid) * FastMath.cos(lat);
         final double zp = (rc * (1.0d - epssq) + heightAboveEllipsoid) * sinLat;
 
         // compute spherical radius and angle lambda and phi of specified point
-
         final double r = FastMath.hypot(xp, zp);
         return new SphericalCoordinates(r, gp.getLongitude(), FastMath.asin(zp / r));
     }
@@ -414,7 +411,7 @@ public class GeoMagneticField {
                  * Equation 12 in the WMM Technical report. Derivative with respect to radius.
                  */
                 Bz -= vars.relativeRadiusPower[n] *
-                      (g[index] * vars.cmLambda[m] + h[index] * vars.smLambda[m]) * (double) (n + 1) * legendre.mP[index];
+                      (g[index] * vars.cmLambda[m] + h[index] * vars.smLambda[m]) * (1d + n) * legendre.mP[index];
 
                 /**
                  * <pre>
