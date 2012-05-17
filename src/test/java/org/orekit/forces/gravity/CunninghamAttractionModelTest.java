@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.ParseException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
@@ -34,9 +35,14 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
@@ -44,6 +50,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
+import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -254,6 +261,75 @@ public class CunninghamAttractionModelTest {
         Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         Assert.assertEquals(0, dif.getNorm(), 3.1e-7);
         Assert.assertTrue(propagator.getCalls() < 400);
+    }
+
+    @Test
+    public void testIssue97() throws IOException, ParseException, OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+
+        // pos-vel (from a ZOOM ephemeris reference)
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState spacecraftState =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       provider.getMu()));
+
+        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
+        for (int i = 2; i <= 69; i++) {
+            // we get the data as extracted from the file
+            final double[][] C = provider.getC(i, i, false);
+            final double[][] S = provider.getS(i, i, false);
+            // perturbing force (ITRF2008 central body frame)
+            final ForceModel cunModel =
+                    new CunninghamAttractionModel(FramesFactory.getITRF2008(), provider.getAe(),
+                                                  provider.getMu(), C, S);
+            final ForceModel droModel =
+                    new DrozinerAttractionModel(FramesFactory.getITRF2008(), provider.getAe(),
+                                                provider.getMu(), C, S);
+
+            /**
+             * Compute acceleration
+             */
+            cunModel.addContribution(spacecraftState, accelerationRetriever);
+            final Vector3D cunGamma = accelerationRetriever.getAcceleration();
+            droModel.addContribution(spacecraftState, accelerationRetriever);
+            final Vector3D droGamma = accelerationRetriever.getAcceleration();
+            Assert.assertEquals(0.0, cunGamma.subtract(droGamma).getNorm(), 2.2e-9 * droGamma.getNorm());
+
+        }
+
+    }
+
+    private static class AccelerationRetriever implements TimeDerivativesEquations {
+
+       private static final long serialVersionUID = -4616792058307814184L;
+        private Vector3D acceleration;
+
+        public void initDerivatives(double[] yDot, Orbit currentOrbit) {
+        }
+
+        public void addKeplerContribution(double mu) {
+        }
+
+        public void addXYZAcceleration(double x, double y, double z) {
+            acceleration = new Vector3D(x, y, z);
+        }
+
+        public void addAcceleration(Vector3D gamma, Frame frame) {
+        }
+
+        public void addMassDerivative(double q) {
+        }
+
+        public Vector3D getAcceleration() {
+            return acceleration;
+        }
+
     }
 
     @Before

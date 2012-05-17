@@ -142,11 +142,13 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
         // define some intermediate variables
         final double onR2 = 1 / r2;
         final double onR3 = onR2 / r;
-        final double onR4 = onR2 * onR2;
+        final double rEqOnR2  = equatorialRadius / r2;
+        final double rEqOnR4  = rEqOnR2 / r2;
+        final double rEq2OnR2 = equatorialRadius * rEqOnR2;
 
-        double cmx   = -x * onR2;
-        double cmy   = -y * onR2;
-        double cmz   = -z * onR2;
+        double cmx   = -x * rEqOnR2;
+        double cmy   = -y * rEqOnR2;
+        double cmz   = -z * rEqOnR2;
 
         final double dx   = -2 * cmx;
         final double dy   = -2 * cmy;
@@ -156,12 +158,12 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
         // since dcy/dx = dcx/dy, dcz/dx = dcx/dz and dcz/dy = dcy/dz,
         // we reuse the existing variables
 
-        double dcmxdx = (x2 - y2 - z2) * onR4;
+        double dcmxdx = (x2 - y2 - z2) * rEqOnR4;
         double dcmxdy =  dx * y * onR2;
         double dcmxdz =  dx * z * onR2;
-        double dcmydy = (y2 - x2 - z2) * onR4;
+        double dcmydy = (y2 - x2 - z2) * rEqOnR4;
         double dcmydz =  dy * z * onR2;
-        double dcmzdz = (z2 - x2 - y2) * onR4;
+        double dcmzdz = (z2 - x2 - y2) * rEqOnR4;
 
         final double ddxdx = -2 * dcmxdx;
         final double ddxdy = -2 * dcmxdy;
@@ -170,24 +172,24 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
         final double ddydz = -2 * dcmydz;
         final double ddzdz = -2 * dcmzdz;
 
-        final double donr2dx = -dx * onR2;
-        final double donr2dy = -dy * onR2;
-        final double donr2dz = -dz * onR2;
+        final double donr2dx = -dx * rEqOnR2;
+        final double donr2dy = -dy * rEqOnR2;
+        final double donr2dz = -dz * rEqOnR2;
 
         // potential coefficients (4 per matrix)
-        double Vrn  = 0.0;
-        double Vin  = 0.0;
-        double Vrd  = 1.0 / r;;
-        double Vid  = 0.0;
-        double Vrn1 = 0.0;
-        double Vin1 = 0.0;
-        double Vrn2 = 0.0;
-        double Vin2 = 0.0;
+        double vrn  = 0.0;
+        double vin  = 0.0;
+        double vrd  = 1.0 / (equatorialRadius * r);
+        double vid  = 0.0;
+        double vrn1 = 0.0;
+        double vin1 = 0.0;
+        double vrn2 = 0.0;
+        double vin2 = 0.0;
 
         // gradient coefficients (4 per matrix)
         double gradXVrn  = 0.0;
         double gradXVin  = 0.0;
-        double gradXVrd  = -x * onR3;
+        double gradXVrd  = -x * onR3 / equatorialRadius;
         double gradXVid  = 0.0;
         double gradXVrn1 = 0.0;
         double gradXVin1 = 0.0;
@@ -196,7 +198,7 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
 
         double gradYVrn  = 0.0;
         double gradYVin  = 0.0;
-        double gradYVrd  = -y * onR3;
+        double gradYVrd  = -y * onR3 / equatorialRadius;
         double gradYVid  = 0.0;
         double gradYVrn1 = 0.0;
         double gradYVin1 = 0.0;
@@ -205,7 +207,7 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
 
         double gradZVrn  = 0.0;
         double gradZVin  = 0.0;
-        double gradZVrd  = -z * onR3;
+        double gradZVrd  = -z * onR3 / equatorialRadius;
         double gradZVid  = 0.0;
         double gradZVrn1 = 0.0;
         double gradZVin1 = 0.0;
@@ -216,7 +218,6 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
         double vdX = 0.0;
         double vdY = 0.0;
         double vdZ = 0.0;
-        double rm  = 1.0;
 
         // start calculating
         for (int m = 0; m <= order; m++) {
@@ -225,7 +226,6 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
             final double[] Cm = C[m];
             final double[] Sm = S[m];
 
-            double rn = rm;
             double cx = cmx;
             double cy = cmy;
             double cz = cmz;
@@ -237,72 +237,65 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
             double dcydz = dcmydz;
             double dczdz = dcmzdz;
 
-            Vrn1 = Vrd;
-            Vin1 = Vid;
-
-            gradXVrn1 = gradXVrd;
-            gradXVin1 = gradXVid;
-            gradYVrn1 = gradYVrd;
-            gradYVin1 = gradYVid;
-            gradZVrn1 = gradZVrd;
-            gradZVin1 = gradZVid;
-
             for (int n = m; n <= degree; n++) {
 
                 if (n == m) {
                     // calculate the first element of the next column
-                    Vrd = (cx + dx) * Vrn1 - (cy + dy) * Vin1;
-                    Vid = (cy + dy) * Vrn1 + (cx + dx) * Vin1;
 
-                    gradXVrd = (cx + dx) * gradXVrn1 - (cy + dy) * gradXVin1 + (dcxdx + ddxdx) * Vrn1 - (dcxdy + ddxdy) * Vin1;
-                    gradXVid = (cy + dy) * gradXVrn1 + (cx + dx) * gradXVin1 + (dcxdy + ddxdy) * Vrn1 + (dcxdx + ddxdx) * Vin1;
+                    vrn      = equatorialRadius * vrd;
+                    vin      = equatorialRadius * vid;
 
-                    gradYVrd = (cx + dx) * gradYVrn1 - (cy + dy) * gradYVin1 + (dcxdy + ddxdy) * Vrn1 - (dcydy + ddydy) * Vin1;
-                    gradYVid = (cy + dy) * gradYVrn1 + (cx + dx) * gradYVin1 + (dcydy + ddydy) * Vrn1 + (dcxdy + ddxdy) * Vin1;
+                    gradXVrn = equatorialRadius * gradXVrd;
+                    gradXVin = equatorialRadius * gradXVid;
+                    gradYVrn = equatorialRadius * gradYVrd;
+                    gradYVin = equatorialRadius * gradYVid;
+                    gradZVrn = equatorialRadius * gradZVrd;
+                    gradZVin = equatorialRadius * gradZVid;
 
-                    gradZVrd = (cx + dx) * gradZVrn1 - (cy + dy) * gradZVin1 + (dcxdz + ddxdz) * Vrn1 - (dcydz + ddydz) * Vin1;
-                    gradZVid = (cy + dy) * gradZVrn1 + (cx + dx) * gradZVin1 + (dcydz + ddydz) * Vrn1 + (dcxdz + ddxdz) * Vin1;
-                    // initialize the current column
-                    Vrn = Vrn1;
-                    Vin = Vin1;
+                    final double tmpGradXVrd = (cx + dx) * gradXVrd - (cy + dy) * gradXVid + (dcxdx + ddxdx) * vrd - (dcxdy + ddxdy) * vid;
+                    gradXVid = (cy + dy) * gradXVrd + (cx + dx) * gradXVid + (dcxdy + ddxdy) * vrd + (dcxdx + ddxdx) * vid;
+                    gradXVrd = tmpGradXVrd;
 
-                    gradXVrn = gradXVrn1;
-                    gradXVin = gradXVin1;
-                    gradYVrn = gradYVrn1;
-                    gradYVin = gradYVin1;
-                    gradZVrn = gradZVrn1;
-                    gradZVin = gradZVin1;
+                    final double tmpGradYVrd = (cx + dx) * gradYVrd - (cy + dy) * gradYVid + (dcxdy + ddxdy) * vrd - (dcydy + ddydy) * vid;
+                    gradYVid = (cy + dy) * gradYVrd + (cx + dx) * gradYVid + (dcydy + ddydy) * vrd + (dcxdy + ddxdy) * vid;
+                    gradYVrd = tmpGradYVrd;
 
-                }
+                    final double tmpGradZVrd = (cx + dx) * gradZVrd - (cy + dy) * gradZVid + (dcxdz + ddxdz) * vrd - (dcydz + ddydz) * vid;
+                    gradZVid = (cy + dy) * gradZVrd + (cx + dx) * gradZVid + (dcydz + ddydz) * vrd + (dcxdz + ddxdz) * vid;
+                    gradZVrd = tmpGradZVrd;
 
-                if (n == m + 1) {
+                    final double tmpVrd = (cx + dx) * vrd - (cy + dy) * vid;
+                    vid = (cy + dy) * vrd + (cx + dx) * vid;
+                    vrd = tmpVrd;
+
+                } else if (n == m + 1) {
                     // calculate the second element of the column
-                    Vrn = cz * Vrn1;
-                    Vin = cz * Vin1;
+                    vrn = cz * vrn1;
+                    vin = cz * vin1;
 
-                    gradXVrn = cz * gradXVrn1 + dcxdz * Vrn1;
-                    gradXVin = cz * gradXVin1 + dcxdz * Vin1;
+                    gradXVrn = cz * gradXVrn1 + dcxdz * vrn1;
+                    gradXVin = cz * gradXVin1 + dcxdz * vin1;
 
-                    gradYVrn = cz * gradYVrn1 + dcydz * Vrn1;
-                    gradYVin = cz * gradYVin1 + dcydz * Vin1;
+                    gradYVrn = cz * gradYVrn1 + dcydz * vrn1;
+                    gradYVin = cz * gradYVin1 + dcydz * vin1;
 
-                    gradZVrn = cz * gradZVrn1 + dczdz * Vrn1;
-                    gradZVin = cz * gradZVin1 + dczdz * Vin1;
+                    gradZVrn = cz * gradZVrn1 + dczdz * vrn1;
+                    gradZVin = cz * gradZVin1 + dczdz * vin1;
 
-                } else if (n >= m + 2) {
+                } else {
                     // calculate the other elements of the column
                     final double inv   = 1.0 / (n - m);
                     final double coeff = n + m - 1.0;
 
-                    Vrn = (cz * Vrn1 - coeff * onR2 * Vrn2) * inv;
-                    Vin = (cz * Vin1 - coeff * onR2 * Vin2) * inv;
+                    vrn = (cz * vrn1 - coeff * rEq2OnR2 * vrn2) * inv;
+                    vin = (cz * vin1 - coeff * rEq2OnR2 * vin2) * inv;
 
-                    gradXVrn = (cz * gradXVrn1 - coeff * onR2 * gradXVrn2 + dcxdz * Vrn1 - coeff * donr2dx * Vrn2) * inv;
-                    gradXVin = (cz * gradXVin1 - coeff * onR2 * gradXVin2 + dcxdz * Vin1 - coeff * donr2dx * Vin2) * inv;
-                    gradYVrn = (cz * gradYVrn1 - coeff * onR2 * gradYVrn2 + dcydz * Vrn1 - coeff * donr2dy * Vrn2) * inv;
-                    gradYVin = (cz * gradYVin1 - coeff * onR2 * gradYVin2 + dcydz * Vin1 - coeff * donr2dy * Vin2) * inv;
-                    gradZVrn = (cz * gradZVrn1 - coeff * onR2 * gradZVrn2 + dczdz * Vrn1 - coeff * donr2dz * Vrn2) * inv;
-                    gradZVin = (cz * gradZVin1 - coeff * onR2 * gradZVin2 + dczdz * Vin1 - coeff * donr2dz * Vin2) * inv;
+                    gradXVrn = (cz * gradXVrn1 - coeff * rEq2OnR2 * gradXVrn2 + dcxdz * vrn1 - coeff * donr2dx * vrn2) * inv;
+                    gradXVin = (cz * gradXVin1 - coeff * rEq2OnR2 * gradXVin2 + dcxdz * vin1 - coeff * donr2dx * vin2) * inv;
+                    gradYVrn = (cz * gradYVrn1 - coeff * rEq2OnR2 * gradYVrn2 + dcydz * vrn1 - coeff * donr2dy * vrn2) * inv;
+                    gradYVin = (cz * gradYVin1 - coeff * rEq2OnR2 * gradYVin2 + dcydz * vin1 - coeff * donr2dy * vin2) * inv;
+                    gradZVrn = (cz * gradZVrn1 - coeff * rEq2OnR2 * gradZVrn2 + dczdz * vrn1 - coeff * donr2dz * vrn2) * inv;
+                    gradZVin = (cz * gradZVin1 - coeff * rEq2OnR2 * gradZVin2 + dczdz * vin1 - coeff * donr2dz * vin2) * inv;
                 }
 
                 // increment variables
@@ -317,8 +310,8 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
                 dcydz += ddydz;
                 dczdz += ddzdz;
 
-                Vrn2 = Vrn1;
-                Vin2 = Vin1;
+                vrn2 = vrn1;
+                vin2 = vin1;
                 gradXVrn2 = gradXVrn1;
                 gradXVin2 = gradXVin1;
                 gradYVrn2 = gradYVrn1;
@@ -326,8 +319,8 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
                 gradZVrn2 = gradZVrn1;
                 gradZVin2 = gradZVin1;
 
-                Vrn1 = Vrn;
-                Vin1 = Vin;
+                vrn1 = vrn;
+                vin1 = vin;
                 gradXVrn1 = gradXVrn;
                 gradXVin1 = gradXVin;
                 gradYVrn1 = gradYVrn;
@@ -339,18 +332,14 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
                 // ( as the matrix is inversed, Cnm actually is Cmn )
 
                 if (Cm[n] != 0.0 || Sm[n] != 0.0) { // avoid doing the processing if not necessary
-                    vdX += rn * (Cm[n] * gradXVrn + Sm[n] * gradXVin);
-                    vdY += rn * (Cm[n] * gradYVrn + Sm[n] * gradYVin);
-                    vdZ += rn * (Cm[n] * gradZVrn + Sm[n] * gradZVin);
+                    vdX += Cm[n] * gradXVrn + Sm[n] * gradXVin;
+                    vdY += Cm[n] * gradYVrn + Sm[n] * gradYVin;
+                    vdZ += Cm[n] * gradZVrn + Sm[n] * gradZVin;
                 }
-
-                rn *= equatorialRadius;
 
             }
 
             // increment variables
-            rm *= equatorialRadius;
-
             cmx += dx;
             cmy += dy;
             cmz += dz;

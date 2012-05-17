@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Fixed numerical stability errors for high order gravity field in Cunningham model (fixes bug #97).
+      </action>
       <action dev="luc" type="fix" due-to="Yannick Tanguy">
         Fixed an error in radiation pressure for BoxAndSolarArraySpacecraft (fixes bug #92).
       </action>
