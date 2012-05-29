@@ -48,7 +48,7 @@ import org.orekit.utils.InterpolationTableLoader;
  * {@link DataProvidersManager}.
  * </p>
  * @author Thomas Neidhart
- * @see Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007
+ * @see "Guochang Xu, GPS - Theory, Algorithms and Applications, Springer, 2007"
  */
 public class SaastamoinenModel implements TroposphericDelayModel {
 

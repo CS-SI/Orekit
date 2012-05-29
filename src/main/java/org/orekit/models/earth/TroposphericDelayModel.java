@@ -38,7 +38,7 @@ public interface TroposphericDelayModel extends Serializable {
      * reasons and returns the same as
      *
      * <pre>
-     *   {@link SaastamoinenModel#calculatePathDelay(double, double)}/{@link Constants#SPEED_OF_LIGHT}
+     *   {@link SaastamoinenModel#calculatePathDelay(double, double)}/{@link org.orekit.utils.Constants#SPEED_OF_LIGHT}
      * </pre>
      *
      * @param elevation the elevation of the satellite in degrees
@@ -46,4 +46,5 @@ public interface TroposphericDelayModel extends Serializable {
      * @return the signal delay due to the troposphere in s
      */
     double calculateSignalDelay(final double elevation, final double height);
+
 }

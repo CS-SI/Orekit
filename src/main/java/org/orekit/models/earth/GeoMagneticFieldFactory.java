@@ -62,7 +62,7 @@ public class GeoMagneticFieldFactory {
      * @param year the decimal year
      * @return a {@link GeoMagneticField} for the given year and model
      * @throws OrekitException if the models could not be loaded
-     * @see {@link GeoMagneticField#getDecimalYear(int, int, int)}
+     * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
     public static GeoMagneticField getField(final FieldModel type, final double year)
         throws OrekitException {
@@ -82,7 +82,7 @@ public class GeoMagneticFieldFactory {
      * @return a {@link GeoMagneticField} for the given year
      * @throws OrekitException
      *             if the IGRF models could not be loaded
-     * @see {@link GeoMagneticField#getDecimalYear(int, int, int)}
+     * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
     public static GeoMagneticField getIGRF(final double year) throws OrekitException {
         synchronized (GeoMagneticFieldFactory.class) {
@@ -97,7 +97,7 @@ public class GeoMagneticFieldFactory {
      * @param year the decimal year
      * @return a {@link GeoMagneticField} for the given year
      * @throws OrekitException if the WMM models could not be loaded
-     * @see {@link GeoMagneticField#getDecimalYear(int, int, int)}
+     * @see GeoMagneticField#getDecimalYear(int, int, int)
      */
     public static GeoMagneticField getWMM(final double year) throws OrekitException {
         synchronized (GeoMagneticFieldFactory.class) {
