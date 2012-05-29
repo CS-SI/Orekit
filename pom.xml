@@ -237,7 +237,7 @@
       <plugin>
         <groupId>com.github.jeluard</groupId>
         <artifactId>maven-plantuml-plugin</artifactId>
-        <version>7232</version>
+        <version>7876</version>
         <configuration>
           <sourceFiles>
             <directory>${basedir}</directory>
@@ -259,13 +259,6 @@
             </goals>
           </execution>
         </executions>
-        <dependencies>
-          <dependency>
-            <groupId>net.sourceforge.plantuml</groupId>
-            <artifactId>plantuml</artifactId>
-            <version>7707</version>
-          </dependency>
-        </dependencies>
       </plugin>
     </plugins>
   </build>
