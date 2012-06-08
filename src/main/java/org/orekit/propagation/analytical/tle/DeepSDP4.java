@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical.tle;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -172,10 +173,13 @@ class DeepSDP4 extends SDP4 {
 
     /** Constructor for a unique initial TLE.
      * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
      * @exception OrekitException if some specific error occurs
      */
-    protected DeepSDP4(final TLE initialTLE) throws OrekitException {
-        super(initialTLE);
+    protected DeepSDP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
+                       final double mass) throws OrekitException {
+        super(initialTLE, attitudeProvider, mass);
     }
 
     /** Computes luni - solar terms from initial coordinates and epoch.

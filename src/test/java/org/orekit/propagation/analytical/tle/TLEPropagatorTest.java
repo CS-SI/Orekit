@@ -17,14 +17,27 @@
 package org.orekit.propagation.analytical.tle;
 
 
+import org.apache.commons.math3.geometry.euclidean.threed.Line;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 
 public class TLEPropagatorTest {
@@ -91,6 +104,88 @@ public class TLEPropagatorTest {
         Assert.assertEquals(initialState.getHx(), finalState.getHx(), 1e-3);
         Assert.assertEquals(initialState.getHy(), finalState.getHy(), 1e-3);
         Assert.assertEquals(initialState.getLM(), finalState.getLM(), 1e-3);
+
+    }
+
+    /** Test if body center belongs to the direction pointed by the satellite
+     */
+    @Test
+    public void testBodyCenterInPointingDirection() throws OrekitException {
+
+        final Frame itrf = FramesFactory.getITRF2008(true);
+        DistanceChecker checker = new DistanceChecker(itrf);
+
+        // with Earth pointing attitude, distance should be small
+        TLEPropagator propagator =
+                TLEPropagator.selectExtrapolator(tle, new BodyCenterPointing(itrf), Propagator.DEFAULT_MASS);
+        propagator.setMasterMode(900.0, checker);
+        propagator.propagate(tle.getDate().shiftedBy(period));
+        Assert.assertEquals(0.0, checker.getMaxDistance(), 3.0e-8);
+
+        // with default attitude mode, distance should be large
+        propagator = TLEPropagator.selectExtrapolator(tle);
+        propagator.setMasterMode(900.0, checker);
+        propagator.propagate(tle.getDate().shiftedBy(period));
+        Assert.assertEquals(1.5219e7, checker.getMinDistance(), 1000.0);
+        Assert.assertEquals(2.6572e7, checker.getMaxDistance(), 1000.0);
+
+    }
+
+    private static class DistanceChecker implements OrekitFixedStepHandler {
+
+        private static final long serialVersionUID = -7778088499864710110L;
+
+        private final Frame itrf;
+        private double minDistance;
+        private double maxDistance;
+
+        public DistanceChecker(Frame itrf) {
+            this.itrf = itrf;
+        }
+
+        public double getMinDistance() {
+            return minDistance;
+        }
+
+        public double getMaxDistance() {
+            return maxDistance;
+        }
+
+        public void init(SpacecraftState s0, AbsoluteDate t) {
+            minDistance = Double.POSITIVE_INFINITY;
+            maxDistance = Double.NEGATIVE_INFINITY;
+        }
+
+        public void handleStep(SpacecraftState currentState, boolean isLast)
+                throws PropagationException {
+            try {
+                // Get satellite attitude rotation, i.e rotation from inertial frame to satellite frame
+                Rotation rotSat = currentState.getAttitude().getRotation();
+
+                // Transform Z axis from satellite frame to inertial frame
+                Vector3D zSat = rotSat.applyInverseTo(Vector3D.PLUS_K);
+
+                // Transform Z axis from inertial frame to ITRF
+                Transform transform = currentState.getFrame().getTransformTo(itrf, currentState.getDate());
+                Vector3D zSatITRF = transform.transformVector(zSat);
+
+                // Transform satellite position/velocity from inertial frame to ITRF
+                PVCoordinates pvSatITRF = transform.transformPVCoordinates(currentState.getPVCoordinates());
+
+                // Line containing satellite point and following pointing direction
+                Line pointingLine = new Line(pvSatITRF.getPosition(),
+                                             pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                         zSatITRF));
+
+                double distance = pointingLine.distance(Vector3D.ZERO);
+                minDistance = FastMath.min(minDistance, distance);
+                maxDistance = FastMath.max(maxDistance, distance);
+                
+
+            } catch (OrekitException oe) {
+                throw new PropagationException(oe);
+            }
+        }
 
     }
 

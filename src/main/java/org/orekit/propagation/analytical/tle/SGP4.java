@@ -17,6 +17,7 @@
 package org.orekit.propagation.analytical.tle;
 
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 
 /** This class contains methods to compute propagated coordinates with the SGP4 model.
@@ -55,12 +56,15 @@ class SGP4 extends TLEPropagator {
     private double c5;
     // CHECKSTYLE: resume JavadocVariable check
 
-    /** Build an instance.
-     * @param initialTLE the unique TLE to propagate
+    /** Constructor for a unique initial TLE.
+     * @param initialTLE the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
      * @exception OrekitException if some specific error occurs
      */
-    protected SGP4(final TLE initialTLE) throws OrekitException {
-        super(initialTLE);
+    protected SGP4(final TLE initialTLE, final AttitudeProvider attitudeProvider,
+                       final double mass) throws OrekitException {
+        super(initialTLE, attitudeProvider, mass);
     }
 
     /** Initialization proper to each propagator (SGP or SDP).

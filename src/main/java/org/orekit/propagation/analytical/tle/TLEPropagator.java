@@ -174,18 +174,6 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
     private final double mass;
 
     /** Protected constructor for derived classes.
-     * <p>
-     * The attitude provider will be set to {@link
-     * org.orekit.propagation.Propagator#DEFAULT_LAW}.
-     * </p>
-     * @param initialTLE the unique TLE to propagate
-     * @exception OrekitException if some specific error occurs
-     */
-    protected TLEPropagator(final TLE initialTLE) throws OrekitException {
-        this(initialTLE, DEFAULT_LAW, DEFAULT_MASS);
-    }
-
-    /** Protected constructor for derived classes.
      * @param initialTLE the unique TLE to propagate
      * @param attitudeProvider provider for attitude computation
      * @param mass spacecraft mass (kg)
@@ -211,6 +199,18 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
      * @exception OrekitException if the underlying model cannot be initialized
      */
     public static TLEPropagator selectExtrapolator(final TLE tle) throws OrekitException {
+        return selectExtrapolator(tle, DEFAULT_LAW, DEFAULT_MASS);
+    }
+
+    /** Selects the extrapolator to use with the selected TLE.
+     * @param tle the TLE to propagate.
+     * @param attitudeProvider provider for attitude computation
+     * @param mass spacecraft mass (kg)
+     * @return the correct propagator.
+     * @exception OrekitException if the underlying model cannot be initialized
+     */
+    public static TLEPropagator selectExtrapolator(final TLE tle, final AttitudeProvider attitudeProvider,
+                                                   final double mass) throws OrekitException {
 
         final double a1 = FastMath.pow( TLEConstants.XKE / (tle.getMeanMotion() * 60.0), TLEConstants.TWO_THIRD);
         final double cosi0 = FastMath.cos(tle.getI());
@@ -225,9 +225,9 @@ public abstract class TLEPropagator extends AbstractPropagator implements Serial
 
         // Period >= 225 minutes is deep space
         if (MathUtils.TWO_PI / (xn0dp * TLEConstants.MINUTES_PER_DAY) >= (1.0 / 6.4)) {
-            return new DeepSDP4(tle);
+            return new DeepSDP4(tle, attitudeProvider, mass);
         } else {
-            return new SGP4(tle);
+            return new SGP4(tle, attitudeProvider, mass);
         }
     }
 

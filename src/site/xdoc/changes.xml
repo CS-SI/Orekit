@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" due-to="Francesco Rocca">
+        Added a way to build TLE propagators with attitude providers and mass (fixes bug #84).
+      </action>
       <action dev="luc" type="fix" >
         Fixed numerical stability errors for high order gravity field in Cunningham model (fixes bug #97).
       </action>
