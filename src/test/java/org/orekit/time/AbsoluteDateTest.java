@@ -257,21 +257,21 @@ public class AbsoluteDateTest {
     }
 
     @Test
-    public void testCCSDSUnsegmented() throws OrekitException {
+    public void testCCSDSUnsegmentedNoExtension() throws OrekitException {
 
-        AbsoluteDate reference = new AbsoluteDate("2002-05-23T12:34:56.789", TimeScalesFactory.getUTC());
+        AbsoluteDate reference = new AbsoluteDate("2002-05-23T12:34:56.789", utc);
         double lsb = FastMath.pow(2.0, -24);
 
         byte[] timeCCSDSEpoch = new byte[] { 0x53, 0x7F, 0x40, -0x70, -0x37, -0x05, -0x19 };
-        for (int preamble = 0x00; preamble < 0x100; ++preamble) {
+        for (int preamble = 0x00; preamble < 0x80; ++preamble) {
             if (preamble == 0x1F) {
                 // using CCSDS reference epoch
                 AbsoluteDate ccsds1 =
-                    AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                    AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) preamble, (byte) 0x0, timeCCSDSEpoch, null);
                 Assert.assertEquals(0, ccsds1.durationFrom(reference), lsb / 2);
             } else {
                 try {
-                    AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) preamble, timeCCSDSEpoch, null);
+                    AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) preamble, (byte) 0x0, timeCCSDSEpoch, null);
                     Assert.fail("an exception should have been thrown");
                 } catch (OrekitException iae) {
                     // expected
@@ -283,7 +283,7 @@ public class AbsoluteDateTest {
         // missing epoch
         byte[] timeJ2000Epoch = new byte[] { 0x04, 0x7E, -0x0B, -0x10, -0x07, 0x16, -0x79 };
         try {
-            AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) 0x2F, timeJ2000Epoch, null);
+            AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) 0x2F, (byte) 0x0, timeJ2000Epoch, null);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException iae) {
             // expected
@@ -291,8 +291,33 @@ public class AbsoluteDateTest {
 
         // using J2000.0 epoch
         AbsoluteDate ccsds3 =
-            AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) 0x2F, timeJ2000Epoch, AbsoluteDate.J2000_EPOCH);
+            AbsoluteDate.parseCCSDSUnsegmentedTimeCode((byte) 0x2F, (byte) 0x0, timeJ2000Epoch, AbsoluteDate.J2000_EPOCH);
         Assert.assertEquals(0, ccsds3.durationFrom(reference), lsb / 2);
+
+    }
+
+    @Test
+    public void testCCSDSUnsegmentedWithExtendedPreamble() throws OrekitException {
+
+        AbsoluteDate reference = new AbsoluteDate("2095-03-03T22:02:45.789012345678901", utc);
+        int leap = (int) FastMath.rint(utc.offsetFromTAI(reference));
+        double lsb = FastMath.pow(2.0, -48);
+
+        byte extendedPreamble = (byte) -0x80;
+        byte identification   = (byte)  0x10;
+        byte coarseLength1    = (byte)  0x0C; // four (3 + 1) bytes
+        byte fineLength1      = (byte)  0x03; // 3 bytes
+        byte coarseLength2    = (byte)  0x20; // 1 additional byte for coarse time
+        byte fineLength2      = (byte)  0x0C; // 3 additional bytes for fine time
+        byte[] timeCCSDSEpoch = new byte[] {
+             0x01,  0x02,  0x03,  0x04,  (byte)(0x05 - leap), // 5 bytes for coarse time (seconds)
+            -0x37, -0x04, -0x4A, -0x74, -0x2C, -0x3C          // 6 bytes for fine time (sub-seconds)
+        };
+        byte preamble1 = (byte) (extendedPreamble | identification | coarseLength1 | fineLength1);
+        byte preamble2 = (byte) (coarseLength2 | fineLength2);
+        AbsoluteDate ccsds1 =
+                AbsoluteDate.parseCCSDSUnsegmentedTimeCode(preamble1, preamble2, timeCCSDSEpoch, null);
+        Assert.assertEquals(0, ccsds1.durationFrom(reference), lsb / 2);
 
     }
 

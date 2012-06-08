@@ -22,6 +22,11 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Upgraded support of CCSDS Unsegmented Time Code (CUC) to version 4 of the
+        standard published in November 2010 (fixes bug #91), this includes support for
+        an extended preamble field and longer time codes.
+      </action>
       <action dev="luc" type="add" due-to="Francesco Rocca">
         Added a way to build TLE propagators with attitude providers and mass (fixes bug #84).
       </action>

@@ -112,7 +112,7 @@ public class AbsoluteDate
     public static final AbsoluteDate FIFTIES_EPOCH =
         new AbsoluteDate(DateComponents.FIFTIES_EPOCH, TimeComponents.H00, TimeScalesFactory.getTT());
 
-    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-3):
+    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4):
      * 1958-01-01T00:00:00 International Atomic Time (<em>not</em> UTC). */
     public static final AbsoluteDate CCSDS_EPOCH =
         new AbsoluteDate(DateComponents.CCSDS_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
@@ -363,10 +363,20 @@ public class AbsoluteDate
     /** Build an instance from a CCSDS Unsegmented Time Code (CUC).
      * <p>
      * CCSDS Unsegmented Time Code is defined in the blue book:
-     * CCSDS Time Code Format (CCSDS 301.0-B-3) published in January 2002
+     * CCSDS Time Code Format (CCSDS 301.0-B-4) published in November 2010
      * </p>
-     * @param preambleField field specifying the format, often not transmitted in
-     * data interfaces, as it is constant for a given data interface
+     * <p>
+     * If the date to be parsed is formatted using version 3 of the standard
+     * (CCSDS 301.0-B-3 published in 2002) or if the extension of the preamble
+     * field introduced in version 4 of the standard is not used, then the
+     * {@code preambleField2} parameter can be set to 0.
+     * </p>
+     * @param preambleField1 first byte of the field specifying the format, often
+     * not transmitted in data interfaces, as it is constant for a given data interface
+     * @param preambleField2 second byte of the field specifying the format
+     * (added in revision 4 of the CCSDS standard in 2010), often not transmitted in data
+     * interfaces, as it is constant for a given data interface (value ignored if presence
+     * not signaled in {@code preambleField1})
      * @param timeField byte array containing the time code
      * @param agencyDefinedEpoch reference epoch, ignored if the preamble field
      * specifies the {@link #CCSDS_EPOCH CCSDS reference epoch} is used (and hence
@@ -375,13 +385,15 @@ public class AbsoluteDate
      * @throws OrekitException if preamble is inconsistent with Unsegmented Time Code,
      * or if it is inconsistent with time field, or if agency epoch is needed but not provided
      */
-    public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(final byte preambleField, final byte[] timeField,
+    public static AbsoluteDate parseCCSDSUnsegmentedTimeCode(final byte preambleField1,
+                                                             final byte preambleField2,
+                                                             final byte[] timeField,
                                                              final AbsoluteDate agencyDefinedEpoch)
         throws OrekitException {
 
         // time code identification and reference epoch
         final AbsoluteDate epoch;
-        switch (preambleField & 0xF0) {
+        switch (preambleField1 & 0x70) {
         case 0x10:
             // the reference epoch is CCSDS epoch 1958-01-01T00:00:00 TAI
             epoch = CCSDS_EPOCH;
@@ -395,12 +407,19 @@ public class AbsoluteDate
             break;
         default :
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_PREAMBLE_FIELD,
-                                      formatByte(preambleField));
+                                      formatByte(preambleField1));
         }
 
         // time field lengths
-        final int coarseTimeLength = 1 + ((preambleField & 0x0C) >>> 2);
-        final int fineTimeLength   = preambleField & 0x03;
+        int coarseTimeLength = 1 + ((preambleField1 & 0x0C) >>> 2);
+        int fineTimeLength   = preambleField1 & 0x03;
+
+        if ((preambleField1 & 0x80) != 0x0) {
+            // there is an additional octet in preamble field
+            coarseTimeLength += (preambleField2 & 0x60) >>> 5;
+            fineTimeLength   += (preambleField2 & 0x1C) >>> 2;
+        }
+
         if (timeField.length != coarseTimeLength + fineTimeLength) {
             throw new OrekitException(OrekitMessages.CCSDS_DATE_INVALID_LENGTH_TIME_FIELD,
                                       timeField.length, coarseTimeLength + fineTimeLength);
@@ -422,7 +441,7 @@ public class AbsoluteDate
     /** Build an instance from a CCSDS Day Segmented Time Code (CDS).
      * <p>
      * CCSDS Day Segmented Time Code is defined in the blue book:
-     * CCSDS Time Code Format (CCSDS 301.0-B-3) published in January 2002
+     * CCSDS Time Code Format (CCSDS 301.0-B-4) published in November 2010
      * </p>
      * @param preambleField field specifying the format, often not transmitted in
      * data interfaces, as it is constant for a given data interface
@@ -500,7 +519,7 @@ public class AbsoluteDate
     /** Build an instance from a CCSDS Calendar Segmented Time Code (CCS).
      * <p>
      * CCSDS Calendar Segmented Time Code is defined in the blue book:
-     * CCSDS Time Code Format (CCSDS 301.0-B-3) published in January 2002
+     * CCSDS Time Code Format (CCSDS 301.0-B-4) published in November 2010
      * </p>
      * @param preambleField field specifying the format, often not transmitted in
      * data interfaces, as it is constant for a given data interface

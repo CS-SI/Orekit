@@ -56,7 +56,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     /** Reference epoch for 1950 dates: 1950-01-01. */
     public static final DateComponents FIFTIES_EPOCH;
 
-    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-3): 1958-01-01. */
+    /** Reference epoch for CCSDS Time Code Format (CCSDS 301.0-B-4): 1958-01-01. */
     public static final DateComponents CCSDS_EPOCH;
 
     /** Reference epoch for Galileo System Time: 1999-08-22. */
