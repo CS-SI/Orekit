@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Fixed wrong transform for 3D lines (fixes bug #101).
+      </action>
       <action dev="luc" type="add" >
         Upgraded support of CCSDS Unsegmented Time Code (CUC) to version 4 of the
         standard published in November 2010 (fixes bug #91), this includes support for

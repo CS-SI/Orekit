@@ -243,7 +243,7 @@ public class Transform implements Serializable {
      */
     public Line transformLine(final Line line) {
         final Vector3D transformedP0 = transformPosition(line.getOrigin());
-        final Vector3D transformedP1 = transformVector(line.pointAt(1.0e6));
+        final Vector3D transformedP1 = transformPosition(line.pointAt(1.0e6));
         return new Line(transformedP0, transformedP1);
     }
 

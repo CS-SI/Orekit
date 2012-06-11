@@ -19,6 +19,7 @@ package org.orekit.frames;
 
 import java.util.Random;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -95,14 +96,7 @@ public class TransformTest {
     public void testReverse() {
         Random random = new Random(0x9f82ba2b2c98dac5l);
         for (int i = 0; i < 20; ++i) {
-            int n = random.nextInt(20);
-            Transform combined = Transform.IDENTITY;
-            for (int k = 0; k < n; ++k) {
-                Transform t = random.nextBoolean()
-                ? new Transform(randomVector(random), randomVector(random))
-                : new Transform(randomRotation(random), randomVector(random));
-                combined = new Transform(combined, t);
-            }
+            Transform combined = randomTransform(random);
 
             checkNoTransform(new Transform(combined, combined.getInverse()), random);
 
@@ -333,14 +327,7 @@ public class TransformTest {
         for (int i = 0; i < 20; ++i) {
 
             // generate a random transform
-            int n = random.nextInt(20);
-            Transform combined = Transform.IDENTITY;
-            for (int k = 0; k < n; ++k) {
-                Transform t = random.nextBoolean()
-                ? new Transform(randomVector(random), randomVector(random))
-                : new Transform(randomRotation(random), randomVector(random));
-                combined = new Transform(combined, t);
-            }
+            Transform combined = randomTransform(random);
 
             // compute Jacobian
             double[][] jacobian = new double[6][6];
@@ -385,6 +372,24 @@ public class TransformTest {
 
     }
 
+    @Test
+    public void testLine() {
+        Random random = new Random(0x4a5ff67426c5731fl);
+        for (int i = 0; i < 100; ++i) {
+            Transform transform = randomTransform(random);
+            for (int j = 0; j < 20; ++j) {
+                Vector3D p0 = randomVector(random);
+                Vector3D p1 = randomVector(random);
+                Line l = new Line(p0, p1);
+                Line transformed = transform.transformLine(l);
+                for (int k = 0; k < 10; ++k) {
+                    Vector3D p = l.pointAt(random.nextDouble() * 1.0e6);
+                    Assert.assertEquals(0.0, transformed.distance(transform.transformPosition(p)), 1.0e-6);
+                }
+            }
+        }
+    }
+
     private void checkVectors(Vector3D v1 , Vector3D v2) {
 
         Vector3D d = v1.subtract(v2);
@@ -417,6 +422,17 @@ public class TransformTest {
         double q3 = random.nextDouble() * 2 - 1;
         double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
         return new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
+    }
+
+    private Transform randomTransform(Random random) {
+        Transform combined = Transform.IDENTITY;
+        for (int k = 0; k < 20; ++k) {
+            Transform t = random.nextBoolean()
+            ? new Transform(randomVector(random), randomVector(random))
+            : new Transform(randomRotation(random), randomVector(random));
+            combined = new Transform(combined, t);
+        }
+        return combined;
     }
 
     private void checkNoTransform(Transform transform, Random random) {
