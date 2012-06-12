@@ -59,7 +59,7 @@ public class SolarBodyTest {
             private static final long serialVersionUID = 4301068133487454052L;
             protected void updateFrame(final AbsoluteDate date) throws OrekitException {
                 PVCoordinates pv = CelestialBodyFactory.getSun().getPVCoordinates(date, eme2000);
-                setTransform(new Transform(pv.getPosition().negate(), pv.getVelocity().negate()));
+                setTransform(new Transform(date, pv.getPosition().negate(), pv.getVelocity().negate()));
             }
         };
         checkPV(CelestialBodyFactory.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
@@ -172,7 +172,32 @@ public class SolarBodyTest {
 
     }
 
+    @Test
+    public void testFrameShift() throws OrekitException {
+        Utils.setDataRoot("regular-data");
+        final Frame moon  = CelestialBodyFactory.getMoon().getBodyOrientedFrame();
+        final Frame earth = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final AbsoluteDate date0 = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
+
+        for (double t = 0; t < Constants.JULIAN_DAY; t += 3600) {
+            final AbsoluteDate date = date0.shiftedBy(t);
+            final Transform transform = earth.getTransformTo(moon, date);
+            for (double dt = -10; dt < 10; dt += 0.125) {
+                final Transform shifted  = transform.shiftedBy(dt);
+                final Transform computed = earth.getTransformTo(moon, transform.getDate().shiftedBy(dt));
+                final Transform error    = new Transform(computed.getDate(), computed, shifted.getInverse());
+                Assert.assertEquals(0.0, error.getTranslation().getNorm(),   100.0);
+                Assert.assertEquals(0.0, error.getVelocity().getNorm(),       20.0);
+                Assert.assertEquals(0.0, error.getRotation().getAngle(),    4.0e-8);
+                Assert.assertEquals(0.0, error.getRotationRate().getNorm(), 8.0e-10);
+            }
+            System.out.println("&");
+        }
+    }
+
+    @Test
     public void testKepler() throws OrekitException {
+        Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate(1969, 06, 28, TimeScalesFactory.getTT());
         final double au = 149597870691.0;
         checkKepler(CelestialBodyFactory.getMoon(),    CelestialBodyFactory.getEarth(), date, 3.844e8, 0.012);

@@ -46,7 +46,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         double dt = 10.0;
         AbsoluteDate date2 = date1.shiftedBy(dt);
         Transform t1 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date2);
-        Transform evolution = new Transform(t0.getInverse(), t1);
+        Transform evolution = new Transform(date2, t0.getInverse(), t1);
 
         Vector3D p = new Vector3D(6000,6000,0);
         Assert.assertEquals(0.0, evolution.transformPosition(Vector3D.ZERO).getNorm(), 1.0e-15);
@@ -160,7 +160,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
         Vector3D axisP2h = evoP2h.getAxis().negate();
         double w = (8 * (alphaP1h - alphaM1h) - (alphaP2h - alphaM2h)) / (12 * h);
         Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
-        Transform finiteDiffTransform = new Transform(trans.getRotation() , new Vector3D(w ,axis));
+        Transform finiteDiffTransform = new Transform(t0, trans.getRotation() , new Vector3D(w ,axis));
 
         checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.61, 1.1e-4);
 

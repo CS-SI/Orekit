@@ -170,8 +170,9 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
         final double dt = tp + tn;
 
         final Transform prevToNext =
-            new Transform(new Transform(previous.getAttitude().getRotation().revert()),
-                          new Transform(next.getAttitude().getRotation()));
+            new Transform(date,
+                          new Transform(date, previous.getAttitude().getRotation().revert()),
+                          new Transform(date, next.getAttitude().getRotation()));
 
         final Rotation newRot = new Rotation(prevToNext.getRotation().getAxis(),
                                              tp * prevToNext.getRotation().getAngle() / dt);
@@ -184,8 +185,9 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
         }
 
         final Transform newTrans =
-            new Transform(new Transform(previous.getAttitude().getRotation()),
-                          new Transform(newRot, newInstRotAxis));
+            new Transform(date,
+                          new Transform(date, previous.getAttitude().getRotation()),
+                          new Transform(date, newRot, newInstRotAxis));
 
         return new Attitude(date, previous.getFrame(), newTrans.getRotation(), newTrans.getRotationRate());
 

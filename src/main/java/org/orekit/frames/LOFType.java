@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
 /** Enumerate for different types of Local Orbital Frames.
@@ -135,24 +136,25 @@ public enum LOFType {
     };
 
     /** Get the transform from an inertial frame defining position-velocity and the local orbital frame.
+     * @param date current date
      * @param pv position-velocity of the spacecraft in some inertial frame
      * @return transform from the frame where position-velocity are defined to local orbital frame
      */
-    public Transform transformFromInertial(final PVCoordinates pv) {
+    public Transform transformFromInertial(final AbsoluteDate date, final PVCoordinates pv) {
 
         final Vector3D p = pv.getPosition();
         final Vector3D v = pv.getVelocity();
         final Vector3D momentum = pv.getMomentum();
 
         // compute the translation part of the transform
-        final Transform translation = new Transform(p.negate(), v.negate());
+        final Transform translation = new Transform(date, p.negate(), v.negate());
 
         // compute the rotation part of the transform
         final Rotation r = rotationFromInertial(pv);
         final Transform rotation =
-                new Transform(r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
+                new Transform(date, r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
 
-        return new Transform(translation, rotation);
+        return new Transform(date, translation, rotation);
 
     }
 

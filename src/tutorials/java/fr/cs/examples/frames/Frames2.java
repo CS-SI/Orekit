@@ -51,6 +51,10 @@ public class Frames2 {
             Vector3DFormat v3 = new Vector3DFormat(new DecimalFormat("0.000",     symbols));
             Vector3DFormat v7 = new Vector3DFormat(new DecimalFormat("0.0000000", symbols));
 
+            // Considering the following Computing/Measurement date in UTC time scale
+            TimeScale utc = TimeScalesFactory.getUTC();
+            AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
+
             // The Center of Gravity frame has its origin at the satellite center of gravity (CoG)
             // and its axes parallel to EME2000. It is derived from EME2000 frame at any moment
             // by an unknown transform which depends on the current position and the velocity.
@@ -59,18 +63,15 @@ public class Frames2 {
 
             // The satellite frame, with origin also at the CoG, depends on attitude.
             // For the sake of this tutorial, we consider a simple inertial attitude here
-            Transform cogToSat = new Transform(new Rotation(0.6, 0.48, 0, 0.64, false));
+            Transform cogToSat = new Transform(date, new Rotation(0.6, 0.48, 0, 0.64, false));
             Frame satFrame = new Frame(cogFrame, cogToSat, "sat", false);
 
             // Finally, the GPS antenna frame can be defined from the satellite frame by 2 transforms:
             // a translation and a rotation
-            Transform translateGPS = new Transform(new Vector3D(0, 0, 1));
-            Transform rotateGPS    = new Transform(new Rotation(new Vector3D(0, 1, 3), FastMath.toRadians(10)));
-            Frame gpsFrame         = new Frame(satFrame, new Transform(translateGPS, rotateGPS), "GPS", false);
+            Transform translateGPS = new Transform(date, new Vector3D(0, 0, 1));
+            Transform rotateGPS    = new Transform(date, new Rotation(new Vector3D(0, 1, 3), FastMath.toRadians(10)));
+            Frame gpsFrame         = new Frame(satFrame, new Transform(date, translateGPS, rotateGPS), "GPS", false);
 
-            // Considering the following Computing/Measurement date in UTC time scale
-            TimeScale utc = TimeScalesFactory.getUTC();
-            AbsoluteDate date = new AbsoluteDate(2008, 10, 01, 12, 00, 00.000, utc);
 
             // Let's get the satellite position and velocity in ITRF2005 as measured by GPS antenna at this moment:
             final Vector3D position = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
@@ -85,11 +86,12 @@ public class Frames2 {
             // unknown. We combine the extracted rotation and the measured translation by
             // applying the rotation first because the position/velocity vector are given in
             // ITRF frame not in GPS antenna frame:
-            Transform measuredTranslation = new Transform(position, velocity);
+            Transform measuredTranslation = new Transform(date, position, velocity);
             Transform formerTransform     = gpsFrame.getTransformTo(FramesFactory.getITRF2005(true), date);
-            Transform preservedRotation   = new Transform(formerTransform.getRotation(),
+            Transform preservedRotation   = new Transform(date,
+                                                          formerTransform.getRotation(),
                                                           formerTransform.getRotationRate());
-            Transform gpsToItrf           = new Transform(preservedRotation, measuredTranslation);
+            Transform gpsToItrf           = new Transform(date, preservedRotation, measuredTranslation);
 
             // So we can update the transform from EME2000 to CoG frame
             cogFrame.updateTransform(gpsFrame, FramesFactory.getITRF2005(true), gpsToItrf, date);

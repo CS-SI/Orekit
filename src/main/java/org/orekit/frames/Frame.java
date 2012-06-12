@@ -209,7 +209,7 @@ public class Frame implements Serializable {
         for (Frame frame = this; frame != common; frame = frame.parent) {
             frame.updateFrame(date);
             commonToInstance =
-                new Transform(frame.transform, commonToInstance);
+                new Transform(date, frame.transform, commonToInstance);
         }
 
         // transform from destination up to common
@@ -217,11 +217,11 @@ public class Frame implements Serializable {
         for (Frame frame = destination; frame != common; frame = frame.parent) {
             frame.updateFrame(date);
             commonToDestination =
-                new Transform(frame.transform, commonToDestination);
+                new Transform(date, frame.transform, commonToDestination);
         }
 
         // transform from instance to destination via common
-        return new Transform(commonToInstance.getInverse(), commonToDestination);
+        return new Transform(date, commonToInstance.getInverse(), commonToDestination);
 
     }
 
@@ -316,8 +316,8 @@ public class Frame implements Serializable {
         // WITHOUT using the existing this.transform that will be updated
         final Transform parentTofA = parent.getTransformTo(fA, date);
         final Transform fBtoSelf   = fB.getTransformTo(this, date);
-        final Transform fAtoSelf   = new Transform(fAtoB, fBtoSelf);
-        setTransform(new Transform(parentTofA, fAtoSelf));
+        final Transform fAtoSelf   = new Transform(date, fAtoB, fBtoSelf);
+        setTransform(new Transform(date, parentTofA, fAtoSelf));
 
     }
 

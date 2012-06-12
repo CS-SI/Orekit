@@ -210,16 +210,17 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
     public Transform toTransform() {
 
         // orbit contribution
+        final AbsoluteDate date = orbit.getDate();
         final PVCoordinates pv = orbit.getPVCoordinates();
         final Transform orbitTransform  =
-            new Transform(pv.getPosition().negate(), pv.getVelocity().negate());
+            new Transform(date, pv.getPosition().negate(), pv.getVelocity().negate());
 
         // attitude contribution
         final Transform attitudeTransform =
-            new Transform(attitude.getRotation(), attitude.getSpin());
+            new Transform(date, attitude.getRotation(), attitude.getSpin());
 
         // combine all contributions
-        return new Transform(orbitTransform, attitudeTransform);
+        return new Transform(date, orbitTransform, attitudeTransform);
 
     }
 

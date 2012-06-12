@@ -70,7 +70,7 @@ class ITRFEquinoxFrame extends FactoryManagedFrame {
             final Rotation wRot = r2.applyTo(r1);
 
             // set up the transform from parent GTOD
-            setTransform(new Transform(wRot.revert(), Vector3D.ZERO));
+            setTransform(new Transform(date, wRot.revert(), Vector3D.ZERO));
             cachedDate = date;
 
         }

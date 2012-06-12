@@ -130,7 +130,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
             // compute translation from parent frame to self
             final PVCoordinates pv = getPVCoordinates(date, getParent());
             final Transform translation =
-                new Transform(pv.getPosition().negate(), pv.getVelocity().negate());
+                new Transform(date, pv.getPosition().negate(), pv.getVelocity().negate());
 
             // compute rotation from EME2000 frame to self,
             // as per the "Report of the IAU/IAG Working Group on Cartographic
@@ -150,10 +150,10 @@ public abstract class AbstractCelestialBody implements CelestialBody {
 
             // compute rotation from parent frame to self
             final Transform t  = definingFrame.getTransformTo(FramesFactory.getEME2000(), date);
-            final Transform rotation = new Transform(r2000.applyTo(t.getRotation()));
+            final Transform rotation = new Transform(date, r2000.applyTo(t.getRotation()));
 
             // update transform from parent to self
-            setTransform(new Transform(translation, rotation));
+            setTransform(new Transform(date, translation, rotation));
 
         }
 
@@ -177,7 +177,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
             final double dt = 10.0;
             final double w0 = iauPole.getPrimeMeridianAngle(date);
             final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
-            setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -w0),
+            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, -w0),
                                        new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K)));
         }
 

@@ -94,7 +94,7 @@ class VEISFrame extends FactoryManagedFrame {
             final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);
 
             // set up the transform from parent GTOD
-            setTransform(new Transform(new Rotation(Vector3D.PLUS_K, vst), rotationRate));
+            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, vst), rotationRate));
 
             cachedDate = date;
         }

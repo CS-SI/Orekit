@@ -114,7 +114,7 @@ public class GTODFrame extends FactoryManagedFrame {
             final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
             // set up the transform from parent TOD
-            setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -gast), rotationRate));
+            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, -gast), rotationRate));
 
             cachedDate = date;
 

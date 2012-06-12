@@ -95,7 +95,7 @@ class ITRFFrame extends FactoryManagedFrame {
             final Rotation combined = wRot.revert();
 
             // set up the transform from parent TIRF
-            setTransform(new Transform(combined, Vector3D.ZERO));
+            setTransform(new Transform(date, combined, Vector3D.ZERO));
             cachedDate = date;
 
         }

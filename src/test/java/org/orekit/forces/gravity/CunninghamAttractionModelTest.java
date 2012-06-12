@@ -75,7 +75,7 @@ public class CunninghamAttractionModelTest {
         Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
-                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
+                                            new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
                                             "pole aligned", true);
 
         double i     = FastMath.toRadians(98.7);
@@ -145,7 +145,7 @@ public class CunninghamAttractionModelTest {
         Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
-                                            new Transform(new Rotation(pole, Vector3D.PLUS_K)),
+                                            new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
                                             "pole aligned", true);
 
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),

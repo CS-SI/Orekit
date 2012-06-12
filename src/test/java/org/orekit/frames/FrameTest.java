@@ -66,7 +66,7 @@ public class FrameTest {
         Transform fromEME2000  = randomTransform(random);
         Frame frame = new Frame(FramesFactory.getEME2000(), fromEME2000, null);
         Transform toEME2000 = frame.getTransformTo(FramesFactory.getEME2000(), new AbsoluteDate());
-        checkNoTransform(new Transform(fromEME2000, toEME2000), random);
+        checkNoTransform(new Transform(fromEME2000.getDate(), fromEME2000, toEME2000), random);
     }
 
     @Test
@@ -76,7 +76,9 @@ public class FrameTest {
         Transform t2  = randomTransform(random);
         Transform t3  = randomTransform(random);
         Frame frame1 =
-            new Frame(FramesFactory.getEME2000(), new Transform(new Transform(t1, t2), t3), null);
+            new Frame(FramesFactory.getEME2000(),
+                      new Transform(t1.getDate(), new Transform(t1.getDate(), t1, t2), t3),
+                      null);
         Frame frame2 =
             new Frame(new Frame(new Frame(FramesFactory.getEME2000(), t1, null), t2, null), t3, null);
         checkNoTransform(frame1.getTransformTo(frame2, new AbsoluteDate()), random);
@@ -96,9 +98,9 @@ public class FrameTest {
 
         Transform T = R1.getTransformTo(R3, new AbsoluteDate());
 
-        Transform S = new Transform(t2,t3);
+        Transform S = new Transform(t2.getDate(), t2,t3);
 
-        checkNoTransform(new Transform(T, S.getInverse()) , random);
+        checkNoTransform(new Transform(T.getDate(), T, S.getInverse()) , random);
 
     }
 
@@ -237,13 +239,13 @@ public class FrameTest {
 
         f0.updateTransform(f1, f2, f1ToF2, date);
         Transform obtained12 = f1.getTransformTo(f2, date);
-        checkNoTransform(new Transform(f1ToF2, obtained12.getInverse()), random);
+        checkNoTransform(new Transform(date, f1ToF2, obtained12.getInverse()), random);
 
         f0.updateTransform(f2, f1, f1ToF2.getInverse(), date);
         Transform obtained21 = f2.getTransformTo(f1, date);
-        checkNoTransform(new Transform(f1ToF2.getInverse(), obtained21.getInverse()), random);
+        checkNoTransform(new Transform(date, f1ToF2.getInverse(), obtained21.getInverse()), random);
 
-        checkNoTransform(new Transform(obtained12, obtained21), random);
+        checkNoTransform(new Transform(date, obtained12, obtained21), random);
 
     }
 
@@ -254,7 +256,7 @@ public class FrameTest {
                 Vector3D u = new Vector3D(random.nextDouble() * 1000.0,
                                           random.nextDouble() * 1000.0,
                                           random.nextDouble() * 1000.0);
-                transform = new Transform(transform, new Transform(u));
+                transform = new Transform(transform.getDate(), transform, new Transform(transform.getDate(), u));
             } else {
                 double q0 = random.nextDouble() * 2 - 1;
                 double q1 = random.nextDouble() * 2 - 1;
@@ -262,7 +264,7 @@ public class FrameTest {
                 double q3 = random.nextDouble() * 2 - 1;
                 double q  = FastMath.sqrt(q0 * q0 + q1 * q1 + q2 * q2 + q3 * q3);
                 Rotation r = new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
-                transform = new Transform(transform, new Transform(r));
+                transform = new Transform(transform.getDate(), transform, new Transform(transform.getDate(), r));
             }
         }
         return transform;

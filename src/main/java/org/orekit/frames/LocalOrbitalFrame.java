@@ -56,7 +56,7 @@ public class LocalOrbitalFrame extends Frame {
     protected void updateFrame(final AbsoluteDate date) throws OrekitException {
 
         // update the frame defining transform
-        setTransform(type.transformFromInertial(provider.getPVCoordinates(date, getParent())));
+        setTransform(type.transformFromInertial(date, provider.getPVCoordinates(date, getParent())));
 
     }
 

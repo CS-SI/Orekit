@@ -112,7 +112,7 @@ class MODFrame extends FactoryManagedFrame {
             final Rotation precession = r1.applyTo(r2.applyTo(r3));
 
             // set up the transform from parent GCRF
-            setTransform(new Transform(precession));
+            setTransform(new Transform(date, precession));
 
             cachedDate = date;
         }

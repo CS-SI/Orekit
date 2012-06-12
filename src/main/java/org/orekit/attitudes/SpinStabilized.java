@@ -91,14 +91,14 @@ public class SpinStabilized implements AttitudeProviderModifier {
 
         // get attitude from underlying non-rotating law
         final Attitude base = nonRotatingLaw.getAttitude(pvProv, date, frame);
-        final Transform baseTransform = new Transform(base.getRotation(), base.getSpin());
+        final Transform baseTransform = new Transform(date, base.getRotation(), base.getSpin());
 
         // compute spin transform due to spin from reference to current date
         final Transform spinInfluence =
-            new Transform(new Rotation(axis, -rate * date.durationFrom(start)), spin);
+            new Transform(date, new Rotation(axis, -rate * date.durationFrom(start)), spin);
 
         // combine the two transforms
-        final Transform combined = new Transform(baseTransform, spinInfluence);
+        final Transform combined = new Transform(date, baseTransform, spinInfluence);
 
         // build the attitude
         return new Attitude(date, frame, combined.getRotation(), combined.getRotationRate());

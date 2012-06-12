@@ -48,7 +48,8 @@ public class InertialProvider implements AttitudeProvider {
      */
     public InertialProvider(final Rotation rotation) {
         satelliteFrame =
-            new Frame(FramesFactory.getEME2000(), new Transform(rotation), null, false);
+            new Frame(FramesFactory.getEME2000(), new Transform(AbsoluteDate.J2000_EPOCH, rotation),
+                      null, false);
     }
 
     /** {@inheritDoc} */

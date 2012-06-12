@@ -19,6 +19,7 @@ package org.orekit.frames;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** EME2000 frame : mean equator at J2000.0.
@@ -59,7 +60,7 @@ class EME2000Frame extends FactoryManagedFrame {
         final Rotation bias = r1.applyTo(r2.applyTo(r3));
 
         // store the bias transform
-        setTransform(new Transform(bias));
+        setTransform(new Transform(AbsoluteDate.J2000_EPOCH, bias));
 
     }
 

@@ -123,10 +123,10 @@ public class CelestialBodyPointed implements AttitudeProvider {
             new Rotation(pointingP, phasingCel, pointingSat, phasingSat);
 
         // build transform combining rotation and instant rotation axis
-        Transform transform = new Transform(celToSatRotation, celToSatRotation.applyTo(phasedRotAxisCel));
+        Transform transform = new Transform(date, celToSatRotation, celToSatRotation.applyTo(phasedRotAxisCel));
         if (frame != celestialFrame) {
             // prepend transform from specified frame to celestial frame
-            transform = new Transform(frame.getTransformTo(celestialFrame, date), transform);
+            transform = new Transform(date, frame.getTransformTo(celestialFrame, date), transform);
         }
 
         // build the attitude

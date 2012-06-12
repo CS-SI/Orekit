@@ -133,7 +133,7 @@ class TIRF2000Frame extends FactoryManagedFrame {
 
             // set up the transform from parent CIRF2000
             final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);
-            setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -era), rotationRate));
+            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, -era), rotationRate));
             cachedDate = date;
 
         }

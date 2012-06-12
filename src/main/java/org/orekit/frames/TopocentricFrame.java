@@ -63,16 +63,18 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
 
         // Build transformation from body centered frame to topocentric frame:
         // 1. Translation from body center to geodetic point
-        final Transform translation = new Transform(parentShape.transform(point).negate());
+        final Transform translation =
+                new Transform(AbsoluteDate.J2000_EPOCH, parentShape.transform(point).negate());
 
         // 2. Rotate axes
         final Vector3D Xtopo = getEast();
         final Vector3D Ztopo = getZenith();
-        final Transform rotation = new Transform(new Rotation(Xtopo, Ztopo, Vector3D.PLUS_I, Vector3D.PLUS_K),
+        final Transform rotation = new Transform(AbsoluteDate.J2000_EPOCH,
+                                                 new Rotation(Xtopo, Ztopo, Vector3D.PLUS_I, Vector3D.PLUS_K),
                                                  Vector3D.ZERO);
 
         // Compose both transformations
-        setTransform(new Transform(translation, rotation));
+        setTransform(new Transform(AbsoluteDate.J2000_EPOCH, translation, rotation));
 
     }
 

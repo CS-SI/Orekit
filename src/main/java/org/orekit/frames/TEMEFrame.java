@@ -65,7 +65,7 @@ class TEMEFrame extends FactoryManagedFrame {
             final double eqe = tod.getEquationOfEquinoxes(date);
 
             // set up the transform from parent TOD
-            setTransform(new Transform(new Rotation(Vector3D.PLUS_K, -eqe)));
+            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, -eqe)));
 
             cachedDate = date;
 

@@ -121,16 +121,17 @@ public class HelmertTransformation implements Serializable {
         final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
 
         // build tranlation part
-        final Transform translationTransform = new Transform(dP, velocity);
+        final Transform translationTransform = new Transform(date, dP, velocity);
 
         // build rotation part
         final double angle = dR.getNorm();
         final Transform rotationTransform =
-            new Transform((angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
+            new Transform(date,
+                          (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
                           rotationRate);
 
         // combine both parts
-        return new Transform(translationTransform, rotationTransform);
+        return new Transform(date, translationTransform, rotationTransform);
 
     }
 

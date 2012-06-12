@@ -22,6 +22,10 @@ import java.util.Arrays;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Precision;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeShiftable;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -78,13 +82,16 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  */
-public class Transform implements Serializable {
+public class Transform implements TimeStamped, TimeShiftable<Transform>, Serializable {
 
     /** Identity transform. */
     public static final Transform IDENTITY = new IdentityTransform();
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -9008113096602590296L;
+    private static final long serialVersionUID = -7021491205414508975L;
+
+    /** Date of the transform. */
+    private final AbsoluteDate date;
 
     /** Global translation. */
     private final Vector3D translation;
@@ -99,13 +106,16 @@ public class Transform implements Serializable {
     private final Vector3D rotationRate;
 
     /** Build a transform from its primitive operations.
+     * @param date date of the transform
      * @param translation first primitive operation to apply
      * @param velocity first time derivative of the translation
      * @param rotation second primitive operation to apply
      * @param rotationRate first time derivative of the rotation (norm representing angular rate)
      */
-    private Transform(final Vector3D translation, final Vector3D velocity,
+    private Transform(final AbsoluteDate date,
+                      final Vector3D translation, final Vector3D velocity,
                       final Rotation rotation, final Vector3D rotationRate) {
+        this.date         = date;
         this.translation  = translation;
         this.rotation     = rotation;
         this.velocity     = velocity;
@@ -113,51 +123,63 @@ public class Transform implements Serializable {
     }
 
     /** Build a translation transform.
+     * @param date date of the transform
      * @param translation translation to apply (i.e. coordinates of
      * the transformed origin, or coordinates of the origin of the
      * old frame in the new frame)
      */
-    public Transform(final Vector3D translation) {
-        this(translation, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+    public Transform(final AbsoluteDate date, final Vector3D translation) {
+        this(date, translation, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Build a rotation transform.
+     * @param date date of the transform
      * @param rotation rotation to apply ( i.e. rotation to apply to the
      * coordinates of a vector expressed in the old frame to obtain the
      * same vector expressed in the new frame )
      */
-    public Transform(final Rotation rotation) {
-        this(Vector3D.ZERO, Vector3D.ZERO, rotation, Vector3D.ZERO);
+    public Transform(final AbsoluteDate date, final Rotation rotation) {
+        this(date, Vector3D.ZERO, Vector3D.ZERO, rotation, Vector3D.ZERO);
     }
 
     /** Build a translation transform, with its first time derivative.
+     * @param date date of the transform
      * @param translation translation to apply (i.e. coordinates of
      * the transformed origin, or coordinates of the origin of the
      * old frame in the new frame)
      * @param velocity the velocity of the translation (i.e. origin
      * of the old frame velocity in the new frame)
      */
-    public Transform(final Vector3D translation, final Vector3D velocity) {
-        this(translation, velocity, Rotation.IDENTITY, Vector3D.ZERO);
+    public Transform(final AbsoluteDate date, final Vector3D translation, final Vector3D velocity) {
+        this(date, translation, velocity, Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Build a rotation transform.
+     * @param date date of the transform
      * @param rotation rotation to apply ( i.e. rotation to apply to the
      * coordinates of a vector expressed in the old frame to obtain the
      * same vector expressed in the new frame )
      * @param rotationRate the axis of the instant rotation
      * expressed in the new frame. (norm representing angular rate)
      */
-    public Transform(final Rotation rotation, final Vector3D rotationRate) {
-        this(Vector3D.ZERO, Vector3D.ZERO, rotation, rotationRate);
+    public Transform(final AbsoluteDate date, final Rotation rotation, final Vector3D rotationRate) {
+        this(date, Vector3D.ZERO, Vector3D.ZERO, rotation, rotationRate);
     }
 
     /** Build a transform by combining two existing ones.
+     * <p>
+     * Note that the dates of the two existing transformed are <em>ignored</em>,
+     * and the combined transform date is set to the date supplied in this constructor
+     * without any attempt to shift the raw transforms. This is a design choice allowing
+     * user full control of the combination.
+     * </p>
+     * @param date date of the transform
      * @param first first transform applied
      * @param second second transform applied
      */
-    public Transform(final Transform first, final Transform second) {
-        this(compositeTranslation(first, second), compositeVelocity(first, second),
+    public Transform(final AbsoluteDate date, final Transform first, final Transform second) {
+        this(date,
+             compositeTranslation(first, second), compositeVelocity(first, second),
              compositeRotation(first, second), compositeRotationRate(first, second));
     }
 
@@ -199,12 +221,39 @@ public class Transform implements Serializable {
         return second.rotationRate.add(second.rotation.applyTo(first.rotationRate));
     }
 
+    /** {@inheritDoc} */
+    public AbsoluteDate getDate() {
+        return date;
+    }
+
+    /** {@inheritDoc} */
+    public Transform shiftedBy(final double dt) {
+
+        // shift translation
+        final Vector3D shiftedTranslation = new Vector3D(1.0, translation, dt, velocity);
+
+        // shift rotation
+        final double rate = rotationRate.getNorm();
+        final Rotation shiftedRotation;
+        if (rate <= Precision.SAFE_MIN) {
+            // don't build too small rotations
+            shiftedRotation = rotation;
+        } else {
+            shiftedRotation = new Rotation(rotationRate, -rate * dt).applyTo(rotation);
+        }
+
+        return new Transform(date.shiftedBy(dt),
+                             shiftedTranslation, velocity,
+                             shiftedRotation, rotationRate);
+
+    };
+
     /** Get the inverse transform of the instance.
      * @return inverse transform of the instance
      */
     public Transform getInverse() {
         final Vector3D rT = rotation.applyTo(translation);
-        return new Transform(rT.negate(),
+        return new Transform(date, rT.negate(),
                              Vector3D.crossProduct(rotationRate, rT).subtract(rotation.applyTo(velocity)),
                              rotation.revert(),
                              rotation.applyInverseTo(rotationRate.negate()));
@@ -218,7 +267,7 @@ public class Transform implements Serializable {
      * @return a new transform, without any time-dependent parts
      */
     public Transform freeze() {
-        return new Transform(translation, Vector3D.ZERO, rotation, Vector3D.ZERO);
+        return new Transform(date, translation, Vector3D.ZERO, rotation, Vector3D.ZERO);
     }
 
     /** Transform a position vector (including translation effects).
@@ -358,7 +407,13 @@ public class Transform implements Serializable {
 
         /** Simple constructor. */
         public IdentityTransform() {
-            super(Vector3D.ZERO, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+            super(AbsoluteDate.J2000_EPOCH, Vector3D.ZERO, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Transform shiftedBy(final double dt) {
+            return this;
         }
 
         /** {@inheritDoc} */
@@ -400,6 +455,6 @@ public class Transform implements Serializable {
             }
         }
 
-    };
+    }
 
 }

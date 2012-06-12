@@ -150,11 +150,11 @@ public class LofOffset implements AttitudeProvider {
 
         // construction of the local orbital frame, using PV from inertial frame
         final PVCoordinates pv = pvProv.getPVCoordinates(date, inertialFrame);
-        final Transform inertialToLof = type.transformFromInertial(pv);
+        final Transform inertialToLof = type.transformFromInertial(date, pv);
 
         // take into account the specified start frame (which may not be an inertial one)
         final Transform frameToInertial = frame.getTransformTo(inertialFrame, date);
-        final Transform frameToLof = new Transform(frameToInertial, inertialToLof);
+        final Transform frameToLof = new Transform(date, frameToInertial, inertialToLof);
 
         // compose with offset rotation
         return new Attitude(date, frame,

@@ -52,6 +52,27 @@ public class ITRF2005FrameTest {
 
     }
 
+    @Test
+    public void testShift() throws OrekitException {
+        final Frame gcrf = FramesFactory.getGCRF();
+        final Frame itrf = FramesFactory.getITRF2005(false);
+        final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, TimeScalesFactory.getUTC());
+
+        for (double t = 0; t < Constants.JULIAN_DAY; t += 3600) {
+            final AbsoluteDate date = date0.shiftedBy(t);
+            final Transform transform = gcrf.getTransformTo(itrf, date);
+            for (double dt = -10; dt < 10; dt += 0.125) {
+                final Transform shifted  = transform.shiftedBy(dt);
+                final Transform computed = gcrf.getTransformTo(itrf, transform.getDate().shiftedBy(dt));
+                final Transform error    = new Transform(computed.getDate(), computed, shifted.getInverse());
+                Assert.assertEquals(0.0, error.getTranslation().getNorm(),  1.0e-10);
+                Assert.assertEquals(0.0, error.getVelocity().getNorm(),     1.0e-10);
+                Assert.assertEquals(0.0, error.getRotation().getAngle(),    1.0e-10);
+                Assert.assertEquals(0.0, error.getRotationRate().getNorm(), 1.0e-15);
+            }
+        }
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("compressed-data");

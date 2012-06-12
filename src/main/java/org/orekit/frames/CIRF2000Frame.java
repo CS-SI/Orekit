@@ -249,7 +249,7 @@ class CIRF2000Frame extends FactoryManagedFrame {
                                            true);
 
         // set up the transform from parent GCRF
-        setTransform(new Transform(bpn, Vector3D.ZERO));
+        setTransform(new Transform(date, bpn, Vector3D.ZERO));
 
     }
 
