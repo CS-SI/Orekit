@@ -486,6 +486,99 @@ public class TransformTest {
 
     }
 
+    @Test
+    public void testShiftDerivatives() {
+
+        Random random = new Random(0x5acda4f605aadce7l);
+        for (int i = 0; i < 10; ++i) {
+            Transform t = randomTransform(random);
+
+            for (double dt = -10.0; dt < 10.0; dt += 0.125) {
+
+                Transform t0 = t.shiftedBy(dt);
+                double v     = t0.getVelocity().getNorm();
+                double omega = t0.getRotationRate().getNorm();
+
+                // numerical derivatives
+                double h = 0.01 / omega;
+                Transform tm4h = t.shiftedBy(dt - 4 * h);
+                Transform tm3h = t.shiftedBy(dt - 3 * h);
+                Transform tm2h = t.shiftedBy(dt - 2 * h);
+                Transform tm1h = t.shiftedBy(dt - 1 * h);
+                Transform tp1h = t.shiftedBy(dt + 1 * h);
+                Transform tp2h = t.shiftedBy(dt + 2 * h);
+                Transform tp3h = t.shiftedBy(dt + 3 * h);
+                Transform tp4h = t.shiftedBy(dt + 4 * h);
+                double numXDot = derivative(h,
+                                            tm4h.getTranslation().getX(), tm3h.getTranslation().getX(),
+                                            tm2h.getTranslation().getX(), tm1h.getTranslation().getX(),
+                                            tp1h.getTranslation().getX(), tp2h.getTranslation().getX(),
+                                            tp3h.getTranslation().getX(), tp4h.getTranslation().getX());
+                double numYDot = derivative(h,
+                                            tm4h.getTranslation().getY(), tm3h.getTranslation().getY(),
+                                            tm2h.getTranslation().getY(), tm1h.getTranslation().getY(),
+                                            tp1h.getTranslation().getY(), tp2h.getTranslation().getY(),
+                                            tp3h.getTranslation().getY(), tp4h.getTranslation().getY());
+                double numZDot = derivative(h,
+                                            tm4h.getTranslation().getZ(), tm3h.getTranslation().getZ(),
+                                            tm2h.getTranslation().getZ(), tm1h.getTranslation().getZ(),
+                                            tp1h.getTranslation().getZ(), tp2h.getTranslation().getZ(),
+                                            tp3h.getTranslation().getZ(), tp4h.getTranslation().getZ());
+                double numQ0Dot = derivative(h,
+                                             tm4h.getRotation().getQ0(), tm3h.getRotation().getQ0(),
+                                             tm2h.getRotation().getQ0(), tm1h.getRotation().getQ0(),
+                                             tp1h.getRotation().getQ0(), tp2h.getRotation().getQ0(),
+                                             tp3h.getRotation().getQ0(), tp4h.getRotation().getQ0());
+                double numQ1Dot = derivative(h,
+                                             tm4h.getRotation().getQ1(), tm3h.getRotation().getQ1(),
+                                             tm2h.getRotation().getQ1(), tm1h.getRotation().getQ1(),
+                                             tp1h.getRotation().getQ1(), tp2h.getRotation().getQ1(),
+                                             tp3h.getRotation().getQ1(), tp4h.getRotation().getQ1());
+                double numQ2Dot = derivative(h,
+                                             tm4h.getRotation().getQ2(), tm3h.getRotation().getQ2(),
+                                             tm2h.getRotation().getQ2(), tm1h.getRotation().getQ2(),
+                                             tp1h.getRotation().getQ2(), tp2h.getRotation().getQ2(),
+                                             tp3h.getRotation().getQ2(), tp4h.getRotation().getQ2());
+                double numQ3Dot = derivative(h,
+                                             tm4h.getRotation().getQ3(), tm3h.getRotation().getQ3(),
+                                             tm2h.getRotation().getQ3(), tm1h.getRotation().getQ3(),
+                                             tp1h.getRotation().getQ3(), tp2h.getRotation().getQ3(),
+                                             tp3h.getRotation().getQ3(), tp4h.getRotation().getQ3());
+
+                // theoretical derivatives
+                double theXDot = t0.getVelocity().getX();
+                double theYDot = t0.getVelocity().getY();
+                double theZDot = t0.getVelocity().getZ();
+                Rotation  r0 = t0.getRotation();
+                Vector3D  w  = t0.getRotationRate();
+                Vector3D  q  = new Vector3D(r0.getQ1(), r0.getQ2(), r0.getQ3());
+                Vector3D  qw = Vector3D.crossProduct(q, w);
+                double theQ0Dot = -0.5 * Vector3D.dotProduct(q, w);
+                double theQ1Dot =  0.5 * (r0.getQ0() * w.getX() + qw.getX());
+                double theQ2Dot =  0.5 * (r0.getQ0() * w.getY() + qw.getY());
+                double theQ3Dot =  0.5 * (r0.getQ0() * w.getZ() + qw.getZ());
+
+                // check consistency
+                Assert.assertEquals(theXDot, numXDot, 1.0e-8 * v);
+                Assert.assertEquals(theYDot, numYDot, 1.0e-8 * v);
+                Assert.assertEquals(theZDot, numZDot, 1.0e-8 * v);
+
+                Assert.assertEquals(theQ0Dot, numQ0Dot, 1.0e-8 * omega);
+                Assert.assertEquals(theQ1Dot, numQ1Dot, 1.0e-8 * omega);
+                Assert.assertEquals(theQ2Dot, numQ2Dot, 1.0e-8 * omega);
+                Assert.assertEquals(theQ3Dot, numQ3Dot, 1.0e-8 * omega);
+
+            }
+        }
+    }
+
+    private double derivative(double h,
+                              double ym4h, double ym3h, double ym2h, double ym1h,
+                              double yp1h, double yp2h, double yp3h, double yp4h) {
+        return (-3 * (yp4h - ym4h) + 32 * (yp3h - ym3h) - 168 * (yp2h - ym2h) + 672 * (yp1h - ym1h)) /
+               (840 * h);
+    }
+
     private Transform randomTransform(Random random) {
         // generate a random transform
         Transform combined = Transform.IDENTITY;
