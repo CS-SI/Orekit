@@ -191,7 +191,6 @@ public class SolarBodyTest {
                 Assert.assertEquals(0.0, error.getRotation().getAngle(),    4.0e-8);
                 Assert.assertEquals(0.0, error.getRotationRate().getNorm(), 8.0e-10);
             }
-            System.out.println("&");
         }
     }
 
