@@ -193,6 +193,13 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         return Vector3D.crossProduct(position, velocity);
     }
 
+    /** Get the opposite of the instance.
+     * @return a new position-velocity which is opposite to the instance
+     */
+    public PVCoordinates negate() {
+        return new PVCoordinates(position.negate(), velocity.negate());
+    }
+
     /** Return a string representation of this position/velocity pair.
      * @return string representation of this position/velocity pair
      */

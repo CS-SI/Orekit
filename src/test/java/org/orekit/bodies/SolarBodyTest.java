@@ -59,7 +59,7 @@ public class SolarBodyTest {
             private static final long serialVersionUID = 4301068133487454052L;
             protected void updateFrame(final AbsoluteDate date) throws OrekitException {
                 PVCoordinates pv = CelestialBodyFactory.getSun().getPVCoordinates(date, eme2000);
-                setTransform(new Transform(date, pv.getPosition().negate(), pv.getVelocity().negate()));
+                setTransform(new Transform(date, pv.negate()));
             }
         };
         checkPV(CelestialBodyFactory.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);

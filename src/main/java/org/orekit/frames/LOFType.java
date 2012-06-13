@@ -142,15 +142,13 @@ public enum LOFType {
      */
     public Transform transformFromInertial(final AbsoluteDate date, final PVCoordinates pv) {
 
-        final Vector3D p = pv.getPosition();
-        final Vector3D v = pv.getVelocity();
-        final Vector3D momentum = pv.getMomentum();
-
         // compute the translation part of the transform
-        final Transform translation = new Transform(date, p.negate(), v.negate());
+        final Transform translation = new Transform(date, pv.negate());
 
         // compute the rotation part of the transform
         final Rotation r = rotationFromInertial(pv);
+        final Vector3D p = pv.getPosition();
+        final Vector3D momentum = pv.getMomentum();
         final Transform rotation =
                 new Transform(date, r, new Vector3D(1.0 / p.getNormSq(), r.applyTo(momentum)));
 

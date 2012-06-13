@@ -23,6 +23,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 
 /** Transformation class for geodetic systems.
@@ -44,13 +45,10 @@ import org.orekit.utils.Constants;
 public class HelmertTransformation implements Serializable {
 
     /** serializable UID. */
-    private static final long serialVersionUID = -6092152895769611904L;
+    private static final long serialVersionUID = -1900615992141291146L;
 
-    /** Global translation. */
-    private final Vector3D translation;
-
-    /** First time derivative of the translation. */
-    private final Vector3D velocity;
+    /** Cartesian part of the transform. */
+    private final PVCoordinates cartesian;
 
     /** Global rotation vector (applying rotation is done by computing cross product). */
     private final Vector3D rotationVector;
@@ -87,12 +85,12 @@ public class HelmertTransformation implements Serializable {
         final double masToRad = 1.0e-3 * Constants.ARC_SECONDS_TO_RADIANS;
 
         this.epoch          = epoch;
-        this.translation    = new Vector3D(t1 * mmToM,
-                                           t2 * mmToM,
-                                           t3 * mmToM);
-        this.velocity       = new Vector3D(t1Dot * mmToM / Constants.JULIAN_YEAR,
-                                           t2Dot * mmToM / Constants.JULIAN_YEAR,
-                                           t3Dot * mmToM / Constants.JULIAN_YEAR);
+        this.cartesian = new PVCoordinates(new Vector3D(t1 * mmToM,
+                                                        t2 * mmToM,
+                                                        t3 * mmToM),
+                                           new Vector3D(t1Dot * mmToM / Constants.JULIAN_YEAR,
+                                                        t2Dot * mmToM / Constants.JULIAN_YEAR,
+                                                        t3Dot * mmToM / Constants.JULIAN_YEAR));
         this.rotationVector = new Vector3D(r1 * masToRad,
                                            r2 * masToRad,
                                            r3 * masToRad);
@@ -117,11 +115,10 @@ public class HelmertTransformation implements Serializable {
 
         // compute parameters evolution since reference epoch
         final double dt = date.durationFrom(epoch);
-        final Vector3D dP = new Vector3D(1, translation, dt, velocity);
         final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
 
         // build tranlation part
-        final Transform translationTransform = new Transform(date, dP, velocity);
+        final Transform translationTransform = new Transform(date, cartesian.shiftedBy(dt));
 
         // build rotation part
         final double angle = dR.getNorm();

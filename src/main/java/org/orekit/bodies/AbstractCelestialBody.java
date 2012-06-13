@@ -129,8 +129,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
 
             // compute translation from parent frame to self
             final PVCoordinates pv = getPVCoordinates(date, getParent());
-            final Transform translation =
-                new Transform(date, pv.getPosition().negate(), pv.getVelocity().negate());
+            final Transform translation = new Transform(date, pv.negate());
 
             // compute rotation from EME2000 frame to self,
             // as per the "Report of the IAU/IAG Working Group on Cartographic

@@ -93,11 +93,8 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
     /** Date of the transform. */
     private final AbsoluteDate date;
 
-    /** Global translation. */
-    private final Vector3D translation;
-
-    /** First time derivative of the translation. */
-    private final Vector3D velocity;
+    /** Cartesian coordinates of the target frame with respect to the original frame. */
+    private final PVCoordinates cartesian;
 
     /** Global rotation. */
     private final Rotation rotation;
@@ -107,18 +104,15 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
 
     /** Build a transform from its primitive operations.
      * @param date date of the transform
-     * @param translation first primitive operation to apply
-     * @param velocity first time derivative of the translation
+     * @param cartesian Cartesian coordinates of the target frame with respect to the original frame
      * @param rotation second primitive operation to apply
      * @param rotationRate first time derivative of the rotation (norm representing angular rate)
      */
-    private Transform(final AbsoluteDate date,
-                      final Vector3D translation, final Vector3D velocity,
+    private Transform(final AbsoluteDate date, final PVCoordinates cartesian,
                       final Rotation rotation, final Vector3D rotationRate) {
         this.date         = date;
-        this.translation  = translation;
+        this.cartesian    = cartesian;
         this.rotation     = rotation;
-        this.velocity     = velocity;
         this.rotationRate = rotationRate;
     }
 
@@ -129,7 +123,7 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * old frame in the new frame)
      */
     public Transform(final AbsoluteDate date, final Vector3D translation) {
-        this(date, translation, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+        this(date, new PVCoordinates(translation, Vector3D.ZERO), Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Build a rotation transform.
@@ -139,7 +133,7 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * same vector expressed in the new frame )
      */
     public Transform(final AbsoluteDate date, final Rotation rotation) {
-        this(date, Vector3D.ZERO, Vector3D.ZERO, rotation, Vector3D.ZERO);
+        this(date, PVCoordinates.ZERO, rotation, Vector3D.ZERO);
     }
 
     /** Build a translation transform, with its first time derivative.
@@ -151,7 +145,17 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * of the old frame velocity in the new frame)
      */
     public Transform(final AbsoluteDate date, final Vector3D translation, final Vector3D velocity) {
-        this(date, translation, velocity, Rotation.IDENTITY, Vector3D.ZERO);
+        this(date, new PVCoordinates(translation, velocity), Rotation.IDENTITY, Vector3D.ZERO);
+    }
+
+    /** Build a translation transform, with its first time derivative.
+     * @param date date of the transform
+     * @param cartesian cartesian part of the transformation to apply (i.e. coordinates of
+     * the transformed origin, or coordinates of the origin of the
+     * old frame in the new frame, with their derivatives)
+     */
+    public Transform(final AbsoluteDate date, final PVCoordinates cartesian) {
+        this(date, cartesian, Rotation.IDENTITY, Vector3D.ZERO);
     }
 
     /** Build a rotation transform.
@@ -163,7 +167,7 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * expressed in the new frame. (norm representing angular rate)
      */
     public Transform(final AbsoluteDate date, final Rotation rotation, final Vector3D rotationRate) {
-        this(date, Vector3D.ZERO, Vector3D.ZERO, rotation, rotationRate);
+        this(date, PVCoordinates.ZERO, rotation, rotationRate);
     }
 
     /** Build a transform by combining two existing ones.
@@ -179,7 +183,8 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      */
     public Transform(final AbsoluteDate date, final Transform first, final Transform second) {
         this(date,
-             compositeTranslation(first, second), compositeVelocity(first, second),
+             new PVCoordinates(compositeTranslation(first, second),
+                               compositeVelocity(first, second)),
              compositeRotation(first, second), compositeRotationRate(first, second));
     }
 
@@ -189,7 +194,7 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * @return translation part of the composite transform
      */
     private static Vector3D compositeTranslation(final Transform first, final Transform second) {
-        return first.translation.add(first.rotation.applyInverseTo(second.translation));
+        return first.cartesian.getPosition().add(first.rotation.applyInverseTo(second.cartesian.getPosition()));
     }
 
     /** Compute a composite velocity.
@@ -199,8 +204,8 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      */
     private static Vector3D compositeVelocity(final Transform first, final Transform second) {
         final Vector3D cross =
-            Vector3D.crossProduct(first.rotationRate, second.translation);
-        return first.velocity.add(first.rotation.applyInverseTo(second.velocity.add(cross)));
+            Vector3D.crossProduct(first.rotationRate, second.cartesian.getPosition());
+        return first.cartesian.getVelocity().add(first.rotation.applyInverseTo(second.cartesian.getVelocity().add(cross)));
     }
 
     /** Compute a composite rotation.
@@ -229,9 +234,6 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
     /** {@inheritDoc} */
     public Transform shiftedBy(final double dt) {
 
-        // shift translation
-        final Vector3D shiftedTranslation = new Vector3D(1.0, translation, dt, velocity);
-
         // shift rotation
         final double rate = rotationRate.getNorm();
         final Rotation shiftedRotation;
@@ -242,8 +244,7 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
             shiftedRotation = new Rotation(rotationRate, -rate * dt).applyTo(rotation);
         }
 
-        return new Transform(date.shiftedBy(dt),
-                             shiftedTranslation, velocity,
+        return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt),
                              shiftedRotation, rotationRate);
 
     };
@@ -252,9 +253,10 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * @return inverse transform of the instance
      */
     public Transform getInverse() {
-        final Vector3D rT = rotation.applyTo(translation);
-        return new Transform(date, rT.negate(),
-                             Vector3D.crossProduct(rotationRate, rT).subtract(rotation.applyTo(velocity)),
+        final Vector3D rT = rotation.applyTo(cartesian.getPosition());
+        return new Transform(date,
+                             new PVCoordinates(rT.negate(),
+                                               Vector3D.crossProduct(rotationRate, rT).subtract(rotation.applyTo(cartesian.getVelocity()))),
                              rotation.revert(),
                              rotation.applyInverseTo(rotationRate.negate()));
     }
@@ -267,7 +269,8 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * @return a new transform, without any time-dependent parts
      */
     public Transform freeze() {
-        return new Transform(date, translation, Vector3D.ZERO, rotation, Vector3D.ZERO);
+        return new Transform(date, new PVCoordinates(cartesian.getPosition(), Vector3D.ZERO),
+                             rotation, Vector3D.ZERO);
     }
 
     /** Transform a position vector (including translation effects).
@@ -275,7 +278,7 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
      * @return transformed position
      */
     public Vector3D transformPosition(final Vector3D position) {
-        return rotation.applyTo(translation.add(position));
+        return rotation.applyTo(cartesian.getPosition().add(position));
     }
 
     /** Transform a vector (ignoring translation effects).
@@ -303,10 +306,10 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
     public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
         final Vector3D p = pv.getPosition();
         final Vector3D v = pv.getVelocity();
-        final Vector3D transformedP = rotation.applyTo(translation.add(p));
+        final Vector3D transformedP = rotation.applyTo(cartesian.getPosition().add(p));
         final Vector3D cross = Vector3D.crossProduct(rotationRate, transformedP);
         return new PVCoordinates(transformedP,
-                                 rotation.applyTo(v.add(velocity)).subtract(cross));
+                                 rotation.applyTo(v.add(cartesian.getVelocity())).subtract(cross));
     }
 
     /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}
@@ -362,22 +365,37 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
 
     }
 
+    /** Get the underlying elementary cartesian part.
+     * <p>A transform can be uniquely represented as an elementary
+     * translation followed by an elementary rotation. This method
+     * returns this unique elementary translation with its derivative.</p>
+     * @return underlying elementary cartesian part
+     * @see #getTranslation()
+     * @see #getVelocity()
+     */
+    public PVCoordinates getCartesian() {
+        return cartesian;
+    }
+
     /** Get the underlying elementary translation.
      * <p>A transform can be uniquely represented as an elementary
      * translation followed by an elementary rotation. This method
      * returns this unique elementary translation.</p>
      * @return underlying elementary translation
-     * @see #getRotation()
+     * @see #getCartesian()
+     * @see #getVelocity()
      */
     public Vector3D getTranslation() {
-        return translation;
+        return cartesian.getPosition();
     }
 
     /** Get the first time derivative of the translation.
      * @return first time derivative of the translation
+     * @see #getCartesian()
+     * @see #getTranslation()
      */
     public Vector3D getVelocity() {
-        return velocity;
+        return cartesian.getVelocity();
     }
 
     /** Get the underlying elementary rotation.
@@ -407,7 +425,7 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
 
         /** Simple constructor. */
         public IdentityTransform() {
-            super(AbsoluteDate.J2000_EPOCH, Vector3D.ZERO, Vector3D.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
+            super(AbsoluteDate.J2000_EPOCH, PVCoordinates.ZERO, Rotation.IDENTITY, Vector3D.ZERO);
         }
 
         /** {@inheritDoc} */
