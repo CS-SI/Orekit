@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.attitudes;
+package org.orekit.utils;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
@@ -23,36 +23,33 @@ import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.FramesFactory;
-import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
 
-public class AttitudeTest {
+public class AngularCoordinatesTest {
 
     @Test
     public void testZeroRate() throws OrekitException {
-        Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
-                                         new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                         Vector3D.ZERO);
-        Assert.assertEquals(Vector3D.ZERO, attitude.getSpin());
+        AngularCoordinates AngularCoordinates =
+                new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false),
+                                       Vector3D.ZERO);
+        Assert.assertEquals(Vector3D.ZERO, AngularCoordinates.getRotationRate());
         double dt = 10.0;
-        Attitude shifted = attitude.shiftedBy(dt);
-        Assert.assertEquals(Vector3D.ZERO, shifted.getSpin());
-        Assert.assertEquals(attitude.getRotation(), shifted.getRotation());
+        AngularCoordinates shifted = AngularCoordinates.shiftedBy(dt);
+        Assert.assertEquals(Vector3D.ZERO, shifted.getRotationRate());
+        Assert.assertEquals(AngularCoordinates.getRotation(), shifted.getRotation());
     }
 
     @Test
     public void testShift() throws OrekitException {
         double rate = 2 * FastMath.PI / (12 * 60);
-        Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
-                                         Rotation.IDENTITY,
-                                         new Vector3D(rate, Vector3D.PLUS_K));
-        Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
+        AngularCoordinates AngularCoordinates =
+                new AngularCoordinates(Rotation.IDENTITY,
+                                       new Vector3D(rate, Vector3D.PLUS_K));
+        Assert.assertEquals(rate, AngularCoordinates.getRotationRate().getNorm(), 1.0e-10);
         double dt = 10.0;
         double alpha = rate * dt;
-        Attitude shifted = attitude.shiftedBy(dt);
-        Assert.assertEquals(rate, shifted.getSpin().getNorm(), 1.0e-10);
-        Assert.assertEquals(alpha, Rotation.distance(attitude.getRotation(), shifted.getRotation()), 1.0e-10);
+        AngularCoordinates shifted = AngularCoordinates.shiftedBy(dt);
+        Assert.assertEquals(rate, shifted.getRotationRate().getNorm(), 1.0e-10);
+        Assert.assertEquals(alpha, Rotation.distance(AngularCoordinates.getRotation(), shifted.getRotation()), 1.0e-10);
 
         Vector3D xSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Assert.assertEquals(0.0, xSat.subtract(new Vector3D(FastMath.cos(alpha), FastMath.sin(alpha), 0)).getNorm(), 1.0e-10);
@@ -66,21 +63,21 @@ public class AttitudeTest {
     @Test
     public void testSpin() throws OrekitException {
         double rate = 2 * FastMath.PI / (12 * 60);
-        Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
-                                         new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                         new Vector3D(rate, Vector3D.PLUS_K));
-        Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
+        AngularCoordinates angularCoordinates =
+                new AngularCoordinates(new Rotation(0.48, 0.64, 0.36, 0.48, false),
+                                       new Vector3D(rate, Vector3D.PLUS_K));
+        Assert.assertEquals(rate, angularCoordinates.getRotationRate().getNorm(), 1.0e-10);
         double dt = 10.0;
-        Attitude shifted = attitude.shiftedBy(dt);
-        Assert.assertEquals(rate, shifted.getSpin().getNorm(), 1.0e-10);
-        Assert.assertEquals(rate * dt, Rotation.distance(attitude.getRotation(), shifted.getRotation()), 1.0e-10);
+        AngularCoordinates shifted = angularCoordinates.shiftedBy(dt);
+        Assert.assertEquals(rate, shifted.getRotationRate().getNorm(), 1.0e-10);
+        Assert.assertEquals(rate * dt, Rotation.distance(angularCoordinates.getRotation(), shifted.getRotation()), 1.0e-10);
 
         Vector3D shiftedX  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Vector3D shiftedY  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_J);
         Vector3D shiftedZ  = shifted.getRotation().applyInverseTo(Vector3D.PLUS_K);
-        Vector3D originalX = attitude.getRotation().applyInverseTo(Vector3D.PLUS_I);
-        Vector3D originalY = attitude.getRotation().applyInverseTo(Vector3D.PLUS_J);
-        Vector3D originalZ = attitude.getRotation().applyInverseTo(Vector3D.PLUS_K);
+        Vector3D originalX = angularCoordinates.getRotation().applyInverseTo(Vector3D.PLUS_I);
+        Vector3D originalY = angularCoordinates.getRotation().applyInverseTo(Vector3D.PLUS_J);
+        Vector3D originalZ = angularCoordinates.getRotation().applyInverseTo(Vector3D.PLUS_K);
         Assert.assertEquals( FastMath.cos(rate * dt), Vector3D.dotProduct(shiftedX, originalX), 1.0e-10);
         Assert.assertEquals( FastMath.sin(rate * dt), Vector3D.dotProduct(shiftedX, originalY), 1.0e-10);
         Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedX, originalZ), 1.0e-10);
@@ -91,11 +88,11 @@ public class AttitudeTest {
         Assert.assertEquals( 0.0,                 Vector3D.dotProduct(shiftedZ, originalY), 1.0e-10);
         Assert.assertEquals( 1.0,                 Vector3D.dotProduct(shiftedZ, originalZ), 1.0e-10);
 
-        Vector3D forward = AngularCoordinates.estimateRate(attitude.getRotation(), shifted.getRotation(), dt);
-        Assert.assertEquals(0.0, forward.subtract(attitude.getSpin()).getNorm(), 1.0e-10);
+        Vector3D forward = AngularCoordinates.estimateRate(angularCoordinates.getRotation(), shifted.getRotation(), dt);
+        Assert.assertEquals(0.0, forward.subtract(angularCoordinates.getRotationRate()).getNorm(), 1.0e-10);
 
-        Vector3D reversed = AngularCoordinates.estimateRate(shifted.getRotation(), attitude.getRotation(), dt);
-        Assert.assertEquals(0.0, reversed.add(attitude.getSpin()).getNorm(), 1.0e-10);
+        Vector3D reversed = AngularCoordinates.estimateRate(shifted.getRotation(), angularCoordinates.getRotation(), dt);
+        Assert.assertEquals(0.0, reversed.add(angularCoordinates.getRotationRate()).getNorm(), 1.0e-10);
 
     }
 

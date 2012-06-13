@@ -40,6 +40,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
 
 
 public class NadirPointingTest {
@@ -251,7 +252,7 @@ public class NadirPointingTest {
         Vector3D spin0 = s0.getAttitude().getSpin();
         Rotation rM = sMinus.getAttitude().getRotation();
         Rotation rP = sPlus.getAttitude().getRotation();
-        Vector3D reference = Attitude.estimateSpin(rM, rP, 2 * h);
+        Vector3D reference = AngularCoordinates.estimateRate(rM, rP, 2 * h);
         Assert.assertTrue(Rotation.distance(rM, rP) > 2.0e-4);
         Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-6);
 

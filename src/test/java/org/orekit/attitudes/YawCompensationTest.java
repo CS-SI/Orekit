@@ -43,6 +43,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
@@ -272,9 +273,9 @@ public class YawCompensationTest {
         Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
-        Vector3D reference = Attitude.estimateSpin(sMinus.getAttitude().getRotation(),
-                                                   sPlus.getAttitude().getRotation(),
-                                                   2 * h);
+        Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
+                                                             sPlus.getAttitude().getRotation(),
+                                                             2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
         Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-9);
 

@@ -23,6 +23,9 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="add" >
+        Added an AnugularCoordinates as an angular counterpart to PVCoordinates.
+      </action>
+      <action dev="luc" type="add" >
         Transform now implements both TimeStamped and TimeShiftable. Note that this change
         implied adding an AbsoluteDate parameter to all transform constructors, so this
         is a backward incompatible change.

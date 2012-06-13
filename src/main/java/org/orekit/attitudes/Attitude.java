@@ -26,6 +26,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.AngularCoordinates;
 
 
 /** This class handles attitude definition at a given date.
@@ -56,11 +57,21 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializa
     /** Reference frame. */
     private final Frame referenceFrame;
 
-     /** Attitude defined by a rotation. */
-    private final Rotation attitude;
+     /** Attitude and spin.  */
+    private final AngularCoordinates orientation;
 
-    /** Spin (spin axis AND velocity).  */
-    private final Vector3D spin;
+    /** Creates a new instance.
+     * @param date date at which attitude is defined
+     * @param referenceFrame reference frame from which attitude is defined
+     * @param orientation complete orientation between reference frame and satellite frame,
+     * including rotation rate
+     */
+    public Attitude(final AbsoluteDate date, final Frame referenceFrame,
+                    final AngularCoordinates orientation) {
+        this.date           = date;
+        this.referenceFrame = referenceFrame;
+        this.orientation    = orientation;
+    }
 
     /** Creates a new instance.
      * @param date date at which attitude is defined
@@ -70,10 +81,7 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializa
      */
     public Attitude(final AbsoluteDate date, final Frame referenceFrame,
                     final Rotation attitude, final Vector3D spin) {
-        this.date           = date;
-        this.referenceFrame = referenceFrame;
-        this.attitude       = attitude;
-        this.spin           = spin;
+        this(date, referenceFrame, new AngularCoordinates(attitude, spin));
     }
 
     /** Estimate spin between two orientations.
@@ -83,11 +91,13 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializa
      * @param end end orientation
      * @param dt time elapsed between the dates of the two orientations
      * @return spin allowing to go from start to end orientation
+     * @deprecated as of 6.0 superseded by {@link
+     * AngularCoordinates#estimateRate(Rotation, Rotation, double)}
      */
+    @Deprecated
     public static Vector3D estimateSpin(final Rotation start, final Rotation end,
                                         final double dt) {
-        final Rotation evolution = start.applyTo(end.revert());
-        return new Vector3D(evolution.getAngle() / dt, evolution.getAxis());
+        return AngularCoordinates.estimateRate(start, end, dt);
     }
 
     /** Get a time-shifted attitude.
@@ -101,19 +111,7 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializa
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      */
     public Attitude shiftedBy(final double dt) {
-        final double rate = spin.getNorm();
-        if (rate == 0.0) {
-            // special case for inertial attitudes
-            return new Attitude(date.shiftedBy(dt), referenceFrame, attitude, spin);
-        }
-
-        // BEWARE: there is really a minus sign here, because if
-        // the satellite frame rotates in one direction, the inertial vectors
-        // seem to rotate in the opposite direction
-        final Rotation evolution = new Rotation(spin, -rate * dt);
-
-        return new Attitude(date.shiftedBy(dt), referenceFrame, evolution.applyTo(attitude), spin);
-
+        return new Attitude(date.shiftedBy(dt), referenceFrame, orientation.shiftedBy(dt));
     }
 
     /** Get a similar attitude with a specific reference frame.
@@ -140,8 +138,8 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializa
         // we have to take an intermediate rotation into account
         final Transform t = newReferenceFrame.getTransformTo(referenceFrame, date);
         return new Attitude(date, newReferenceFrame,
-                            attitude.applyTo(t.getRotation()),
-                            spin.add(attitude.applyTo(t.getRotationRate())));
+                            orientation.getRotation().applyTo(t.getRotation()),
+                            orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())));
 
     }
 
@@ -159,19 +157,32 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializa
         return referenceFrame;
     }
 
+    /** Get the complete orientation including spin.
+     * @return complete orientation including spin
+     * @see #getRotation()
+     * @see #getSpin()
+     */
+    public AngularCoordinates getOrientation() {
+        return orientation;
+    }
+
     /** Get the attitude rotation.
      * @return attitude satellite rotation from reference frame.
+     * @see #getOrientation()
+     * @see #getSpin()
      */
     public Rotation getRotation() {
-        return attitude;
+        return orientation.getRotation();
     }
 
     /** Get the satellite spin.
      * <p>The spin vector is defined in <strong>satellite</strong> frame.</p>
      * @return spin satellite spin (axis and velocity).
+     * @see #getOrientation()
+     * @see #getRotation()
      */
     public Vector3D getSpin() {
-        return spin;
+        return orientation.getRotationRate();
     }
 
 }

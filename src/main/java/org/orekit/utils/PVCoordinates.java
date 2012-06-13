@@ -28,6 +28,9 @@ import org.orekit.time.TimeShiftable;
  * proper orbit propagation (it is not even Keplerian!) but should be sufficient
  * for either small time shifts or coarse accuracy.
  * </p>
+ * <p>
+ * This class is the angular counterpart to {@link AngularCoordinates}.
+ * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Fabien Maussion
  * @author Luc Maisonobe
@@ -158,10 +161,6 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * </p>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
-     * @see org.orekit.time.AbsoluteDate#shiftedBy(double)
-     * @see org.orekit.attitudes.Attitude#shiftedBy(double)
-     * @see org.orekit.orbits.Orbit#shiftedBy(double)
-     * @see org.orekit.propagation.SpacecraftState#shiftedBy(double)
      */
     public PVCoordinates shiftedBy(final double dt) {
         return new PVCoordinates(new Vector3D(1, position, dt, velocity), velocity);

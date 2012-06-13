@@ -208,19 +208,10 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      * @return transform from specified frame to current spacecraft frame
      */
     public Transform toTransform() {
-
-        // orbit contribution
         final AbsoluteDate date = orbit.getDate();
-        final Transform orbitTransform =
-            new Transform(date, orbit.getPVCoordinates().negate());
-
-        // attitude contribution
-        final Transform attitudeTransform =
-            new Transform(date, attitude.getRotation(), attitude.getSpin());
-
-        // combine all contributions
-        return new Transform(date, orbitTransform, attitudeTransform);
-
+        return new Transform(date,
+                             new Transform(date, orbit.getPVCoordinates().negate()),
+                             new Transform(date, attitude.getOrientation()));
     }
 
     /** Get the central attraction coefficient.

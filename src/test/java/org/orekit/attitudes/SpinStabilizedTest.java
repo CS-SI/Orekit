@@ -36,6 +36,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -104,7 +105,7 @@ public class SpinStabilizedTest {
         // compute spin axis using finite differences
         Rotation rM = sMinus.getAttitude().getRotation();
         Rotation rP = sPlus.getAttitude().getRotation();
-        Vector3D reference = Attitude.estimateSpin(rM, rP, 2 * h);
+        Vector3D reference = AngularCoordinates.estimateRate(rM, rP, 2 * h);
 
         Assert.assertEquals(2 * FastMath.PI / reference.getNorm(), 2 * FastMath.PI / spin0.getNorm(), 0.05);
         Assert.assertEquals(0.0, FastMath.toDegrees(Vector3D.angle(reference, spin0)), 1.0e-10);

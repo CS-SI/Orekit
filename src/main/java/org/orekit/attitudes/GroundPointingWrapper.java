@@ -21,6 +21,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -106,7 +107,7 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
         final double h = 0.1;
         final Rotation compensationM1H  = getCompensation(pvProv, date.shiftedBy(-h), frame, base.shiftedBy(-h));
         final Rotation compensationP1H  = getCompensation(pvProv, date.shiftedBy( h), frame, base.shiftedBy( h));
-        final Vector3D compensationRate = Attitude.estimateSpin(compensationM1H, compensationP1H, 2 * h);
+        final Vector3D compensationRate = AngularCoordinates.estimateRate(compensationM1H, compensationP1H, 2 * h);
 
         // Combination of base attitude, compensation and compensation rate
         return new Attitude(date, frame,

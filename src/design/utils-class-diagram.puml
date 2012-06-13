@@ -35,7 +35,6 @@
       class PVCoordinates {
         +PVCoordinates ZERO
         +Vector3D estimateVelocity(Vector3D start, Vector3D end, double dt)
-        +PVCoordinates shiftedBy(double dt)
         +Vector3D getPosition()
         +Vector3D getVelocity()
         +Vector3D getMomentum()
@@ -45,8 +44,17 @@
         +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
       }
 
+      class AngularCoordinates {
+        +AngularCoordinates IDENTITY
+        +Vector3D estimateRate(Rotation start, Rotation end, double dt)
+        +AngularCoordinates revert()
+        +Rotation getRotation()
+        +Vector3D getRotationRate()
+      }
+
       PVCoordinatesProvider -up-> PVCoordinates
       TimeShiftable_T_      <|..  PVCoordinates
+      TimeShiftable_T_      <|..  AngularCoordinates
 
       class SecularAndHarmonic {
         +void addPoint()

@@ -200,8 +200,8 @@ public class CartesianParametersTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assert.assertTrue(bos.size () >  1450);
-        Assert.assertTrue(bos.size () <  1550);
+        Assert.assertTrue(bos.size () >  1550);
+        Assert.assertTrue(bos.size () <  1650);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

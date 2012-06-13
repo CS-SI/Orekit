@@ -22,6 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -135,7 +136,7 @@ public abstract class GroundPointing implements AttitudeProvider {
         // Attitude spin
         final Rotation rotM1h = new Rotation(deltaPM1h, pvM1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
         final Rotation rotP1h = new Rotation(deltaPP1h, pvP1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
-        final Vector3D spin   = Attitude.estimateSpin(rotM1h, rotP1h, 2 * h);
+        final Vector3D spin   = AngularCoordinates.estimateRate(rotM1h, rotP1h, 2 * h);
 
         return new Attitude(date, frame, rot, spin);
 
