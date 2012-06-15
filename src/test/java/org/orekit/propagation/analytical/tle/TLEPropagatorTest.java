@@ -120,7 +120,7 @@ public class TLEPropagatorTest {
                 TLEPropagator.selectExtrapolator(tle, new BodyCenterPointing(itrf), Propagator.DEFAULT_MASS);
         propagator.setMasterMode(900.0, checker);
         propagator.propagate(tle.getDate().shiftedBy(period));
-        Assert.assertEquals(0.0, checker.getMaxDistance(), 3.0e-8);
+        Assert.assertEquals(0.0, checker.getMaxDistance(), 2.0e-7);
 
         // with default attitude mode, distance should be large
         propagator = TLEPropagator.selectExtrapolator(tle);
