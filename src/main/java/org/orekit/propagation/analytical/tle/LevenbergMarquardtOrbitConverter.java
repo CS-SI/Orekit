@@ -41,10 +41,10 @@ public class LevenbergMarquardtOrbitConverter extends AbstractTLEFitter {
      * @param elementNumber element number
      * @param revolutionNumberAtEpoch revolution number at epoch
      */
-    protected LevenbergMarquardtOrbitConverter(final int maxIterations,
-                                               final int satelliteNumber, final char classification,
-                                               final int launchYear, final int launchNumber, final String launchPiece,
-                                               final int elementNumber, final int revolutionNumberAtEpoch) {
+    public LevenbergMarquardtOrbitConverter(final int maxIterations,
+                                            final int satelliteNumber, final char classification,
+                                            final int launchYear, final int launchNumber, final String launchPiece,
+                                            final int elementNumber, final int revolutionNumberAtEpoch) {
         super(satelliteNumber, classification,
               launchYear, launchNumber, launchPiece, elementNumber, revolutionNumberAtEpoch);
         this.maxIterations = maxIterations;
