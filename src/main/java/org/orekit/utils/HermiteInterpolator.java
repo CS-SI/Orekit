@@ -78,7 +78,7 @@ class HermiteInterpolator implements DifferentiableUnivariateVectorFunction {
      * The point abscissae for all calls <em>must</em> be different.
      * </p>
      * @param x abscissa of the sample point
-     * @param y value and derivatives of the sample point
+     * @param value value and derivatives of the sample point
      * (if only one row is passed, it is the value, if two rows are
      * passed the first one is the value and the second the derivative
      * and so on)
