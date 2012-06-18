@@ -28,12 +28,14 @@ import org.orekit.errors.OrekitMessages;
 
 /** Polynomial interpolator using both sample values and sample derivatives.
  * <p>
- * Note that this class is <em>not</em> expected to remain in Orekit. It rather
- * belongs to Apache Commons Math. However, since as of writing (June 2012) Orekit
- * depends on version 3.0 of Apache Commons Math and this class is not provided by
- * this version of the library, it is implemented as a package private class in
- * Orekit. Once the class is included in an officially released version of Apache
- * Commons Math, it will be removed from Orekit.
+ * WARNING: this class is <em>not</em> expected to remain in Orekit. It is
+ * provided by version 3.1 of Apache Commons Math. However, since as of writing
+ * (June 2012) this version is not released yet, Orekit depends on the latest
+ * official version 3.0 which does not provides this class. So despite it is
+ * implemented as a public class in Orekit so it can be used in from any package,
+ * it does not belong to Orekit public API and should not be used at application
+ * level. Once version 3.1 of Apache Commons Math is released, this class will
+ * be removed from Orekit.
  * </p>
  * <p>
  * The interpolation polynomials match all sample points, including both values
