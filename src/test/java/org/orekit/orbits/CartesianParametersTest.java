@@ -21,6 +21,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -34,6 +36,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
@@ -286,6 +289,87 @@ public class CartesianParametersTest {
                 Assert.assertEquals((i == j) ? 1 : 0, row[j], 1.0e-15);
             }
         }
+
+    }
+
+    @Test
+    public void testInterpolation() throws OrekitException {
+
+        final double ehMu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
+
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
+        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
+        final CartesianOrbit initialOrbit = new CartesianOrbit(new PVCoordinates(position, velocity),
+                                                              FramesFactory.getEME2000(), date, ehMu);
+
+        EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+
+        // set up a 5 points sample
+        List<Orbit> sample = new ArrayList<Orbit>();
+        for (double dt = 0; dt < 251.0; dt += 60.0) {
+            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+        }
+
+        // well inside the sample, interpolation should be better than Keplerian shift
+        double maxShiftPError = 0;
+        double maxInterpolationPError = 0;
+        double maxShiftVError = 0;
+        double maxInterpolationVError = 0;
+        for (double dt = 0; dt < 240.0; dt += 1.0) {
+            AbsoluteDate t                   = initialOrbit.getDate().shiftedBy(dt);
+            PVCoordinates propagated         = propagator.propagate(t).getPVCoordinates();
+            PVCoordinates shiftError         = new PVCoordinates(propagated,
+                                                                 initialOrbit.shiftedBy(dt).getPVCoordinates());
+            PVCoordinates interpolationError = new PVCoordinates(propagated,
+                                                                 initialOrbit.interpolate(t, sample).getPVCoordinates());
+            maxShiftPError                   = FastMath.max(maxShiftPError,
+                                                            shiftError.getPosition().getNorm());
+            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
+                                                            interpolationError.getPosition().getNorm());
+            maxShiftVError                   = FastMath.max(maxShiftVError,
+                                                            shiftError.getVelocity().getNorm());
+            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
+                                                            interpolationError.getVelocity().getNorm());
+        }
+        Assert.assertTrue(maxShiftPError         > 390.0);
+        Assert.assertTrue(maxInterpolationPError < 10.0);
+        Assert.assertTrue(maxShiftVError         > 3.0);
+        Assert.assertTrue(maxInterpolationVError < 0.8);
+
+        // past sample end, interpolation should quickly become worse than Keplerian shift
+        // (this is because we interpolate in Cartesian parameters here, it's much better with other orbit types)
+        maxShiftPError = 0;
+        maxInterpolationPError = 0;
+        maxShiftVError = 0;
+        maxInterpolationVError = 0;
+        for (double dt = 250.0; dt < 300.0; dt += 1.0) {
+            AbsoluteDate t                   = initialOrbit.getDate().shiftedBy(dt);
+            PVCoordinates propagated         = propagator.propagate(t).getPVCoordinates();
+            PVCoordinates shiftError         = new PVCoordinates(propagated,
+                                                                 initialOrbit.shiftedBy(dt).getPVCoordinates());
+            PVCoordinates interpolationError = new PVCoordinates(propagated,
+                                                                 initialOrbit.interpolate(t, sample).getPVCoordinates());
+            maxShiftPError                   = FastMath.max(maxShiftPError,
+                                                            shiftError.getPosition().getNorm());
+            maxInterpolationPError           = FastMath.max(maxInterpolationPError,
+                                                            interpolationError.getPosition().getNorm());
+            maxShiftVError                   = FastMath.max(maxShiftVError,
+                                                            shiftError.getVelocity().getNorm());
+            maxInterpolationVError           = FastMath.max(maxInterpolationVError,
+                                                            interpolationError.getVelocity().getNorm());
+        }
+        Assert.assertTrue(maxShiftPError         <  610.0);
+        Assert.assertTrue(maxInterpolationPError > 4500.0);
+        Assert.assertTrue(maxShiftVError         <    4.0);
+        Assert.assertTrue(maxInterpolationVError >  320.0);
 
     }
 

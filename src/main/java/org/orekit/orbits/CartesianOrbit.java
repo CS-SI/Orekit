@@ -16,9 +16,14 @@
  */
 package org.orekit.orbits;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Pair;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -211,6 +216,22 @@ public class CartesianOrbit extends Orbit {
     public CartesianOrbit shiftedBy(final double dt) {
         final PVCoordinates shiftedPV = (getA() < 0) ? shiftPVHyperbolic(dt) : shiftPVElliptic(dt);
         return new CartesianOrbit(shiftedPV, getFrame(), getDate().shiftedBy(dt), getMu());
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * ensuring velocity remains the exact derivative of position.
+     * </p>
+     */
+    public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
+        final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
+                new ArrayList<Pair<AbsoluteDate,PVCoordinates>>(sample.size());
+        for (final Orbit orbit : sample) {
+            datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(orbit.getDate(), orbit.getPVCoordinates()));
+        }
+        final PVCoordinates interpolated = PVCoordinates.interpolate(date, true, datedPV);
+        return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 
     /** Compute shifted position and velocity in elliptic case.

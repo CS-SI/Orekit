@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.PVCoordinates;
@@ -57,7 +58,9 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public abstract class Orbit implements TimeStamped, TimeShiftable<Orbit>, Serializable, PVCoordinatesProvider {
+public abstract class Orbit
+    implements TimeStamped, TimeShiftable<Orbit>, TimeInterpolable<Orbit>,
+               Serializable, PVCoordinatesProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 438733454597999578L;

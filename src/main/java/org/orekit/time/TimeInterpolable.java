@@ -16,16 +16,28 @@
  */
 package org.orekit.time;
 
-/** This interface represents objects that can be shifted in time.
+import java.util.Collection;
+
+/** This interface represents objects that can be interpolated in time.
  * @param <T> Type of the object.
  * @author Luc Maisonobe
  */
-public interface TimeShiftable<T extends TimeShiftable<T>> {
+public interface TimeInterpolable<T extends TimeInterpolable<T>> {
 
-    /** Get a time-shifted instance.
-     * @param dt time shift in seconds
-     * @return a new instance, shifted with respect to instance (which is not changed)
+    /** Get an interpolated instance.
+     * <p>
+     * Note that the state of the current instance may not be used
+     * in the interpolation process, only its type and non interpolable
+     * fields are used (for example central attraction coefficient or
+     * frame when interpolating orbits). The interpolable fields taken
+     * into account are taken only from the states of the sample points.
+     * So if the state of the instance must be used, the instance should
+     * be included in the sample points.
+     * </p>
+     * @param date interpolation date
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
      */
-    T shiftedBy(double dt);
+    T interpolate(AbsoluteDate date, Collection<T> sample);
 
 }

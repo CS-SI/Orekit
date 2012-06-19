@@ -17,15 +17,22 @@
 package org.orekit.attitudes;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CircularOrbit;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.PVCoordinates;
 
 public class AttitudeTest {
 
@@ -96,6 +103,89 @@ public class AttitudeTest {
 
         Vector3D reversed = AngularCoordinates.estimateRate(shifted.getRotation(), attitude.getRotation(), dt);
         Assert.assertEquals(0.0, reversed.add(attitude.getSpin()).getNorm(), 1.0e-10);
+
+    }
+
+    @Test
+    public void testInterpolation() throws OrekitException {
+
+        Utils.setDataRoot("regular-data");
+        final double ehMu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
+
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
+        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
+        final CircularOrbit initialOrbit = new CircularOrbit(new PVCoordinates(position, velocity),
+                                                             FramesFactory.getEME2000(), date, ehMu);
+
+        EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+        propagator.setAttitudeProvider(new BodyCenterPointing(FramesFactory.getITRF2008()));
+        final Attitude initialAttitude = propagator.propagate(initialOrbit.getDate()).getAttitude();
+
+        // set up a 5 points sample
+        List<Attitude> sample = new ArrayList<Attitude>();
+        for (double dt = 0; dt < 251.0; dt += 60.0) {
+            sample.add(propagator.propagate(date.shiftedBy(dt)).getAttitude());
+        }
+
+        // well inside the sample, interpolation should be better than linear shift
+        double maxShiftAngleError = 0;
+        double maxInterpolationAngleError = 0;
+        double maxShiftRateError = 0;
+        double maxInterpolationRateError = 0;
+        for (double dt = 0; dt < 240.0; dt += 1.0) {
+            AbsoluteDate t                 = initialOrbit.getDate().shiftedBy(dt);
+            Attitude propagated            = propagator.propagate(t).getAttitude();
+            double shiftAngleError         = Rotation.distance(propagated.getRotation(),
+                                                               initialAttitude.shiftedBy(dt).getRotation());
+            double interpolationAngleError = Rotation.distance(propagated.getRotation(),
+                                                               initialAttitude.interpolate(t, sample).getRotation());
+            double shiftRateError          = Vector3D.distance(propagated.getSpin(),
+                                                               initialAttitude.shiftedBy(dt).getSpin());
+            double interpolationRateError  = Vector3D.distance(propagated.getSpin(),
+                                                               initialAttitude.interpolate(t, sample).getSpin());
+            maxShiftAngleError             = FastMath.max(maxShiftAngleError, shiftAngleError);
+            maxInterpolationAngleError     = FastMath.max(maxInterpolationAngleError, interpolationAngleError);
+            maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError);
+            maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
+        }
+        Assert.assertTrue(maxShiftAngleError         > 1.0e-5);
+        Assert.assertTrue(maxInterpolationAngleError < 1.0e-12);
+        Assert.assertTrue(maxShiftRateError          > 1.0e-7);
+        Assert.assertTrue(maxInterpolationRateError  < 1.0e-13);
+
+        // past sample end, interpolation error should increase, but still be far better than linear shif
+        maxShiftAngleError = 0;
+        maxInterpolationAngleError = 0;
+        maxShiftRateError = 0;
+        maxInterpolationRateError = 0;
+        for (double dt = 250.0; dt < 300.0; dt += 1.0) {
+            AbsoluteDate t                 = initialOrbit.getDate().shiftedBy(dt);
+            Attitude propagated            = propagator.propagate(t).getAttitude();
+            double shiftAngleError         = Rotation.distance(propagated.getRotation(),
+                                                               initialAttitude.shiftedBy(dt).getRotation());
+            double interpolationAngleError = Rotation.distance(propagated.getRotation(),
+                                                               initialAttitude.interpolate(t, sample).getRotation());
+            double shiftRateError          = Vector3D.distance(propagated.getSpin(),
+                                                               initialAttitude.shiftedBy(dt).getSpin());
+            double interpolationRateError  = Vector3D.distance(propagated.getSpin(),
+                                                               initialAttitude.interpolate(t, sample).getSpin());
+            maxShiftAngleError             = FastMath.max(maxShiftAngleError, shiftAngleError);
+            maxInterpolationAngleError     = FastMath.max(maxInterpolationAngleError, interpolationAngleError);
+            maxShiftRateError              = FastMath.max(maxShiftRateError, shiftRateError);
+            maxInterpolationRateError      = FastMath.max(maxInterpolationRateError, interpolationRateError);
+        }
+        Assert.assertTrue(maxShiftAngleError         > 2.0e-5);
+        Assert.assertTrue(maxInterpolationAngleError < 1.0e-9);
+        Assert.assertTrue(maxShiftRateError          > 1.5e-7);
+        Assert.assertTrue(maxInterpolationRateError  < 1.0e-10);
 
     }
 

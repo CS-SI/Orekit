@@ -17,9 +17,17 @@
 package org.orekit.utils;
 
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.time.AbsoluteDate;
 
 
 public class PVCoordinatesTest {
@@ -61,6 +69,108 @@ public class PVCoordinatesTest {
         PVCoordinates pv =
             new PVCoordinates(new Vector3D( 1,  0.1,  10), new Vector3D(-1, -0.1, -10));
         Assert.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0)}", pv.toString());
+    }
+
+    @Test
+    public void testInterpolatePolynomialPV() {
+        Random random = new Random(0xae7771c9933407bdl);
+        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
+        for (int i = 0; i < 20; ++i) {
+
+            PolynomialFunction px    = randomPolynomial(5, random);
+            PolynomialFunction py    = randomPolynomial(5, random);
+            PolynomialFunction pz    = randomPolynomial(5, random);
+            PolynomialFunction pxDot = px.polynomialDerivative();
+            PolynomialFunction pyDot = py.polynomialDerivative();
+            PolynomialFunction pzDot = pz.polynomialDerivative();
+
+            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
+            for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
+                Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
+                Vector3D velocity = new Vector3D(pxDot.value(dt), pyDot.value(dt), pzDot.value(dt));
+                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t0.shiftedBy(dt), new PVCoordinates(position, velocity)));
+            }
+
+            for (double dt = 0; dt < 1.0; dt += 0.01) {
+                PVCoordinates interpolated = PVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                Vector3D p = interpolated.getPosition();
+                Vector3D v = interpolated.getVelocity();
+                Assert.assertEquals(px.value(dt),    p.getX(), 1.0e-15 * p.getNorm());
+                Assert.assertEquals(py.value(dt),    p.getY(), 1.0e-15 * p.getNorm());
+                Assert.assertEquals(pz.value(dt),    p.getZ(), 1.0e-15 * p.getNorm());
+                Assert.assertEquals(pxDot.value(dt), v.getX(), 1.0e-15 * v.getNorm());
+                Assert.assertEquals(pyDot.value(dt), v.getY(), 1.0e-15 * v.getNorm());
+                Assert.assertEquals(pzDot.value(dt), v.getZ(), 1.0e-15 * v.getNorm());
+            }
+
+        }
+    }
+
+    @Test
+    public void testInterpolatePolynomialPositionOnly() {
+        Random random = new Random(0x88740a12e4299003l);
+        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
+        for (int i = 0; i < 20; ++i) {
+
+            PolynomialFunction px    = randomPolynomial(5, random);
+            PolynomialFunction py    = randomPolynomial(5, random);
+            PolynomialFunction pz    = randomPolynomial(5, random);
+            PolynomialFunction pxDot = px.polynomialDerivative();
+            PolynomialFunction pyDot = py.polynomialDerivative();
+            PolynomialFunction pzDot = pz.polynomialDerivative();
+
+            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
+            for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
+                Vector3D position = new Vector3D(px.value(dt), py.value(dt), pz.value(dt));
+                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t0.shiftedBy(dt), new PVCoordinates(position, Vector3D.ZERO)));
+            }
+
+            for (double dt = 0; dt < 1.0; dt += 0.01) {
+                PVCoordinates interpolated = PVCoordinates.interpolate(t0.shiftedBy(dt), false, sample);
+                Vector3D p = interpolated.getPosition();
+                Vector3D v = interpolated.getVelocity();
+                Assert.assertEquals(px.value(dt),    p.getX(), 1.0e-14 * p.getNorm());
+                Assert.assertEquals(py.value(dt),    p.getY(), 1.0e-14 * p.getNorm());
+                Assert.assertEquals(pz.value(dt),    p.getZ(), 1.0e-14 * p.getNorm());
+                Assert.assertEquals(pxDot.value(dt), v.getX(), 1.0e-14 * v.getNorm());
+                Assert.assertEquals(pyDot.value(dt), v.getY(), 1.0e-14 * v.getNorm());
+                Assert.assertEquals(pzDot.value(dt), v.getZ(), 1.0e-14 * v.getNorm());
+            }
+
+        }
+    }
+
+    @Test
+    public void testInterpolateNonPolynomial() {
+        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
+
+            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
+            for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
+                Vector3D position = new Vector3D( FastMath.cos(dt), FastMath.sin(dt), 0.0);
+                Vector3D velocity = new Vector3D(-FastMath.sin(dt), FastMath.cos(dt), 0.0);
+                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t0.shiftedBy(dt), new PVCoordinates(position, velocity)));
+            }
+
+            for (double dt = 0; dt < 1.0; dt += 0.01) {
+                PVCoordinates interpolated = PVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                Vector3D p = interpolated.getPosition();
+                Vector3D v = interpolated.getVelocity();
+                Assert.assertEquals(FastMath.cos(dt),    p.getX(), 3.0e-6 * p.getNorm());
+                Assert.assertEquals(FastMath.sin(dt),    p.getY(), 3.0e-6 * p.getNorm());
+                Assert.assertEquals(0,                   p.getZ(), 3.0e-6 * p.getNorm());
+                Assert.assertEquals(-FastMath.sin(dt),   v.getX(), 3.0e-5 * v.getNorm());
+                Assert.assertEquals( FastMath.cos(dt),   v.getY(), 3.0e-5 * v.getNorm());
+                Assert.assertEquals(0,                   v.getZ(), 3.0e-5 * v.getNorm());
+            }
+
+    }
+
+    private PolynomialFunction randomPolynomial(int degree, Random random) {
+        double[] coeff = new double[ 1 + degree];
+        for (int j = 0; j < degree; ++j) {
+            coeff[j] = random.nextDouble();
+        }
+        return new PolynomialFunction(coeff);
     }
 
     private void checkPV(PVCoordinates expected, PVCoordinates real, double epsilon) {

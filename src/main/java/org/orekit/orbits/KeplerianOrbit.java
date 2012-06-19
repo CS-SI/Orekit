@@ -16,6 +16,8 @@
  */
 package org.orekit.orbits;
 
+import java.util.Collection;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -23,6 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.HermiteInterpolator;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -666,6 +669,42 @@ public class KeplerianOrbit extends Orbit {
         return new KeplerianOrbit(a, e, i, pa, raan,
                                   getMeanAnomaly() + getKeplerianMeanMotion() * dt,
                                   PositionAngle.MEAN, getFrame(), getDate().shiftedBy(dt), getMu());
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * on Keplerian elements, without derivatives (which means the interpolation
+     * falls back to Lagrange interpolation only).
+     * </p>
+     */
+    public KeplerianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
+
+        // set up an interpolator
+        final HermiteInterpolator interpolator = new HermiteInterpolator();
+
+        // add sample points
+        for (final Orbit orbit : sample) {
+            final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+            interpolator.addSamplePoint(kep.getDate().durationFrom(date),
+                                        new double[] {
+                                            kep.getA(),
+                                            kep.getE(),
+                                            kep.getI(),
+                                            kep.getPerigeeArgument(),
+                                            kep.getRightAscensionOfAscendingNode(),
+                                            kep.getTrueAnomaly()
+                                       });
+        }
+
+        // interpolate
+        final double[] interpolated = interpolator.value(0);
+
+        // build a new interpolated instance
+        return new KeplerianOrbit(interpolated[0], interpolated[1], interpolated[2],
+                                  interpolated[3], interpolated[4], interpolated[5],
+                                  PositionAngle.TRUE, getFrame(), date, getMu());
+
     }
 
     /** {@inheritDoc} */

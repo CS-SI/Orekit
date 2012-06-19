@@ -17,13 +17,18 @@
 package org.orekit.attitudes;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
@@ -46,7 +51,8 @@ import org.orekit.utils.AngularCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializable {
+public class Attitude
+    implements TimeStamped, TimeShiftable<Attitude>, TimeInterpolable<Attitude>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -947817502698754209L;
@@ -183,6 +189,22 @@ public class Attitude implements TimeStamped, TimeShiftable<Attitude>, Serializa
      */
     public Vector3D getSpin() {
         return orientation.getRotationRate();
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
+     * </p>
+     */
+    public Attitude interpolate(final AbsoluteDate date, final Collection<Attitude> sample) {
+        final List<Pair<AbsoluteDate, AngularCoordinates>> datedPV =
+                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>(sample.size());
+        for (final Attitude attitude : sample) {
+            datedPV.add(new Pair<AbsoluteDate, AngularCoordinates>(attitude.getDate(), attitude.getOrientation()));
+        }
+        final AngularCoordinates interpolated = AngularCoordinates.interpolate(date, true, datedPV);
+        return new Attitude(date, referenceFrame, interpolated);
     }
 
 }

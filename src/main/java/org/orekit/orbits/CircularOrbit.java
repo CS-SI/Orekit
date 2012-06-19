@@ -16,12 +16,15 @@
  */
 package org.orekit.orbits;
 
+import java.util.Collection;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.HermiteInterpolator;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -531,6 +534,42 @@ public class CircularOrbit
                                  getAlphaM() + getKeplerianMeanMotion() * dt,
                                  PositionAngle.MEAN, getFrame(),
                                  getDate().shiftedBy(dt), getMu());
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * on circular elements, without derivatives (which means the interpolation
+     * falls back to Lagrange interpolation only).
+     * </p>
+     */
+    public CircularOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
+
+        // set up an interpolator
+        final HermiteInterpolator interpolator = new HermiteInterpolator();
+
+        // add sample points
+        for (final Orbit orbit : sample) {
+            final CircularOrbit circ = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
+            interpolator.addSamplePoint(circ.getDate().durationFrom(date),
+                                        new double[] {
+                                            circ.getA(),
+                                            circ.getCircularEx(),
+                                            circ.getCircularEy(),
+                                            circ.getI(),
+                                            circ.getRightAscensionOfAscendingNode(),
+                                            circ.getAlphaV()
+                                       });
+        }
+
+        // interpolate
+        final double[] interpolated = interpolator.value(0);
+
+        // build a new interpolated instance
+        return new CircularOrbit(interpolated[0], interpolated[1], interpolated[2],
+                                 interpolated[3], interpolated[4], interpolated[5],
+                                 PositionAngle.TRUE, getFrame(), date, getMu());
+
     }
 
     /** {@inheritDoc} */

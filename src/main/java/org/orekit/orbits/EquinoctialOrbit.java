@@ -16,12 +16,15 @@
  */
 package org.orekit.orbits;
 
+import java.util.Collection;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.HermiteInterpolator;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -469,6 +472,42 @@ public class EquinoctialOrbit extends Orbit {
                                     getLM() + getKeplerianMeanMotion() * dt,
                                     PositionAngle.MEAN, getFrame(),
                                     getDate().shiftedBy(dt), getMu());
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * on equinoctial elements, without derivatives (which means the interpolation
+     * falls back to Lagrange interpolation only).
+     * </p>
+     */
+    public EquinoctialOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
+
+        // set up an interpolator
+        final HermiteInterpolator interpolator = new HermiteInterpolator();
+
+        // add sample points
+        for (final Orbit orbit : sample) {
+            final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+            interpolator.addSamplePoint(equi.getDate().durationFrom(date),
+                                        new double[] {
+                                            equi.getA(),
+                                            equi.getEquinoctialEx(),
+                                            equi.getEquinoctialEy(),
+                                            equi.getHx(),
+                                            equi.getHy(),
+                                            equi.getLv()
+                                       });
+        }
+
+        // interpolate
+        final double[] interpolated = interpolator.value(0);
+
+        // build a new interpolated instance
+        return new EquinoctialOrbit(interpolated[0], interpolated[1], interpolated[2],
+                                    interpolated[3], interpolated[4], interpolated[5],
+                                    PositionAngle.TRUE, getFrame(), date, getMu());
+
     }
 
     /** {@inheritDoc} */

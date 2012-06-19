@@ -16,6 +16,9 @@
  */
 package org.orekit.orbits;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -28,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
@@ -737,6 +741,77 @@ public class CircularParametersTest {
                           32 * (oP3h.getAlpha(type)                     - oM3h.getAlpha(type)) -
                          168 * (oP2h.getAlpha(type)                     - oM2h.getAlpha(type)) +
                          672 * (oP1h.getAlpha(type)                     - oM1h.getAlpha(type))) / (840 * h);
+
+    }
+
+    @Test
+    public void testInterpolation() throws OrekitException {
+
+        final double ehMu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
+
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
+        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
+        final CircularOrbit initialOrbit = new CircularOrbit(new PVCoordinates(position, velocity),
+                                                             FramesFactory.getEME2000(), date, ehMu);
+
+        EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+
+        // set up a 5 points sample
+        List<Orbit> sample = new ArrayList<Orbit>();
+        for (double dt = 0; dt < 300.0; dt += 60.0) {
+            sample.add(propagator.propagate(date.shiftedBy(dt)).getOrbit());
+        }
+
+        // well inside the sample, interpolation should be much better than Keplerian shift
+        double maxShiftError = 0;
+        double maxInterpolationError = 0;
+        for (double dt = 0; dt < 251.0; dt += 1.0) {
+            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
+            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
+            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
+            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
+            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
+        }
+        Assert.assertTrue(maxShiftError         > 425.0);
+        Assert.assertTrue(maxInterpolationError < 0.04);
+
+        // slightly past sample end, interpolation should quickly increase, but remain reasonable
+        maxShiftError = 0;
+        maxInterpolationError = 0;
+        for (double dt = 250; dt < 300.0; dt += 1.0) {
+            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
+            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
+            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
+            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
+            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
+        }
+        Assert.assertTrue(maxShiftError         <  610.0);
+        Assert.assertTrue(maxInterpolationError <    0.8);
+
+        // far past sample end, interpolation should become really wrong
+        // (in this test case, break even occurs at around 1822 seconds, with a 13 km error)
+        maxShiftError = 0;
+        maxInterpolationError = 0;
+        for (double dt = 300; dt < 2000; dt += 1.0) {
+            AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
+            Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
+            Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
+            Vector3D propagated   = propagator.propagate(t).getPVCoordinates().getPosition();
+            maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
+            maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
+        }
+        Assert.assertTrue(maxShiftError         < 16500.0);
+        Assert.assertTrue(maxInterpolationError > 47000.0);
 
     }
 

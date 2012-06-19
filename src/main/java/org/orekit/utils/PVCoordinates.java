@@ -17,8 +17,11 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
+import java.util.Collection;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Pair;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
 /** Simple container for Position/Velocity pairs.
@@ -164,6 +167,56 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     public PVCoordinates shiftedBy(final double dt) {
         return new PVCoordinates(new Vector3D(1, position, dt, velocity), velocity);
+    }
+
+    /** Interpolate position-velocity.
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * ensuring velocity remains the exact derivative of position.
+     * </p>
+     * @param date interpolation date
+     * @param useVelocity if true, use sample points velocity, otherwise ignore it and
+     * use only position
+     * @param sample sample points on which interpolation should be done
+     * @return a new position-velocity, interpolated at specified date
+     */
+    public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocity,
+                                            final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
+
+        // set up an interpolator taking derivatives into account
+        final HermiteInterpolator interpolator = new HermiteInterpolator();
+
+        // add sample points
+        if (useVelocity) {
+            // populate sample with position and velocity data
+            for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
+                final Vector3D position = datedPV.getValue().getPosition();
+                final Vector3D velocity = datedPV.getValue().getVelocity();
+                interpolator.addSamplePoint(datedPV.getKey().getDate().durationFrom(date),
+                                            new double[] {
+                                                position.getX(), position.getY(), position.getZ()
+                                            }, new double[] {
+                                                velocity.getX(), velocity.getY(), velocity.getZ()
+                                            });
+            }
+        } else {
+            // populate sample with position data, ignoring velocity
+            for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
+                final Vector3D position = datedPV.getValue().getPosition();
+                interpolator.addSamplePoint(datedPV.getKey().getDate().durationFrom(date),
+                                            new double[] {
+                                                position.getX(), position.getY(), position.getZ()
+                                            });
+            }
+        }
+
+        // interpolate
+        final double[] p = interpolator.value(0);
+        final double[] v = interpolator.derivative(0);
+
+        // build a new interpolated instance
+        return new PVCoordinates(new Vector3D(p[0], p[1], p[2]), new Vector3D(v[0], v[1], v[2]));
+
     }
 
     /** Gets the position.

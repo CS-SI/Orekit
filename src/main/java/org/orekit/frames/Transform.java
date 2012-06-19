@@ -17,12 +17,17 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.Pair;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
@@ -82,7 +87,8 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @author Fabien Maussion
  */
-public class Transform implements TimeStamped, TimeShiftable<Transform>, Serializable {
+public class Transform
+    implements TimeStamped, TimeShiftable<Transform>, TimeInterpolable<Transform>, Serializable {
 
     /** Identity transform. */
     public static final Transform IDENTITY = new IdentityTransform();
@@ -265,6 +271,23 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     };
 
+    /** {@inheritDoc} */
+    public Transform interpolate(final AbsoluteDate date, final Collection<Transform> sample) {
+        final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
+                new ArrayList<Pair<AbsoluteDate,PVCoordinates>>(sample.size());
+        final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =
+                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>(sample.size());
+        for (final Transform transform : sample) {
+            datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(transform.getDate(),
+                                                              transform.getCartesian()));
+            datedAC.add(new Pair<AbsoluteDate, AngularCoordinates>(transform.getDate(),
+                                                                   transform.getAngular()));
+        }
+        final PVCoordinates      interpolatedPV = PVCoordinates.interpolate(date, true, datedPV);
+        final AngularCoordinates interpolatedAC = AngularCoordinates.interpolate(date, true, datedAC);
+        return new Transform(date, interpolatedPV, interpolatedAC);
+    }
+
     /** Get the inverse transform of the instance.
      * @return inverse transform of the instance
      */
@@ -422,12 +445,25 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
         return cartesian.getVelocity();
     }
 
+    /** Get the underlying elementary angular part.
+     * <p>A transform can be uniquely represented as an elementary
+     * translation followed by an elementary rotation. This method
+     * returns this unique elementary rotation with its derivative.</p>
+     * @return underlying elementary angular part
+     * @see #getRotation()
+     * @see #getRotationRate()
+     */
+    public AngularCoordinates getAngular() {
+        return angular;
+    }
+
     /** Get the underlying elementary rotation.
      * <p>A transform can be uniquely represented as an elementary
      * translation followed by an elementary rotation. This method
      * returns this unique elementary rotation.</p>
      * @return underlying elementary rotation
-     * @see #getTranslation()
+     * @see #getAngular()
+     * @see #getRotationRate()
      */
     public Rotation getRotation() {
         return angular.getRotation();
@@ -436,6 +472,8 @@ public class Transform implements TimeStamped, TimeShiftable<Transform>, Seriali
     /** Get the first time derivative of the rotation.
      * <p>The norm represents the angular rate.</p>
      * @return First time derivative of the rotation
+     * @see #getAngular()
+     * @see #getRotation()
      */
     public Vector3D getRotationRate() {
         return angular.getRotationRate();

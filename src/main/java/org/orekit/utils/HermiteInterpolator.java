@@ -51,7 +51,7 @@ import org.orekit.errors.OrekitMessages;
  * </p>
  * @author Luc Maisonobe
  */
-class HermiteInterpolator implements DifferentiableUnivariateVectorFunction {
+public class HermiteInterpolator implements DifferentiableUnivariateVectorFunction {
 
     /** Sample abscissae. */
     private final List<Double> abscissae;
