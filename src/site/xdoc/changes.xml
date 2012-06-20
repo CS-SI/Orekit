@@ -24,8 +24,8 @@
              description="TBD.">
       <action dev="luc" type="add" >
         Added Hermite interpolation features for position-velocity coordinates,
-        angular coordinates, orbits, attitudes and transforms. Hermite interpolation
-        matches sample points value and optionally first derivative.
+        angular coordinates, orbits, attitudes, spacecraft states and transforms.
+        Hermite interpolation matches sample points value and optionally first derivative.
       </action>
       <action dev="luc" type="add" >
         Added an AngularCoordinates as an angular counterpart to PVCoordinates.

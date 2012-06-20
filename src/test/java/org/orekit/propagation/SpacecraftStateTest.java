@@ -18,6 +18,8 @@ package org.orekit.propagation;
 
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.Assert;
 
@@ -33,6 +35,7 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.BodyCenterPointing;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.KeplerianOrbit;
@@ -49,7 +52,7 @@ import org.orekit.utils.PVCoordinates;
 public class SpacecraftStateTest {
 
     @Test
-    public void testInterpolationError()
+    public void testShiftError()
         throws ParseException, OrekitException {
 
 
@@ -93,6 +96,49 @@ public class SpacecraftStateTest {
         Assert.assertEquals(4.0,    maxResidualP, 0.2);
         Assert.assertEquals(0.04,   maxResidualV, 0.01);
         Assert.assertEquals(7.0e-5, maxResidualA, 0.3e-5);
+    }
+
+    @Test
+    public void testInterpolation()
+        throws ParseException, OrekitException {
+        checkInterpolationError( 2, 640.5707, 3.5695114, 1468.9144e-5, 0.0);
+        checkInterpolationError( 3, 424.6225, 0.7395422,   71.3043e-5, 0.0);
+        checkInterpolationError( 4,  61.2305, 0.1562064,    7.4442e-5, 0.0);
+        checkInterpolationError( 5,  19.2103, 0.0236758,    1.3682e-5, 0.0);
+        checkInterpolationError( 6,   1.9613, 0.0037497,    0.3674e-5, 0.0);
+        checkInterpolationError( 7,   0.4109, 0.0004614,    0.1285e-5, 0.0);
+        checkInterpolationError( 8,   0.0350, 0.0000563,    0.0549e-5, 0.0);
+        checkInterpolationError( 9,   0.0053, 0.0000058,    0.0268e-5, 0.0);
+        checkInterpolationError(10,   0.0005, 0.0000006,    0.0140e-5, 0.0);
+    }
+
+    private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
+                                         double expectedErrorA, double expectedErrorM)
+        throws PropagationException {
+        AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
+        SpacecraftState centerState = propagator.propagate(centerDate);
+        List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
+        for (int i = 0; i < n; ++i) {
+            sample.add(propagator.propagate(centerDate.shiftedBy(i * 900.0 / (n - 1))));
+        }
+        double maxErrorP = 0;
+        double maxErrorV = 0;
+        double maxErrorA = 0;
+        double maxErrorM = 0;
+        for (double dt = 0; dt < 900.0; dt += 5) {
+            SpacecraftState interpolated = centerState.interpolate(centerDate.shiftedBy(dt), sample);
+            SpacecraftState propagated = propagator.propagate(centerDate.shiftedBy(dt));
+            PVCoordinates dpv = new PVCoordinates(propagated.getPVCoordinates(), interpolated.getPVCoordinates());
+            maxErrorP = FastMath.max(maxErrorP, dpv.getPosition().getNorm());
+            maxErrorV = FastMath.max(maxErrorV, dpv.getVelocity().getNorm());
+            maxErrorA = FastMath.max(maxErrorA, FastMath.toDegrees(Rotation.distance(interpolated.getAttitude().getRotation(),
+                                                                                                  propagated.getAttitude().getRotation())));
+            maxErrorM = FastMath.max(maxErrorM, FastMath.abs(interpolated.getMass() - propagated.getMass()));
+        }
+        Assert.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
+        Assert.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
+        Assert.assertEquals(expectedErrorA, maxErrorA, 1.0e-8);
+        Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
     }
 
     @Test(expected=IllegalArgumentException.class)

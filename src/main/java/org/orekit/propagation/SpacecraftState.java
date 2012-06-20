@@ -17,6 +17,9 @@
 package org.orekit.propagation;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
@@ -27,8 +30,10 @@ import org.orekit.frames.LOFType;
 import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.HermiteInterpolator;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -55,7 +60,8 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftState>, Serializable {
+public class SpacecraftState
+    implements TimeStamped, TimeShiftable<SpacecraftState>, TimeInterpolable<SpacecraftState>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3141803003950085500L;
@@ -179,6 +185,25 @@ public class SpacecraftState implements TimeStamped, TimeShiftable<SpacecraftSta
      */
     public SpacecraftState shiftedBy(final double dt) {
         return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt), mass);
+    }
+
+    /** {@inheritDoc} */
+    public SpacecraftState interpolate(final AbsoluteDate date,
+                                       final Collection<SpacecraftState> sample) {
+        final List<Orbit> orbits = new ArrayList<Orbit>(sample.size());
+        final List<Attitude> attitudes = new ArrayList<Attitude>(sample.size());
+        final HermiteInterpolator massInterpolator = new HermiteInterpolator();
+        for (final SpacecraftState state : sample) {
+            orbits.add(state.getOrbit());
+            attitudes.add(state.getAttitude());
+            massInterpolator.addSamplePoint(state.getDate().durationFrom(date),
+                                            new double[] {
+                                                state.getMass()
+                                            });
+        }
+        return new SpacecraftState(orbit.interpolate(date, orbits),
+                                   attitude.interpolate(date, attitudes),
+                                   massInterpolator.value(0)[0]);
     }
 
     /** Gets the current orbit.
