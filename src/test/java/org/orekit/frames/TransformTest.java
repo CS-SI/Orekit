@@ -17,6 +17,8 @@
 package org.orekit.frames;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
@@ -104,6 +106,21 @@ public class TransformTest {
             Transform combined = randomTransform(random);
 
             checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, combined, combined.getInverse()), random);
+
+        }
+
+    }
+
+    @Test
+    public void testDecomposeAndRebuild() {
+        Random random = new Random(0xb8ee9da1b05198c9l);
+        for (int i = 0; i < 20; ++i) {
+            Transform combined = randomTransform(random);
+            Transform rebuilt  = new Transform(combined.getDate(),
+                                               new Transform(combined.getDate(), combined.getTranslation(), combined.getVelocity()),
+                                               new Transform(combined.getDate(), combined.getRotation(), combined.getRotationRate()));
+
+            checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, combined, rebuilt.getInverse()), random);
 
         }
 
@@ -451,7 +468,7 @@ public class TransformTest {
         // the following transform corresponds to a frame moving along the line x=1 and rotating around its -z axis
         // the linear motion velocity is (0, +1, 0), the angular rate is PI/2
         // at t = -1 the frame origin is at (1, -1, 0), its X axis is equal to  Xref and its Y axis is equal to  Yref
-        // at t =  0 the frame origin is at (1,  0, 0), its X axis is equal to  Yref and its Y axis is equal to  Xref
+        // at t =  0 the frame origin is at (1,  0, 0), its X axis is equal to -Yref and its Y axis is equal to  Xref
         // at t = +1 the frame origin is at (1, +1, 0), its X axis is equal to -Xref and its Y axis is equal to -Yref
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
@@ -572,6 +589,42 @@ public class TransformTest {
         }
     }
 
+    @Test
+    public void testInterpolation() {
+
+        AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
+        List<Transform> sample = new ArrayList<Transform>();
+        for (int i = 0; i < 5; ++i) {
+            sample.add(evolvingTransform(t0, i * 0.8));
+        }
+
+        for (double dt = 0.1; dt <= 3.1; dt += 0.01) {
+            Transform reference = evolvingTransform(t0, dt);
+            Transform interpolated = sample.get(0).interpolate(reference.getDate(), sample);
+            Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
+            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),   8.0e-9);
+            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),   5.0e-8);
+            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),    8.0e-9);
+            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(), 5.0e-8);
+
+        }
+
+    }
+
+    private Transform evolvingTransform(final AbsoluteDate t0, final double dt) {
+        // the following transform corresponds to a frame moving along the circle r = 1
+        // with its x axis always pointing to the reference frame center
+        final double omega = 0.2;
+        final AbsoluteDate date = t0.shiftedBy(dt);
+        final double cos = FastMath.cos(omega * dt);
+        final double sin = FastMath.sin(omega * dt);
+        return new Transform(date,
+                             new Transform(date, new Vector3D(-cos, -sin, 0), new Vector3D(omega * sin, -omega * cos, 0)),
+                             new Transform(date,
+                                           new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt),
+                                           new Vector3D(omega, Vector3D.PLUS_K)));
+    }
+
     private double derivative(double h,
                               double ym4h, double ym3h, double ym2h, double ym1h,
                               double yp1h, double yp2h, double yp3h, double yp4h) {
@@ -637,8 +690,8 @@ public class TransformTest {
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
             Assert.assertEquals(0, pv.getPosition().subtract(tPv.getPosition()).getNorm(),
                          1.0e-10 * pv.getPosition().getNorm());
-            Assert.assertEquals(0, pv.getVelocity().subtract(tPv.getVelocity()).getNorm(),
-                         1.0e-9 * pv.getVelocity().getNorm());
+            Assert.assertEquals("" + (1.0e-9 * pv.getVelocity().getNorm()), 0, pv.getVelocity().subtract(tPv.getVelocity()).getNorm(),
+                         3.0e-9 * pv.getVelocity().getNorm());
         }
     }
 
