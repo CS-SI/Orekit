@@ -32,12 +32,9 @@
     end package
 
     package time #DDEBD8
-      interface TimeStamped {
-        +AbsoluteDate getDate()
-      }
-      interface "TimeShiftable<T>" as TimeShiftable_T_ {
-        +T shiftedBy(double dt)
-      }
+      interface TimeStamped
+      interface "TimeShiftable<T>" as TimeShiftable_T_
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_
     end package
 
     package attitude #DDEBD8
@@ -60,6 +57,10 @@
         + Attitude getAttitude(PVCoordinatesProvider pvProv, AbsoluteDate date, Frame frame)
       }
 
+      class FixedRate {
+        +Attitude getReferenceAttitude()
+      }
+
       interface AttitudeProviderModifier {
         +AttitudeProvider getUnderlyingAttitudeProvider()
       }
@@ -73,10 +74,6 @@
         #PVCoordinates getTargetPV
       }
 
-      class FixedRate {
-        +Attitude getReferenceAttitude()
-      }
-
       abstract class GroundPointingWrapper {
         +Attitude getBaseState
         +Rotation getCompensation
@@ -86,24 +83,25 @@
       Attitude         <-up- AttitudeProvider : create
       TimeStamped      <|.. Attitude
       TimeShiftable_T_ <|.. Attitude
+      TimeInterpolable_T_ <|.. Attitude
+      AttitudeProvider             <|-- FixedRate
       AttitudeProvider <|-- AttitudeProviderModifier
-      AttitudesSequence ..|> AttitudeProvider 
+      AttitudesSequence ..|> AttitudeProvider
       AttitudesSequence "*" o--> AttitudeProvider
+      AttitudeProvider <--* "1" LofOffsetPointing 
       AttitudeProvider <|.. GroundPointing
       GroundPointing   <|-- GroundPointingWrapper
+      LofOffsetPointing            --|> GroundPointing
 
       AttitudeProviderModifier     <|-- SpinStabilized
       AttitudeProviderModifier     <|-- GroundPointingWrapper
       GroundPointing               <|-- BodyCenterPointing
       GroundPointing               <|-- NadirPointing
       GroundPointing               <|-- TargetPointing
-      GroundPointing               <|-- LofOffsetPointing
-      LofOffsetPointing        "1" *--> AttitudeProvider
       GroundPointingWrapper    "1" *--> GroundPointing
       GroundPointingWrapper        <|-- YawCompensation
       GroundPointingWrapper        <|-- YawSteering
       AttitudeProvider             <|-- CelestialBodyPointed
-      AttitudeProvider             <|-- FixedRate
       AttitudeProvider             <|-- InertialProvider
       AttitudeProvider             <|-- LofOffset
 

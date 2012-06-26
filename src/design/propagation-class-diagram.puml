@@ -39,15 +39,22 @@
         +AbsoluteDate getDate()
       }
 
+      interface "TimeShiftable<T>" as TimeShiftable_T_ {
+        +T shiftedBy(double dt)
+      }
+
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
+        +T interpolate(AbsoluteDate date, Collection<T> sample)
+      }
+
     end package
 
     package propagation #DDEBD8
 
       class SpacecraftState {
-  	+SpacecraftState shiftedBy(double dt)
-  	+Orbit getOrbit()
-  	+Attitude getAttitude()
-  	+double getMass()
+        +Orbit getOrbit()
+        +Attitude getAttitude()
+        +double getMass()
       }
 
       interface Propagator {
@@ -77,7 +84,9 @@
       Propagator            <|..     BoundedPropagator
       PVCoordinatesProvider <|.down. Propagator
       Propagator            ->       SpacecraftState : create
-      TimeStamped           <|.down. SpacecraftState
+      TimeStamped           <|.right. SpacecraftState
+      TimeShiftable_T_      <|.right. SpacecraftState
+      TimeInterpolable_T_   <|.right. SpacecraftState
 
    end package
 

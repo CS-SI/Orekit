@@ -27,21 +27,16 @@
 
   package org.orekit #ECEBD8
 
-  package utils #DDEBD8
-    interface PVCoordinatesProvider {
-      +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-    }
-  end package
-
   package data #DDEBD8
-    interface DataLoader {
-      +boolean stillAcceptsData()
-      +void loadData(InputStream input, String name)
-    }
+    interface DataLoader
   end package
 
   package frames #DDEBD8
     class Frame
+  end package
+
+  package utils #DDEBD8
+    interface PVCoordinatesProvider
   end package
 
   package bodies #DDEBD8
@@ -82,19 +77,19 @@
     }
 
     class IAUPoleFactory {
-      +IAUPole getIAUPole(JPLEphemeridesLoader.EphemerisType body)
+      +IAUPole getIAUPole(EphemerisType body)
     }
 
     abstract class AbstractCelestialBody
 
-    CelestialBodyLoader  ..|> DataLoader
+    DataLoader           <|.. CelestialBodyLoader
     CelestialBodyLoader  <|-- JPLEphemeridesLoader
-    CelestialBody "*"       <--o "1" CelestialBodyFactory
-    CelestialBodyLoader "*" <-left-o "1" CelestialBodyFactory
+    CelestialBody "*"       <-left-o "1" CelestialBodyFactory
+    CelestialBodyFactory "1" o--> "*" CelestialBodyLoader
     PVCoordinatesProvider <|.. CelestialBody
     CelestialBody         -up-> Frame
     CelestialBody         <|-- AbstractCelestialBody
-    IAUPoleFactory "1" *--> "*" IAUPole  : creates
+    IAUPole "*" <-left-* "1" IAUPoleFactory  : creates
     AbstractCelestialBody "1" *--> IAUPole
     AbstractCelestialBody <-left- JPLEphemeridesLoader : creates
 

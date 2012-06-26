@@ -35,6 +35,10 @@
       +T shiftedBy(double dt)
     }
 
+    interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
+      +T interpolate(AbsoluteDate date, Collection<T> sample)
+    }
+
     class AbsoluteDate {
       +AbsoluteDate JULIAN_EPOCH
       +AbsoluteDate MODIFIED_JULIAN_EPOCH

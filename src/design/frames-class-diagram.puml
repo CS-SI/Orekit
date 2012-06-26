@@ -25,7 +25,15 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit.frames #ECEBD8
+  package org.orekit #ECEBD8
+
+    package time #DDEBD8
+      interface TimeStamped
+      interface "TimeShiftable<T>" as TimeShiftable_T_
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_
+    end package
+
+    package frames #DDEBD8
 
     class Transform {
       +Transform IDENTITY
@@ -103,6 +111,12 @@
     FramesFactory       *-->       Frame     : predefined frames
     Frame               o-->       Frame     : parent
     Frame               o-up->     Transform : transform from parent
+
+  end package
+
+  TimeStamped         <|.. Transform
+  TimeShiftable_T_    <|.. Transform
+  TimeInterpolable_T_ <|.. Transform
 
   end package
 

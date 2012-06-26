@@ -21,12 +21,21 @@
   skinparam ClassArrowColor       #691616
   skinparam ClassBorderColor      #691616
   skinparam ClassFontSize         11
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
 
   package org.orekit #ECEBD8
 
     package time #DDEBD8
+      interface TimeStamped {
+        +AbsoluteDate getDate()
+      }
       interface "TimeShiftable<T>" as TimeShiftable_T_ {
         +T shiftedBy(double dt)
+      }
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
+        +T interpolate(AbsoluteDate date, Collection<T> sample)
       }
     end package
 
@@ -38,7 +47,13 @@
         +Vector3D getPosition()
         +Vector3D getVelocity()
         +Vector3D getMomentum()
+        +{static} PVCoordinates interpolate(...)
       }
+      note bottom
+      don't implement TimeInterpolable<T>
+      as the interpolate method here is static
+      and has a different signature
+      end note
 
       interface PVCoordinatesProvider {
         +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
@@ -50,19 +65,17 @@
         +AngularCoordinates revert()
         +Rotation getRotation()
         +Vector3D getRotationRate()
+        +{static} AngularCoordinates interpolate(...)
       }
+      note bottom
+      don't implement TimeInterpolable<T>
+      as the interpolate method here is static
+      and has a different signature
+      end note
 
       PVCoordinatesProvider -up-> PVCoordinates
       TimeShiftable_T_      <|..  PVCoordinates
       TimeShiftable_T_      <|..  AngularCoordinates
-
-      class SecularAndHarmonic {
-        +void addPoint()
-        +void fit()
-        +double[] getFittedParameters()
-        +double osculatingValue()
-        +double meanValue()
-      }
 
       interface Constants {
         +double SPEED_OF_LIGHT
@@ -96,7 +109,7 @@
     end package
 
     package bodies #DDEBD8
-      interface CelestialBody
+      class CelestialBody
       PVCoordinatesProvider <|.. CelestialBody
     end package
 

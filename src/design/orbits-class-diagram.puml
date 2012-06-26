@@ -27,30 +27,29 @@
 
   package org.orekit #ECEBD8
 
-    package frames #DDEBD8
-      class Frame
-    end package
-
     package time #DDEBD8
-      class AbsoluteDate
-      interface TimeStamped {
-        +AbsoluteDate getDate()
-      }
-      interface "TimeShiftable<T>" as TimeShiftable_T_ {
-        +T shiftedBy(double dt)
-      }
-    end package
-
-    package utils #DDEBD8
-      class  PVCoordinates
-      interface PVCoordinatesProvider {
-        +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
-      }
-      PVCoordinatesProvider -down-> Frame
-      PVCoordinatesProvider -down-> AbsoluteDate
+      interface TimeStamped
+      interface "TimeShiftable<T>" as TimeShiftable_T_
+      interface "TimeInterpolable<T>" as TimeInterpolable_T_
     end package
 
     package orbit #DDEBD8
+      class KeplerianOrbit
+      class CircularOrbit
+      class CartesianOrbit
+      class EquinoctialOrbit
+
+      abstract class Orbit {
+        +OrbitType getType()
+        +Frame getFrame()
+        +double getA()
+        +double getKeplerianPeriod()
+        +double getKeplerianMeanMotion()
+        +double get...()
+        +void getJacobianWrtCartesian(PositionAngle type, double[][] jacobian)
+        +void getJacobianWrtParameters(PositionAngle type, double[][] jacobian)
+      }
+
       enum OrbitType {
         +CARTESIAN
         +CIRCULAR
@@ -67,39 +66,21 @@
         +TRUE
       }
 
-      abstract class Orbit {
-        +OrbitType getType()
-        +Frame getFrame()
-        +double getA()
-        +double getKeplerianPeriod()
-        +double getKeplerianMeanMotion()
-        +double get...()
-        +Orbit shiftedBy(double dt)
-        +void getJacobianWrtCartesian(PositionAngle type, double[][] jacobian)
-        +void getJacobianWrtParameters(PositionAngle type, double[][] jacobian)
-      }
-
-      class KeplerianOrbit
-      class CircularOrbit
-      class CartesianOrbit
-      class EquinoctialOrbit
-
-      TimeStamped           <|..     Orbit
-      TimeShiftable_T_      <|..     Orbit
-      PVCoordinatesProvider <|..     Orbit
-      AbsoluteDate          <-left-* Orbit
-      Frame                 <-left-* Orbit
-      PVCoordinates         <-left-* Orbit
-      OrbitType             -->      Orbit : convert
-      Orbit                 *-up->   OrbitType
-      OrbitType             -right-> PositionAngle
-      Orbit                 <|---    KeplerianOrbit
-      Orbit                 <|---    CircularOrbit
-      Orbit                 <|---    CartesianOrbit
-      Orbit                 <|---    EquinoctialOrbit
+      Orbit     <--       OrbitType : convert
+      Orbit     *-->      OrbitType
+      Orbit     -->       PositionAngle
+      OrbitType -right->  PositionAngle
+      Orbit     <|--      KeplerianOrbit
+      Orbit     <|--      CircularOrbit
+      Orbit     <|--      CartesianOrbit
+      Orbit     <|--      EquinoctialOrbit
 
     end package
 
   end package
+
+  TimeStamped         <|.. Orbit
+  TimeShiftable_T_    <|.. Orbit
+  TimeInterpolable_T_ <|.. Orbit
 
 @enduml
