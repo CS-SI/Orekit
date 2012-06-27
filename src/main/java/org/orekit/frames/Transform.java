@@ -301,9 +301,9 @@ public class Transform
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
      */
-    public Transform interpolate(final AbsoluteDate date,
-                                 final boolean useVelocities, final boolean useRotationRates,
-                                 final Collection<Transform> sample) {
+    public static Transform interpolate(final AbsoluteDate date,
+                                        final boolean useVelocities, final boolean useRotationRates,
+                                        final Collection<Transform> sample) {
         final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
                 new ArrayList<Pair<AbsoluteDate,PVCoordinates>>(sample.size());
         final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =
