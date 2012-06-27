@@ -259,11 +259,11 @@ public class Frame implements Serializable {
      * <p>Tracking measurements really correspond to the link between the ground
      * and on-board antennas. This is tightly linked to the transform between
      * these two frames, however neither frame is the direct parent frame of the
-     * other ones: the path involves four intermediate frames. When we process a
+     * other one: the path involves four intermediate frames. When we process a
      * measurement, what we really want to update is the transform that defines
      * the satellite frame with respect to its parent GCRF frame. This
      * is the purpose of this method. This update is done by the following call,
-     * where <code>measurementTransform</code> represent the measurement as a
+     * where <code>measurementTransform</code> represents the measurement as a
      * simple translation transform between the two antenna frames:</p>
      * <pre><code>
      * satellite.updateTransform(onBoardAntenna, trackingAntenna,
