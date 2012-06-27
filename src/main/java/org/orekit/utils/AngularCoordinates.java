@@ -150,13 +150,22 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * There is still a singularity at 2&pi;, which is handled by slightly offsetting all rotations
      * when this singularity is detected.
      * </p>
+     * <p>
+     * Note that even if first time derivatives (rotation rates)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the rotations.
+     * </p>
      * @param date interpolation date
-     * @param useRate if true, use sample points rotation rate, otherwise ignore it and use
-     * only rotation
+     * @param useRotationRates if true, use sample points rotation rates,
+     * otherwise ignore them and use only rotations
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      */
-    public static AngularCoordinates interpolate(final AbsoluteDate date, final boolean useRate,
+    public static AngularCoordinates interpolate(final AbsoluteDate date, final boolean useRotationRates,
                                                  final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample) {
 
         // set up safety elements for 2PI singularity avoidance
@@ -174,7 +183,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final HermiteInterpolator interpolator = new HermiteInterpolator();
 
             // add sample points
-            if (useRate) {
+            if (useRotationRates) {
                 // populate sample with rotation and rotation rate data
                 for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
                     final double[][] rodrigues = getModifiedRodrigues(reversedOffset, threshold, datedAC.getValue());

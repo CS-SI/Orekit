@@ -271,20 +271,51 @@ public class Transform
         return new Transform(date.shiftedBy(dt), cartesian.shiftedBy(dt), angular.shiftedBy(dt));
     };
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate, boolean,
+     * boolean, Collection)} with both {@code useVelocities} and {@code useRotationRates}
+     * set to true.
+     * </p>
+     */
     public Transform interpolate(final AbsoluteDate date, final Collection<Transform> sample) {
+        return interpolate(date, true, true, sample);
+    }
+
+    /** Interpolate a transform from a sample set of existing transforms.
+     * <p>
+     * Note that even if first time derivatives (velocities and rotation rates)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the positions
+     * and rotations.
+     * </p>
+     * @param date interpolation date
+     * @param useVelocities if true, use sample transforms velocities,
+     * otherwise ignore them and use only positions
+     * @param useRotationRates if true, use sample points rotation rates,
+     * otherwise ignore them and use only rotations
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
+     */
+    public Transform interpolate(final AbsoluteDate date,
+                                 final boolean useVelocities, final boolean useRotationRates,
+                                 final Collection<Transform> sample) {
         final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
                 new ArrayList<Pair<AbsoluteDate,PVCoordinates>>(sample.size());
         final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =
                 new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>(sample.size());
         for (final Transform transform : sample) {
             datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(transform.getDate(),
-                                                              transform.getCartesian()));
+                    transform.getCartesian()));
             datedAC.add(new Pair<AbsoluteDate, AngularCoordinates>(transform.getDate(),
-                                                                   transform.getAngular()));
+                    transform.getAngular()));
         }
-        final PVCoordinates      interpolatedPV = PVCoordinates.interpolate(date, true, datedPV);
-        final AngularCoordinates interpolatedAC = AngularCoordinates.interpolate(date, true, datedAC);
+        final PVCoordinates      interpolatedPV = PVCoordinates.interpolate(date, useVelocities, datedPV);
+        final AngularCoordinates interpolatedAC = AngularCoordinates.interpolate(date, useRotationRates, datedAC);
         return new Transform(date, interpolatedPV, interpolatedAC);
     }
 

@@ -174,20 +174,29 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * The interpolated instance is created by polynomial Hermite interpolation
      * ensuring velocity remains the exact derivative of position.
      * </p>
+     * <p>
+     * Note that even if first time derivatives (velocities)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the positions.
+     * </p>
      * @param date interpolation date
-     * @param useVelocity if true, use sample points velocity, otherwise ignore it and
-     * use only position
+     * @param useVelocities if true, use sample points velocities,
+     * otherwise ignore them and use only positions
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      */
-    public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocity,
+    public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
                                             final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
 
         // set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
         // add sample points
-        if (useVelocity) {
+        if (useVelocities) {
             // populate sample with position and velocity data
             for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
                 final Vector3D position = datedPV.getValue().getPosition();
