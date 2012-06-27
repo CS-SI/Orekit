@@ -66,7 +66,7 @@ import org.orekit.utils.Constants;
  *   (two instances of the class) or durations. They are counted in seconds,
  *   are continuous and could be measured using only a virtually perfect stopwatch.
  *   The related methods are {@link #AbsoluteDate(AbsoluteDate, double)},
- *   {@link #parseCCSDSUnsegmentedTimeCode(byte, byte[], AbsoluteDate)},
+ *   {@link #parseCCSDSUnsegmentedTimeCode(byte, byte, byte[], AbsoluteDate)},
  *   {@link #parseCCSDSDaySegmentedTimeCode(byte, byte[], DateComponents)},
  *   {@link #durationFrom(AbsoluteDate)}, {@link #compareTo(AbsoluteDate)}, {@link #equals(Object)}
  *   and {@link #hashCode()}.</p>

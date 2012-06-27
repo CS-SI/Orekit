@@ -38,7 +38,8 @@ import org.orekit.errors.OrekitMessages;
  * Jupiter-centered frame is: EME2000, Earth-Moon barycenter centered,
  * solar system barycenter centered, Jupiter-centered. The defining transforms
  * of these frames are combinations of simple linear {@link
- * org.orekit.frames.Transform#Transform(org.apache.commons.math3.geometry.euclidean.threed.Vector3D,
+ * org.orekit.frames.Transform#Transform(org.orekit.time.AbsoluteDate,
+ * org.apache.commons.math3.geometry.euclidean.threed.Vector3D,
  * org.apache.commons.math3.geometry.euclidean.threed.Vector3D) translation/velocity} transforms
  * without any rotation. The frame axes are therefore always parallel to
  * {@link org.orekit.frames.FramesFactory#getEME2000() EME2000} frame axes.</p>
