@@ -27,35 +27,60 @@
 
   package org.orekit.propagation #ECEBD8
 
-  interface Propagator {
-    +void addEventDetector(EventDetector detector)
-    +Collection<EventDetector> getEventsDetectors()
-    +void clearEventsDetectors()
-  }
-
-  package events #DDEBD8
-    interface EventDetector {
-      +void init(SpacecraftState s0, AbsoluteDate t)
-      +double g(SpacecraftState s)
-      +Action eventOccurred(SpacecraftState s, boolean increasing)
-      +SpacecraftState resetState(SpacecraftState oldState)
-      +double getThreshold()
-      +double getMaxCheckInterval()
-      +int getMaxIterationCount()
+    interface Propagator {
+      +void addEventDetector(EventDetector detector)
+      +Collection<EventDetector> getEventsDetectors()
+      +void clearEventsDetectors()
     }
 
-    enum EventDetector.Action {
-      +STOP
-      +RESET_STATE
-      +RESET_DERIVATIVES
-      +CONTINUE
-    }
+    package events #DDEBD8
 
-    EventDetector "*" <-down- "1" Propagator : detectors
-    EventDetector.Action <-down-  EventDetector
+      interface EventDetector {
+        +void init(SpacecraftState s0, AbsoluteDate t)
+        +double g(SpacecraftState s)
+        +Action eventOccurred(SpacecraftState s, boolean increasing)
+        +SpacecraftState resetState(SpacecraftState oldState)
+        +double getThreshold()
+        +double getMaxCheckInterval()
+        +int getMaxIterationCount()
+      }
+
+      enum EventDetector.Action {
+        +STOP
+        +RESET_STATE
+        +RESET_DERIVATIVES
+        +CONTINUE
+      }
+
+      class AbstractDetector
+      note top
+        provides default implementations for
+        all methods except the g function
+        and eventOccurred
+      end note
+
+      class EventShifter {
+       -double increasingOffset
+       -double decreasingOffset
+      }
+      EventDetector <--* "1" EventShifter 
+      EventShifter --|> AbstractDetector 
+
+      Propagator "1" o--> "*" EventDetector : detectors
+      EventDetector.Action <-right-  EventDetector
+      EventDetector <|.. AbstractDetector
+      AbstractDetector <|-- AltitudeDetector
+      AbstractDetector <|-- EclipseDetector
+      AbstractDetector <|-- ElevationDetector
+      class "...Detector" as DummyDetector
+      AbstractDetector <|--DummyDetector
+      note top
+        many implementations not displayed
+        for the sake of diagram clarity
+      end note
+
+    end package
 
   end package
-
-end package
 
 @enduml

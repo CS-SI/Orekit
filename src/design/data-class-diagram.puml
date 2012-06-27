@@ -29,6 +29,16 @@
 
     package data #DDEBD8
 
+      interface DataProvider {
+        +Pattern GZIP_FILE_PATTERN
+        +Pattern ZIP_ARCHIVE_PATTERN
+        +boolean feed(Pattern supported, DataLoader visitor)
+      }
+      note right
+        knows how to retrieve data
+        from storage, not parse it
+      end note
+
       class DataProvidersManager {
         +String OREKIT_DATA_PATH
         +DataProvidersManager getInstance()
@@ -45,23 +55,21 @@
         +boolean feed(String supportedNames, DataLoader loader)
       }
 
-      interface DataProvider {
-        +Pattern GZIP_FILE_PATTERN
-        +Pattern ZIP_ARCHIVE_PATTERN
-        +boolean feed(Pattern supported, DataLoader visitor)
-      }
-
       interface DataLoader {
         +boolean stillAcceptsData()
         +void loadData(InputStream input, String name)
       }
+      note top
+        knows how to parse data,
+        not retrieve it from storage
+      end note
 
-      DataProvidersManager "1" o--> "*" DataProvider : manages, feeds
-      DataProvider <|-- DirectoryCrawler
-      DataProvider <|-- ClassPathCrawler
-      DataProvider <|-- NetworkCrawler
-      DataProvider <|-- ZipJarCrawler
-      DataProvider -down-> DataLoader : feeds
+      DataProvider "*" <--o "1" DataProvidersManager : manages, feeds
+      DirectoryCrawler --|> DataProvider
+      ClassPathCrawler --|> DataProvider
+      NetworkCrawler   --|> DataProvider
+      ZipJarCrawler    --|> DataProvider
+      DataProvider --> DataLoader : feeds
 
     end package
 
@@ -75,13 +83,17 @@
     end package
 
     package various.other.packages #DDEBD8
-      DataLoader <|-- SomeSpecificDataLoader
+      class "...DataLoader" as DummyDataLoader
+      DataLoader <|-- DummyDataLoader
     end package
 
   end package
 
   package user.application #ECEBD8
-    DataProvider <|-- MyDatabaseLoader
+    DataProvider <|-- MyProvider
+    DataProvidersManager <-- Main : configures
+    MyProvider <--* Main
+    MyProvider *--> "1" DataBase
   end package
 
 @enduml
