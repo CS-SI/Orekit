@@ -27,6 +27,13 @@
 
   package org.orekit #ECEBD8
 
+    package utils #DDEBD8
+      class TimeStampedCache
+      note top
+        provides thread-safety
+      end note
+    end package
+
     package time #DDEBD8
       interface TimeStamped
       interface "TimeShiftable<T>" as TimeShiftable_T_
@@ -104,9 +111,10 @@
     Frame               <|--       FactoryManagedFrame
     FactoryManagedFrame <--*       FramesFactory
     Predefined <-left- FramesFactory
-'    FramesFactory -right-> Predefined
 
-    FixedTransformProvider --|> TransformProvider
+    InterpolatingTransformProvider --|> TransformProvider
+    InterpolatingTransformProvider *--> "1" TimeStampedCache
+    TransformProvider <|-- FixedTransformProvider
     FixedTransformProvider *--> "1" Transform       
     EME2000Provider        --|> TransformProvider
     ITRFProvider           --|> TransformProvider
@@ -115,9 +123,9 @@
 
   end package
 
-  TimeStamped         <|.. Transform
-  TimeShiftable_T_    <|.. Transform
-  TimeInterpolable_T_ <|.. Transform
+  Transform ..|> TimeStamped
+  Transform ..|> TimeShiftable_T_
+  Transform ..|> TimeInterpolable_T_
 
   end package
 

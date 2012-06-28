@@ -22,8 +22,7 @@ import java.io.Serializable;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
-/**
-** Interface for Transform providers.
+/** Interface for Transform providers.
  * <p>The transform provider interface is mainly used to define the
  * transform between a frame and its parent frame.
  * </p>

@@ -270,8 +270,8 @@ public class TimeStampedCache<T extends TimeStamped> {
     public T[] getNeighbors(final AbsoluteDate central) {
 
         if (central.compareTo(earliest) < 0 || central.compareTo(latest) > 0) {
-            OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_CACHE,
-                                                           central, earliest, latest);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_CACHE,
+                                                                 central, earliest, latest);
         }
 
         lock.readLock().lock();
