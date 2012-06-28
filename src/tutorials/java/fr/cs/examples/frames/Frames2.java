@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.frames.UpdatableFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -59,7 +60,7 @@ public class Frames2 {
             // and its axes parallel to EME2000. It is derived from EME2000 frame at any moment
             // by an unknown transform which depends on the current position and the velocity.
             // Let's initialize this transform by the identity transform.
-            Frame cogFrame = new Frame(FramesFactory.getEME2000(), Transform.IDENTITY, "LOF", false);
+            UpdatableFrame cogFrame = new UpdatableFrame(FramesFactory.getEME2000(), Transform.IDENTITY, "LOF", false);
 
             // The satellite frame, with origin also at the CoG, depends on attitude.
             // For the sake of this tutorial, we consider a simple inertial attitude here

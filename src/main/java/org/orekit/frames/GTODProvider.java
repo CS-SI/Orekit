@@ -29,12 +29,12 @@ import org.orekit.utils.Constants;
 /** Greenwich True Of Date Frame, also known as True of Date Rotating frame (TDR)
  * or Greenwich Rotating Coordinate frame (GCR).
  * <p> This frame handles the sidereal time according to IAU-82 model.</p>
- * <p> Its parent frame is the {@link TODFrame}.</p>
+ * <p> Its parent frame is the {@link TODProvider}.</p>
  * <p> The pole motion is not applied here.</p>
  * @author Pascal Parraud
  * @author Thierry Ceolin
  */
-public class GTODFrame extends FactoryManagedFrame {
+public class GTODProvider implements TransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -1727797229994466102L;
@@ -61,47 +61,40 @@ public class GTODFrame extends FactoryManagedFrame {
     /** Fourth coefficient of IAU 1982 GMST-UT1 model. */
     private static final double GMST_3 = -6.2e-6;
 
-    /** Cached date to avoid useless calculus. */
+    /** True Of Date provider. */
+    private final TODProvider tod;
+
+    /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
+
+    /** Cached transform to avoid useless computation. */
+    private Transform cachedTransform;
 
     /** EOP history. */
     private final EOP1980History eopHistory;
 
-    /** Simple constructor, applying EOP corrections (here, lod).
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if EOP parameters cannot be read
-     */
-    protected GTODFrame(final Predefined factoryKey)
-        throws OrekitException {
-        this(true, factoryKey);
-    }
-
     /** Simple constructor.
-     * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
-     * @param factoryKey key of the frame within the factory
+     * @param tod True Of Date provider
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected GTODFrame(final boolean applyEOPCorr, final Predefined factoryKey)
+    protected GTODProvider(final TODProvider tod)
         throws OrekitException {
 
-        super(FramesFactory.getTOD(applyEOPCorr), null, false, factoryKey);
+        this.tod = tod;
 
         // we need this history even if we don't apply all correction,
         // as we at least always apply the very large UT1-UTC offset
         eopHistory = FramesFactory.getEOP1980History();
 
-        // everything is in place, we can now synchronize the frame
-        updateFrame(AbsoluteDate.J2000_EPOCH);
-
     }
 
-    /** Update the frame to the given date.
-     * <p>The update considers the earth rotation from IERS data.</p>
+    /** Get the transform from TOD at specified date.
+     * <p>The update considers the Earth rotation from IERS data.</p>
      * @param date new value of the date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
@@ -109,16 +102,19 @@ public class GTODFrame extends FactoryManagedFrame {
             final double gast = getGAST(date);
 
             // compute true angular rotation of Earth, in rad/s
-            final double lod = ((TODFrame) getParent()).getLOD(date);
+            final double lod = tod.getLOD(date);
             final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
             final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
             // set up the transform from parent TOD
-            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, -gast), rotationRate));
+            cachedTransform = new Transform(date, new Rotation(Vector3D.PLUS_K, -gast), rotationRate);
 
             cachedDate = date;
 
         }
+
+        return cachedTransform;
+
     }
 
     /** Get the Greenwich mean sidereal time, in radians.
@@ -150,7 +146,7 @@ public class GTODFrame extends FactoryManagedFrame {
      * <p>
      * Greenwich apparent sidereal time is {@link
      * #getGMST(AbsoluteDate) Greenwich mean sidereal time} plus {@link
-     * TODFrame#getEquationOfEquinoxes(AbsoluteDate) equation of equinoxes}.
+     * TODProvider#getEquationOfEquinoxes(AbsoluteDate) equation of equinoxes}.
      * </p>
      * @param date current date
      * @return Greenwich apparent sidereal time, in radians
@@ -160,7 +156,7 @@ public class GTODFrame extends FactoryManagedFrame {
     public double getGAST(final AbsoluteDate date) throws OrekitException {
 
         // offset from J2000.0 epoch
-        final double eqe = ((TODFrame) getParent()).getEquationOfEquinoxes(date);
+        final double eqe = tod.getEquationOfEquinoxes(date);
 
         // compute Greenwich apparent sidereal time, in radians
         return getGMST(date) + eqe;

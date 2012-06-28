@@ -57,25 +57,17 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     public TopocentricFrame(final BodyShape parentShape, final GeodeticPoint point,
                             final String name) {
 
-        super(parentShape.getBodyFrame(), null, name, false);
+        super(parentShape.getBodyFrame(),
+              new Transform(AbsoluteDate.J2000_EPOCH,
+                            new Transform(AbsoluteDate.J2000_EPOCH,
+                                          parentShape.transform(point).negate()),
+                            new Transform(AbsoluteDate.J2000_EPOCH,
+                                          new Rotation(point.getEast(), point.getZenith(),
+                                                       Vector3D.PLUS_I, Vector3D.PLUS_K),
+                                          Vector3D.ZERO)),
+              name, false);
         this.parentShape = parentShape;
         this.point = point;
-
-        // Build transformation from body centered frame to topocentric frame:
-        // 1. Translation from body center to geodetic point
-        final Transform translation =
-                new Transform(AbsoluteDate.J2000_EPOCH, parentShape.transform(point).negate());
-
-        // 2. Rotate axes
-        final Vector3D Xtopo = getEast();
-        final Vector3D Ztopo = getZenith();
-        final Transform rotation = new Transform(AbsoluteDate.J2000_EPOCH,
-                                                 new Rotation(Xtopo, Ztopo, Vector3D.PLUS_I, Vector3D.PLUS_K),
-                                                 Vector3D.ZERO);
-
-        // Compose both transformations
-        setTransform(new Transform(AbsoluteDate.J2000_EPOCH, translation, rotation));
-
     }
 
     /** Get the body shape on which the local point is defined.

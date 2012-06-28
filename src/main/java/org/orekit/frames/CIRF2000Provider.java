@@ -46,7 +46,7 @@ import org.orekit.utils.Constants;
  * (43200 seconds) each, the resulting maximal interpolation error on the frame is about
  * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  */
-class CIRF2000Frame extends FactoryManagedFrame {
+class CIRF2000Provider implements TransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -8378289692425977657L;
@@ -169,15 +169,12 @@ class CIRF2000Frame extends FactoryManagedFrame {
     private final double[] sNeville;
 
     /** Simple constructor.
-     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      * @see Frame
      */
-    protected CIRF2000Frame(final Predefined factoryKey)
+    public CIRF2000Provider()
         throws OrekitException {
-
-        super(FramesFactory.getGCRF(), null , true, factoryKey);
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.1e-10 arcseconds
@@ -196,9 +193,6 @@ class CIRF2000Frame extends FactoryManagedFrame {
         yDevelopment    = loadModel(Y_MODEL);
         sxy2Development = loadModel(S_XY2_MODEL);
 
-        // everything is in place, we can now synchronize the frame
-        updateFrame(AbsoluteDate.J2000_EPOCH);
-
     }
 
     /** Load a series development model.
@@ -210,7 +204,7 @@ class CIRF2000Frame extends FactoryManagedFrame {
         throws OrekitException {
 
         // get the table data
-        final InputStream stream = CIRF2000Frame.class.getResourceAsStream(name);
+        final InputStream stream = CIRF2000Provider.class.getResourceAsStream(name);
 
         // nutation models are in micro arcseconds in the data files
         // we store and use them in radians
@@ -218,13 +212,13 @@ class CIRF2000Frame extends FactoryManagedFrame {
 
     }
 
-    /** Update the frame to the given date.
-     * <p>The update considers the nutation and precession effects from IERS data.</p>
+    /** Get the transform from GCRF to CIRF2000 at the specified date.
+     * <p>The transform considers the nutation and precession effects from IERS data.</p>
      * @param date new value of the date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         //    offset from J2000.0 epoch
         final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
@@ -248,8 +242,7 @@ class CIRF2000Frame extends FactoryManagedFrame {
                                            r * (xPrCos - ySin), zP1 * (yCos - xPrSin),
                                            true);
 
-        // set up the transform from parent GCRF
-        setTransform(new Transform(date, bpn, Vector3D.ZERO));
+        return new Transform(date, bpn, Vector3D.ZERO);
 
     }
 

@@ -30,7 +30,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class GTODFrameTest {
+public class GTODProviderAlternateConfigurationTest {
 
     @Test
     public void testAASReferenceLEO() throws OrekitException {
@@ -54,19 +54,13 @@ public class GTODFrameTest {
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
 
         Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0094, 4.9e-6);
 
-        // this test gives worse result than GTODFrameAlternateConfigurationTest because
-        // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
-        // in lod with the data used by Vallado to set up this test case
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.283289, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.535355e-4, delta.getVelocity().getNorm(), 1.0e-10);
-
-        // even if lod correction is ignored, results are quite the same
+        // if lod correction is ignored, results are quite the same
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
-        delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.283289, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.593972e-4, delta.getVelocity().getNorm(), 1.0e-10);
+        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
+        Assert.assertEquals(9.378e-3, delta.getPosition().getNorm(), 1.0e-6);
+        Assert.assertEquals(1.41e-5, delta.getVelocity().getNorm(), 1.0e-7);
 
     }
 
@@ -93,24 +87,29 @@ public class GTODFrameTest {
             new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
                               new Vector3D(-0.979178, -1.476540, -0.928772));
 
-        // this test gives worst result than GTODFrameAlternateConfigurationTest because
-        // at 2004-06-01 there is a 0.047ms difference in dut1 and a 0.416ms difference
-        // in lod with the data used by Vallado to set up this test case
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.195813, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.427468e-5, delta.getVelocity().getNorm(), 9.0e-12);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.051, 5.2e-7);
 
-        // even if lod correction is ignored, results are quite the same
+        // if lod correction is ignored, results are quite the same
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
-        delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.195813, delta.getPosition().getNorm(), 5.0e-7);
-        Assert.assertEquals(5.156e-7, delta.getVelocity().getNorm(), 8.0e-11);
+        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
+        Assert.assertEquals(5.01e-2, delta.getPosition().getNorm(), 1.5e-4);
+        Assert.assertEquals(5.2e-7, delta.getVelocity().getNorm(), 4.0e-9);
 
     }
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("compressed-data");
+        Utils.setDataRoot("testpef-data");
+    }
+
+    private void checkPV(PVCoordinates reference,
+                         PVCoordinates result, double positionThreshold,
+                         double velocityThreshold) {
+
+        Vector3D dP = result.getPosition().subtract(reference.getPosition());
+        Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
+        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
+        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
     }
 
 }

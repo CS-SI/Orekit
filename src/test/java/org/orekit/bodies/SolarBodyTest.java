@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.frames.TransformProvider;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.analytical.KeplerianPropagator;
@@ -55,13 +56,13 @@ public class SolarBodyTest {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
         final Frame eme2000 = FramesFactory.getEME2000();
-        Frame heliocentricFrame = new Frame(eme2000, null, "heliocentric/aligned EME2000", true) {
-            private static final long serialVersionUID = 4301068133487454052L;
-            protected void updateFrame(final AbsoluteDate date) throws OrekitException {
-                PVCoordinates pv = CelestialBodyFactory.getSun().getPVCoordinates(date, eme2000);
-                setTransform(new Transform(date, pv.negate()));
+        Frame heliocentricFrame = new Frame(eme2000, new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            public Transform getTransform(AbsoluteDate date)
+                throws OrekitException {
+                return new Transform(date, CelestialBodyFactory.getSun().getPVCoordinates(date, eme2000).negate());
             }
-        };
+        }, "heliocentric/aligned EME2000", true);
         checkPV(CelestialBodyFactory.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
         checkPV(CelestialBodyFactory.getMercury(), date, heliocentricFrame,
                 new Vector3D(0.3388866970713254, -0.16350851403469605, -0.12250815624343761),

@@ -16,8 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Precision;
@@ -42,7 +40,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Luc Maisonobe
  * @since 5.1
  */
-public class HelmertTransformation implements Serializable {
+public class HelmertTransformation implements TransformProvider {
 
     /** serializable UID. */
     private static final long serialVersionUID = -1900615992141291146L;
@@ -58,6 +56,12 @@ public class HelmertTransformation implements Serializable {
 
     /** Reference epoch of the transform. */
     private final AbsoluteDate epoch;
+
+    /** Cached date to avoid useless computation. */
+    private AbsoluteDate cachedDate;
+
+    /** Cached transform to avoid useless computation. */
+    private Transform cachedTransform;
 
     /** Build a transform from its primitive operations.
      * @param epoch reference epoch of the transform
@@ -111,24 +115,31 @@ public class HelmertTransformation implements Serializable {
      * @param date date at which the transform is desired
      * @return computed transform at specified date
      */
-    public Transform getTransform(final AbsoluteDate date) {
+    public synchronized Transform getTransform(final AbsoluteDate date) {
 
-        // compute parameters evolution since reference epoch
-        final double dt = date.durationFrom(epoch);
-        final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
+        if ((cachedDate == null) || !cachedDate.equals(date)) {
 
-        // build tranlation part
-        final Transform translationTransform = new Transform(date, cartesian.shiftedBy(dt));
+            // compute parameters evolution since reference epoch
+            final double dt = date.durationFrom(epoch);
+            final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
 
-        // build rotation part
-        final double angle = dR.getNorm();
-        final Transform rotationTransform =
-            new Transform(date,
-                          (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
-                          rotationRate);
+            // build translation part
+            final Transform translationTransform = new Transform(date, cartesian.shiftedBy(dt));
 
-        // combine both parts
-        return new Transform(date, translationTransform, rotationTransform);
+            // build rotation part
+            final double angle = dR.getNorm();
+            final Transform rotationTransform =
+                    new Transform(date,
+                                  (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
+                                                               rotationRate);
+
+            // combine both parts
+            cachedTransform = new Transform(date, translationTransform, rotationTransform);
+            cachedDate      = date;
+
+        }
+
+        return cachedTransform;
 
     }
 

@@ -24,54 +24,43 @@ import org.orekit.utils.Constants;
 
 
 /** International Terrestrial Reference Frame.
- * <p> Handles pole motion effects and depends on {@link TIRF2000Frame}, its
+ * <p> Handles pole motion effects and depends on {@link TIRF2000Provider}, its
  * parent frame.</p>
  * @author Luc Maisonobe
  */
-class ITRFFrame extends FactoryManagedFrame {
+class ITRFProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7686119047589233585L;
+    private static final long serialVersionUID = -8320047148885526349L;
 
     /** S' rate in radians per julian century.
      * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
      */
     private static final double S_PRIME_RATE = -47e-6 * Constants.ARC_SECONDS_TO_RADIANS;
 
+    /** TIRF provider. */
+    private final TIRF2000Provider tirf;
+
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Simple constructor, ignoring tidal effects.
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if nutation cannot be computed
-     */
-    protected ITRFFrame(final Predefined factoryKey)
-        throws OrekitException {
-        this(true, factoryKey);
-    }
+    /** Cached transform to avoid useless computation. */
+    private Transform cachedTransform;
 
     /** Simple constructor.
-     * @param ignoreTidalEffects if true, tidal effects are ignored
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if nutation cannot be computed
+     * @param tirf TIRF 2000 provider
      */
-    protected ITRFFrame(final boolean ignoreTidalEffects, final Predefined factoryKey)
-        throws OrekitException {
-
-        super(FramesFactory.getTIRF2000(ignoreTidalEffects), null, false, factoryKey);
-
-        // everything is in place, we can now synchronize the frame
-        updateFrame(AbsoluteDate.J2000_EPOCH);
-
+    public ITRFProvider(final TIRF2000Provider tirf) {
+        this.tirf = tirf;
     }
 
-    /** Update the frame to the given date.
+    /** Get the transform from TIRF 2000 at specified date.
      * <p>The update considers the pole motion from IERS data.</p>
      * @param date new value of the date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
@@ -80,7 +69,7 @@ class ITRFFrame extends FactoryManagedFrame {
             final double ttc =  tts / Constants.JULIAN_CENTURY;
 
             // pole correction parameters
-            final PoleCorrection pCorr = ((TIRF2000Frame) getParent()).getPoleCorrection(date);
+            final PoleCorrection pCorr = tirf.getPoleCorrection(date);
             final PoleCorrection nCorr = nutationCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
@@ -95,10 +84,13 @@ class ITRFFrame extends FactoryManagedFrame {
             final Rotation combined = wRot.revert();
 
             // set up the transform from parent TIRF
-            setTransform(new Transform(date, combined, Vector3D.ZERO));
+            cachedTransform = new Transform(date, combined, Vector3D.ZERO);
             cachedDate = date;
 
         }
+
+        return cachedTransform;
+
     }
 
     /** Compute nutation correction due to tidal gravity.

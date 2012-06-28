@@ -49,7 +49,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.GTODFrame;
+import org.orekit.frames.GTODProvider;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -73,7 +73,7 @@ import fr.cs.examples.KeyValueFileParser;
 public class Phasing {
 
     /** GTOD frame for mean solar time computation. */
-    private final GTODFrame gtod;
+    private final GTODProvider gtod;
 
     /** Gravity field. */
     private final PotentialCoefficientsProvider gravityField;
@@ -147,11 +147,12 @@ public class Phasing {
     }
 
     public Phasing() throws IOException, ParseException, OrekitException {
-        gtod         = FramesFactory.getGTOD(false);
+        Frame gtodFrame = FramesFactory.getGTOD(false);
+        gtod         = (GTODProvider) gtodFrame.getTransformProvider();
         gravityField = GravityFieldFactory.getPotentialProvider();
         earth        = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                             Constants.WGS84_EARTH_FLATTENING,
-                                            gtod);
+                                            gtodFrame);
     }
 
     private void run(final File input)

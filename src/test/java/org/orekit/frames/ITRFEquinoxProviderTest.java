@@ -27,7 +27,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 
-public class ITRFEquinoxFrameTest {
+public class ITRFEquinoxProviderTest {
 
     @Test
     public void testEquinoxVersusCIO() throws OrekitException {

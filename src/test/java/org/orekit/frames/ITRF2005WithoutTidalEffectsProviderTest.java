@@ -32,7 +32,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class ITRF2005WithoutTidalEffectsFrameTest {
+public class ITRF2005WithoutTidalEffectsProviderTest {
 
     @Test
     public void testRoughRotation() throws OrekitException {
@@ -84,7 +84,7 @@ public class ITRF2005WithoutTidalEffectsFrameTest {
     public void testRoughERA() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
-        TIRF2000Frame TIRF2000 = (TIRF2000Frame) FramesFactory.getTIRF2000();
+        TIRF2000Provider TIRF2000 = (TIRF2000Provider) FramesFactory.getTIRF2000().getTransformProvider();
 
         Assert.assertEquals(180, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 

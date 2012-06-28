@@ -28,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class DerivedITRSRealizationFrameTest {
+public class HelmertTransformationTest {
 
     @Test
     public void testHelmert20052008() throws OrekitException {

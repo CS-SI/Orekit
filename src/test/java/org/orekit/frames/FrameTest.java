@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
-import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -182,70 +181,6 @@ public class FrameTest {
         }
         Assert.assertEquals(0, maxA1 - minA1, 1.0e-12);
         Assert.assertEquals(FastMath.PI, maxA2 - minA2, 0.01);
-
-    }
-
-    @Test
-    public void testUpdateTransform() throws OrekitException {
-        Random random     = new Random(0x2f6769c23e53e96el);
-        Frame eme2000     = FramesFactory.getEME2000();
-        AbsoluteDate date = new AbsoluteDate();
-
-        Frame f1 = new Frame(eme2000, randomTransform(random), "f1");
-        Frame f2 = new Frame(f1     , randomTransform(random), "f2");
-        Frame f3 = new Frame(f2     , randomTransform(random), "f3");
-        Frame f4 = new Frame(f2     , randomTransform(random), "f4");
-        Frame f5 = new Frame(f4     , randomTransform(random), "f5");
-        Frame f6 = new Frame(eme2000, randomTransform(random), "f6");
-        Frame f7 = new Frame(f6     , randomTransform(random), "f7");
-        Frame f8 = new Frame(f6     , randomTransform(random), "f8");
-        Frame f9 = new Frame(f7     , randomTransform(random), "f9");
-
-        checkFrameAncestorException(f6, f8, f9, randomTransform(random), date);
-        checkFrameAncestorException(f6, f3, f5, randomTransform(random), date);
-        checkFrameAncestorException(eme2000, f5, f9, randomTransform(random), date);
-        checkFrameAncestorException(f3, eme2000, f6, randomTransform(random), date);
-
-        checkUpdateTransform(f1, f5, f9, date, random);
-        checkUpdateTransform(f7, f6, f9, date, random);
-        checkUpdateTransform(f6, eme2000, f7, date, random);
-
-        checkUpdateTransform(f6, f6.getParent(), f6, date, random);
-
-    }
-
-    private void checkFrameAncestorException(Frame f0, Frame f1, Frame f2,
-                                             Transform transform, AbsoluteDate date) {
-        doCheckFrameAncestorException(f0, f1, f2, transform, date);
-        doCheckFrameAncestorException(f0, f2, f1, transform, date);
-    }
-
-    private void doCheckFrameAncestorException(Frame f0, Frame f1, Frame f2,
-                                               Transform transform, AbsoluteDate date) {
-        try {
-            f0.updateTransform(f1, f2, transform, date);
-            Assert.fail("Should raise a FrameAncestorException");
-        } catch(FrameAncestorException expected){
-            // expected behavior
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught");
-        }
-    }
-
-    private void checkUpdateTransform(Frame f0, Frame f1, Frame f2,
-                                      AbsoluteDate date, Random random)
-      throws OrekitException {
-        Transform f1ToF2 = randomTransform(random);
-
-        f0.updateTransform(f1, f2, f1ToF2, date);
-        Transform obtained12 = f1.getTransformTo(f2, date);
-        checkNoTransform(new Transform(date, f1ToF2, obtained12.getInverse()), random);
-
-        f0.updateTransform(f2, f1, f1ToF2.getInverse(), date);
-        Transform obtained21 = f2.getTransformTo(f1, date);
-        checkNoTransform(new Transform(date, f1ToF2.getInverse(), obtained21.getInverse()), random);
-
-        checkNoTransform(new Transform(date, obtained12, obtained21), random);
 
     }
 

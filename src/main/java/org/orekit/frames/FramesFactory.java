@@ -439,7 +439,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new EME2000Frame(Predefined.EME2000);
+                frame = new FactoryManagedFrame(getGCRF(), new EME2000Provider(), true, Predefined.EME2000);
                 FRAMES.put(Predefined.EME2000, frame);
             }
 
@@ -512,7 +512,9 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new ITRFFrame(ignoreTidalEffects, factoryKey);
+                final Frame tirfFrame = getTIRF2000(ignoreTidalEffects);
+                final TIRF2000Provider tirfProvider = (TIRF2000Provider) tirfFrame.getTransformProvider();
+                frame = new FactoryManagedFrame(tirfFrame, new ITRFProvider(tirfProvider), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -705,7 +707,7 @@ public class FramesFactory implements Serializable {
                 final HelmertTransformation helmertTransformation =
                     new HelmertTransformation(new AbsoluteDate(refYear, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
                                               t1, t2, t3, r1, r2, r3, t1Dot, t2Dot, t3Dot, r1Dot, r2Dot, r3Dot);
-                frame = new DerivedITRSRealizationFrame(parent, helmertTransformation, factoryKey);
+                frame = new FactoryManagedFrame(parent, helmertTransformation, false, factoryKey);
 
                 FRAMES.put(factoryKey, frame);
 
@@ -742,7 +744,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new TIRF2000Frame(ignoreTidalEffects, factoryKey);
+                frame = new FactoryManagedFrame(getCIRF2000(), new TIRF2000Provider(ignoreTidalEffects), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -765,7 +767,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new CIRF2000Frame(factoryKey);
+                frame = new FactoryManagedFrame(getGCRF(), new CIRF2000Provider(), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -788,7 +790,8 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new VEISFrame(factoryKey);
+                frame = new FactoryManagedFrame(FramesFactory.getGTOD(false), new VEISFrame(),
+                                                true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -810,7 +813,9 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new ITRFEquinoxFrame(factoryKey);
+                TODProvider tod = (TODProvider) getTOD(true).getTransformProvider();
+                frame = new FactoryManagedFrame(getGTOD(true), new ITRFEquinoxProvider(tod),
+                                                false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -830,18 +835,20 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static GTODFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
+    public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey = applyEOPCorr ?
                                           Predefined.GTOD_WITH_EOP_CORRECTIONS :
                                           Predefined.GTOD_WITHOUT_EOP_CORRECTIONS;
-            GTODFrame frame = (GTODFrame) FRAMES.get(factoryKey);
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new GTODFrame(applyEOPCorr, factoryKey);
+                final FactoryManagedFrame todFrame = getTOD(applyEOPCorr);
+                final TODProvider todProvider = (TODProvider) todFrame.getTransformProvider();
+                frame = new FactoryManagedFrame(todFrame, new GTODProvider(todProvider), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -878,18 +885,19 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public static TODFrame getTOD(final boolean applyEOPCorr) throws OrekitException {
+    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey = applyEOPCorr ?
                                           Predefined.TOD_WITH_EOP_CORRECTIONS :
                                           Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
-            TODFrame frame = (TODFrame) FRAMES.get(factoryKey);
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new TODFrame(applyEOPCorr, factoryKey);
+                frame = new FactoryManagedFrame(getMOD(applyEOPCorr), new TODProvider(applyEOPCorr),
+                                                true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -920,7 +928,8 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new MODFrame(applyEOPCorr, factoryKey);
+                frame = new FactoryManagedFrame(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
+                                                new MODProvider(), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -966,7 +975,9 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new TEMEFrame(factoryKey);
+                final FactoryManagedFrame todFrame = getTOD(false);
+                final TODProvider todProvider = (TODProvider) todFrame.getTransformProvider();
+                frame = new FactoryManagedFrame(todFrame, new TEMEProvider(todProvider), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

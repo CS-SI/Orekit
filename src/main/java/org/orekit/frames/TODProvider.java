@@ -27,7 +27,7 @@ import org.orekit.utils.Constants;
 
 /** True Equator, Mean Equinox of Date Frame.
  * <p>This frame handles nutation effects according to the IAU-80 theory.</p>
- * <p>Its parent frame is the {@link MODFrame}.</p>
+ * <p>Its parent frame is the {@link MODProvider}.</p>
  * <p>It is sometimes called True of Date (ToD) frame.<p>
  * <p>This implementation includes a caching/interpolation feature to
  * tremendously improve efficiency. The IAU-80 theory involves lots of terms
@@ -41,10 +41,10 @@ import org.orekit.utils.Constants;
  * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  * @author Pascal Parraud
  */
-public class TODFrame extends FactoryManagedFrame {
+class TODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5889997098421530065L;
+    private static final long serialVersionUID = 7013467596084047566L;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -258,27 +258,18 @@ public class TODFrame extends FactoryManagedFrame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
+    /** Cached transform to avoid useless computation. */
+    private Transform cachedTransform;
+
     /** EOP history. */
     private final EOP1980History eopHistory;
 
-    /** Simple constructor, applying EOP corrections (here, nutation).
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if EOP parameters cannot be read
-     */
-    protected TODFrame(final Predefined factoryKey)
-        throws OrekitException {
-        this(true, factoryKey);
-    }
-
     /** Simple constructor.
      * @param applyEOPCorr if true, EOP correction is applied (here, nutation)
-     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected TODFrame(final boolean applyEOPCorr, final Predefined factoryKey)
+    public TODProvider(final boolean applyEOPCorr)
         throws OrekitException {
-
-        super(FramesFactory.getMOD(applyEOPCorr), null , true, factoryKey);
 
         // set up an interpolation model on 12 points with a 1/2 day step
         // this leads to an interpolation error of about 1.7e-10 arcseconds
@@ -292,9 +283,6 @@ public class TODFrame extends FactoryManagedFrame {
         depsNeville = new double[n];
 
         eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
-
-        // everything is in place, we can now synchronize the frame
-        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 
@@ -319,13 +307,13 @@ public class TODFrame extends FactoryManagedFrame {
                eopHistory.getPoleCorrection(date);
     }
 
-    /** Update the frame to the given date.
+    /** Get the transform from Mean Of Date at specified date.
      * <p>The update considers the nutation effects from IERS data.</p>
      * @param date new value of the date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
@@ -358,11 +346,12 @@ public class TODFrame extends FactoryManagedFrame {
             final Rotation precession = r1.applyTo(r2.applyTo(r3));
 
             // set up the transform from parent MOD
-            setTransform(new Transform(date, precession));
-
+            cachedTransform = new Transform(date, precession);
             cachedDate = date;
 
         }
+
+        return cachedTransform;
 
     }
 

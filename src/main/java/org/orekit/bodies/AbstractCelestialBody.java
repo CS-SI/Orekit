@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -41,7 +42,7 @@ import org.orekit.utils.PVCoordinates;
 public abstract class AbstractCelestialBody implements CelestialBody {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 6769512376971866660L;
+    private static final long serialVersionUID = -8225707171826328799L;
 
     /** Name of the body. */
     private final String name;
@@ -51,9 +52,6 @@ public abstract class AbstractCelestialBody implements CelestialBody {
 
     /** IAU pole. */
     private final IAUPole iauPole;
-
-    /** Frame in which celestial body coordinates are defined. */
-    private final Frame definingFrame;
 
     /** Inertially oriented, body-centered frame. */
     private final Frame inertialFrame;
@@ -75,9 +73,10 @@ public abstract class AbstractCelestialBody implements CelestialBody {
         this.name          = name;
         this.gm            = gm;
         this.iauPole       = iauPole;
-        this.definingFrame = definingFrame;
-        this.inertialFrame = new InertiallyOrientedFrame(inertialFrameName);
-        this.bodyFrame     = new BodyOrientedFrame(bodyFrameName);
+        this.inertialFrame =
+                new Frame(definingFrame, new InertiallyOriented(definingFrame), inertialFrameName, true);
+        this.bodyFrame     =
+                new Frame(inertialFrame, new BodyOriented(), bodyFrameName, false);
     }
 
     /** {@inheritDoc} */
@@ -111,24 +110,27 @@ public abstract class AbstractCelestialBody implements CelestialBody {
         throws OrekitException;
 
 
-    /** Inertially oriented body centered frame. */
-    private class InertiallyOrientedFrame extends Frame {
+    /** Provider for inertially oriented body centered frame transform. */
+    private class InertiallyOriented implements TransformProvider {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 3361119898885468867L;
+        private static final long serialVersionUID = -8849993808761896559L;
 
-        /** Build a new instance.
-         * @param name of the frame
+        /** Frame in which celestial body coordinates are defined. */
+        private final Frame definingFrame;
+
+        /** Simple constructor.
+         * @param definingFrame frame in which celestial body coordinates are defined
          */
-        public InertiallyOrientedFrame(final String name) {
-            super(definingFrame, null, name, true);
+        public InertiallyOriented(final Frame definingFrame) {
+            this.definingFrame = definingFrame;
         }
 
         /** {@inheritDoc} */
-        protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
             // compute translation from parent frame to self
-            final PVCoordinates pv = getPVCoordinates(date, getParent());
+            final PVCoordinates pv = getPVCoordinates(date, definingFrame);
             final Transform translation = new Transform(date, pv.negate());
 
             // compute rotation from EME2000 frame to self,
@@ -152,32 +154,26 @@ public abstract class AbstractCelestialBody implements CelestialBody {
             final Transform rotation = new Transform(date, r2000.applyTo(t.getRotation()));
 
             // update transform from parent to self
-            setTransform(new Transform(date, translation, rotation));
+            return new Transform(date, translation, rotation);
 
         }
 
     }
 
-    /** Body oriented body centered frame. */
-    private class BodyOrientedFrame extends Frame {
+    /** Provider for body oriented body centered frame transform. */
+    private class BodyOriented implements TransformProvider {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 4254134424697573764L;
-
-        /** Build a new instance.
-         * @param name of the frame
-         */
-        public BodyOrientedFrame(final String name) {
-            super(inertialFrame, null, name, true);
-        }
+        private static final long serialVersionUID = -1859795611761959145L;
 
         /** {@inheritDoc} */
-        protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
             final double dt = 10.0;
             final double w0 = iauPole.getPrimeMeridianAngle(date);
             final double w1 = iauPole.getPrimeMeridianAngle(date.shiftedBy(dt));
-            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, -w0),
-                                       new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K)));
+            return new Transform(date,
+                                 new Rotation(Vector3D.PLUS_K, -w0),
+                                 new Vector3D((w1 - w0) / dt, Vector3D.PLUS_K));
         }
 
     }

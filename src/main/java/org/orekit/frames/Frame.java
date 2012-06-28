@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.WeakHashMap;
 
-import org.orekit.errors.FrameAncestorException;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -61,8 +60,8 @@ public class Frame implements Serializable {
     /** Parent frame (only the root frame doesn't have a parent). */
     private final Frame parent;
 
-    /** Transform from parent frame to instance. */
-    private Transform transform;
+    /** Provider for transform from parent frame to instance. */
+    private final TransformProvider transformProvider;
 
     /** Map of deepest frames commons with other frames. */
     private final transient WeakHashMap<Frame, Frame> commons;
@@ -80,7 +79,7 @@ public class Frame implements Serializable {
      */
     private Frame(final String name, final boolean pseudoInertial) {
         parent    = null;
-        transform = Transform.IDENTITY;
+        transformProvider = new FixedTransformProvider(Transform.IDENTITY);
         commons   = new WeakHashMap<Frame, Frame>();
         this.name = name;
         this.pseudoInertial = pseudoInertial;
@@ -98,6 +97,20 @@ public class Frame implements Serializable {
     public Frame(final Frame parent, final Transform transform, final String name)
         throws IllegalArgumentException {
         this(parent, transform, name, false);
+    }
+
+    /** Build a non-inertial frame from its transform with respect to its parent.
+     * <p>calling this constructor is equivalent to call
+     * <code>{link {@link #Frame(Frame, Transform, String, boolean)
+     * Frame(parent, transform, name, false)}</code>.</p>
+     * @param parent parent frame (must be non-null)
+     * @param transformProvider provider for transform from parent frame to instance
+     * @param name name of the frame
+     * @exception IllegalArgumentException if the parent frame is null
+     */
+    public Frame(final Frame parent, final TransformProvider transformProvider, final String name)
+        throws IllegalArgumentException {
+        this(parent, transformProvider, name, false);
     }
 
     /** Build a frame from its transform with respect to its parent.
@@ -118,16 +131,37 @@ public class Frame implements Serializable {
     public Frame(final Frame parent, final Transform transform, final String name,
                  final boolean pseudoInertial)
         throws IllegalArgumentException {
+        this(parent, new FixedTransformProvider(transform), name, pseudoInertial);
+    }
+
+    /** Build a frame from its transform with respect to its parent.
+     * <p>The convention for the transform is that it is from parent
+     * frame to instance. This means that the two following frames
+     * are similar:</p>
+     * <pre>
+     * Frame frame1 = new Frame(FramesFactory.getGCRF(), new Transform(t1, t2));
+     * Frame frame2 = new Frame(new Frame(FramesFactory.getGCRF(), t1), t2);
+     * </pre>
+     * @param parent parent frame (must be non-null)
+     * @param transformProvider provider for transform from parent frame to instance
+     * @param name name of the frame
+     * @param pseudoInertial true if frame is considered pseudo-inertial
+     * (i.e. suitable for propagating orbit)
+     * @exception IllegalArgumentException if the parent frame is null
+     */
+    public Frame(final Frame parent, final TransformProvider transformProvider, final String name,
+                 final boolean pseudoInertial)
+        throws IllegalArgumentException {
 
         if (parent == null) {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.NULL_PARENT_FOR_FRAME,
                                                                  name);
         }
-        this.name          = name;
-        this.pseudoInertial = pseudoInertial;
-        this.parent        = parent;
-        this.transform     = transform;
-        commons            = new WeakHashMap<Frame, Frame>();
+        this.name              = name;
+        this.pseudoInertial    = pseudoInertial;
+        this.parent            = parent;
+        this.transformProvider = transformProvider;
+        this.commons           = new WeakHashMap<Frame, Frame>();
 
     }
 
@@ -180,13 +214,6 @@ public class Frame implements Serializable {
         return parent;
     }
 
-    /** Update the transform from the parent frame to the instance.
-     * @param transform new transform from parent frame to instance
-     */
-    public void setTransform(final Transform transform) {
-        this.transform = transform;
-    }
-
     /** Get the transform from the instance to another frame.
      * @param destination destination frame to which we want to transform vectors
      * @param date the date (can be null if it is sure than no date dependent frame is used)
@@ -207,17 +234,15 @@ public class Frame implements Serializable {
         // transform from common to instance
         Transform commonToInstance = Transform.IDENTITY;
         for (Frame frame = this; frame != common; frame = frame.parent) {
-            frame.updateFrame(date);
             commonToInstance =
-                new Transform(date, frame.transform, commonToInstance);
+                new Transform(date, frame.transformProvider.getTransform(date), commonToInstance);
         }
 
         // transform from destination up to common
         Transform commonToDestination = Transform.IDENTITY;
         for (Frame frame = destination; frame != common; frame = frame.parent) {
-            frame.updateFrame(date);
             commonToDestination =
-                new Transform(date, frame.transform, commonToDestination);
+                new Transform(date, frame.transformProvider.getTransform(date), commonToDestination);
         }
 
         // transform from instance to destination via common
@@ -225,100 +250,11 @@ public class Frame implements Serializable {
 
     }
 
-    /** Update the frame to the given date.
-     * <p>This method is called each time {@link #getTransformTo(Frame, AbsoluteDate)}
-     * is called. The base implementation in the {@link Frame} class does nothing.
-     * The proper way to build a date-dependent frame is to extend the {@link Frame}
-     * class and implement this method which will have to call {@link
-     * #setTransform(Transform)} with the new transform </p>
-     * @param date new value of the  date
-     * @exception OrekitException if some frame specific error occurs
+    /** Get the provider for transform from parent frame to instance.
+     * @return provider for transform from parent frame to instance
      */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
-        // do nothing in the base implementation
-    }
-
-    /** Update the transform from parent frame implicitly according to two other
-     * frames.
-
-     * <p>This method allows to control the relative position of two parts
-     * of the global frames tree using any two frames in each part as
-     * control handles. Consider the following simplified frames tree as an
-     * example:</p>
-     * <pre>
-     *              GCRF
-     *                |
-     *  --------------------------------
-     *  |             |                |
-     * Sun        satellite          Earth
-     *                |                |
-     *        on-board antenna   ground station
-     *                                 |
-     *                          tracking antenna
-     * </pre>
-     * <p>Tracking measurements really correspond to the link between the ground
-     * and on-board antennas. This is tightly linked to the transform between
-     * these two frames, however neither frame is the direct parent frame of the
-     * other one: the path involves four intermediate frames. When we process a
-     * measurement, what we really want to update is the transform that defines
-     * the satellite frame with respect to its parent GCRF frame. This
-     * is the purpose of this method. This update is done by the following call,
-     * where <code>measurementTransform</code> represents the measurement as a
-     * simple translation transform between the two antenna frames:</p>
-     * <pre><code>
-     * satellite.updateTransform(onBoardAntenna, trackingAntenna,
-     *                           measurementTransform, date);
-     * </code></pre>
-     * <p>One way to represent the behavior of the method is to consider the
-     * sub-tree rooted at the instance on one hand (satellite and on-board antenna
-     * in the example above) and the tree containing all the other frames on the
-     * other hand (GCRF, Sun, Earth, ground station, tracking antenna).
-     * Both tree are considered as solid sets linked by a flexible spring, which is
-     * the transform we want to update. The method stretches the spring to make
-     * sure the transform between the two specified frames (one in each tree part)
-     * matches the specified transform.</p>
-     * @param f1 first control frame (may be the instance itself)
-     * @param f2 second control frame (may be the instance itself)
-     * @param f1Tof2 desired transform from first to second control frame
-     * @param date date of the transform
-     * @exception OrekitException if the path between the two control frames does
-     * not cross the link between instance and its parent frame or if some
-     * intermediate transform fails
-     * @see #setTransform(Transform)
-     */
-    public void updateTransform(final Frame f1, final Frame f2, final Transform f1Tof2,
-                                final AbsoluteDate date) throws OrekitException {
-
-        Frame fA = f1;
-        Frame fB = f2;
-        Transform fAtoB = f1Tof2;
-
-        // make sure f1 is not a child of the instance
-        if (fA.isChildOf(this) || (fA == this)) {
-
-            if (fB.isChildOf(this) || (fB == this)) {
-                throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_BOTH_FRAMES,
-                                                 getName(), fA.getName(), fB.getName());
-            }
-
-            // swap f1 and f2 to make sure the child is f2
-            final Frame tmp = fA;
-            fA = fB;
-            fB = tmp;
-            fAtoB = fAtoB.getInverse();
-
-        } else  if (!(fB.isChildOf(this) || (fB == this))) {
-            throw new FrameAncestorException(OrekitMessages.FRAME_ANCESTOR_OF_NEITHER_FRAME,
-                                             getName(), fA.getName(), fB.getName());
-        }
-
-        // rebuild the transform by traveling from parent to self
-        // WITHOUT using the existing this.transform that will be updated
-        final Transform parentTofA = parent.getTransformTo(fA, date);
-        final Transform fBtoSelf   = fB.getTransformTo(this, date);
-        final Transform fAtoSelf   = new Transform(date, fAtoB, fBtoSelf);
-        setTransform(new Transform(date, parentTofA, fAtoSelf));
-
+    public TransformProvider getTransformProvider() {
+        return transformProvider;
     }
 
     /** Find the deepest common ancestor of two frames in the frames tree.

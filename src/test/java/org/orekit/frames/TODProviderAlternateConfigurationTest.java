@@ -33,31 +33,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class TODFrameTest {
-
-    @Test
-    public void testEQESmallDiscontinuity() throws OrekitException {
-        AbsoluteDate switchDate = new AbsoluteDate(1997, 2, 27, TimeScalesFactory.getUTC());
-        TODFrame tod = (TODFrame) FramesFactory.getTOD(false);
-        double currentEQE = Double.NaN;
-        double h = 0.01;
-        for (double dt = -1.0 - h / 2; dt <= 1.0 + h /2; dt += h) {
-            AbsoluteDate d = switchDate.shiftedBy(dt);
-            double previousEQE = currentEQE;
-            currentEQE = tod.getEquationOfEquinoxes(d);
-            if (!Double.isNaN(previousEQE)) {
-                double deltaMicroAS = 3.6e9 * FastMath.toDegrees(currentEQE - previousEQE);
-                if ((dt - h) * dt > 0) {
-                    // away from switch date, equation of equinox should decrease at
-                    // about 1.06 micro arcsecond per second
-                    Assert.assertEquals(-1.06 * h, deltaMicroAS, 0.0003 * h);
-                } else {
-                    // around switch date, there should be a -1.63 micro arcsecond discontinuity
-                    Assert.assertEquals(-1.63, deltaMicroAS, 0.01);
-                }
-            }
-        }
-    }
+public class TODProviderAlternateConfigurationTest {
 
     @Test
     public void testAASReferenceLEO() throws OrekitException {
@@ -86,10 +62,10 @@ public class TODFrameTest {
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.7e-3);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.3, 1.6e-3);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 2.9e-7);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.91, 7.4e-4);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.6e-3);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.5, 1.5e-3);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 6.0e-7);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.90615, 7.4e-4);
 
     }
 
@@ -134,10 +110,8 @@ public class TODFrameTest {
 
         final boolean withNutationCorrection = true;
 
-        TODFrame interpolatingFrame =
-            new TODFrame(withNutationCorrection, Predefined.TOD_WITH_EOP_CORRECTIONS);
-        NonInterpolatingTODFrame nonInterpolatingFrame =
-            new NonInterpolatingTODFrame(withNutationCorrection, Predefined.TOD_WITH_EOP_CORRECTIONS);
+        TransformProvider interpolating = new TODProvider(withNutationCorrection);
+        TransformProvider nonInterpolating = new NonInterpolatingTODProvider(withNutationCorrection);
 
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2002, 11, 11, 0, 0, 0.0, TimeScalesFactory.getTAI());
@@ -145,7 +119,9 @@ public class TODFrameTest {
         double maxError = 0.0;
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
             final Transform transform =
-                interpolatingFrame.getTransformTo(nonInterpolatingFrame, date);
+                    new Transform(date,
+                                  interpolating.getTransform(date),
+                                  nonInterpolating.getTransform(date).getInverse());
             final double error = transform.getRotation().getAngle() * 648000 / FastMath.PI;
             maxError = FastMath.max(maxError, error);
         }
@@ -156,15 +132,14 @@ public class TODFrameTest {
 
     @Before
     public void setUp() {
-        Utils.setDataRoot("compressed-data");
+        Utils.setDataRoot("testpef-data");
     }
 
-    private class NonInterpolatingTODFrame extends TODFrame {
-        private static final long serialVersionUID = 419603722255134316L;
-        public NonInterpolatingTODFrame(final boolean ignoreNutationCorrection,
-                                         final Predefined factoryKey)
+    private class NonInterpolatingTODProvider extends TODProvider {
+        private static final long serialVersionUID = -7116622345154042273L;
+        public NonInterpolatingTODProvider(final boolean ignoreNutationCorrection)
             throws OrekitException {
-            super(ignoreNutationCorrection, factoryKey);
+            super(ignoreNutationCorrection);
         }
         public double[] getInterpolatedNutationElements(final double t) {
             return computeNutationElements(t);

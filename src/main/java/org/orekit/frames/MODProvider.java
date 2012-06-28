@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -28,10 +27,10 @@ import org.orekit.utils.Constants;
  * <p>It is sometimes called Mean of Date (MoD) frame.<p>
  * @author Pascal Parraud
  */
-class MODFrame extends FactoryManagedFrame {
+class MODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8560514103170944033L;
+    private static final long serialVersionUID = 8795437689936129851L;
 
     /** 1st coefficient for ZETA precession angle. */
     private static final double ZETA_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
@@ -57,36 +56,19 @@ class MODFrame extends FactoryManagedFrame {
     /** Cached date to avoid useless computation. */
     private AbsoluteDate cachedDate;
 
-    /** Simple constructor, applying EOP corrections (here, EME2000/GCRF bias compensation).
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if EOP parameters cannot be read
-     */
-    protected MODFrame(final Predefined factoryKey)
-        throws OrekitException {
-        this(true, factoryKey);
-    }
+    /** Cached transform to avoid useless computation. */
+    private Transform cachedTransform;
 
     /** Simple constructor.
-     * @param applyEOPCorr if true, EOP correction is applied (here, EME2000/GCRF bias compensation)
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected MODFrame(final boolean applyEOPCorr, final Predefined factoryKey)
-        throws OrekitException {
-
-        super(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
-              null , true, factoryKey);
-
-        // everything is in place, we can now synchronize the frame
-        updateFrame(AbsoluteDate.J2000_EPOCH);
-
+    public MODProvider() {
     }
 
-    /** Update the frame to the given date.
+    /** Get the transfrom from parent frame.
      * <p>The update considers the precession effects.</p>
      * @param date new value of the date
      */
-    protected void updateFrame(final AbsoluteDate date) {
+    public synchronized Transform getTransform(final AbsoluteDate date) {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
@@ -112,10 +94,12 @@ class MODFrame extends FactoryManagedFrame {
             final Rotation precession = r1.applyTo(r2.applyTo(r3));
 
             // set up the transform from parent GCRF
-            setTransform(new Transform(date, precession));
-
+            cachedTransform = new Transform(date, precession);
             cachedDate = date;
+
         }
+
+        return cachedTransform;
 
     }
 

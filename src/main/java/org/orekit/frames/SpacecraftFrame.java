@@ -35,15 +35,12 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
     /** Propagator to use. */
     private final Propagator propagator;
 
-    /** Cached date to avoid useless computation. */
-    private transient AbsoluteDate cachedDate;
-
     /** Simple constructor.
      * @param propagator orbit/attitude propagator computing spacecraft state evolution
      * @param name name of the frame
      */
     public SpacecraftFrame(final Propagator propagator, final String name) {
-        super(propagator.getFrame(), null, name, false);
+        super(propagator.getFrame(), new LocalProvider(propagator), name, false);
         this.propagator = propagator;
     }
 
@@ -65,13 +62,37 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
         return propagator.getPVCoordinates(date, frame);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
-            setTransform(propagator.propagate(date).toTransform());
-            cachedDate = date;
+    /** Local provider for transforms. */
+    private static class LocalProvider implements TransformProvider {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 386815086579675823L;
+
+        /** Propagator to use. */
+        private final Propagator propagator;
+
+        /** Cached date to avoid useless computation. */
+        private transient AbsoluteDate cachedDate;
+
+        /** Cached transform to avoid useless computation. */
+        private transient Transform cachedTransform;
+
+        /** Simple constructor.
+         * @param propagator orbit/attitude propagator computing spacecraft state evolution
+         */
+        public LocalProvider(final Propagator propagator) {
+            this.propagator = propagator;
         }
+
+        /** {@inheritDoc} */
+        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+            if ((cachedDate == null) || !cachedDate.equals(date)) {
+                cachedTransform = propagator.propagate(date).toTransform();
+                cachedDate = date;
+            }
+            return cachedTransform;
+        }
+
     }
 
 }

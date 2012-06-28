@@ -26,11 +26,11 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 /** Veis 1950 Frame.
- * <p>Its parent frame is the {@link GTODFrame} without EOP correction application.<p>
+ * <p>Its parent frame is the {@link GTODProvider} without EOP correction application.<p>
  * <p>This frame is mainly provided for consistency with legacy softwares.</p>
  * @author Pascal Parraud
  */
-class VEISFrame extends FactoryManagedFrame {
+class VEISFrame implements TransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 6918291423091809232L;
@@ -48,33 +48,28 @@ class VEISFrame extends FactoryManagedFrame {
     /** Veis sidereal time derivative in rad/s. */
     private static final double VSTD = 7.292115146705209e-5;
 
-    /** Cached date to avoid useless calculus. */
-    private transient AbsoluteDate cachedDate;
+    /** Cached date to avoid useless computation. */
+    private AbsoluteDate cachedDate;
+
+    /** Cached transform to avoid useless computation. */
+    private Transform cachedTransform;
 
     /** EOP history. */
     private final EOP1980History eopHistory;
 
     /** Constructor for the singleton.
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if data embedded in the library cannot be read
+     * @exception OrekitException if EOP data cannot be read
      */
-    public VEISFrame(final Predefined factoryKey)
+    public VEISFrame()
         throws OrekitException {
-
-        super(FramesFactory.getGTOD(false), null, true, factoryKey);
-
         eopHistory = FramesFactory.getEOP1980History();
-
-        // frame synchronization
-        updateFrame(AbsoluteDate.J2000_EPOCH);
-
     }
 
-    /** Update the frame to the given date.
+    /** Get the transform from GTOD at specified date.
      * @param date new value of the date
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
@@ -94,10 +89,11 @@ class VEISFrame extends FactoryManagedFrame {
             final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);
 
             // set up the transform from parent GTOD
-            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, vst), rotationRate));
-
+            cachedTransform = new Transform(date, new Rotation(Vector3D.PLUS_K, vst), rotationRate);
             cachedDate = date;
         }
+
+        return cachedTransform;
 
     }
 

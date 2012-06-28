@@ -31,7 +31,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
-public class TEMEFrameTest {
+public class TEMEProviderTest {
 
     @Test
     public void testValladoTEMEofDate() throws OrekitException {

@@ -35,6 +35,23 @@
 
     package frames #DDEBD8
 
+    class Frame {
+      +String getName()
+      +boolean isPseudoInertial()
+      +Frame getParent()
+      +Transform getTransformTo(Frame destination, AbsoluteDate date)
+      +Frame getFrozenFrame(Frame reference, AbsoluteDate freezingDate, String frozenName)
+    }
+
+    class EME2000Provider
+    class ITRFProvider
+    class MODProvider
+    class "...Provider" as DummyProvider
+
+    interface TransformProvider {
+      +Transform getTransform(AbsoluteDate date)
+    }
+
     class Transform {
       +Transform IDENTITY
       +Transform getInverse()
@@ -50,67 +67,51 @@
       +Vector3D getRotationRate()
     }
 
-    class Frame {
-      +String getName()
-      +boolean isPseudoInertial()
-      +Frame getParent()
-      +Transform getTransformTo(Frame destination, AbsoluteDate date)
-      +Frame getFrozenFrame(Frame reference, AbsoluteDate freezingDate, String frozenName)
-      #void updateFrame(AbsoluteDate date)
-      #Frame getRoot()
+    class UpdatableFrame {
+      +void setTransform(Transform)
+      +void updateFrame(...)
     }
-    note bottom
-      the implementations shown here are only
-      a subset of available frames
-    end note
 
-    class FramesFactory {
-      +Frame getGCRF()
-      +Frame getICRF()
-      +FactoryManagedFrame getEME2000()
-      +FactoryManagedFrame get...()
-      +Frame getFrame(Predefined factoryKey)
+    class TopocentricFrame
+    class LocalOrbitalFrame
+    class "...Frame" as DummyFrame
+    class FactoryManagedFrame {
+      +Predefined getFactoryKey()
     }
 
     enum Predefined {
       +GCRF
       +ICRF
       +EME2000
-      +ITRF_2008_WITHOUT_TIDAL_EFFECTS
-      +ITRF_2008_WITH_TIDAL_EFFECTS
-      +ITRF_2005_WITHOUT_TIDAL_EFFECTS
-      +ITRF_...
-      +ITRF_EQUINOX
-      +TIRF_2000_WITHOUT_TIDAL_EFFECTS
-      +TIRF_2000_WITH_TIDAL_EFFECTS
-      +CIRF_2000
-      +VEIS_1950
-      +GTOD_WITHOUT_EOP_CORRECTIONS
-      +GTOD_WITH_EOP_CORRECTIONS
-      +TOD_WITHOUT_EOP_CORRECTIONS
-      +TOD_WITH_EOP_CORRECTIONS
-      +MOD_WITHOUT_EOP_CORRECTIONS
-      +MOD_WITH_EOP_CORRECTIONS
-      +TEME
+      +...
     }
 
-    class EME2000Frame
-    class ITRFFrame
-    class MODFrame
-    class LOFFrame
-    class TopocentricFrame
+    class FramesFactory {
+      +Frame getFrame(Predefined factoryKey)
+      +Frame getGCRF()
+      +Frame getICRF()
+      +FactoryManagedFrame getEME2000()
+      +FactoryManagedFrame get...()
+    }
 
-    FactoryManagedFrame -down-|>   Frame
-    FactoryManagedFrame *-down->   Predefined
-    FramesFactory       *-right->  FactoryManagedFrame
-    Frame               <|--       EME2000Frame
-    Frame               <|--       ITRFFrame
-    Frame               <|--       MODFrame
-    Frame               <|--       LOFFrame
+    TransformProvider --> Transform : creates
+    TransformProvider "1" <--* Frame : transform from parent
+    Frame               -right->        Transform
+    Frame               <|--       UpdatableFrame
     Frame               <|--       TopocentricFrame
-    FramesFactory       *-->       Frame     : predefined frames
-    Frame               o-->       Frame     : parent
-    Frame               o-up->     Transform : transform from parent
+    Frame               <|--       LocalOrbitalFrame
+    Frame               <|--       DummyFrame
+    Frame               <|--       FactoryManagedFrame
+    FactoryManagedFrame <--*       FramesFactory
+    Predefined <-left- FramesFactory
+'    FramesFactory -right-> Predefined
+
+    FixedTransformProvider --|> TransformProvider
+    FixedTransformProvider *--> "1" Transform       
+    EME2000Provider        --|> TransformProvider
+    ITRFProvider           --|> TransformProvider
+    MODProvider            --|> TransformProvider
+    DummyProvider          --|> TransformProvider
 
   end package
 

@@ -28,13 +28,13 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
-public class CIRF2000FrameTest {
+public class CIRF2000ProviderTest {
 
     @Test
     public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
 
-        CIRF2000Frame interpolatingFrame = new CIRF2000Frame(Predefined.CIRF_2000);
-        CIRF2000Frame nonInterpolatingFrame = new NonInterpolatingCIRF2000Frame(Predefined.CIRF_2000);
+        CIRF2000Provider interpolating = new CIRF2000Provider();
+        CIRF2000Provider nonInterpolating = new NonInterpolatingCIRF2000Provider();
 
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2002, 10,  3, TimeScalesFactory.getTAI());
@@ -42,7 +42,9 @@ public class CIRF2000FrameTest {
         double maxError = 0.0;
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(900)) {
             final Transform transform =
-                interpolatingFrame.getTransformTo(nonInterpolatingFrame, date);
+                new Transform(date,
+                              interpolating.getTransform(date),
+                              nonInterpolating.getTransform(date).getInverse());
             final double error = transform.getRotation().getAngle() * 648000 / FastMath.PI;
             maxError = FastMath.max(maxError, error);
         }
@@ -51,11 +53,9 @@ public class CIRF2000FrameTest {
 
     }
 
-    private class NonInterpolatingCIRF2000Frame extends CIRF2000Frame {
-        private static final long serialVersionUID = -8187118174897725897L;
-        public NonInterpolatingCIRF2000Frame(final Predefined factoryKey)
-            throws OrekitException {
-            super(factoryKey);
+    private class NonInterpolatingCIRF2000Provider extends CIRF2000Provider {
+        private static final long serialVersionUID = 1L;
+        public NonInterpolatingCIRF2000Provider() throws OrekitException {
         }
         protected void setInterpolatedPoleCoordinates(final double t) {
             computePoleCoordinates(t);

@@ -39,9 +39,9 @@ public class FactoryManagedFrame extends Frame {
      * (i.e. suitable for propagating orbit)
      * @param factoryKey key of the frame within the factory
      */
-    protected FactoryManagedFrame(final Frame parent, final Transform transform,
-                                  final boolean pseudoInertial, final Predefined factoryKey) {
-        super(parent, transform, factoryKey.getName(), pseudoInertial);
+    public FactoryManagedFrame(final Frame parent, final TransformProvider transformProvider,
+                               final boolean pseudoInertial, final Predefined factoryKey) {
+        super(parent, transformProvider, factoryKey.getName(), pseudoInertial);
         this.factoryKey = factoryKey;
     }
 

@@ -29,10 +29,10 @@ import org.orekit.utils.Constants;
  * <p>The transformation between GCRF and EME2000 is a constant rotation bias.</p>
  * @author Luc Maisonobe
  */
-class EME2000Frame extends FactoryManagedFrame {
+class EME2000Provider extends FixedTransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -5958683081464730407L;
+    private static final long serialVersionUID = -6134137187835219727L;
 
     /** Obliquity of the ecliptic. */
     private static final double EPSILON_0 = 84381.448 * Constants.ARC_SECONDS_TO_RADIANS;
@@ -47,20 +47,14 @@ class EME2000Frame extends FactoryManagedFrame {
     private static final double ALPHA_0 = -0.0146 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** Simple constructor.
-     * @param factoryKey key of the frame within the factory
      */
-    protected EME2000Frame(final Predefined factoryKey) {
-
-        super(FramesFactory.getGCRF(), null, true, factoryKey);
+    protected EME2000Provider() {
 
         // build the bias transform
-        final Rotation r1 = new Rotation(Vector3D.PLUS_I, D_EPSILON_B);
-        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0));
-        final Rotation r3 = new Rotation(Vector3D.PLUS_K, -ALPHA_0);
-        final Rotation bias = r1.applyTo(r2.applyTo(r3));
-
-        // store the bias transform
-        setTransform(new Transform(AbsoluteDate.J2000_EPOCH, bias));
+        super(new Transform(AbsoluteDate.J2000_EPOCH,
+                            new Rotation(Vector3D.PLUS_I, D_EPSILON_B).
+                            applyTo(new Rotation(Vector3D.PLUS_J, -D_PSI_B * FastMath.sin(EPSILON_0)).
+                                    applyTo(new Rotation(Vector3D.PLUS_K, -ALPHA_0)))));
 
     }
 

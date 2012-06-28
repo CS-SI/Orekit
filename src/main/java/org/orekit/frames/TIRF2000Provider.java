@@ -34,12 +34,12 @@ import org.orekit.utils.Constants;
 
 /** Terrestrial Intermediate Reference Frame 2000.
  * <p> The pole motion is not considered : Pseudo Earth Fixed Frame. It handles
- * the earth rotation angle, its parent frame is the {@link CIRF2000Frame}</p>
+ * the earth rotation angle, its parent frame is the {@link CIRF2000Provider}</p>
  */
-class TIRF2000Frame extends FactoryManagedFrame {
+class TIRF2000Provider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2109614784019192664L;
+    private static final long serialVersionUID = 7243684504752696164L;
 
     /** Reference date of Capitaine's Earth Rotation Angle model. */
     private static final AbsoluteDate ERA_REFERENCE =
@@ -56,8 +56,11 @@ class TIRF2000Frame extends FactoryManagedFrame {
      * (radians per day, fractional part) */
     private static final double ERA_1B = ERA_1A * 0.00273781191135448;
 
-    /** Cached date to avoid useless calculus. */
-    private transient AbsoluteDate cachedDate;
+    /** Cached date to avoid useless computation. */
+    private AbsoluteDate cachedDate;
+
+    /** Cached transform to avoid useless computation. */
+    private Transform cachedTransform;
 
     /** Earth Rotation Angle, in radians. */
     private double era;
@@ -71,30 +74,16 @@ class TIRF2000Frame extends FactoryManagedFrame {
     /** UT1 time scale. */
     private transient UT1Scale ut1;
 
-    /** Simple constructor, ignoring tidal effects.
-     * @param factoryKey key of the frame within the factory
-     * @exception OrekitException if nutation cannot be computed
-     */
-    protected TIRF2000Frame(final Predefined factoryKey)
-        throws OrekitException {
-        this(true, factoryKey);
-    }
-
     /** Simple constructor.
      * @param ignoreTidalEffects if true, tidal effects are ignored
-     * @param factoryKey key of the frame within the factory
      * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRF2000Frame(final boolean ignoreTidalEffects, final Predefined factoryKey)
+    protected TIRF2000Provider(final boolean ignoreTidalEffects)
         throws OrekitException {
 
-        super(FramesFactory.getCIRF2000(), null, false, factoryKey);
         tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
         eopHistory      = FramesFactory.getEOP2000History();
         ut1             = TimeScalesFactory.getUT1();
-
-        // everything is in place, we can now synchronize the frame
-        updateFrame(AbsoluteDate.J2000_EPOCH);
 
     }
 
@@ -114,13 +103,13 @@ class TIRF2000Frame extends FactoryManagedFrame {
         }
     }
 
-    /** Update the frame to the given date.
+    /** Get the transform from CIRF 2000 at specified date.
      * <p>The update considers the earth rotation from IERS data.</p>
      * @param date new value of the date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         if ((cachedDate == null) || !cachedDate.equals(date)) {
 
@@ -133,10 +122,13 @@ class TIRF2000Frame extends FactoryManagedFrame {
 
             // set up the transform from parent CIRF2000
             final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);
-            setTransform(new Transform(date, new Rotation(Vector3D.PLUS_K, -era), rotationRate));
+            cachedTransform = new Transform(date, new Rotation(Vector3D.PLUS_K, -era), rotationRate);
             cachedDate = date;
 
         }
+
+        return cachedTransform;
+
     }
 
     /** Get the Earth Rotation Angle at the current date.
@@ -145,7 +137,7 @@ class TIRF2000Frame extends FactoryManagedFrame {
      * @exception OrekitException if nutation model cannot be computed
      */
     public double getEarthRotationAngle(final AbsoluteDate date) throws OrekitException {
-        updateFrame(date);
+        getTransform(date);
         return era;
     }
 

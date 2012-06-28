@@ -30,7 +30,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class EME2000FrameTest {
+public class MODProviderTest {
 
     @Test
     public void testAASReferenceLEO() throws OrekitException {
@@ -43,23 +43,28 @@ public class EME2000FrameTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getGCRF().getTransformTo(FramesFactory.getEME2000(), t0);
+        Transform tt = FramesFactory.getGCRF().getTransformTo(FramesFactory.getMOD(true), t0);
+        //GCRF iau76 w corr
+        PVCoordinates pvGCRFiau76 =
+            new PVCoordinates(new Vector3D(5102508.9579, 6123011.4007, 6378136.9282),
+                              new Vector3D(-4743.220157, 790.536497, 5533.755727));
+        //MOD iau76 w corr
+        PVCoordinates pvMODiau76Wcorr =
+            new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
+                              new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        PVCoordinates pvGcrfIau2000A =
-            new PVCoordinates(new Vector3D(5102508.9579, 6123011.4038, 6378136.9252),
-                              new Vector3D(-4743.220156, 790.536497, 5533.755728));
-        PVCoordinates pvEME2000EqA =
-            new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
-                              new Vector3D(-4743.219766, 790.536344, 5533.756084));
-        checkPV(pvEME2000EqA, t.transformPVCoordinates(pvGcrfIau2000A), 1.1e-4, 2.6e-7);
+        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.6e-5, 7.2e-7);
 
-        PVCoordinates pvGcrfIau2000B =
-            new PVCoordinates(new Vector3D(5102508.9579, 6123011.4012, 6378136.9277),
-                              new Vector3D(-4743.220156, 790.536495, 5533.755729));
-        PVCoordinates pvEME2000EqB =
-            new PVCoordinates(new Vector3D(5102509.0383, 6123011.9733, 6378136.3142),
-                              new Vector3D(-4743.219766, 790.536342, 5533.756085));
-        checkPV(pvEME2000EqB, t.transformPVCoordinates(pvGcrfIau2000B), 7.4e-5, 2.6e-7);
+        Transform tf = FramesFactory.getEME2000().getTransformTo(FramesFactory.getMOD(false), t0);
+        //J2000 iau76
+        PVCoordinates pvJ2000iau76 =
+            new PVCoordinates(new Vector3D(5102509.6000, 6123011.5200, 6378136.3000),
+                              new Vector3D(-4743.219600, 790.536600, 5533.756190));
+        //MOD iau76
+        PVCoordinates pvMODiau76 =
+            new PVCoordinates(new Vector3D(5094029.0167, 6127870.9363, 6380247.8885),
+                              new Vector3D(-4746.262495, 786.014149, 5531.791025));
+        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 4.3e-5, 2.7e-7);
 
     }
 
@@ -74,23 +79,27 @@ public class EME2000FrameTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getGCRF().getTransformTo(FramesFactory.getEME2000(), t0);
+        Transform tt = FramesFactory.getGCRF().getTransformTo(FramesFactory.getMOD(true), t0);
+        //GCRF iau76 w corr
+        PVCoordinates pvGCRFiau76 =
+            new PVCoordinates(new Vector3D(-40588150.3649, -11462167.0282, 27143.2028),
+                              new Vector3D(834.787457, -2958.305691, -1.172994));
+        //MOD iau76 w corr
+        PVCoordinates pvMODiau76Wcorr =
+            new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
+                              new Vector3D(837.708020, -2957.480117, -0.814253));
+        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.5e-5, 6.9e-7);
 
-        PVCoordinates pvGCRFiau2000A =
-            new PVCoordinates(new Vector3D(-40588150.3617, -11462167.0397, 27143.1974),
-                              new Vector3D(834.787458, -2958.305691, -1.172993));
-        PVCoordinates pvEME2000EqA =
-            new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
-                              new Vector3D(834.787667, -2958.305632, -1.172963));
-        checkPV(pvEME2000EqA, t.transformPVCoordinates(pvGCRFiau2000A), 5.8e-5, 6.4e-7);
-
-        PVCoordinates pvGCRFiau2000B =
-            new PVCoordinates(new Vector3D(-40588150.3617,-11462167.0397, 27143.2125),
-                              new Vector3D(834.787458,-2958.305691,-1.172999));
-        PVCoordinates pvEME2000EqB =
-            new PVCoordinates(new Vector3D(-40588149.5481, -11462169.9118, 27146.8613),
-                              new Vector3D(834.787667, -2958.305632, -1.172968));
-        checkPV(pvEME2000EqB, t.transformPVCoordinates(pvGCRFiau2000B), 1.1e-4, 5.5e-7);
+        Transform tf = FramesFactory.getEME2000().getTransformTo(FramesFactory.getMOD(false), t0);
+        //J2000 iau76
+        PVCoordinates pvJ2000iau76 =
+            new PVCoordinates(new Vector3D(-40588150.3620, -11462167.0280, 27147.6490),
+                              new Vector3D(834.787457, -2958.305691, -1.173016));
+        //MOD iau76
+        PVCoordinates pvMODiau76 =
+            new PVCoordinates(new Vector3D(-40576822.6385, -11502231.5013, 9738.2304),
+                              new Vector3D(837.708020, -2957.480118, -0.814275));
+        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 3.3e-5, 6.9e-7);
 
     }
 
@@ -100,7 +109,8 @@ public class EME2000FrameTest {
     }
 
     private void checkPV(PVCoordinates reference,
-                         PVCoordinates result, double positionThreshold,
+                         PVCoordinates result,
+                         double positionThreshold,
                          double velocityThreshold) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());

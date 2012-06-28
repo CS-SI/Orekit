@@ -28,13 +28,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class LocalOrbitalFrame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3442484777549385439L;
-
-    /** Frame type. */
-    private final LOFType type;
-
-    /** Provider used to compute frame motion. */
-    private final PVCoordinatesProvider provider;
+    private static final long serialVersionUID = -4469440345574964950L;
 
     /** Build a new instance.
      * @param parent parent frame (must be non-null)
@@ -47,16 +41,50 @@ public class LocalOrbitalFrame extends Frame {
                              final PVCoordinatesProvider provider,
                              final String name)
         throws IllegalArgumentException {
-        super(parent, Transform.IDENTITY, name, false);
-        this.type     = type;
-        this.provider = provider;
+        super(parent, new LocalProvider(type, provider, parent), name, false);
     }
 
-    /** {@inheritDoc} */
-    protected void updateFrame(final AbsoluteDate date) throws OrekitException {
+    /** Local provider for transforms. */
+    private static class LocalProvider implements TransformProvider {
 
-        // update the frame defining transform
-        setTransform(type.transformFromInertial(date, provider.getPVCoordinates(date, getParent())));
+        /** Serializable UID. */
+        private static final long serialVersionUID = 386815086579675823L;
+
+        /** Frame type. */
+        private final LOFType type;
+
+        /** Provider used to compute frame motion. */
+        private final PVCoordinatesProvider provider;
+
+        /** Reference frame. */
+        private final Frame reference;
+
+        /** Cached date to avoid useless computation. */
+        private transient AbsoluteDate cachedDate;
+
+        /** Cached transform to avoid useless computation. */
+        private transient Transform cachedTransform;
+
+        /** Simple constructor.
+         * @param type frame type
+         * @param provider provider used to compute frame motion
+         * @param reference reference frame
+         */
+        public LocalProvider(final LOFType type, final PVCoordinatesProvider provider,
+                             final Frame reference) {
+            this.type      = type;
+            this.provider  = provider;
+            this.reference = reference;
+        }
+
+        /** {@inheritDoc} */
+        public Transform getTransform(final AbsoluteDate date) throws OrekitException {
+            if ((cachedDate == null) || !cachedDate.equals(date)) {
+                cachedTransform = type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
+                cachedDate = date;
+            }
+            return cachedTransform;
+        }
 
     }
 
