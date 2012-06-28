@@ -109,7 +109,7 @@ public class TimeStampedCache<T extends TimeStamped> {
         this.earliest         = generator.getEarliest();
         this.latest           = generator.getLatest();
         final double halfSpan = 0.5 * latest.durationFrom(earliest);
-        this.reference        = earliest.shiftedBy(halfSpan);
+        this.reference        = Double.isInfinite(halfSpan) ? AbsoluteDate.J2000_EPOCH : earliest.shiftedBy(halfSpan);
 
         this.maxSlots       = maxSlots;
         this.maxSpan        = maxSpan;
@@ -270,8 +270,8 @@ public class TimeStampedCache<T extends TimeStamped> {
     public T[] getNeighbors(final AbsoluteDate central) {
 
         if (central.compareTo(earliest) < 0 || central.compareTo(latest) > 0) {
-            OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_CACHE,
-                                                           central, earliest, latest);
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_CACHE,
+                                                                 central, earliest, latest);
         }
 
         lock.readLock().lock();

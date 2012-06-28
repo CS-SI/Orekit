@@ -48,6 +48,59 @@ public class TimeStampedCacheTest {
     }
 
     @Test
+    public void testPastInfinityRange() {
+        TimeStampedCache<AbsoluteDate> cache =
+                new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                        new Generator(AbsoluteDate.PAST_INFINITY, AbsoluteDate.J2000_EPOCH, 10.0), 2);
+        List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
+        list.add(AbsoluteDate.GALILEO_EPOCH);
+        list.add(AbsoluteDate.MODIFIED_JULIAN_EPOCH);
+        list.add(AbsoluteDate.JULIAN_EPOCH);
+        Assert.assertEquals(3, checkDatesSingleThread(list, cache));
+        try {
+            cache.getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(100.0));
+            Assert.fail("expected IllegalArgumentException");
+        } catch (IllegalArgumentException iae) {
+            // expected behavior
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught");
+        }
+    }
+
+    @Test
+    public void testFutureInfinityRange() {
+        TimeStampedCache<AbsoluteDate> cache =
+                new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                        new Generator(AbsoluteDate.MODIFIED_JULIAN_EPOCH, AbsoluteDate.FUTURE_INFINITY, 10.0), 2);
+        List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
+        list.add(AbsoluteDate.J2000_EPOCH);
+        list.add(AbsoluteDate.GALILEO_EPOCH);
+        Assert.assertEquals(2, checkDatesSingleThread(list, cache));
+        try {
+            cache.getNeighbors(AbsoluteDate.JULIAN_EPOCH);
+            Assert.fail("expected IllegalArgumentException");
+        } catch (IllegalArgumentException iae) {
+            // expected behavior
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught");
+        }
+    }
+
+    @Test
+    public void testInfinityRange() {
+        TimeStampedCache<AbsoluteDate> cache =
+                new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                        new Generator(AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY, 10.0), 2);
+        List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
+        list.add(AbsoluteDate.J2000_EPOCH.shiftedBy(+4.6e12));
+        list.add(AbsoluteDate.J2000_EPOCH.shiftedBy(-4.6e12));
+        list.add(AbsoluteDate.JULIAN_EPOCH);
+        list.add(AbsoluteDate.J2000_EPOCH);
+        list.add(AbsoluteDate.GALILEO_EPOCH);
+        Assert.assertEquals(5, checkDatesSingleThread(list, cache));
+    }
+
+    @Test
     public void testRegularCalls() {
         TimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
         Assert.assertEquals(2000, testMultipleSingleThread(cache, new SequentialMode(), 2));

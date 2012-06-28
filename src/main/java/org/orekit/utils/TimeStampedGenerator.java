@@ -49,26 +49,20 @@ import org.orekit.time.TimeStamped;
  * 17:00:00 or 18:00:00. The cache <em>will</em> merge arrays returned from different calls in
  * the same global time slot.
  * </p>
- * <p>
- * Note that the {@link #getEarliest() earliest} and {@link #getLatest() latest} dates are
- * used to set up an interpolation mapping, so even if a generator is able to handle dates
- * infinitely far in the past or in the future directions, {@link #getEarliest()} and {@link
- * #getLatest()} must both return finite dates instead of the theoretical infinite boundaries.
- * </p>
  * @param <T> Type of the cached data.
  * @author Luc Maisonobe
  */
 public interface TimeStampedGenerator<T extends TimeStamped> {
 
     /** Get the date of the earliest entry that can be generated.
-     * @return date of the earliest entry that can be generated (must be a finite
-     * date, date at infinity in the past direction is <em>not</em> allowed)
+     * @return date of the earliest entry that can be generated
+     * (can be {@link AbsoluteDate#PAST_INFINITY})
      */
     AbsoluteDate getEarliest();
 
     /** Get the date of the latest entry that can be generated.
-     * @return date of the latest entry that can be generated (must be a finite
-     * date, date at infinity in the future direction is <em>not</em> allowed)
+     * @return date of the latest entry that can be generated 
+     * (can be {@link AbsoluteDate#FUTURE_INFINITY})
      */
     AbsoluteDate getLatest();
 
