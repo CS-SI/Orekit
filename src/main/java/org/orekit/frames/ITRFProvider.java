@@ -57,6 +57,7 @@ class ITRFProvider implements TransformProvider {
     /** Get the transform from TIRF 2000 at specified date.
      * <p>The update considers the pole motion from IERS data.</p>
      * @param date new value of the date
+     * @return transform at the specified date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */

@@ -497,7 +497,7 @@ public class EquinoctialOrbit extends Orbit {
                                             equi.getHx(),
                                             equi.getHy(),
                                             equi.getLv()
-                                       });
+                                        });
         }
 
         // interpolate

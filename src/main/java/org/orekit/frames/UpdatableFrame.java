@@ -34,8 +34,8 @@ public class UpdatableFrame extends Frame {
 
     /** Build a non-inertial frame from its transform with respect to its parent.
      * <p>calling this constructor is equivalent to call
-     * <code>{link {@link #Frame(UpdatableFrame, Transform, String, boolean)
-     * Frame(parent, transform, name, false)}</code>.</p>
+     * {@link #UpdatableFrame(Frame, Transform, String, boolean)
+     * UpdatableFrame(parent, transform, name, false)}.</p>
      * @param parent parent frame (must be non-null)
      * @param transform transform from parent frame to instance
      * @param name name of the frame
@@ -62,7 +62,7 @@ public class UpdatableFrame extends Frame {
      * @exception IllegalArgumentException if the parent frame is null
      */
     public UpdatableFrame(final Frame parent, final Transform transform, final String name,
-                 final boolean pseudoInertial)
+                          final boolean pseudoInertial)
         throws IllegalArgumentException {
         super(parent, new UpdatableProvider(transform), name, pseudoInertial);
     }

@@ -197,14 +197,14 @@ public class Attitude
      * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
      * </p>
      */
-    public Attitude interpolate(final AbsoluteDate date, final Collection<Attitude> sample) {
+    public Attitude interpolate(final AbsoluteDate interpolationDate, final Collection<Attitude> sample) {
         final List<Pair<AbsoluteDate, AngularCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>(sample.size());
+                new ArrayList<Pair<AbsoluteDate, AngularCoordinates>>(sample.size());
         for (final Attitude attitude : sample) {
             datedPV.add(new Pair<AbsoluteDate, AngularCoordinates>(attitude.getDate(), attitude.getOrientation()));
         }
-        final AngularCoordinates interpolated = AngularCoordinates.interpolate(date, true, datedPV);
-        return new Attitude(date, referenceFrame, interpolated);
+        final AngularCoordinates interpolated = AngularCoordinates.interpolate(interpolationDate, true, datedPV);
+        return new Attitude(interpolationDate, referenceFrame, interpolated);
     }
 
 }

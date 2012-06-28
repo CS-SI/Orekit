@@ -91,6 +91,7 @@ public class GTODProvider implements TransformProvider {
     /** Get the transform from TOD at specified date.
      * <p>The update considers the Earth rotation from IERS data.</p>
      * @param date new value of the date
+     * @return transform at the specified date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */

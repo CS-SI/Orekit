@@ -278,8 +278,9 @@ public class Transform
      * set to true.
      * </p>
      */
-    public Transform interpolate(final AbsoluteDate date, final Collection<Transform> sample) {
-        return interpolate(date, true, true, sample);
+    public Transform interpolate(final AbsoluteDate interpolationDate,
+                                 final Collection<Transform> sample) {
+        return interpolate(interpolationDate, true, true, sample);
     }
 
     /** Interpolate a transform from a sample set of existing transforms.
@@ -305,9 +306,9 @@ public class Transform
                                         final boolean useVelocities, final boolean useRotationRates,
                                         final Collection<Transform> sample) {
         final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate,PVCoordinates>>(sample.size());
+                new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
         final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =
-                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>(sample.size());
+                new ArrayList<Pair<AbsoluteDate, AngularCoordinates>>(sample.size());
         for (final Transform transform : sample) {
             datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(transform.getDate(),
                     transform.getCartesian()));

@@ -67,6 +67,7 @@ class MODProvider implements TransformProvider {
     /** Get the transfrom from parent frame.
      * <p>The update considers the precession effects.</p>
      * @param date new value of the date
+     * @return transform at the specified date
      */
     public synchronized Transform getTransform(final AbsoluteDate date) {
 

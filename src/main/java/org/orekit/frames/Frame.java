@@ -40,13 +40,11 @@ import org.orekit.time.AbsoluteDate;
  * then u<sub>B</sub>={@link
  * Transform#transformVector(org.apache.commons.math3.geometry.euclidean.threed.Vector3D)
  * t.transformVector(u<sub>A</sub>)}.
- * <p>The transforms may be constant or varying. For simple fixed transforms,
- * using this base class is sufficient. For varying transforms (time-dependent
- * or telemetry-based for example), it may be useful to define specific subclasses
- * that will implement {@link #updateFrame(AbsoluteDate)} or that will
- * add some specific <code>updateFromTelemetry(telemetry)</code>
- * methods that will compute the transform and call internally
- * the {@link #setTransform(Transform)} method.</p>
+ * <p>The transforms may be constant or varying, depending on the implementation of
+ * the {@link TransformProvider transform provider} used to define the frame. For simple
+ * fixed transforms, using {@link FixedTransformProvider} is sufficient. For varying
+ * transforms (time-dependent or telemetry-based for example), it may be useful to define
+ * specific implementations of {@link TransformProvider transform provider}.</p>
  *
  * @author Guylaine Prat
  * @author Luc Maisonobe

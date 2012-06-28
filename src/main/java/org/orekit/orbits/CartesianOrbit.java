@@ -226,7 +226,7 @@ public class CartesianOrbit extends Orbit {
      */
     public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
         final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate,PVCoordinates>>(sample.size());
+                new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
         for (final Orbit orbit : sample) {
             datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(orbit.getDate(), orbit.getPVCoordinates()));
         }

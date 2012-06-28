@@ -177,7 +177,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         for (int i = 0; restart && i < sample.size() + 2; ++i) {
 
             restart = false;
-            Rotation reversedOffset = offset.revert();
+            final Rotation reversedOffset = offset.revert();
 
             // set up an interpolator taking derivatives into account
             final HermiteInterpolator interpolator = new HermiteInterpolator();

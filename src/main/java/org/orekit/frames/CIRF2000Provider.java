@@ -215,6 +215,7 @@ class CIRF2000Provider implements TransformProvider {
     /** Get the transform from GCRF to CIRF2000 at the specified date.
      * <p>The transform considers the nutation and precession effects from IERS data.</p>
      * @param date new value of the date
+     * @return transform at the specified date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */

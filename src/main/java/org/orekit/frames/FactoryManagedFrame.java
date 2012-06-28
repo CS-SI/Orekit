@@ -34,7 +34,7 @@ public class FactoryManagedFrame extends Frame {
 
     /** Simple constructor.
      * @param parent parent frame (must be non-null)
-     * @param transform transform from parent frame to instance
+     * @param transformProvider provider for transform from parent frame to instance
      * @param pseudoInertial true if frame is considered pseudo-inertial
      * (i.e. suitable for propagating orbit)
      * @param factoryKey key of the frame within the factory

@@ -50,7 +50,7 @@ public abstract class AbstractDetector implements EventDetector {
         this.threshold = threshold;
     }
 
-    /** {inheritDoc} */
+    /** {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
         // do nothing by default
     }

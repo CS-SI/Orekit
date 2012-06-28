@@ -94,7 +94,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
 
             final double[] y = value[i].clone();
             if (i > 1) {
-                double inv = 1.0 / ArithmeticUtils.factorial(i);
+                final double inv = 1.0 / ArithmeticUtils.factorial(i);
                 for (int j = 0; j < y.length; ++j) {
                     y[j] *= inv;
                 }
@@ -138,7 +138,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
 
         // iteration initialization
         final PolynomialFunction zero = polynomial(0);
-        PolynomialFunction[] polynomials = new PolynomialFunction[topDiagonal.get(0).length];
+        final PolynomialFunction[] polynomials = new PolynomialFunction[topDiagonal.get(0).length];
         for (int i = 0; i < polynomials.length; ++i) {
             polynomials[i] = zero;
         }
@@ -146,7 +146,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
 
         // build the polynomials by iterating on the top diagonal of the divided differences array
         for (int i = 0; i < topDiagonal.size(); ++i) {
-            double[] tdi = topDiagonal.get(i);
+            final double[] tdi = topDiagonal.get(i);
             for (int k = 0; k < polynomials.length; ++k) {
                 polynomials[k] = polynomials[k].add(coeff.multiply(polynomial(tdi[k])));
             }
@@ -168,7 +168,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
      * @return interpolated value
      * @exception IllegalStateException if sample is empty
      */
-    public double[] value(double x)
+    public double[] value(final double x)
         throws IllegalStateException {
 
         // safety check
@@ -177,7 +177,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
         final double[] value = new double[topDiagonal.get(0).length];
         double valueCoeff = 1;
         for (int i = 0; i < topDiagonal.size(); ++i) {
-            double[] dividedDifference = topDiagonal.get(i);
+            final double[] dividedDifference = topDiagonal.get(i);
             for (int k = 0; k < value.length; ++k) {
                 value[k] += dividedDifference[k] * valueCoeff;
             }
@@ -200,7 +200,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
      * @return interpolated derivative
      * @exception IllegalStateException if sample is empty
      */
-    public double[] derivative(double x)
+    public double[] derivative(final double x)
         throws IllegalStateException {
 
         // safety check
@@ -210,7 +210,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
         double valueCoeff      = 1;
         double derivativeCoeff = 0;
         for (int i = 0; i < topDiagonal.size(); ++i) {
-            double[] dividedDifference = topDiagonal.get(i);
+            final double[] dividedDifference = topDiagonal.get(i);
             for (int k = 0; k < derivative.length; ++k) {
                 derivative[k] += dividedDifference[k] * derivativeCoeff;
             }
@@ -223,15 +223,15 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
 
     }
 
-    /** {@inheritDoc}} */
+    /** {@inheritDoc} */
     public UnivariateVectorFunction derivative() {
         return new UnivariateVectorFunction() {
 
             /** {@inheritDoc}} */
-            public double[] value(double x) {
+            public double[] value(final double x) {
                 return derivative(x);
             }
-            
+
         };
     }
 
@@ -239,7 +239,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
      * @exception IllegalStateException if interpolation cannot be performed
      * because sample is empty
      */
-    private void checkInterpolation() throws IllegalStateException {        
+    private void checkInterpolation() throws IllegalStateException {
         if (abscissae.isEmpty()) {
             throw OrekitException.createIllegalStateException(OrekitMessages.EMPTY_INTERPOLATION_SAMPLE);
         }
@@ -249,7 +249,7 @@ public class HermiteInterpolator implements DifferentiableUnivariateVectorFuncti
      * @param c polynomials coefficients
      * @return polynomial
      */
-    private PolynomialFunction polynomial(double ... c) {
+    private PolynomialFunction polynomial(final double ... c) {
         return new PolynomialFunction(c);
     }
 

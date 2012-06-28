@@ -37,12 +37,11 @@ even if it is really implemented in the bodies package.
 <p> 
 The frames can be time dependent (for example the ITRF2005 frame depends on time due to
 precession/nutation, Earth rotation and pole motion). In order to get a transform from one
-frame to another one, the date must be specified, and
-{@link org.orekit.frames.Frame#updateFrame(AbsoluteDate)} is called under the hood. If a
-user wants to implement his own date synchronized frame, he has to 
-implement by extension his own {@link org.orekit.frames.Frame#updateFrame(AbsoluteDate)}
-method, the default implementation provided by the base class does nothing and is suited
-for non time dependent frames.
+frame to another one, the date must be specified, and {@link
+org.orekit.frames.TransformProvider#getTransform(AbsoluteDate)} is called under the hood.
+If a user wants to implement his own date synchronized frame, he has to 
+implement his own {@link org.orekit.frames.TransformProvider} class and provide it to the
+frame constructor.
 </p>
 
 @author Luc Maisonobe

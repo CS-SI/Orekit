@@ -503,7 +503,7 @@ public class GeoMagneticField {
          * @param lambda the lambda angle
          * @param phi the phi angle
          */
-        public SphericalCoordinates(final double r, final double lambda, final double phi) {
+        private SphericalCoordinates(final double r, final double lambda, final double phi) {
             this.r = r;
             this.lambda = lambda;
             this.phi = phi;
@@ -525,7 +525,7 @@ public class GeoMagneticField {
         /** Calculates the spherical harmonic variables for a given spherical coordinate.
          * @param sph the spherical coordinate
          */
-        public SphericalHarmonicVars(final SphericalCoordinates sph) {
+        private SphericalHarmonicVars(final SphericalCoordinates sph) {
 
             relativeRadiusPower = new double[maxN + 1];
 
@@ -577,7 +577,7 @@ public class GeoMagneticField {
          * </p>
          * @param x sinus of the spherical latitude (or cosinus of the spherical colatitude)
          */
-        public LegendreFunction(final double x) {
+        private LegendreFunction(final double x) {
 
             final int numTerms = (maxN + 1) * (maxN + 2) / 2;
 
