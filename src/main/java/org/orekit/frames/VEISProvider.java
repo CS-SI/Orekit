@@ -30,7 +30,7 @@ import org.orekit.utils.Constants;
  * <p>This frame is mainly provided for consistency with legacy softwares.</p>
  * @author Pascal Parraud
  */
-class VEISFrame implements TransformProvider {
+class VEISProvider implements TransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 6918291423091809232L;
@@ -60,13 +60,14 @@ class VEISFrame implements TransformProvider {
     /** Constructor for the singleton.
      * @exception OrekitException if EOP data cannot be read
      */
-    public VEISFrame()
+    public VEISProvider()
         throws OrekitException {
         eopHistory = FramesFactory.getEOP1980History();
     }
 
     /** Get the transform from GTOD at specified date.
      * @param date new value of the date
+     * @return transform at the specified date
      * @exception OrekitException if data embedded in the library cannot be read
      */
     public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {

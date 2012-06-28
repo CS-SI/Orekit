@@ -790,7 +790,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(FramesFactory.getGTOD(false), new VEISFrame(),
+                frame = new FactoryManagedFrame(FramesFactory.getGTOD(false), new VEISProvider(),
                                                 true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
@@ -813,7 +813,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                TODProvider tod = (TODProvider) getTOD(true).getTransformProvider();
+                final TODProvider tod = (TODProvider) getTOD(true).getTransformProvider();
                 frame = new FactoryManagedFrame(getGTOD(true), new ITRFEquinoxProvider(tod),
                                                 false, factoryKey);
                 FRAMES.put(factoryKey, frame);
