@@ -43,6 +43,8 @@ public class TimeStampedCacheTest {
         Assert.assertEquals(1, checkDatesSingleThread(list, cache));
         Assert.assertEquals(4, cache.getGenerateCalls());
         Assert.assertEquals(0, cache.getSlotsEvictions());
+        Assert.assertEquals(10, cache.getMaxSlots());
+        Assert.assertEquals(Constants.JULIAN_YEAR, cache.getMaxSpan(), 1.0e-10);
     }
 
     @Test

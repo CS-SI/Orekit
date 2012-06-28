@@ -130,6 +130,20 @@ public class TimeStampedCache<T extends TimeStamped> {
         return generator;
     }
 
+    /** Get the maximum number of independent cached time slots.
+     * @return maximum number of independent cached time slots
+     */
+    public int getMaxSlots() {
+        return maxSlots;
+    }
+
+    /** Get the maximum duration span in seconds of one slot.
+     * @return maximum duration span in seconds of one slot
+     */
+    public double getMaxSpan() {
+        return maxSpan;
+    }
+
     /** Get the number of calls to the generate method.
      * <p>
      * This number of calls is related to the number of cache misses and may
