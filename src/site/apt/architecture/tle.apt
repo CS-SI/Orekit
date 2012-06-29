@@ -40,10 +40,6 @@ TLE
   This is a miss and it is due to change, so that representations conversions can be made
   automatically and transparently for the user.
 
-* Package organization
- 
-[../images/design/OrekitModel_tlePackage.png]
-
 * Authors
 
   ** Fabien Maussion

@@ -66,10 +66,6 @@ Forces
   are implemented, with the possibility to define an impulse maneuver, thanks 
   to the event detector mechanism.
 
-* Package organization
- 
-[../images/design/OrekitModel_forcesPackage.png]
-
 * Authors
 
  ** Luc Maisonobe
