@@ -68,7 +68,7 @@ public class ITRF2005FrameTest {
                 Assert.assertEquals(0.0, error.getTranslation().getNorm(),  1.0e-10);
                 Assert.assertEquals(0.0, error.getVelocity().getNorm(),     1.0e-10);
                 Assert.assertEquals(0.0, error.getRotation().getAngle(),    1.0e-10);
-                Assert.assertEquals(0.0, error.getRotationRate().getNorm(), 1.0e-15);
+                Assert.assertEquals(0.0, error.getRotationRate().getNorm(), 5.0e-15);
             }
         }
     }

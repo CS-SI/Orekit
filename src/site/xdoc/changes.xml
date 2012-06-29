@@ -22,6 +22,11 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Use the new thread-safe cache and the new Hermite interpolation feature on
+        Transforms to re-implement a thread-safe, efficient and accurate CIRF2000 frame
+        (Work In Progress for bug #3).
+      </action>
       <action dev="luc" type="add" >
         Added Hermite interpolation features for position-velocity coordinates,
         angular coordinates, orbits, attitudes, spacecraft states and transforms.

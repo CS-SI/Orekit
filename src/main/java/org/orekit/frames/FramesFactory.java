@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.OrekitConfiguration;
 
 
 /** Factory for predefined reference frames.
@@ -767,7 +768,13 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getGCRF(), new CIRF2000Provider(), true, factoryKey);
+                final TransformProvider interpolating =
+                        new InterpolatingTransformProvider(new CIRF2000Provider(), true, false,
+                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                           8, Constants.JULIAN_DAY / 6,
+                                                           OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                           Constants.JULIAN_YEAR);
+                frame = new FactoryManagedFrame(getGCRF(), interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

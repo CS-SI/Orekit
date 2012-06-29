@@ -90,14 +90,14 @@ public class ITRF2005ProviderAlternateConfigurationTest {
                               new Vector3D(834.787458, -2958.305691, -1.172993));
         checkPV(pvGCRFiau2000A,
                 itrfA.getTransformTo(FramesFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.061, 4.6e-6);
+                0.061, 1.1e-4);
 
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
                               new Vector3D(834.787667, -2958.305632, -1.172963));
         checkPV(pvEME2000EqA,
                 itrfA.getTransformTo(FramesFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
-                0.061, 4.3e-6);
+                0.061, 1.1e-4);
 
     }
 

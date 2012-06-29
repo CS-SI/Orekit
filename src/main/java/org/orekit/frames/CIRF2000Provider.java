@@ -35,16 +35,6 @@ import org.orekit.utils.Constants;
  * Capitaine's model and <strong>not</strong> IAU-82 sidereal time which is
  * consistent with the previous models only.</p>
  * <p>Its parent frame is the GCRF frame.<p>
- * <p>This implementation includes a caching/interpolation feature to
- * tremendously improve efficiency. The IAU-2000 model involves lots of terms
- * (1600 components for x, 1275 components for y and 66 components for s). Recomputing
- * all these components for each point is really slow. The shortest period for these
- * components is about 5.5 days (one fifth of the moon revolution period), hence the
- * pole motion is smooth at the day or week scale. This implies that these motions can
- * be computed accurately using a few reference points per day or week and interpolated
- * between these points. This implementation uses 12 points separated by 1/2 day
- * (43200 seconds) each, the resulting maximal interpolation error on the frame is about
- * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  */
 class CIRF2000Provider implements TransformProvider {
 
@@ -135,39 +125,6 @@ class CIRF2000Provider implements TransformProvider {
     /** Pole position (S + XY/2). */
     private final PoissonSeries sxy2Development;
 
-    /** "Left-central" date of the interpolation array. */
-    private double tCenter;
-
-    /** Step size of the interpolation array. */
-    private final double h;
-
-    /** X coordinate of current pole. */
-    private double xCurrent;
-
-    /** Y coordinate of current pole. */
-    private double yCurrent;
-
-    /** S coordinate of current pole. */
-    private double sCurrent;
-
-    /** X coordinate of reference poles. */
-    private final double[] xRef;
-
-    /** Y coordinate of reference poles. */
-    private final double[] yRef;
-
-    /** S coordinate of reference poles. */
-    private final double[] sRef;
-
-    /** Neville interpolation array for X coordinate. */
-    private final double[] xNeville;
-
-    /** Neville interpolation array for Y coordinate. */
-    private final double[] yNeville;
-
-    /** Neville interpolation array for S coordinate. */
-    private final double[] sNeville;
-
     /** Simple constructor.
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
@@ -175,18 +132,6 @@ class CIRF2000Provider implements TransformProvider {
      */
     public CIRF2000Provider()
         throws OrekitException {
-
-        // set up an interpolation model on 12 points with a 1/2 day step
-        // this leads to an interpolation error of about 1.1e-10 arcseconds
-        final int n = 12;
-        tCenter  = Double.NaN;
-        h        = 43200.0;
-        xRef     = new double[n];
-        yRef     = new double[n];
-        sRef     = new double[n];
-        xNeville = new double[n];
-        yNeville = new double[n];
-        sNeville = new double[n];
 
         // load the nutation model
         xDevelopment    = loadModel(X_MODEL);
@@ -224,111 +169,6 @@ class CIRF2000Provider implements TransformProvider {
         //    offset from J2000.0 epoch
         final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
 
-        // evaluate pole motion in celestial frame
-        setInterpolatedPoleCoordinates(t);
-
-        // set up the bias, precession and nutation rotation
-        final double x2Py2  = xCurrent * xCurrent + yCurrent * yCurrent;
-        final double zP1    = 1 + FastMath.sqrt(1 - x2Py2);
-        final double r      = FastMath.sqrt(x2Py2);
-        final double sPe2   = 0.5 * (sCurrent + FastMath.atan2(yCurrent, xCurrent));
-        final double cos    = FastMath.cos(sPe2);
-        final double sin    = FastMath.sin(sPe2);
-        final double xPr    = xCurrent + r;
-        final double xPrCos = xPr * cos;
-        final double xPrSin = xPr * sin;
-        final double yCos   = yCurrent * cos;
-        final double ySin   = yCurrent * sin;
-        final Rotation bpn  = new Rotation(zP1 * (xPrCos + ySin), -r * (yCos + xPrSin),
-                                           r * (xPrCos - ySin), zP1 * (yCos - xPrSin),
-                                           true);
-
-        return new Transform(date, bpn, Vector3D.ZERO);
-
-    }
-
-    /** Set the interpolated pole coordinates.
-     * @param t offset from J2000.0 epoch in seconds
-     */
-    protected void setInterpolatedPoleCoordinates(final double t) {
-
-        final int n    = xRef.length;
-        final int nM12 = (n - 1) / 2;
-        if (Double.isNaN(tCenter) || (t < tCenter) || (t > tCenter + h)) {
-            // recompute interpolation array
-            setReferencePoints(t);
-        }
-
-        // interpolate pole coordinates using Neville's algorithm
-        System.arraycopy(xRef, 0, xNeville, 0, n);
-        System.arraycopy(yRef, 0, yNeville, 0, n);
-        System.arraycopy(sRef, 0, sNeville, 0, n);
-        final double theta = (t - tCenter) / h;
-        for (int j = 1; j < n; ++j) {
-            for (int i = n - 1; i >= j; --i) {
-                final double c1 = (theta + nM12 - i + j) / j;
-                final double c2 = (theta + nM12 - i) / j;
-                xNeville[i] = c1 * xNeville[i] - c2 * xNeville[i - 1];
-                yNeville[i] = c1 * yNeville[i] - c2 * yNeville[i - 1];
-                sNeville[i] = c1 * sNeville[i] - c2 * sNeville[i - 1];
-            }
-        }
-
-        xCurrent = xNeville[n - 1];
-        yCurrent = yNeville[n - 1];
-        sCurrent = sNeville[n - 1];
-
-    }
-
-    /** Set the reference points array.
-     * @param t offset from J2000.0 epoch in seconds
-     */
-    private void setReferencePoints(final double t) {
-
-        final int n    = xRef.length;
-        final int nM12 = (n - 1) / 2;
-
-        // evaluate new location of center interval
-        final double newTCenter = h * FastMath.floor(t / h);
-
-        // shift reusable reference points
-        int iMin = 0;
-        int iMax = n;
-        final int shift = (int) FastMath.rint((newTCenter - tCenter) / h);
-        if (!Double.isNaN(tCenter) && (FastMath.abs(shift) < n)) {
-            if (shift >= 0) {
-                System.arraycopy(xRef, shift, xRef, 0, n - shift);
-                System.arraycopy(yRef, shift, yRef, 0, n - shift);
-                System.arraycopy(sRef, shift, sRef, 0, n - shift);
-                iMin = n - shift;
-            } else {
-                System.arraycopy(xRef, 0, xRef, -shift, n + shift);
-                System.arraycopy(yRef, 0, yRef, -shift, n + shift);
-                System.arraycopy(sRef, 0, sRef, -shift, n + shift);
-                iMax = -shift;
-            }
-        }
-
-        // compute new reference points
-        tCenter = newTCenter;
-        for (int i = iMin; i < iMax; ++i) {
-            computePoleCoordinates(tCenter + (i - nM12) * h);
-            xRef[i] = xCurrent;
-            yRef[i] = yCurrent;
-            sRef[i] = sCurrent;
-        }
-
-    }
-
-    /** Compute pole coordinates from precession and nutation effects.
-     * <p>This method applies the complete IAU-2000 model and hence is
-     * extremely slow. It is called by the {@link
-     * #getInterpolatedPoleCoordinates(double)} on a small number of reference
-     * points only.</p>
-     * @param t offset from J2000.0 epoch in seconds
-     */
-    protected void computePoleCoordinates(final double t) {
-
         // offset in julian centuries
         final double tc =  t / Constants.JULIAN_CENTURY;
 
@@ -349,9 +189,27 @@ class CIRF2000Provider implements TransformProvider {
                                (F142 * tc + F141) * tc); // general accumulated precession in longitude
 
         // pole position
-        xCurrent =    xDevelopment.value(tc, elements);
-        yCurrent =    yDevelopment.value(tc, elements);
-        sCurrent = sxy2Development.value(tc, elements) - xCurrent * yCurrent / 2;
+        final double xCurrent =    xDevelopment.value(tc, elements);
+        final double yCurrent =    yDevelopment.value(tc, elements);
+        final double sCurrent = sxy2Development.value(tc, elements) - xCurrent * yCurrent / 2;
+
+        // set up the bias, precession and nutation rotation
+        final double x2Py2  = xCurrent * xCurrent + yCurrent * yCurrent;
+        final double zP1    = 1 + FastMath.sqrt(1 - x2Py2);
+        final double r      = FastMath.sqrt(x2Py2);
+        final double sPe2   = 0.5 * (sCurrent + FastMath.atan2(yCurrent, xCurrent));
+        final double cos    = FastMath.cos(sPe2);
+        final double sin    = FastMath.sin(sPe2);
+        final double xPr    = xCurrent + r;
+        final double xPrCos = xPr * cos;
+        final double xPrSin = xPr * sin;
+        final double yCos   = yCurrent * cos;
+        final double ySin   = yCurrent * sin;
+        final Rotation bpn  = new Rotation(zP1 * (xPrCos + ySin), -r * (yCos + xPrSin),
+                                           r * (xPrCos - ySin), zP1 * (yCos - xPrSin),
+                                           true);
+
+        return new Transform(date, bpn, Vector3D.ZERO);
 
     }
 

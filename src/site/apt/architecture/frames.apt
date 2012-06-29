@@ -67,6 +67,9 @@ Frames
   example) are u<A> in frame A and u<B> in frame B, then u<B>=t.transformVector(u<A>).
   Transforms provide specific methods for vectorial conversions, affine conversions, either
   with or without first derivatives (i.e. angular and linear velocities composition).
+
+  Transformations can be interpolated using Hermite interpolation, i.e. taking derivatives
+  into account if desired.
  
 * Predefined Frames
 
@@ -174,15 +177,13 @@ Frames
   period). The pole motion is therefore quite smooth at the day or week scale. This implies that
   this motion can be computed accurately using a few reference points per day or week and
   interpolated between these points. The trade-off selected for Orekit implementation is to use
-  12 points separated by half a day (43200 seconds) each. The resulting maximal interpolation error
-  on the frame is about 0.13 nanoarcseconds, as depicted in the following plot. The 12 reference
-  points are cached so the computation cost is roughly to perform two complete evaluations of the
-  luni-solar and planetary terms per simulation day, and one interpolation per simulation step,
-  regardless of the step size. This represents huge savings for steps shorter than one half day,
-  which is the rule in most application (step sizes are mostly of the range of a few tens of
-  seconds).
-
-[../images/cirf2000-interpolation-error.png]
+  eight points separated by four hours each. The resulting maximal interpolation error
+  on the frame is about 4e-15 radians. The referencepoints are cached so the computation cost is
+  roughly to perform two complete evaluations of the luni-solar and planetary terms per simulation
+  day, and one interpolation per simulation step, regardless of the step size. This represents huge
+  savings for steps shorter than one half day, which is the rule in most application (step sizes are
+  mostly of the range of a few tens of seconds). Note that starting with Orekit 6.0, this caching feature
+  is thread-safe.
 
   Tidal effects are also taken into account on Earth Rotation angle and on pole motion. The 71
   terms model from IERS is used. Since this model is also computing intensive, a caching/interpolation
