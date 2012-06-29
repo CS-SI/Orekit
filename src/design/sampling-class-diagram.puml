@@ -17,21 +17,13 @@
 @startuml
 
   skinparam svek                  true
-  skinparam ClassBackgroundColor  #F3EFEB
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
   skinparam ClassArrowColor       #691616
   skinparam ClassBorderColor      #691616
   skinparam NoteBackgroundColor   #F3EFEB
   skinparam NoteBorderColor       #691616
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
-
-  skinparam svek true
-  skinparam class {
-    BackgroundColor  #F3EFEB
-    ArrowColor       #691616
-    BorderColor      #691616
-    FontSize         11
-  }
 
   package org.orekit.propagation #ECEBD8
 

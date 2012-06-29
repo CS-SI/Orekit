@@ -21,9 +21,9 @@
   skinparam NoteBorderColor                     #691616
   skinparam NoteFontColor                       #691616
   skinparam SequenceActorBorderColor            #6A584B
-  skinparam SequenceParticipantBackgroundColor  #EDF7C8
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
   skinparam SequenceParticipantBorderColor      #6A584B
-  skinparam SequenceLifeLineBackgroundColor     #EDF7C8
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
   skinparam SequenceLifeLineBorderColor         #6A584B
   skinparam SequenceArrowColor                  #6A584B
   skinparam SequenceBorderColor                 #6A584B
@@ -31,7 +31,7 @@
 
   hide footbox
 
-  box "User application" #ECEBD8
+  box "User application" #F3EDF7
     participant "Main" as U
     participant "Event detector" as E
     participant "Logger" as L

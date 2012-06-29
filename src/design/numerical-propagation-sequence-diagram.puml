@@ -21,9 +21,9 @@
   skinparam NoteBorderColor                     #691616
   skinparam NoteFontColor                       #691616
   skinparam SequenceActorBorderColor            #6A584B
-  skinparam SequenceParticipantBackgroundColor  #EDF7C8
+  skinparam SequenceParticipantBackgroundColor  #F3EFEB/CCC9C5
   skinparam SequenceParticipantBorderColor      #6A584B
-  skinparam SequenceLifeLineBackgroundColor     #EDF7C8
+  skinparam SequenceLifeLineBackgroundColor     #CCC9C5/F3EFEB
   skinparam SequenceLifeLineBorderColor         #6A584B
   skinparam SequenceArrowColor                  #6A584B
   skinparam SequenceBorderColor                 #6A584B
@@ -31,7 +31,9 @@
 
   hide footbox
 
-  participant "User application" as U
+  box "User application" #F3EDF7
+    participant "Main" as M
+  end box
   participant Propagator
   participant Integrator
   participant DifferentialEquations
@@ -41,8 +43,8 @@
   participant "Force Model 2" as F2
   participant NewtonianAttraction
 
-  activate U
-  U          -> Propagator : propagate
+  activate M
+  M          -> Propagator : propagate
     activate Propagator
     Propagator -> DifferentialEquations : create
       activate DifferentialEquations
@@ -106,8 +108,8 @@
         deactivate DifferentialEquations
       Integrator --> Propagator : final state
       deactivate Integrator
-    Propagator --> U : final state
+    Propagator --> M : final state
     deactivate Propagator
-  deactivate U
+  deactivate M
 
 @enduml

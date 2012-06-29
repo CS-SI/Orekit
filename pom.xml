@@ -259,6 +259,13 @@
             </goals>
           </execution>
         </executions>
+        <dependencies>
+          <dependency>
+            <groupId>net.sourceforge.plantuml</groupId>
+            <artifactId>plantuml</artifactId>
+            <version>7930</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
