@@ -726,14 +726,21 @@ public class TimeStampedCache<T extends TimeStamped> {
         private void insertAtStart(final List<T> data) {
 
             // insert data at start
+            boolean inserted = false;
             final long q0 = earliestQuantum.get();
             for (int i = 0; i < data.size(); ++i) {
                 final long quantum = quantum(data.get(i).getDate());
                 if (quantum < q0) {
                     cache.add(i, new Entry(data.get(i), quantum));
+                    inserted = true;
                 } else {
                     break;
                 }
+            }
+
+            if (!inserted) {
+                throw OrekitException.createIllegalStateException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+                                                                  cache.get(0).getData().getDate());
             }
 
             // evict excess data at end
@@ -755,15 +762,22 @@ public class TimeStampedCache<T extends TimeStamped> {
         private void appendAtEnd(final List<T> data) {
 
             // append data at end
+            boolean appended = false;
             final long qn = latestQuantum.get();
             final int  n  = cache.size();
             for (int i = data.size() - 1; i >= 0; --i) {
                 final long quantum = quantum(data.get(i).getDate());
                 if (quantum > qn) {
                     cache.add(n, new Entry(data.get(i), quantum));
+                    appended = true;
                 } else {
                     break;
                 }
+            }
+
+            if (!appended) {
+                throw OrekitException.createIllegalStateException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+                                                                  cache.get(cache.size() - 1).getData().getDate());
             }
 
             // evict excess data at start
@@ -789,6 +803,10 @@ public class TimeStampedCache<T extends TimeStamped> {
         private List<T> generateAndCheck(final T existing, final AbsoluteDate date)
             throws IllegalStateException {
             final List<T> entries = generator.generate(existing, date);
+            if (entries.isEmpty()) {
+                throw OrekitException.createIllegalStateException(OrekitMessages.NO_DATA_GENERATED,
+                                                                  date);
+            }
             for (int i = 1; i < entries.size(); ++i) {
                 if (entries.get(i).getDate().compareTo(entries.get(i - 1).getDate()) < 0) {
                     throw OrekitException.createIllegalStateException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,

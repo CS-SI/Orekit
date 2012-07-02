@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -213,6 +214,72 @@ public class TimeStampedCacheTest {
     @Test(expected=IllegalStateException.class)
     public void testNoLatestEntry() {
         createCache(10, 3600.0, 3).getLatest();
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testNoGeneratedData() {
+        TimeStampedGenerator<AbsoluteDate> nullGenerator =
+                new TimeStampedGenerator<AbsoluteDate>() {
+
+            public AbsoluteDate getEarliest() {
+                return AbsoluteDate.PAST_INFINITY;
+            }
+
+            public AbsoluteDate getLatest() {
+                return AbsoluteDate.FUTURE_INFINITY;
+            }
+
+            public List<AbsoluteDate> generate(AbsoluteDate existing,
+                                               AbsoluteDate date) {
+                return new ArrayList<AbsoluteDate>();
+            }
+        };
+        new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                                           nullGenerator, 2).getNeighbors(AbsoluteDate.J2000_EPOCH);
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testNoDataBefore() {
+        TimeStampedGenerator<AbsoluteDate> nullGenerator =
+                new TimeStampedGenerator<AbsoluteDate>() {
+
+            public AbsoluteDate getEarliest() {
+                return AbsoluteDate.J2000_EPOCH.shiftedBy(-20);
+            }
+
+            public AbsoluteDate getLatest() {
+                return AbsoluteDate.J2000_EPOCH;
+            }
+
+            public List<AbsoluteDate> generate(AbsoluteDate existing,
+                                               AbsoluteDate date) {
+                return Arrays.asList(AbsoluteDate.J2000_EPOCH);
+            }
+        };
+        new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                                           nullGenerator, 2).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(-10));
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testNoDataAfter() {
+        TimeStampedGenerator<AbsoluteDate> nullGenerator =
+                new TimeStampedGenerator<AbsoluteDate>() {
+
+            public AbsoluteDate getEarliest() {
+                return AbsoluteDate.J2000_EPOCH;
+            }
+
+            public AbsoluteDate getLatest() {
+                return AbsoluteDate.J2000_EPOCH.shiftedBy(+20.0);
+            }
+
+            public List<AbsoluteDate> generate(AbsoluteDate existing,
+                                               AbsoluteDate date) {
+                return Arrays.asList(AbsoluteDate.J2000_EPOCH);
+            }
+        };
+        new TimeStampedCache<AbsoluteDate>(10, Constants.JULIAN_YEAR, AbsoluteDate.class,
+                                           nullGenerator, 2).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(+10));
     }
 
     @Test(expected=IllegalStateException.class)
