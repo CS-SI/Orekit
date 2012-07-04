@@ -23,18 +23,11 @@ package org.orekit.frames;
 public class EOP2000History extends AbstractEOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8374043152379666334L;
+    private static final long serialVersionUID = 7042823586838112732L;
 
     /** Simple constructor.
      */
     public EOP2000History() {
-    }
-
-    /** Add an Earth Orientation Parameters entry.
-     * @param entry entry to add
-     */
-    public void addEntry(final EOP2000Entry entry) {
-        entries.add(entry);
     }
 
 }

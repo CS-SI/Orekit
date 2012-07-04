@@ -16,7 +16,9 @@
  */
 package org.orekit.frames;
 
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.HermiteInterpolator;
 
 /** This class holds Earth Orientation Parameters (IAU1980) data throughout a large time range.
  * @author Pascal Parraud
@@ -24,18 +26,11 @@ import org.orekit.time.AbsoluteDate;
 public class EOP1980History extends AbstractEOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3673081177492491161L;
+    private static final long serialVersionUID = 3003752420705950441L;
 
     /** Simple constructor.
      */
     public EOP1980History() {
-    }
-
-    /** Add an Earth Orientation Parameters entry.
-     * @param entry entry to add
-     */
-    public void addEntry(final EOP1980Entry entry) {
-        entries.add(entry);
     }
 
     /** Get the correction to the nutation parameters.
@@ -43,19 +38,22 @@ public class EOP1980History extends AbstractEOPHistory {
      * @param date date at which the correction is desired
      * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
      * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
+     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
     public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
-        if (prepareInterpolation(date)) {
-            synchronized (this) {
-
-                final EOP1980Entry n = (EOP1980Entry) next;
-                final EOP1980Entry p = (EOP1980Entry) previous;
-                final double ddEps = (dtP * n.getDdEps() + dtN * p.getDdEps()) / (dtP + dtN);
-                final double ddPsi = (dtP * n.getDdPsi() + dtN * p.getDdPsi()) / (dtP + dtN);
-                return new NutationCorrection(ddEps, ddPsi);
-
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                final EOP1980Entry e1980 = (EOP1980Entry) entry;
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                    e1980. getDdEps(), e1980.getDdPsi()
+                });
             }
-        } else {
+            final double[] interpolated = interpolator.value(0);
+            return new NutationCorrection(interpolated[0], interpolated[1]);
+        } catch (TimeStampedCacheException tce) {
+            // no EOP data available for this date, we use a default null correction
             return NutationCorrection.NULL_CORRECTION;
         }
     }

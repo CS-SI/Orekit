@@ -38,7 +38,7 @@ public class EOP2000HistoryTest {
     public void testOutOfRange() throws OrekitException {
         EOP2000History history = FramesFactory.getEOP2000History();
         AbsoluteDate endDate = new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC());
-        for (double t = -1000; t < 1000 ; t += 10) {
+        for (double t = -1000; t < 1000 ; t += 3) {
             AbsoluteDate date = endDate.shiftedBy(t);
             double dt = history.getUT1MinusUTC(date);
             if (t <= 0) {

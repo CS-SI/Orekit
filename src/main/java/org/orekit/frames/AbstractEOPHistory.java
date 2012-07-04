@@ -17,16 +17,23 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
+import org.orekit.utils.HermiteInterpolator;
+import org.orekit.utils.OrekitConfiguration;
+import org.orekit.utils.TimeStampedCache;
+import org.orekit.utils.TimeStampedGenerator;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
@@ -34,41 +41,43 @@ import org.orekit.time.TimeStamped;
 public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -4066489179973636623L;
+    private static final long serialVersionUID = 5659073889129159070L;
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    /** Number of points to use in interpolation. */
+    // TODO set the value to 4 as recommended by IERS
+    private static final int INTERPOLATION_POINTS = 2;
+
+    /** Earth Orientation Parameter entries. */
+    private final SortedSet<TimeStamped> entries;
 
     /** EOP history entries. */
-    protected final SortedSet<TimeStamped> entries;
-
-    /** Previous EOP entry. */
-    protected EOPEntry previous;
-
-    /** Next EOP entry. */
-    protected EOPEntry next;
-
-    /** Offset from previous date. */
-    protected double dtP;
-
-    /** Offset to next date. */
-    protected double dtN;
-
-    // CHECKSTYLE: resume VisibilityModifierCheck
+    private final TimeStampedCache<EOPEntry> cache;
 
     /** Simple constructor.
      */
     protected AbstractEOPHistory() {
         entries = new TreeSet<TimeStamped>(new ChronologicalComparator());
+        cache   = new TimeStampedCache<EOPEntry>(INTERPOLATION_POINTS,
+                                                 OrekitConfiguration.getDefaultMaxSlotsNumber(), Constants.JULIAN_YEAR,
+                                                 30 * Constants.JULIAN_DAY,
+                                                 new Generator(), EOPEntry.class);
     }
 
-    /** {@inheritDoc} */
-    public int size() {
-        return entries.size();
+    /** Add an Earth Orientation Parameters entry.
+     * @param entry entry to add
+     */
+    public void addEntry(final EOPEntry entry) {
+        entries.add(entry);
     }
 
     /** {@inheritDoc} */
     public Iterator<TimeStamped> iterator() {
         return entries.iterator();
+    }
+
+    /** {@inheritDoc} */
+    public int size() {
+        return cache.getEntries();
     }
 
     /** {@inheritDoc} */
@@ -82,30 +91,59 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     }
 
     /** {@inheritDoc} */
-    public synchronized double getUT1MinusUTC(final AbsoluteDate date) {
-        if (prepareInterpolation(date)) {
-            synchronized (this) {
-                double dutN = next.getUT1MinusUTC();
-                final double dutP = previous.getUT1MinusUTC();
-                if (dutN - dutP > 0.9) {
-                    // there was a leap second between the two entries
-                    dutN -= 1.0;
+    public double getUT1MinusUTC(final AbsoluteDate date) {
+        try {
+            final EOPEntry[] entries = getNeighbors(date);
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            final double firstDUT = entries[0].getUT1MinusUTC();
+            boolean beforeLeap = true;
+            for (final EOPEntry entry : entries) {
+                final double dut;
+                if (entry.getUT1MinusUTC() - firstDUT > 0.9) {
+                    // there was a leap second between the entries
+                    dut = entry.getUT1MinusUTC() - 1.0;
+                    if (entry.getDate().compareTo(date) <= 0) {
+                        beforeLeap = false;
+                    }
+                } else {
+                    dut = entry.getUT1MinusUTC();
                 }
-                return (dtP * dutN + dtN * dutP) / (dtP + dtN);
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                    dut
+                });
             }
-        } else {
-            return 0;
+            final double interpolated = interpolator.value(0)[0];
+            return beforeLeap ? interpolated : interpolated + 1.0;
+        } catch (TimeStampedCacheException tce) {
+            // no EOP data available for this date, we use a default 0.0 offset
+            return 0.0;
         }
     }
 
+    /** Get the entries surrounding a central date.
+     * @param central central date
+     * @return array of cached entries surrounding specified date
+     * @exception TimeStampedCacheException if EOP data cannot be retrieved
+     */
+    protected EOPEntry[] getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
+        return cache.getNeighbors(central);
+    }
+
     /** {@inheritDoc} */
-    public double getLOD(final AbsoluteDate date) {
-        if (prepareInterpolation(date)) {
-            synchronized (this) {
-                return (dtP * next.getLOD() + dtN * previous.getLOD()) / (dtP + dtN);
+    public double getLOD(final AbsoluteDate date) throws TimeStampedCacheException {
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                    entry. getLOD()
+                });
             }
-        } else {
-            return 0;
+            return interpolator.value(0)[0];
+        } catch (TimeStampedCacheException tce) {
+            // no EOP data available for this date, we use a default null correction
+            return 0.0;
         }
     }
 
@@ -114,67 +152,22 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
      * @param date date at which the correction is desired
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
+     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        if (prepareInterpolation(date)) {
-            synchronized (this) {
-
-                final double x = (dtP * next.getX() + dtN * previous.getX()) / (dtP + dtN);
-                final double y = (dtP * next.getY() + dtN * previous.getY()) / (dtP + dtN);
-
-                return new PoleCorrection(x, y);
-
-            }
-        } else {
-            return PoleCorrection.NULL_CORRECTION;
-        }
-    }
-
-    /** Prepare interpolation between two entries.
-     * @param  date target date
-     * @return true if there are entries bracketing the target date
-     */
-    protected synchronized boolean prepareInterpolation(final AbsoluteDate date) {
-
-        // compute offsets assuming the current selection brackets the date
-        dtP = (previous == null) ? -1.0 : date.durationFrom(previous.getDate());
-        dtN = (next == null) ? -1.0 : next.getDate().durationFrom(date);
-
-        // check if bracketing was correct
-        if ((dtP < 0) || (dtN < 0)) {
-
-            // bad luck, we need to recompute brackets
-            if (!selectBracketingEntries(date)) {
-                // the specified date is outside of supported range
-                return false;
-            }
-
-            // recompute offsets
-            dtP = date.durationFrom(previous.getDate());
-            dtN = next.getDate().durationFrom(date);
-
-        }
-
-        return true;
-
-    }
-
-    /** Select the entries bracketing a specified date.
-     * <p>If the date is either before the first entry or after the last entry,
-     * previous and next will be set to null.</p>
-     * @param  date target date
-     * @return true if the date was found in the tables
-     */
-    protected boolean selectBracketingEntries(final AbsoluteDate date) {
         try {
-            // select the bracketing elements
-            next     = (EOPEntry) (entries.tailSet(date).first());
-            previous = (EOPEntry) (entries.headSet(next).last());
-            return true;
-        } catch (NoSuchElementException nsee) {
-            previous = null;
-            next     = null;
-            return false;
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                    entry. getX(), entry.getY()
+                });
+            }
+            final double[] interpolated = interpolator.value(0);
+            return new PoleCorrection(interpolated[0], interpolated[1]);
+        } catch (TimeStampedCacheException tce) {
+            // no EOP data available for this date, we use a default null correction
+            return PoleCorrection.NULL_CORRECTION;
         }
     }
 
@@ -197,6 +190,54 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             preceding = current;
 
         }
+    }
+
+    /** Local generator for entries. */
+    private class Generator implements TimeStampedGenerator<EOPEntry> {
+
+        /** {@inheritDoc} */
+        public List<EOPEntry> generate(final EOPEntry existing, final AbsoluteDate date)
+            throws TimeStampedCacheException {
+
+            final List<EOPEntry> generated = new ArrayList<EOPEntry>();
+
+            // depending on the user provided EOP file, entry points are expected to
+            // be every day or every 5 days, using 5 days is a safe margin
+            final double timeMargin = 5 * Constants.JULIAN_DAY;
+            final AbsoluteDate start;
+            final AbsoluteDate end;
+            if (existing == null) {
+                start = date.shiftedBy(-INTERPOLATION_POINTS * timeMargin);
+                end   = date.shiftedBy(INTERPOLATION_POINTS * timeMargin);
+            } else if (existing.getDate().compareTo(date) <= 0) {
+                start = existing.getDate();
+                end   = date.shiftedBy(INTERPOLATION_POINTS * timeMargin);
+            } else {
+                start = date.shiftedBy(-INTERPOLATION_POINTS * timeMargin);
+                end   = existing.getDate();
+            }
+
+            // gather entries in the interval from existing to date (with some margins)
+            for (TimeStamped ts : entries.tailSet(start).headSet(end)) {
+                generated.add((EOPEntry) ts);
+            }
+ 
+            if (generated.isEmpty()) {
+                if (entries.isEmpty()) {
+                    throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, date);
+                } else if (entries.last().getDate().compareTo(date) < 0) {
+                        throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+                                                            entries.last().getDate());
+                } else {
+                    throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+                                                        entries.first().getDate());
+                }
+            }
+
+            return generated;
+
+        }
+
     }
 
 }

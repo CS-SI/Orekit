@@ -16,6 +16,7 @@
  */
 package org.orekit.frames;
 
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -50,7 +51,8 @@ public interface EOPHistory extends Iterable<TimeStamped> {
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the value is desired
      * @return LoD in seconds (0 if date is outside covered range)
+     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
-    double getLOD(final AbsoluteDate date);
+    double getLOD(final AbsoluteDate date) throws TimeStampedCacheException;
 
 }
