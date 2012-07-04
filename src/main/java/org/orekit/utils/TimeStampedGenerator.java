@@ -18,6 +18,7 @@ package org.orekit.utils;
 
 import java.util.List;
 
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -54,18 +55,6 @@ import org.orekit.time.TimeStamped;
  */
 public interface TimeStampedGenerator<T extends TimeStamped> {
 
-    /** Get the date of the earliest entry that can be generated.
-     * @return date of the earliest entry that can be generated
-     * (can be {@link AbsoluteDate#PAST_INFINITY})
-     */
-    AbsoluteDate getEarliest();
-
-    /** Get the date of the latest entry that can be generated.
-     * @return date of the latest entry that can be generated 
-     * (can be {@link AbsoluteDate#FUTURE_INFINITY})
-     */
-    AbsoluteDate getLatest();
-
     /** Generate a chronologically sorted list of entries to be cached.
      * <p>
      * If {@code existing} is earlier than {@code date}, the range covered by
@@ -87,7 +76,8 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
      * @param date date that must be covered by the range of the generated array
      * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
      * @return chronologically sorted list of generated entries
+     * @exception TimeStampedCacheException if time stamped data cannot be generated
      */
-    List<T> generate(T existing, AbsoluteDate date);
+    List<T> generate(T existing, AbsoluteDate date) throws TimeStampedCacheException;
 
 }

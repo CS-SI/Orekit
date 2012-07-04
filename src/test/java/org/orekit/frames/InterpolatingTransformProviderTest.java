@@ -44,7 +44,7 @@ public class InterpolatingTransformProviderTest {
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider, true, true,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                   5, 0.8, 10, 60.0);
+                                                   5, 0.8, 10, 60.0, 60.0);
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
             Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
@@ -70,7 +70,7 @@ public class InterpolatingTransformProviderTest {
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider, false, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                   5, 0.8, 10, 60.0);
+                                                   5, 0.8, 10, 60.0, 60.0);
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
             Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
@@ -97,7 +97,7 @@ public class InterpolatingTransformProviderTest {
                     }
                 }, true, true,
                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                5, 0.8, 10, 60.0);
+                5, 0.8, 10, 60.0, 60.0);
         interpolatingProvider.getTransform(AbsoluteDate.J2000_EPOCH);
     }
 
@@ -109,7 +109,7 @@ public class InterpolatingTransformProviderTest {
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider, true, true,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                   5, 0.8, 10, 60.0);
+                                                   5, 0.8, 10, 60.0, 60.0);
 
         for (double dt = 0.1; dt <= 3.1; dt += 0.001) {
             interpolatingProvider.getTransform(t0.shiftedBy(dt));

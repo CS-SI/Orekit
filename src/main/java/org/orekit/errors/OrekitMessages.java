@@ -157,7 +157,6 @@ public enum OrekitMessages implements Localizable {
     NO_DATA_GENERATED("no data generated generated around date: {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}"),
-    OUT_OF_RANGE_CACHE("out of range date for cache entry: {0}, [{1}, {2}]"),
     DUPLICATED_ABSCISSA("abscissa {0} is duplicated"),
     EMPTY_INTERPOLATION_SAMPLE("sample for interpolation is empty");
 

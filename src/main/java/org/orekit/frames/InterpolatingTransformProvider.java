@@ -79,20 +79,22 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * in the {@link TimeStampedCache time-stamped cache}
      * @param maxSpan maximum duration span in seconds of one slot
      * in the {@link TimeStampedCache time-stamped cache}
+     * @param newSlotInterval time interval above which a new slot is created
+     * in the {@link TimeStampedCache time-stamped cache}
      */
     public InterpolatingTransformProvider(final TransformProvider rawProvider,
                                           final boolean useVelocities, final boolean useRotationRates,
                                           final AbsoluteDate earliest, final AbsoluteDate latest,
                                           final int gridPoints, final double step,
-                                          final int maxSlots, final double maxSpan) {
+                                          final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.rawProvider      = rawProvider;
         this.useVelocities    = useVelocities;
         this.useRotationRates = useRotationRates;
         this.earliest         = earliest;
         this.latest           = latest;
         this.step             = step;
-        this.cache            = new TimeStampedCache<Transform>(maxSlots, maxSpan, Transform.class,
-                                                                new Generator(), gridPoints);
+        this.cache            = new TimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
+                                                                new Generator(), Transform.class);
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -129,8 +131,8 @@ public class InterpolatingTransformProvider implements TransformProvider {
      */
     private Object writeReplace() {
         return new DataTransferObject(rawProvider, useVelocities, useRotationRates,
-                                      earliest, latest, cache.getNeighborsSize(),
-                                      step, cache.getMaxSlots(), cache.getMaxSpan());
+                                      earliest, latest, cache.getNeighborsSize(), step,
+                                      cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
     }
 
     /** Internal class used only for serialization. */
@@ -166,6 +168,9 @@ public class InterpolatingTransformProvider implements TransformProvider {
         /** Maximum duration span in seconds of one slot. */
         private final double maxSpan;
 
+        /** Time interval above which a new slot is created. */
+        private final double newSlotInterval;
+
         /** Simple constructor.
          * @param rawProvider provider for raw (non-interpolated) transforms
          * @param useVelocities if true, use sample transforms velocities,
@@ -180,12 +185,14 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * in the {@link TimeStampedCache time-stamped cache}
          * @param maxSpan maximum duration span in seconds of one slot
          * in the {@link TimeStampedCache time-stamped cache}
+         * @param newSlotInterval time interval above which a new slot is created
+         * in the {@link TimeStampedCache time-stamped cache}
          */
         public DataTransferObject(final TransformProvider rawProvider,
                                   final boolean useVelocities, final boolean useRotationRates,
                                   final AbsoluteDate earliest, final AbsoluteDate latest,
                                   final int gridPoints, final double step,
-                                  final int maxSlots, final double maxSpan) {
+                                  final int maxSlots, final double maxSpan, final double newSlotInterval) {
             this.rawProvider      = rawProvider;
             this.useVelocities    = useVelocities;
             this.useRotationRates = useRotationRates;
@@ -195,6 +202,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
             this.step             = step;
             this.maxSlots         = maxSlots;
             this.maxSpan          = maxSpan;
+            this.newSlotInterval  = newSlotInterval;
         }
 
         /** Replace the deserialized data transfer object with a {@link InterpolatingTransformProvider}.
@@ -203,24 +211,14 @@ public class InterpolatingTransformProvider implements TransformProvider {
         private Object readResolve() {
             // build a new provider, with an empty cache
             return new InterpolatingTransformProvider(rawProvider, useVelocities, useRotationRates,
-                                                      earliest, latest,
-                                                      gridPoints, step, maxSlots, maxSpan);
+                                                      earliest, latest, gridPoints, step,
+                                                      maxSlots, maxSpan, newSlotInterval);
         }
 
     }
 
     /** Local generator for thread-safe cache. */
     private class Generator implements TimeStampedGenerator<Transform> {
-
-        /** {@inheritDoc} */
-        public AbsoluteDate getEarliest() {
-            return earliest;
-        }
-
-        /** {@inheritDoc} */
-        public AbsoluteDate getLatest() {
-            return latest;
-        }
 
         /** {@inheritDoc} */
         public List<Transform> generate(final Transform existing, final AbsoluteDate date) {

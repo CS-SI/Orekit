@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -28,6 +29,7 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -42,26 +44,20 @@ public class TimeStampedCache<T extends TimeStamped> {
     /** Default number of independent cached time slots. */
     public static final int DEFAULT_CACHED_SLOTS_NUMBER = 10;
 
-    /** Threshold factor for creating new slot or extending existing ones. */
-    private static final long NEW_RANGE_FACTOR = 10;
-
     /** Quantum step. */
     private static final double QUANTUM_STEP = 1.0e-6;
 
-    /** Earliest supported date. */
-    private final AbsoluteDate earliest;
-
-    /** Latest supported date. */
-    private final AbsoluteDate latest;
-
     /** Reference date for indexing. */
-    private final AbsoluteDate reference;
+    private final AtomicReference<AbsoluteDate> reference;
 
     /** Maximum number of independent cached time slots. */
     private final int maxSlots;
 
     /** Maximum duration span in seconds of one slot. */
     private final double maxSpan;
+
+    /** Quantum gap above which a new slot is created instead of extending an existing one. */
+    private final long newSlotQuantumGap;
 
     /** Class of the cached entries. */
     private final Class<T> entriesClass;
@@ -85,16 +81,19 @@ public class TimeStampedCache<T extends TimeStamped> {
     private final ReadWriteLock lock;
 
     /** Simple constructor.
+     * @param neighborsSize fixed size of the arrays to be returned by {@link
+     * #getNeighbors(AbsoluteDate)}, must be at least 2
      * @param maxSlots maximum number of independent cached time slots
      * @param maxSpan maximum duration span in seconds of one slot
      * (can be set to {@code Double.POSITIVE_INFINITY} if desired)
-     * @param entriesClass class of the cached entries
+     * @param newSlotInterval time interval above which a new slot is created
+     * instead of extending an existing one
      * @param generator generator to use for yet non-existent data
-     * @param neighborsSize fixed size of the arrays to be returned by {@link
-     * #getNeighbors(AbsoluteDate)}, must be at least 2
+     * @param entriesClass class of the cached entries
      */
-    public TimeStampedCache(final int maxSlots, final double maxSpan, final Class<T> entriesClass,
-                            final TimeStampedGenerator<T> generator, final int neighborsSize) {
+    public TimeStampedCache(final int neighborsSize, final int maxSlots, final double maxSpan,
+                            final double newSlotInterval, final TimeStampedGenerator<T> generator,
+                            final Class<T> entriesClass) {
 
         // safety check
         if (maxSlots < 1) {
@@ -105,14 +104,10 @@ public class TimeStampedCache<T extends TimeStamped> {
                                                                  neighborsSize, 2);
         }
 
-        // compute boundaries
-        this.earliest         = generator.getEarliest();
-        this.latest           = generator.getLatest();
-        final double halfSpan = 0.5 * latest.durationFrom(earliest);
-        this.reference        = Double.isInfinite(halfSpan) ? AbsoluteDate.J2000_EPOCH : earliest.shiftedBy(halfSpan);
-
+        this.reference      = new AtomicReference<AbsoluteDate>();
         this.maxSlots       = maxSlots;
         this.maxSpan        = maxSpan;
+        this.newSlotQuantumGap     = FastMath.round(newSlotInterval / QUANTUM_STEP);
         this.entriesClass   = entriesClass;
         this.generator      = generator;
         this.neighborsSize  = neighborsSize;
@@ -142,6 +137,17 @@ public class TimeStampedCache<T extends TimeStamped> {
      */
     public double getMaxSpan() {
         return maxSpan;
+    }
+
+    /** Get quantum gap above which a new slot is created instead of extending an existing one.
+     * <p>
+     * The quantum gap is the {@code newSlotInterval} value provided at construction
+     * rounded to the nearest quantum step used internally by the cache.
+     * </p>
+     * @return quantum gap in seconds
+     */
+    public double getNewSlotQuantumGap() {
+        return newSlotQuantumGap * QUANTUM_STEP;
     }
 
     /** Get the number of calls to the generate method.
@@ -263,16 +269,12 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @return array of cached entries surrounding specified date (the size
      * of the array is fixed to the one specified in the {@link #TimeStampedCache(int,
      * double, Class, TimeStampedGenerator, int) constructor})
-     * @exception IllegalArgumentException if the requested date is outside the supported range
+     * @exception TimeStampedCacheException if entries are not chronologically
+     * sorted or if new data cannot be generated
      * @see #getEarliest()
      * @see #getLatest()
      */
-    public T[] getNeighbors(final AbsoluteDate central) {
-
-        if (central.compareTo(earliest) < 0 || central.compareTo(latest) > 0) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.OUT_OF_RANGE_CACHE,
-                                                                 central, earliest, latest);
-        }
+    public T[] getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
 
         lock.readLock().lock();
         try {
@@ -292,7 +294,8 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @return quantum corresponding to the date
      */
     private long quantum(final AbsoluteDate date) {
-        return FastMath.round(date.durationFrom(reference) / QUANTUM_STEP);
+        reference.compareAndSet(null, date);
+        return FastMath.round(date.durationFrom(reference.get()) / QUANTUM_STEP);
     }
 
     /** Select a slot containing a date.
@@ -302,15 +305,18 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @param date target date
      * @param dateQuantum global quantum of the date
      * @return slot covering the date
+     * @exception TimeStampedCacheException if entries are not chronologically
+     * sorted or if new data cannot be generated
      */
-    private Slot selectSlot(final AbsoluteDate date, final long dateQuantum) {
+    private Slot selectSlot(final AbsoluteDate date, final long dateQuantum)
+        throws TimeStampedCacheException {
 
         Slot selected = null;
 
         int index = slots.isEmpty() ? 0 : slotIndex(dateQuantum);
         if (slots.isEmpty() ||
-            slots.get(index).getEarliestQuantum() > dateQuantum + NEW_RANGE_FACTOR * neighborsSize ||
-            slots.get(index).getLatestQuantum()   < dateQuantum - NEW_RANGE_FACTOR * neighborsSize) {
+            slots.get(index).getEarliestQuantum() > dateQuantum + newSlotQuantumGap ||
+            slots.get(index).getLatestQuantum()   < dateQuantum - newSlotQuantumGap) {
             // no existing slot is suitable
 
             // upgrade the read lock to a write lock so we can change the list of available slots
@@ -322,13 +328,13 @@ public class TimeStampedCache<T extends TimeStamped> {
                 // the list while we were waiting for the write lock
                 index = slots.isEmpty() ? 0 : slotIndex(dateQuantum);
                 if (slots.isEmpty() ||
-                    slots.get(index).getEarliestQuantum() > dateQuantum + NEW_RANGE_FACTOR * neighborsSize ||
-                    slots.get(index).getLatestQuantum()   < dateQuantum - NEW_RANGE_FACTOR * neighborsSize) {
+                    slots.get(index).getEarliestQuantum() > dateQuantum + newSlotQuantumGap ||
+                    slots.get(index).getLatestQuantum()   < dateQuantum - newSlotQuantumGap) {
 
                     // we really need to create a new slot in the current thread
                     // (no other threads have created it while we were waiting for the lock)
                     if ((!slots.isEmpty()) &&
-                        slots.get(index).getLatestQuantum() < dateQuantum - NEW_RANGE_FACTOR * neighborsSize) {
+                        slots.get(index).getLatestQuantum() < dateQuantum - newSlotQuantumGap) {
                         ++index;
                     }
 
@@ -421,29 +427,23 @@ public class TimeStampedCache<T extends TimeStamped> {
 
         /** Simple constructor.
          * @param date central date for initial entries to insert in the slot
-         * @exception IllegalStateException if entries are not chronologically sorted
+         * @exception TimeStampedCacheException if entries are not chronologically
+         * sorted or if new data cannot be generated
          */
-        public Slot(final AbsoluteDate date) throws IllegalStateException {
+        public Slot(final AbsoluteDate date) throws TimeStampedCacheException {
 
             // allocate cache
             this.cache = new ArrayList<Entry>();
 
             // set up first entries
-            AbsoluteDate generationDate;
-            if (date.compareTo(earliest) < 0) {
-                generationDate = earliest;
-            } else if (date.compareTo(latest) > 0) {
-                generationDate = latest;
-            } else {
-                generationDate = date;
-            }
+            AbsoluteDate generationDate = date;
 
             calls.incrementAndGet();
             for (final T entry : generateAndCheck(null, generationDate)) {
                 cache.add(new Entry(entry, quantum(entry.getDate())));
             }
             earliestQuantum = new AtomicLong(cache.get(0).getQuantum());
-            latestQuantum   = new AtomicLong(cache.get(cache.size() - 1).getQuantum() + 1);
+            latestQuantum   = new AtomicLong(cache.get(cache.size() - 1).getQuantum());
 
             while (cache.size() < neighborsSize) {
                 // we need to generate more entries
@@ -453,21 +453,15 @@ public class TimeStampedCache<T extends TimeStamped> {
                 calls.incrementAndGet();
 
                 final T existing;
-                if (latest.durationFrom(entryN.getDate()) >= entry0.getDate().durationFrom(earliest)) {
+                if (entryN.getDate().durationFrom(date) <= date.durationFrom(entry0.getDate())) {
                     // generate additional point at the end of the slot
                     existing = entryN;
                     generationDate = entryN.getDate().shiftedBy(getMeanStep() * (neighborsSize - cache.size()));
-                    if (generationDate.compareTo(latest) > 0) {
-                        generationDate = latest;
-                    }
                     appendAtEnd(generateAndCheck(existing, generationDate));
                 } else {
                     // generate additional point at the start of the slot
                     existing = entry0;
                     generationDate = entry0.getDate().shiftedBy(-getMeanStep() * (neighborsSize - cache.size()));
-                    if (generationDate.compareTo(earliest) < 0) {
-                        generationDate = earliest;
-                    }
                     insertAtStart(generateAndCheck(existing, generationDate));
                 }
 
@@ -548,28 +542,16 @@ public class TimeStampedCache<T extends TimeStamped> {
          * @param central central date
          * @param dateQuantum global quantum of the date
          * @return a new array containing date neighbors
-         * @exception IllegalStateException if entries are not chronologically sorted
+         * @exception TimeStampedCacheException if entries are not chronologically
+         * sorted or if new data cannot be generated
          * @see #getBefore(AbsoluteDate)
          * @see #getAfter(AbsoluteDate)
          */
         public T[] getNeighbors(final AbsoluteDate central, final long dateQuantum)
-            throws IllegalStateException {
+            throws TimeStampedCacheException {
 
             int index         = entryIndex(central, dateQuantum);
             int firstNeighbor = index - (neighborsSize - 1) / 2;
-
-            // if the request for neighbors is outside the supported generator limits,
-            // adjust the firstNeighbor index to match the current available cache entries
-            // without requesting more data from the generator
-            // as the slot will always contain entries after initialization, there is no
-            // need to do a null check for the data returned from getLatest() or getEarliest()
-            if (firstNeighbor + neighborsSize > cache.size() &&
-                getLatest().getDate().compareTo(generator.getLatest()) >= 0) {
-                firstNeighbor = cache.size() - neighborsSize;
-            } else if (firstNeighbor < 0 &&
-                       getEarliest().getDate().compareTo(generator.getEarliest()) <= 0) {
-                firstNeighbor = 0;
-            }
 
             if (firstNeighbor < 0 || firstNeighbor + neighborsSize > cache.size()) {
                 // the cache is not balanced around the desired date, we can try to generate new data
@@ -590,26 +572,13 @@ public class TimeStampedCache<T extends TimeStamped> {
                             // generate data at the appropriate slot end
                             final double step = getMeanStep();
                             final T existing;
-                            AbsoluteDate generationDate;
+                            final AbsoluteDate generationDate;
                             if (firstNeighbor < 0) {
                                 existing       = cache.get(0).getData();
-                                generationDate = central.shiftedBy(-step * neighborsSize / 2);
-                                if (generationDate.compareTo(existing.getDate()) >= 0) {
-                                    generationDate = existing.getDate().shiftedBy(-step);
-                                }
+                                generationDate = existing.getDate().shiftedBy(step * firstNeighbor);
                             } else {
                                 existing       = cache.get(cache.size() - 1).getData();
-                                generationDate = central.shiftedBy(-step * neighborsSize / 2);
-                                if (generationDate.compareTo(existing.getDate()) <= 0) {
-                                    generationDate = existing.getDate().shiftedBy(step);
-                                }
-                            }
-                            if (generationDate.compareTo(earliest) < 0) {
-                                generationDate = earliest;
-                                loop = false;
-                            } else if (generationDate.compareTo(latest) > 0) {
-                                generationDate = latest;
-                                loop = false;
+                                generationDate = existing.getDate().shiftedBy(step * (firstNeighbor + neighborsSize - cache.size()));
                             }
                             calls.incrementAndGet();
 
@@ -688,7 +657,7 @@ public class TimeStampedCache<T extends TimeStamped> {
             if (dateQuantum < getEarliestQuantum()) {
                 // date if before the first entry
                 return -1;
-            } else if (dateQuantum >= getLatestQuantum()) {
+            } else if (dateQuantum > getLatestQuantum()) {
                 // date is after the last entry
                 return cache.size();
             } else {
@@ -722,8 +691,9 @@ public class TimeStampedCache<T extends TimeStamped> {
 
         /** Insert data at slot start.
          * @param data data to insert
+         * @exception TimeStampedCacheException if new data cannot be generated
          */
-        private void insertAtStart(final List<T> data) {
+        private void insertAtStart(final List<T> data) throws TimeStampedCacheException {
 
             // insert data at start
             boolean inserted = false;
@@ -739,8 +709,8 @@ public class TimeStampedCache<T extends TimeStamped> {
             }
 
             if (!inserted) {
-                throw OrekitException.createIllegalStateException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                                  cache.get(0).getData().getDate());
+                throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
+                                                              cache.get(0).getData().getDate());
             }
 
             // evict excess data at end
@@ -758,8 +728,9 @@ public class TimeStampedCache<T extends TimeStamped> {
 
         /** Append data at slot end.
          * @param data data to append
+         * @exception TimeStampedCacheException if new data cannot be generated
          */
-        private void appendAtEnd(final List<T> data) {
+        private void appendAtEnd(final List<T> data) throws TimeStampedCacheException {
 
             // append data at end
             boolean appended = false;
@@ -776,8 +747,8 @@ public class TimeStampedCache<T extends TimeStamped> {
             }
 
             if (!appended) {
-                throw OrekitException.createIllegalStateException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                                  cache.get(cache.size() - 1).getData().getDate());
+                throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+                                                              cache.get(cache.size() - 1).getData().getDate());
             }
 
             // evict excess data at start
@@ -798,20 +769,21 @@ public class TimeStampedCache<T extends TimeStamped> {
          * @param date date that must be covered by the range of the generated array
          * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
          * @return chronologically sorted list of generated entries
-         * @exception IllegalStateException if entries are not chronologically sorted
+         * @exception IllegalStateException 
+         * @exception TimeStampedCacheException if if entries are not chronologically
+         * sorted or if new data cannot be generated
          */
         private List<T> generateAndCheck(final T existing, final AbsoluteDate date)
-            throws IllegalStateException {
+            throws TimeStampedCacheException {
             final List<T> entries = generator.generate(existing, date);
             if (entries.isEmpty()) {
-                throw OrekitException.createIllegalStateException(OrekitMessages.NO_DATA_GENERATED,
-                                                                  date);
+                throw new TimeStampedCacheException(OrekitMessages.NO_DATA_GENERATED, date);
             }
             for (int i = 1; i < entries.size(); ++i) {
                 if (entries.get(i).getDate().compareTo(entries.get(i - 1).getDate()) < 0) {
-                    throw OrekitException.createIllegalStateException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
-                                                                      entries.get(i - 1).getDate(),
-                                                                      entries.get(i).getDate());
+                    throw new TimeStampedCacheException(OrekitMessages.NON_CHRONOLOGICALLY_SORTED_ENTRIES,
+                                                                  entries.get(i - 1).getDate(),
+                                                                  entries.get(i).getDate());
                 }
             }
             return entries;

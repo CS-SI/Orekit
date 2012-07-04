@@ -61,7 +61,7 @@ public class CIRF2000ProviderTest {
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    8, Constants.JULIAN_DAY / 6,
                                                    OrekitConfiguration.getDefaultMaxSlotsNumber(),
-                                                   Constants.JULIAN_YEAR);
+                                                   Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2002, 10,  3, TimeScalesFactory.getTAI());

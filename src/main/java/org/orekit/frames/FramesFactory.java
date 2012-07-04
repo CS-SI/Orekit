@@ -773,7 +773,7 @@ public class FramesFactory implements Serializable {
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            8, Constants.JULIAN_DAY / 6,
                                                            OrekitConfiguration.getDefaultMaxSlotsNumber(),
-                                                           Constants.JULIAN_YEAR);
+                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
                 frame = new FactoryManagedFrame(getGCRF(), interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }

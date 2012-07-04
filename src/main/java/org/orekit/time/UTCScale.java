@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.SortedMap;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.utils.Constants;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.TimeStampedCache;
@@ -64,9 +66,9 @@ public class UTCScale implements TimeScale {
     UTCScale(final SortedMap<DateComponents, Integer> entries) throws OrekitException {
 
         // create cache
-        cache = new TimeStampedCache<UTCTAIOffset>(OrekitConfiguration.getDefaultMaxSlotsNumber(),
-                                                   Double.POSITIVE_INFINITY, UTCTAIOffset.class,
-                                                   new Generator(entries), 2);
+        cache = new TimeStampedCache<UTCTAIOffset>(2,
+                                                   OrekitConfiguration.getDefaultMaxSlotsNumber(), Double.POSITIVE_INFINITY,
+                                                   1000 * Constants.JULIAN_YEAR, new Generator(entries), UTCTAIOffset.class);
 
         // ensure the cache is populated right from the beginning
         // (this allows calling getEarliest() or getLatest() even before computing first offset)
@@ -124,18 +126,13 @@ public class UTCScale implements TimeScale {
         }
 
         /** {@inheritDoc} */
-        public AbsoluteDate getEarliest() {
-            return offsets.get(0).getDate();
-        }
-
-        /** {@inheritDoc} */
-        public AbsoluteDate getLatest() {
-            return offsets.get(offsets.size() - 1).getDate();
-        }
-
-        /** {@inheritDoc} */
-        public List<UTCTAIOffset> generate(final UTCTAIOffset existing, final AbsoluteDate date) {
-            // everything has been generated at construction
+        public List<UTCTAIOffset> generate(final UTCTAIOffset existing, final AbsoluteDate date)
+                throws TimeStampedCacheException {
+            if (existing != null) {
+                // short cut to avoid going through all cache updating as nothing new is available
+                throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+                                                    offsets.get(offsets.size() - 1).getDate());
+            }
             return offsets;
         }
 
@@ -177,16 +174,20 @@ public class UTCScale implements TimeScale {
 
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        final UTCTAIOffset[] neighbors = getNeighbors(date);
-        if (neighbors[0].getDate().compareTo(date) > 0) {
-            // the date is before the first neighbor, hence it is before the first known leap
+        if (cache.getEarliest().getDate().compareTo(date) > 0) {
+            // the date is before the first known leap
             return 0;
-        } else if (neighbors[1].getDate().compareTo(date) < 0) {
-            // the date is after the second neighbor, hence it is after the last known leap
-            return -neighbors[1].getOffset(date);
+        } else if (cache.getLatest().getDate().compareTo(date) < 0) {
+            // the date is after the last known leap
+            return -cache.getLatest().getOffset(date);
         } else {
-            // the date is nominally bracketed by the neighbors
-            return -neighbors[0].getOffset(date);
+            // the date is nominally bracketed by two leaps
+            try {
+                return -cache.getNeighbors(date)[0].getOffset(date);
+            } catch (TimeStampedCacheException tce) {
+                // this should never happen as boundaries have been handled in the previous statements
+                throw OrekitException.createInternalError(tce);
+            }
         }
     }
 
@@ -194,16 +195,30 @@ public class UTCScale implements TimeScale {
     public double offsetToTAI(final DateComponents date,
                               final TimeComponents time) {
 
-        // find close neighbors, assuming date in TAI, i.e a date earlier than real UTC date
-        final UTCTAIOffset[] neighbors =
-                getNeighbors(new AbsoluteDate(date, time, TimeScalesFactory.getTAI()));
-
-        if (neighbors[1].getMJD() <= date.getMJD()) {
-            // the date is in fact just after a leap second!
-            return neighbors[1].getOffset(date, time);
+        if (cache.getEarliest().getMJD() > date.getMJD()) {
+            // the date is before the first known leap
+            return 0;
+        } else if (cache.getLatest().getMJD() <= date.getMJD()) {
+            // the date is after the last known leap
+            return cache.getLatest().getOffset(date, time);
         } else {
-            return neighbors[0].getOffset(date, time);
+            // the date is nominally bracketed by two leaps
+            try {
+                // find close neighbors, assuming date in TAI, i.e a date earlier than real UTC date
+                final UTCTAIOffset[] neighbors =
+                        cache.getNeighbors(new AbsoluteDate(date, time, TimeScalesFactory.getTAI()));
+                if (neighbors[1].getMJD() <= date.getMJD()) {
+                    // the date is in fact just after a leap second!
+                    return neighbors[1].getOffset(date, time);
+                } else {
+                    return neighbors[0].getOffset(date, time);
+                }
+            } catch (TimeStampedCacheException tce) {
+                // this should never happen as boundaries have been handled in the previous statements
+                throw OrekitException.createInternalError(tce);
+            }
         }
+
     }
 
     /** {@inheritDoc} */
@@ -235,16 +250,20 @@ public class UTCScale implements TimeScale {
      * @return true if time is within a leap second introduction
      */
     public boolean insideLeap(final AbsoluteDate date) {
-        final UTCTAIOffset[] neighbors = getNeighbors(date);
-        if (neighbors[0].getDate().compareTo(date) > 0) {
-            // the date is before the first neighbor, hence it is before the first known leap
+        if (cache.getEarliest().getDate().compareTo(date) > 0) {
+            // the date is before the first known leap
             return false;
-        } else if (neighbors[1].getDate().compareTo(date) < 0) {
-            // the date is after the second neighbor, hence it is after the last known leap
-            return date.compareTo(getNeighbors(date)[1].getValidityStart()) < 0;
+        } else if (cache.getLatest().getDate().compareTo(date) < 0) {
+            // the date is after the last known leap
+            return date.compareTo(cache.getLatest().getValidityStart()) < 0;
         } else {
-            // the date is nominally bracketed by the neighbors
-            return date.compareTo(getNeighbors(date)[0].getValidityStart()) < 0;
+            // the date is nominally bracketed by two leaps
+            try {
+                return date.compareTo(cache.getNeighbors(date)[0].getValidityStart()) < 0;
+            } catch (TimeStampedCacheException tce) {
+                // this should never happen as boundaries have been handled in the previous statements
+                throw OrekitException.createInternalError(tce);
+            }
         }
     }
 
@@ -253,28 +272,20 @@ public class UTCScale implements TimeScale {
      * @return value of the previous leap
      */
     public double getLeap(final AbsoluteDate date) {
-        return getNeighbors(date)[0].getLeap();
-    }
-
-    /** Gets the entries from the cache surrounding the given {@code date}.
-     * The input {@code date} is bound to the limits of the {@link Generator} providing
-     * the {@link UTCTAIOffset} entries.
-     *
-     * @param date the date for which to retrieve {@link UTCTAIOffset} entries
-     * @return the {@link UTCTAIOffset} neighbor entries for the given {@code date}
-     */
-    private UTCTAIOffset[] getNeighbors(final AbsoluteDate date) {
-        AbsoluteDate boundedDate;
-        final AbsoluteDate latest = cache.getLatest().getDate();
-        final AbsoluteDate earliest = cache.getEarliest().getDate();
-        if (date.compareTo(earliest) < 0) {
-            boundedDate = earliest;
-        } else if (date.compareTo(latest) > 0) {
-            boundedDate = latest;
+        if (cache.getEarliest().getDate().compareTo(date) > 0) {
+            return 0;
+        } else if (cache.getLatest().getDate().compareTo(date) < 0) {
+            // the date is after the last known leap
+            return cache.getLatest().getLeap();
         } else {
-            boundedDate = date;
+            // the date is nominally bracketed by two leaps
+            try {
+                return cache.getNeighbors(date)[0].getLeap();
+            } catch (TimeStampedCacheException tce) {
+                // this should never happen as boundaries have been handled in the previous statements
+                throw OrekitException.createInternalError(tce);
+            }
         }
-        return cache.getNeighbors(boundedDate);
     }
 
 }
