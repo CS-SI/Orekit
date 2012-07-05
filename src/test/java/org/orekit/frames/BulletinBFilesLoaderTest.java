@@ -74,10 +74,10 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         EOP2000History history = new EOP2000History();
         new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
         AbsoluteDate date = new AbsoluteDate(2006, 1, 11, 12, 0, 0, TimeScalesFactory.getUTC());
-        Assert.assertEquals(msToS(( -0.130    + -0.244)   / 2), history.getLOD(date), 1.0e-10);
-        Assert.assertEquals(        (0.333310 + 0.333506) / 2,  history.getUT1MinusUTC(date), 1.0e-10);
-        Assert.assertEquals(asToRad((0.04927  + 0.04876)  / 2), history.getPoleCorrection(date).getXp(), 1.0e-10);
-        Assert.assertEquals(asToRad((0.38105  + 0.38071)  / 2), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assert.assertEquals(msToS(  (-3 * 0.073    + 27 * -0.130   + 27 * -0.244   - 3 * -0.264)   / 48), history.getLOD(date), 1.0e-10);
+        Assert.assertEquals(        (-3 * 0.333275 + 27 * 0.333310 + 27 * 0.333506 - 3 * 0.333768) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assert.assertEquals(asToRad((-3 * 0.04958  + 27 * 0.04927  + 27 * 0.04876  - 3 * 0.04854)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assert.assertEquals(asToRad((-3 * 0.38117  + 27 * 0.38105  + 27 * 0.38071  - 3 * 0.38036)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
     }
 
     @Test
@@ -86,12 +86,12 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
         EOP1980History history = new EOP1980History();
         new BulletinBFilesLoader("bulletinb.270").fillHistory(history);
         AbsoluteDate date = new AbsoluteDate(2010, 6, 12, 12, 0, 0, TimeScalesFactory.getUTC());
-        Assert.assertEquals(msToS((     0.0294 +   0.0682) / 2), history.getLOD(date), 1.0e-10);
-        Assert.assertEquals(msToS((   -57.2523 + -57.3103) / 2), history.getUT1MinusUTC(date), 1.0e-10);
-        Assert.assertEquals(masToRad((  1.658  +   4.926)  / 2), history.getPoleCorrection(date).getXp(), 1.0e-10);
-        Assert.assertEquals(masToRad((469.330  + 470.931)  / 2), history.getPoleCorrection(date).getYp(), 1.0e-10);
-        Assert.assertEquals(masToRad((-65.018  + -65.067)  / 2), history.getNutationCorrection(date).getDdpsi(), 1.0e-10);
-        Assert.assertEquals(masToRad(( -9.927  + -10.036)  / 2), history.getNutationCorrection(date).getDdeps(), 1.0e-10);
+        Assert.assertEquals(msToS((   -3 *   0.1202 + 27 *   0.0294 + 27 *   0.0682 - 3 *   0.1531) / 48), history.getLOD(date), 1.0e-10);
+        Assert.assertEquals(msToS((   -3 * -57.1711 + 27 * -57.2523 + 27 * -57.3103 - 3 * -57.4101) / 48), history.getUT1MinusUTC(date), 1.0e-10);
+        Assert.assertEquals(masToRad((-3 *  -1.216  + 27 *   1.658  + 27 *   4.926  - 3 *   7.789)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assert.assertEquals(masToRad((-3 * 467.780  + 27 * 469.330  + 27 * 470.931  - 3 * 472.388)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assert.assertEquals(masToRad((-3 * -64.899  + 27 * -65.018  + 27 * -65.067  - 3 * -64.998)  / 48), history.getNutationCorrection(date).getDdpsi(), 1.0e-10);
+        Assert.assertEquals(masToRad((-3 *  -9.955  + 27 *  -9.927  + 27 * -10.036  - 3 * -10.146)  / 48), history.getNutationCorrection(date).getDdeps(), 1.0e-10);
     }
 
     private double msToS(double ms) {

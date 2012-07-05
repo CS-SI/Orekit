@@ -62,10 +62,10 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
         EOP2000History history = new EOP2000History();
         new EOP05C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
         AbsoluteDate date = new AbsoluteDate(2003, 1, 7, 12, 0, 0, TimeScalesFactory.getUTC());
-        Assert.assertEquals(        ( 0.0007776 +  0.0008613) / 2,  history.getLOD(date), 1.0e-10);
-        Assert.assertEquals(        (-0.2920235 + -0.2928453) / 2,  history.getUT1MinusUTC(date), 1.0e-10);
-        Assert.assertEquals(asToRad((-0.106053  + -0.108629)  / 2), history.getPoleCorrection(date).getXp(), 1.0e-10);
-        Assert.assertEquals(asToRad(( 0.201512  +  0.203603)  / 2), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assert.assertEquals(        (-3 *  0.0006026 + 27 *  0.0007776 + 27 *  0.0008613 - 3 *  0.0008817) / 48,  history.getLOD(date), 1.0e-10);
+        Assert.assertEquals(        (-3 * -0.2913617 + 27 * -0.2920235 + 27 * -0.2928453 - 3 * -0.2937273) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assert.assertEquals(asToRad((-3 * -0.103535  + 27 * -0.106053  + 27 * -0.108629  - 3 * -0.111086)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assert.assertEquals(asToRad((-3 *  0.199584  + 27 *  0.201512  + 27 *  0.203603  - 3 *  0.205778)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
     }
 
     private double asToRad(double mas) {

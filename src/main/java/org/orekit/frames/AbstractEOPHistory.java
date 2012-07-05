@@ -44,8 +44,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     private static final long serialVersionUID = 5659073889129159070L;
 
     /** Number of points to use in interpolation. */
-    // TODO set the value to 4 as recommended by IERS
-    private static final int INTERPOLATION_POINTS = 2;
+    private static final int INTERPOLATION_POINTS = 4;
 
     /** Earth Orientation Parameter entries. */
     private final SortedSet<TimeStamped> entries;

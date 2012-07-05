@@ -64,7 +64,7 @@ public class HarrisPriesterTest {
         // COMPUTE DENSITY KG/M3 RHO
         double rho = hp.getDensity(date, pos, itrf);
 
-        Assert.assertEquals(3.9236341626253185E-13, rho, 0.0);
+        Assert.assertEquals(3.9236341626253185E-13, rho, 1.0e-21);
 
     }
 
@@ -93,7 +93,7 @@ public class HarrisPriesterTest {
 
         final double c2Psi2 = 2.150731005787848e-2;
 
-        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho4-rho2) - 1., 1.e-15);
+        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho4-rho2) - 1., 1.e-10);
 
     }
 
@@ -187,7 +187,7 @@ public class HarrisPriesterTest {
         // COMPUTE DENSITY KG/M3 RHO
         final double rho = hp.getDensity(date, pos, itrf);
 
-        Assert.assertEquals(2.9049031824908125E-7, rho, 0.0);
+        Assert.assertEquals(2.9049031824908125E-7, rho, 1.0e-17);
 
         HarrisPriester hp6 = new HarrisPriester(sun, earth, userTab, 6);
         final double rho6 = hp6.getDensity(date, pos, itrf);
@@ -197,7 +197,7 @@ public class HarrisPriesterTest {
 
         final double c2Psi2 = 2.150731005787848e-2;
 
-        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho-rho2) - 1., 1.e-15);
+        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho-rho2) - 1., 1.e-10);
 
     }
 

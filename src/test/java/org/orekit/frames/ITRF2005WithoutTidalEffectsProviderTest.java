@@ -162,7 +162,7 @@ public class ITRF2005WithoutTidalEffectsProviderTest {
         Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
         Transform finiteDiffTransform = new Transform(t0, trans.getRotation() , new Vector3D(w ,axis));
 
-        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.61, 1.1e-4);
+        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.61, 2.0e-4);
 
     }
 
