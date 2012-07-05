@@ -251,7 +251,16 @@ public class UTCScaleTest {
         Assert.assertEquals(0, cache.getSlotsEvictions());        
         Assert.assertEquals(1, cache.getSlots());
     }
-    
+
+    @Test
+    public void testOffsetToTAIBeforeFirstLeapSecond() throws OrekitException {
+        TimeScale scale = TimeScalesFactory.getUTC();
+        // time before first leap second
+        DateComponents dateComponents = new DateComponents(1950, 1, 1);
+        double actual = scale.offsetToTAI(dateComponents, TimeComponents.H00);
+        Assert.assertEquals(0.0, actual, 1.0e-10);
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
