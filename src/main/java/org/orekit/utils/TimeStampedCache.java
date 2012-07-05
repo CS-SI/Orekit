@@ -569,24 +569,38 @@ public class TimeStampedCache<T extends TimeStamped> {
                         firstNeighbor = index - (neighborsSize - 1) / 2;
                         if (firstNeighbor < 0 || firstNeighbor + neighborsSize > cache.size()) {
 
-                            // generate data at the appropriate slot end
+                            // estimate which data we need to be generated
                             final double step = getMeanStep();
                             final T existing;
                             final AbsoluteDate generationDate;
+                            final boolean simplyRebalance;
                             if (firstNeighbor < 0) {
-                                existing       = cache.get(0).getData();
-                                generationDate = existing.getDate().shiftedBy(step * firstNeighbor);
+                                existing        = cache.get(0).getData();
+                                generationDate  = existing.getDate().shiftedBy(step * firstNeighbor);
+                                simplyRebalance = existing.getDate().compareTo(central) <= 0;
                             } else {
-                                existing       = cache.get(cache.size() - 1).getData();
-                                generationDate = existing.getDate().shiftedBy(step * (firstNeighbor + neighborsSize - cache.size()));
+                                existing        = cache.get(cache.size() - 1).getData();
+                                generationDate  = existing.getDate().shiftedBy(step * (firstNeighbor + neighborsSize - cache.size()));
+                                simplyRebalance = existing.getDate().compareTo(central) >= 0;
                             }
                             calls.incrementAndGet();
 
-                            // add generated data to the slot
-                            if (firstNeighbor < 0) {
-                                insertAtStart(generateAndCheck(existing, generationDate));
-                            } else {
-                                appendAtEnd(generateAndCheck(existing, generationDate));
+                            // generated data and add it to the slot
+                            try {
+                                if (firstNeighbor < 0) {
+                                    insertAtStart(generateAndCheck(existing, generationDate));
+                                } else {
+                                    appendAtEnd(generateAndCheck(existing, generationDate));
+                                }
+                            } catch (TimeStampedCacheException tce) {
+                                if (simplyRebalance) {
+                                    // we were simply trying to rebalance an unbalanced interval near slot end
+                                    // we failed, but the central date is already covered by the existing (unbalanced) data
+                                    // so we ignore the exception and stop the loop, we will continue with what we have
+                                    loop = false;
+                                } else {
+                                    throw tce;
+                                }
                             }
 
                         } else {
