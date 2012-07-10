@@ -31,6 +31,20 @@ import org.orekit.utils.OrekitConfiguration;
 public class CIRF2000ProviderTest {
 
     @Test
+    public void testRotationRate() throws OrekitException {
+        TransformProvider provider =
+                new InterpolatingTransformProvider(new CIRF2000Provider(), true, false,
+                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                   3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
+        AbsoluteDate tMin = new AbsoluteDate(2009, 4, 7, 2, 56, 33.816, TimeScalesFactory.getUTC());
+        double minRate = provider.getTransform(tMin).getRotationRate().getNorm();
+        Assert.assertEquals(1.1e-15, minRate, 1.0e-16);
+        AbsoluteDate tMax = new AbsoluteDate(2043, 12, 16, 10, 47, 20, TimeScalesFactory.getUTC());
+        double maxRate = provider.getTransform(tMax).getRotationRate().getNorm();
+        Assert.assertEquals(8.6e-12, maxRate, 1.0e-13);
+    }
+
+    @Test
     public void testInterpolationAccuracy() throws OrekitException {
 
         // max interpolation error observed on a 2 months period with 60 seconds step

@@ -48,12 +48,6 @@ class VEISProvider implements TransformProvider {
     /** Veis sidereal time derivative in rad/s. */
     private static final double VSTD = 7.292115146705209e-5;
 
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
-
     /** EOP history. */
     private final EOP1980History eopHistory;
 
@@ -70,31 +64,25 @@ class VEISProvider implements TransformProvider {
      * @return transform at the specified date
      * @exception OrekitException if data embedded in the library cannot be read
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
+        // offset from FIFTIES epoch (UT1 scale)
+        final double dtai = date.durationFrom(VST_REFERENCE);
+        final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
+        final double dut1 = eopHistory.getUT1MinusUTC(date);
 
-            // offset from FIFTIES epoch (UT1 scale)
-            final double dtai = date.durationFrom(VST_REFERENCE);
-            final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
-            final double dut1 = eopHistory.getUT1MinusUTC(date);
+        final double tut1 = dtai + dutc + dut1;
+        final double ttd  = tut1 / Constants.JULIAN_DAY;
+        final double rdtt = ttd - (int) ttd;
 
-            final double tut1 = dtai + dutc + dut1;
-            final double ttd  = tut1 / Constants.JULIAN_DAY;
-            final double rdtt = ttd - (int) ttd;
+        // compute Veis sidereal time, in radians
+        final double vst = (VST0 + VST1 * ttd + MathUtils.TWO_PI * rdtt) % MathUtils.TWO_PI;
 
-            // compute Veis sidereal time, in radians
-            final double vst = (VST0 + VST1 * ttd + MathUtils.TWO_PI * rdtt) % MathUtils.TWO_PI;
+        // compute angular rotation of Earth, in rad/s
+        final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);
 
-            // compute angular rotation of Earth, in rad/s
-            final Vector3D rotationRate = new Vector3D(-VSTD, Vector3D.PLUS_K);
-
-            // set up the transform from parent GTOD
-            cachedTransform = new Transform(date, new Rotation(Vector3D.PLUS_K, vst), rotationRate);
-            cachedDate = date;
-        }
-
-        return cachedTransform;
+        // set up the transform from parent GTOD
+        return new Transform(date, new Rotation(Vector3D.PLUS_K, vst), rotationRate);
 
     }
 

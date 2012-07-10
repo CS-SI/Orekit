@@ -41,12 +41,6 @@ class ITRFProvider implements TransformProvider {
     /** TIRF provider. */
     private final TIRF2000Provider tirf;
 
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
-
     /** Simple constructor.
      * @param tirf TIRF 2000 provider
      */
@@ -61,36 +55,29 @@ class ITRFProvider implements TransformProvider {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
+        // offset from J2000 epoch in julian centuries
+        final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        final double ttc =  tts / Constants.JULIAN_CENTURY;
 
-            // offset from J2000 epoch in julian centuries
-            final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-            final double ttc =  tts / Constants.JULIAN_CENTURY;
+        // pole correction parameters
+        final PoleCorrection pCorr = tirf.getPoleCorrection(date);
+        final PoleCorrection nCorr = nutationCorrection(date);
 
-            // pole correction parameters
-            final PoleCorrection pCorr = tirf.getPoleCorrection(date);
-            final PoleCorrection nCorr = nutationCorrection(date);
+        // elementary rotations due to pole motion in terrestrial frame
+        final Rotation r1 = new Rotation(Vector3D.PLUS_I, -(pCorr.getYp() + nCorr.getYp()));
+        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -(pCorr.getXp() + nCorr.getXp()));
+        final Rotation r3 = new Rotation(Vector3D.PLUS_K, S_PRIME_RATE * ttc);
 
-            // elementary rotations due to pole motion in terrestrial frame
-            final Rotation r1 = new Rotation(Vector3D.PLUS_I, -(pCorr.getYp() + nCorr.getYp()));
-            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -(pCorr.getXp() + nCorr.getXp()));
-            final Rotation r3 = new Rotation(Vector3D.PLUS_K, S_PRIME_RATE * ttc);
+        // complete pole motion in terrestrial frame
+        final Rotation wRot = r3.applyTo(r2.applyTo(r1));
 
-            // complete pole motion in terrestrial frame
-            final Rotation wRot = r3.applyTo(r2.applyTo(r1));
+        // combined effects
+        final Rotation combined = wRot.revert();
 
-            // combined effects
-            final Rotation combined = wRot.revert();
-
-            // set up the transform from parent TIRF
-            cachedTransform = new Transform(date, combined, Vector3D.ZERO);
-            cachedDate = date;
-
-        }
-
-        return cachedTransform;
+        // set up the transform from parent TIRF
+        return new Transform(date, combined, Vector3D.ZERO);
 
     }
 

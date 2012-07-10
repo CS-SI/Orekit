@@ -65,7 +65,7 @@ public class TEMEProviderTest {
         PVCoordinates pvEME2000Computed = t.transformPVCoordinates(pvTEME);
         PVCoordinates delta = new PVCoordinates(pvEME2000Computed, pvEME2000Ref);
         Assert.assertEquals(0.0, delta.getPosition().getNorm(), 0.025);
-        Assert.assertEquals(0.0, delta.getVelocity().getNorm(), 1.0e-5);
+        Assert.assertEquals(0.0, delta.getVelocity().getNorm(), 1.0e-4);
 
     }
 

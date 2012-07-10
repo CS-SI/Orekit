@@ -71,12 +71,6 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
         /** Propagator to use. */
         private final Propagator propagator;
 
-        /** Cached date to avoid useless computation. */
-        private transient AbsoluteDate cachedDate;
-
-        /** Cached transform to avoid useless computation. */
-        private transient Transform cachedTransform;
-
         /** Simple constructor.
          * @param propagator orbit/attitude propagator computing spacecraft state evolution
          */
@@ -86,11 +80,7 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
 
         /** {@inheritDoc} */
         public Transform getTransform(final AbsoluteDate date) throws OrekitException {
-            if ((cachedDate == null) || !cachedDate.equals(date)) {
-                cachedTransform = propagator.propagate(date).toTransform();
-                cachedDate = date;
-            }
-            return cachedTransform;
+            return propagator.propagate(date).toTransform();
         }
 
     }

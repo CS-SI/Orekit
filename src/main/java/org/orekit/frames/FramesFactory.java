@@ -820,9 +820,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final TODProvider tod = (TODProvider) getTOD(true).getTransformProvider();
-                frame = new FactoryManagedFrame(getGTOD(true), new ITRFEquinoxProvider(tod),
-                                                false, factoryKey);
+                frame = new FactoryManagedFrame(getGTOD(true), new ITRFEquinoxProvider(), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -853,9 +851,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final FactoryManagedFrame todFrame = getTOD(applyEOPCorr);
-                final TODProvider todProvider = (TODProvider) todFrame.getTransformProvider();
-                frame = new FactoryManagedFrame(todFrame, new GTODProvider(todProvider), false, factoryKey);
+                frame = new FactoryManagedFrame(getTOD(applyEOPCorr), new GTODProvider(), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -896,15 +892,29 @@ public class FramesFactory implements Serializable {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Predefined factoryKey = applyEOPCorr ?
-                                          Predefined.TOD_WITH_EOP_CORRECTIONS :
-                                          Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
+            final Predefined factoryKey;
+            final int interpolationPoints;
+            final int pointsPerDay;
+            if (applyEOPCorr) {
+                factoryKey          = Predefined.TOD_WITH_EOP_CORRECTIONS;
+                interpolationPoints = 6;
+                pointsPerDay        = 24;
+            } else {
+                factoryKey          = Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
+                interpolationPoints = 6;
+                pointsPerDay        = 8;
+            }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getMOD(applyEOPCorr), new TODProvider(applyEOPCorr),
-                                                true, factoryKey);
+                final TransformProvider interpolating =
+                        new InterpolatingTransformProvider(new TODProvider(applyEOPCorr), true, false,
+                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                           interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
+                                                           OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+                frame = new FactoryManagedFrame(getMOD(applyEOPCorr), interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -982,9 +992,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final FactoryManagedFrame todFrame = getTOD(false);
-                final TODProvider todProvider = (TODProvider) todFrame.getTransformProvider();
-                frame = new FactoryManagedFrame(todFrame, new TEMEProvider(todProvider), true, factoryKey);
+                frame = new FactoryManagedFrame(getTOD(false), new TEMEProvider(), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

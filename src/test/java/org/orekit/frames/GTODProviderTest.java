@@ -104,7 +104,7 @@ public class GTODProviderTest {
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
         Assert.assertEquals(0.195813, delta.getPosition().getNorm(), 5.0e-7);
-        Assert.assertEquals(5.156e-7, delta.getVelocity().getNorm(), 8.0e-11);
+        Assert.assertEquals(1.427468e-5, delta.getVelocity().getNorm(), 9.0e-12);
 
     }
 

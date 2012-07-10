@@ -53,12 +53,6 @@ class MODProvider implements TransformProvider {
     /** 3rd coefficient for Z precession angle. */
     private static final double Z_3 =    0.018203 * Constants.ARC_SECONDS_TO_RADIANS;
 
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
-
     /** Simple constructor.
      */
     public MODProvider() {
@@ -69,38 +63,31 @@ class MODProvider implements TransformProvider {
      * @param date new value of the date
      * @return transform at the specified date
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) {
+    public Transform getTransform(final AbsoluteDate date) {
 
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
+        // offset from J2000 epoch in julian centuries
+        final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        final double ttc = tts / Constants.JULIAN_CENTURY;
 
-            // offset from J2000 epoch in julian centuries
-            final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-            final double ttc = tts / Constants.JULIAN_CENTURY;
+        // compute the zeta precession angle
+        final double zeta = ((ZETA_3 * ttc + ZETA_2) * ttc + ZETA_1) * ttc;
 
-            // compute the zeta precession angle
-            final double zeta = ((ZETA_3 * ttc + ZETA_2) * ttc + ZETA_1) * ttc;
+        // compute the theta precession angle
+        final double theta = ((THETA_3 * ttc + THETA_2) * ttc + THETA_1) * ttc;
 
-            // compute the theta precession angle
-            final double theta = ((THETA_3 * ttc + THETA_2) * ttc + THETA_1) * ttc;
+        // compute the z precession angle
+        final double z = ((Z_3 * ttc + Z_2) * ttc + Z_1) * ttc;
 
-            // compute the z precession angle
-            final double z = ((Z_3 * ttc + Z_2) * ttc + Z_1) * ttc;
+        // elementary rotations for precession
+        final Rotation r1 = new Rotation(Vector3D.PLUS_K,  z);
+        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -theta);
+        final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zeta);
 
-            // elementary rotations for precession
-            final Rotation r1 = new Rotation(Vector3D.PLUS_K,  z);
-            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -theta);
-            final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zeta);
+        // complete precession
+        final Rotation precession = r1.applyTo(r2.applyTo(r3));
 
-            // complete precession
-            final Rotation precession = r1.applyTo(r2.applyTo(r3));
-
-            // set up the transform from parent GCRF
-            cachedTransform = new Transform(date, precession);
-            cachedDate = date;
-
-        }
-
-        return cachedTransform;
+        // set up the transform from parent GCRF
+        return new Transform(date, precession);
 
     }
 

@@ -56,12 +56,6 @@ class TIRF2000Provider implements TransformProvider {
      * (radians per day, fractional part) */
     private static final double ERA_1B = ERA_1A * 0.00273781191135448;
 
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
-
     /** Earth Rotation Angle, in radians. */
     private double era;
 
@@ -110,25 +104,18 @@ class TIRF2000Provider implements TransformProvider {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
-
-            // compute Earth Rotation Angle using Nicole Capitaine model (2000)
-            final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
-            final double tu =
+        // compute Earth Rotation Angle using Nicole Capitaine model (2000)
+        final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
+        final double tu =
                 (date.durationFrom(ERA_REFERENCE) + ut1.offsetFromTAI(date) + tidalDtu1) / Constants.JULIAN_DAY;
-            era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
-            era -= MathUtils.TWO_PI * FastMath.floor((era + FastMath.PI) / MathUtils.TWO_PI);
+        era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
+        era -= MathUtils.TWO_PI * FastMath.floor((era + FastMath.PI) / MathUtils.TWO_PI);
 
-            // set up the transform from parent CIRF2000
-            final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);
-            cachedTransform = new Transform(date, new Rotation(Vector3D.PLUS_K, -era), rotationRate);
-            cachedDate = date;
-
-        }
-
-        return cachedTransform;
+        // set up the transform from parent CIRF2000
+        final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);
+        return new Transform(date, new Rotation(Vector3D.PLUS_K, -era), rotationRate);
 
     }
 

@@ -59,12 +59,6 @@ public class LocalOrbitalFrame extends Frame {
         /** Reference frame. */
         private final Frame reference;
 
-        /** Cached date to avoid useless computation. */
-        private transient AbsoluteDate cachedDate;
-
-        /** Cached transform to avoid useless computation. */
-        private transient Transform cachedTransform;
-
         /** Simple constructor.
          * @param type frame type
          * @param provider provider used to compute frame motion
@@ -79,11 +73,7 @@ public class LocalOrbitalFrame extends Frame {
 
         /** {@inheritDoc} */
         public Transform getTransform(final AbsoluteDate date) throws OrekitException {
-            if ((cachedDate == null) || !cachedDate.equals(date)) {
-                cachedTransform = type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
-                cachedDate = date;
-            }
-            return cachedTransform;
+            return type.transformFromInertial(date, provider.getPVCoordinates(date, reference));
         }
 
     }

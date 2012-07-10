@@ -60,7 +60,7 @@ public class GTODProviderAlternateConfigurationTest {
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
         Assert.assertEquals(9.378e-3, delta.getPosition().getNorm(), 1.0e-6);
-        Assert.assertEquals(1.41e-5, delta.getVelocity().getNorm(), 1.0e-7);
+        Assert.assertEquals(4.81e-6, delta.getVelocity().getNorm(), 1.0e-8);
 
     }
 

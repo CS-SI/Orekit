@@ -17,10 +17,7 @@
 package org.orekit.frames;
 
 
-import java.io.FileNotFoundException;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,7 +61,7 @@ public class TODProviderAlternateConfigurationTest {
 
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.6e-3);
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.5, 1.5e-3);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 6.0e-7);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 5.3e-5);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.90615, 7.4e-4);
 
     }
@@ -97,53 +94,17 @@ public class TODProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.4, 7.9e-4);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 4.5, 2.3e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.4, 8.1e-4);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 4.5, 7.2e-5);
 
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 5.2e-4, 9.1e-7);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 3.5, 7.7e-4);
-
-    }
-
-    @Test
-    public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
-
-        final boolean withNutationCorrection = true;
-
-        TransformProvider interpolating = new TODProvider(withNutationCorrection);
-        TransformProvider nonInterpolating = new NonInterpolatingTODProvider(withNutationCorrection);
-
-        // the following time range is located around the maximal observed error
-        AbsoluteDate start = new AbsoluteDate(2002, 11, 11, 0, 0, 0.0, TimeScalesFactory.getTAI());
-        AbsoluteDate end   = new AbsoluteDate(2002, 11, 15, 6, 0, 0.0, TimeScalesFactory.getTAI());
-        double maxError = 0.0;
-        for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
-            final Transform transform =
-                    new Transform(date,
-                                  interpolating.getTransform(date),
-                                  nonInterpolating.getTransform(date).getInverse());
-            final double error = transform.getRotation().getAngle() * 648000 / FastMath.PI;
-            maxError = FastMath.max(maxError, error);
-        }
-
-        Assert.assertTrue(maxError < 7.2e-11);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 5.2e-4, 6.4e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 3.5, 7.9e-4);
 
     }
 
     @Before
     public void setUp() {
         Utils.setDataRoot("testpef-data");
-    }
-
-    private class NonInterpolatingTODProvider extends TODProvider {
-        private static final long serialVersionUID = -7116622345154042273L;
-        public NonInterpolatingTODProvider(final boolean ignoreNutationCorrection)
-            throws OrekitException {
-            super(ignoreNutationCorrection);
-        }
-        public double[] getInterpolatedNutationElements(final double t) {
-            return computeNutationElements(t);
-        }
     }
 
     private void checkPV(PVCoordinates reference,

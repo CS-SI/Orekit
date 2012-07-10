@@ -61,31 +61,15 @@ public class GTODProvider implements TransformProvider {
     /** Fourth coefficient of IAU 1982 GMST-UT1 model. */
     private static final double GMST_3 = -6.2e-6;
 
-    /** True Of Date provider. */
-    private final TODProvider tod;
-
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
-
     /** EOP history. */
     private final EOP1980History eopHistory;
 
     /** Simple constructor.
-     * @param tod True Of Date provider
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected GTODProvider(final TODProvider tod)
+    protected GTODProvider()
         throws OrekitException {
-
-        this.tod = tod;
-
-        // we need this history even if we don't apply all correction,
-        // as we at least always apply the very large UT1-UTC offset
         eopHistory = FramesFactory.getEOP1980History();
-
     }
 
     /** Get the transform from TOD at specified date.
@@ -95,26 +79,18 @@ public class GTODProvider implements TransformProvider {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
+        // compute Greenwich apparent sidereal time, in radians
+        final double gast = getGAST(date);
 
-            // compute Greenwich apparent sidereal time, in radians
-            final double gast = getGAST(date);
+        // compute true angular rotation of Earth, in rad/s
+        final double lod = eopHistory.getLOD(date);
+        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
+        final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
-            // compute true angular rotation of Earth, in rad/s
-            final double lod = tod.getLOD(date);
-            final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
-            final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
-
-            // set up the transform from parent TOD
-            cachedTransform = new Transform(date, new Rotation(Vector3D.PLUS_K, -gast), rotationRate);
-
-            cachedDate = date;
-
-        }
-
-        return cachedTransform;
+        // set up the transform from parent TOD
+        return new Transform(date, new Rotation(Vector3D.PLUS_K, -gast), rotationRate);
 
     }
 
@@ -157,7 +133,7 @@ public class GTODProvider implements TransformProvider {
     public double getGAST(final AbsoluteDate date) throws OrekitException {
 
         // offset from J2000.0 epoch
-        final double eqe = tod.getEquationOfEquinoxes(date);
+        final double eqe = TODProvider.getEquationOfEquinoxes(date);
 
         // compute Greenwich apparent sidereal time, in radians
         return getGMST(date) + eqe;

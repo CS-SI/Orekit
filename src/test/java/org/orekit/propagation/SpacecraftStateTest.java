@@ -101,15 +101,15 @@ public class SpacecraftStateTest {
     @Test
     public void testInterpolation()
         throws ParseException, OrekitException {
-        checkInterpolationError( 2, 640.5707, 3.5695114, 1468.9144e-5, 0.0);
-        checkInterpolationError( 3, 424.6225, 0.7395422,   71.3043e-5, 0.0);
-        checkInterpolationError( 4,  61.2305, 0.1562064,    7.4442e-5, 0.0);
-        checkInterpolationError( 5,  19.2103, 0.0236758,    1.3682e-5, 0.0);
-        checkInterpolationError( 6,   1.9613, 0.0037497,    0.3674e-5, 0.0);
-        checkInterpolationError( 7,   0.4109, 0.0004614,    0.1285e-5, 0.0);
-        checkInterpolationError( 8,   0.0350, 0.0000563,    0.0549e-5, 0.0);
-        checkInterpolationError( 9,   0.0053, 0.0000058,    0.0268e-5, 0.0);
-        checkInterpolationError(10,   0.0005, 0.0000006,    0.0140e-5, 0.0);
+        checkInterpolationError( 2, 640.5707, 3.5695114, 169847849.39e-9, 0.0);
+        checkInterpolationError( 3, 424.6225, 0.7395422,    189888.18e-9, 0.0);
+        checkInterpolationError( 4,  61.2305, 0.1562064,       232.33e-9, 0.0);
+        checkInterpolationError( 5,  19.2103, 0.0236758,         0.48e-9, 0.0);
+        checkInterpolationError( 6,   1.9613, 0.0037497,         0.07e-9, 0.0);
+        checkInterpolationError( 7,   0.4109, 0.0004614,         0.45e-9, 0.0);
+        checkInterpolationError( 8,   0.0350, 0.0000563,         0.29e-9, 0.0);
+        checkInterpolationError( 9,   0.0053, 0.0000058,         1.57e-9, 0.0);
+        checkInterpolationError(10,   0.0005, 0.0000006,         5.22e-9, 0.0);
     }
 
     private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,
@@ -137,7 +137,7 @@ public class SpacecraftStateTest {
         }
         Assert.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
         Assert.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assert.assertEquals(expectedErrorA, maxErrorA, 1.0e-8);
+        Assert.assertEquals(expectedErrorA, maxErrorA, 1.0e-11);
         Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
     }
 

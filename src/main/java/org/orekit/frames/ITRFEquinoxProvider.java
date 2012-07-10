@@ -30,22 +30,16 @@ import org.orekit.time.AbsoluteDate;
 class ITRFEquinoxProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7686119047589233585L;
+    private static final long serialVersionUID = 6723470955343821599L;
 
-    /** True Of Date provider. */
-    private final TODProvider tod;
-
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
+    /** EOP history. */
+    private final EOP1980History eopHistory;
 
     /** Simple constructor.
-     * @param tod True Of Date provider
+     * @exception OrekitException if EOP parameters cannot be read
      */
-    protected ITRFEquinoxProvider(final TODProvider tod) {
-        this.tod = tod;
+    protected ITRFEquinoxProvider() throws OrekitException {
+        eopHistory = FramesFactory.getEOP1980History();
     }
 
     /** Get the transform from GTOD at specified date.
@@ -55,12 +49,10 @@ class ITRFEquinoxProvider implements TransformProvider {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
-
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
             // pole correction parameters
-            final PoleCorrection pCorr = tod.getPoleCorrection(date);
+            final PoleCorrection pCorr = eopHistory.getPoleCorrection(date);
 
             // elementary rotations due to pole motion in terrestrial frame
             final Rotation r1 = new Rotation(Vector3D.PLUS_I, -pCorr.getYp());
@@ -70,12 +62,7 @@ class ITRFEquinoxProvider implements TransformProvider {
             final Rotation wRot = r2.applyTo(r1);
 
             // set up the transform from parent GTOD
-            cachedTransform = new Transform(date, wRot.revert(), Vector3D.ZERO);
-            cachedDate = date;
-
-        }
-
-        return cachedTransform;
+            return new Transform(date, wRot.revert(), Vector3D.ZERO);
 
     }
 

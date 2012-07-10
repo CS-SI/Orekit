@@ -30,6 +30,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -38,13 +40,12 @@ public class TODProviderTest {
     @Test
     public void testEQESmallDiscontinuity() throws OrekitException {
         AbsoluteDate switchDate = new AbsoluteDate(1997, 2, 27, TimeScalesFactory.getUTC());
-        TODProvider tod = (TODProvider) FramesFactory.getTOD(false).getTransformProvider();
         double currentEQE = Double.NaN;
         double h = 0.01;
         for (double dt = -1.0 - h / 2; dt <= 1.0 + h /2; dt += h) {
             AbsoluteDate d = switchDate.shiftedBy(dt);
             double previousEQE = currentEQE;
-            currentEQE = tod.getEquationOfEquinoxes(d);
+            currentEQE = TODProvider.getEquationOfEquinoxes(d);
             if (!Double.isNaN(previousEQE)) {
                 double deltaMicroAS = 3.6e9 * FastMath.toDegrees(currentEQE - previousEQE);
                 if ((dt - h) * dt > 0) {
@@ -57,6 +58,20 @@ public class TODProviderTest {
                 }
             }
         }
+    }
+
+    @Test
+    public void testRotationRate() throws OrekitException {
+        TransformProvider provider =
+                new InterpolatingTransformProvider(new TODProvider(false), true, false,
+                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                   3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
+        AbsoluteDate tMin = new AbsoluteDate(2035, 3, 2, 15, 58, 59, TimeScalesFactory.getUTC());
+        double minRate = provider.getTransform(tMin).getRotationRate().getNorm();
+        Assert.assertEquals(6.4e-14, minRate, 1.0e-15);
+        AbsoluteDate tMax = new AbsoluteDate(2043, 12, 16, 14, 18, 9, TimeScalesFactory.getUTC());
+        double maxRate = provider.getTransform(tMax).getRotationRate().getNorm();
+        Assert.assertEquals(1.4e-11, maxRate, 1.0e-12);
     }
 
     @Test
@@ -88,7 +103,7 @@ public class TODProviderTest {
 
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.7e-3);
         checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.3, 1.6e-3);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 2.9e-7);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 5.3e-5);
         checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.91, 7.4e-4);
 
     }
@@ -121,22 +136,58 @@ public class TODProviderTest {
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.4, 7.9e-4);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 4.5, 2.3e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.4, 8.1e-4);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 4.5, 7.2e-5);
 
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 5.2e-4, 9.1e-7);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 3.5, 7.7e-4);
+        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 5.2e-4, 6.4e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 3.5, 7.9e-4);
 
     }
 
     @Test
-    public void testInterpolationAccuracy() throws OrekitException, FileNotFoundException {
+    public void testInterpolationAccuracyWithEOP() throws OrekitException, FileNotFoundException {
 
-        final boolean withNutationCorrection = true;
-
-        TransformProvider interpolating = new TODProvider(withNutationCorrection);
-        TransformProvider nonInterpolating =
-            new NonInterpolatingTODProvider(withNutationCorrection);
+        // max interpolation error observed on a one month period with 60 seconds step
+        //
+        // number of sample points    time between sample points    max error
+        //        6                          86400s /  8 =  3h       19.56e-12 rad
+        //        6                          86400s / 12 =  2h       13.02e-12 rad
+        //        6                          86400s / 16 =  1h30      9.75e-12 rad
+        //        6                          86400s / 20 =  1h12      7.79e-12 rad
+        //        6                          86400s / 24 =  1h        6.48e-12 rad
+        //        8                          86400s /  8 =  3h       20.91e-12 rad
+        //        8                          86400s / 12 =  2h       13.91e-12 rad
+        //        8                          86400s / 16 =  1h30     10.42e-12 rad
+        //        8                          86400s / 20 =  1h12      8.32e-12 rad
+        //        8                          86400s / 24 =  1h        6.92e-12 rad
+        //       10                          86400s /  8 =  3h       21.65e-12 rad
+        //       10                          86400s / 12 =  2h       14.41e-12 rad
+        //       10                          86400s / 16 =  1h30     10.78e-12 rad
+        //       10                          86400s / 20 =  1h12      8.61e-12 rad
+        //       10                          86400s / 24 =  1h        7.16e-12 rad
+        //       12                          86400s /  8 =  3h       22.12e-12 rad
+        //       12                          86400s / 12 =  2h       14.72e-12 rad
+        //       12                          86400s / 16 =  1h30     11.02e-12 rad
+        //       12                          86400s / 20 =  1h12      8.80e-12 rad
+        //       12                          86400s / 24 =  1h        7.32e-12 rad
+        //
+        // looking at error behavior during along the sample show the max error is
+        // a peak at 00h00 each day for all curves, which matches the EOP samples
+        // points used for correction (applyEOPCorr is set to true at construction here).
+        // So looking only at max error does not allow to select an interpolation
+        // setting as they all fall in a similar 6e-12 to 8e-12 range. Looking at
+        // the error behavior between these peaks however shows that there is still
+        // some signal if the time interval is between sample points is too large,
+        // in order to get only numerical noise, we have to go as far as 1h between
+        // the points.
+        // We finally select 6 interpolation points separated by 1 hour each
+        TransformProvider nonInterpolating = new TODProvider(true);
+        final TransformProvider interpolating =
+                new InterpolatingTransformProvider(nonInterpolating, true, false,
+                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                   6, Constants.JULIAN_DAY / 24,
+                                                   OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                   Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
         // the following time range is located around the maximal observed error
         AbsoluteDate start = new AbsoluteDate(2002, 11, 11, 0, 0, 0.0, TimeScalesFactory.getTAI());
@@ -144,30 +195,73 @@ public class TODProviderTest {
         double maxError = 0.0;
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
             final Transform transform =
-                    new Transform(date, interpolating.getTransform(date),
+                    new Transform(date,
+                                  interpolating.getTransform(date),
                                   nonInterpolating.getTransform(date).getInverse());
-            final double error = transform.getRotation().getAngle() * 648000 / FastMath.PI;
+            final double error = transform.getRotation().getAngle();
             maxError = FastMath.max(maxError, error);
         }
 
-        Assert.assertTrue(maxError < 7.2e-11);
+        Assert.assertTrue(maxError < 7e-12);
+
+    }
+
+    @Test
+    public void testInterpolationAccuracyWithoutEOP() throws OrekitException, FileNotFoundException {
+
+        // max interpolation error observed on a one month period with 60 seconds step
+        //
+        // number of sample points    time between sample points    max error
+        //        5                          86400s /  3 =  8h     3286.90e-15 rad
+        //        5                          86400s /  6 =  4h      103.90e-15 rad
+        //        5                          86400s /  8 =  3h       24.74e-15 rad
+        //        5                          86400s / 12 =  2h        4.00e-15 rad
+        //        6                          86400s /  3 =  8h      328.91e-15 rad
+        //        6                          86400s /  6 =  4h        5.92e-15 rad
+        //        6                          86400s /  8 =  3h        3.95e-15 rad
+        //        6                          86400s / 12 =  2h        3.94e-15 rad
+        //        8                          86400s /  3 =  8h        5.87e-15 rad
+        //        8                          86400s /  6 =  4h        4.73e-15 rad
+        //        8                          86400s /  8 =  3h        4.45e-15 rad
+        //        8                          86400s / 12 =  2h        3.87e-15 rad
+        //       10                          86400s /  3 =  8h        5.29e-15 rad
+        //       10                          86400s /  6 =  4h        5.36e-15 rad
+        //       10                          86400s /  8 =  3h        5.86e-15 rad
+        //       10                          86400s / 12 =  2h        5.76e-15 rad
+        //
+        // 
+        // We don't see anymore the peak at 00h00 so this confirms it is related to EOP
+        // sampling. All values between 3e-15 and 6e-15 are really equivalent: it is
+        // mostly numerical noise. The best settings are 6 or 8 points every 2 or 3 hours.
+        // We finally select 6 interpolation points separated by 3 hours each
+        TransformProvider nonInterpolating = new TODProvider(false);
+                final TransformProvider interpolating =
+                        new InterpolatingTransformProvider(nonInterpolating, true, false,
+                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                           6, Constants.JULIAN_DAY / 8,
+                                                           OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+
+                // the following time range is located around the maximal observed error
+                AbsoluteDate start = new AbsoluteDate(2002, 11, 11, 0, 0, 0.0, TimeScalesFactory.getTAI());
+                AbsoluteDate end   = new AbsoluteDate(2002, 11, 15, 6, 0, 0.0, TimeScalesFactory.getTAI());
+                double maxError = 0.0;
+                for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
+                    final Transform transform =
+                            new Transform(date,
+                                          interpolating.getTransform(date),
+                                          nonInterpolating.getTransform(date).getInverse());
+                    final double error = transform.getRotation().getAngle();
+                    maxError = FastMath.max(maxError, error);
+                }
+
+                Assert.assertTrue(maxError < 4.0e-15);
 
     }
 
     @Before
     public void setUp() {
         Utils.setDataRoot("compressed-data");
-    }
-
-    private class NonInterpolatingTODProvider extends TODProvider {
-        private static final long serialVersionUID = 419603722255134316L;
-        public NonInterpolatingTODProvider(final boolean ignoreNutationCorrection)
-            throws OrekitException {
-            super(ignoreNutationCorrection);
-        }
-        public double[] getInterpolatedNutationElements(final double t) {
-            return computeNutationElements(t);
-        }
     }
 
     private void checkPV(PVCoordinates reference,

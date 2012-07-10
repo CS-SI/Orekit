@@ -57,12 +57,6 @@ public class HelmertTransformation implements TransformProvider {
     /** Reference epoch of the transform. */
     private final AbsoluteDate epoch;
 
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
-
     /** Build a transform from its primitive operations.
      * @param epoch reference epoch of the transform
      * @param t1 translation parameter along X axis (BEWARE, this is in mm)
@@ -115,31 +109,24 @@ public class HelmertTransformation implements TransformProvider {
      * @param date date at which the transform is desired
      * @return computed transform at specified date
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) {
+    public Transform getTransform(final AbsoluteDate date) {
 
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
+        // compute parameters evolution since reference epoch
+        final double dt = date.durationFrom(epoch);
+        final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
 
-            // compute parameters evolution since reference epoch
-            final double dt = date.durationFrom(epoch);
-            final Vector3D dR = new Vector3D(1, rotationVector, dt, rotationRate);
+        // build translation part
+        final Transform translationTransform = new Transform(date, cartesian.shiftedBy(dt));
 
-            // build translation part
-            final Transform translationTransform = new Transform(date, cartesian.shiftedBy(dt));
+        // build rotation part
+        final double angle = dR.getNorm();
+        final Transform rotationTransform =
+                new Transform(date,
+                              (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
+                                                           rotationRate);
 
-            // build rotation part
-            final double angle = dR.getNorm();
-            final Transform rotationTransform =
-                    new Transform(date,
-                                  (angle < Precision.SAFE_MIN) ? Rotation.IDENTITY : new Rotation(dR, angle),
-                                                               rotationRate);
-
-            // combine both parts
-            cachedTransform = new Transform(date, translationTransform, rotationTransform);
-            cachedDate      = date;
-
-        }
-
-        return cachedTransform;
+        // combine both parts
+        return new Transform(date, translationTransform, rotationTransform);
 
     }
 

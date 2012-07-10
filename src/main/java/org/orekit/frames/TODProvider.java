@@ -29,16 +29,6 @@ import org.orekit.utils.Constants;
  * <p>This frame handles nutation effects according to the IAU-80 theory.</p>
  * <p>Its parent frame is the {@link MODProvider}.</p>
  * <p>It is sometimes called True of Date (ToD) frame.<p>
- * <p>This implementation includes a caching/interpolation feature to
- * tremendously improve efficiency. The IAU-80 theory involves lots of terms
- * (106 components for Dpsi and Deps). Recomputing all these components
- * for each point is really slow. The shortest period for these components is
- * about 5.5 days (one fifth of the moon revolution period), hence the pole
- * motion is smooth at the day or week scale. This implies that these motions can
- * be computed accurately using a few reference points per day or week and interpolated
- * between these points. This implementation uses 12 points separated by 1/2 day
- * (43200 seconds) each, the resulting maximal interpolation error on the frame is about
- * 1.3&times;10<sup>-10</sup> arcseconds.</p>
  * @author Pascal Parraud
  */
 class TODProvider implements TransformProvider {
@@ -237,30 +227,6 @@ class TODProvider implements TransformProvider {
     private static final AbsoluteDate NEW_EQE_MODEL_START =
         new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
 
-    /** "Left-central" date of the interpolation array. */
-    private double tCenter;
-
-    /** Step size of the interpolation array. */
-    private final double h;
-
-    /** Nutation in longitude of reference. */
-    private final double[] dpsiRef;
-
-    /** Nutation in obliquity of reference. */
-    private final double[] depsRef;
-
-    /** Neville interpolation array for dpsi. */
-    private final double[] dpsiNeville;
-
-    /** Neville interpolation array for deps. */
-    private final double[] depsNeville;
-
-    /** Cached date to avoid useless computation. */
-    private AbsoluteDate cachedDate;
-
-    /** Cached transform to avoid useless computation. */
-    private Transform cachedTransform;
-
     /** EOP history. */
     private final EOP1980History eopHistory;
 
@@ -270,20 +236,7 @@ class TODProvider implements TransformProvider {
      */
     public TODProvider(final boolean applyEOPCorr)
         throws OrekitException {
-
-        // set up an interpolation model on 12 points with a 1/2 day step
-        // this leads to an interpolation error of about 1.7e-10 arcseconds
-        final int n = 12;
-        h           = 43600.0;
-
-        tCenter     = Double.NaN;
-        dpsiRef     = new double[n];
-        depsRef     = new double[n];
-        dpsiNeville = new double[n];
-        depsNeville = new double[n];
-
         eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
-
     }
 
     /** Get the LoD (Length of Day) value.
@@ -302,9 +255,7 @@ class TODProvider implements TransformProvider {
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        return (eopHistory == null) ?
-               PoleCorrection.NULL_CORRECTION :
-               eopHistory.getPoleCorrection(date);
+        return (eopHistory == null) ? PoleCorrection.NULL_CORRECTION : eopHistory.getPoleCorrection(date);
     }
 
     /** Get the transform from Mean Of Date at specified date.
@@ -314,45 +265,38 @@ class TODProvider implements TransformProvider {
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
-    public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
+    public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        if ((cachedDate == null) || !cachedDate.equals(date)) {
+        // offset from J2000.0 epoch
+        final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
 
-            // offset from J2000.0 epoch
-            final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        // evaluate the nutation elements
+        final double[] nutation = computeNutationElements(t);
 
-            // evaluate the nutation elements
-            final double[] nutation = getInterpolatedNutationElements(t);
+        // compute the mean obliquity of the ecliptic
+        final double moe = getMeanObliquityOfEcliptic(t);
 
-            // compute the mean obliquity of the ecliptic
-            final double moe = getMeanObliquityOfEcliptic(t);
+        // get the IAU1980 corrections for the nutation parameters
+        final NutationCorrection nutCorr = (eopHistory == null) ?
+                                           NutationCorrection.NULL_CORRECTION :
+                                           eopHistory.getNutationCorrection(date);
 
-            // get the IAU1980 corrections for the nutation parameters
-            final NutationCorrection nutCorr = (eopHistory == null) ?
-                                               NutationCorrection.NULL_CORRECTION :
-                                               eopHistory.getNutationCorrection(date);
+        final double deps = nutation[1] + nutCorr.getDdeps();
+        final double dpsi = nutation[0] + nutCorr.getDdpsi();
 
-            final double deps = nutation[1] + nutCorr.getDdeps();
-            final double dpsi = nutation[0] + nutCorr.getDdpsi();
+        // compute the true obliquity of the ecliptic
+        final double toe = moe + deps;
 
-            // compute the true obliquity of the ecliptic
-            final double toe = moe + deps;
+        // set up the elementary rotations for nutation
+        final Rotation r1 = new Rotation(Vector3D.PLUS_I,  toe);
+        final Rotation r2 = new Rotation(Vector3D.PLUS_K,  dpsi);
+        final Rotation r3 = new Rotation(Vector3D.PLUS_I, -moe);
 
-            // set up the elementary rotations for nutation
-            final Rotation r1 = new Rotation(Vector3D.PLUS_I,  toe);
-            final Rotation r2 = new Rotation(Vector3D.PLUS_K,  dpsi);
-            final Rotation r3 = new Rotation(Vector3D.PLUS_I, -moe);
+        // complete nutation
+        final Rotation precession = r1.applyTo(r2.applyTo(r3));
 
-            // complete nutation
-            final Rotation precession = r1.applyTo(r2.applyTo(r3));
-
-            // set up the transform from parent MOD
-            cachedTransform = new Transform(date, precession);
-            cachedDate = date;
-
-        }
-
-        return cachedTransform;
+        // set up the transform from parent MOD
+        return new Transform(date, precession);
 
     }
 
@@ -361,14 +305,14 @@ class TODProvider implements TransformProvider {
      * @return equation of the equinoxes
      * @exception OrekitException if nutation model cannot be computed
      */
-    public double getEquationOfEquinoxes(final AbsoluteDate date)
+    public static double getEquationOfEquinoxes(final AbsoluteDate date)
         throws OrekitException {
 
         // offset from J2000 epoch in seconds
         final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
 
         // nutation in longitude
-        final double dPsi = getInterpolatedNutationElements(t) [0];
+        final double dPsi = computeNutationElements(t) [0];
 
         // mean obliquity of ecliptic
         final double moe = getMeanObliquityOfEcliptic(t);
@@ -398,83 +342,13 @@ class TODProvider implements TransformProvider {
      * @param t offset from J2000 epoch in seconds
      * @return mean obliquity of ecliptic
      */
-    private double getMeanObliquityOfEcliptic(final double t) {
+    private static double getMeanObliquityOfEcliptic(final double t) {
 
         // offset from J2000 epoch in julian centuries
         final double tc = t / Constants.JULIAN_CENTURY;
 
         // compute the mean obliquity of the ecliptic
         return ((MOE_3 * tc + MOE_2) * tc + MOE_1) * tc + MOE_0;
-
-    }
-
-    /** Set the interpolated nutation elements.
-     * @param t offset from J2000.0 epoch in seconds
-     * @return interpolated nutation elements in a two elements array,
-     * with dPsi at index 0 and dEpsilon at index 1
-     */
-    public double[] getInterpolatedNutationElements(final double t) {
-
-        final int n    = dpsiRef.length;
-        final int nM12 = (n - 1) / 2;
-        if (Double.isNaN(tCenter) || (t < tCenter) || (t > tCenter + h)) {
-            // recompute interpolation array
-            setReferencePoints(t);
-        }
-
-        // interpolate nutation elements using Neville's algorithm
-        System.arraycopy(dpsiRef, 0, dpsiNeville, 0, n);
-        System.arraycopy(depsRef, 0, depsNeville, 0, n);
-        final double theta = (t - tCenter) / h;
-        for (int j = 1; j < n; ++j) {
-            for (int i = n - 1; i >= j; --i) {
-                final double c1 = (theta + nM12 - i + j) / j;
-                final double c2 = (theta + nM12 - i) / j;
-                dpsiNeville[i] = c1 * dpsiNeville[i] - c2 * dpsiNeville[i - 1];
-                depsNeville[i] = c1 * depsNeville[i] - c2 * depsNeville[i - 1];
-            }
-        }
-
-        return new double[] {
-            dpsiNeville[n - 1], depsNeville[n - 1]
-        };
-
-    }
-
-    /** Set the reference points array.
-     * @param t offset from J2000.0 epoch in seconds
-     */
-    private void setReferencePoints(final double t) {
-
-        final int n    = dpsiRef.length;
-        final int nM12 = (n - 1) / 2;
-
-        // evaluate new location of center interval
-        final double newTCenter = h * FastMath.floor(t / h);
-
-        // shift reusable reference points
-        int iMin = 0;
-        int iMax = n;
-        final int shift = (int) FastMath.rint((newTCenter - tCenter) / h);
-        if (!Double.isNaN(tCenter) && (FastMath.abs(shift) < n)) {
-            if (shift >= 0) {
-                System.arraycopy(dpsiRef, shift, dpsiRef, 0, n - shift);
-                System.arraycopy(depsRef, shift, depsRef, 0, n - shift);
-                iMin = n - shift;
-            } else {
-                System.arraycopy(dpsiRef, 0, dpsiRef, -shift, n + shift);
-                System.arraycopy(depsRef, 0, depsRef, -shift, n + shift);
-                iMax = -shift;
-            }
-        }
-
-        // compute new reference points
-        tCenter = newTCenter;
-        for (int i = iMin; i < iMax; ++i) {
-            final double[] nutation = computeNutationElements(tCenter + (i - nM12) * h);
-            dpsiRef[i] = nutation[0];
-            depsRef[i] = nutation[1];
-        }
 
     }
 
@@ -486,7 +360,7 @@ class TODProvider implements TransformProvider {
      * @return computed nutation elements in a two elements array,
      * with dPsi at index 0 and dEpsilon at index 1
      */
-    public double[] computeNutationElements(final double t) {
+    private static double[] computeNutationElements(final double t) {
 
         // offset in julian centuries
         final double tc =  t / Constants.JULIAN_CENTURY;
