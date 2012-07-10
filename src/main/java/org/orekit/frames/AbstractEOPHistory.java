@@ -130,7 +130,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     }
 
     /** {@inheritDoc} */
-    public double getLOD(final AbsoluteDate date) throws TimeStampedCacheException {
+    public double getLOD(final AbsoluteDate date) {
         try {
             final HermiteInterpolator interpolator = new HermiteInterpolator();
             for (final EOPEntry entry : getNeighbors(date)) {
