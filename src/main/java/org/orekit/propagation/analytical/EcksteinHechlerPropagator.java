@@ -24,6 +24,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
@@ -222,7 +223,7 @@ public class EcksteinHechlerPropagator extends AbstractPropagator {
 
             // compute mean parameters
             // transform into circular adapted parameters used by the Eckstein-Hechler model
-            computeMeanParameters(new CircularOrbit(initialOrbit));
+            computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(initialOrbit));
 
             resetInitialState(new SpacecraftState(initialOrbit,
                                                attitudeProv.getAttitude(getPvProvider(), initialOrbit.getDate(), initialOrbit.getFrame()),
