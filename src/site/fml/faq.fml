@@ -19,24 +19,27 @@
     <title>References</title>
     <faq id="projects">
       <question>
-        Has Orekit already been used ?
+        Has Orekit already been used?
       </question>
       <answer>
         <p>
           Yes, it has been used in successful operational missions.
         </p>
-        <p>The most prominent use of Orekit was for the Automated Transfer
+        <p>The first operational use of Orekit was for the Automated Transfer
           Vehicle (ATV) mission to International Space station (ISS). Orekit
           was used operationally during the real-time monitoring of the rendez-vous
           phase up to the docking. It continuously recomputed the relative geometry
           of the two spacecrafts using different sensors output to check their
           consistency.
         </p>
+        <p>Orekit has also been selected by CNES for its next generation flight
+        dynamics systems (project Sirius) in early 2011.
+        </p>
       </answer>
     </faq>
     <faq id="validation">
       <question>
-        Is Orekit validated ?
+        Is Orekit validated?
       </question>
       <answer>
         <p>
@@ -82,14 +85,31 @@
           by accurate reference models in the version 4.0.
         </p>
         <p>
-          The least validated part is the numerical propagation. Only rough validation has been done
-          yet. Precise validation requires a good model for Sun, so it had been postponed until this
-          model have been re-implemented.
+          Numerical propagation has been validated by CNES independently of the Orekit team against
+          some very high accuracy propagators (Zoom). They told us the results were good (down to
+          centimeter level for simple force models), but we don't have a thorough breakdown of errors
+          for various orbits and force models.
         </p>
         <p>
           Validation is a continuous task for us, we are always working on improving it. We would be
           happy to also have other teams perform independent validation runs. We have already received
           some feedback and new tests cases after the first version has been published.
+        </p>
+      </answer>
+      <question>
+        Is Orekit thread-safe?
+      </question>
+      <answer>
+        <p>
+          Versions up to 5.X are <em>not</em> thread-safe. Note that simply wrapping Orekit calls
+          in synchronized blocks is not a solution as it completely breaks all data caching features,
+          so performances are reduced by a large factor.
+        </p>
+        <p>
+          As thread-safety was an important need for many people, this problem has been addressed and
+          starting with version 6.0 many Orekit classes are thread-safe. Note however that some parts
+          for which sequential access is natural (like numerical propagators) are <em>not</em> thread
+          safe.
         </p>
       </answer>
     </faq>
