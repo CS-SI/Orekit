@@ -74,7 +74,7 @@ public class CIRF2000ProviderTest {
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    8, Constants.JULIAN_DAY / 6,
-                                                   OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                   OrekitConfiguration.getCacheSlotsNumber(),
                                                    Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
         // the following time range is located around the maximal observed error

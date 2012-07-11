@@ -186,7 +186,7 @@ public class TODProviderTest {
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    6, Constants.JULIAN_DAY / 24,
-                                                   OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                   OrekitConfiguration.getCacheSlotsNumber(),
                                                    Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
         // the following time range is located around the maximal observed error
@@ -239,7 +239,7 @@ public class TODProviderTest {
                         new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            6, Constants.JULIAN_DAY / 8,
-                                                           OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                           OrekitConfiguration.getCacheSlotsNumber(),
                                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
                 // the following time range is located around the maximal observed error

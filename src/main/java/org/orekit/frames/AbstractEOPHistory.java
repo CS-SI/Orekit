@@ -57,7 +57,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     protected AbstractEOPHistory() {
         entries = new TreeSet<TimeStamped>(new ChronologicalComparator());
         cache   = new TimeStampedCache<EOPEntry>(INTERPOLATION_POINTS,
-                                                 OrekitConfiguration.getDefaultMaxSlotsNumber(), Constants.JULIAN_YEAR,
+                                                 OrekitConfiguration.getCacheSlotsNumber(), Constants.JULIAN_YEAR,
                                                  30 * Constants.JULIAN_DAY,
                                                  new Generator(), EOPEntry.class);
     }

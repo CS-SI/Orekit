@@ -772,7 +772,7 @@ public class FramesFactory implements Serializable {
                         new InterpolatingTransformProvider(new CIRF2000Provider(), true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            8, Constants.JULIAN_DAY / 6,
-                                                           OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                           OrekitConfiguration.getCacheSlotsNumber(),
                                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
                 frame = new FactoryManagedFrame(getGCRF(), interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
@@ -912,7 +912,7 @@ public class FramesFactory implements Serializable {
                         new InterpolatingTransformProvider(new TODProvider(applyEOPCorr), true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
-                                                           OrekitConfiguration.getDefaultMaxSlotsNumber(),
+                                                           OrekitConfiguration.getCacheSlotsNumber(),
                                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
                 frame = new FactoryManagedFrame(getMOD(applyEOPCorr), interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);

@@ -23,11 +23,11 @@ package org.orekit.utils;
  */
 public class OrekitConfiguration {
 
-    /** Default maximum number of slots to use in caches. */
-    private static int DEFAULT_MAX_SLOTS_NUMBER;
+    /** Number of slots to use in caches. */
+    private static int CACHE_SLOTS_NUMBER;
 
     static {
-        DEFAULT_MAX_SLOTS_NUMBER = 100;
+        CACHE_SLOTS_NUMBER = 100;
     }
 
     /** Private constructor.
@@ -38,18 +38,18 @@ public class OrekitConfiguration {
     private OrekitConfiguration() {
     }
 
-    /** Set the default maximum number of slots to use in caches.
-     * @param defaultMaxSlotsNumber maximum number of slots to use in caches
+    /** Set the number of slots to use in caches.
+     * @param slotsNumber number of slots to use in caches
      */
-    public static void setDefaultMaxSlotsNumber(final int defaultMaxSlotsNumber) {
-        OrekitConfiguration.DEFAULT_MAX_SLOTS_NUMBER = defaultMaxSlotsNumber;
+    public static void setCacheSlotsNumber(final int slotsNumber) {
+        OrekitConfiguration.CACHE_SLOTS_NUMBER = slotsNumber;
     }
 
-    /** Get the default maximum number of slots to use in caches.
-     * @return default maximum number of slots to use in caches
+    /** Get the number of slots to use in caches.
+     * @return number of slots to use in caches
      */
-    public static int getDefaultMaxSlotsNumber() {
-        return DEFAULT_MAX_SLOTS_NUMBER;
+    public static int getCacheSlotsNumber() {
+        return CACHE_SLOTS_NUMBER;
     }
 
 }

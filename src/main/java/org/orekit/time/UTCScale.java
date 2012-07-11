@@ -67,7 +67,7 @@ public class UTCScale implements TimeScale {
 
         // create cache
         cache = new TimeStampedCache<UTCTAIOffset>(2,
-                                                   OrekitConfiguration.getDefaultMaxSlotsNumber(), Double.POSITIVE_INFINITY,
+                                                   OrekitConfiguration.getCacheSlotsNumber(), Double.POSITIVE_INFINITY,
                                                    1000 * Constants.JULIAN_YEAR, new Generator(entries), UTCTAIOffset.class);
 
         // ensure the cache is populated right from the beginning
