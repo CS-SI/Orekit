@@ -1,5 +1,8 @@
 package org.orekit.propagation.precomputed;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.Assert;
 
 import org.apache.commons.math3.util.FastMath;
@@ -11,8 +14,10 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EclipseDetector;
@@ -23,12 +28,28 @@ import org.orekit.time.TimeScalesFactory;
 
 public class EphemerisEventsTest {
 
-    private AbsoluteDate initDate;
-    private AbsoluteDate finalDate;
-    private int inEclipsecounter;
-    private int outEclipsecounter;
+    @Test
+    public void testEphemKeplerian() throws IllegalArgumentException, OrekitException {
+        checkEphem(OrbitType.KEPLERIAN);
+    }
 
-    private Ephemeris buildEphem() throws IllegalArgumentException, OrekitException {
+    @Test
+    public void testEphemCircular() throws IllegalArgumentException, OrekitException {
+        checkEphem(OrbitType.CIRCULAR);
+    }
+
+    @Test
+    public void testEphemEquinoctial() throws IllegalArgumentException, OrekitException {
+        checkEphem(OrbitType.EQUINOCTIAL);
+    }
+
+    @Test
+    public void testEphemCartesian() throws IllegalArgumentException, OrekitException {
+        checkEphem(OrbitType.CARTESIAN);
+    }
+
+    private Ephemeris buildEphem(OrbitType type)
+        throws IllegalArgumentException, OrekitException {
 
         double mass = 2500;
         double a = 7187990.1979844316;
@@ -51,20 +72,20 @@ public class EphemerisEventsTest {
                                             FramesFactory.getEME2000(), initDate, mu);
 
         int nbIntervals = 720;
-        EcksteinHechlerPropagator eck =
-            new EcksteinHechlerPropagator(transPar, mass,
-                                          ae, mu, c20, c30, c40, c50, c60);
+        Propagator propagator =
+                new EcksteinHechlerPropagator(transPar, mass, ae, mu, c20, c30, c40, c50, c60);
 
-        SpacecraftState[] tab = new SpacecraftState[nbIntervals+1];
+        List<SpacecraftState> tab = new ArrayList<SpacecraftState>(nbIntervals + 1);
         for (int j = 0; j<= nbIntervals; j++) {
-            AbsoluteDate current = initDate.shiftedBy((j * deltaT) / nbIntervals);
-            tab[j] = eck.propagate(current);
+            SpacecraftState state = propagator.propagate(initDate.shiftedBy((j * deltaT) / nbIntervals));
+            tab.add(new SpacecraftState(type.convertType(state.getOrbit()),
+                                        state.getAttitude(), state.getMass()));
         }
 
-        return new Ephemeris(tab);
+        return new Ephemeris(tab, 2);
     }
 
-    private EclipseDetector buildEclipsDetector() throws OrekitException {
+    private EclipseDetector buildEclipsDetector(final OrbitType type) throws OrekitException {
 
         double sunRadius = 696000000.;
         double earthRadius = 6400000.;
@@ -74,6 +95,7 @@ public class EphemerisEventsTest {
                                                   CelestialBodyFactory.getEarth(), earthRadius) {
             private static final long serialVersionUID = 1L;
             public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+                Assert.assertEquals(type, s.getOrbit().getType());
                 if (increasing) {
                     ++inEclipsecounter;
                 } else {
@@ -86,8 +108,8 @@ public class EphemerisEventsTest {
         return ecl;
     }
 
-    @Test
-    public void testEphem() throws IllegalArgumentException, OrekitException {
+    private void checkEphem(OrbitType type)
+        throws IllegalArgumentException, OrekitException {
 
         initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
                                     TimeComponents.H00,
@@ -99,9 +121,9 @@ public class EphemerisEventsTest {
 
 
 
-        BoundedPropagator ephem = buildEphem();
+        BoundedPropagator ephem = buildEphem(type);
 
-        ephem.addEventDetector(buildEclipsDetector());
+        ephem.addEventDetector(buildEclipsDetector(type));
 
         AbsoluteDate computeEnd = new AbsoluteDate(finalDate, -1000.0);
 
@@ -118,5 +140,10 @@ public class EphemerisEventsTest {
         inEclipsecounter = 0;
         outEclipsecounter = 0;
     }
+
+    private AbsoluteDate initDate;
+    private AbsoluteDate finalDate;
+    private int inEclipsecounter;
+    private int outEclipsecounter;
 
 }

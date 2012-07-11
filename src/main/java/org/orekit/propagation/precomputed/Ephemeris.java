@@ -16,29 +16,26 @@
  */
 package org.orekit.propagation.precomputed;
 
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.Arrays;
+import java.util.List;
 
-import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
-import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.MathUtils;
-import org.orekit.attitudes.Attitude;
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.TimeStamped;
+import org.orekit.utils.Constants;
+import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedCache;
+import org.orekit.utils.TimeStampedGenerator;
 
 /** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
@@ -46,39 +43,54 @@ import org.orekit.utils.PVCoordinates;
  *
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Luc Maisonobe
  */
 public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2876501122142490509L;
+    private static final long serialVersionUID = -1523460404698149239L;
 
-    /** All entries. */
-    private final SortedSet<TimeStamped> data;
+    /** First date in range. */
+    private final AbsoluteDate minDate;
 
-    /** Previous state in the cached selection. */
-    private SpacecraftState previous;
+    /** Last date in range. */
+    private final AbsoluteDate maxDate;
 
-    /** Next state in the cached selection. */
-    private SpacecraftState next;
+    /** Thread-safe cache. */
+    private final TimeStampedCache<SpacecraftState> cache;
 
-    /** Constructor with tabulated entries.
-     * @param tabulatedStates states table
+    /** Constructor with tabulated states.
+     * @param states tabulates states
+     * @param interpolationPoints number of points to use in interpolation
+     * @exception MathIllegalArgumentException if the number of states is smaller than
+     * the number of points to use in interpolation
      */
-    public Ephemeris(final SpacecraftState[] tabulatedStates) {
+    public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
+        throws MathIllegalArgumentException {
 
         super(DEFAULT_LAW);
 
-        if (tabulatedStates.length < 2) {
-            throw new IllegalArgumentException("There should be at least 2 entries.");
+        if (states.size() < interpolationPoints) {
+            throw new MathIllegalArgumentException(LocalizedFormats.INSUFFICIENT_DIMENSION,
+                                                   states.size(), interpolationPoints);
         }
 
-        data = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        for (int i = 0; i < tabulatedStates.length; ++i) {
-            data.add(tabulatedStates[i]);
-        }
+        minDate = states.get(0).getDate();
+        maxDate = states.get(states.size() - 1).getDate();
 
-        previous = null;
-        next     = null;
+        // set up cache
+        final TimeStampedGenerator<SpacecraftState> generator =
+                new TimeStampedGenerator<SpacecraftState>() {
+            /** {@inheritDoc} */
+            public List<SpacecraftState> generate(final SpacecraftState existing,
+                                                  final AbsoluteDate date) {
+                return states;
+            }
+        };
+        cache = new TimeStampedCache<SpacecraftState>(interpolationPoints,
+                                                      OrekitConfiguration.getCacheSlotsNumber(),
+                                                      Double.POSITIVE_INFINITY, Constants.JULIAN_DAY,
+                                                      generator, SpacecraftState.class);
 
     }
 
@@ -86,37 +98,25 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
      * @return the first date of the range
      */
     public AbsoluteDate getMinDate() {
-        return data.first().getDate();
+        return minDate;
     }
 
     /** Get the last date of the range.
      * @return the last date of the range
      */
     public AbsoluteDate getMaxDate() {
-        return data.last().getDate();
+        return maxDate;
     }
 
     @Override
     /** {@inheritDoc} */
     public SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
-        // Check if date is in the specified range
-        if (enclosinbracketDate(date)) {
-
-            final double tp = date.durationFrom(previous.getDate());
-            final double tn = next.getDate().durationFrom(date);
-            if (tp == 0 && tn == 0) {
-                return previous;
-            }
-            // Classical interpolation
-            return new SpacecraftState(getInterpolatedOp(tp, tn, date),
-                                       interpolatedAttitude(date, tp, tn),
-                                       interpolatedMass(tp, tn));
-
+        try {
+            final SpacecraftState[] neighbors = cache.getNeighbors(date);
+            return neighbors[0].interpolate(date, Arrays.asList(neighbors));
+        } catch (TimeStampedCacheException tce) {
+            throw new PropagationException(tce);
         }
-
-        throw new PropagationException(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE,
-                                       date, getMinDate(), getMaxDate());
-
     }
 
     /** {@inheritDoc} */
@@ -133,105 +133,6 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return propagate(date).getPVCoordinates(frame);
-    }
-
-    /** Get the interpolated orbital parameters.
-     * @param tp time in seconds since previous date
-     * @param tn time in seconds until next date
-     * @param date desired date for the state
-     * @return the new equinoctial parameters
-     */
-    private Orbit getInterpolatedOp(final double tp, final double tn, final AbsoluteDate date) {
-
-        final double dt = tp + tn;
-        final double cP = tp / dt;
-        final double cN = tn / dt;
-
-        final double a  = cN * previous.getA()  + cP * next.getA();
-        final double ex = cN * previous.getEquinoctialEx() + cP * next.getEquinoctialEx();
-        final double ey = cN * previous.getEquinoctialEy() + cP * next.getEquinoctialEy();
-        final double hx = cN * previous.getHx() + cP * next.getHx();
-        final double hy = cN * previous.getHy() + cP * next.getHy();
-        final double lv = cN * previous.getLv() + cP * MathUtils.normalizeAngle(next.getLv(), previous.getLv());
-
-        return new EquinoctialOrbit(a, ex, ey, hx, hy, lv, PositionAngle.TRUE,
-                                    previous.getFrame(), date, previous.getMu());
-
-    }
-
-    /** Get the interpolated Attitude.
-     * @param date interpolation date
-     * @param tp time in seconds since previous date
-     * @param tn time in seconds until next date
-     * @return the new attitude kinematics
-     */
-    private Attitude interpolatedAttitude(final AbsoluteDate date, final double tp, final double tn) {
-
-        final double dt = tp + tn;
-
-        final Transform prevToNext =
-            new Transform(date,
-                          new Transform(date, previous.getAttitude().getRotation().revert()),
-                          new Transform(date, next.getAttitude().getRotation()));
-
-        final Rotation newRot = new Rotation(prevToNext.getRotation().getAxis(),
-                                             tp * prevToNext.getRotation().getAngle() / dt);
-        Vector3D newInstRotAxis;
-        if (prevToNext.getRotationRate().getNorm() != 0) {
-            newInstRotAxis = new Vector3D(tp * prevToNext.getRotationRate().getNorm() / dt,
-                                          prevToNext.getRotationRate().normalize());
-        } else {
-            newInstRotAxis = Vector3D.ZERO;
-        }
-
-        final Transform newTrans =
-            new Transform(date,
-                          new Transform(date, previous.getAttitude().getRotation()),
-                          new Transform(date, newRot, newInstRotAxis));
-
-        return new Attitude(date, previous.getFrame(), newTrans.getRotation(), newTrans.getRotationRate());
-
-    }
-
-    /** Get the interpolated Mass.
-     * @param tp time in seconds since previous date
-     * @param tn time in seconds until next date
-     * @return the new mass
-     */
-    private double interpolatedMass(final double tp, final double tn) {
-        return (tn * previous.getMass() + tp * next.getMass()) / (tn + tp);
-    }
-
-    /** Find the states bracketing a date.
-     * @param date date to bracket
-     * @return true if bracketing states have been found
-     */
-    private boolean enclosinbracketDate(final AbsoluteDate date) {
-
-        if (date.durationFrom(getMinDate()) < 0 || date.durationFrom(getMaxDate()) > 0) {
-            return false;
-        }
-
-        if (date.durationFrom(getMinDate()) == 0) {
-            previous = (SpacecraftState) data.first();
-            final Iterator<TimeStamped> i = data.iterator();
-            i.next();
-            next = (SpacecraftState) i.next();
-            return true;
-        }
-
-        // don't search if the cached selection is fine
-        if ((previous != null) && (date.durationFrom(previous.getDate()) >= 0) &&
-            (next != null) && (date.durationFrom(next.getDate()) < 0)) {
-            // the current selection is already good
-            return true;
-        }
-
-        // search bracketing states
-        previous = (SpacecraftState) data.headSet(date).last();
-        next     = (SpacecraftState) data.tailSet(date).first();
-
-        return true;
     }
 
     /** Try (and fail) to reset the initial state.
@@ -252,10 +153,3 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
     }
 
 }
-
-
-
-
-
-
-

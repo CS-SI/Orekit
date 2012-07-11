@@ -18,6 +18,9 @@ package org.orekit.propagation;
 
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -31,7 +34,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.orbits.CartesianOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
@@ -73,13 +76,13 @@ public class TabulatedEphemerisTest {
         EcksteinHechlerPropagator eck =
             new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
-        SpacecraftState[] tab = new SpacecraftState[nbIntervals+1];
+        List<SpacecraftState> tab = new ArrayList<SpacecraftState>(nbIntervals + 1);
         for (int j = 0; j<= nbIntervals; j++) {
             AbsoluteDate current = initDate.shiftedBy((j * deltaT) / nbIntervals);
-            tab[j] = eck.propagate(current);
+            tab.add(eck.propagate(current));
         }
 
-        Ephemeris te = new Ephemeris(tab);
+        Ephemeris te = new Ephemeris(tab, 2);
 
         Assert.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
         Assert.assertEquals(0.0, te.getMinDate().durationFrom(initDate), 1.0e-9);
@@ -101,34 +104,55 @@ public class TabulatedEphemerisTest {
         AbsoluteDate t1 = new AbsoluteDate(t0, 1320.0);
         Vector3D p1 = new Vector3D(-0.17831296727974E+08,  0.67919502669856E+06, -0.16591008368477E+07);
         Vector3D v1 = new Vector3D(-0.38699705630724E+04, -0.36209408682762E+04, -0.16255053872347E+03);
-        SpacecraftState s1 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(p1, v1), frame, t1, mu));
+        SpacecraftState s1 = new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(p1, v1), frame, t1, mu));
 
         AbsoluteDate t2 = new AbsoluteDate(t0, 1440.0);
         Vector3D p2 = new Vector3D(-0.18286942572033E+08,  0.24442124296930E+06, -0.16777961761695E+07);
         Vector3D v2 = new Vector3D(-0.37252897467918E+04, -0.36246628128896E+04, -0.14917724596280E+03);
-        SpacecraftState s2 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(p2, v2), frame, t2, mu));
+        SpacecraftState s2 = new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(p2, v2), frame, t2, mu));
 
         AbsoluteDate t3 = new AbsoluteDate(t0, 1560.0);
         Vector3D p3 = new Vector3D(-0.18725635245837E+08, -0.19058407701834E+06, -0.16949352249614E+07);
         Vector3D v3 = new Vector3D(-0.35873348682393E+04, -0.36248828501784E+04, -0.13660045394149E+03);
-        SpacecraftState s3 = new SpacecraftState(new CartesianOrbit(new PVCoordinates(p3, v3), frame, t3, mu));
+        SpacecraftState s3 = new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(p3, v3), frame, t3, mu));
 
-        Ephemeris ephem= new Ephemeris(new SpacecraftState[] { s1, s2, s3 });
+        Ephemeris ephem= new Ephemeris(Arrays.asList(s1, s2, s3), 2);
 
-        Vector3D pA = ephem.propagate(new AbsoluteDate(t0, 24 * 60)).getPVCoordinates(frame).getPosition();
-        Assert.assertEquals(-18286942.572, pA.getX(), 1.0e-3);
-        Assert.assertEquals(   244421.243, pA.getY(), 1.0e-3);
-        Assert.assertEquals( -1677796.176, pA.getZ(), 1.0e-3);
+        AbsoluteDate tA = new AbsoluteDate(t0, 24 * 60);
+        Vector3D pA = ephem.propagate(tA).getPVCoordinates(frame).getPosition();
+        Assert.assertEquals(1.766,
+                            Vector3D.distance(pA, s1.shiftedBy(tA.durationFrom(s1.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
+        Assert.assertEquals(0.000,
+                            Vector3D.distance(pA, s2.shiftedBy(tA.durationFrom(s2.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
+        Assert.assertEquals(1.556,
+                            Vector3D.distance(pA, s3.shiftedBy(tA.durationFrom(s3.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
 
-        Vector3D pB = ephem.propagate(new AbsoluteDate(t0, 25 * 60)).getPVCoordinates(frame).getPosition();
-        Assert.assertEquals(-18505774.837, pB.getX(), 1.0e-3);
-        Assert.assertEquals(    29483.655, pB.getY(), 1.0e-3);
-        Assert.assertEquals( -1686453.500, pB.getZ(), 1.0e-3);
+        AbsoluteDate tB = new AbsoluteDate(t0, 25 * 60);
+        Vector3D pB = ephem.propagate(tB).getPVCoordinates(frame).getPosition();
+        Assert.assertEquals(2.646,
+                            Vector3D.distance(pB, s1.shiftedBy(tB.durationFrom(s1.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
+        Assert.assertEquals(2.619,
+                            Vector3D.distance(pB, s2.shiftedBy(tB.durationFrom(s2.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
+        Assert.assertEquals(2.632,
+                            Vector3D.distance(pB, s3.shiftedBy(tB.durationFrom(s3.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
 
-        Vector3D pC = ephem.propagate(new AbsoluteDate(t0, 26 * 60)).getPVCoordinates(frame).getPosition();
-        Assert.assertEquals(-18725635.246, pC.getX(), 1.0e-3);
-        Assert.assertEquals(  -190584.077, pC.getY(), 1.0e-3);
-        Assert.assertEquals( -1694935.225, pC.getZ(), 1.0e-3);
+        AbsoluteDate tC = new AbsoluteDate(t0, 26 * 60);
+        Vector3D pC = ephem.propagate(tC).getPVCoordinates(frame).getPosition();
+        Assert.assertEquals(6.851,
+                            Vector3D.distance(pC, s1.shiftedBy(tC.durationFrom(s1.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
+        Assert.assertEquals(1.605,
+                            Vector3D.distance(pC, s2.shiftedBy(tC.durationFrom(s2.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
+        Assert.assertEquals(0.000,
+                            Vector3D.distance(pC, s3.shiftedBy(tC.durationFrom(s3.getDate())).getPVCoordinates(frame).getPosition()),
+                            1.0e-3);
 
     }
 
