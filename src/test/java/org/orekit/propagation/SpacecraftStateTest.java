@@ -101,15 +101,13 @@ public class SpacecraftStateTest {
     @Test
     public void testInterpolation()
         throws ParseException, OrekitException {
-        checkInterpolationError( 2, 640.5707, 3.5695114, 169847849.39e-9, 0.0);
-        checkInterpolationError( 3, 424.6225, 0.7395422,    189888.18e-9, 0.0);
-        checkInterpolationError( 4,  61.2305, 0.1562064,       232.33e-9, 0.0);
-        checkInterpolationError( 5,  19.2103, 0.0236758,         0.48e-9, 0.0);
-        checkInterpolationError( 6,   1.9613, 0.0037497,         0.07e-9, 0.0);
-        checkInterpolationError( 7,   0.4109, 0.0004614,         0.45e-9, 0.0);
-        checkInterpolationError( 8,   0.0350, 0.0000563,         0.29e-9, 0.0);
-        checkInterpolationError( 9,   0.0053, 0.0000058,         1.57e-9, 0.0);
-        checkInterpolationError(10,   0.0005, 0.0000006,         5.22e-9, 0.0);
+        checkInterpolationError( 2, 5162.2580, 1.47722511, 169847849.38e-9, 0.0);
+        checkInterpolationError( 3,  650.5940, 0.62788726,    189888.18e-9, 0.0);
+        checkInterpolationError( 4,  259.3868, 0.11878960,       232.33e-9, 0.0);
+        checkInterpolationError( 5,   29.5445, 0.02278694,         0.48e-9, 0.0);
+        checkInterpolationError( 6,    6.7633, 0.00336356,         0.09e-9, 0.0);
+        checkInterpolationError( 9,    0.0082, 0.00000577,         1.49e-9, 0.0);
+        checkInterpolationError(10,    0.0011, 0.00000058,         5.61e-9, 0.0);
     }
 
     private void checkInterpolationError(int n, double expectedErrorP, double expectedErrorV,

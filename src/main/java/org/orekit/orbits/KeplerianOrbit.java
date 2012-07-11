@@ -684,16 +684,38 @@ public class KeplerianOrbit extends Orbit {
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
         // add sample points
+        AbsoluteDate previousDate = null;
+        double previousPA   = Double.NaN;
+        double previousRAAN = Double.NaN;
+        double previousM    = Double.NaN;
         for (final Orbit orbit : sample) {
             final KeplerianOrbit kep = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+            final double continuousPA;
+            final double continuousRAAN;
+            final double continuousM;
+            if (previousDate == null) {
+                continuousPA   = kep.getPerigeeArgument();
+                continuousRAAN = kep.getRightAscensionOfAscendingNode();
+                continuousM    = kep.getMeanAnomaly();
+            } else {
+                final double dt      = kep.getDate().durationFrom(previousDate);
+                final double keplerM = previousM + kep.getKeplerianMeanMotion() * dt;
+                continuousPA   = MathUtils.normalizeAngle(kep.getPerigeeArgument(), previousPA);
+                continuousRAAN = MathUtils.normalizeAngle(kep.getRightAscensionOfAscendingNode(), previousRAAN);
+                continuousM    = MathUtils.normalizeAngle(kep.getMeanAnomaly(), keplerM);
+            }
+            previousDate = kep.getDate();
+            previousPA   = continuousPA;
+            previousRAAN = continuousRAAN;
+            previousM    = continuousM;
             interpolator.addSamplePoint(kep.getDate().durationFrom(date),
                                         new double[] {
                                             kep.getA(),
                                             kep.getE(),
                                             kep.getI(),
-                                            kep.getPerigeeArgument(),
-                                            kep.getRightAscensionOfAscendingNode(),
-                                            kep.getTrueAnomaly()
+                                            continuousPA,
+                                            continuousRAAN,
+                                            continuousM
                                         });
         }
 
@@ -703,7 +725,7 @@ public class KeplerianOrbit extends Orbit {
         // build a new interpolated instance
         return new KeplerianOrbit(interpolated[0], interpolated[1], interpolated[2],
                                   interpolated[3], interpolated[4], interpolated[5],
-                                  PositionAngle.TRUE, getFrame(), date, getMu());
+                                  PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

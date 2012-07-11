@@ -749,7 +749,7 @@ public class EquinoctialParametersTest {
         // well inside the sample, interpolation should be much better than Keplerian shift
         double maxShiftError = 0;
         double maxInterpolationError = 0;
-        for (double dt = 0; dt < 251.0; dt += 1.0) {
+        for (double dt = 0; dt < 241.0; dt += 1.0) {
             AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
             Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
             Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
@@ -757,13 +757,13 @@ public class EquinoctialParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         > 425.0);
+        Assert.assertTrue(maxShiftError         > 390.0);
         Assert.assertTrue(maxInterpolationError < 0.04);
 
         // slightly past sample end, interpolation should quickly increase, but remain reasonable
         maxShiftError = 0;
         maxInterpolationError = 0;
-        for (double dt = 250; dt < 300.0; dt += 1.0) {
+        for (double dt = 240; dt < 300.0; dt += 1.0) {
             AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
             Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
             Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
@@ -772,13 +772,13 @@ public class EquinoctialParametersTest {
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
         Assert.assertTrue(maxShiftError         <  610.0);
-        Assert.assertTrue(maxInterpolationError <    0.8);
+        Assert.assertTrue(maxInterpolationError < 1.3);
 
         // far past sample end, interpolation should become really wrong
-        // (in this test case, break even occurs at around 1822 seconds, with a 13 km error)
+        // (in this test case, break even occurs at around 863 seconds, with a 3.9 km error)
         maxShiftError = 0;
         maxInterpolationError = 0;
-        for (double dt = 300; dt < 2000; dt += 1.0) {
+        for (double dt = 300; dt < 1000; dt += 1.0) {
             AbsoluteDate t        = initialOrbit.getDate().shiftedBy(dt);
             Vector3D shifted      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
             Vector3D interpolated = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
@@ -786,8 +786,8 @@ public class EquinoctialParametersTest {
             maxShiftError = FastMath.max(maxShiftError, shifted.subtract(propagated).getNorm());
             maxInterpolationError = FastMath.max(maxInterpolationError, interpolated.subtract(propagated).getNorm());
         }
-        Assert.assertTrue(maxShiftError         < 16500.0);
-        Assert.assertTrue(maxInterpolationError > 47000.0);
+        Assert.assertTrue(maxShiftError         < 5000.0);
+        Assert.assertTrue(maxInterpolationError > 9000.0);
 
     }
 

@@ -885,7 +885,7 @@ public class KeplerianParametersTest {
         double maxInterpolationPositionError = 0;
         double maxShiftEccentricityError = 0;
         double maxInterpolationEccentricityError = 0;
-        for (double dt = 0; dt < 251.0; dt += 1.0) {
+        for (double dt = 0; dt < 241.0; dt += 1.0) {
             AbsoluteDate t         = initialOrbit.getDate().shiftedBy(dt);
             Vector3D shiftedP      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
             Vector3D interpolatedP = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
@@ -898,20 +898,20 @@ public class KeplerianParametersTest {
             maxShiftEccentricityError = FastMath.max(maxShiftEccentricityError, FastMath.abs(shiftedE - propagatedE));
             maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
-        Assert.assertTrue(maxShiftPositionError             > 425.0);
-        Assert.assertTrue(maxInterpolationPositionError     < 20.0);
-        Assert.assertTrue(maxShiftEccentricityError         > 5.0e-4);
+        Assert.assertTrue(maxShiftPositionError             > 390.0);
+        Assert.assertTrue(maxInterpolationPositionError     < 40.0);
+        Assert.assertTrue(maxShiftEccentricityError         > 4.5e-4);
         Assert.assertTrue(maxInterpolationEccentricityError < 2.1e-6);
 
         // slightly past sample end, bad eccentricity interpolation shows up
-        // (in this case, it is not even possible to go past 1906 seconds
-        // as interpolated eccentricity exceeds 1.0 and semi-major axis is
-        // positive, so this is not even a proper hyperbolic orbit...)
+        // (in this case, interpolated eccentricity exceeds 1.0 btween 1900
+        // and 1910s, while semi-majaxis remains positive, so this is not
+        // even a proper hyperbolic orbit...)
         maxShiftPositionError = 0;
         maxInterpolationPositionError = 0;
         maxShiftEccentricityError = 0;
         maxInterpolationEccentricityError = 0;
-        for (double dt = 250; dt < 600.0; dt += 1.0) {
+        for (double dt = 240; dt < 600; dt += 1.0) {
             AbsoluteDate t         = initialOrbit.getDate().shiftedBy(dt);
             Vector3D shiftedP      = initialOrbit.shiftedBy(dt).getPVCoordinates().getPosition();
             Vector3D interpolatedP = initialOrbit.interpolate(t, sample).getPVCoordinates().getPosition();
@@ -925,7 +925,7 @@ public class KeplerianParametersTest {
             maxInterpolationEccentricityError = FastMath.max(maxInterpolationEccentricityError, FastMath.abs(interpolatedE - propagatedE));
         }
         Assert.assertTrue(maxShiftPositionError             <  2200.0);
-        Assert.assertTrue(maxInterpolationPositionError     > 43000.0);
+        Assert.assertTrue(maxInterpolationPositionError     > 72000.0);
         Assert.assertTrue(maxShiftEccentricityError         <  1.2e-3);
         Assert.assertTrue(maxInterpolationEccentricityError >  3.8e-3);
 

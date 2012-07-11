@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -549,16 +550,33 @@ public class CircularOrbit
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
         // add sample points
+        AbsoluteDate previousDate = null;
+        double previousRAAN   = Double.NaN;
+        double previousAlphaM = Double.NaN;
         for (final Orbit orbit : sample) {
             final CircularOrbit circ = (CircularOrbit) OrbitType.CIRCULAR.convertType(orbit);
+            final double continuousRAAN;
+            final double continuousAlphaM;
+            if (previousDate == null) {
+                continuousRAAN   = circ.getRightAscensionOfAscendingNode();
+                continuousAlphaM = circ.getAlphaM();
+            } else {
+                final double dt       = circ.getDate().durationFrom(previousDate);
+                final double keplerAM = previousAlphaM + circ.getKeplerianMeanMotion() * dt;
+                continuousRAAN   = MathUtils.normalizeAngle(circ.getRightAscensionOfAscendingNode(), previousRAAN);
+                continuousAlphaM = MathUtils.normalizeAngle(circ.getAlphaM(), keplerAM);
+            }
+            previousDate   = circ.getDate();
+            previousRAAN   = continuousRAAN;
+            previousAlphaM = continuousAlphaM;
             interpolator.addSamplePoint(circ.getDate().durationFrom(date),
                                         new double[] {
                                             circ.getA(),
                                             circ.getCircularEx(),
                                             circ.getCircularEy(),
                                             circ.getI(),
-                                            circ.getRightAscensionOfAscendingNode(),
-                                            circ.getAlphaV()
+                                            continuousRAAN,
+                                            continuousAlphaM
                                         });
         }
 
@@ -568,7 +586,7 @@ public class CircularOrbit
         // build a new interpolated instance
         return new CircularOrbit(interpolated[0], interpolated[1], interpolated[2],
                                  interpolated[3], interpolated[4], interpolated[5],
-                                 PositionAngle.TRUE, getFrame(), date, getMu());
+                                 PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 

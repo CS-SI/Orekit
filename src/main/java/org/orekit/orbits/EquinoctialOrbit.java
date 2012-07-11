@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
@@ -487,8 +488,20 @@ public class EquinoctialOrbit extends Orbit {
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
         // add sample points
+        AbsoluteDate previousDate = null;
+        double previousLm = Double.NaN;
         for (final Orbit orbit : sample) {
             final EquinoctialOrbit equi = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(orbit);
+            final double continuousLm;
+            if (previousDate == null) {
+                continuousLm = equi.getLM();
+            } else {
+                final double dt       = equi.getDate().durationFrom(previousDate);
+                final double keplerLm = previousLm + equi.getKeplerianMeanMotion() * dt;
+                continuousLm = MathUtils.normalizeAngle(equi.getLM(), keplerLm);
+            }
+            previousDate = equi.getDate();
+            previousLm   = continuousLm;
             interpolator.addSamplePoint(equi.getDate().durationFrom(date),
                                         new double[] {
                                             equi.getA(),
@@ -496,7 +509,7 @@ public class EquinoctialOrbit extends Orbit {
                                             equi.getEquinoctialEy(),
                                             equi.getHx(),
                                             equi.getHy(),
-                                            equi.getLv()
+                                            continuousLm
                                         });
         }
 
@@ -506,7 +519,7 @@ public class EquinoctialOrbit extends Orbit {
         // build a new interpolated instance
         return new EquinoctialOrbit(interpolated[0], interpolated[1], interpolated[2],
                                     interpolated[3], interpolated[4], interpolated[5],
-                                    PositionAngle.TRUE, getFrame(), date, getMu());
+                                    PositionAngle.MEAN, getFrame(), date, getMu());
 
     }
 
