@@ -137,7 +137,7 @@ public class SpacecraftStateTest {
         }
         Assert.assertEquals(expectedErrorP, maxErrorP, 1.0e-3);
         Assert.assertEquals(expectedErrorV, maxErrorV, 1.0e-6);
-        Assert.assertEquals(expectedErrorA, maxErrorA, 1.0e-11);
+        Assert.assertEquals(expectedErrorA, maxErrorA, 4.0e-10);
         Assert.assertEquals(expectedErrorM, maxErrorM, 1.0e-15);
     }
 
