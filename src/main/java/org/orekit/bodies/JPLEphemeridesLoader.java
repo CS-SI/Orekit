@@ -258,7 +258,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         case SOLAR_SYSTEM_BARYCENTER :
             final JPLEphemeridesLoader embLoader = new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
             final CelestialBody embBody = embLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
-            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         embBody.getInertiallyOrientedFrame(), inertialFrameName, bodyFrameName) {
 
                 /** Serializable UID. */
@@ -276,7 +276,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             };
         case EARTH_MOON :
             final double scale = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         FramesFactory.getEME2000(), inertialFrameName, bodyFrameName) {
 
                 /** Serializable UID. */
@@ -334,12 +334,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
             };
         case MOON :
-            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         FramesFactory.getEME2000(), inertialFrameName, bodyFrameName);
         default :
             final JPLEphemeridesLoader ssbLoader = new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
             final CelestialBody ssbBody = ssbLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
-            return new JPLCelestialBody(supportedNames, name, gm, IAUPoleFactory.getIAUPole(generateType),
+            return new JPLCelestialBody(name, gm, IAUPoleFactory.getIAUPole(generateType),
                                         ssbBody.getInertiallyOrientedFrame(),
                                         inertialFrameName, bodyFrameName);
         }
@@ -706,25 +706,12 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         // INPOP files do not have constants for AU and EMRAT, thus extract them from
         // the header record and create a constant for them to be consistent with JPL files
-
-        double au = getLoadedAstronomicalUnit();
-        if (Double.isNaN(au)) {
-            au = extractDouble(first, 2680);
-            if (au < 1.4e8 || au > 1.6e8) {
-                throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
-            } else {
-                constants.put(CONSTANT_AU, au);
-            }
+        if (Double.isNaN(getLoadedAstronomicalUnit())) {
+           constants.put(CONSTANT_AU, extractDouble(first, HEADER_ASTRONOMICAL_UNIT_OFFSET));
         }
 
-        double emRat = getLoadedEarthMoonMassRatio();
-        if (Double.isNaN(emRat)) {
-            emRat = extractDouble(first, 2688);
-            if (emRat < 80 || emRat > 82) {
-                throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
-            } else {
-                constants.put(CONSTANT_EMRAT, emRat);
-            }
+        if (Double.isNaN(getLoadedEarthMoonMassRatio())) {
+            constants.put(CONSTANT_EMRAT, extractDouble(first, HEADER_EM_RATIO_OFFSET));
         }
 
     }
@@ -748,8 +735,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
         synchronized (this) {
 
-            if ((centralDate.durationFrom(rangeEnd) > FIFTY_DAYS) ||
-                    (rangeStart.durationFrom(centralDate) > FIFTY_DAYS)) {
+            if ((centralDate.durationFrom(rangeEnd)   > FIFTY_DAYS) ||
+                (rangeStart.durationFrom(centralDate) > FIFTY_DAYS)) {
                 // we are not interested in this record, don't parse it
                 return;
             }
@@ -764,8 +751,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
                 // set up chunk validity range
                 final AbsoluteDate chunkStart = chunkEnd;
-                chunkEnd = (i == nbChunks - 1) ?
-                        rangeEnd : rangeStart.shiftedBy((i + 1) * duration);
+                chunkEnd = (i == nbChunks - 1) ? rangeEnd : rangeStart.shiftedBy((i + 1) * duration);
 
                 // extract Chebyshev coefficients for the selected body
                 // and convert them from kilometers to meters
@@ -1021,7 +1007,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** Frame in which ephemeris are defined. */
         private final Frame definingFrame;
 
-        /** Private constructor for the singletons.
+        /** Private constructor available only to the loader.
          * @param supportedNames regular expression for supported files names (may be null)
          * @param name name of the body
          * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
@@ -1030,7 +1016,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
          * @param inertialFrameName name to use for inertially oriented body centered frame
          * @param bodyFrameName name to use for body oriented body centered frame
          */
-        private JPLCelestialBody(final String supportedNames, final String name, final double gm,
+        private JPLCelestialBody(final String name, final double gm,
                                  final IAUPole iauPole, final Frame definingFrame,
                                  final String inertialFrameName, final String bodyFrameName) {
             super(name, gm, iauPole, definingFrame, inertialFrameName, bodyFrameName);
