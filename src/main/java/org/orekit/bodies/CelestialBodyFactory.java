@@ -200,43 +200,43 @@ public class CelestialBodyFactory {
         CelestialBodyLoader loader = null;
         if (name.equals(SOLAR_SYSTEM_BARYCENTER)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SOLAR_SYSTEM_BARYCENTER);
         } else if (name.equals(SUN)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SUN);
         } else if (name.equals(MERCURY)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY);
         } else if (name.equals(VENUS)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.VENUS);
         } else if (name.equals(EARTH_MOON)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH_MOON);
         } else if (name.equals(EARTH)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.EARTH);
         } else if (name.equals(MOON)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MOON);
         } else if (name.equals(MARS)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MARS);
         } else if (name.equals(JUPITER)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.JUPITER);
         } else if (name.equals(SATURN)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.SATURN);
         } else if (name.equals(URANUS)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.URANUS);
         } else if (name.equals(NEPTUNE)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.NEPTUNE);
         } else if (name.equals(PLUTO)) {
             loader =
-                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO, null);
+                new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.PLUTO);
         }
 
         if (loader != null) {
@@ -377,8 +377,9 @@ public class CelestialBodyFactory {
      * addCelestialBodyLoader} or if {@link #clearCelestialBodyLoaders(String)
      * clearCelestialBodyLoaders} has been called afterwards,
      * the {@link #addDefaultCelestialBodyLoader(String, String)
-     * addDefaultCelestialBodyLoader} method will be called automatically with
-     * a null second parameter (supported file names).
+     * addDefaultCelestialBodyLoader} method will be called automatically,
+     * once with the default name for JPL DE ephemerides and once with the
+     * default name for IMCCE INPOP files.
      * </p>
      * @param name name of the celestial body
      * @return celestial body
@@ -393,19 +394,27 @@ public class CelestialBodyFactory {
                     List<CelestialBodyLoader> loaders = LOADERS_MAP.get(name);
                     boolean loaded = false;
                     if ((loaders == null) || loaders.isEmpty()) {
-                        addDefaultCelestialBodyLoader(name, null);
+                        addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES);
+                        addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES);
                         loaders = LOADERS_MAP.get(name);
                     }
+                    OrekitException delayedException = null;
                     for (CelestialBodyLoader loader : loaders) {
-                        DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
-                        if (loader.foundData()) {
-                            body   = loader.loadCelestialBody(name);
-                            loaded = true;
-                            break;
+                        try {
+                            DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
+                            if (loader.foundData()) {
+                                body   = loader.loadCelestialBody(name);
+                                loaded = true;
+                                break;
+                            }
+                        } catch (OrekitException oe) {
+                            delayedException = oe;
                         }
                     }
                     if (!loaded) {
-                        throw new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, name);
+                        throw (delayedException != null) ?
+                              delayedException :
+                              new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, name);
                     }
 
                 }

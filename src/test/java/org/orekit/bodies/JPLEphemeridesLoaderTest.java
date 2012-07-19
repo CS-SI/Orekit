@@ -40,7 +40,8 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
+            new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                                     JPLEphemeridesLoader.EphemerisType.SUN);
         Assert.assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
         Assert.assertEquals(81.30056, loader.getLoadedEarthMoonMassRatio(), 1.0e-8);
     }
@@ -49,7 +50,8 @@ public class JPLEphemeridesLoaderTest {
     public void testConstantsInpop() throws OrekitException {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
+            new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES,
+                                     JPLEphemeridesLoader.EphemerisType.SUN);
         Assert.assertEquals(149597870691.0, loader.getLoadedAstronomicalUnit(), 0.1);
         Assert.assertEquals(81.30057, loader.getLoadedEarthMoonMassRatio(), 1.0e-8);
     }
@@ -59,7 +61,8 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("regular-data/de405-ephemerides");
 
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
+            new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                                     JPLEphemeridesLoader.EphemerisType.SUN);
         Assert.assertEquals(22032.080e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
                             1.0e6);
@@ -101,7 +104,8 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("inpop");
 
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.SUN, null);
+            new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES,
+                                     JPLEphemeridesLoader.EphemerisType.SUN);
         Assert.assertEquals(22032.081e9,
                             loader.getLoadedGravitationalCoefficient(JPLEphemeridesLoader.EphemerisType.MERCURY),
                             1.0e6);
@@ -140,20 +144,23 @@ public class JPLEphemeridesLoaderTest {
     @Test
     public void testDerivative405() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data/de405-ephemerides");
-        checkDerivative(new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
+        checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                        new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
     }
 
     @Test
     public void testDerivative406() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data/de406-ephemerides");
-        checkDerivative(new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()));
+        checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                        new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()));
     }
 
     @Test
     @Ignore
     public void testDerivative414() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data/de414-ephemerides");
-        checkDerivative(new AbsoluteDate(1950, 1, 12, TimeScalesFactory.getTT()));
+        checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                        new AbsoluteDate(1950, 1, 12, TimeScalesFactory.getTT()));
     }
 
     @Test
@@ -161,11 +168,11 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderInpopTCBBig =
-                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type, null);
+                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type);
         CelestialBody bodysInpopTCBBig = loaderInpopTCBBig.loadCelestialBody(CelestialBodyFactory.MARS);
         Assert.assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         JPLEphemeridesLoader loaderInpopTCBLittle =
-                new JPLEphemeridesLoader("^inpop.*_TCB_.*_littleendian\\.dat$", type, null);
+                new JPLEphemeridesLoader("^inpop.*_TCB_.*_littleendian\\.dat$", type);
         CelestialBody bodysInpopTCBLittle = loaderInpopTCBLittle.loadCelestialBody(CelestialBodyFactory.MARS);
         Assert.assertEquals(1.0, loaderInpopTCBLittle.getLoadedConstant("TIMESC"), 1.0e-10);
         AbsoluteDate t0 = new AbsoluteDate(1969, 7, 17, 10, 43, 23.4, TimeScalesFactory.getTT());
@@ -186,14 +193,14 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("regular-data:inpop");
         JPLEphemeridesLoader.EphemerisType type = JPLEphemeridesLoader.EphemerisType.MARS;
         JPLEphemeridesLoader loaderDE405 =
-                new JPLEphemeridesLoader("^unxp(\\d\\d\\d\\d)\\.405$", type, null);
+                new JPLEphemeridesLoader("^unxp(\\d\\d\\d\\d)\\.405$", type);
         CelestialBody bodysDE405 = loaderDE405.loadCelestialBody(CelestialBodyFactory.MARS);
         JPLEphemeridesLoader loaderInpopTDBBig =
-                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type, null);
+                new JPLEphemeridesLoader("^inpop.*_TDB_.*_bigendian\\.dat$", type);
         CelestialBody bodysInpopTDBBig = loaderInpopTDBBig.loadCelestialBody(CelestialBodyFactory.MARS);
         Assert.assertEquals(0.0, loaderInpopTDBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         JPLEphemeridesLoader loaderInpopTCBBig =
-                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type, null);
+                new JPLEphemeridesLoader("^inpop.*_TCB_.*_bigendian\\.dat$", type);
         CelestialBody bodysInpopTCBBig = loaderInpopTCBBig.loadCelestialBody(CelestialBodyFactory.MARS);
         Assert.assertEquals(1.0, loaderInpopTCBBig.getLoadedConstant("TIMESC"), 1.0e-10);
         AbsoluteDate t0 = new AbsoluteDate(1969, 7, 17, 10, 43, 23.4, TimeScalesFactory.getTT());
@@ -211,9 +218,9 @@ public class JPLEphemeridesLoaderTest {
 
     }
 
-    private void checkDerivative(AbsoluteDate date) throws OrekitException, ParseException {
+    private void checkDerivative(String supportedNames, AbsoluteDate date) throws OrekitException, ParseException {
         JPLEphemeridesLoader loader =
-            new JPLEphemeridesLoader(null, JPLEphemeridesLoader.EphemerisType.MERCURY, date);
+            new JPLEphemeridesLoader(supportedNames, JPLEphemeridesLoader.EphemerisType.MERCURY);
         CelestialBody body = loader.loadCelestialBody(CelestialBodyFactory.MERCURY);
         double h = 20;
 
