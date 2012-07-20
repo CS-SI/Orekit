@@ -25,8 +25,6 @@ import java.text.ParseException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.BivariateFunction;
-import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 
@@ -35,20 +33,42 @@ import org.orekit.errors.OrekitException;
  */
 public class InterpolationTableLoader implements DataLoader {
 
-    /** The bi-variate interpolation function read from the file. */
-    private BivariateFunction function;
+    /** Abscissa grid for the bi-variate interpolation function read from the file. */
+    private double[] xArr;
 
-    /** Returns the interpolation function.
-     * @return the interpolation function, or <code>null</code> if the file
-     *         could not be read
+    /** Ordinate grid for the bi-variate interpolation function read from the file. */
+    private double[] yArr;
+
+    /** Values samples for the bi-variate interpolation function read from the file. */
+    private double[][] fArr;
+
+    /** Returns a copy of the abscissa grid for the interpolation function.
+     * @return the abscissa grid for the interpolation function,
+     *         or <code>null</code> if the file could not be read
      */
-    public BivariateFunction getInterpolationFunction() {
-        return function;
+    public double[] getAbscissaGrid() {
+        return xArr.clone();
+    }
+
+    /** Returns a copy of the ordinate grid for the interpolation function.
+     * @return the ordinate grid for the interpolation function,
+     *         or <code>null</code> if the file could not be read
+     */
+    public double[] getOrdinateGrid() {
+        return yArr.clone();
+    }
+
+    /** Returns a copy of the values samples for the interpolation function.
+     * @return the values samples for the interpolation function,
+     *         or <code>null</code> if the file could not be read
+     */
+    public double[][] getValuesSamples() {
+        return fArr.clone();
     }
 
     /** {@inheritDoc} */
     public boolean stillAcceptsData() {
-        return function == null;
+        return xArr == null;
     }
 
     /** Loads an bi-variate interpolation table from the given {@link InputStream}.
@@ -128,16 +148,15 @@ public class InterpolationTableLoader implements DataLoader {
 
         } while (!done);
 
-        final double[] xArr = toPrimitiveArray(xValues);
-        final double[] yArr = toPrimitiveArray(yValues);
-        final double[][] fArr = new double[cellValues.size()][];
+        xArr = toPrimitiveArray(xValues);
+        yArr = toPrimitiveArray(yValues);
+        fArr = new double[cellValues.size()][];
         int idx = 0;
 
         for (List<Double> row : cellValues) {
             fArr[idx++] = toPrimitiveArray(row);
         }
 
-        function = new BicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
     }
 
     /** Converts a list of {@link Double} objects into an array of double primitives.

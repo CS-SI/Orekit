@@ -17,6 +17,7 @@
 package org.orekit.models.earth;
 
 import org.apache.commons.math3.analysis.BivariateFunction;
+import org.apache.commons.math3.analysis.interpolation.BicubicSplineInterpolator;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,8 +37,29 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
     /** Singleton object for the default model. */
     private static FixedTroposphericDelay defaultModel;
 
+    /** Abscissa grid for the bi-variate interpolation function read from the file. */
+    private final double[] xArr;
+
+    /** Ordinate grid for the bi-variate interpolation function read from the file. */
+    private final double[] yArr;
+
+    /** Values samples for the bi-variate interpolation function read from the file. */
+    private final double[][] fArr;
+
     /** Interpolation function for the tropospheric delays. */
-    private final BivariateFunction delayFunction;
+    private transient BivariateFunction delayFunction;
+
+    /** Creates a new {@link FixedTroposphericDelay} instance.
+     * @param xArr abscissa grid for the interpolation function
+     * @param yArr ordinate grid for the interpolation function
+     * @param fArr values samples for the interpolation function
+     */
+    public FixedTroposphericDelay(final double[] xArr, final double[] yArr, final double[][] fArr) {
+        this.xArr = xArr.clone();
+        this.yArr = yArr.clone();
+        this.fArr = fArr.clone();
+        delayFunction = new BicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
+    }
 
     /** Creates a new {@link FixedTroposphericDelay} instance, and loads the
      * delay values from the given resource via the {@link DataProvidersManager}.
@@ -50,7 +72,10 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
         DataProvidersManager.getInstance().feed(supportedName, loader);
 
         if (!loader.stillAcceptsData()) {
-            delayFunction = loader.getInterpolationFunction();
+            xArr = loader.getAbscissaGrid();
+            yArr = loader.getOrdinateGrid();
+            fArr = loader.getValuesSamples();
+            delayFunction = new BicubicSplineInterpolator().interpolate(xArr, yArr, fArr);
         } else {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_RESOURCE, supportedName);
         }
@@ -86,4 +111,12 @@ public class FixedTroposphericDelay implements TroposphericDelayModel {
     public double calculateSignalDelay(final double elevation, final double height) {
         return calculatePathDelay(elevation, height) / Constants.SPEED_OF_LIGHT;
     }
+
+    /** Make sure the unserializable bivariate interpolation function is properly rebuilt.
+     * @return replacement object, with bivariate function properly set up
+     */
+    private Object readResolve() {
+        return new FixedTroposphericDelay(xArr, yArr, fArr);
+    }
+
 }

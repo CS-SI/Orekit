@@ -173,7 +173,9 @@ public class SaastamoinenModel implements TroposphericDelayModel {
             try {
                 DataProvidersManager.getInstance().feed("^saastamoinen-correction\\.txt$", loader);
                 if (!loader.stillAcceptsData()) {
-                    func = loader.getInterpolationFunction();
+                    func = new BicubicSplineInterpolator().interpolate(loader.getAbscissaGrid(),
+                                                                       loader.getOrdinateGrid(),
+                                                                       loader.getValuesSamples());
                 }
             } catch (OrekitException ex) {
                 // config file could not be loaded, use the default values instead
