@@ -92,25 +92,25 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     /** {@inheritDoc} */
     public double getUT1MinusUTC(final AbsoluteDate date) {
         try {
-            final EOPEntry[] entries = getNeighbors(date);
+            final EOPEntry[] neighbors = getNeighbors(date);
             final HermiteInterpolator interpolator = new HermiteInterpolator();
-            final double firstDUT = entries[0].getUT1MinusUTC();
+            final double firstDUT = neighbors[0].getUT1MinusUTC();
             boolean beforeLeap = true;
-            for (final EOPEntry entry : entries) {
+            for (final EOPEntry neighbor : neighbors) {
                 final double dut;
-                if (entry.getUT1MinusUTC() - firstDUT > 0.9) {
+                if (neighbor.getUT1MinusUTC() - firstDUT > 0.9) {
                     // there was a leap second between the entries
-                    dut = entry.getUT1MinusUTC() - 1.0;
-                    if (entry.getDate().compareTo(date) <= 0) {
+                    dut = neighbor.getUT1MinusUTC() - 1.0;
+                    if (neighbor.getDate().compareTo(date) <= 0) {
                         beforeLeap = false;
                     }
                 } else {
-                    dut = entry.getUT1MinusUTC();
+                    dut = neighbor.getUT1MinusUTC();
                 }
-                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                interpolator.addSamplePoint(neighbor.getDate().durationFrom(date),
                                             new double[] {
-                    dut
-                });
+                                                dut
+                                            });
             }
             final double interpolated = interpolator.value(0)[0];
             return beforeLeap ? interpolated : interpolated + 1.0;
@@ -136,8 +136,8 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             for (final EOPEntry entry : getNeighbors(date)) {
                 interpolator.addSamplePoint(entry.getDate().durationFrom(date),
                                             new double[] {
-                    entry. getLOD()
-                });
+                                                entry.getLOD()
+                                            });
             }
             return interpolator.value(0)[0];
         } catch (TimeStampedCacheException tce) {
@@ -151,7 +151,6 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
      * @param date date at which the correction is desired
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
-     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
         try {
@@ -159,8 +158,8 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             for (final EOPEntry entry : getNeighbors(date)) {
                 interpolator.addSamplePoint(entry.getDate().durationFrom(date),
                                             new double[] {
-                    entry. getX(), entry.getY()
-                });
+                                                entry.getX(), entry.getY()
+                                            });
             }
             final double[] interpolated = interpolator.value(0);
             return new PoleCorrection(interpolated[0], interpolated[1]);
@@ -220,13 +219,13 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             for (TimeStamped ts : entries.tailSet(start).headSet(end)) {
                 generated.add((EOPEntry) ts);
             }
- 
+
             if (generated.isEmpty()) {
                 if (entries.isEmpty()) {
                     throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, date);
                 } else if (entries.last().getDate().compareTo(date) < 0) {
-                        throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                            entries.last().getDate());
+                    throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
+                                                        entries.last().getDate());
                 } else {
                     throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
                                                         entries.first().getDate());

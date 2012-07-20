@@ -51,18 +51,18 @@ class ITRFEquinoxProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-            // pole correction parameters
-            final PoleCorrection pCorr = eopHistory.getPoleCorrection(date);
+        // pole correction parameters
+        final PoleCorrection pCorr = eopHistory.getPoleCorrection(date);
 
-            // elementary rotations due to pole motion in terrestrial frame
-            final Rotation r1 = new Rotation(Vector3D.PLUS_I, -pCorr.getYp());
-            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -pCorr.getXp());
+        // elementary rotations due to pole motion in terrestrial frame
+        final Rotation r1 = new Rotation(Vector3D.PLUS_I, -pCorr.getYp());
+        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -pCorr.getXp());
 
-            // complete pole motion in terrestrial frame
-            final Rotation wRot = r2.applyTo(r1);
+        // complete pole motion in terrestrial frame
+        final Rotation wRot = r2.applyTo(r1);
 
-            // set up the transform from parent GTOD
-            return new Transform(date, wRot.revert(), Vector3D.ZERO);
+        // set up the transform from parent GTOD
+        return new Transform(date, wRot.revert(), Vector3D.ZERO);
 
     }
 

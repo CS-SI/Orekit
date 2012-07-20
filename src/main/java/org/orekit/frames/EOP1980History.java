@@ -38,7 +38,6 @@ public class EOP1980History extends AbstractEOPHistory {
      * @param date date at which the correction is desired
      * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
      * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
-     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
     public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
         try {
@@ -47,8 +46,8 @@ public class EOP1980History extends AbstractEOPHistory {
                 final EOP1980Entry e1980 = (EOP1980Entry) entry;
                 interpolator.addSamplePoint(entry.getDate().durationFrom(date),
                                             new double[] {
-                    e1980. getDdEps(), e1980.getDdPsi()
-                });
+                                                e1980.getDdEps(), e1980.getDdPsi()
+                                            });
             }
             final double[] interpolated = interpolator.value(0);
             return new NutationCorrection(interpolated[0], interpolated[1]);

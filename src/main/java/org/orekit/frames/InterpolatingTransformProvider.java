@@ -63,7 +63,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     private final double step;
 
     /** Cache for sample points. */
-    private final TimeStampedCache<Transform> cache;
+    private final transient TimeStampedCache<Transform> cache;
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
@@ -188,11 +188,11 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * @param newSlotInterval time interval above which a new slot is created
          * in the {@link TimeStampedCache time-stamped cache}
          */
-        public DataTransferObject(final TransformProvider rawProvider,
-                                  final boolean useVelocities, final boolean useRotationRates,
-                                  final AbsoluteDate earliest, final AbsoluteDate latest,
-                                  final int gridPoints, final double step,
-                                  final int maxSlots, final double maxSpan, final double newSlotInterval) {
+        private DataTransferObject(final TransformProvider rawProvider,
+                                   final boolean useVelocities, final boolean useRotationRates,
+                                   final AbsoluteDate earliest, final AbsoluteDate latest,
+                                   final int gridPoints, final double step,
+                                   final int maxSlots, final double maxSpan, final double newSlotInterval) {
             this.rawProvider      = rawProvider;
             this.useVelocities    = useVelocities;
             this.useRotationRates = useRotationRates;
@@ -224,7 +224,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         public List<Transform> generate(final Transform existing, final AbsoluteDate date) {
 
             try {
-                List<Transform> generated = new ArrayList<Transform>();
+                final List<Transform> generated = new ArrayList<Transform>();
 
                 if (existing == null) {
 
@@ -250,7 +250,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
                         do {
                             t = t.shiftedBy(-step);
                             generated.add(0, rawProvider.getTransform(t));
-                        } while (t.compareTo(date) >= 0);         
+                        } while (t.compareTo(date) >= 0);
                     }
                 }
 

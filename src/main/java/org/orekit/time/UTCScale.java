@@ -127,7 +127,7 @@ public class UTCScale implements TimeScale {
 
         /** {@inheritDoc} */
         public List<UTCTAIOffset> generate(final UTCTAIOffset existing, final AbsoluteDate date)
-                throws TimeStampedCacheException {
+            throws TimeStampedCacheException {
             if (existing != null) {
                 // short cut to avoid going through all cache updating as nothing new is available
                 throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,

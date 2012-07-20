@@ -316,7 +316,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
         // remove linear offset from the current coordinates
         final double dt = date.durationFrom(offsetDate);
-        AngularCoordinates fixed  = ac.subtractOffset(offset.shiftedBy(dt));
+        final AngularCoordinates fixed = ac.subtractOffset(offset.shiftedBy(dt));
 
         // check modified Rodrigues vector singularity
         double q0 = fixed.getRotation().getQ0();

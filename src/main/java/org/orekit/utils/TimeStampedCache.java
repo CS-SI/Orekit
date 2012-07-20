@@ -783,7 +783,6 @@ public class TimeStampedCache<T extends TimeStamped> {
          * @param date date that must be covered by the range of the generated array
          * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
          * @return chronologically sorted list of generated entries
-         * @exception IllegalStateException 
          * @exception TimeStampedCacheException if if entries are not chronologically
          * sorted or if new data cannot be generated
          */
