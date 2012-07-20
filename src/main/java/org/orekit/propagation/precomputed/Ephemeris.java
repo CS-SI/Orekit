@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.precomputed;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,7 +58,7 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
     private final AbsoluteDate maxDate;
 
     /** Thread-safe cache. */
-    private final TimeStampedCache<SpacecraftState> cache;
+    private final transient TimeStampedCache<SpacecraftState> cache;
 
     /** Constructor with tabulated states.
      * @param states tabulates states
@@ -81,12 +82,11 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
         // set up cache
         final TimeStampedGenerator<SpacecraftState> generator =
                 new TimeStampedGenerator<SpacecraftState>() {
-            /** {@inheritDoc} */
-            public List<SpacecraftState> generate(final SpacecraftState existing,
-                                                  final AbsoluteDate date) {
-                return states;
-            }
-        };
+                    /** {@inheritDoc} */
+                    public List<SpacecraftState> generate(final SpacecraftState existing, final AbsoluteDate date) {
+                        return states;
+                    }
+                };
         cache = new TimeStampedCache<SpacecraftState>(interpolationPoints,
                                                       OrekitConfiguration.getCacheSlotsNumber(),
                                                       Double.POSITIVE_INFINITY, Constants.JULIAN_DAY,
@@ -150,6 +150,55 @@ public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
     /** {@inheritDoc} */
     public SpacecraftState getInitialState() throws PropagationException {
         return basicPropagate(getMinDate());
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the data needed for generation,
+     * but does <em>not</em> serializes the cache itself (in fact the cache is
+     * not serializable).
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        try {
+            return new DataTransferObject(cache.getGenerator().generate(null, null),
+                                          cache.getNeighborsSize());
+        } catch (TimeStampedCacheException tce) {
+            // this should never happen
+            throw OrekitException.createInternalError(tce);
+        }
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -8479036196711159270L;
+
+        /** Tabulates states. */
+        private final List<SpacecraftState> states;
+
+        /** Number of points to use in interpolation. */
+        private final int interpolationPoints;
+
+        /** Simple constructor.
+         * @param states tabulates states
+         * @param interpolationPoints number of points to use in interpolation
+         */
+        private DataTransferObject(final List<SpacecraftState> states, final int interpolationPoints) {
+            this.states              = states;
+            this.interpolationPoints = interpolationPoints;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link Ephemeris}.
+         * @return replacement {@link Ephemeris}
+         */
+        private Object readResolve() {
+            // build a new provider, with an empty cache
+            return new Ephemeris(states, interpolationPoints);
+        }
+
     }
 
 }
