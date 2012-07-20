@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -392,7 +391,6 @@ public class CelestialBodyFactory {
             if (body == null) {
                 synchronized (LOADERS_MAP) {
                     List<CelestialBodyLoader> loaders = LOADERS_MAP.get(name);
-                    boolean loaded = false;
                     if ((loaders == null) || loaders.isEmpty()) {
                         addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES);
                         addDefaultCelestialBodyLoader(name, JPLEphemeridesLoader.DEFAULT_INPOP_SUPPORTED_NAMES);
@@ -401,17 +399,15 @@ public class CelestialBodyFactory {
                     OrekitException delayedException = null;
                     for (CelestialBodyLoader loader : loaders) {
                         try {
-                            DataProvidersManager.getInstance().feed(loader.getSupportedNames(), loader);
-                            if (loader.foundData()) {
-                                body   = loader.loadCelestialBody(name);
-                                loaded = true;
+                            body = loader.loadCelestialBody(name);
+                            if (body != null) {
                                 break;
                             }
                         } catch (OrekitException oe) {
                             delayedException = oe;
                         }
                     }
-                    if (!loaded) {
+                    if (body == null) {
                         throw (delayedException != null) ?
                               delayedException :
                               new OrekitException(OrekitMessages.NO_DATA_LOADED_FOR_CELESTIAL_BODY, name);

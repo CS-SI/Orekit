@@ -150,7 +150,7 @@ public class JPLEphemeridesLoaderTest {
 
     @Test
     public void testDerivative406() throws OrekitException, ParseException {
-        Utils.setDataRoot("regular-data/de406-ephemerides");
+        Utils.setDataRoot("regular-data:regular-data/de406-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(2964, 9, 26, TimeScalesFactory.getTT()));
     }

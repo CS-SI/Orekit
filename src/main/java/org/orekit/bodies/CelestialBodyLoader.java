@@ -16,13 +16,12 @@
  */
 package org.orekit.bodies;
 
-import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 
 /** Interface for loading celestial bodies.
  * @author Luc Maisonobe
  */
-public interface CelestialBodyLoader extends DataLoader {
+public interface CelestialBodyLoader {
 
     /** Load celestial body.
      * @param name name of the celestial body
@@ -30,15 +29,5 @@ public interface CelestialBodyLoader extends DataLoader {
      * @throws OrekitException if the body cannot be loaded
      */
     CelestialBody loadCelestialBody(String name) throws OrekitException;
-
-    /** Check if some data have already been loaded.
-     * @return true if some data have already been loaded
-     */
-    boolean foundData();
-
-    /** Get the regular expression for supported PV coordinates files names.
-     * @return regular expression for supported PV coordinates files names
-     */
-    String getSupportedNames();
 
 }

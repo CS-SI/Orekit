@@ -22,10 +22,16 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update" >
+        Greatly simplified CelestialBodyLoader interface, now it is not related
+        to DataLoader anymore (which implies users can more easily provide
+        analytical models instead of the JPL/IMCCE ephemerides if they want)
+      </action>
       <action dev="luc" type="fix" >
         Use the new thread-safe caches and the new Hermite interpolation feature on
-        Transform, Earth Orientation Parameters, UTC-TAI history and Ephemeris to
-        remove thread-safety issues in all classes using cache (fixes #3).
+        Transform, Earth Orientation Parameters, JPL/IMCCE ephemerides, UTC-TAI
+        history and Ephemeris to remove thread-safety issues in all classes using
+        cache (fixes #3).
       </action>
       <action dev="luc" type="add" >
         Added Hermite interpolation features for position-velocity coordinates,
