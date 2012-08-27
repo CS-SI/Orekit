@@ -44,6 +44,23 @@ public class ICGEMFormatReaderTest {
 
     }
 
+    @Test
+    public void testEigen06() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        double[][] C = provider.getC(5, 5, true);;
+        double[][] S = provider.getS(5, 5, true);
+
+        Assert.assertEquals(9.57211326674e-07,C[3][0],  0);
+        Assert.assertEquals(1.74807033099e-07,C[5][5],  0);
+        Assert.assertEquals(0, S[4][0],  0);
+        Assert.assertEquals(3.08820169866e-07,S[4][4],  0);
+        Assert.assertEquals(0.3986004415E+15,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07,provider.getAe(),  0);
+
+    }
+
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");

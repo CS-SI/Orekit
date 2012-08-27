@@ -28,11 +28,17 @@ import org.orekit.errors.OrekitMessages;
 
 /** Reader for the ICGEM gravity field format.
  *
- * <p> This format is used to describe the gravity field of EIGEN models
+ * <p>This format is used to describe the gravity field of EIGEN models
  * published by the GFZ Potsdam since 2004. It is described in Franz
- * Barthelmes and Christoph F&ouml;rste paper:
- * <a href="http://op.gfz-potsdam.de/grace/results/grav/g005_ICGEM-Format.pdf">the
- * ICGEM-format</a>.
+ * Barthelmes and Christoph F&ouml;rste paper: "the ICGEM-format".
+ * The 2006-02-28 version of this paper can be found <a
+ * href="http://op.gfz-potsdam.de/grace/results/grav/g005_ICGEM-Format.pdf">here</a>
+ * and the 2011-06-07 version of this paper can be found <a
+ * href="http://icgem.gfz-potsdam.de/ICGEM/documents/ICGEM-Format-2011.pdf">here</a>.
+ * These versions differ in time-dependent coefficients, which are linear-only prior
+ * to 2011 (up to eigen-5 model) and have also harmonic effects after that date
+ * (starting with eigen-6 model). Both versions are supported
+ * by the class (for now, they simply ignore the time-dependent parts).</p>
  *
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
  *  which will determine which reader to use with the selected potential
@@ -75,6 +81,15 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
     /** Gravity field coefficient first time derivative. */
     private static final String DOT                     = "dot";
+
+    /** Gravity field coefficient trend. */
+    private static final String TRND                    = "trnd";
+
+    /** Gravity field coefficient sine amplitude. */
+    private static final String ASIN                    = "asin";
+
+    /** Gravity field coefficient cosine amplitude. */
+    private static final String ACOS                    = "acos";
 
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
@@ -147,7 +162,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         final int order  = Integer.parseInt(tab[2]);
                         normalizedC[degree][order] = Double.parseDouble(tab[3].replace('D', 'E'));
                         normalizedS[degree][order] = Double.parseDouble(tab[4].replace('D', 'E'));
-                    } else if ((tab.length == 7) && DOT.equals(tab[0])) {
+                    } else if (((tab.length == 7) && DOT.equals(tab[0])) ||
+                               ((tab.length == 7) && TRND.equals(tab[0])) ||
+                               ((tab.length == 8) && ASIN.equals(tab[0])) ||
+                               ((tab.length == 8) && ACOS.equals(tab[0]))) {
                         // we ignore the time derivative records
                     } else {
                         throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
