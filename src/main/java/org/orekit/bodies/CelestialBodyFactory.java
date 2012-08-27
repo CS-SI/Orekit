@@ -245,23 +245,65 @@ public class CelestialBodyFactory {
     }
 
     /** Clear loaders for one celestial body.
+     * <p>
+     * Calling this method also clears the celestial body that
+     * has been loaded via this {@link CelestialBodyLoader}.
+     * </p>
      * @param name name of the body
      * @see #addCelestialBodyLoader(String, CelestialBodyLoader)
      * @see #clearCelestialBodyLoaders()
+     * @see #clearCelestialBodyCache(String)
      */
     public static void clearCelestialBodyLoaders(final String name) {
-        synchronized (LOADERS_MAP) {
-            LOADERS_MAP.remove(name);
+        // use same synchronization order as in getBody to prevent deadlocks
+        synchronized (CELESTIAL_BODIES_MAP) {
+            // take advantage of reentrent synchronization as
+            // clearCelestialBodyCache uses the same lock inside
+            clearCelestialBodyCache(name);
+
+            synchronized (LOADERS_MAP) {
+                LOADERS_MAP.remove(name);
+            }
         }
     }
 
     /** Clear loaders for all celestial bodies.
+     * <p>
+     * Calling this method also clears all loaded celestial bodies.
+     * </p>
      * @see #addCelestialBodyLoader(String, CelestialBodyLoader)
      * @see #clearCelestialBodyLoaders(String)
+     * @see #clearCelestialBodyCache()
      */
     public static void clearCelestialBodyLoaders() {
-        synchronized (LOADERS_MAP) {
-            LOADERS_MAP.clear();
+        synchronized (CELESTIAL_BODIES_MAP) {
+            clearCelestialBodyCache();
+
+            synchronized (LOADERS_MAP) {
+                LOADERS_MAP.clear();
+            }
+        }
+    }
+
+    /** Clear the specified celestial body from the internal cache.
+     * @param name name of the body
+     */
+    public static void clearCelestialBodyCache(final String name) {
+        synchronized (CELESTIAL_BODIES_MAP) {
+            CELESTIAL_BODIES_MAP.remove(name);
+        }
+    }
+
+    /** Clear all loaded celestial bodies.
+     * <p>
+     * Calling this method will remove all loaded bodies from the internal
+     * cache. Subsequent calls to {@link #getBody(String)} or similar methods
+     * will result in a reload of the requested body from the configured loader(s).
+     * </p>
+     */
+    public static void clearCelestialBodyCache() {
+        synchronized (CELESTIAL_BODIES_MAP) {
+            CELESTIAL_BODIES_MAP.clear();
         }
     }
 
