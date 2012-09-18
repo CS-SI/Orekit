@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="tn" type="fix" due-to="Evan Ward">
+        Convert position entries contained in SP3 files to meters instead of km
+        (fixes bug #112).
+      </action>
       <action dev="luc" type="add" >
         Added support for version 2011 of ICGEM gravity field format. Orekit
         still ignore the time-dependent part of these fields, though.

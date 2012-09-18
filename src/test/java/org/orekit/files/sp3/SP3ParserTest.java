@@ -58,7 +58,7 @@ public class SP3ParserTest {
                 TimeScalesFactory.getGPS()), coord.getEpoch());
 
         // P 1 16258.524750 -3529.015750 -20611.427050 -62.540600
-        checkPVEntry(new PVCoordinates(new Vector3D(16258.524, -3529.015, -20611.427),
+        checkPVEntry(new PVCoordinates(new Vector3D(16258524.75, -3529015.75, -20611427.049),
                                        new Vector3D(0, 0, 0)),
                      coord.getCoordinate());
     }
@@ -88,7 +88,7 @@ public class SP3ParserTest {
 
         // P 1 16258.524750 -3529.015750 -20611.427050 -62.540600
         // V 1  -6560.373522  25605.954994  -9460.427179     -0.024236
-        checkPVEntry(new PVCoordinates(new Vector3D(16258.524, -3529.015, -20611.427),
+        checkPVEntry(new PVCoordinates(new Vector3D(16258524.75, -3529015.75, -20611427.049),
                                        new Vector3D(-656.0373, 2560.5954, -946.0427)),
                      coord.getCoordinate());
     }
@@ -117,7 +117,7 @@ public class SP3ParserTest {
                 TimeScalesFactory.getGPS()), coord.getEpoch());
 
         // PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219
-        checkPVEntry(new PVCoordinates(new Vector3D(-11044.805, -10475.672, 21929.418),
+        checkPVEntry(new PVCoordinates(new Vector3D(-11044805.8, -10475672.35, 21929418.2),
                                        new Vector3D(0, 0, 0)),
                      coord.getCoordinate());
     }
@@ -129,7 +129,8 @@ public class SP3ParserTest {
         final Vector3D actualPos = actual.getPosition();
         final Vector3D actualVel = actual.getVelocity();
 
-        final double eps = 1e-2;
+        // sp3 files can have mm accuracy
+        final double eps = 1e-3;
 
         Assert.assertEquals(expectedPos.getX(), actualPos.getX(), eps);
         Assert.assertEquals(expectedPos.getY(), actualPos.getY(), eps);

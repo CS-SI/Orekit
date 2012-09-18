@@ -205,8 +205,7 @@ public class SP3Parser implements OrbitFileParser {
         // line 3 contains the number of satellites
         case 3:
             pi.maxSatellites = Integer.valueOf(line.substring(4, 6).trim());
-            // fall-through intended - the line contains already the first
-            // entries
+            // fall-through intended - the line contains already the first entries
 
             // the following 4 lines contain additional satellite ids
         case 4:
@@ -224,8 +223,7 @@ public class SP3Parser implements OrbitFileParser {
         }
             break;
 
-        // the following 5 lines contain general accuracy information for each
-        // satellite
+        // the following 5 lines contain general accuracy information for each satellite
         case 8:
         case 9:
         case 10:
@@ -293,13 +291,13 @@ public class SP3Parser implements OrbitFileParser {
         case 15: {
             // String base = line.substring(3, 13).trim();
             // if (!base.equals("0.0000000")) {
-                // (mm or 10**-4 mm/sec)
+            //    // (mm or 10**-4 mm/sec)
             //    pi.posVelBase = Double.valueOf(base);
             // }
 
             // base = line.substring(14, 26).trim();
             // if (!base.equals("0.000000000")) {
-                // (psec or 10**-4 psec/sec)
+            //    // (psec or 10**-4 psec/sec)
             //    pi.clockBase = Double.valueOf(base);
             // }
         }
@@ -360,7 +358,8 @@ public class SP3Parser implements OrbitFileParser {
                 final double y = Double.valueOf(line.substring(18, 32).trim());
                 final double z = Double.valueOf(line.substring(32, 46).trim());
 
-                pi.latestPosition = new Vector3D(x, y, z);
+                // the position values are in km and have to be converted to m
+                pi.latestPosition = new Vector3D(x * 1000, y * 1000, z * 1000);
 
                 // clock (microsec)
                 pi.latestClock = Double.valueOf(line.substring(46, 60).trim());
@@ -412,8 +411,7 @@ public class SP3Parser implements OrbitFileParser {
                 final double yv = Double.valueOf(line.substring(18, 32).trim());
                 final double zv = Double.valueOf(line.substring(32, 46).trim());
 
-                // the velocity values are in dm/s and have to be converted to
-                // m/s
+                // the velocity values are in dm/s and have to be converted to m/s
                 final Vector3D velocity = new Vector3D(xv / 10d, yv / 10d, zv / 10d);
 
                 final double clockRateChange = Double.valueOf(line.substring(46, 60).trim());
@@ -451,8 +449,7 @@ public class SP3Parser implements OrbitFileParser {
         }
     }
 
-    /** Returns the {@link SP3FileType} that corresponds to a given string
-     * in a SP3 file.
+    /** Returns the {@link SP3FileType} that corresponds to a given string in a SP3 file.
      * @param fileType file type as string
      * @return file type as enum
      */
