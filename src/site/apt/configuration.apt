@@ -29,10 +29,10 @@ Configuration
   Small and simple data sets are defined by setting constants in the code itself. This is
   the case for the 32.184 seconds offset between Terrestrial Time and International Atomic
   Time scales for example. Large or complex data sets are embedded by copying the
-  corresponding resource files inside the compiled jar, under the META-INF directory as is
-  usual with the Java language. This is the case for the IAU-2000 precession-nutation
-  model tables for example. There is nothing to configure for these data sets as they are
-  embedded within the library, so users may ignore them completely.
+  corresponding resource files inside the compiled jar, under the assets directory as is.
+  This is the case for the IAU-2000 precession-nutation model tables for example. There is
+  nothing to configure for these data sets as they are embedded within the library, so
+  users may ignore them completely.
 
   Other types of data sets correspond to huge or changing data sets. These cannot
   realistically be embedded within a specific version of the library in the long run. A

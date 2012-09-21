@@ -164,7 +164,7 @@ public class DTM2000 implements Atmosphere {
     private static final double ROT2 = 0.034428412;
 
     /** Resources text file. */
-    private static final String DTM2000 = "/META-INF/dtm_2000.txt";
+    private static final String DTM2000 = "/assets/org/orekit/dtm_2000.txt";
 
     // CHECKSTYLE: stop JavadocVariable check
 
