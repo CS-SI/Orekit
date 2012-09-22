@@ -44,6 +44,9 @@ public abstract class AbstractCelestialBody implements CelestialBody {
     /** Serializable UID. */
     private static final long serialVersionUID = -8225707171826328799L;
 
+    /** J2000 frame, cached. */
+    private static final Frame eme2000 = FramesFactory.getEME2000();
+
     /** Name of the body. */
     private final String name;
 
@@ -150,7 +153,7 @@ public abstract class AbstractCelestialBody implements CelestialBody {
             final Rotation r2000 = new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
 
             // compute rotation from parent frame to self
-            final Transform t  = definingFrame.getTransformTo(FramesFactory.getEME2000(), date);
+            final Transform t  = definingFrame.getTransformTo(eme2000, date);
             final Transform rotation = new Transform(date, r2000.applyTo(t.getRotation()));
 
             // update transform from parent to self
