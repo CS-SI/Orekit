@@ -18,9 +18,13 @@ package org.orekit.time;
 
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +41,14 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.TimeStampedCache;
 
 public class UTCScaleTest {
+
+    @Test
+    public void testAfter() {
+        AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
+                                           new TimeComponents(23, 59, 59),
+                                           utc);
+        System.out.println(d1.toString());
+    }
 
     @Test
     public void testNoLeap() {
@@ -261,6 +273,33 @@ public class UTCScaleTest {
         Assert.assertEquals(0.0, actual, 1.0e-10);
     }
 
+    @Test
+    public void testEmptyOffsets() throws Exception {
+        Utils.setDataRoot("no-data");
+
+        TimeScalesFactory.addUTCTAILoader(new UTCTAILoader() {
+            SortedMap<DateComponents, Integer> data = new TreeMap<DateComponents, Integer>();
+
+            public SortedMap<DateComponents, Integer> loadTimeSteps() {
+                return data;
+            }
+
+            public String getSupportedNames() {
+                return "";
+            }
+
+            public boolean stillAcceptsData() {
+                return false;
+            }
+
+            public void loadData(InputStream input, String name) throws IOException {
+                throw new IOException();
+            }
+        });
+
+        String dateStr = AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getUTC());
+    }
+    
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");

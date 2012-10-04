@@ -72,7 +72,9 @@ public class UTCScale implements TimeScale {
 
         // ensure the cache is populated right from the beginning
         // (this allows calling getEarliest() or getLatest() even before computing first offset)
-        cache.getNeighbors(AbsoluteDate.J2000_EPOCH);
+        // use a central date that is guaranteed to be included in the preset offset table,
+        // in case no user supplied entries are available (see issue #111)
+        cache.getNeighbors(new AbsoluteDate(new DateComponents(1966, 1), TimeScalesFactory.getTAI()));
 
     }
 

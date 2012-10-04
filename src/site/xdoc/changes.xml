@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="tn" type="fix" due-to="Simon Billemont">
+        Prevent initialization exception in UTCScale in case no user-defined offsets are provided. 
+        (fixes bug #111).
+      </action>
       <action dev="luc" type="fix" due-to="Evan Ward">
         Improved performance by caching EME2000 frame in AbstractCelestialBody
         (fixes bug #116).
