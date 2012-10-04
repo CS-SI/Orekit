@@ -37,7 +37,7 @@ public class OrekitMessagesTest {
     public void testAllKeysPresentInPropertiesFiles() {
         for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
             ResourceBundle bundle =
-                ResourceBundle.getBundle("META-INF/localization/OrekitMessages", new Locale(language));
+                ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages", new Locale(language));
             for (OrekitMessages message : OrekitMessages.values()) {
                 final String messageKey = message.toString();
                 boolean keyPresent = false;
@@ -56,7 +56,7 @@ public class OrekitMessagesTest {
     public void testAllPropertiesCorrespondToKeys() {
         for (final String language : new String[] { "de", "en", "es", "fr", "gl", "it", "no" } ) {
             ResourceBundle bundle =
-                ResourceBundle.getBundle("META-INF/localization/OrekitMessages", new Locale(language));
+                ResourceBundle.getBundle("assets/org/orekit/localization/OrekitMessages", new Locale(language));
             for (final Enumeration<String> keys = bundle.getKeys(); keys.hasMoreElements();) {
                 final String propertyKey = keys.nextElement();
                 try {

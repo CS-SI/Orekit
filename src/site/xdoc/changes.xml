@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" due-to="Evan Ward">
+        Improved performance by caching EME2000 frame in AbstractCelestialBody
+        (fixes bug #116).
+      </action>
       <action dev="tn" type="fix" due-to="Evan Ward">
         Make TidalCorrections class thread-safe by using the new TimeStampedCache. 
         (fixes bug #117).

@@ -148,7 +148,7 @@ public class PoissonSeriesTest {
 
     @Test
     public void testTrueFiles() throws OrekitException {
-        String directory = "/META-INF/IERS-conventions-2003/";
+        String directory = "/assets/org/orekit/iers-conventions-2003/";
         InputStream xStream =
             getClass().getResourceAsStream(directory + "tab5.2a.txt");
         Assert.assertNotNull(new PoissonSeries(xStream, 1.0, "tab5.2a.txt"));

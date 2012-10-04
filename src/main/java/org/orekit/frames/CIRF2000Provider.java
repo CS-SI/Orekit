@@ -105,7 +105,7 @@ class CIRF2000Provider implements TransformProvider {
     // CHECKSTYLE: resume JavadocVariable check
 
     /** IERS conventions (2003) resources base directory. */
-    private static final String IERS_2003_BASE = "/META-INF/IERS-conventions-2003/";
+    private static final String IERS_2003_BASE = "/assets/org/orekit/iers-conventions-2003/";
 
     /** Resources for IERS table 5.2a from IERS conventions (2003). */
     private static final String X_MODEL     = IERS_2003_BASE + "tab5.2a.txt";

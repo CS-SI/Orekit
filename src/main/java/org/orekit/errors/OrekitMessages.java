@@ -163,7 +163,7 @@ public enum OrekitMessages implements Localizable {
     // CHECKSTYLE: resume JavadocVariable check
 
     /** Base name of the resource bundle in classpath. */
-    private static final String RESOURCE_BASE_NAME = "META-INF/localization/OrekitMessages";
+    private static final String RESOURCE_BASE_NAME = "assets/org/orekit/localization/OrekitMessages";
 
     /** Source English format. */
     private final String sourceFormat;
