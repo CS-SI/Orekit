@@ -13,54 +13,108 @@
 
 Downloads
 
-* Library
+* Development Library version
+
+  The development version of the OREKIT library is always available to
+  download from our version control system. We use {{{http://git-scm.com/} Git}}
+  as our SCM. The anonymous read access to our Git repository  allows users who
+  need the latest features and the latest bug fixes to get them even before an
+  official release.
+
+  The Git repository can be cloned using the following command, which can
+  be easily adapted if you are using one of the numerous Git graphical
+  user interface available or if Git is supported by you integrated
+  development environment:
+
++---------------------
+  git clone http://www.orekit.org/git/orekit
++---------------------
+
+* Released Library versions
 
   OREKIT is provided both in several packaging systems. You can pick up
   the one that better suits your needs. Source packages are the most complete
   ones since the other packages (binary jars, javadoc jars and even the bulk
   of this site) are created from these sources.
 
+  OREKIT is also available in maven central repository since version 5.0.1,
+  with groupID org.orekit and artifactId orekit, so maven internal mechanism
+  will download automatically all artifacts and dependencies as required.
+
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
 *----------*--------------------------------------------------------*
-|  source  | {{{./downloads/orekit-5.0-src.zip}orekit-5.0-src.zip}} |
+|  source  | {{{https://www.orekit.org/forge/attachments/download/48/orekit-5.0.3-sources.zip}orekit-5.0.3-sources.zip}} |
 *----------*--------------------------------------------------------*
-|  binary  |     {{{./downloads/orekit-5.0.jar}orekit-5.0.jar}}     |
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/44/orekit-5.0.3.jar}orekit-5.0.3.jar}}     |
 *----------*--------------------------------------------------------*
-|  javadoc | {{{./downloads/orekit-5.0-doc.jar}orekit-5.0-doc.jar}} |
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/46/orekit-5.0.3-javadoc.jar}orekit-5.0.3-javadoc.jar}} |
+*----------*--------------------------------------------------------*
+version 5.0.3 downloads (release date: 2011-07-13)
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
+|  source  | {{{https://www.orekit.org/forge/attachments/download/42/orekit-5.0.2-sources.zip}orekit-5.0.2-sources.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/38/orekit-5.0.2.jar}orekit-5.0.2.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/40/orekit-5.0.2-javadoc.jar}orekit-5.0.2-javadoc.jar}} |
+*----------*--------------------------------------------------------*
+version 5.0.2 downloads (release date: 2011-07-11)
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
+|  source  | {{{https://www.orekit.org/forge/attachments/download/36/orekit-5.0.1-sources.zip}orekit-5.0.1-sources.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/34/orekit-5.0.1.jar}orekit-5.0.1.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/32/orekit-5.0.1-javadoc.jar}orekit-5.0.1-javadoc.jar}} |
+*----------*--------------------------------------------------------*
+version 5.0.1 downloads (release date: 2011-04-18)
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
+|  source  | {{{https://www.orekit.org/forge/attachments/download/12/orekit-5.0-src.zip}orekit-5.0-src.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/13/orekit-5.0.jar}orekit-5.0.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/11/orekit-5.0-doc.jar}orekit-5.0-doc.jar}} |
 *----------*--------------------------------------------------------*
 version 5.0 downloads (release date: 2010-05-06)
 
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
 *----------*--------------------------------------------------------*
-|  source  | {{{./downloads/orekit-4.1-src.zip}orekit-4.1-src.zip}} |
+|  source  | {{{https://www.orekit.org/forge/attachments/download/8/orekit-4.1-src.zip}orekit-4.1-src.zip}} |
 *----------*--------------------------------------------------------*
-|  binary  |     {{{./downloads/orekit-4.1.jar}orekit-4.1.jar}}     |
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/9/orekit-4.1.jar}orekit-4.1.jar}}     |
 *----------*--------------------------------------------------------*
-|  javadoc | {{{./downloads/orekit-4.1-doc.jar}orekit-4.1-doc.jar}} |
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/10/orekit-4.1-doc.jar}orekit-4.1-doc.jar}} |
 *----------*--------------------------------------------------------*
 version 4.1 downloads (release date: 2009-08-18)
 
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
 *----------*--------------------------------------------------------*
-|  source  | {{{./downloads/orekit-4.0-src.zip}orekit-4.0-src.zip}} |
+|  source  | {{{https://www.orekit.org/forge/attachments/download/5/orekit-4.0-src.zip}orekit-4.0-src.zip}} |
 *----------*--------------------------------------------------------*
-|  binary  |     {{{./downloads/orekit-4.0.jar}orekit-4.0.jar}}     |
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/6/orekit-4.0.jar}orekit-4.0.jar}}     |
 *----------*--------------------------------------------------------*
-|  javadoc | {{{./downloads/orekit-4.0-doc.jar}orekit-4.0-doc.jar}} |
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/7/orekit-4.0-doc.jar}orekit-4.0-doc.jar}} |
 *----------*--------------------------------------------------------*
 version 4.0 downloads (release date: 2008-10-13)
 
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
 *----------*--------------------------------------------------------*
-|  source  | {{{./downloads/orekit-3.1-src.zip}orekit-3.1-src.zip}} |
+|  source  | {{{https://www.orekit.org/forge/attachments/download/2/orekit-3.1-src.zip}orekit-3.1-src.zip}} |
 *----------*--------------------------------------------------------*
-|  binary  |     {{{./downloads/orekit-3.1.jar}orekit-3.1.jar}}     |
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/3/orekit-3.1.jar}orekit-3.1.jar}}     |
 *----------*--------------------------------------------------------*
-|  javadoc | {{{./downloads/orekit-3.1-doc.jar}orekit-3.1-doc.jar}} |
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/4/orekit-3.1-doc.jar}orekit-3.1-doc.jar}} |
 *----------*--------------------------------------------------------*
 version 3.1 downloads (release date: 2008-07-16)
 
@@ -73,14 +127,19 @@ version 3.1 downloads (release date: 2008-07-16)
 
   This file contents is:
 
-    ** leap seconds data up to 2010
+    ** leap seconds data up to 2012,
 
-    ** Earth Orientation Parameters up to start-2010
+    ** IERS Earth orientation parameters from 1973 to mid-2012
+       with predicted date to mid-2013 (both IAU-1980 and IAU-2000),
 
-    ** DE 406 planetary ephemerides from 1962 to 2029
+    ** Marshall Solar Activity Futur Estimation from 1999 to 2012,
+
+    ** DE 406 planetary ephemerides from 1962 to 2029,
+
+    ** Eigen 06S gravity field.
   
   There is no guarantee that this file will be available indefinitely or that its
   content will be updated. It should be considered as a simple configuration example.
   Users are encouraged to set up their own configuration data.
 
-  The file is available by following this link: {{{./downloads/orekit-data.zip}orekit-data.zip}}.
+  The file is available by following this link: {{{https://www.orekit.org/forge/attachments/download/313/orekit-data.zip}orekit-data.zip}}.
