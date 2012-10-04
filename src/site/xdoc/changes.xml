@@ -23,6 +23,10 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="tn" type="fix" due-to="Evan Ward">
+        Make TidalCorrections class thread-safe by using the new TimeStampedCache. 
+        (fixes bug #117).
+      </action>
+      <action dev="tn" type="fix" due-to="Evan Ward">
         Convert position entries contained in SP3 files to meters instead of km
         (fixes bug #112).
       </action>

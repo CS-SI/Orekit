@@ -17,10 +17,18 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
+import org.orekit.utils.OrekitConfiguration;
+import org.orekit.utils.TimeStampedCache;
+import org.orekit.utils.TimeStampedGenerator;
 
 
 /** Compute tidal correction to the pole motion.
@@ -28,6 +36,7 @@ import org.orekit.utils.Constants;
  * Earth orientation. It is a java translation of the fortran subroutine
  * found at ftp://tai.bipm.org/iers/conv2003/chapter8/ortho_eop.f.</p>
  * @author Pascal Parraud
+ * @author Evan Ward
  */
 public class TidalCorrection implements Serializable {
 
@@ -42,6 +51,15 @@ public class TidalCorrection implements Serializable {
 
     /** Time units conversion factor. */
     private static final double MICRO_SECONDS_TO_SECONDS = 1.0e-6;
+
+    /** Number of interpolation points to use. */
+    private static final int INTERPOLATION_POINTS = 8;
+
+    /** Step size in days of the interpolation data points. */
+    private static final double STEP_SIZE = 3.0 / 32.0;
+
+    /** Difference in days between the modified julian day epoch and the year 1960. */
+    private static final double MJD_TO_1960 = 37076.5;
 
     /** HS parameter. */
     private static final double[] HS = {
@@ -154,7 +172,7 @@ public class TidalCorrection implements Serializable {
     };
 
     /** Orthoweights for UT1. */
-    private static double[] ORTHOWT = {
+    private static final double[] ORTHOWT = {
         -1.76335 *  MICRO_SECONDS_TO_SECONDS,
         +1.03364 *  MICRO_SECONDS_TO_SECONDS,
         -0.27553 *  MICRO_SECONDS_TO_SECONDS,
@@ -169,53 +187,18 @@ public class TidalCorrection implements Serializable {
         +0.04726 *  MICRO_SECONDS_TO_SECONDS
     };
 
-    /** "Left-central" date of the interpolation array. */
-    private double tCenter;
-
-    /** Step size of the interpolation array. */
-    private final double h;
-
-    /** Current dx pole correction. */
-    private double dxCurrent;
-
-    /** Current dy pole correction. */
-    private double dyCurrent;
-
-    /** current dtu1 correction. */
-    private double dtCurrent;
-
-    /** dx pole corrections. */
-    private final double[] dxRef;
-
-    /** dy pole corrections. */
-    private final double[] dyRef;
-
-    /** dtu1 corrections. */
-    private final double[] dtRef;
-
-    /** Neville interpolation array for dx correction. */
-    private final double[] dxNeville;
-
-    /** Neville interpolation array for dy correction. */
-    private final double[] dyNeville;
-
-    /** Neville interpolation array for dtu1 correction. */
-    private final double[] dtNeville;
+    /** Cache of computed {@link Correction tidal corrections}. */
+    private final TimeStampedCache<CorrectionData> cache;
 
     /** Simple constructor.
      */
     public TidalCorrection() {
 
-        // interpolation arrays
-        final int n = 8;
-        h         = 3.0 / 32.0;
-        tCenter   = Double.NaN;
-        dxRef     = new double[n];
-        dyRef     = new double[n];
-        dtRef     = new double[n];
-        dxNeville = new double[n];
-        dyNeville = new double[n];
-        dtNeville = new double[n];
+        // create cache
+        cache = new TimeStampedCache<CorrectionData>(INTERPOLATION_POINTS,
+                                                     OrekitConfiguration.getCacheSlotsNumber(),
+                                                     Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY,
+                                                     new Generator(), CorrectionData.class);
 
     }
 
@@ -224,99 +207,111 @@ public class TidalCorrection implements Serializable {
      * @return dUT1 in seconds
      */
     public double getDUT1(final AbsoluteDate date) {
-        setInterpolatedCorrections(date);
-        return dtCurrent;
+
+        try {
+            final double t       = toDay(date);
+            final double tCenter = toDayQuantum(t);
+
+            final int n    = INTERPOLATION_POINTS;
+            final int nM12 = (n - 1) / 2;
+
+            final CorrectionData[] corrections = cache.getNeighbors(date);
+
+            // copy points to a temporary array
+            final double[] dtNeville = new double[n];
+            for (int i = 0; i < n; i++) {
+                dtNeville[i] = corrections[i].dt;
+            }
+
+            // interpolate corrections using Neville's algorithm
+            final double theta = (t - tCenter) / STEP_SIZE;
+            for (int j = 1; j < n; ++j) {
+                for (int i = n - 1; i >= j; --i) {
+                    final double c1 = (theta + nM12 - i + j) / j;
+                    final double c2 = (theta + nM12 - i) / j;
+                    dtNeville[i] = c1 * dtNeville[i] - c2 * dtNeville[i - 1];
+                }
+            }
+
+            return dtNeville[n - 1];
+        } catch (TimeStampedCacheException tce) {
+            // this should never happen as the generator is not bounded
+            throw OrekitException.createInternalError(tce);
+        }
+
     }
 
     /** Get the pole IERS Reference Pole correction.
      * @param date date at which the correction is desired
      * @return pole correction
      */
-    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        setInterpolatedCorrections(date);
-        return new PoleCorrection(dxCurrent, dyCurrent);
-    }
+    public  PoleCorrection getPoleCorrection(final AbsoluteDate date) {
 
-    /** Set the interpolated corrections.
-     * @param date current date
-     */
-    private void setInterpolatedCorrections(final AbsoluteDate date) {
+        try {
+            final double t       = toDay(date);
+            final double tCenter = toDayQuantum(t);
 
-        final double t =
-            date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / Constants.JULIAN_DAY - 37076.5;
+            final int n    = INTERPOLATION_POINTS;
+            final int nM12 = (n - 1) / 2;
 
-        final int n    = dtRef.length;
-        final int nM12 = (n - 1) / 2;
-        if (Double.isNaN(tCenter) || (t < tCenter) || (t > tCenter + h)) {
-            // recompute interpolation array
-            setReferencePoints(t);
-        }
+            final CorrectionData[] corrections = this.cache.getNeighbors(date);
 
-        // interpolate corrections using Neville's algorithm
-        System.arraycopy(dxRef, 0, dxNeville, 0, n);
-        System.arraycopy(dyRef, 0, dyNeville, 0, n);
-        System.arraycopy(dtRef, 0, dtNeville, 0, n);
-        final double theta = (t - tCenter) / h;
-        for (int j = 1; j < n; ++j) {
-            for (int i = n - 1; i >= j; --i) {
-                final double c1 = (theta + nM12 - i + j) / j;
-                final double c2 = (theta + nM12 - i) / j;
-                dxNeville[i] = c1 * dxNeville[i] - c2 * dxNeville[i - 1];
-                dyNeville[i] = c1 * dyNeville[i] - c2 * dyNeville[i - 1];
-                dtNeville[i] = c1 * dtNeville[i] - c2 * dtNeville[i - 1];
+            // copy points to a temporary array
+            final double[] dxNeville = new double[n];
+            final double[] dyNeville = new double[n];
+            for (int i = 0; i < n; i++) {
+                dxNeville[i] = corrections[i].dx;
+                dyNeville[i] = corrections[i].dy;
             }
-        }
 
-        dxCurrent = dxNeville[n - 1];
-        dyCurrent = dyNeville[n - 1];
-        dtCurrent = dtNeville[n - 1];
+            // interpolate corrections using Neville's algorithm
+            final double theta = (t - tCenter) / STEP_SIZE;
+            for (int j = 1; j < n; ++j) {
+                for (int i = n - 1; i >= j; --i) {
+                    final double c1 = (theta + nM12 - i + j) / j;
+                    final double c2 = (theta + nM12 - i) / j;
+                    dxNeville[i] = c1 * dxNeville[i] - c2 * dxNeville[i - 1];
+                    dyNeville[i] = c1 * dyNeville[i] - c2 * dyNeville[i - 1];
+                }
+            }
+
+            return new PoleCorrection(dxNeville[n - 1], dyNeville[n - 1]);
+        } catch (TimeStampedCacheException tce) {
+            // this should never happen as the generator is not bounded
+            throw OrekitException.createInternalError(tce);
+        }
 
     }
 
-    /** Set the reference points array.
-     * @param t offset from reference epoch in days
+    /** Convert an {@link AbsoluteDate} to days past the epoch.
+     * @param date the date to convert
+     * @return days past the epoch, including the fractional part
      */
-    private void setReferencePoints(final double t) {
+    private static double toDay(final AbsoluteDate date) {
+        return date.durationFrom(AbsoluteDate.MODIFIED_JULIAN_EPOCH) / Constants.JULIAN_DAY - MJD_TO_1960;
+    }
 
-        final int n    = dxRef.length;
-        final int nM12 = (n - 1) / 2;
+    /** Convert days to an {@link AbsoluteDate}.
+     * @param t the time in days
+     * @return the date corresponding to {@code t}
+     */
+    private static AbsoluteDate toDate(final double t) {
+        return AbsoluteDate.MODIFIED_JULIAN_EPOCH.shiftedBy(Constants.JULIAN_DAY * (t + MJD_TO_1960));
+    }
 
-        // evaluate new location of center interval
-        final double newTCenter = h * FastMath.floor(t / h);
-
-        // shift reusable reference points
-        int iMin = 0;
-        int iMax = n;
-        final int shift = (int) FastMath.rint((newTCenter - tCenter) / h);
-        if (!Double.isNaN(tCenter) && (FastMath.abs(shift) < n)) {
-            if (shift >= 0) {
-                System.arraycopy(dxRef, shift, dxRef, 0, n - shift);
-                System.arraycopy(dyRef, shift, dyRef, 0, n - shift);
-                System.arraycopy(dtRef, shift, dtRef, 0, n - shift);
-                iMin = n - shift;
-            } else {
-                System.arraycopy(dxRef, 0, dxRef, -shift, n + shift);
-                System.arraycopy(dyRef, 0, dyRef, -shift, n + shift);
-                System.arraycopy(dtRef, 0, dtRef, -shift, n + shift);
-                iMax = -shift;
-            }
-        }
-
-        // compute new reference points
-        tCenter = newTCenter;
-        for (int i = iMin; i < iMax; ++i) {
-            computeCorrections(tCenter + (i - nM12) * h);
-            dxRef[i] = dxCurrent;
-            dyRef[i] = dyCurrent;
-            dtRef[i] = dtCurrent;
-        }
-
+    /** Convert a day to the closest quantum in terms of {@link #STEP_SIZE}.
+     * @param t the day to convert
+     * @return the closest quantum before t, still in days
+     */
+    private static double toDayQuantum(final double t) {
+        return STEP_SIZE * FastMath.floor(t / STEP_SIZE);
     }
 
     /** Compute the partials of the tidal variations to the orthoweights.
      * @param t offset from reference epoch in days
+     * @return the pole and UT1 correction
      */
-    private void computeCorrections(final double t) {
+    private static CorrectionData computeCorrections(final double t) {
 
         // compute the time dependent potential matrix
         final double d60A = t + 2;
@@ -400,19 +395,118 @@ public class TidalCorrection implements Serializable {
         final double partials11 = SP[9] * bnm11 - SP[10] * bp1 - SP[11] * am1;
 
         // combine partials to set up corrections
-        dxCurrent = partials0 * ORTHOWX[0] + partials1  * ORTHOWX[1]  + partials2  * ORTHOWX[2] +
+        final double dx =
+                    partials0 * ORTHOWX[0] + partials1  * ORTHOWX[1]  + partials2  * ORTHOWX[2] +
                     partials3 * ORTHOWX[3] + partials4  * ORTHOWX[4]  + partials5  * ORTHOWX[5] +
                     partials6 * ORTHOWX[6] + partials7  * ORTHOWX[7]  + partials8  * ORTHOWX[8] +
                     partials9 * ORTHOWX[9] + partials10 * ORTHOWX[10] + partials11 * ORTHOWX[11];
-        dyCurrent = partials0 * ORTHOWY[0] + partials1  * ORTHOWY[1]  + partials2  * ORTHOWY[2] +
+        final double dy =
+                    partials0 * ORTHOWY[0] + partials1  * ORTHOWY[1]  + partials2  * ORTHOWY[2] +
                     partials3 * ORTHOWY[3] + partials4  * ORTHOWY[4]  + partials5  * ORTHOWY[5] +
                     partials6 * ORTHOWY[6] + partials7  * ORTHOWY[7]  + partials8  * ORTHOWY[8] +
                     partials9 * ORTHOWY[9] + partials10 * ORTHOWY[10] + partials11 * ORTHOWY[11];
-        dtCurrent = partials0 * ORTHOWT[0] + partials1  * ORTHOWT[1]  + partials2  * ORTHOWT[2] +
+        final double dt =
+                    partials0 * ORTHOWT[0] + partials1  * ORTHOWT[1]  + partials2  * ORTHOWT[2] +
                     partials3 * ORTHOWT[3] + partials4  * ORTHOWT[4]  + partials5  * ORTHOWT[5] +
                     partials6 * ORTHOWT[6] + partials7  * ORTHOWT[7]  + partials8  * ORTHOWT[8] +
                     partials9 * ORTHOWT[9] + partials10 * ORTHOWT[10] + partials11 * ORTHOWT[11];
 
+        return new CorrectionData(toDate(t), dx, dy, dt);
+
     }
 
+    /** A data cache container for tidal correction data.
+     */
+    private static class CorrectionData implements TimeStamped {
+
+        /** date the correction is valid. */
+        private final AbsoluteDate date;
+
+        /** x component of the pole correction. */
+        private final double dx;
+
+        /** y component of the pole correction. */
+        private final double dy;
+
+        /** time component of the correction. */
+        private final double dt;
+
+        /** Create a new correction with the given data.
+         * @param date date the correction is valid
+         * @param dx x component of the pole correction
+         * @param dy y component of the pole correction
+         * @param dt time component of the correction
+         */
+        public CorrectionData(final AbsoluteDate date, final double dx, final double dy, final double dt) {
+            this.date = date;
+            this.dx   = dx;
+            this.dy   = dy;
+            this.dt   = dt;
+        }
+
+        /** {@inheritDoc} */
+        public AbsoluteDate getDate() {
+            return date;
+        }
+    }
+
+    /** Generates {@link Correction}s for a {@link TimeStampedCache}.
+     */
+    private static class Generator implements TimeStampedGenerator<CorrectionData> {
+
+        /**
+         * {@inheritDoc}
+         * <p>
+         * <b>Note:</b> this {@link Generator} generates the minimum points necessary to
+         * cover the range (existing, date].
+         */
+        public List<CorrectionData> generate(final CorrectionData existing, final AbsoluteDate date)
+            throws TimeStampedCacheException {
+
+            // set tStart and tEnd so that n points are generated
+            final int nM12 = (INTERPOLATION_POINTS - 1) / 2;
+            // days to subtract from tStart
+            final double extraBefore = STEP_SIZE * nM12;
+            // days to add to tEnd
+            final double extraAfter = STEP_SIZE * (INTERPOLATION_POINTS - nM12);
+
+            // date in days
+            double tStart;
+            double tEnd;
+
+            if (existing == null) {
+                tStart = toDayQuantum(toDay(date)) - extraBefore;
+                tEnd   = toDayQuantum(toDay(date) + extraAfter);
+            } else {
+                // the day value of the existing cache entry
+                final double existingDay = toDayQuantum(toDay(existing.getDate()));
+
+                if (existing.getDate().compareTo(date) > 0) {
+                    // existing is after date
+                    tStart = toDayQuantum(toDay(date)) - extraAfter - STEP_SIZE;
+                    tEnd   = FastMath.min(existingDay - STEP_SIZE,
+                                          toDayQuantum(toDay(date) + extraBefore) - STEP_SIZE);
+                } else {
+                    // existing is before or same as date
+                    tStart = FastMath.max(existingDay + STEP_SIZE,
+                                          toDayQuantum(toDay(date)) - extraBefore + STEP_SIZE);
+                    tEnd   = toDayQuantum(toDay(date) + extraAfter) + STEP_SIZE;
+                }
+            }
+
+            // n is number of points to generate. (tEnd - tStart) / STEP_SIZE should
+            // already be *very* close to an integer
+            final int n = (int) FastMath.round((tEnd - tStart) / STEP_SIZE);
+
+            // list of generated points
+            final List<CorrectionData> generated = new ArrayList<CorrectionData>(n);
+
+            // compute new reference points in [tStart, tEnd)
+            for (int i = 0; i < n; ++i) {
+                generated.add(computeCorrections(tStart + i * STEP_SIZE));
+            }
+
+            return generated;
+        }
+    }
 }

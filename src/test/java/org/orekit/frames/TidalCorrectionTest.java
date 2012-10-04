@@ -16,15 +16,23 @@
  */
 package org.orekit.frames;
 
+import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 
 public class TidalCorrectionTest {
@@ -55,7 +63,7 @@ public class TidalCorrectionTest {
     @Test
     public void testCachePole() {
 
-        TidalCorrection tc = new TidalCorrection();
+        final TidalCorrection tc = new TidalCorrection();
 
         // compute the pole motion component for tidal correction, testing cache mechanism
         final PoleCorrection poleCorr = tc.getPoleCorrection(date);
@@ -79,7 +87,7 @@ public class TidalCorrectionTest {
     @Test
     public void testCacheDUT1() {
 
-        TidalCorrection tc = new TidalCorrection();
+        final TidalCorrection tc = new TidalCorrection();
 
         // compute the dut1 component for tidal correction
         final double dut1Corr = tc.getDUT1(date);
@@ -96,6 +104,113 @@ public class TidalCorrectionTest {
 
         Assert.assertTrue(dut1Corr2 == dut1Corr3);
 
+    }
+
+    /**
+     * Check that {@link TidalCorrection#getDUT1(AbsoluteDate)} is thread safe.
+     */
+    @Test
+    public void testConcurrentTidalCorrections() throws Exception {
+
+        // set up
+        final TidalCorrection tide = new TidalCorrection();
+        final int threads = 10;
+        final int timesPerThread = 100;
+
+        // each thread uses a separate date, shifted 60 seconds apart
+        final double[] expected = new double[threads];
+        for (int i = 0; i < threads; i++) {
+            expected[i] = tide.getDUT1(date.shiftedBy(i * 60));
+        }
+
+        // build jobs for concurrent execution
+        final List<Callable<Boolean>> jobs = new ArrayList<Callable<Boolean>>();
+        for (int i = 0; i < threads; i++) {
+            final int job = i;
+            jobs.add(new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    for (int j = 0; j < timesPerThread; j++) {
+                        final double actual = tide.getDUT1(date.shiftedBy(job * 60));
+                        assertEquals(expected[job], actual, 0);
+                    }
+                    return true;
+                }
+            });
+        }
+
+        // action
+        final List<Future<Boolean>> futures = Executors.newFixedThreadPool(threads).invokeAll(jobs);
+
+        // verify - necessary to throw AssertionErrors from the Callable
+        for (Future<Boolean> future : futures) {
+            assertEquals(true, future.get());
+        }
+    }
+
+    /**
+     * Performance test, kept as a reference.
+     */
+    @Test
+    @Ignore
+    public void testSingleThreadPerformance() {
+
+        final TidalCorrection tide = new TidalCorrection();
+
+        // runtime stats
+        final int n = 100000;
+        long time = System.nanoTime();
+        for (int i = 0; i < n; i++) {
+            tide.getDUT1(date);
+        }
+        time = System.nanoTime() - time;
+        System.out.format("same date took %f s%n", time * 1e-9);
+        time = System.nanoTime();
+        for (int i = 0; i < n; i++) {
+            // date out side of cache range
+            tide.getDUT1(date.shiftedBy(i * Constants.JULIAN_DAY)); //Constants.JULIAN_DAY));
+        }
+        time = System.nanoTime() - time;
+        System.out.format("different date took %f s%n", time * 1e-9);
+    }
+
+    /**
+     * Performance test, kept as a reference.
+     */
+    @Test
+    @Ignore
+    public void testConcurrentPerformance() throws Exception {
+
+        // set up
+        final TidalCorrection tide = new TidalCorrection();
+        final int threads = 10;
+        final int timesPerThread = 100000;
+
+        // build jobs for concurrent execution
+        final List<Callable<Long>> jobs = new ArrayList<Callable<Long>>();
+        for (int i = 0; i < threads; i++) {
+            final int shift = i * timesPerThread;
+            jobs.add(new Callable<Long>() {
+                public Long call() throws Exception {
+                    final long time = System.nanoTime();
+                    for (int j = 0; j < timesPerThread; j++) {
+                        tide.getDUT1(date.shiftedBy(shift + j * Constants.JULIAN_DAY));
+                    }
+                    return System.nanoTime() - time;
+                }
+            });
+        }
+
+        // action
+        final List<Future<Long>> futures = Executors.newFixedThreadPool(threads).invokeAll(jobs);
+
+        // verify - necessary to throw AssertionErrors from the Callable
+        long worst = 0;
+        for (Future<Long> future : futures) {
+            final long time = future.get();
+            if (time > worst)
+                worst = time;
+        }
+        System.out.format("tsc interp: worst time: %f s%n", worst * 1e-9);
     }
 
     @Before
