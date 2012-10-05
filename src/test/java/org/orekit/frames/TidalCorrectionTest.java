@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 import static org.junit.Assert.assertEquals;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -33,6 +34,7 @@ import org.junit.Test;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.TimeStampedCache;
 
 
 public class TidalCorrectionTest {
@@ -104,6 +106,68 @@ public class TidalCorrectionTest {
 
         Assert.assertTrue(dut1Corr2 == dut1Corr3);
 
+    }
+
+    @Test
+    public void testCacheValidation() {
+        // validates that results calculated using an internal cache are the same
+        // as without such a cache (the cache is effectively disabled).
+
+        final TidalCorrection tcCache = new TidalCorrection();
+        final TidalCorrection tcDirect = new TidalCorrection();
+        disableTimeStampedCache(tcDirect);
+
+        for (int i = 0; i < 100; i++) {
+            // compute the dut1 component for tidal correction
+            double dut1Cache  = tcCache.getDUT1(date.shiftedBy(i * Constants.JULIAN_DAY));
+            double dut1Direct = tcDirect.getDUT1(date.shiftedBy(i * Constants.JULIAN_DAY));
+
+            Assert.assertEquals(dut1Direct, dut1Cache, 1e-12);
+
+            // compute the dut1 component for tidal correction
+            dut1Cache  = tcCache.getDUT1(date.shiftedBy(i * Constants.JULIAN_DAY + Constants.JULIAN_DAY / 2));
+            dut1Direct = tcDirect.getDUT1(date.shiftedBy(i * Constants.JULIAN_DAY + Constants.JULIAN_DAY / 2));
+
+            Assert.assertEquals(dut1Direct, dut1Cache, 1e-12);
+        }
+
+        for (int i = 0; i < 100; i++) {
+            // compute the dut1 component for tidal correction
+            double dut1Cache  = tcCache.getDUT1(date.shiftedBy(-i * Constants.JULIAN_DAY));
+            double dut1Direct = tcDirect.getDUT1(date.shiftedBy(-i * Constants.JULIAN_DAY));
+
+            Assert.assertEquals(dut1Direct, dut1Cache, 1e-12);
+
+            // compute the dut1 component for tidal correction
+            dut1Cache  = tcCache.getDUT1(date.shiftedBy(-i * Constants.JULIAN_DAY + Constants.JULIAN_DAY / 2));
+            dut1Direct = tcDirect.getDUT1(date.shiftedBy(-i * Constants.JULIAN_DAY + Constants.JULIAN_DAY / 2));
+
+            Assert.assertEquals(dut1Direct, dut1Cache, 1e-12);
+        }
+    }
+
+    /**
+     * Disables the internal TimeStampedCache for validation purposes.
+     * For this purpose the newSlotInterval is set to a very low value (1 min), so that
+     * every time new tidal correction data has to be created, a new slot is used.
+     * @param tc the {@link TidalCorrection} object for which the cache shall be disabled
+     */
+    private void disableTimeStampedCache(final TidalCorrection tc) {
+        try {
+            Class<?> clazz = tc.getClass();
+            Field field = clazz.getDeclaredField("cache");
+            field.setAccessible(true);
+            @SuppressWarnings("rawtypes")
+            TimeStampedCache<?> cache = (TimeStampedCache) field.get(tc);
+            clazz = cache.getClass();
+            field = clazz.getDeclaredField("newSlotQuantumGap");
+            field.setAccessible(true);
+            field.set(cache, FastMath.round(60 / 1e-6));
+        } catch (IllegalAccessException iae) {
+            Assert.fail(iae.getMessage());
+        } catch (NoSuchFieldException nfe) {
+            Assert.fail(nfe.getMessage());
+        }
     }
 
     /**

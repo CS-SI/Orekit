@@ -197,7 +197,7 @@ public class TidalCorrection implements Serializable {
         // create cache
         cache = new TimeStampedCache<CorrectionData>(INTERPOLATION_POINTS,
                                                      OrekitConfiguration.getCacheSlotsNumber(),
-                                                     Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY,
+                                                     Constants.JULIAN_YEAR, 7 * Constants.JULIAN_DAY,
                                                      new Generator(), CorrectionData.class);
 
     }
@@ -463,35 +463,27 @@ public class TidalCorrection implements Serializable {
         public List<CorrectionData> generate(final CorrectionData existing, final AbsoluteDate date)
             throws TimeStampedCacheException {
 
-            // set tStart and tEnd so that n points are generated
-            final int nM12 = (INTERPOLATION_POINTS - 1) / 2;
-            // days to subtract from tStart
-            final double extraBefore = STEP_SIZE * nM12;
-            // days to add to tEnd
-            final double extraAfter = STEP_SIZE * (INTERPOLATION_POINTS - nM12);
-
             // date in days
             double tStart;
             double tEnd;
 
             if (existing == null) {
+                // set tStart and tEnd so that n points are generated
+                final int nM12 = (INTERPOLATION_POINTS - 1) / 2;
+                // days to subtract from tStart
+                final double extraBefore = STEP_SIZE * nM12;
+                // days to add to tEnd
+                final double extraAfter = STEP_SIZE * (INTERPOLATION_POINTS - nM12);
                 tStart = toDayQuantum(toDay(date)) - extraBefore;
                 tEnd   = toDayQuantum(toDay(date) + extraAfter);
+            } else if (existing.getDate().compareTo(date) > 0) {
+                // existing is after date
+                tStart = toDayQuantum(toDay(date));
+                tEnd   = toDayQuantum(toDay(existing.getDate()));
             } else {
-                // the day value of the existing cache entry
-                final double existingDay = toDayQuantum(toDay(existing.getDate()));
-
-                if (existing.getDate().compareTo(date) > 0) {
-                    // existing is after date
-                    tStart = toDayQuantum(toDay(date)) - extraAfter - STEP_SIZE;
-                    tEnd   = FastMath.min(existingDay - STEP_SIZE,
-                                          toDayQuantum(toDay(date) + extraBefore) - STEP_SIZE);
-                } else {
-                    // existing is before or same as date
-                    tStart = FastMath.max(existingDay + STEP_SIZE,
-                                          toDayQuantum(toDay(date)) - extraBefore + STEP_SIZE);
-                    tEnd   = toDayQuantum(toDay(date) + extraAfter) + STEP_SIZE;
-                }
+                // existing is before or same as date
+                tStart = toDayQuantum(toDay(existing.getDate())) + STEP_SIZE;
+                tEnd   = toDayQuantum(toDay(date)) + STEP_SIZE;
             }
 
             // n is number of points to generate. (tEnd - tStart) / STEP_SIZE should
