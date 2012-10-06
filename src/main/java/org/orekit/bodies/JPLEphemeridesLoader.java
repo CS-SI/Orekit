@@ -21,9 +21,12 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.math3.util.FastMath;
@@ -821,8 +824,8 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     /** Local parser for Chebyshev polynomials. */
     private class EphemerisParser implements DataLoader, TimeStampedGenerator<PosVelChebyshev> {
 
-        /** List of Chebyshev polynomials read. */
-        private final List<PosVelChebyshev> entries;
+        /** Set of Chebyshev polynomials read. */
+        private final SortedSet<PosVelChebyshev> entries;
 
         /** Start of range we are interested in. */
         private AbsoluteDate start;
@@ -833,7 +836,11 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         /** Simple constructor.
          */
         public EphemerisParser() {
-            entries = new ArrayList<PosVelChebyshev>();
+            entries = new TreeSet<PosVelChebyshev>(new Comparator<PosVelChebyshev>() {
+                public int compare(final PosVelChebyshev o1, final PosVelChebyshev o2) {
+                    return o1.getDate().compareTo(o2.getDate());
+                }
+            });
         }
 
         /** {@inheritDoc} */
@@ -862,7 +869,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                     throw new OrekitException(OrekitMessages.NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND);
                 }
 
-                return entries;
+                return new ArrayList<PosVelChebyshev>(entries);
 
             } catch (OrekitException oe) {
                 throw new TimeStampedCacheException(oe);
@@ -877,9 +884,15 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                 return false;
             }
 
-            // we are happy as soon as we have read something, don't bother opening
-            // a new file and parsing it until the time stamped cache asks for it
-            return entries.isEmpty();
+            // we have to look for data in all available ephemerides files as there may be
+            // data overlaps that result in incomplete data
+            if (entries.isEmpty()) {
+                return true;
+            } else {
+                // if the requested range is already filled, we do not need to look further
+                return !(entries.first().getDate().compareTo(start) < 0 &&
+                         entries.last().getDate().compareTo(end)    > 0);
+            }
 
         }
 

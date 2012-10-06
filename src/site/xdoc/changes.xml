@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="tn" type="fix" due-to="Yannick Tanguy">
+        Fix loading of JPL ephemerides files with overlapping periods. 
+        (fixes bug #113).
+      </action>
       <action dev="tn" type="fix" due-to="Simon Billemont">
         Prevent initialization exception in UTCScale in case no user-defined offsets are provided. 
         (fixes bug #111).

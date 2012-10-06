@@ -17,6 +17,7 @@
 package org.orekit.bodies;
 
 
+import java.io.IOException;
 import java.text.ParseException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -214,6 +215,39 @@ public class JPLEphemeridesLoaderTest {
             Assert.assertTrue(pDE405.distance(pInpopTDBBig) < 1050.0);
             Assert.assertTrue(pDE405.distance(pInpopTCBBig) > 1350.0);
             Assert.assertTrue(pDE405.distance(pInpopTCBBig) < 1900.0);
+        }
+
+    }
+
+    @Test
+    public void testOverlappingEphemeridesData() throws OrekitException, IOException, ParseException {
+        Utils.setDataRoot("overlapping-data/data.zip");
+
+        // the data root contains two ephemerides files (JPL DE 405), which overlap in the period
+        // (1999-12-23T23:58:55.816, 2000-01-24T23:58:55.815)
+        // this test checks that the data in the overlapping and surrounding range is loaded correctly
+        // from both files (see issue #113).
+
+        // as the bug only manifests if the DataLoader first loads the ephemerides file containing earlier
+        // data points, the data files are zipped to get a deterministic order when listing files
+
+        CelestialBody moon = CelestialBodyFactory.getMoon();
+
+        // 1999/12/31 0h00
+        final AbsoluteDate initDate = new AbsoluteDate(1999, 12, 31, 00, 00, 00, TimeScalesFactory.getUTC());
+        moon.getPVCoordinates(initDate, FramesFactory.getGCRF());
+
+        // 2000/04/01 0h00
+        final AbsoluteDate otherDate = new AbsoluteDate(2000, 02, 01, 00, 00, 00, TimeScalesFactory.getUTC());
+        moon.getPVCoordinates(otherDate, FramesFactory.getGCRF());
+
+        // 3 years from initDate
+        AbsoluteDate currentDate = new AbsoluteDate(1999, 12, 01, 00, 00, 00, TimeScalesFactory.getTAI());
+        AbsoluteDate finalDate = new AbsoluteDate(2000, 03, 14, 00, 00, 00, TimeScalesFactory.getTAI());
+
+        while (currentDate.compareTo(finalDate) < 0)  {
+            currentDate = currentDate.shiftedBy(Constants.JULIAN_DAY);
+            moon.getPVCoordinates(currentDate, FramesFactory.getGCRF());
         }
 
     }
