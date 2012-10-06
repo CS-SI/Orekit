@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="tn" type="fix" due-to="Carlos Casas">
+        Clear caches in CelestialBodyFactory when removing CelestialBodyLoaders. 
+        (fixes bug #106).
+      </action>
       <action dev="tn" type="fix" due-to="Yannick Tanguy">
         Fix loading of JPL ephemerides files with overlapping periods. 
         (fixes bug #113).
