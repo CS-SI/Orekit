@@ -17,6 +17,12 @@
 package org.orekit.time;
 
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -58,6 +64,43 @@ public class UT1ScaleTest {
             DateTimeComponents components = date.getComponents(ut1);
             double dt2 = ut1.offsetToTAI(components.getDate(), components.getTime());
             Assert.assertEquals( 0.0, dt1 + dt2, 1.0e-10);
+        }
+    }
+
+    @Test
+    public void testConcurrent() throws InterruptedException, ExecutionException {
+        // set up
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        final int threads = 10;
+        final int timesPerThread = 100;
+        final double dt = 123.456789 * Constants.JULIAN_DAY;
+
+        // calculate expected values in single-thread mode
+        final double[] expected = new double[timesPerThread];
+        for (int i = 0; i < timesPerThread; i++) {
+            expected[i] = ut1.offsetFromTAI(date.shiftedBy(i * dt));
+        }
+
+        // build jobs for concurrent execution
+        final List<Callable<Boolean>> jobs = new ArrayList<Callable<Boolean>>();
+        for (int i = 0; i < threads; i++) {
+            jobs.add(new Callable<Boolean>() {
+                public Boolean call() throws Exception {
+                    for (int j = 0; j < timesPerThread; j++) {
+                        final double actual = ut1.offsetFromTAI(date.shiftedBy(j * dt));
+                        Assert.assertEquals(expected[j], actual, 0);
+                    }
+                    return true;
+                }
+            });
+        }
+
+        // action
+        final List<Future<Boolean>> futures = Executors.newFixedThreadPool(threads).invokeAll(jobs);
+
+        // verify - necessary to throw AssertionErrors from the Callable
+        for (Future<Boolean> future : futures) {
+            Assert.assertEquals(true, future.get());
         }
     }
 

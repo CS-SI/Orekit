@@ -22,17 +22,20 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="tn" type="fix" due-to="Evan Ward">
+        Remove unnecessary synchronization in UT1Scale (fixes bug #119).
+      </action>
       <action dev="tn" type="fix" due-to="Carlos Casas">
-        Clear caches in CelestialBodyFactory when removing CelestialBodyLoaders. 
+        Clear caches in CelestialBodyFactory when removing CelestialBodyLoaders
         (fixes bug #106).
       </action>
       <action dev="tn" type="fix" due-to="Yannick Tanguy">
-        Fix loading of JPL ephemerides files with overlapping periods. 
+        Fix loading of JPL ephemerides files with overlapping periods
         (fixes bug #113).
       </action>
       <action dev="tn" type="fix" due-to="Simon Billemont">
-        Prevent initialization exception in UTCScale in case no user-defined offsets are provided. 
-        (fixes bug #111).
+        Prevent initialization exception in UTCScale in case no user-defined
+        offsets are provided. (fixes bug #111).
       </action>
       <action dev="luc" type="fix" due-to="Evan Ward">
         Improved performance by caching EME2000 frame in AbstractCelestialBody

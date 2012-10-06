@@ -45,15 +45,14 @@ public class UT1Scale implements TimeScale {
     }
 
     /** {@inheritDoc} */
-    public synchronized double offsetFromTAI(final AbsoluteDate date) {
+    public double offsetFromTAI(final AbsoluteDate date) {
         final double dtu1        = eopHistory.getUT1MinusUTC(date);
         final double utcMinusTai = utc.offsetFromTAI(date);
         return utcMinusTai + dtu1;
     }
 
     /** {@inheritDoc} */
-    public synchronized double offsetToTAI(final DateComponents date,
-                                           final TimeComponents time) {
+    public double offsetToTAI(final DateComponents date, final TimeComponents time) {
         final AbsoluteDate reference = new AbsoluteDate(date, time, TimeScalesFactory.getTAI());
         double offset = 0;
         for (int i = 0; i < 3; i++) {
