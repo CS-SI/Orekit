@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="tn" type="fix" due-to="Christophe Le Bris">
+        Correct spelling of the inner class QuadratureComputation (fixes bug #120).
+      </action>
       <action dev="tn" type="fix" due-to="Evan Ward">
         Remove unnecessary synchronization in UT1Scale (fixes bug #119).
       </action>

@@ -87,11 +87,13 @@ public class OsculatingToMeanElementsConverter {
 
         final double delta = satelliteRevolution * Math.PI;
 
-        final QuatratureComputation quadrature = new QuatratureComputation(state);
+        final QuadratureComputation quadrature = new QuadratureComputation(state);
         for (int i = 0; i < 5; i++) {
             results[i] = quadrature.solve(i, l - delta, l + delta, tolerance[0][i + 1], tolerance[1][i + 1]);
         }
-        return new SpacecraftState(new EquinoctialOrbit(aMean, results[0], results[1], results[2], results[3], results[4], PositionAngle.ECCENTRIC, state.getFrame(), state.getDate(), state.getMu()));
+        return new SpacecraftState(new EquinoctialOrbit(aMean, results[0], results[1], results[2], results[3],
+                                                        results[4], PositionAngle.ECCENTRIC, state.getFrame(),
+                                                        state.getDate(), state.getMu()));
     }
 
     /**
@@ -115,7 +117,7 @@ public class OsculatingToMeanElementsConverter {
     }
 
     /**
-     * Function used in semi-amjor axis computation.
+     * Function used in semi-major axis computation.
      * Semi-major computation is done through a Newton-Raphson iteration procedure.
      * Initialization is done for A<sub>0</sub> = a<sub>0</sub>,
      * where a<sub>0</sub> is the initial orbit semi-major axis
@@ -125,7 +127,7 @@ public class OsculatingToMeanElementsConverter {
         /** Satellite initial state. */
         private final SpacecraftState initialState;
 
-        /** Period function used to compute the semi major axis evolution. */
+        /** Period function used to compute the semi-major axis evolution. */
         private final AlphaFunction   periodFunction;
 
         /** &alpha; = &int;<sub>t-T</sub><sup>t+T</sup> a(t')dt). */
@@ -137,7 +139,7 @@ public class OsculatingToMeanElementsConverter {
         /**
          * Integration interval.
          * The integration is done between [t - &delta;, t + &delta;] where &delta; = n *
-         * &tau;<sub>i</sub> / 2, n beeing the number of satellite revolutions in the average
+         * &tau;<sub>i</sub> / 2, n being the number of satellite revolutions in the average
          * interval, &tau;<sub>i</sub> the i<sup>th</sup> iteration in mean satellite orbital period
          */
         private double                delta;
@@ -160,10 +162,12 @@ public class OsculatingToMeanElementsConverter {
             this.initialState = initialState;
             this.delta = satelliteRevolution * initialState.getKeplerianPeriod() * 0.5;
             this.periodFunction = new AlphaFunction(initialState, satelliteRevolution, initialState.getKeplerianPeriod());
-            this.integrator = new SimpsonIntegrator(relativeTolerance, absoluteTolerance, SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT, SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
+            this.integrator = new SimpsonIntegrator(relativeTolerance, absoluteTolerance,
+                                                    SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT,
+                                                    SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
         }
 
-        /** Set the satellite averaging intervale.
+        /** Set the satellite averaging interval.
          * @param delta averaging interval (whole number of periods)
          */
         public final void setDelta(final double delta) {
@@ -213,9 +217,7 @@ public class OsculatingToMeanElementsConverter {
             this.mu = function.initialState.getMu();
         }
 
-        /**
-         * {@inheritDoc}
-         */
+        /** {@inheritDoc} */
         @Override
         public double doSolve() {
             final double startValue = getStartValue();
@@ -268,7 +270,7 @@ public class OsculatingToMeanElementsConverter {
 
         /** Get the semi-major axis at specific date.
          * @param x date offset with respect to initial date
-         * @return semi major axis
+         * @return semi-major axis
          */
         public double value(final double x) {
             try {
@@ -280,7 +282,7 @@ public class OsculatingToMeanElementsConverter {
     }
 
     /** Quadrature used to average orbital parameters. */
-    private class QuatratureComputation implements UnivariateFunction {
+    private class QuadratureComputation implements UnivariateFunction {
 
         /** Initial date. */
         private AbsoluteDate initialDate;
@@ -291,7 +293,7 @@ public class OsculatingToMeanElementsConverter {
         /** Initialize the quadrature computation.
          * @param state initial state
          */
-        private QuatratureComputation(final SpacecraftState state) {
+        private QuadratureComputation(final SpacecraftState state) {
             this.initialDate = state.getDate();
         }
 
@@ -306,7 +308,9 @@ public class OsculatingToMeanElementsConverter {
         public double solve(final int i, final double lower, final double upper,
                             final double absoluteTolerance, final double relativeTolerance) {
             this.index = i;
-            final SimpsonIntegrator simpson = new SimpsonIntegrator(relativeTolerance, absoluteTolerance, SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT, SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
+            final SimpsonIntegrator simpson = new SimpsonIntegrator(relativeTolerance, absoluteTolerance,
+                                                                    SimpsonIntegrator.DEFAULT_MIN_ITERATIONS_COUNT,
+                                                                    SimpsonIntegrator.SIMPSON_MAX_ITERATIONS_COUNT);
             final double integral = simpson.integrate(MAX_EVALUATION, this, lower, upper);
             return integral / (MathUtils.TWO_PI * satelliteRevolution);
         }
