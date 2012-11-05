@@ -381,7 +381,7 @@ public class HansenCoefficients {
 
             final double kns = getHansenKernelValue(0, -(n + 1), s);
 
-            dkdxns = (n - 1) * chi2 * ((2. * n - 3.) * dkmN - (n - 2.) * dkmNp1) / ((n + s - 1.) * (n - s + 1.));
+            dkdxns = (n - 1) * chi2 * ((2. * n - 3.) * dkmN - (n - 2.) * dkmNp1) / ((n + s - 1.) * (n - s - 1.));
             dkdxns += 2. * kns / chi;
         }
 
