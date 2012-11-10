@@ -22,7 +22,6 @@ import java.io.ObjectOutputStream;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -55,9 +54,6 @@ class TIRF2000Provider implements TransformProvider {
     /** Rate term of Capitaine's Earth Rotation Angle model.
      * (radians per day, fractional part) */
     private static final double ERA_1B = ERA_1A * 0.00273781191135448;
-
-    /** Earth Rotation Angle, in radians. */
-    private double era;
 
     /** Tidal correction (null if tidal effects are ignored). */
     private final TidalCorrection tidalCorrection;
@@ -106,15 +102,9 @@ class TIRF2000Provider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        // compute Earth Rotation Angle using Nicole Capitaine model (2000)
-        final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
-        final double tu =
-                (date.durationFrom(ERA_REFERENCE) + ut1.offsetFromTAI(date) + tidalDtu1) / Constants.JULIAN_DAY;
-        era  = ERA_0 + ERA_1A * tu + ERA_1B * tu;
-        era -= MathUtils.TWO_PI * FastMath.floor((era + FastMath.PI) / MathUtils.TWO_PI);
-
         // set up the transform from parent CIRF2000
         final Vector3D rotationRate = new Vector3D((ERA_1A + ERA_1B) / Constants.JULIAN_DAY, Vector3D.PLUS_K);
+        final double era = getEarthRotationAngle(date);
         return new Transform(date, new Rotation(Vector3D.PLUS_K, -era), rotationRate);
 
     }
@@ -125,8 +115,13 @@ class TIRF2000Provider implements TransformProvider {
      * @exception OrekitException if nutation model cannot be computed
      */
     public double getEarthRotationAngle(final AbsoluteDate date) throws OrekitException {
-        getTransform(date);
-        return era;
+
+        // compute Earth Rotation Angle using Nicole Capitaine model (2000)
+        final double tidalDtu1   = (tidalCorrection == null) ? 0 : tidalCorrection.getDUT1(date);
+        final double tu =
+                (date.durationFrom(ERA_REFERENCE) + ut1.offsetFromTAI(date) + tidalDtu1) / Constants.JULIAN_DAY;
+        return MathUtils.normalizeAngle(ERA_0 + ERA_1A * tu + ERA_1B * tu, 0);
+
     }
 
     /** Serialize an instance.
