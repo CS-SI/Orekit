@@ -47,7 +47,7 @@ public class UTCScaleTest {
         AbsoluteDate d1 = new AbsoluteDate(new DateComponents(2020, 12, 31),
                                            new TimeComponents(23, 59, 59),
                                            utc);
-        System.out.println(d1.toString());
+        Assert.assertEquals("2020-12-31T23:59:59.000", d1.toString());
     }
 
     @Test
