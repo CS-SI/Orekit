@@ -294,6 +294,12 @@ public class Transform
      * then use interpolation to add derivatives consistent with the positions
      * and rotations.
      * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
      * @param date interpolation date
      * @param useVelocities if true, use sample transforms velocities,
      * otherwise ignore them and use only positions

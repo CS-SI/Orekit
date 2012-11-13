@@ -223,6 +223,19 @@ public class CartesianOrbit extends Orbit {
      * The interpolated instance is created by polynomial Hermite interpolation
      * ensuring velocity remains the exact derivative of position.
      * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     * <p>
+     * If orbit interpolation on large samples is needed, using the {@link
+     * org.orekit.propagation.precomputed.Ephemeris} class is a better way tha using this
+     * low-level interpolation. The Ephemeris class automatically handles selection of
+     * a neighboring sub-sample with a predefined number of point from a large global sample
+     * in a thread-safe way.
+     * </p>
      */
     public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
         final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =

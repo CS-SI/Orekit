@@ -187,7 +187,14 @@ public class SpacecraftState
         return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt), mass);
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     */
     public SpacecraftState interpolate(final AbsoluteDate date,
                                        final Collection<SpacecraftState> sample) {
         final List<Orbit> orbits = new ArrayList<Orbit>(sample.size());
