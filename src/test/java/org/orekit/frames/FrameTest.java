@@ -40,6 +40,8 @@ public class FrameTest {
         Random random = new Random(0x29448c7d58b95565l);
         Frame  frame  = FramesFactory.getEME2000();
         checkNoTransform(frame.getTransformTo(frame, new AbsoluteDate()), random);
+        Assert.assertTrue(frame.getDepth() > 0);
+        Assert.assertEquals(frame.getParent().getDepth() + 1, frame.getDepth());
     }
 
     @Test
@@ -94,12 +96,53 @@ public class FrameTest {
         Frame R1 = new Frame(FramesFactory.getEME2000(),t1,"R1");
         Frame R2 = new Frame(R1,t2,"R2");
         Frame R3 = new Frame(R2,t3,"R3");
+        Assert.assertTrue(R1.getDepth() > 0);
+        Assert.assertEquals(R1.getDepth() + 1, R2.getDepth());
+        Assert.assertEquals(R2.getDepth() + 1, R3.getDepth());
 
         Transform T = R1.getTransformTo(R3, new AbsoluteDate());
 
         Transform S = new Transform(t2.getDate(), t2,t3);
 
         checkNoTransform(new Transform(T.getDate(), T, S.getInverse()) , random);
+
+    }
+
+    @Test
+    public void testDepthAndAncestor() throws OrekitException{
+        Random random = new Random(0x01f8d3b944123044l);
+        Frame root = Frame.getRoot();
+
+        Frame f1 = new Frame(root, randomTransform(random), "f1");
+        Frame f2 = new Frame(f1,   randomTransform(random), "f2");
+        Frame f3 = new Frame(f1,   randomTransform(random), "f3");
+        Frame f4 = new Frame(f2,   randomTransform(random), "f4");
+        Frame f5 = new Frame(f3,   randomTransform(random), "f5");
+        Frame f6 = new Frame(f5,   randomTransform(random), "f6");
+
+        Assert.assertEquals(0, root.getDepth());
+        Assert.assertEquals(1, f1.getDepth());
+        Assert.assertEquals(2, f2.getDepth());
+        Assert.assertEquals(2, f3.getDepth());
+        Assert.assertEquals(3, f4.getDepth());
+        Assert.assertEquals(3, f5.getDepth());
+        Assert.assertEquals(4, f6.getDepth());
+
+        Assert.assertTrue(root == f1.getAncestor(1));
+        Assert.assertTrue(root == f6.getAncestor(4));
+        Assert.assertTrue(f1   == f6.getAncestor(3));
+        Assert.assertTrue(f3   == f6.getAncestor(2));
+        Assert.assertTrue(f5   == f6.getAncestor(1));
+        Assert.assertTrue(f6   == f6.getAncestor(0));
+
+        try {
+            f6.getAncestor(5);
+            Assert.fail("an exception should have been triggered");
+        } catch (IllegalArgumentException iae) {
+            // expected behavior
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught: " + e.getClass().getName());
+        }
 
     }
 
@@ -129,7 +172,7 @@ public class FrameTest {
         // check that a frame is not its own child
         Assert.assertEquals(false, f4.isChildOf(f4));
 
-        // check if a frame which belong to a different branch than the 2nd frame can be a child for it
+        // check if a frame which belongs to a different branch than the 2nd frame can be a child for it
         Assert.assertEquals(false, f9.isChildOf(f5));
 
         // check if the root frame is not a child of itself

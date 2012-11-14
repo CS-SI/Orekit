@@ -50,6 +50,7 @@ public enum OrekitMessages implements Localizable {
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),
     FRAME_ANCESTOR_OF_BOTH_FRAMES("frame {0} is an ancestor of both frames {1} and {2}"),
     FRAME_ANCESTOR_OF_NEITHER_FRAME("frame {0} is an ancestor of neither frame {1} nor {2}"),
+    FRAME_NO_NTH_ANCESTOR("frame {0} has depth {1}, it cannot have an ancestor {2} levels above"),
     UNSUPPORTED_LOCAL_ORBITAL_FRAME("unsupported local orbital frame, supported types: {0} and {1}"),
     NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS("non pseudo-inertial frame \"{0}\" is not suitable for defining orbits"),
     DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS("data root directory {0} does not exist"),
