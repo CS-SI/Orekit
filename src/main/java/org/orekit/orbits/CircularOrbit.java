@@ -304,23 +304,17 @@ public class CircularOrbit
         return OrbitType.CIRCULAR;
     }
 
-    /** Get the semi-major axis.
-     * @return semi-major axis (m)
-     */
+    /** {@inheritDoc} */
     public double getA() {
         return a;
     }
 
-    /** Get the first component of the equinoctial eccentricity vector.
-     * @return e cos(&omega; + &Omega;), first component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEx() {
         return ex * FastMath.cos(raan) - ey * FastMath.sin(raan);
     }
 
-    /** Get the second component of the equinoctial eccentricity vector.
-     * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEy() {
         return ey * FastMath.cos(raan) + ex * FastMath.sin(raan);
     }
@@ -339,16 +333,12 @@ public class CircularOrbit
         return ey;
     }
 
-    /** Get the first component of the inclination vector.
-     * @return first component of the inclination vector.
-     */
+    /** {@inheritDoc} */
     public double getHx() {
         return  FastMath.cos(raan) * FastMath.tan(i / 2);
     }
 
-    /** Get the second component of the inclination vector.
-     * @return second component of the inclination vector.
-     */
+    /** {@inheritDoc} */
     public double getHy() {
         return  FastMath.sin(raan) * FastMath.tan(i / 2);
     }
@@ -434,16 +424,12 @@ public class CircularOrbit
 
     }
 
-    /** Get the eccentricity.
-     * @return eccentricity
-     */
+    /** {@inheritDoc} */
     public double getE() {
         return FastMath.sqrt(ex * ex + ey * ey);
     }
 
-    /** Get the inclination.
-     * @return inclination (rad)
-     */
+    /** {@inheritDoc} */
     public double getI() {
         return i;
     }
@@ -455,23 +441,17 @@ public class CircularOrbit
         return raan;
     }
 
-    /** Get the true latitude argument.
-     * @return true latitude argument (rad)
-     */
+    /** {@inheritDoc} */
     public double getLv() {
         return alphaV + raan;
     }
 
-    /** Get the eccentric latitude argument.
-     * @return eccentric latitude argument.(rad)
-     */
+    /** {@inheritDoc} */
     public double getLE() {
         return getAlphaE() + raan;
     }
 
-    /** Get the mean latitude argument.
-     * @return mean latitude argument.(rad)
-     */
+    /** {@inheritDoc} */
     public double getLM() {
         return getAlphaM() + raan;
     }
