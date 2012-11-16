@@ -18,20 +18,25 @@ package fr.cs.examples.propagation;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Formatter;
+import java.util.List;
 import java.util.Locale;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
@@ -41,7 +46,9 @@ import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
@@ -53,428 +60,541 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTThirdBody;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.OrbitFactory;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.PVCoordinates;
 
-/**
- * Orekit tutorial for semi-analytical extrapolation using the DSST. Some of the parameters can be
- * set just below, in the class description, to generate comparatives files between a numerical
- * propagator and the DSST propagator. The orbit can be set from the
- * {@link DSSTPropagation#orbitDefinition()} method.
+import fr.cs.examples.KeyValueFileParser;
+
+/** Orekit tutorial for semi-analytical extrapolation using the DSST.
+ *  <p>
+ *  The parameters are read from the input file dsst-propagation.in located in the user's
+ *  home directory (see commented example at src/tutorial/ressources/dsst-propagation.in).
+ *  The results are written to the ouput file dsst-propagation.out in the same directory.
+ *  </p>
+ *  <p>
+ *  </p>
+ *  <p>
+ *  Comparison between the DSST propagator and the numerical propagator can be optionally
+ *  performed. Numerical results are  written to the ouput file numerical-propagation.out.
+ *  </p>
  *
- * @author Romain Di Costanzo
+ *  @author Romain Di Costanzo
+ *  @author Pascal Parraud
  */
 public class DSSTPropagation {
 
-    /**
-     * Customization of the tutorial : see also the {@link DSSTPropagation#orbitDefinition()}
-     * submethod
+    /** Program entry point.
+     * @param args program arguments
      */
-    // Force model used :
-    private static boolean             centralBody              = true;
-    private static int                 degree                   = 10;
-    private static int                 order                    = 10;
-    private static boolean             moon                     = false;
-    private static boolean             sun                      = false;
-    private static boolean             drag                     = false;
-    private static boolean             radiationPressure        = false;
+    public static void main(String[] args) {
+        try {
 
-    // generate output file on user home directory
-    private static boolean             generateFileResult       = true;
-    private static File                outputFile               = new File(System.getProperty("user.home"));
-    // print one point every xxx seconds
-    private static double              printStep                = 1000;
+            // configure Orekit data acces
+            Utils.setDataRoot("tutorial-orekit-data");
 
-    // extrapolation time
-    private static double              extrapolationTime        = 1 * 365 * 86400d;
+            // input/output (in user's home directory)
+            File input  = new File(new File(System.getProperty("user.home")), "dsst-propagation.in");
+            File output = new File(input.getParentFile(), "dsst-propagation.out");
 
-    /**
-     * End of tutorial customization
-     */
-    private static AbsoluteDate        initDate;
-    private static DSSTPropagator      propaDSST;
-    private static NumericalPropagator propaNUM;
+            new DSSTPropagation().run(input, output);
 
-    // Print result with the following date :
-    // date (in days, from the initialDate), px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm, e, i,
-    // pa, raan
-    private static String              format                   = new String("%14.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f %20.10f");
-
-    /**
-     * DSST force model will be re-initialized every time the propagation date will be bigger than
-     * resetDate + timeShiftToInitialize. In seconds.
-     */
-    private static double              TIME_SHIFT_TO_INITIALIZE = 10 * 86400;
-
-    /**
-     * @param args
-     * @throws Exception
-     */
-    public static void main(String[] args) throws Exception {
-
-        if (order > degree) {
-            throw new Exception("Potential order cannot be higher than potential degree");
+        } catch (IOException ioe) {
+            System.err.println(ioe.getLocalizedMessage());
+            System.exit(1);
+        } catch (IllegalArgumentException iae) {
+            System.err.println(iae.getLocalizedMessage());
+            System.exit(1);
+        } catch (OrekitException oe) {
+            System.err.println(oe.getLocalizedMessage());
+            System.exit(1);
+        } catch (ParseException pe) {
+            System.err.println(pe.getLocalizedMessage());
+            System.exit(1);
         }
-        // Potential data
-        Utils.setDataRoot("tutorial-orekit-data");
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
-
-        orbitDefinition(provider);
-
-        /**
-         * FORCES :
-         */
-        setForceModel(provider);
-
-        /**
-         * OUTPUT :
-         */
-        initializeOutput();
-
-        // DSST Propagation
-        double dsstStart = System.currentTimeMillis();
-        propaDSST.propagate(initDate.shiftedBy(extrapolationTime));
-        double dsstEnd = System.currentTimeMillis();
-
-        System.out.println("execution time DSST : " + (dsstEnd - dsstStart) / 1000.);
-
-        // Numerical Propagation
-        double NUMStart = System.currentTimeMillis();
-        propaNUM.propagate(initDate.shiftedBy(extrapolationTime));
-        double NUMEnd = System.currentTimeMillis();
-
-        System.out.println("execution time NUM : " + (NUMEnd - NUMStart) / 1000.);
-
     }
 
-    /**
-     * Define the orbit to use. Just let one of the three possible options available
-     *
-     * @throws Exception
-     */
-    private static void orbitDefinition(PotentialCoefficientsProvider provider) throws Exception {
+    /** Input parameter keys. */
+    private static enum ParameterKey {
+        ORBIT_DATE,
+        ORBIT_CIRCULAR_A,
+        ORBIT_CIRCULAR_EX,
+        ORBIT_CIRCULAR_EY,
+        ORBIT_CIRCULAR_I,
+        ORBIT_CIRCULAR_RAAN,
+        ORBIT_CIRCULAR_ALPHA,
+        ORBIT_EQUINOCTIAL_A,
+        ORBIT_EQUINOCTIAL_EX,
+        ORBIT_EQUINOCTIAL_EY,
+        ORBIT_EQUINOCTIAL_HX,
+        ORBIT_EQUINOCTIAL_HY,
+        ORBIT_EQUINOCTIAL_LAMBDA,
+        ORBIT_KEPLERIAN_A,
+        ORBIT_KEPLERIAN_E,
+        ORBIT_KEPLERIAN_I,
+        ORBIT_KEPLERIAN_PA,
+        ORBIT_KEPLERIAN_RAAN,
+        ORBIT_KEPLERIAN_ANOMALY,
+        ORBIT_ANGLE_TYPE,
+        ORBIT_CARTESIAN_PX,
+        ORBIT_CARTESIAN_PY,
+        ORBIT_CARTESIAN_PZ,
+        ORBIT_CARTESIAN_VX,
+        ORBIT_CARTESIAN_VY,
+        ORBIT_CARTESIAN_VZ,
+        ORBIT_IS_OSCULATING,
+        START_DATE,
+        DURATION,
+        OUTPUT_STEP,
+        NUMERICAL_COMPARISON,
+        CENTRAL_BODY_ORDER,
+        CENTRAL_BODY_DEGREE,
+        THIRD_BODY_MOON,
+        THIRD_BODY_SUN,
+        DRAG,
+        DRAG_CD,
+        DRAG_SF,
+        SOLAR_RADIATION_PRESSURE,
+        SOLAR_RADIATION_PRESSURE_CR,
+        SOLAR_RADIATION_PRESSURE_SF;
+    }
+
+    private void run(final File input, final File output)
+            throws IOException, IllegalArgumentException, OrekitException, ParseException {
+
+        // read input parameters
+        KeyValueFileParser<ParameterKey> parser = new KeyValueFileParser<ParameterKey>(ParameterKey.class);
+        parser.parseInput(new FileInputStream(input));
+
+        // check mandatory input parameters
+        if (!parser.containsKey(ParameterKey.ORBIT_DATE)) {
+            throw new IOException("Orbit date is not defined.");
+        }
+        if (!parser.containsKey(ParameterKey.DURATION)) {
+            throw new IOException("Propagation duration is not defined.");
+        }
+
+        // Inertial frame is EME2000
+        final Frame eme2000 = FramesFactory.getEME2000();
+
+        // All dates in UTC
+        final TimeScale utc = TimeScalesFactory.getUTC();
+
+        // Potential coefficients provider
+        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+
+        // Central body attraction coefficient (m³/s²)
+        final double mu = provider.getMu();
 
         // Orbit definition
-        AbsoluteDate orbitDate = new AbsoluteDate("2011-12-12T11:57:20.000", TimeScalesFactory.getUTC());
+        final Orbit orbit = createOrbit(parser, eme2000, utc, mu);
 
-        // OPTION 1 : Use a default low orbit :
-//        useDefaultOrbit(orbitDate, provider);
+        // DSST propagator definition
+        Boolean isOsculating = false;
+        if (parser.containsKey(ParameterKey.ORBIT_IS_OSCULATING)) {
+            isOsculating = parser.getBoolean(ParameterKey.ORBIT_IS_OSCULATING);
+        }
+        final DSSTPropagator dsstProp = createDSSTProp(orbit, isOsculating);
 
-        // OPTION 2 : Use a default geostationnary orbit :
-        // SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getGeostationnaryOrbit(mu,
-        // FramesFactory.getGCRF(), orbitDate));
-        // setDSSTProp(orbitOsc);
-        // setNumProp(orbitOsc);
+        // Set Force models
+        setForceModel(parser, provider, eme2000, dsstProp);
 
-        // OPTION 3 : Define your own orbit : here a circular orbit is set, by can be any of
-        // KeplerianOrbit, CircularOrbit, CartesianOrbit. Cannot be with null inclination !
-        // You also must define if the orbit you enter is an osculating one or not. If yes, please
-        // indicate the associated force model used. If no do not take the following boolean into
-        // account : sun, moon, solarRadiation
-
-         final double mu = provider.getMu();
-         Orbit orbit = new CircularOrbit(7204535.848109436, -4.484755873986251E-4,
-         0.0011562979012178316, 98.74341600466741, Math.toRadians(43.32990110790338),
-         Math.toRadians(180), PositionAngle.MEAN, FramesFactory.getEME2000(), orbitDate, mu);
-         boolean isOscullating = true;
-         // Fill those fields if (isOscullating = true) :
-         boolean sun = true;
-         boolean moon = true;
-         boolean solarRadiation = false;
-
-         setOrbit(provider, orbit, isOscullating, sun, moon, solarRadiation);
-
-    }
-
-    /**
-     * The default orbit is an heliosynchronous orbit. As the DSST doen't take yet short periodic
-     * variations create a fake mean orbit from the oscullating parameters.
-     */
-    private static void useDefaultOrbit(AbsoluteDate orbitDate,
-                                        PotentialCoefficientsProvider provider) throws Exception {
-
-        final double ae = provider.getAe();
-        final double mu = provider.getMu();
-        SpacecraftState orbitOsc = new SpacecraftState(OrbitFactory.getHeliosynchronousOrbit(ae, 800000, 1e-3, 0d, Math.PI / 2d, Math.PI, mu, FramesFactory.getGCRF(), orbitDate));
-        // Set the numerical propagator to compute the mean orbit from the osculating one :
-        setNumProp(orbitOsc);
-        // Add a default gravitational model
-        propaNUM.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, provider.getC(2, 0, false), provider.getS(2, 0, false)));
-        // Create the mean orbit from the osculating :
-        SpacecraftState[] orbits = OrbitFactory.getMeanOrbitFromOsculating(propaNUM, 86400, 10);
-        SpacecraftState mean = orbits[0];
-        SpacecraftState osc = orbits[1];
-
-        // As the DSST propagator doesn't take short periodic variation in account actually, we need
-        // to use the 'mean' orbit for DSSTPropagator and the 'osc' orbit for the numerical
-        // propagator :
-        setDSSTProp(mean, false, TIME_SHIFT_TO_INITIALIZE);
-        // Reset the numerical propagator with new orbit (remove every force model)
-        setNumProp(osc);
-
-    }
-
-    /**
-     * Method to be used by user if he wants to define its own orbit
-     *
-     * @param provider
-     *            {@link PotentialCoefficientsProvider}
-     * @param orbit
-     *            orbit to use
-     * @param isOsculating
-     *            is the orbit osculating
-     * @param sun
-     *            if yes, is the sun in model forces
-     * @param moon
-     *            if yes, is the moon in model forces
-     * @param solarRadiation
-     *            if yes, does it take the solar radiation in account
-     * @throws Exception
-     */
-    private static void setOrbit(PotentialCoefficientsProvider provider,
-                                 Orbit orbit,
-                                 boolean isOsculating,
-                                 boolean sun,
-                                 boolean moon,
-                                 boolean solarRadiation) throws Exception {
-        if (isOsculating) {
-
-            setDSSTProp(new SpacecraftState(orbit), isOsculating, TIME_SHIFT_TO_INITIALIZE);
-            // Reset the numerical propagator with new orbit (remove every force model)
-            setNumProp(new SpacecraftState(orbit));
-
-
+        // Simulation properties
+        AbsoluteDate start;
+        if (parser.containsKey(ParameterKey.START_DATE)) {
+            start = parser.getDate(ParameterKey.START_DATE, utc);
         } else {
-            // WARNING : no comparison with numerical can be done under this conditions !
-            System.out.println("WARNING : no comparison with numerical can be done under this conditions !");
-            // Mean elements : set propagator
-            setDSSTProp(new SpacecraftState(orbit), isOsculating, TIME_SHIFT_TO_INITIALIZE);
-            setNumProp(new SpacecraftState(orbit));
+            start = parser.getDate(ParameterKey.ORBIT_DATE, utc);
         }
+        double duration = parser.getDouble(ParameterKey.DURATION);
+        double outStep  = parser.getDouble(ParameterKey.OUTPUT_STEP);
+
+        // Add orbit handler
+        OrbitHandler dsstHandler = new OrbitHandler();
+        dsstProp.setMasterMode(outStep, dsstHandler);
+
+        // DSST Propagation
+        final double dsstOn = System.currentTimeMillis();
+        dsstProp.propagate(start, start.shiftedBy(duration));
+        final double dsstOff = System.currentTimeMillis();
+        System.out.println("DSST execution time: " + (dsstOff - dsstOn) / 1000.);
+        
+        // Print results
+        printOutput(output, dsstHandler, start);
+        System.out.println("DSST results saved as file " + output);
+
+        // Check if we want to compare numerical to DSST propagator (default is false)
+        if (parser.containsKey(ParameterKey.NUMERICAL_COMPARISON)
+                && parser.getBoolean(ParameterKey.NUMERICAL_COMPARISON)) {
+            
+            if ( !isOsculating ) {
+                System.out.println("\nWARNING:");
+                System.out.println("The DSST propagator considers a mean orbit while the numerical will consider an osculating one.");
+                System.out.println("The comparison will be meaningless.\n");
+            }
+
+            // output (in user's home directory)
+            File output_num = new File(input.getParentFile(), "numerical-propagation.out");
+
+            // Numerical propagator definition
+            final NumericalPropagator numProp = createNumProp(orbit);
+            
+            // Set Force models
+            setForceModel(parser, provider, eme2000, numProp);
+
+            // Add orbit handler
+            OrbitHandler numHandler = new OrbitHandler();
+            numProp.setMasterMode(outStep, numHandler);
+
+            // Numerical Propagation
+            final double numOn = System.currentTimeMillis();
+            numProp.propagate(start, start.shiftedBy(duration));
+            final double numOff = System.currentTimeMillis();
+            System.out.println("Numerical execution time: " + (numOff - numOn) / 1000.);
+            
+            // Print results
+            printOutput(output_num, numHandler, start);
+            System.out.println("Numerical results saved as file " + output_num);
+        }
+
     }
 
-    /**
-     * Update propagator force's model
-     *
-     * @param provider
-     * @throws OrekitException
+    /** Create an orbit from input parameters
+     * @param parser input file parser
+     * @param frame  inertial frame
+     * @param scale  time scale
+     * @param mu     central attraction coefficient
+     * @throws NoSuchElementException if input parameters are mising
+     * @throws IOException if input parameters are invalid
      */
-    private static void setForceModel(PotentialCoefficientsProvider provider) throws OrekitException {
-        final double ae = provider.getAe();
-        final double mu = provider.getMu();
-        if (centralBody) {
-            // Central Body Force Model with un-normalized coefficients
-            double[][] CnmNotNorm;
-            double[][] SnmNotNorm;
-            CnmNotNorm = provider.getC(degree, order, false);
-            SnmNotNorm = provider.getS(degree, order, false);
+    private Orbit createOrbit(final KeyValueFileParser<ParameterKey> parser,
+                              final Frame frame, final TimeScale scale, final double mu)
+        throws NoSuchElementException, IOException {
 
-            // DSST force model parameters
-            DSSTForceModel centralBodyDSST = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, CnmNotNorm, CnmNotNorm, null);
-            ForceModel centralBodyNUM = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
-            propaDSST.addForceModel(centralBodyDSST);
-            propaNUM.addForceModel(centralBodyNUM);
+        // Orbit definition
+        Orbit orbit;
+        PositionAngle angleType = PositionAngle.MEAN;
+        if (parser.containsKey(ParameterKey.ORBIT_ANGLE_TYPE)) {
+            angleType = PositionAngle.valueOf(parser.getString(ParameterKey.ORBIT_ANGLE_TYPE).toUpperCase());
+        }
+        if (parser.containsKey(ParameterKey.ORBIT_KEPLERIAN_A)) {
+            orbit = new KeplerianOrbit(parser.getDouble(ParameterKey.ORBIT_KEPLERIAN_A) * 1000.,
+                                       parser.getDouble(ParameterKey.ORBIT_KEPLERIAN_E),
+                                       parser.getAngle(ParameterKey.ORBIT_KEPLERIAN_I),
+                                       parser.getAngle(ParameterKey.ORBIT_KEPLERIAN_PA),
+                                       parser.getAngle(ParameterKey.ORBIT_KEPLERIAN_RAAN),
+                                       parser.getAngle(ParameterKey.ORBIT_KEPLERIAN_ANOMALY),
+                                       angleType,
+                                       frame,
+                                       parser.getDate(ParameterKey.ORBIT_DATE, scale),
+                                       mu
+                                      );
+        } else if (parser.containsKey(ParameterKey.ORBIT_EQUINOCTIAL_A)) {
+            orbit = new EquinoctialOrbit(parser.getDouble(ParameterKey.ORBIT_EQUINOCTIAL_A) * 1000.,
+                                         parser.getDouble(ParameterKey.ORBIT_EQUINOCTIAL_EX),
+                                         parser.getDouble(ParameterKey.ORBIT_EQUINOCTIAL_EY),
+                                         parser.getDouble(ParameterKey.ORBIT_EQUINOCTIAL_HX),
+                                         parser.getDouble(ParameterKey.ORBIT_EQUINOCTIAL_HY),
+                                         parser.getAngle(ParameterKey.ORBIT_EQUINOCTIAL_LAMBDA),
+                                         angleType,
+                                         frame,
+                                         parser.getDate(ParameterKey.ORBIT_DATE, scale),
+                                         mu
+                                        );
+        } else if (parser.containsKey(ParameterKey.ORBIT_CIRCULAR_A)) {
+            orbit = new CircularOrbit(parser.getDouble(ParameterKey.ORBIT_CIRCULAR_A) * 1000.,
+                                      parser.getDouble(ParameterKey.ORBIT_CIRCULAR_EX),
+                                      parser.getDouble(ParameterKey.ORBIT_CIRCULAR_EY),
+                                      parser.getAngle(ParameterKey.ORBIT_CIRCULAR_I),
+                                      parser.getAngle(ParameterKey.ORBIT_CIRCULAR_RAAN),
+                                      parser.getAngle(ParameterKey.ORBIT_CIRCULAR_ALPHA),
+                                      angleType,
+                                      frame,
+                                      parser.getDate(ParameterKey.ORBIT_DATE, scale),
+                                      mu
+                                     );
+        } else if (parser.containsKey(ParameterKey.ORBIT_CARTESIAN_PX)) {
+            final double[] pos = {parser.getDouble(ParameterKey.ORBIT_CARTESIAN_PX) * 1000.,
+                                  parser.getDouble(ParameterKey.ORBIT_CARTESIAN_PY) * 1000.,
+                                  parser.getDouble(ParameterKey.ORBIT_CARTESIAN_PZ) * 1000.};
+            final double[] vel = {parser.getDouble(ParameterKey.ORBIT_CARTESIAN_VX) * 1000.,
+                                  parser.getDouble(ParameterKey.ORBIT_CARTESIAN_VY) * 1000.,
+                                  parser.getDouble(ParameterKey.ORBIT_CARTESIAN_VZ) * 1000.};
+            orbit = new CartesianOrbit(new PVCoordinates(new Vector3D(pos), new Vector3D(vel)),
+                                       frame,
+                                       parser.getDate(ParameterKey.ORBIT_DATE, scale),
+                                       mu
+                                      );
+        } else {
+            throw new IOException("Orbit definition is incomplete.");
         }
 
-        if (sun) {
-            DSSTForceModel sunDSST = new DSSTThirdBody(CelestialBodyFactory.getSun());
-            ForceModel sunNUM = new ThirdBodyAttraction(CelestialBodyFactory.getSun());
-            propaDSST.addForceModel(sunDSST);
-            propaNUM.addForceModel(sunNUM);
-        }
+        return orbit;
 
-        if (moon) {
-            DSSTForceModel moonDSST = new DSSTThirdBody(CelestialBodyFactory.getMoon());
-            ForceModel moonNUM = new ThirdBodyAttraction(CelestialBodyFactory.getMoon());
-            propaDSST.addForceModel(moonDSST);
-            propaNUM.addForceModel(moonNUM);
-        }
+    }
+    /** Set up the DSST Propagator
+     *
+     *  @param orbit
+     *  @param isOsculating if orbital elements are osculating
+     *  @throws OrekitException
+     */
+    private DSSTPropagator createDSSTProp(Orbit orbit, boolean isOsculating) throws OrekitException {
 
-        if (drag) {
-            // Drag Force Model
-            OneAxisEllipsoid earth = new OneAxisEllipsoid(ae, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF2005());
-            earth.setAngularThreshold(1.e-6);
-            Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
-            final double cd = 2.0;
-            final double sf = 5.0;
-            DSSTForceModel dragDSST = new DSSTAtmosphericDrag(atm, cd, sf);
-            ForceModel dragNUM = new DragForce(atm, new SphericalSpacecraft(sf, cd, 0., 0.));
-            propaDSST.addForceModel(dragDSST);
-            propaNUM.addForceModel(dragNUM);
-        }
+        /** TODO: this parameter will desappear soon */
+        final double TIME_SHIFT_TO_INITIALIZE = 10 * 86400;
 
-        if (radiationPressure) {
-            // Solar Radiation Pressure Force Model
-            PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-            double sf = 5.0;
-            double kA = 0.5;
-            double kR = 0.5;
-            double cR = 2. * (1. + (1. - kA) * (1. - kR) * 4. / 9.);
-            // DSST radiation pressure force
-            DSSTForceModel pressureDSST = new DSSTSolarRadiationPressure(cR, sf, sun, ae);
-            // NUMERICAL radiation pressure force
-            SphericalSpacecraft spc = new SphericalSpacecraft(sf, 0., kA, kR);
-            ForceModel pressureNUM = new SolarRadiationPressure(sun, ae, spc);
-            propaDSST.addForceModel(pressureDSST);
-            propaNUM.addForceModel(pressureNUM);
-        }
+        final double minStep = orbit.getKeplerianPeriod();
+        final double maxStep = minStep * 100.;
+        final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+
+        return new DSSTPropagator(integrator, orbit, isOsculating, TIME_SHIFT_TO_INITIALIZE);
     }
 
-    /**
-     * Output initialization
+    /** Create the numerical propagator
      *
-     * @throws IOException
+     *  @param orbit initial orbit
+     *  @throws OrekitException 
      */
-    private static void initializeOutput() throws IOException {
-        if (generateFileResult) {
-            String fileNameExtention = "";
-            if (centralBody) {
-                fileNameExtention = fileNameExtention.concat("earth");
-            }
-            if (sun) {
-                fileNameExtention = fileNameExtention.concat("_sun");
-            }
-            if (moon) {
-                fileNameExtention = fileNameExtention.concat("_moon");
-            }
-            if (drag) {
-                fileNameExtention = fileNameExtention.concat("_drag");
-            }
-            if (radiationPressure) {
-                fileNameExtention = fileNameExtention.concat("_radPres");
-            }
-
-            propaDSST.setMasterMode(printStep, new PrintStepHandler(outputFile, fileNameExtention.concat("_DSST"), format, initDate));
-            propaNUM.setMasterMode(printStep, new PrintStepHandler(outputFile, fileNameExtention.concat("_NUM"), format, initDate));
-        }
-    }
-
-    /**
-     * Set up the numerical propagator
-     *
-     * @param initialState
-     */
-    private static void setNumProp(SpacecraftState initialState) {
-        final double[][] tol = NumericalPropagator.tolerances(1.0, initialState.getOrbit(), initialState.getOrbit().getType());
-        final double minStep = 1.;
-        final double maxStep = 200.;
+    private NumericalPropagator createNumProp(final Orbit orbit) throws OrekitException {
+        final double[][] tol = NumericalPropagator.tolerances(1.0, orbit, orbit.getType());
+        final double minStep = 1.e-3;
+        final double maxStep = 1.e+3;
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
         integrator.setInitialStepSize(100.);
-        propaNUM = new NumericalPropagator(integrator);
-        propaNUM.setInitialState(initialState);
+
+        NumericalPropagator numProp = new NumericalPropagator(integrator);
+        numProp.setInitialState(new SpacecraftState(orbit));
+
+        return numProp;
     }
 
-    /**
-     * Set up the DSST Propagator
+    /** Set DSST propagator force models
      *
-     * @param initialState
-     * @param isOsculating
-     * @throws OrekitException
+     *  @param provider potential coefficients provider
+     *  @param parser input file parser
+     *  @param frame  inertial frame
+     *  @param dsstProp DSST propagator
+     *  @throws IOException
+     *  @throws OrekitException
      */
-    private static void setDSSTProp(SpacecraftState initialState,
-                                    boolean isOsculating,
-                                    final double timeShiftToInitialize) throws OrekitException {
-        initDate = initialState.getDate();
-        final double minStep = initialState.getKeplerianPeriod() / 10;
-        final double maxStep = FastMath.min(initialState.getKeplerianPeriod() * 10, 86400.);
-        final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
-        integrator.setInitialStepSize(minStep);
-        propaDSST = new DSSTPropagator(integrator, initialState.getOrbit(), isOsculating, timeShiftToInitialize);
+    private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
+                               final PotentialCoefficientsProvider provider,
+                               final Frame frame,
+                               final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
+        final double ae = provider.getAe();
+        final double mu = provider.getMu();
+        
+        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
+        final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
+
+        if (order > degree) {
+            throw new IOException("Potential order cannot be higher than potential degree");
+        }
+
+        // Central Body Force Model with un-normalized coefficients
+        final double[][] Cnm = provider.getC(degree, order, false);
+        final double[][] Snm = provider.getS(degree, order, false);
+        dsstProp.addForceModel(new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY,
+                                                   ae, mu, Cnm, Snm, null));
+
+        // 3rd body (SUN)
+        if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
+            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getSun()));
+        }
+
+        // 3rd body (MOON)
+        if (parser.containsKey(ParameterKey.THIRD_BODY_MOON) && parser.getBoolean(ParameterKey.THIRD_BODY_MOON)) {
+            dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
+        }
+
+        // Drag Force
+        if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
+            OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
+                                                          Constants.WGS84_EARTH_FLATTENING,
+                                                          frame);
+            earth.setAngularThreshold(1.e-6);
+            Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
+            dsstProp.addForceModel(new DSSTAtmosphericDrag(atm,
+                                                           parser.getDouble(ParameterKey.DRAG_CD),
+                                                           parser.getDouble(ParameterKey.DRAG_SF)));
+        }
+
+        // Solar Radiation Pressure Force Model
+        if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
+            dsstProp.addForceModel(new DSSTSolarRadiationPressure(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR),
+                                                                  parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
+                                                                  CelestialBodyFactory.getSun(), ae));
+        }
     }
 
-    /**
-     * Specialized step handler.
-     * <p>
-     * This class extends the step handler in order to print on the output stream at the given step.
-     * <p>
+    /** Set DSST propagator force models
+     *
+     *  @param provider potential coefficients provider
+     *  @param parser  input file parser
+     *  @param frame   inertial frame
+     *  @param numProp numerical propagator
+     *  @throws IOException
+     *  @throws OrekitException
      */
-    private static class PrintStepHandler implements OrekitFixedStepHandler {
+    private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
+                               final PotentialCoefficientsProvider provider,
+                               final Frame frame,
+                               final NumericalPropagator numProp) throws IOException, OrekitException {
 
-        /**
-         * Output format.
-         */
-        private final String         format;
+        final double ae = provider.getAe();
+        final double mu = provider.getMu();
+        
+        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
+        final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
 
-        /**
-         * Buffer
-         */
-        private final BufferedWriter buffer;
+        if (order > degree) {
+            throw new IOException("Potential order cannot be higher than potential degree");
+        }
 
-        /** Starting date */
-        private AbsoluteDate         dateIni;
+        // Central Body (un-normalized coefficients)
+        numProp.addForceModel(new CunninghamAttractionModel(frame, ae, mu,
+                                                            provider.getC(degree, order, false),
+                                                            provider.getS(degree, order, false)));
+
+        // 3rd body (SUN)
+        if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
+            numProp.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
+        }
+
+        // 3rd body (MOON)
+        if (parser.containsKey(ParameterKey.THIRD_BODY_MOON) && parser.getBoolean(ParameterKey.THIRD_BODY_MOON)) {
+            numProp.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
+        }
+
+        // Drag
+        if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
+            OneAxisEllipsoid earth = new OneAxisEllipsoid(ae, Constants.WGS84_EARTH_FLATTENING, frame);
+            earth.setAngularThreshold(1.e-6);
+            Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
+            numProp.addForceModel(new DragForce(atm,
+                                                new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
+                                                                        parser.getDouble(ParameterKey.DRAG_CD),
+                                                                        0., 0.)));
+        }
+
+        // Solar Radiation Pressure
+        if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
+            final double cR = parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR);
+            // cR being the DSST SRP coef and assuming a spherical spacecraft, the conversion is:
+            // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
+            // with kA arbitrary sets to 0
+            final double kR = 3.25 - 2.25 * cR;
+            final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
+                                                                    0., 0., kR);
+
+            numProp.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, ssc));
+        }
+    }
+
+    /** Print the results in the output file
+     *
+     *  @param handler orbit handler
+     *  @param output output file
+     *  @param sart start date of propagation
+     *  @throws OrekitException 
+     *  @throws IOException 
+     */
+    private void printOutput(final File output,
+                             final OrbitHandler handler,
+                             final AbsoluteDate start) throws OrekitException, IOException {
+        // Output format:
+        // time_from_start, a, e, i, raan, pa, aM, h, k, p, q, lM, px, py, pz, vx, vy, vz
+        final String format = new String(" %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e %24.16e");
+        final BufferedWriter buffer = new BufferedWriter(new FileWriter(output));
+        buffer.write("##   time_from_start(s)            a(km)                      e                      i(deg)         ");
+        buffer.write("         raan(deg)                pa(deg)              mean_anomaly(deg)              ey/h          ");
+        buffer.write("           ex/k                    hy/p                     hx/q             mean_longitude_arg(deg)");
+        buffer.write("       Xposition(km)           Yposition(km)             Zposition(km)           Xvelocity(km/s)    ");
+        buffer.write("      Yvelocity(km/s)         Zvelocity(km/s)");
+        buffer.newLine();
+        for (Orbit o : handler.getOrbits()) {
+            final Formatter f = new Formatter(new StringBuilder(), Locale.ENGLISH);
+            // Time from start (s)
+            final double time = o.getDate().durationFrom(start);
+            // Semi-major axis (km)
+            final double a = o.getA() / 1000.;
+            // Keplerian elements
+            // Eccentricity
+            final double e = o.getE();
+            // Inclination (degrees)
+            final double i = Math.toDegrees(MathUtils.normalizeAngle(o.getI(), FastMath.PI));
+            // Right Ascension of Ascending Node (degrees)
+            KeplerianOrbit ko = new KeplerianOrbit(o);
+            final double ra = Math.toDegrees(MathUtils.normalizeAngle(ko.getRightAscensionOfAscendingNode(), FastMath.PI));
+            // Perigee Argument (degrees)
+            final double pa = Math.toDegrees(MathUtils.normalizeAngle(ko.getPerigeeArgument(), FastMath.PI));
+            // Mean Anomaly (degrees)
+            final double am = Math.toDegrees(MathUtils.normalizeAngle(ko.getAnomaly(PositionAngle.MEAN), FastMath.PI));
+            // Equinoctial elements
+            // ey/h component of eccentricity vector
+            final double h = o.getEquinoctialEy();
+            // ex/k component of eccentricity vector
+            final double k = o.getEquinoctialEx();
+            // hy/p component of inclination vector
+            final double p = o.getHy();
+            // hx/q component of inclination vector
+            final double q = o.getHx();
+            // Mean Longitude Argument (degrees)
+            final double lm = Math.toDegrees(MathUtils.normalizeAngle(o.getLM(), FastMath.PI));
+            // Cartesian elements
+            // Position along X in inertial frame (km)
+            final double px = o.getPVCoordinates().getPosition().getX() / 1000.;
+            // Position along Y in inertial frame (km)
+            final double py = o.getPVCoordinates().getPosition().getY() / 1000.;
+            // Position along Z in inertial frame (km)
+            final double pz = o.getPVCoordinates().getPosition().getZ() / 1000.;
+            // Velocity along X in inertial frame (km/s)
+            final double vx = o.getPVCoordinates().getVelocity().getX() / 1000.;
+            // Velocity along Y in inertial frame (km/s)
+            final double vy = o.getPVCoordinates().getVelocity().getY() / 1000.;
+            // Velocity along Z in inertial frame (km/s)
+            final double vz = o.getPVCoordinates().getVelocity().getZ() / 1000.;
+            buffer.write(f.format(format, time, a, e, i, ra, pa, am, h, k, p, q, lm, px, py, pz, vx, vy, vz).toString());
+            buffer.newLine();
+        }
+        buffer.close();
+    }
+
+    /** Specialized step handler catching the orbit at each step. */
+    private static class OrbitHandler implements OrekitFixedStepHandler {
 
         /** Serializable UID. */
-        private static final long    serialVersionUID = -8909135870522456848L;
+        private static final long   serialVersionUID = -8909135870522456848L;
 
-        private PrintStepHandler(final File outputFile,
-                                 final String name,
-                                 final String format,
-                                 final AbsoluteDate initDate)
-                                                             throws IOException {
-            this.buffer = new BufferedWriter(new FileWriter(new File(outputFile, name)));
-            this.format = format;
-            this.dateIni = initDate;
+        /** List of orbits. */
+        private final List<Orbit> orbits;
+
+        private OrbitHandler() {
+            // initialise an empty list of orbit
+            orbits = new ArrayList<Orbit>();
         }
 
         /** {@inheritDoc} */
-        public void init(final SpacecraftState s0,
-                         final AbsoluteDate t) {
+        public void init(final SpacecraftState s0, final AbsoluteDate t) {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(SpacecraftState currentState,
-                               boolean isLast) {
-            final StringBuilder sb = new StringBuilder();
-            Formatter formatter = new Formatter(sb, Locale.ENGLISH);
+        public void handleStep(SpacecraftState currentState, boolean isLast) {
+            // fill in the list with the orbit from the current step
+            orbits.add(currentState.getOrbit());
+        }
 
-            // PV printer
-            final Vector3D pos = currentState.getOrbit().getPVCoordinates().getPosition();
-            final Vector3D vel = currentState.getOrbit().getPVCoordinates().getVelocity();
-            final double px = pos.getX();
-            final double py = pos.getY();
-            final double pz = pos.getZ();
-            final double vx = vel.getX();
-            final double vy = vel.getY();
-            final double vz = vel.getZ();
-            // Equinoctial printer :
-            EquinoctialOrbit orb = new EquinoctialOrbit(currentState.getOrbit());
-            final double a = orb.getA();
-            final double ex = orb.getEquinoctialEx();
-            final double ey = orb.getEquinoctialEy();
-            final double hx = orb.getHx();
-            final double hy = orb.getHy();
-            final double lm = orb.getLM();
-
-            final double ec = orb.getE();
-            final double in = orb.getI();
-
-            KeplerianOrbit kep = new KeplerianOrbit(orb);
-            final double pa = kep.getPerigeeArgument();
-            final double ra = kep.getRightAscensionOfAscendingNode();
-            // Date printer
-            final double deltaDay = currentState.getDate().durationFrom(dateIni) / 86400d;
-            formatter.format(this.format, deltaDay, px, py, pz, vx, vy, vz, a, ex, ey, hx, hy, lm, ec, in, pa, ra);
-            try {
-                this.buffer.write(formatter.toString());
-                this.buffer.newLine();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (isLast) {
-                try {
-                    buffer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        /** Get the list of propagated orbits.
+         * @return orbits
+         */
+        public List<Orbit> getOrbits() {
+            return orbits;
         }
     }
 

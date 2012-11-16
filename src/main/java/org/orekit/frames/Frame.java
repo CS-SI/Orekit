@@ -17,8 +17,6 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.LinkedList;
-import java.util.WeakHashMap;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -58,11 +56,11 @@ public class Frame implements Serializable {
     /** Parent frame (only the root frame doesn't have a parent). */
     private final Frame parent;
 
+    /** Depth of the frame with respect to tree root. */
+    private final int depth;
+
     /** Provider for transform from parent frame to instance. */
     private final TransformProvider transformProvider;
-
-    /** Map of deepest frames commons with other frames. */
-    private final transient WeakHashMap<Frame, Frame> commons;
 
     /** Instance name. */
     private final String name;
@@ -76,10 +74,10 @@ public class Frame implements Serializable {
      * (i.e. suitable for propagating orbit)
      */
     private Frame(final String name, final boolean pseudoInertial) {
-        parent    = null;
-        transformProvider = new FixedTransformProvider(Transform.IDENTITY);
-        commons   = new WeakHashMap<Frame, Frame>();
-        this.name = name;
+        parent              = null;
+        depth               = 0;
+        transformProvider   = new FixedTransformProvider(Transform.IDENTITY);
+        this.name           = name;
         this.pseudoInertial = pseudoInertial;
     }
 
@@ -155,11 +153,11 @@ public class Frame implements Serializable {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.NULL_PARENT_FOR_FRAME,
                                                                  name);
         }
+        this.parent            = parent;
+        this.depth             = parent.depth + 1;
+        this.transformProvider = transformProvider;
         this.name              = name;
         this.pseudoInertial    = pseudoInertial;
-        this.parent            = parent;
-        this.transformProvider = transformProvider;
-        this.commons           = new WeakHashMap<Frame, Frame>();
 
     }
 
@@ -212,6 +210,44 @@ public class Frame implements Serializable {
         return parent;
     }
 
+    /** Get the depth of the frame.
+     * <p>
+     * The depth of a frame is the number of parents frame between
+     * it and the frames tree root. It is 0 for the root frame, and
+     * the depth of a frame is the depth of its parent frame plus one.
+     * </p>
+     * @return depth of the frame
+     */
+    public int getDepth() {
+        return depth;
+    }
+
+    /** Get the n<sup>th</sup> ancestor of the frame.
+     * @param n index of the ancestor (0 is the instance, 1 is its parent,
+     * 2 is the parent of its parent...)
+     * @return n<sup>th</sup> ancestor of the frame (must be between 0
+     * and the depth of the frame)
+     * @exception IllegalArgumentException if n is larger than the depth
+     * of the instance
+     */
+    public Frame getAncestor(int n) throws IllegalArgumentException {
+
+        // safety check
+        if (n > depth) {
+            throw OrekitException.createIllegalArgumentException(OrekitMessages.FRAME_NO_NTH_ANCESTOR,
+                                                                 name, depth, n);
+        }
+
+        // go upward to find ancestor
+        Frame current = this;
+        while (n-- > 0) {
+            current = current.parent;
+        }
+
+        return current;
+
+    }
+
     /** Get the transform from the instance to another frame.
      * @param destination destination frame to which we want to transform vectors
      * @param date the date (can be null if it is sure than no date dependent frame is used)
@@ -262,72 +298,30 @@ public class Frame implements Serializable {
      */
     private static Frame findCommon(final Frame from, final Frame to) {
 
-        // have we already computed the common frame for this pair ?
-        Frame common = (Frame) from.commons.get(to);
-        if (common != null) {
-            return common;
+        // select deepest frames that could be the common ancestor
+        Frame currentF = from.depth > to.depth ? from.getAncestor(from.depth - to.depth) : from;
+        Frame currentT = from.depth > to.depth ? to : to.getAncestor(to.depth - from.depth);
+
+        // go upward until we find a match
+        while (currentF != currentT) {
+            currentF = currentF.parent;
+            currentT = currentT.parent;
         }
 
-        // definitions of the path up to the head tree for each frame
-        final LinkedList<Frame> pathFrom = from.pathToRoot();
-        final LinkedList<Frame> pathTo   = to.pathToRoot();
-
-        if (pathFrom.isEmpty() || pathTo.contains(from)) {
-            // handle root case and same branch case
-            common = from;
-        }
-        if (pathTo.isEmpty() || pathFrom.contains(to)) {
-            // handle root case and same branch case
-            common = to;
-        }
-        if (common != null) {
-            from.commons.put(to, common);
-            to.commons.put(from, common);
-            return common;
-        }
-
-        // at this stage pathFrom contains at least one frame
-        Frame lastFrom = (Frame) pathFrom.removeLast();
-        common = lastFrom; // common must be one of the instance of Frame already defined
-
-        // at the beginning of the loop pathTo contains at least one frame
-        for (Frame lastTo = (Frame) pathTo.removeLast();
-             (lastTo == lastFrom) && (lastTo != null) && (lastFrom != null);
-             lastTo = (Frame) (pathTo.isEmpty() ? null : pathTo.removeLast())) {
-            common = lastFrom;
-            lastFrom = (Frame) (pathFrom.isEmpty() ? null : pathFrom.removeLast());
-        }
-
-        from.commons.put(to, common);
-        to.commons.put(from, common);
-        return common;
+        return currentF;
 
     }
 
     /** Determine if a Frame is a child of another one.
      * @param potentialAncestor supposed ancestor frame
      * @return true if the potentialAncestor belongs to the
-     * path from instance to the root frame
+     * path from instance to the root frame, excluding itself
      */
     public boolean isChildOf(final Frame potentialAncestor) {
-        for (Frame frame = parent; frame != null; frame = frame.parent) {
-            if (frame == potentialAncestor) {
-                return true;
-            }
+        if (depth <= potentialAncestor.depth) {
+            return false;
         }
-        return false;
-    }
-
-    /** Get the path from instance frame to the root frame.
-     * @return path from instance to root, excluding instance itself
-     * (empty if instance is root)
-     */
-    private LinkedList<Frame> pathToRoot() {
-        final LinkedList<Frame> path = new LinkedList<Frame>();
-        for (Frame frame = parent; frame != null; frame = frame.parent) {
-            path.add(frame);
-        }
-        return path;
+        return getAncestor(depth - potentialAncestor.depth) == potentialAncestor;
     }
 
     /** Get the unique root frame.

@@ -286,37 +286,27 @@ public class EquinoctialOrbit extends Orbit {
         return OrbitType.EQUINOCTIAL;
     }
 
-    /** Get the semi-major axis.
-     * @return semi-major axis (m)
-     */
+    /** {@inheritDoc} */
     public double getA() {
         return a;
     }
 
-    /** Get the first component of the eccentricity vector.
-     * @return e cos(&omega; + &Omega;), first component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEx() {
         return ex;
     }
 
-    /** Get the second component of the eccentricity vector.
-     * @return e sin(&omega; + &Omega;), second component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEy() {
         return ey;
     }
 
-    /** Get the first component of the inclination vector.
-     * @return tan(i/2) cos(&Omega;), first component of the inclination vector
-     */
+    /** {@inheritDoc} */
     public double getHx() {
         return hx;
     }
 
-    /** Get the second component of the inclination vector.
-     * @return tan(i/2) sin(&Omega;), second component of the inclination vector
-     */
+    /** {@inheritDoc} */
     public double getHy() {
         return hy;
     }
@@ -331,16 +321,12 @@ public class EquinoctialOrbit extends Orbit {
                                                                                    getLv());
     }
 
-    /** Get the true longitude argument.
-     * @return v + &omega; + &Omega; true longitude argument (rad)
-     */
+    /** {@inheritDoc} */
     public double getLv() {
         return lv;
     }
 
-    /** Get the eccentric longitude argument.
-     * @return E + &omega; + &Omega; eccentric longitude argument (rad)
-     */
+    /** {@inheritDoc} */
     public double getLE() {
         final double epsilon = FastMath.sqrt(1 - ex * ex - ey * ey);
         final double cosLv   = FastMath.cos(lv);
@@ -363,9 +349,7 @@ public class EquinoctialOrbit extends Orbit {
         return lE + 2 * FastMath.atan(num / den);
     }
 
-    /** Get the mean longitude argument.
-     * @return M + &omega; + &Omega; mean longitude argument (rad)
-     */
+    /** {@inheritDoc} */
     public double getLM() {
         final double lE = getLE();
         return lE - ex * FastMath.sin(lE) + ey * FastMath.cos(lE);
@@ -404,16 +388,12 @@ public class EquinoctialOrbit extends Orbit {
 
     }
 
-    /** Get the eccentricity.
-     * @return eccentricity
-     */
+    /** {@inheritDoc} */
     public double getE() {
         return FastMath.sqrt(ex * ex + ey * ey);
     }
 
-    /** Get the inclination.
-     * @return inclination (rad)
-     */
+    /** {@inheritDoc} */
     public double getI() {
         return 2 * FastMath.atan(FastMath.sqrt(hx * hx + hy * hy));
     }
@@ -480,6 +460,19 @@ public class EquinoctialOrbit extends Orbit {
      * The interpolated instance is created by polynomial Hermite interpolation
      * on equinoctial elements, without derivatives (which means the interpolation
      * falls back to Lagrange interpolation only).
+     * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     * <p>
+     * If orbit interpolation on large samples is needed, using the {@link
+     * org.orekit.propagation.precomputed.Ephemeris} class is a better way tha using this
+     * low-level interpolation. The Ephemeris class automatically handles selection of
+     * a neighboring sub-sample with a predefined number of point from a large global sample
+     * in a thread-safe way.
      * </p>
      */
     public EquinoctialOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {

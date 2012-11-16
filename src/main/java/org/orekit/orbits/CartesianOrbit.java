@@ -113,9 +113,7 @@ public class CartesianOrbit extends Orbit {
         }
     }
 
-    /** Get the semi-major axis.
-     * @return semi-major axis (m)
-     */
+    /** {@inheritDoc} */
     public double getA() {
         // lazy evaluation of semi-major axis
         final double r  = getPVCoordinates().getPosition().getNorm();
@@ -123,9 +121,7 @@ public class CartesianOrbit extends Orbit {
         return r / (2 - r * V2 / getMu());
     }
 
-    /** Get the eccentricity.
-     * @return eccentricity
-     */
+    /** {@inheritDoc} */
     public double getE() {
         final Vector3D pvP   = getPVCoordinates().getPosition();
         final Vector3D pvV   = getPVCoordinates().getVelocity();
@@ -135,32 +131,24 @@ public class CartesianOrbit extends Orbit {
         return FastMath.sqrt(eCE * eCE + eSE * eSE);
     }
 
-    /** Get the inclination.
-     * @return inclination (rad)
-     */
+    /** {@inheritDoc} */
     public double getI() {
         return Vector3D.angle(Vector3D.PLUS_K, getPVCoordinates().getMomentum());
     }
 
-    /** Get the first component of the eccentricity vector.
-     * @return first component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEx() {
         initEquinoctial();
         return equinoctial.getEquinoctialEx();
     }
 
-    /** Get the second component of the eccentricity vector.
-     * @return second component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEy() {
         initEquinoctial();
         return equinoctial.getEquinoctialEy();
     }
 
-    /** Get the first component of the inclination vector.
-     * @return first component of the inclination vector.
-     */
+    /** {@inheritDoc} */
     public double getHx() {
         final Vector3D w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
@@ -170,9 +158,7 @@ public class CartesianOrbit extends Orbit {
         return -w.getY() / (1 + w.getZ());
     }
 
-    /** Get the second component of the inclination vector.
-     * @return second component of the inclination vector.
-     */
+    /** {@inheritDoc} */
     public double getHy() {
         final Vector3D w = getPVCoordinates().getMomentum().normalize();
         // Check for equatorial retrograde orbit
@@ -182,25 +168,19 @@ public class CartesianOrbit extends Orbit {
         return  w.getX() / (1 + w.getZ());
     }
 
-    /** Get the true latitude argument.
-     * @return true latitude argument (rad)
-     */
+    /** {@inheritDoc} */
     public double getLv() {
         initEquinoctial();
         return equinoctial.getLv();
     }
 
-    /** Get the eccentric latitude argument.
-     * @return eccentric latitude argument.(rad)
-     */
+    /** {@inheritDoc} */
     public double getLE() {
         initEquinoctial();
         return equinoctial.getLE();
     }
 
-    /** Get the mean latitude argument.
-     * @return mean latitude argument.(rad)
-     */
+    /** {@inheritDoc} */
     public double getLM() {
         initEquinoctial();
         return equinoctial.getLM();
@@ -222,6 +202,19 @@ public class CartesianOrbit extends Orbit {
      * <p>
      * The interpolated instance is created by polynomial Hermite interpolation
      * ensuring velocity remains the exact derivative of position.
+     * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     * <p>
+     * If orbit interpolation on large samples is needed, using the {@link
+     * org.orekit.propagation.precomputed.Ephemeris} class is a better way tha using this
+     * low-level interpolation. The Ephemeris class automatically handles selection of
+     * a neighboring sub-sample with a predefined number of point from a large global sample
+     * in a thread-safe way.
      * </p>
      */
     public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {

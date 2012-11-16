@@ -34,6 +34,14 @@ public interface TimeInterpolable<T extends TimeInterpolable<T>> {
      * So if the state of the instance must be used, the instance should
      * be included in the sample points.
      * </p>
+     * <p>
+     * Note that this method is designed for small samples only (say up
+     * to about 10-20 points) so it can be implemented using polynomial
+     * interpolation (typically Hermite interpolation). Using too much
+     * points may induce <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's
+     * phenomenon</a> and numerical problems (including NaN appearing).
+     * </p>
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date

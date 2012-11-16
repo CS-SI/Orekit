@@ -190,18 +190,18 @@ public abstract class Orbit
      */
     public abstract double getHy();
 
-    /** Get the eccentric latitude argument.
-     * @return eccentric latitude argument (rad)
+    /** Get the eccentric longitude argument.
+     * @return E + &omega; + &Omega; eccentric longitude argument (rad)
      */
     public abstract double getLE();
 
-    /** Get the true latitude argument.
-     * @return true latitude argument (rad)
+    /** Get the true longitude argument.
+     * @return v + &omega; + &Omega; true longitude argument (rad)
      */
     public abstract double getLv();
 
-    /** Get the mean latitude argument.
-     * @return mean latitude argument (rad)
+    /** Get the mean longitude argument.
+     * @return M + &omega; + &Omega; mean longitude argument (rad)
      */
     public abstract double getLM();
 

@@ -196,6 +196,12 @@ public class Attitude
      * The interpolated instance is created by polynomial Hermite interpolation
      * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
      * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
      */
     public Attitude interpolate(final AbsoluteDate interpolationDate, final Collection<Attitude> sample) {
         final List<Pair<AbsoluteDate, AngularCoordinates>> datedPV =

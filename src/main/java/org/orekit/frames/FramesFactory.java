@@ -18,9 +18,9 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
@@ -158,7 +158,7 @@ public class FramesFactory implements Serializable {
 
     /** Predefined frames. */
     private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
-        new WeakHashMap<Predefined, FactoryManagedFrame>();
+        new HashMap<Predefined, FactoryManagedFrame>();
 
     /** EOP 1980 loaders. */
     private static final List<EOP1980HistoryLoader> EOP_1980_LOADERS =

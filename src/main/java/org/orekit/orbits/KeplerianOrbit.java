@@ -320,23 +320,17 @@ public class KeplerianOrbit extends Orbit {
         return OrbitType.KEPLERIAN;
     }
 
-    /** Get the semi-major axis.
-     * @return semi-major axis (m)
-     */
+    /** {@inheritDoc} */
     public double getA() {
         return a;
     }
 
-    /** Get the eccentricity.
-     * @return eccentricity
-     */
+    /** {@inheritDoc} */
     public double getE() {
         return e;
     }
 
-    /** Get the inclination.
-     * @return inclination (rad)
-     */
+    /** {@inheritDoc} */
     public double getI() {
         return i;
     }
@@ -545,23 +539,17 @@ public class KeplerianOrbit extends Orbit {
                                                              iter);
     }
 
-    /** Get the first component of the eccentricity vector.
-     * @return first component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEx() {
         return  e * FastMath.cos(pa + raan);
     }
 
-    /** Get the second component of the eccentricity vector.
-     * @return second component of the eccentricity vector
-     */
+    /** {@inheritDoc} */
     public double getEquinoctialEy() {
         return  e * FastMath.sin(pa + raan);
     }
 
-    /** Get the first component of the inclination vector.
-     * @return first component of the inclination vector.
-     */
+    /** {@inheritDoc} */
     public double getHx() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -570,9 +558,7 @@ public class KeplerianOrbit extends Orbit {
         return  FastMath.cos(raan) * FastMath.tan(i / 2);
     }
 
-    /** Get the second component of the inclination vector.
-     * @return second component of the inclination vector.
-     */
+    /** {@inheritDoc} */
     public double getHy() {
         // Check for equatorial retrograde orbit
         if (FastMath.abs(i - FastMath.PI) < 1.0e-10) {
@@ -581,23 +567,17 @@ public class KeplerianOrbit extends Orbit {
         return  FastMath.sin(raan) * FastMath.tan(i / 2);
     }
 
-    /** Get the true latitude argument.
-     * @return true latitude argument (rad)
-     */
+    /** {@inheritDoc} */
     public double getLv() {
         return pa + raan + v;
     }
 
-    /** Get the eccentric latitude argument.
-     * @return eccentric latitude argument.(rad)
-     */
+    /** {@inheritDoc} */
     public double getLE() {
         return pa + raan + getEccentricAnomaly();
     }
 
-    /** Get the mean latitude argument.
-     * @return mean latitude argument.(rad)
-     */
+    /** {@inheritDoc} */
     public double getLM() {
         return pa + raan + getMeanAnomaly();
     }
@@ -682,6 +662,19 @@ public class KeplerianOrbit extends Orbit {
      * The interpolated instance is created by polynomial Hermite interpolation
      * on Keplerian elements, without derivatives (which means the interpolation
      * falls back to Lagrange interpolation only).
+     * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     * <p>
+     * If orbit interpolation on large samples is needed, using the {@link
+     * org.orekit.propagation.precomputed.Ephemeris} class is a better way tha using this
+     * low-level interpolation. The Ephemeris class automatically handles selection of
+     * a neighboring sub-sample with a predefined number of point from a large global sample
+     * in a thread-safe way.
      * </p>
      */
     public KeplerianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {

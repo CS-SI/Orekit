@@ -22,6 +22,12 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" due-to="Evan Ward">
+        Removed weak hash maps in frames (fixes bug #122).
+      </action>
+        <action dev="luc" type="fix" due-to="Bruno Revelin">
+        Improved documentation of interpolation methods (fixes bug #123).
+      </action>
       <action dev="tn" type="fix" due-to="Evan Ward">
         Make TIRF2000Provider class thread-safe (fixes bug #118).
       </action>
