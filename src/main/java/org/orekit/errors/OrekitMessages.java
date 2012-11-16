@@ -158,7 +158,8 @@ public enum OrekitMessages implements Localizable {
     UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}"),
     DUPLICATED_ABSCISSA("abscissa {0} is duplicated"),
-    EMPTY_INTERPOLATION_SAMPLE("sample for interpolation is empty");
+    EMPTY_INTERPOLATION_SAMPLE("sample for interpolation is empty"),
+    UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations");
 
     // CHECKSTYLE: resume JavadocVariable check
 

@@ -514,8 +514,10 @@ public class KeplerianOrbit extends Orbit {
      * </p>
      * @param M mean anomaly (rad)
      * @return v the true anomaly
+     * @throws IllegalArgumentException if convergence cannot be reached when
+     * computing the hyperbolic eccentric anomaly
      */
-    private double meanToHyperbolicEccentric(final double M) {
+    private double meanToHyperbolicEccentric(final double M) throws IllegalArgumentException {
 
         // resolution of hyperbolic Kepler equation for keplerian parameters
         double H     = -M;
@@ -533,10 +535,14 @@ public class KeplerianOrbit extends Orbit {
             HpM -= shift;
             H    = HpM - M;
 
-        } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
+            if (FastMath.abs(shift) <= 1.0e-12) {
+                return H;
+            }
 
-        return H;
+        } while (++iter < 50);
 
+        throw OrekitException.createIllegalArgumentException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
+                                                             iter);
     }
 
     /** Get the first component of the eccentricity vector.

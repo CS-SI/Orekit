@@ -931,6 +931,27 @@ public class KeplerianParametersTest {
 
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testTooLargeEccentricity() {
+
+        final Frame eme2000 = FramesFactory.getEME2000();
+        final double meanAnomaly = 1.;
+        final KeplerianOrbit orb0 = new KeplerianOrbit(42600e3, 0.9, 0.00001, 0, 0,
+                                                       FastMath.toRadians(meanAnomaly),
+                                                       PositionAngle.MEAN, eme2000, date, mu);
+
+        // big dV along Y
+        final Vector3D deltaV = new Vector3D(0.0, 110000.0, 0.0);
+        final PVCoordinates pv1 = new PVCoordinates(orb0.getPVCoordinates().getPosition(),
+                                                    orb0.getPVCoordinates().getVelocity().add(deltaV));
+        final KeplerianOrbit orb1 = new KeplerianOrbit(pv1, eme2000, date, mu);
+
+        // the orbit should be too eccentric, the conversion of mean anomaly to hyperbolic eccentric anomaly
+        // does not converge after 50 iterations
+        final KeplerianOrbit orbShift = orb1.shiftedBy(0);
+
+    }
+
     @Before
     public void setUp() {
 
