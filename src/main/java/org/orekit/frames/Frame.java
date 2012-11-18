@@ -374,11 +374,14 @@ public class Frame implements Serializable {
             /** Serializable UID. */
             private static final long serialVersionUID = -2654403496396721543L;
 
-            /** Replace deserialized objects by singleton instance.
-             * @return singleton instance
+            /** Replace the instance with a data transfer object for serialization.
+             * <p>
+             * This intermediate class serializes nothing.
+             * </p>
+             * @return data transfer object that will be serialized
              */
-            private Object readResolve() {
-                return getRoot();
+            private Object writeReplace() {
+                return new DataTransferObject();
             }
 
         };
@@ -389,6 +392,26 @@ public class Frame implements Serializable {
          * the compiler from generating one automatically.</p>
          */
         private LazyRootHolder() {
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 4067764035816491212L;
+
+        /** Simple constructor.
+         */
+        private DataTransferObject() {
+        }
+
+        /** Replace the deserialized data transfer object with a {@link FactoryManagedFrame}.
+         * @return replacement {@link FactoryManagedFrame}
+         */
+        private Object readResolve() {
+            return getRoot();
         }
 
     }

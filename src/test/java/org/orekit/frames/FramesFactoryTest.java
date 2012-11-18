@@ -16,6 +16,12 @@
  */
 package org.orekit.frames;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import junit.framework.Assert;
 
 import org.junit.Before;
@@ -70,6 +76,37 @@ public class FramesFactoryTest {
             Frame parent = FramesFactory.getFrame(pair[1]);
             Assert.assertEquals("wrong parent for " + child.getName(),
                                 parent.getName(), child.getParent().getName());
+        }
+    }
+
+    @Test
+    public void testSerialization()
+            throws OrekitException, IOException, ClassNotFoundException {
+        for (Predefined predefined : Predefined.values()) {
+
+            Frame original = FramesFactory.getFrame(predefined);
+            if (predefined != Predefined.ICRF) {
+                Assert.assertEquals(predefined.getName(), original.getName());
+            }
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream    oos = new ObjectOutputStream(bos);
+            oos.writeObject(original);
+             if (predefined == Predefined.GCRF) {
+                Assert.assertTrue(bos.size() >  50);
+                Assert.assertTrue(bos.size() < 100);
+            } else if (predefined == Predefined.ICRF) {
+                Assert.assertTrue(bos.size() > 430);
+                Assert.assertTrue(bos.size() < 480);
+            } else {
+                Assert.assertTrue(bos.size() > 100);
+                Assert.assertTrue(bos.size() < 150);
+            }
+
+            ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream     ois = new ObjectInputStream(bis);
+            Frame deserialized  = (Frame) ois.readObject();
+            Assert.assertTrue(original == deserialized);
         }
     }
 

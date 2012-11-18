@@ -16,7 +16,7 @@
  */
 package org.orekit.frames;
 
-import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 import org.orekit.errors.OrekitException;
 
@@ -27,7 +27,7 @@ import org.orekit.errors.OrekitException;
 public class FactoryManagedFrame extends Frame {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1566019035725009300L;
+    private static final long serialVersionUID = -8176399341069422724L;
 
     /** Key of the frame within the factory. */
     private final Predefined factoryKey;
@@ -52,31 +52,42 @@ public class FactoryManagedFrame extends Frame {
         return factoryKey;
     }
 
-    /** Replace deserialized objects by singleton instance.
-     * @return singleton instance
-     * @exception ObjectStreamException if object cannot be deserialized
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
      */
-    protected Object readResolve() throws ObjectStreamException {
-        try {
-            return FramesFactory.getFrame(factoryKey);
-        } catch (OrekitException oe) {
-            throw new OrekitDeserializationException(oe.getLocalizedMessage(), oe.getCause());
-        }
+    private Object writeReplace() {
+        return new DataTransferObject(factoryKey);
     }
 
-    /** Extended ObjectStreamException with some more information. */
-    private static class OrekitDeserializationException extends ObjectStreamException {
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -4647126795776569854L;
+        private static final long serialVersionUID = 2970971575793609756L;
+
+        /** Name of the frame within the factory. */
+        private final String name;
 
         /** Simple constructor.
-         * Build an exception from a cause and with a specified message
-         * @param message descriptive message
-         * @param cause underlying cause
+         * @param factoryKey key of the frame within the factory
          */
-        public OrekitDeserializationException(final String message, final Throwable cause) {
-            super(message);
+        private DataTransferObject(final Predefined factoryKey) {
+            this.name = factoryKey.name();
+        }
+
+        /** Replace the deserialized data transfer object with a {@link FactoryManagedFrame}.
+         * @return replacement {@link FactoryManagedFrame}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return FramesFactory.getFrame(Predefined.valueOf(name));
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
         }
 
     }
