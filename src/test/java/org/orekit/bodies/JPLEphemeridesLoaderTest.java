@@ -33,6 +33,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
 
 public class JPLEphemeridesLoaderTest {
 
@@ -162,6 +163,22 @@ public class JPLEphemeridesLoaderTest {
         Utils.setDataRoot("regular-data/de414-ephemerides");
         checkDerivative(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
                         new AbsoluteDate(1950, 1, 12, TimeScalesFactory.getTT()));
+    }
+
+    @Test
+    public void testDummyEarth() throws OrekitException, ParseException {
+        Utils.setDataRoot("regular-data/de405-ephemerides");
+        JPLEphemeridesLoader loader =
+                new JPLEphemeridesLoader(JPLEphemeridesLoader.DEFAULT_DE_SUPPORTED_NAMES,
+                                         JPLEphemeridesLoader.EphemerisType.EARTH);
+        CelestialBody body = loader.loadCelestialBody(CelestialBodyFactory.EARTH);
+        AbsoluteDate date = new AbsoluteDate(1950, 1, 12, TimeScalesFactory.getTT());
+        Frame eme2000 = FramesFactory.getEME2000();
+        for (double h = 0; h < 86400; h += 60.0) {
+            PVCoordinates pv = body.getPVCoordinates(date, eme2000);
+            Assert.assertEquals(0, pv.getPosition().getNorm(), 1.0e-15);
+            Assert.assertEquals(0, pv.getVelocity().getNorm(), 1.0e-15);
+        }
     }
 
     @Test

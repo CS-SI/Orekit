@@ -22,6 +22,16 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Fixed serialization of all predefined frames. This fix implied
+        also fixing serialization of celestial bodies as the predefined
+        ICRF frame relies on them. Note for both types of objects, only
+        some meta-data are really serialized in such a way that at
+        deserialization time we retrieve singletons. So the serialized
+        data are small (less than 500 bytes) and exchanging many time
+        these objects in a distributed application does not imply anymore
+        lots of duplication.
+      </action>
       <action dev="tn" type="fix" due-to="Yannick Tanguy">
         Throw an exception if the conversion of mean anomaly to hyperbolic
         eccentric anomaly does not converge in KeplerianOrbit (fixes bug #114).

@@ -16,6 +16,11 @@
  */
 package org.orekit.bodies;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -61,6 +66,33 @@ public class CelestialBodyFactoryTest {
         CelestialBody sun2 = CelestialBodyFactory.getSun();
         Assert.assertNotNull(sun2);
         Assert.assertNotSame(sun, sun2);
+    }
+
+    @Test
+    public void testSerialization()
+            throws OrekitException, IOException, ClassNotFoundException {
+        Utils.setDataRoot("regular-data");
+        for (String name : new String[] {
+            CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER, CelestialBodyFactory.SUN, CelestialBodyFactory.MERCURY,
+            CelestialBodyFactory.VENUS, CelestialBodyFactory.EARTH_MOON, CelestialBodyFactory.EARTH,
+            CelestialBodyFactory.MOON, CelestialBodyFactory.MARS, CelestialBodyFactory.JUPITER,
+            CelestialBodyFactory.SATURN, CelestialBodyFactory.URANUS, CelestialBodyFactory.NEPTUNE, CelestialBodyFactory.PLUTO
+        }) {
+
+            CelestialBody original = CelestialBodyFactory.getBody(name);
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream    oos = new ObjectOutputStream(bos);
+            oos.writeObject(original);
+            Assert.assertTrue(bos.size() > 400);
+            Assert.assertTrue(bos.size() < 450);
+
+            ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream     ois = new ObjectInputStream(bis);
+            CelestialBody deserialized  = (CelestialBody) ois.readObject();
+            Assert.assertTrue(original == deserialized);
+
+        }
     }
 
     @Test

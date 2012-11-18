@@ -37,7 +37,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -77,12 +76,6 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** 50 days in seconds. */
     private static final double FIFTY_DAYS = 50 * Constants.JULIAN_DAY;
-
-    /** Suffix for inertial frame name. */
-    private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
-
-    /** Suffix for body frame name. */
-    private static final String BODY_FRAME_SUFFIX = "/rotating";
 
     /** DE number used by INPOP files. */
     private static final int INPOP_DE_NUMBER = 100;
@@ -179,6 +172,16 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     }
 
+    /** Interface for raw position-velocity retrieval. */
+    public static interface RawPVProvider {
+        /** Get the position-velocity at date.
+         * @param date date at which the position-velocity is desired
+         * @return position-velocity at the specified date
+         * @exception OrekitException if the date is not available to the loader
+         */
+        PVCoordinates getRawPV(final AbsoluteDate date) throws OrekitException;
+    }
+
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
@@ -262,63 +265,52 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
      */
     public CelestialBody loadCelestialBody(final String name) throws OrekitException {
 
+        final double gm       = getLoadedGravitationalCoefficient(generateType);
+        final IAUPole iauPole = IAUPoleFactory.getIAUPole(generateType);
+        final double scale;
+        final Frame definingFrame;
+        final RawPVProvider rawPVProvider;
         switch (generateType) {
-        case SOLAR_SYSTEM_BARYCENTER :
-            return new JPLCelestialBody(name, -1.0, EphemerisType.EARTH_MOON, CelestialBodyFactory.EARTH_MOON);
-        case EARTH_MOON :
-            return new JPLCelestialBody(name, 1.0 / (1.0 + getLoadedEarthMoonMassRatio()),
-                                        FramesFactory.getEME2000());
-        case EARTH :
-            return new CelestialBody() {
-
-                /** Serializable UID. */
-                private static final long serialVersionUID = 800054277277715849L;
-
-                private final double gm = getLoadedGravitationalCoefficient(EphemerisType.EARTH);
-
-                /** {@inheritDoc} */
-                public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-                    throws OrekitException {
-
-                    // specific implementation for Earth:
-                    // the Earth is always exactly at the origin of its own inertial frame
-                    return getInertiallyOrientedFrame().getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
-
-                }
-
-                /** {@inheritDoc} */
-                @Deprecated
-                public Frame getFrame() {
-                    return FramesFactory.getEME2000();
-                }
-
-                /** {@inheritDoc} */
-                public Frame getInertiallyOrientedFrame() {
-                    return FramesFactory.getEME2000();
-                }
-
-                /** {@inheritDoc} */
-                public Frame getBodyOrientedFrame() throws OrekitException {
-                    return FramesFactory.getITRF2005();
-                }
-
-                /** {@inheritDoc} */
-                public String getName() {
-                    return name;
-                }
-
-                /** {@inheritDoc} */
-                public double getGM() {
-                    return gm;
-                }
-
-            };
-        case MOON :
-            return new JPLCelestialBody(name, 1.0, FramesFactory.getEME2000());
-        default :
-            return new JPLCelestialBody(name, 1.0, EphemerisType.SOLAR_SYSTEM_BARYCENTER,
-                                        CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
+        case SOLAR_SYSTEM_BARYCENTER : {
+            scale = -1.0;
+            final JPLEphemeridesLoader parentLoader =
+                    new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
+            final CelestialBody parentBody =
+                    parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
+            definingFrame = parentBody.getInertiallyOrientedFrame();
+            rawPVProvider = new EphemerisRawPVProvider();
+            break;
         }
+        case EARTH_MOON :
+            scale         = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
+            definingFrame =  FramesFactory.getEME2000();
+            rawPVProvider = new EphemerisRawPVProvider();
+            break;
+        case EARTH :
+            scale         = 1.0;
+            definingFrame = FramesFactory.getEME2000();
+            rawPVProvider = new ZeroRawPVProvider();
+            break;
+        case MOON :
+            scale         =  1.0;
+            definingFrame =  FramesFactory.getEME2000();
+            rawPVProvider = new EphemerisRawPVProvider();
+            break;
+        default : {
+            scale = 1.0;
+            final JPLEphemeridesLoader parentLoader =
+                    new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
+            final CelestialBody parentBody =
+                    parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
+            definingFrame = parentBody.getInertiallyOrientedFrame();
+            rawPVProvider = new EphemerisRawPVProvider();
+        }
+        }
+
+        // build the celestial body
+        return new JPLCelestialBody(name, supportedNames, generateType, rawPVProvider,
+                                    gm, scale, iauPole, definingFrame);
+
     }
 
     /** Get astronomical unit.
@@ -1012,49 +1004,13 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     }
 
-    /** Local celestial body class. */
-    private class JPLCelestialBody extends AbstractCelestialBody {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -2941415197776129165L;
-
-        /** Scaling factor for position-velocity. */
-        private double scale;
-
-        /** Simple constructor.
-         * @param name name of the body
-         * @param scale scaling factor for position-velocity
-         * @param definingFrame frame in which celestial body coordinates are defined
-         * @exception OrekitException if gravitational coefficient cannot be retrieved
-         */
-        public JPLCelestialBody(final String name, final double scale, final Frame definingFrame)
-            throws OrekitException {
-            super(name, getLoadedGravitationalCoefficient(generateType),
-                  IAUPoleFactory.getIAUPole(generateType),
-                  definingFrame, name + INERTIAL_FRAME_SUFFIX, name + BODY_FRAME_SUFFIX);
-            this.scale = scale;
-        }
-
-        /** Simple constructor.
-         * @param name name of the body
-         * @param scale scaling factor for position-velocity
-         * @param parentBody celestial body with respect to which this one is defined
-         * @param parentName name of the parent body
-         * @exception OrekitException if gravitational coefficient cannot be retrieved
-         */
-        public JPLCelestialBody(final String name, final double scale,
-                                final EphemerisType parentBody, final String parentName)
-            throws OrekitException {
-            this(name,
-                 scale,
-                 new JPLEphemeridesLoader(supportedNames, parentBody).loadCelestialBody(parentName).getInertiallyOrientedFrame());
-        }
+    /** Raw position-velocity provider using ephemeris. */
+    private class EphemerisRawPVProvider implements RawPVProvider {
 
         /** {@inheritDoc} */
-        public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
-            throws OrekitException {
+        public PVCoordinates getRawPV(final AbsoluteDate date) throws TimeStampedCacheException {
 
-            // get raw PV from chebyshev polynomials
+            // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
             try {
                 chebyshev = ephemerides.getNeighbors(date)[0];
@@ -1066,14 +1022,20 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                     throw tce;
                 }
             }
-            final PVCoordinates pv = chebyshev.getPositionVelocity(date);
 
-            // the raw PV are relative to the parent of the body centered inertially oriented frame
-            final Transform transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);
+            // evaluate the Chebyshev polynomials
+            return chebyshev.getPositionVelocity(date);
 
-            // apply the scale factor
-            return new PVCoordinates(scale, transform.transformPVCoordinates(pv));
+        }
 
+    }
+
+    /** Raw position-velocity provider providing always zero. */
+    private class ZeroRawPVProvider implements RawPVProvider {
+
+        /** {@inheritDoc} */
+        public PVCoordinates getRawPV(final AbsoluteDate date) {
+            return PVCoordinates.ZERO;
         }
 
     }
