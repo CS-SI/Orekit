@@ -16,6 +16,11 @@
  */
 package org.orekit.orbits;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -812,6 +817,36 @@ public class CircularParametersTest {
         }
         Assert.assertTrue(maxShiftError         < 5000.0);
         Assert.assertTrue(maxInterpolationError > 9000.0);
+
+    }
+
+    @Test
+    public void testSerialization()
+      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        CircularOrbit orbit = new CircularOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(orbit);
+
+        Assert.assertTrue(bos.size() > 400);
+        Assert.assertTrue(bos.size() < 500);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        CircularOrbit deserialized  = (CircularOrbit) ois.readObject();
+        Assert.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEx(), deserialized.getCircularEx(), 1.0e-10);
+        Assert.assertEquals(orbit.getCircularEy(), deserialized.getCircularEy(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assert.assertEquals(orbit.getAlphaV(), deserialized.getAlphaV(), 1.0e-10);
+        Assert.assertEquals(orbit.getDate(), deserialized.getDate());
+        Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
 
     }
 

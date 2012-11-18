@@ -16,6 +16,7 @@
  */
 package org.orekit.orbits;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -446,6 +447,61 @@ public class CartesianOrbit extends Orbit {
      */
     public String toString() {
         return "cartesian parameters: " + getPVCoordinates().toString();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes all needed parameters,
+     * including position-velocity which are <em>not</em> serialized by parent
+     * {@link Orekit} class.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(getPVCoordinates(), getFrame(), getDate(), getMu());
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 4184412866917874790L;
+
+        /** Computed PVCoordinates. */
+        private PVCoordinates pvCoordinates;
+
+        /** Frame in which are defined the orbital parameters. */
+        private final Frame frame;
+
+        /** Date of the orbital parameters. */
+        private final AbsoluteDate date;
+
+        /** Value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
+        private final double mu;
+
+        /** Simple constructor.
+         * @param pvCoordinates the position and velocity of the satellite.
+         * @param frame the frame in which the {@link PVCoordinates} are defined
+         * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+         * @param date date of the orbital parameters
+         * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+         */
+        private DataTransferObject(final PVCoordinates pvCoordinates, final Frame frame,
+                                   final AbsoluteDate date, final double mu) {
+            this.pvCoordinates = pvCoordinates;
+            this.frame         = frame;
+            this.date          = date;
+            this.mu            = mu;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link CartesianOrbit}.
+         * @return replacement {@link CartesianOrbit}
+         */
+        private Object readResolve() {
+            // build a new provider, with an empty cache
+            return new CartesianOrbit(pvCoordinates, frame, date, mu);
+        }
+
     }
 
 }

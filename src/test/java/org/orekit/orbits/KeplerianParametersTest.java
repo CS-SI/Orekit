@@ -16,6 +16,11 @@
  */
 package org.orekit.orbits;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -948,7 +953,38 @@ public class KeplerianParametersTest {
 
         // the orbit should be too eccentric, the conversion of mean anomaly to hyperbolic eccentric anomaly
         // does not converge after 50 iterations
-        final KeplerianOrbit orbShift = orb1.shiftedBy(0);
+        orb1.shiftedBy(0);
+
+    }
+
+    @Test
+    public void testSerialization()
+      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
+        Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
+        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        KeplerianOrbit orbit = new KeplerianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
+        Assert.assertEquals(42255170.003, orbit.getA(), 1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(orbit);
+
+        Assert.assertTrue(bos.size() > 400);
+        Assert.assertTrue(bos.size() < 500);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        KeplerianOrbit deserialized  = (KeplerianOrbit) ois.readObject();
+        Assert.assertEquals(orbit.getA(), deserialized.getA(), 1.0e-10);
+        Assert.assertEquals(orbit.getE(), deserialized.getE(), 1.0e-10);
+        Assert.assertEquals(orbit.getI(), deserialized.getI(), 1.0e-10);
+        Assert.assertEquals(orbit.getPerigeeArgument(), deserialized.getPerigeeArgument(), 1.0e-10);
+        Assert.assertEquals(orbit.getRightAscensionOfAscendingNode(), deserialized.getRightAscensionOfAscendingNode(), 1.0e-10);
+        Assert.assertEquals(orbit.getTrueAnomaly(), deserialized.getTrueAnomaly(), 1.0e-10);
+        Assert.assertEquals(orbit.getDate(), deserialized.getDate());
+        Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(orbit.getFrame().getName(), deserialized.getFrame().getName());
 
     }
 

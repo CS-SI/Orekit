@@ -203,16 +203,17 @@ public class CartesianParametersTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assert.assertTrue(bos.size () >  1700);
-        Assert.assertTrue(bos.size () <  1800);
+        Assert.assertTrue(bos.size() > 600);
+        Assert.assertTrue(bos.size() < 700);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         CartesianOrbit deserialized  = (CartesianOrbit) ois.readObject();
-        Vector3D dp = orbit.getPVCoordinates().getPosition().subtract(deserialized.getPVCoordinates().getPosition());
-        Vector3D dv = orbit.getPVCoordinates().getVelocity().subtract(deserialized.getPVCoordinates().getVelocity());
-        Assert.assertEquals(0.0, dp.getNorm(), 1.0e-10);
-        Assert.assertEquals(0.0, dv.getNorm(), 1.0e-10);
+        PVCoordinates dpv = new PVCoordinates(orbit.getPVCoordinates(), deserialized.getPVCoordinates());
+        Assert.assertEquals(0.0, dpv.getPosition().getNorm(), 1.0e-10);
+        Assert.assertEquals(0.0, dpv.getVelocity().getNorm(), 1.0e-10);
+        Assert.assertEquals(orbit.getDate(), deserialized.getDate());
+        Assert.assertEquals(orbit.getMu(), deserialized.getMu(), 1.0e-10);
 
     }
 

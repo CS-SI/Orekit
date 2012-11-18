@@ -75,7 +75,7 @@ public abstract class Orbit
     private final double mu;
 
     /** Computed PVCoordinates. */
-    private PVCoordinates pvCoordinates;
+    private transient PVCoordinates pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
     private transient double[][] jacobianMeanWrtCartesian;
