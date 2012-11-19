@@ -16,7 +16,6 @@
  */
 package org.orekit.forces.maneuvers;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -71,10 +70,7 @@ import org.orekit.utils.Constants;
  * @author Luc Maisonobe
  */
 public class SmallManeuverAnalyticalModel
-    implements AdapterPropagator.DifferentialEffect, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 5046690115016896090L;
+    implements AdapterPropagator.DifferentialEffect {
 
     /** State at maneuver date (before maneuver occurrence). */
     private final SpacecraftState state0;

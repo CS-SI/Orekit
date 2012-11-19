@@ -17,8 +17,8 @@
 package org.orekit.forces.maneuvers;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -45,9 +45,6 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
 
     /** Parameter name for flow rate. */
     private static final String FLOW_RATE = "flow rate";
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 5349622732741384211L;
 
     /** State of the engine. */
     private boolean firing;

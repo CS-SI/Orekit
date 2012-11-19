@@ -19,7 +19,6 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
-import java.util.regex.Pattern;
 
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
@@ -27,19 +26,19 @@ import org.orekit.errors.OrekitException;
 public class ModifiedNewcombOperatorLoader implements DataLoader {
 
     /** Supported file pattern. */
-    private static final String PATTERN = "^ModifidedNewcombOperator\\.txt$";
+//    private static final String PATTERN = "^ModifidedNewcombOperator\\.txt$";
 
     /** maximum frequency index used in the tesseral perturbation. */
-    private int                 maxFreq;
+//    private int                 maxFreq;
 
     /** maximum resonant degree available. */
-    private int                 resonantDegree;
+//    private int                 resonantDegree;
 
     /** maximum d'Alembert characteristic. */
-    private int                 alembertMax;
+//    private int                 alembertMax;
 
     /** maximum power of eccentricity used in the expansion of the Hansen coefficient Kernel. */
-    private int                 powerOfE;
+//    private int                 powerOfE;
 
     /** Simple constructor.
      * @param maxFreq maximum frequency index used in the tesseral perturbation
@@ -49,18 +48,18 @@ public class ModifiedNewcombOperatorLoader implements DataLoader {
      */
     public ModifiedNewcombOperatorLoader(final int maxFreq, final int resonantDegree,
                                          final int alembertMax, final int powerOfE) {
-        this.maxFreq = maxFreq;
-        this.resonantDegree = resonantDegree;
-        this.alembertMax = alembertMax;
-        this.powerOfE = powerOfE;
+//        this.maxFreq = maxFreq;
+//        this.resonantDegree = resonantDegree;
+//        this.alembertMax = alembertMax;
+//        this.powerOfE = powerOfE;
 
         // double pattern
-        final String doublePattern = "\\p{Blank}*(-?\\p{Digit}*\\.\\p{Digit}*)";
+//        final String doublePattern = "\\p{Blank}*(-?\\p{Digit}*\\.\\p{Digit}*)";
 
         // integer pattern
-        final String intPattern = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
-        final Pattern regularPattern =
-                Pattern.compile(intPattern + intPattern + intPattern + intPattern + intPattern + doublePattern);
+//        final String intPattern = "((?:\\p{Blank}|\\p{Digit})\\p{Digit})";
+//        final Pattern regularPattern =
+//                Pattern.compile(intPattern + intPattern + intPattern + intPattern + intPattern + doublePattern);
 
     }
 

@@ -38,9 +38,6 @@ import org.orekit.utils.PVCoordinates;
  */
 class Jacobianizer implements AccelerationJacobiansProvider {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 4392740517934778827L;
-
     /** Wrapped force model instance. */
     private final ForceModel forceModel;
 
@@ -204,9 +201,6 @@ class Jacobianizer implements AccelerationJacobiansProvider {
 
     /** Internal class for retrieving accelerations. */
     private static class AccelerationRetriever implements TimeDerivativesEquations {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 6410400549499020323L;
 
         /** Stored acceleration. */
         private final double[] acceleration;

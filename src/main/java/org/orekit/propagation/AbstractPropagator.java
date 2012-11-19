@@ -59,10 +59,10 @@ import org.orekit.utils.PVCoordinatesProvider;
  * </p>
  * @author Luc Maisonobe
  */
-public abstract class AbstractPropagator implements Propagator {
+public abstract class AbstractPropagator implements Propagator, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2434402795728927604L;
+    private static final long serialVersionUID = 5688856053382094325L;
 
     /** Propagation mode. */
     private int mode;
@@ -497,10 +497,7 @@ public abstract class AbstractPropagator implements Propagator {
         throws PropagationException;
 
     /** Internal PVCoordinatesProvider for attitude computation. */
-    private class LocalPVProvider implements PVCoordinatesProvider, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -5121444553818793467L;
+    private class LocalPVProvider implements PVCoordinatesProvider {
 
         /** {@inheritDoc} */
         public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)

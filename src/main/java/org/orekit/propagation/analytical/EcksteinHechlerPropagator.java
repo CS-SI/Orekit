@@ -30,7 +30,6 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 
-
 /** This class propagates a {@link org.orekit.propagation.SpacecraftState}
  *  using the analytical Eckstein-Hechler model.
  * <p>The Eckstein-Hechler model is suited for near circular orbits
@@ -43,7 +42,7 @@ import org.orekit.time.AbsoluteDate;
 public class EcksteinHechlerPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 1268374325750125229L;
+    private static final long serialVersionUID = -465578380177088063L;
 
     /** Mean parameters at the initial date. */
     private CircularOrbit mean;

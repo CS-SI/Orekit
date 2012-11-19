@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.numerical;
 
+import org.apache.commons.math3.ode.Parameterizable;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.Parameterizable;
 import org.orekit.propagation.SpacecraftState;
 
 /**

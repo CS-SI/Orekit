@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.QRDecomposition;
@@ -40,10 +38,7 @@ import org.orekit.propagation.SpacecraftState;
  * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
  */
-public class JacobiansMapper implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -2125324068169838971L;
+public class JacobiansMapper {
 
     /** Name. */
     private String name;

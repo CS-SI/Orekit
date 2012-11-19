@@ -37,9 +37,6 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1596721390500187750L;
-
     /** Cross section (m<sup>2</sup>). */
     private final double crossSection;
 

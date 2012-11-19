@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.Serializable;
-
-
 /** This class is a container for additional state parameters and the name of their associated evolution equation.
 *
 * <p>
@@ -30,10 +27,7 @@ import java.io.Serializable;
 * @see AdditionalEquations
 * @author Luc Maisonobe
 */
-public class AdditionalStateData implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 5993627266168523777L;
+public class AdditionalStateData {
 
     /** Additional state name. */
     private String name;

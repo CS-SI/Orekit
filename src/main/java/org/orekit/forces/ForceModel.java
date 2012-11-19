@@ -16,6 +16,7 @@
  */
 package org.orekit.forces;
 
+import org.apache.commons.math3.ode.ParameterizedODE;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -50,7 +51,7 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface ForceModel extends Parameterizable {
+public interface ForceModel extends ParameterizedODE {
 
     /** Compute the contribution of the force model to the perturbing
      * acceleration.

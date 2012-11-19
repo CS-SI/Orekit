@@ -31,7 +31,7 @@ import org.orekit.time.AbsoluteDate;
 public class KeplerianPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2094439036855266946L;
+    private static final long serialVersionUID = -6444645654047442702L;
 
     /** Initial state. */
     private SpacecraftState initialState;

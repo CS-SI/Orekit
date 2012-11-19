@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -127,7 +126,7 @@ import org.orekit.utils.PVCoordinatesProvider;
 public class DSSTPropagator extends AbstractPropagator {
 
     /** Serializable UID. */
-    private static final long              serialVersionUID = -1217566398912634178L;
+    private static final long serialVersionUID = 1498740972841393005L;
 
     /** Propagation orbit type. */
     private static final OrbitType         ORBIT_TYPE       = OrbitType.EQUINOCTIAL;
@@ -138,14 +137,14 @@ public class DSSTPropagator extends AbstractPropagator {
     /** Position error tolerance (m). */
     private static final double            EXTRA_TIME       = Constants.JULIAN_DAY;
 
-    /** Integrator selected by the user for the orbital extrapolation process. */
-    private transient FirstOrderIntegrator integrator;
-
     /** Force models used during the extrapolation of the Orbit. */
     private final List<DSSTForceModel>     forceModels;
 
+    /** Integrator selected by the user for the orbital extrapolation process. */
+    private transient FirstOrderIntegrator integrator;
+
     /** Step accumulator. */
-    private StepAccumulator                cumulator;
+    private transient StepAccumulator      cumulator;
 
     /** Reference date. */
     private AbsoluteDate                   referenceDate;
@@ -706,10 +705,7 @@ public class DSSTPropagator extends AbstractPropagator {
     }
 
     /** Specialized step handler to add up all step interpolators. */
-    private static class StepAccumulator implements StepHandler, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 8081411926415691239L;
+    private static class StepAccumulator implements StepHandler {
 
         /** Cumulated step interpolators. */
         private SortedSet<StRange> cumulatedSteps;
@@ -807,10 +803,7 @@ public class DSSTPropagator extends AbstractPropagator {
      * Internal class for step interpolator encapsulation before accumulation. This class allows
      * step interpolators ordering in a sorted set.
      */
-    private static class StRange implements Comparable<StRange>, Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -6209093963711616737L;
+    private static class StRange implements Comparable<StRange> {
 
         /** Min time in the range. */
         private AbsoluteDate      tmin;

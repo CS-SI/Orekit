@@ -17,9 +17,9 @@
 package org.orekit.forces.gravity;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -29,13 +29,11 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe
  */
-public class NewtonianAttraction extends AbstractParameterizable implements AccelerationJacobiansProvider, ForceModel {
+public class NewtonianAttraction extends AbstractParameterizable
+                                 implements AccelerationJacobiansProvider, ForceModel {
 
     /** Name of the single parameter of this model: the central attraction coefficient. */
     public static final String CENTRAL_ATTRACTION_COEFFICIENT = "central attraction coefficient";
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -7754312556095545327L;
 
     /** Central attraction coefficient (m^3/s^2). */
     private double mu;

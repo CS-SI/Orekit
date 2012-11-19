@@ -17,10 +17,10 @@
 package org.orekit.forces.gravity;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -40,9 +40,6 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  */
 
 public class DrozinerAttractionModel extends AbstractParameterizable implements ForceModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6897768625006106349L;
 
     /** Reference equatorial radius of the potential. */
     private final double equatorialRadius;

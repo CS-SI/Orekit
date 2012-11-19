@@ -16,16 +16,12 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.Serializable;
 
 /** Simple container associating a parameter name with a step to compute its jacobian
- * and the provider thant manages it.
+ * and the provider that manages it.
  * @author V&eacute;ronique Pommier-Maurussane
  */
-class ParameterConfiguration implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 2247518849090889379L;
+class ParameterConfiguration {
 
     /** Parameter name. */
     private String parameterName;

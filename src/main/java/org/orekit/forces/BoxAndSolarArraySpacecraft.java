@@ -16,7 +16,6 @@
  */
 package org.orekit.forces;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,9 +61,6 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Pascal Parraud
  */
 public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensitive {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -4426844682371384944L;
 
     /** Surface vectors for body facets. */
     private final List<Facet> facets;
@@ -388,10 +384,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * <p>Instance of this class are guaranteed to be immutable.</p>
      * @author Luc Maisonobe
      */
-    public static class Facet implements Serializable {
-
-        /** Serializble UID. */
-        private static final long serialVersionUID = -1743508315029520059L;
+    public static class Facet {
 
         /** Unit Normal vector, pointing outward. */
         private final Vector3D normal;

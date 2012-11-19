@@ -38,9 +38,6 @@ import org.orekit.propagation.SpacecraftState;
  */
 public class PartialDerivativesEquations implements AdditionalEquations {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -556926704905099805L;
-
     /** Selected parameters for Jacobian computation. */
     private NumericalPropagator propagator;
 

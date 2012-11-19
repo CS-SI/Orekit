@@ -17,15 +17,14 @@
 package org.orekit.forces.gravity;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
-
 
 /** Third body attraction force model.
  *
@@ -33,9 +32,6 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class ThirdBodyAttraction extends AbstractParameterizable implements ForceModel {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1703641239448217284L;
 
     /** The body to consider. */
     private final CelestialBody body;

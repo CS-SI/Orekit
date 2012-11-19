@@ -307,7 +307,6 @@ public class CunninghamAttractionModelTest {
 
     private static class AccelerationRetriever implements TimeDerivativesEquations {
 
-       private static final long serialVersionUID = -4616792058307814184L;
         private Vector3D acceleration;
 
         public void initDerivatives(double[] yDot, Orbit currentOrbit) {

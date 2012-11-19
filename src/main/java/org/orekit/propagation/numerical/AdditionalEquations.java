@@ -16,11 +16,8 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.Serializable;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
  *
@@ -60,7 +57,7 @@ import org.orekit.propagation.SpacecraftState;
  * @see org.orekit.propagation.AdditionalStateProvider
  * @author Luc Maisonobe
  */
-public interface AdditionalEquations extends Serializable {
+public interface AdditionalEquations {
 
     /** Get the name of the additional state.
      * @return name of the additional state

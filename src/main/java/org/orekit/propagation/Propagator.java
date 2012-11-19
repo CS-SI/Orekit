@@ -16,7 +16,6 @@
  */
 package org.orekit.propagation;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 import org.orekit.attitudes.AttitudeProvider;
@@ -45,7 +44,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *
  */
 
-public interface Propagator extends PVCoordinatesProvider, Serializable {
+public interface Propagator extends PVCoordinatesProvider {
 
     /** Default mass. */
     double DEFAULT_MASS = 1000.0;

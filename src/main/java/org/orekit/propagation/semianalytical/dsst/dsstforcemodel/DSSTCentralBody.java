@@ -63,7 +63,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * Truncation tolerance for analytically averaged central body spherical harmonics for
      * drag-perturbed orbit.
      */
-    private static final double    TRUNCATION_TOLERANCE_DRAG   = 1e-10;
+//    private static final double    TRUNCATION_TOLERANCE_DRAG   = 1e-10;
 
     // Analytical central body spherical harmonic models
     /** Equatorial radius of the Central Body. */
@@ -209,7 +209,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * {@link DSSTCentralBody#tesseralTruncation(SpacecraftState)} method which determines the upper
      * bound for geopotential summation.
      */
-    private double                 tesseralTruncationTolerance;
+//    private double                 tesseralTruncationTolerance;
 
 
     /** DSST Central body constructor.
@@ -271,7 +271,7 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
         this.tesseralMaxEccentricityPower = Integer.MIN_VALUE;
         this.maximumHansen = Integer.MIN_VALUE;
         this.zonalTruncationTolerance = Double.NEGATIVE_INFINITY;
-        this.tesseralTruncationTolerance = Double.NEGATIVE_INFINITY;
+//        this.tesseralTruncationTolerance = Double.NEGATIVE_INFINITY;
 
     }
 
@@ -447,104 +447,104 @@ public class DSSTCentralBody extends AbstractGravitationalForces {
      * @throws OrekitException
      *             if an error occurs when computing Hansen upper bound
      */
-    private void tesseralTruncation(final SpacecraftState initialState) throws OrekitException {
-
-        // Check if a value has been entered by the user :
-        if (tesseralTruncationTolerance == Double.NEGATIVE_INFINITY) {
-            tesseralTruncationTolerance = TRUNCATION_TOLERANCE_VACUUM;
-        }
-
-        // Temporary variables :
-        int sMin = Integer.MAX_VALUE;
-        int sMax = Integer.MIN_VALUE;
-        int n;
-        final double e = initialState.getE();
-        final double a = initialState.getA();
-        boolean sLoop = true;
-
-        // J-loop j = 0, +-1, +-2 ...
-        // Resonant term identified :
-        final Iterator<ResonantCouple> iterator = resonantTesseralHarmonic.iterator();
-        // Iterative process :
-
-        while (iterator.hasNext()) {
-            final ResonantCouple resonantTesseralCouple = iterator.next();
-            final int j = resonantTesseralCouple.getN();
-            int m = resonantTesseralCouple.getM();
-            int sbis = 0;
-            // S-loop : s = j, j+-1, j+-2 ...
-            int s = j;
-            while (sLoop) {
-                final int signS = (int) FastMath.pow(-1, s);
-                sbis += s * signS;
-                sMin = FastMath.min(sMin, sbis);
-                sMax = FastMath.max(sMax, sbis);
-
-                // N-loop : n = Max(2, m, |s|), n-m even and n < N. N being the maximum
-                // potential degree
-                n = FastMath.max(FastMath.max(2, m), FastMath.abs(sbis));
-
-                if (n > degree) {
-                    break;
-                }
-
-                if ((n - sbis) % 2 == 0) {
-
-                    // Compute the perturbation function upper bound :
-                    final double hansenUp = HansenCoefficients.computeUpperBound(e, j, -n - 1, sbis);
-
-                    // Compute Jacobi polynomials upper bound :
-                    final int l = (sbis <= m) ? (n - m) : n - sbis;
-                    final int v = FastMath.abs(m - sbis);
-                    final int w = FastMath.abs(m + sbis);
-
-                    final PolynomialFunction jacobi = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                    final double jacDer = jacobi.derivative().value(gamma);
-                    final double jacDer2 = jacDer * jacDer;
-                    final double jacGam = jacobi.value(gamma);
-                    final double jacGam2 = jacGam * jacGam;
-                    final double jacFact = (1 - gamma * gamma) / (l * (v + w + l + 1));
-                    final double jacobiUp = FastMath.sqrt(jacGam2 + jacFact * jacDer2);
-
-                    // Upper bound for |Cnm - iSnm|
-                    final double cnm = Cnm[n][m];
-                    final double cnm2 = cnm * cnm;
-                    final double snm = Snm[n][m];
-                    final double snm2 = snm * snm;
-                    final double csnmUp = FastMath.sqrt(cnm2 + snm2);
-
-                    // Upper bound for the |Gmsj + iHmsj|
-                    final double maxE = FastMath.pow(e, FastMath.abs(sbis - j));
-                    final int p = FastMath.abs(sbis - I * m) / 2;
-                    final double maxG = FastMath.pow(1 - gamma * gamma, p);
-                    final double ghmsUp = maxE * maxG;
-
-                    // Upper bound for Vmns
-                    final double vmnsUp = FastMath.abs(DSSTCoefficientFactory.getVmns(m, n, sbis));
-                    // Upper bound for Gammamsn
-                    final GammaMsnCoefficients gmns = new GammaMsnCoefficients(gamma, I);
-                    final double gmnsUp = FastMath.abs(gmns.getGammaMsn(n, sbis, m));
-
-                    // Upper perturbation function value
-                    final double common = (mu / a) * FastMath.pow(ae / a, n);
-                    final double upperValue = common * vmnsUp * gmnsUp * hansenUp * jacobiUp * csnmUp * ghmsUp;
-
-                    if (upperValue <= tesseralTruncationTolerance) {
-                        // Store values :
-                        tessMinS = FastMath.abs(sMin);
-                        tessMaxS = sMax;
-                        tessMaxN = n;
-
-                        // Force loop to stop :
-                        sLoop = false;
-                        m = order;
-                        n = degree;
-                    }
-                }
-                s++;
-            }
-        }
-    }
+//    private void tesseralTruncation(final SpacecraftState initialState) throws OrekitException {
+//
+//        // Check if a value has been entered by the user :
+//        if (tesseralTruncationTolerance == Double.NEGATIVE_INFINITY) {
+//            tesseralTruncationTolerance = TRUNCATION_TOLERANCE_VACUUM;
+//        }
+//
+//        // Temporary variables :
+//        int sMin = Integer.MAX_VALUE;
+//        int sMax = Integer.MIN_VALUE;
+//        int n;
+//        final double e = initialState.getE();
+//        final double a = initialState.getA();
+//        boolean sLoop = true;
+//
+//        // J-loop j = 0, +-1, +-2 ...
+//        // Resonant term identified :
+//        final Iterator<ResonantCouple> iterator = resonantTesseralHarmonic.iterator();
+//        // Iterative process :
+//
+//        while (iterator.hasNext()) {
+//            final ResonantCouple resonantTesseralCouple = iterator.next();
+//            final int j = resonantTesseralCouple.getN();
+//            int m = resonantTesseralCouple.getM();
+//            int sbis = 0;
+//            // S-loop : s = j, j+-1, j+-2 ...
+//            int s = j;
+//            while (sLoop) {
+//                final int signS = (int) FastMath.pow(-1, s);
+//                sbis += s * signS;
+//                sMin = FastMath.min(sMin, sbis);
+//                sMax = FastMath.max(sMax, sbis);
+//
+//                // N-loop : n = Max(2, m, |s|), n-m even and n < N. N being the maximum
+//                // potential degree
+//                n = FastMath.max(FastMath.max(2, m), FastMath.abs(sbis));
+//
+//                if (n > degree) {
+//                    break;
+//                }
+//
+//                if ((n - sbis) % 2 == 0) {
+//
+//                    // Compute the perturbation function upper bound :
+//                    final double hansenUp = HansenCoefficients.computeUpperBound(e, j, -n - 1, sbis);
+//
+//                    // Compute Jacobi polynomials upper bound :
+//                    final int l = (sbis <= m) ? (n - m) : n - sbis;
+//                    final int v = FastMath.abs(m - sbis);
+//                    final int w = FastMath.abs(m + sbis);
+//
+//                    final PolynomialFunction jacobi = PolynomialsUtils.createJacobiPolynomial(l, v, w);
+//                    final double jacDer = jacobi.derivative().value(gamma);
+//                    final double jacDer2 = jacDer * jacDer;
+//                    final double jacGam = jacobi.value(gamma);
+//                    final double jacGam2 = jacGam * jacGam;
+//                    final double jacFact = (1 - gamma * gamma) / (l * (v + w + l + 1));
+//                    final double jacobiUp = FastMath.sqrt(jacGam2 + jacFact * jacDer2);
+//
+//                    // Upper bound for |Cnm - iSnm|
+//                    final double cnm = Cnm[n][m];
+//                    final double cnm2 = cnm * cnm;
+//                    final double snm = Snm[n][m];
+//                    final double snm2 = snm * snm;
+//                    final double csnmUp = FastMath.sqrt(cnm2 + snm2);
+//
+//                    // Upper bound for the |Gmsj + iHmsj|
+//                    final double maxE = FastMath.pow(e, FastMath.abs(sbis - j));
+//                    final int p = FastMath.abs(sbis - I * m) / 2;
+//                    final double maxG = FastMath.pow(1 - gamma * gamma, p);
+//                    final double ghmsUp = maxE * maxG;
+//
+//                    // Upper bound for Vmns
+//                    final double vmnsUp = FastMath.abs(DSSTCoefficientFactory.getVmns(m, n, sbis));
+//                    // Upper bound for Gammamsn
+//                    final GammaMsnCoefficients gmns = new GammaMsnCoefficients(gamma, I);
+//                    final double gmnsUp = FastMath.abs(gmns.getGammaMsn(n, sbis, m));
+//
+//                    // Upper perturbation function value
+//                    final double common = (mu / a) * FastMath.pow(ae / a, n);
+//                    final double upperValue = common * vmnsUp * gmnsUp * hansenUp * jacobiUp * csnmUp * ghmsUp;
+//
+//                    if (upperValue <= tesseralTruncationTolerance) {
+//                        // Store values :
+//                        tessMinS = FastMath.abs(sMin);
+//                        tessMaxS = sMax;
+//                        tessMaxN = n;
+//
+//                        // Force loop to stop :
+//                        sLoop = false;
+//                        m = order;
+//                        n = degree;
+//                    }
+//                }
+//                s++;
+//            }
+//        }
+//    }
 
     /** Compute the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
      * @param initialState initial satellite state

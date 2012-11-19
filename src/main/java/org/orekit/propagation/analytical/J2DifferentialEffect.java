@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
@@ -40,10 +38,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  */
 public class J2DifferentialEffect
-    implements AdapterPropagator.DifferentialEffect, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 3681516488729752197L;
+    implements AdapterPropagator.DifferentialEffect {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;

@@ -16,8 +16,6 @@
  */
 package org.orekit.forces.radiation;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -28,7 +26,7 @@ import org.orekit.propagation.SpacecraftState;
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
-public interface RadiationSensitive extends Serializable {
+public interface RadiationSensitive {
 
     /** Compute the acceleration due to radiation pressure.
      * <p>

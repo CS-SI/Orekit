@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.Parameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.Parameterizable;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -57,9 +57,6 @@ public class DragForce implements ForceModel, Parameterizable {
         PARAMETERS_NAMES = new ArrayList<String>();
         PARAMETERS_NAMES.add(DRAG_COEFFICIENT);
     }
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 5386256916056674950L;
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;

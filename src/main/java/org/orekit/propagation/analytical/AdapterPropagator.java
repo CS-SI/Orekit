@@ -52,6 +52,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public class AdapterPropagator extends AbstractPropagator {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = -5953975769121996528L;
+
     /** Interface for orbit differential effects. */
     public static interface DifferentialEffect {
 
@@ -69,9 +72,6 @@ public class AdapterPropagator extends AbstractPropagator {
         SpacecraftState apply(SpacecraftState original) throws OrekitException;
 
     }
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -5953975769121996528L;
 
     /** Underlying reference propagator. */
     private Propagator reference;

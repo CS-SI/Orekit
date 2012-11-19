@@ -56,7 +56,6 @@ import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
-
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
  * numerical integration.
  * <p>Numerical propagation is much more accurate than analytical propagation
@@ -149,9 +148,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class NumericalPropagator implements Propagator {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -2385169798425713766L;
-
     /** Absolute vectorial error field name. */
     private static final String ABSOLUTE_TOLERANCE = "vecAbsoluteTolerance";
 
@@ -186,13 +182,13 @@ public class NumericalPropagator implements Propagator {
     private SpacecraftState currentState;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
-    private transient FirstOrderIntegrator integrator;
+    private FirstOrderIntegrator integrator;
 
     /** Counter for differential equations calls. */
     private int calls;
 
     /** Propagator mode handler. */
-    private transient ModeHandler modeHandler;
+    private ModeHandler modeHandler;
 
     /** Current mode. */
     private int mode;
@@ -795,9 +791,6 @@ public class NumericalPropagator implements Propagator {
 
     /** Internal class for differential equations representation. */
     private class DifferentialEquations implements FirstOrderDifferentialEquations, TimeDerivativesEquations {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -1927530118454989452L;
 
         /** Reference to the derivatives array to initialize. */
         private double[] storedYDot;

@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
@@ -40,7 +38,7 @@ import org.orekit.orbits.Orbit;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public interface TimeDerivativesEquations extends Serializable {
+public interface TimeDerivativesEquations {
 
     /** Initialize all derivatives to zero.
      * @param yDot reference to the array where to put the derivatives.

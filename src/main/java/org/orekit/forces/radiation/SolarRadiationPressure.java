@@ -17,10 +17,10 @@
 package org.orekit.forces.radiation;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.forces.AbstractParameterizable;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -39,16 +39,14 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
  */
-public class SolarRadiationPressure extends AbstractParameterizable implements ForceModel, AccelerationJacobiansProvider {
+public class SolarRadiationPressure extends AbstractParameterizable
+                                    implements ForceModel, AccelerationJacobiansProvider {
 
     /** Parameter name for absorption coefficient. */
     public static final String ABSORPTION_COEFFICIENT = "absorption coefficient";
 
     /** Parameter name for reflection coefficient. */
     public static final String REFLECTION_COEFFICIENT = "reflection coefficient";
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -4510170320082379419L;
 
      /** Sun radius (m). */
     private static final double SUN_RADIUS = 6.95e8;
@@ -97,8 +95,8 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
         super(ABSORPTION_COEFFICIENT, REFLECTION_COEFFICIENT);
-        this.kRef  = pRef * dRef * dRef;
-        this.sun   = sun;
+        this.kRef = pRef * dRef * dRef;
+        this.sun  = sun;
         this.equatorialRadius = equatorialRadius;
         this.spacecraft = spacecraft;
     }
