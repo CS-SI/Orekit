@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.integration.TimeDerivativesEquations;
+import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** Third body attraction force model.
  *

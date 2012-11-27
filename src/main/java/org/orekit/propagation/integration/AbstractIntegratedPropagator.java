@@ -38,6 +38,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
+import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -89,13 +90,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         detectors           = new ArrayList<EventDetector>();
         addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
         stateVector         = new double[7];
-        stateMapper         = new StateMapper(null, Double.NaN, null, null, null, null);
+        stateMapper         = createMapper(null, Double.NaN, null, null, null, null);
     }
-
-    /** Get the adder.
-     * @return adder
-     */
-    protected abstract TimeDerivativesEquations getAdder();
 
     /** Set the integrator.
      * @param integrator numerical integrator to use for propagation.
@@ -114,18 +110,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /**  {@inheritDoc} */
     public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
         super.setAttitudeProvider(attitudeProvider);
-        stateMapper = new StateMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                      stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
-                                      attitudeProvider, stateMapper.getFrame());
+        stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
+                                   stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                   attitudeProvider, stateMapper.getFrame());
     }
 
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
     protected void setOrbitType(final OrbitType orbitType) {
-        stateMapper = new StateMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                      orbitType, stateMapper.getPositionAngleType(),
-                                      stateMapper.getAttitudeProvider(), stateMapper.getFrame());
+        stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
+                                   orbitType, stateMapper.getPositionAngleType(),
+                                   stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
     /** Get propagation parameter type.
@@ -145,9 +141,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @param positionAngleType angle type to use for propagation
      */
     protected void setPositionAngleType(final PositionAngle positionAngleType) {
-        stateMapper = new StateMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
-                                      stateMapper.getOrbitType(), positionAngleType,
-                                      stateMapper.getAttitudeProvider(), stateMapper.getFrame());
+        stateMapper = createMapper(stateMapper.getReferenceDate(), stateMapper.getMu(),
+                                   stateMapper.getOrbitType(), positionAngleType,
+                                   stateMapper.getAttitudeProvider(), stateMapper.getFrame());
     }
 
     /** Get propagation parameter type.
@@ -163,9 +159,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     * @see #addForceModel(ForceModel)
     */
    public void setMu(final double mu) {
-       stateMapper = new StateMapper(stateMapper.getReferenceDate(), mu,
-                                     stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
-                                     stateMapper.getAttitudeProvider(), stateMapper.getFrame());
+       stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
+                                  stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                  stateMapper.getAttitudeProvider(), stateMapper.getFrame());
    }
 
    /** Get the central attraction coefficient &mu;.
@@ -319,12 +315,32 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return ((EphemerisModeHandler) modeHandler).getEphemeris();
     }
 
+    /** Create a mapper between raw double components and spacecraft state.
+    /** Simple constructor.
+     * <p>
+     * The position parameter type is meaningful only if {@link
+     * #getOrbitType() propagation orbit type}
+     * support it. As an example, it is not meaningful for propagation
+     * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+     * </p>
+     * @param referenceDate reference date
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param orbitType orbit type to use for mapping
+     * @param positionAngleType angle type to use for propagation
+     * @param attitudeProvider attitude provider
+     * @param frame inertial frame
+     * @return new mapper
+     */
+    protected abstract StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
+                                                final OrbitType orbitType, final PositionAngle positionAngleType,
+                                                final AttitudeProvider attitudeProvider, final Frame frame);
+
     /** Get the differential equations to integrate (for main state only).
      * @return differential equations for main state
      */
     protected abstract MainStateEquations getMainStateEquations();
 
-        /** {@inheritDoc} */
+    /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
         try {
             if (getStartDate() == null) {
@@ -384,7 +400,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * @return state at end of propagation
      * @exception PropagationException if orbit cannot be propagated
      */
-    private SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
+    protected SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
         throws PropagationException {
         try {
 
@@ -397,9 +413,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
 
             // space dynamics view
-            stateMapper = new StateMapper(getInitialState().getDate(), stateMapper.getMu(),
-                                          stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
-                                          stateMapper.getAttitudeProvider(), getInitialState().getFrame());
+            stateMapper = createMapper(getInitialState().getDate(), stateMapper.getMu(),
+                                       stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                       stateMapper.getAttitudeProvider(), getInitialState().getFrame());
 
 
             // set propagation orbit type
@@ -422,7 +438,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             this.stateVector  = new double[computeDimension()];
 
             if (getInitialState().getMass() <= 0.0) {
-                throw new IllegalArgumentException("Mass is null or negative");
+                throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
+                                               getInitialState().getMass());
             }
 
             // mathematical view
@@ -450,8 +467,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
             final double stopTime;
             try {
-                stopTime = getIntegrator().integrate(new CompleteDifferentialEquations(getMainStateEquations(), getAdder()),
+                beforeIntegration(tEnd);
+                stopTime = getIntegrator().integrate(new CompleteDifferentialEquations(getMainStateEquations()),
                                                      t0, stateVector, t1, stateVector);
+                afterIntegration();
             } catch (OrekitExceptionWrapper oew) {
                 throw oew.getException();
             }
@@ -484,6 +503,29 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         } catch (MathIllegalStateException mise) {
             throw PropagationException.unwrap(mise);
         }
+    }
+
+    /** Method called just before integration.
+     * <p>
+     * The default implementation does nothing, it may be specialized in subclasses.
+     * </p>
+     * @param tEnd target date at which state should be propagated
+     * @exception OrekitException if hook cannot be run
+     */
+    protected void beforeIntegration(final AbsoluteDate tEnd)
+        throws OrekitException {
+        // do nothing by default
+    }
+
+    /** Method called just after integration.
+     * <p>
+     * The default implementation does nothing, it may be specialized in subclasses.
+     * </p>
+     * @exception OrekitException if hook cannot be run
+     */
+    protected void afterIntegration()
+        throws OrekitException {
+        // do nothing by default
     }
 
     /** Get state vector dimension without additional parameters.
@@ -558,18 +600,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Differential equations for the main state (orbit, attitude and mass). */
     public static interface MainStateEquations {
 
-        /** Initialize equations before integration.
-         * @param initialState initial state
-         */
-        void init(final SpacecraftState initialState);
-
         /** Compute differential equations for main state.
          * @param state current state
-         * @param adder adder to use for accumulating differentials
+         * @return derivatives of main state
          * @throws OrekitException if differentials cannot be computed
          */
-        void computeDerivatives(final SpacecraftState state, TimeDerivativesEquations adder)
-                throws OrekitException;
+        double[] computeDerivatives(final SpacecraftState state) throws OrekitException;
 
     }
  
@@ -579,23 +615,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Main state equations. */
         private final MainStateEquations main;
 
-        /** Adder for accumulated differentials. */
-        private final TimeDerivativesEquations adder;
-
         /** Simple constructor.
          * @param main main state equations
-         * @param adder adder for accumulated differentials
-         * @exception OrekitException if main equations cannot be initialized
          */
-        public CompleteDifferentialEquations(final MainStateEquations main, final TimeDerivativesEquations adder)
-            throws OrekitException {
-
-            this.main  = main;
-            this.adder = adder;
-
+        public CompleteDifferentialEquations(final MainStateEquations main) {
+            this.main = main;
             calls = 0;
-            main.init(getInitialState());
-
         }
 
         /** {@inheritDoc} */
@@ -612,12 +637,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 // update space dynamics view
                 final SpacecraftState currentState = stateMapper.mapArrayToState(t, y);
 
-                // initialize derivatives
-                adder.initDerivatives(yDot, currentState.getOrbit());
-
                 // compute main state differentials
-                main.computeDerivatives(currentState, adder);
-
+                final double[] mainDot = main.computeDerivatives(currentState);
+                System.arraycopy(mainDot, 0, yDot, 0, mainDot.length);
 
                 // Add contribution for additional state
                 int index = 7;
@@ -629,7 +651,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                     System.arraycopy(y, index, p, 0, p.length);
 
                     // compute additional derivatives
-                    stateAndEqu.getEquations().computeDerivatives(currentState, getAdder(), p, pDot);
+                    final double[] additionalMainDot =
+                            stateAndEqu.getEquations().computeDerivatives(currentState, p, pDot);
+                    if (additionalMainDot != null) {
+                        // the additional equations have an effect on main equations
+                        for (int i = 0; i < additionalMainDot.length; ++i) {
+                            yDot[i] += additionalMainDot[i];
+                        }
+                    }
 
                     // update each additional state contribution in global array
                     System.arraycopy(pDot, 0, yDot, index, p.length);

@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.integration;
+package org.orekit.propagation.numerical;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 
 /** Interface summing up the contribution of several forces into orbit and mass derivatives.
  *

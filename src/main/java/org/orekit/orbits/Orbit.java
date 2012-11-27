@@ -460,7 +460,7 @@ public abstract class Orbit
 
     /** Add the contribution of the Keplerian motion to parameters derivatives
      * <p>
-     * This method is used by numerical propagators to evaluate the part of Keplerrian
+     * This method is used by integration-based propagators to evaluate the part of Keplerian
      * motion to evolution of the orbital state.
      * </p>
      * @param type type of the position angle in the state

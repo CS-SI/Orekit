@@ -27,7 +27,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
-import org.orekit.propagation.integration.TimeDerivativesEquations;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -244,8 +243,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
-    public void computeDerivatives(final SpacecraftState s, final TimeDerivativesEquations adder,
-                                   final double[] p, final double[] pDot) throws OrekitException {
+    public double[] computeDerivatives(final SpacecraftState s, final double[] p, final double[] pDot)
+        throws OrekitException {
 
         final int dim = 3;
 
@@ -432,6 +431,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             }
 
         }
+
+        // these equations have no effect of the main state itself
+        return null;
 
     }
 

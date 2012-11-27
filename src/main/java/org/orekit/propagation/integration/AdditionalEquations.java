@@ -40,13 +40,13 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * <p>
  * The additional parameters are gathered in a simple p array. The additional equations compute
  * the pDot array, which is the time-derivative of the p array. Since the additional parameters
- * p may also have an influence on the equations of motion themselves (for example an equation
- * linked to a complex thrust model may induce an acceleration and a mass change), the same
- * {@link TimeDerivativesEquations time derivatives equations adder} already shared by all force
- * models to add their contributions is also provided to the additional equations implementation
- * object. This means these equations can be used as an additional force model if needed. If the
- * additional parameters have no influence at all on the spacecraft state, this adder can
- * simply be ignored.
+ * p may also have an influence on the equations of motion themselves that should be cumulated
+ * to the main state derivatives (for example an equation linked to a complex thrust model may
+ * induce an acceleration and a mass change), the {@link #computeDerivatives(SpacecraftState,
+ * double[], double[]) computeDerivatives} method can return a double array that will be
+ * <em>added</em> to the main state derivatives. This means these equations can be used as an
+ * additional force model if needed. If the additional parameters have no influence at all on
+ * the main spacecraft state, a null reference may be returned.
  * </p>
  * <p>
  * This interface is the numerical (read not already integrated) counterpart of
@@ -67,14 +67,14 @@ public interface AdditionalEquations {
 
     /** Compute the derivatives related to the additional state parameters.
      * @param s current state information: date, kinematics, attitude
-     * @param adder object where the contribution of the additional parameters
-     * p to the orbit evolution (accelerations, mass time-derivative) should be added
      * @param p current value of the additional parameters
      * @param pDot placeholder where the derivatives of the additional parameters
      * should be put
+     * @return cumulative effect of the equations on the main state (may be null if
+     * equations do not change main state at all)
      * @exception OrekitException if some specific error occurs
      */
-    void computeDerivatives(SpacecraftState s, TimeDerivativesEquations adder,
-                            double[] p, double[] pDot) throws OrekitException;
+    double[] computeDerivatives(SpacecraftState s,  double[] p, double[] pDot)
+        throws OrekitException;
 
 }

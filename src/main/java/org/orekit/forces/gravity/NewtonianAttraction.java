@@ -23,8 +23,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.integration.TimeDerivativesEquations;
 import org.orekit.propagation.numerical.AccelerationJacobiansProvider;
+import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe

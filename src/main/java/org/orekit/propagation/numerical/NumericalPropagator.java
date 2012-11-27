@@ -23,6 +23,7 @@ import java.util.List;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -38,7 +39,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.AdditionalEquations;
-import org.orekit.propagation.integration.TimeDerivativesEquations;
+import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -142,9 +143,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Force models used during the extrapolation of the Orbit, without jacobians. */
     private final List<ForceModel> forceModels;
 
-    /** Adder for the derivatives. */
-    private final TimeDerivativesEquations adder;
-
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
      * unspecified default law and there are no perturbing forces at all.
@@ -157,21 +155,13 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
-        adder = new Adder();
-        forceModels         = new ArrayList<ForceModel>();
+        forceModels = new ArrayList<ForceModel>();
         setAttitudeProvider(DEFAULT_LAW);
         setMu(Double.NaN);
         setIntegrator(integrator);
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
-    }
-
-    /** Get the adder.
-     * @return adder
-     */
-    protected TimeDerivativesEquations getAdder() {
-        return adder;
     }
 
      /** Set the central attraction coefficient &mu;.
@@ -287,46 +277,74 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         return propagate(date).getPVCoordinates(frame);
     }
 
-    /** Get the differential equations to integrate (for main state only).
-     * @return differential equations for main state
-     */
-    protected MainStateEquations getMainStateEquations() {
-        return new MainStateEquations() {
+    /** {@inheritDoc} */
+    protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
+                                       final OrbitType orbitType, final PositionAngle positionAngleType,
+                                       final AttitudeProvider attitudeProvider, final Frame frame) {
+        return new OsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+    }
 
-            /** {@inheritDoc} */
-            public void init(final SpacecraftState initialState) {
-                for (final ForceModel forceModel : forceModels) {
-                    final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
-                    if (modelDetectors != null) {
-                        for (final EventDetector detector : modelDetectors) {
-                            setUpEventDetector(detector);
-                        }
-                    }
-                }
+    /** Internal mapper using directly osculating parameters. */
+    private static class OsculatingMapper extends StateMapper {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = -1525946167852572811L;
+
+        /** Simple constructor.
+         * <p>
+         * The position parameter type is meaningful only if {@link
+         * #getOrbitType() propagation orbit type}
+         * support it. As an example, it is not meaningful for propagation
+         * in {@link OrbitType#CARTESIAN Cartesian} parameters.
+         * </p>
+         * @param referenceDate reference date
+         * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+         * @param orbitType orbit type to use for mapping
+         * @param positionAngleType angle type to use for propagation
+         * @param attitudeProvider attitude provider
+         * @param frame inertial frame
+         */
+        public OsculatingMapper(final AbsoluteDate referenceDate, final double mu,
+                                final OrbitType orbitType, final PositionAngle positionAngleType,
+                                final AttitudeProvider attitudeProvider, final Frame frame) {
+            super(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+        }
+
+        /** {@inheritDoc} */
+        public SpacecraftState mapArrayToState(final double t, final double[] y)
+                throws OrekitException {
+
+            final double mass = y[6];
+            if (mass <= 0.0) {
+                throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
             }
 
-            /** {@inheritDoc} */
-            public void computeDerivatives(final SpacecraftState state, final TimeDerivativesEquations adder)
-                    throws OrekitException {
+            final AbsoluteDate date = mapDoubleToDate(t);
+            final Orbit orbit       = getOrbitType().mapArrayToOrbit(y, getPositionAngleType(), date, getMu(), getFrame());
+            final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
 
-                // compute the contributions of all perturbing forces
-                for (final ForceModel forceModel : forceModels) {
-                    forceModel.addContribution(state, adder);
-                }
+            return new SpacecraftState(orbit, attitude, mass);
 
-                // finalize derivatives by adding the Kepler contribution
-                newtonianAttraction.addContribution(state, adder);
+        }
 
-            }
-        };
+        /** {@inheritDoc} */
+        public void mapStateToArray(final SpacecraftState state, final double[] y) {
+            getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y);
+            y[6] = state.getMass();
+        }
 
     }
 
-    /** Internal class for differential equations representation. */
-    private class Adder implements TimeDerivativesEquations {
+    /** {@inheritDoc} */
+    protected MainStateEquations getMainStateEquations() {
+        return new Main();
+    }
 
-        /** Reference to the derivatives array to initialize. */
-        private double[] storedYDot;
+    /** Internal class for osculating parameters integration. */
+    private class Main implements MainStateEquations, TimeDerivativesEquations {
+
+        /** Derivatives array. */
+        private final double[] yDot;
 
         /** Current orbit. */
         private Orbit orbit;
@@ -334,30 +352,58 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         /** Jacobian of the orbital parameters with respect to the cartesian parameters. */
         private double[][] jacobian;
 
-        /** Build a new instance. */
-        public Adder() {
-            jacobian = new double[6][6];
+        /** Simple constructor.
+         */
+        public Main() {
+
+            this.yDot     = new double[7];
+            this.jacobian = new double[6][6];
+
+            for (final ForceModel forceModel : forceModels) {
+                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
+                if (modelDetectors != null) {
+                    for (final EventDetector detector : modelDetectors) {
+                        setUpEventDetector(detector);
+                    }
+                }
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
+
+            orbit = state.getOrbit();
+            Arrays.fill(yDot, 0.0);
+            orbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
+
+            // compute the contributions of all perturbing forces
+            for (final ForceModel forceModel : forceModels) {
+                forceModel.addContribution(state, this);
+            }
+
+            // finalize derivatives by adding the Kepler contribution
+            newtonianAttraction.addContribution(state, this);
+
+            return yDot.clone();
+
         }
 
         /** {@inheritDoc} */
         public void initDerivatives(final double[] yDot, final Orbit currentOrbit)
             throws PropagationException {
-            storedYDot = yDot;
-            orbit      = currentOrbit;
-            Arrays.fill(storedYDot, 0.0);
-            currentOrbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
         }
 
         /** {@inheritDoc} */
         public void addKeplerContribution(final double mu) {
-            orbit.addKeplerContribution(getPositionAngleType(), mu, storedYDot);
+            orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
         }
 
         /** {@inheritDoc} */
         public void addXYZAcceleration(final double x, final double y, final double z) {
             for (int i = 0; i < 6; ++i) {
                 final double[] jRow = jacobian[i];
-                storedYDot[i] += jRow[3] * x + jRow[4] * y + jRow[5] * z;
+                yDot[i] += jRow[3] * x + jRow[4] * y + jRow[5] * z;
             }
         }
 
@@ -374,7 +420,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
             if (q > 0) {
                 throw OrekitException.createIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
             }
-            storedYDot[6] += q;
+            yDot[6] += q;
         }
 
     }

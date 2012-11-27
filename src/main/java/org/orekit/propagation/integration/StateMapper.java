@@ -18,13 +18,9 @@ package org.orekit.propagation.integration;
 
 import java.io.Serializable;
 
-import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
@@ -34,7 +30,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 6.0
  */
-public class StateMapper implements Serializable {
+public abstract class StateMapper implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = -6503521886256031804L;
@@ -71,9 +67,9 @@ public class StateMapper implements Serializable {
      * @param attitudeProvider attitude provider
      * @param frame inertial frame
      */
-    public StateMapper(final AbsoluteDate referenceDate, final double mu,
-                       final OrbitType orbitType, final PositionAngle positionAngleType,
-                       final AttitudeProvider attitudeProvider, final Frame frame) {
+    protected StateMapper(final AbsoluteDate referenceDate, final double mu,
+                          final OrbitType orbitType, final PositionAngle positionAngleType,
+                          final AttitudeProvider attitudeProvider, final Frame frame) {
         this.referenceDate    = referenceDate;
         this.mu               = mu;
         this.orbitType        = orbitType;
@@ -149,31 +145,17 @@ public class StateMapper implements Serializable {
      * @param t date offset
      * @param y state components
      * @return spacecraft state
-     * @exception OrekitException if state is inconsistent or cannot be mapped
+     * @exception OrekitException if array is inconsistent or cannot be mapped
      */
-    public SpacecraftState mapArrayToState(final double t, final double[] y)
-        throws OrekitException {
+    public abstract SpacecraftState mapArrayToState(final double t, final double[] y)
+        throws OrekitException;
 
-        final double mass = y[6];
-        if (mass <= 0.0) {
-            throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE, mass);
-        }
-
-        final AbsoluteDate date = mapDoubleToDate(t);
-        final Orbit orbit       = orbitType.mapArrayToOrbit(y, angleType, date, getMu(), getFrame());
-        final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, getFrame());
-
-        return new SpacecraftState(orbit, attitude, mass);
-
-    }
-
-    /** Map a spacecrzft state to raw double components.
+    /** Map a spacecraft state to raw double components.
      * @param state state to map
      * @param y placeholder where to put the components
+     * @exception OrekitException if state is inconsistent or cannot be mapped
      */
-    public void mapStateToArray(final SpacecraftState state, final double[] y) {
-        orbitType.mapOrbitToArray(state.getOrbit(), angleType, y);
-        y[6] = state.getMass();
-    }
+    public abstract void mapStateToArray(final SpacecraftState state, final double[] y)
+        throws OrekitException;
 
 }
