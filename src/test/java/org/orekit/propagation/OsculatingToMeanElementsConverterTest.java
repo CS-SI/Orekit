@@ -12,6 +12,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
@@ -243,7 +244,7 @@ public class OsculatingToMeanElementsConverterTest {
      * 
      * @param initialState
      */
-    private void setNumProp(SpacecraftState initialState) {
+    private void setNumProp(SpacecraftState initialState) throws PropagationException {
         final double[][] tol = NumericalPropagator.tolerances(1.0, initialState.getOrbit(), initialState.getOrbit().getType());
         final double minStep = 1.;
         final double maxStep = 200.;

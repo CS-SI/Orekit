@@ -16,25 +16,15 @@
  */
 package org.orekit.propagation.numerical;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.math3.exception.MathIllegalArgumentException;
-import org.apache.commons.math3.exception.MathIllegalStateException;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.events.EventHandler;
-import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
@@ -44,15 +34,13 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.AdaptedEventDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.sampling.AdaptedStepHandler;
+import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepNormalizer;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -137,7 +125,7 @@ import org.orekit.utils.PVCoordinates;
  * @see ForceModel
  * @see OrekitStepHandler
  * @see OrekitFixedStepHandler
- * @see org.orekit.propagation.precomputed.IntegratedEphemeris
+ * @see org.orekit.propagation.integration.IntegratedEphemeris
  * @see TimeDerivativesEquations
  *
  * @author Mathieu Rom&eacute;ro
@@ -146,16 +134,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Fabien Maussion
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class NumericalPropagator implements Propagator {
-
-    /** Absolute vectorial error field name. */
-    private static final String ABSOLUTE_TOLERANCE = "vecAbsoluteTolerance";
-
-    /** Relative vectorial error field name. */
-    private static final String RELATIVE_TOLERANCE = "vecRelativeTolerance";
-
-    /** Attitude provider. */
-    private AttitudeProvider attitudeProvider;
+public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Central body attraction. */
     private NewtonianAttraction newtonianAttraction;
@@ -163,44 +142,8 @@ public class NumericalPropagator implements Propagator {
     /** Force models used during the extrapolation of the Orbit, without jacobians. */
     private final List<ForceModel> forceModels;
 
-    /** Event detectors not related to force models. */
-    private final List<EventDetector> detectors;
-
-    /** State vector. */
-    private double[] stateVector;
-
-    /** Start date. */
-    private AbsoluteDate startDate;
-
-    /** Reference date. */
-    private AbsoluteDate referenceDate;
-
-    /** Initial state to propagate. */
-    private SpacecraftState initialState;
-
-    /** Current state to propagate. */
-    private SpacecraftState currentState;
-
-    /** Integrator selected by the user for the orbital extrapolation process. */
-    private FirstOrderIntegrator integrator;
-
-    /** Counter for differential equations calls. */
-    private int calls;
-
-    /** Propagator mode handler. */
-    private ModeHandler modeHandler;
-
-    /** Current mode. */
-    private int mode;
-
-    /** Propagation orbit type. */
-    private OrbitType orbitType;
-
-    /** Position angle type. */
-    private PositionAngle angleType;
-
-    /** Additional equations and associated data. */
-    private List<AdditionalEquationsAndData> addEquationsAndData;
+    /** Adder for the derivatives. */
+    private final TimeDerivativesEquations adder;
 
     /** Create a new instance of NumericalPropagator, based on orbit definition mu.
      * After creation, the instance is empty, i.e. the attitude provider is set to an
@@ -214,14 +157,9 @@ public class NumericalPropagator implements Propagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
+        adder = new Adder();
         forceModels         = new ArrayList<ForceModel>();
-        detectors           = new ArrayList<EventDetector>();
-        startDate           = null;
-        referenceDate       = null;
-        currentState        = null;
-        addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
-        attitudeProvider    = DEFAULT_LAW;
-        stateVector         = new double[7];
+        setAttitudeProvider(DEFAULT_LAW);
         setMu(Double.NaN);
         setIntegrator(integrator);
         setSlaveMode();
@@ -229,28 +167,20 @@ public class NumericalPropagator implements Propagator {
         setPositionAngleType(PositionAngle.TRUE);
     }
 
-    /** Set the integrator.
-     * @param integrator numerical integrator to use for propagation.
+    /** Get the adder.
+     * @return adder
      */
-    public void setIntegrator(final FirstOrderIntegrator integrator) {
-        this.integrator = integrator;
+    protected TimeDerivativesEquations getAdder() {
+        return adder;
     }
 
-    /** Set the central attraction coefficient &mu;.
+     /** Set the central attraction coefficient &mu;.
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @see #getMu()
      * @see #addForceModel(ForceModel)
      */
     public void setMu(final double mu) {
+        super.setMu(mu);
         newtonianAttraction = new NewtonianAttraction(mu);
-    }
-
-    /** Get the central attraction coefficient &mu;.
-     * @return mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @see #setMu(double)
-     */
-    public double getMu() {
-        return newtonianAttraction.getMu();
     }
 
     /** Set the attitude provider.
@@ -259,32 +189,7 @@ public class NumericalPropagator implements Propagator {
      */
     @Deprecated
     public void setAttitudeLaw(final AttitudeProvider provider) {
-        this.attitudeProvider = provider;
-    }
-
-    /** {@inheritDoc} */
-    public AttitudeProvider getAttitudeProvider() {
-        return attitudeProvider;
-    }
-
-    /** {@inheritDoc} */
-    public void setAttitudeProvider(final AttitudeProvider attitudeProvider) {
-        this.attitudeProvider = attitudeProvider;
-    }
-
-    /** {@inheritDoc} */
-    public void addEventDetector(final EventDetector detector) {
-        detectors.add(detector);
-    }
-
-    /** {@inheritDoc} */
-    public Collection<EventDetector> getEventsDetectors() {
-        return Collections.unmodifiableCollection(detectors);
-    }
-
-    /** {@inheritDoc} */
-    public void clearEventsDetectors() {
-        detectors.clear();
+        setAttitudeProvider(provider);
     }
 
     /** Add a force model to the global perturbation model.
@@ -326,82 +231,18 @@ public class NumericalPropagator implements Propagator {
         return newtonianAttraction;
     }
 
-    /** {@inheritDoc} */
-    public int getMode() {
-        return mode;
-    }
-
-    /** {@inheritDoc} */
-    public Frame getFrame() {
-        return initialState.getFrame();
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
-     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
-     */
-    public void setSlaveMode() {
-        integrator.clearStepHandlers();
-        modeHandler = null;
-        mode = SLAVE_MODE;
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
-     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
-     * step handler is needed, it should be added after this method has been called.</p>
-     */
-    public void setMasterMode(final double h, final OrekitFixedStepHandler handler) {
-        setMasterMode(new OrekitStepNormalizer(h, handler));
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
-     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
-     * step handler is needed, it should be added after this method has been callled.</p>
-     */
-    public void setMasterMode(final OrekitStepHandler handler) {
-        integrator.clearStepHandlers();
-        final AdaptedStepHandler wrapped = new AdaptedStepHandler(handler);
-        integrator.addStepHandler(wrapped);
-        modeHandler = wrapped;
-        mode = MASTER_MODE;
-    }
-
-    /** {@inheritDoc}
-     * <p>Note that this method has the side effect of replacing the step handlers
-     * of the underlying integrator set up in the {@link
-     * #NumericalPropagator(FirstOrderIntegrator) constructor} or the {@link
-     * #setIntegrator(FirstOrderIntegrator) setIntegrator} method. So if a specific
-     * step handler is needed, it should be added after this method has been called.</p>
-     */
-    public void setEphemerisMode() {
-        integrator.clearStepHandlers();
-        final EphemerisModeHandler ephemeris = new EphemerisModeHandler();
-        modeHandler = ephemeris;
-        integrator.addStepHandler(ephemeris);
-        mode = EPHEMERIS_GENERATION_MODE;
-    }
-
     /** Set propagation orbit type.
      * @param orbitType orbit type to use for propagation
      */
     public void setOrbitType(final OrbitType orbitType) {
-        this.orbitType = orbitType;
+        super.setOrbitType(orbitType);
     }
 
     /** Get propagation parameter type.
      * @return orbit type used for propagation
      */
     public OrbitType getOrbitType() {
-        return orbitType;
+        return super.getOrbitType();
     }
 
     /** Set position angle type.
@@ -414,331 +255,30 @@ public class NumericalPropagator implements Propagator {
      * @param positionAngleType angle type to use for propagation
      */
     public void setPositionAngleType(final PositionAngle positionAngleType) {
-        this.angleType = positionAngleType;
+        super.setPositionAngleType(positionAngleType);
     }
 
     /** Get propagation parameter type.
      * @return angle type to use for propagation
      */
     public PositionAngle getPositionAngleType() {
-        return angleType;
-    }
-
-    /** {@inheritDoc} */
-    public BoundedPropagator getGeneratedEphemeris()
-        throws IllegalStateException {
-        if (mode != EPHEMERIS_GENERATION_MODE) {
-            throw OrekitException.createIllegalStateException(OrekitMessages.PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE);
-        }
-        return ((EphemerisModeHandler) modeHandler).getEphemeris();
-    }
-
-    /** {@inheritDoc} */
-    public SpacecraftState getInitialState() {
-        return initialState;
+        return super.getPositionAngleType();
     }
 
     /** Set the initial state.
      * @param initialState initial state
-     * @see #propagate(AbsoluteDate)
      */
-    public void setInitialState(final SpacecraftState initialState) {
+    public void setInitialState(final SpacecraftState initialState) throws PropagationException {
         resetInitialState(initialState);
     }
 
     /** {@inheritDoc} */
-    public void resetInitialState(final SpacecraftState state) {
+    public void resetInitialState(final SpacecraftState state) throws PropagationException {
+        super.resetInitialState(state);
         if (newtonianAttraction == null) {
             setMu(state.getMu());
         }
-        this.initialState = state;
-        this.startDate    = null;
-    }
-
-    /** Select additional state and equations pair in the list.
-     * @param  name name of the additional equations to select
-     * @return additional state and equations pair
-     * @throws OrekitException if additional equation is unknown
-     */
-    private AdditionalEquationsAndData selectStateAndEquations(final String name)
-        throws OrekitException {
-        for (AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-            if (stateAndEqu.getEquations().getName().equals(name)) {
-                return stateAndEqu;
-            }
-        }
-        throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION);
-    }
-
-    /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param addEqu additional equations
-     * @see #setInitialAdditionalState(String, double[])
-     * @exception OrekitException if a set of equations with the same name is already present
-     */
-    public void addAdditionalEquations(final AdditionalEquations addEqu)
-        throws OrekitException {
-
-        // check if the name is already used
-        for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-            if (stateAndEqu.getEquations().getName().equals(addEqu.getName())) {
-                // this set of equations is already registered, complain
-                throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, addEqu.getName());
-            }
-        }
-
-        // this is really a new set of equations, add it
-        addEquationsAndData.add(new AdditionalEquationsAndData(addEqu));
-
-    }
-
-    /** Set initial additional state.
-     * @param name name of the additional equations whose initial state is set
-     * @param addState additional state
-     * @throws OrekitException if additional equation is unknown
-     * @see #addAdditionalEquations(AdditionalEquations)
-     */
-    public void setInitialAdditionalState(final String name, final double[] addState)
-        throws OrekitException {
-        selectStateAndEquations(name).getData().setAdditionalState(addState);
-    }
-
-    /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
-        try {
-            if (startDate == null) {
-                if (initialState == null) {
-                    throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-                }
-                startDate = initialState.getDate();
-            }
-            return propagate(startDate, target);
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded PropagationException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof PropagationException) {
-                    throw (PropagationException) t;
-                }
-            }
-            throw new PropagationException(oe);
-
-        }
-    }
-
-    /** {@inheritDoc} */
-    public SpacecraftState propagate(final AbsoluteDate tStart, final AbsoluteDate tEnd)
-        throws PropagationException {
-        try {
-
-            if (initialState == null) {
-                throw new PropagationException(OrekitMessages.INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION);
-            }
-
-            if (!tStart.equals(initialState.getDate())) {
-                // if propagation start date is not initial date,
-                // propagate from initial to start date without event detection
-                propagate(tStart, false);
-            }
-
-            // propagate from start date to end date with event detection
-            return propagate(tEnd, true);
-
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded PropagationException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof PropagationException) {
-                    throw (PropagationException) t;
-                }
-            }
-            throw new PropagationException(oe);
-
-        }
-    }
-
-    /** Propagation with or without event detection.
-     * @param tEnd target date to which orbit should be propagated
-     * @param activateHandlers if true, step and event handlers should be activated
-     * @return state at end of propagation
-     * @exception PropagationException if orbit cannot be propagated
-     */
-    private SpacecraftState propagate(final AbsoluteDate tEnd, final boolean activateHandlers)
-        throws PropagationException {
-        try {
-
-            if (initialState.getDate().equals(tEnd)) {
-                // don't extrapolate
-                return initialState;
-            }
-            if (integrator == null) {
-                throw new PropagationException(OrekitMessages.ODE_INTEGRATOR_NOT_SET_FOR_ORBIT_PROPAGATION);
-            }
-
-            // space dynamics view
-            referenceDate  = initialState.getDate();
-
-            // set propagation orbit type
-            final Orbit initialOrbit = orbitType.convertType(initialState.getOrbit());
-            if (Double.isNaN(getMu())) {
-                setMu(initialOrbit.getMu());
-            }
-
-            // initialize mode handler
-            switch (mode) {
-            case MASTER_MODE:
-                break;
-            case EPHEMERIS_GENERATION_MODE:
-                break;
-            default: // this should be slave mode
-                break;
-            }
-            if (modeHandler != null) {
-                final List<AdditionalStateData> stateData =
-                        new ArrayList<AdditionalStateData>(addEquationsAndData.size());
-                for (final AdditionalEquationsAndData equationsAndData : addEquationsAndData) {
-                    stateData.add(equationsAndData.getData());
-                }
-                modeHandler.initialize(orbitType, angleType, attitudeProvider, stateData,
-                                       activateHandlers, referenceDate,
-                                       initialState.getFrame(), newtonianAttraction.getMu());
-            }
-
-            // creating state vector
-            this.stateVector  = new double[computeDimension()];
-
-            currentState =
-                new SpacecraftState(initialOrbit, initialState.getAttitude(), initialState.getMass());
-
-            if (initialState.getMass() <= 0.0) {
-                throw new IllegalArgumentException("Mass is null or negative");
-            }
-
-            // mathematical view
-            final double t0 = 0;
-            final double t1 = tEnd.durationFrom(initialState.getDate());
-
-            // Map state to array
-            orbitType.mapOrbitToArray(initialState.getOrbit(), angleType, stateVector);
-            stateVector[6] = initialState.getMass();
-            int index = 7;
-            for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-                final double[] addState = stateAndEqu.getData().getAdditionalState();
-                System.arraycopy(addState, 0, stateVector, index, addState.length);
-                // Incrementing index
-                index += addState.length;
-            }
-
-            integrator.clearEventHandlers();
-
-            // set up events related to force models
-            for (final ForceModel forceModel : forceModels) {
-                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
-                if (modelDetectors != null) {
-                    for (final EventDetector detector : modelDetectors) {
-                        setUpEventDetector(detector);
-                    }
-                }
-            }
-
-            // set up events added by user
-            for (final EventDetector detector : detectors) {
-                setUpEventDetector(detector);
-            }
-
-            // mathematical integration
-            if (!addEquationsAndData.isEmpty()) {
-                expandToleranceArray();
-            }
-            final double stopTime;
-            try {
-                stopTime = integrator.integrate(new DifferentialEquations(), t0, stateVector, t1, stateVector);
-            } catch (OrekitExceptionWrapper oew) {
-                throw oew.getException();
-            }
-            if (!addEquationsAndData.isEmpty()) {
-                resetToleranceArray();
-            }
-
-            // back to space dynamics view
-            final AbsoluteDate date = initialState.getDate().shiftedBy(stopTime);
-
-            // get final additional state
-            index = 7;
-            for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-                final double[] addState = stateAndEqu.getData().getAdditionalState();
-                System.arraycopy(stateVector, index, addState, 0, addState.length);
-                // Incrementing index
-                index += addState.length;
-            }
-
-            // get final state
-            final Orbit finalOrbit = orbitType.mapArrayToOrbit(stateVector, angleType, date, getMu(),
-                                                               initialState.getFrame());
-            final Attitude finalAttitude = attitudeProvider.getAttitude(finalOrbit, date,
-                                                                        initialState.getFrame());
-            initialState = new SpacecraftState(finalOrbit, finalAttitude, stateVector[6]);
-            startDate = date;
-            return initialState;
-
-        } catch (PropagationException pe) {
-            throw pe;
-        } catch (OrekitException oe) {
-            throw new PropagationException(oe);
-        } catch (MathIllegalArgumentException miae) {
-            throw PropagationException.unwrap(miae);
-        } catch (MathIllegalStateException mise) {
-            throw PropagationException.unwrap(mise);
-        }
-    }
-
-    /** Expand integrator tolerance array to fit compound state vector.
-     */
-    private void expandToleranceArray() {
-        if (integrator instanceof AdaptiveStepsizeIntegrator) {
-            final int n = computeDimension();
-            resizeArray(integrator, ABSOLUTE_TOLERANCE, n, Double.POSITIVE_INFINITY);
-            resizeArray(integrator, RELATIVE_TOLERANCE, n, 0.0);
-        }
-    }
-
-    /** Reset integrator tolerance array to original size.
-     */
-    private void resetToleranceArray() {
-        if (integrator instanceof AdaptiveStepsizeIntegrator) {
-            final int n = stateVector.length;
-            resizeArray(integrator, ABSOLUTE_TOLERANCE, n, Double.POSITIVE_INFINITY);
-            resizeArray(integrator, RELATIVE_TOLERANCE, n, 0.0);
-        }
-    }
-
-    /** Resize object internal array.
-     * @param instance instance concerned
-     * @param fieldName field name
-     * @param newSize new array size
-     * @param filler value to use to fill uninitialized elements of the new array
-     */
-    private void resizeArray(final Object instance, final String fieldName,
-                             final int newSize, final double filler) {
-        try {
-            final Field arrayField = AdaptiveStepsizeIntegrator.class.getDeclaredField(fieldName);
-            arrayField.setAccessible(true);
-            final double[] originalArray = (double[]) arrayField.get(instance);
-            final int originalSize = originalArray.length;
-            final double[] resizedArray = new double[newSize];
-            if (newSize > originalSize) {
-                // expand array
-                System.arraycopy(originalArray, 0, resizedArray, 0, originalSize);
-                Arrays.fill(resizedArray, originalSize, newSize, filler);
-            } else {
-                // shrink array
-                System.arraycopy(originalArray, 0, resizedArray, 0, newSize);
-            }
-            arrayField.set(instance, resizedArray);
-        } catch (NoSuchFieldException nsfe) {
-            throw OrekitException.createInternalError(nsfe);
-        } catch (IllegalAccessException iae) {
-            throw OrekitException.createInternalError(iae);
-        }
+        setStartDate(null);
     }
 
     /** {@inheritDoc} */
@@ -747,137 +287,70 @@ public class NumericalPropagator implements Propagator {
         return propagate(date).getPVCoordinates(frame);
     }
 
-    /** Get the number of calls to the differential equations computation method.
-     * <p>The number of calls is reset each time the {@link #propagate(AbsoluteDate)}
-     * method is called.</p>
-     * @return number of calls to the differential equations computation method
+    /** Get the differential equations to integrate (for main state only).
+     * @return differential equations for main state
      */
-    public int getCalls() {
-        return calls;
-    }
+    protected MainStateEquations getMainStateEquations() {
+        return new MainStateEquations() {
 
-    /** Wrap an Orekit event detector and register it to the integrator.
-     * @param osf event handler to wrap
-     */
-    protected void setUpEventDetector(final EventDetector osf) {
-        final EventHandler handler =
-            new AdaptedEventDetector(osf, orbitType, angleType, attitudeProvider,
-                                     referenceDate, newtonianAttraction.getMu(),
-                                     initialState.getFrame());
-        integrator.addEventHandler(handler,
-                                   osf.getMaxCheckInterval(),
-                                   osf.getThreshold(),
-                                   osf.getMaxIterationCount());
-    }
+            /** {@inheritDoc} */
+            public void init(final SpacecraftState initialState) {
+                for (final ForceModel forceModel : forceModels) {
+                    final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
+                    if (modelDetectors != null) {
+                        for (final EventDetector detector : modelDetectors) {
+                            setUpEventDetector(detector);
+                        }
+                    }
+                }
+            }
 
-    /** Get state vector dimension without additional parameters.
-     * @return state vector dimension without additional parameters.
-     */
-    public int getBasicDimension() {
-        return 7;
+            /** {@inheritDoc} */
+            public void computeDerivatives(final SpacecraftState state, final TimeDerivativesEquations adder)
+                    throws OrekitException {
 
-    }
-    /** Compute complete state vector dimension.
-     * @return state vector dimension
-     */
-    private int computeDimension() {
-        int sum = getBasicDimension();
-        for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-            sum += stateAndEqu.getData().getAdditionalState().length;
-        }
-        return sum;
+                // compute the contributions of all perturbing forces
+                for (final ForceModel forceModel : forceModels) {
+                    forceModel.addContribution(state, adder);
+                }
+
+                // finalize derivatives by adding the Kepler contribution
+                newtonianAttraction.addContribution(state, adder);
+
+            }
+        };
 
     }
 
     /** Internal class for differential equations representation. */
-    private class DifferentialEquations implements FirstOrderDifferentialEquations, TimeDerivativesEquations {
+    private class Adder implements TimeDerivativesEquations {
 
         /** Reference to the derivatives array to initialize. */
         private double[] storedYDot;
+
+        /** Current orbit. */
+        private Orbit orbit;
 
         /** Jacobian of the orbital parameters with respect to the cartesian parameters. */
         private double[][] jacobian;
 
         /** Build a new instance. */
-        public DifferentialEquations() {
-            calls = 0;
+        public Adder() {
             jacobian = new double[6][6];
-        }
-
-        /** {@inheritDoc} */
-        public int getDimension() {
-            return computeDimension();
-        }
-
-        /** {@inheritDoc} */
-        public void computeDerivatives(final double t, final double[] y, final double[] yDot)
-            throws OrekitExceptionWrapper {
-
-            try {
-                // update space dynamics view
-                final AbsoluteDate currentDate = referenceDate.shiftedBy(t);
-                final Orbit currentOrbit =
-                    orbitType.mapArrayToOrbit(y, angleType, currentDate,
-                                              currentState.getMu(), currentState.getFrame());
-                final Attitude currentAttitude =
-                    attitudeProvider.getAttitude(currentOrbit, currentDate, currentState.getFrame());
-                currentState = new SpacecraftState(currentOrbit, currentAttitude, y[6]);
-
-                if (currentState.getMass() <= 0.0) {
-                    throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
-                                                   currentState.getMass());
-                }
-
-                // initialize derivatives
-                initDerivatives(yDot, currentState.getOrbit());
-
-                // compute the contributions of all perturbing forces
-                for (final ForceModel forceModel : forceModels) {
-                    forceModel.addContribution(currentState, this);
-                }
-
-                // finalize derivatives by adding the Kepler contribution
-                newtonianAttraction.addContribution(currentState, this);
-
-                // Add contribution for additional state
-                int index = 7;
-                for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-                    final double[] p    = stateAndEqu.getData().getAdditionalState();
-                    final double[] pDot = stateAndEqu.getData().getAdditionalStateDot();
-
-                    // update current additional state
-                    System.arraycopy(y, index, p, 0, p.length);
-
-                    // compute additional derivatives
-                    stateAndEqu.getEquations().computeDerivatives(currentState, this, p, pDot);
-
-                    // update each additional state contribution in global array
-                    System.arraycopy(pDot, 0, yDot, index, p.length);
-
-                    // incrementing index
-                    index += p.length;
-                }
-
-                // increment calls counter
-                ++calls;
-
-            } catch (OrekitException oe) {
-                throw new OrekitExceptionWrapper(oe);
-            }
-
         }
 
         /** {@inheritDoc} */
         public void initDerivatives(final double[] yDot, final Orbit currentOrbit)
             throws PropagationException {
             storedYDot = yDot;
+            orbit      = currentOrbit;
             Arrays.fill(storedYDot, 0.0);
-            currentOrbit.getJacobianWrtCartesian(angleType, jacobian);
+            currentOrbit.getJacobianWrtCartesian(getPositionAngleType(), jacobian);
         }
 
         /** {@inheritDoc} */
         public void addKeplerContribution(final double mu) {
-            currentState.getOrbit().addKeplerContribution(angleType, mu, storedYDot);
+            orbit.addKeplerContribution(getPositionAngleType(), mu, storedYDot);
         }
 
         /** {@inheritDoc} */
@@ -891,7 +364,7 @@ public class NumericalPropagator implements Propagator {
         /** {@inheritDoc} */
         public void addAcceleration(final Vector3D gamma, final Frame frame)
             throws OrekitException {
-            final Transform t = frame.getTransformTo(currentState.getFrame(), currentState.getDate());
+            final Transform t = frame.getTransformTo(orbit.getFrame(), orbit.getDate());
             final Vector3D gammInRefFrame = t.transformVector(gamma);
             addXYZAcceleration(gammInRefFrame.getX(), gammInRefFrame.getY(), gammInRefFrame.getZ());
         }
@@ -902,39 +375,6 @@ public class NumericalPropagator implements Propagator {
                 throw OrekitException.createIllegalArgumentException(OrekitMessages.POSITIVE_FLOW_RATE, q);
             }
             storedYDot[6] += q;
-        }
-
-    }
-
-    /** Internal class for additional equations and state data management. */
-    private static class AdditionalEquationsAndData {
-
-        /** Additional equations. */
-        private final AdditionalEquations equations;
-
-        /** Additional state and derivatives data. */
-        private final AdditionalStateData data;
-
-        /** Simple constructor.
-         * @param equations additional equations
-         */
-        public AdditionalEquationsAndData(final AdditionalEquations equations) {
-            this.equations = equations;
-            data = new AdditionalStateData(equations.getName());
-        }
-
-        /** Get the additional equations.
-         * @return additional equations
-         */
-        public AdditionalEquations getEquations() {
-            return equations;
-        }
-
-        /** Get the additional state.
-         * @return additional state
-         */
-        public AdditionalStateData getData() {
-            return data;
         }
 
     }
@@ -1015,5 +455,4 @@ public class NumericalPropagator implements Propagator {
     }
 
 }
-
 

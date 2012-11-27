@@ -48,6 +48,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -88,7 +89,7 @@ public class PartialDerivativesTest {
 
                 // compute reference state Jacobian using finite differences
                 double[][] dYdY0Ref = new double[6][6];
-                NumericalPropagator propagator2 = setUpPropagator(initialState, dP, orbitType, angleType, gravityField);
+                AbstractIntegratedPropagator propagator2 = setUpPropagator(initialState, dP, orbitType, angleType, gravityField);
                 double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialState.getOrbit(), orbitType)[0];
                 for (int i = 0; i < 6; ++i) {
                     propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));
@@ -155,7 +156,7 @@ public class PartialDerivativesTest {
 
                 // compute reference state Jacobian using finite differences
                 double[][] dYdY0Ref = new double[6][6];
-                NumericalPropagator propagator2 = setUpPropagator(initialState, dP, orbitType, angleType, gravityField);
+                AbstractIntegratedPropagator propagator2 = setUpPropagator(initialState, dP, orbitType, angleType, gravityField);
                 double[] steps = NumericalPropagator.tolerances(1000000 * dP, initialState.getOrbit(), orbitType)[0];
                 for (int i = 0; i < 6; ++i) {
                     propagator2.resetInitialState(shiftState(initialState, orbitType, angleType, -4 * steps[i], i));

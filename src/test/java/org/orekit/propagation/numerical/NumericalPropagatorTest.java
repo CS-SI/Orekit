@@ -48,6 +48,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
+import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -90,7 +91,7 @@ public class NumericalPropagatorTest {
 
     @Test(expected=OrekitException.class)
     public void testNotInitialised() throws OrekitException {
-        final NumericalPropagator notInitialised =
+        final AbstractIntegratedPropagator notInitialised =
             new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
         notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
     }

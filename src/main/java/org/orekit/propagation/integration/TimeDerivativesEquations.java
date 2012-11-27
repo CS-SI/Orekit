@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.integration;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -29,8 +29,8 @@ import org.orekit.orbits.Orbit;
  * {@link org.orekit.orbits.Orbit} plus one mass derivatives. It implements Gauss
  * equations for different kind of parameters.</p>
  * <p>An implementation of this interface is automatically provided by {@link
- * org.orekit.propagation.numerical.NumericalPropagator numerical propagators} to the
- * various {@link org.orekit.forces.ForceModel force models}.
+ * AbstractIntegratedPropagator integration-based propagators}, which are either
+ * semi-analytical or numerical propagators.
  * </p>
  * @see org.orekit.forces.ForceModel
  * @see org.orekit.propagation.numerical.NumericalPropagator

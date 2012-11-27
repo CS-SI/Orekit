@@ -27,7 +27,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.propagation.integration.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 
 

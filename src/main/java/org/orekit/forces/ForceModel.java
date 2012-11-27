@@ -20,7 +20,7 @@ import org.apache.commons.math3.ode.ParameterizedODE;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.propagation.integration.TimeDerivativesEquations;
 
 /** This interface represents a force modifying spacecraft motion.
  *

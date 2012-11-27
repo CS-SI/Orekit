@@ -30,6 +30,7 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.TimeDerivativesEquations;
 import org.orekit.utils.PVCoordinates;
 
 /** Class enabling basic {@link ForceModel} instances

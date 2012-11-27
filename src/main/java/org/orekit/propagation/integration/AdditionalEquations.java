@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.integration;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.numerical.NumericalPropagator;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
  *

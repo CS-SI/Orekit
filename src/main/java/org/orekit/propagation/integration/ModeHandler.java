@@ -14,15 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.integration;
 
 import java.util.List;
 
-import org.orekit.attitudes.AttitudeProvider;
-import org.orekit.frames.Frame;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.time.AbsoluteDate;
 
 /** Common interface for all propagator mode handlers initialization.
  * @author Luc Maisonobe
@@ -30,18 +25,10 @@ import org.orekit.time.AbsoluteDate;
 public interface ModeHandler {
 
     /** Initialize the mode handler.
-     * @param orbit orbit type
-     * @param angle position angle type
-     * @param provider attitude provider
      * @param additionalStateData list of additional state data
      * @param activateHandlers if handlers shall be active
-     * @param reference reference date
-     * @param frame reference frame
-     * @param mu central body attraction coefficient
      */
-    void initialize(OrbitType orbit, PositionAngle angle,
-                    AttitudeProvider provider,
-                    List <AdditionalStateData> additionalStateData,
-                    boolean activateHandlers, AbsoluteDate reference, Frame frame, double mu);
+    void initialize(List <AdditionalStateData> additionalStateData,
+                    boolean activateHandlers);
 
 }

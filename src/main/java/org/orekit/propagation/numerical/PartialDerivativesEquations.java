@@ -26,6 +26,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.propagation.integration.TimeDerivativesEquations;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.

@@ -14,7 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.numerical;
+package org.orekit.propagation.integration;
+
+import java.io.Serializable;
+
+import org.orekit.propagation.numerical.NumericalPropagator;
 
 /** This class is a container for additional state parameters and the name of their associated evolution equation.
 *
@@ -27,7 +31,10 @@ package org.orekit.propagation.numerical;
 * @see AdditionalEquations
 * @author Luc Maisonobe
 */
-public class AdditionalStateData {
+public class AdditionalStateData implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 5993627266168523777L;
 
     /** Additional state name. */
     private String name;

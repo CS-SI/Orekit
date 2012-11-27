@@ -14,26 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.precomputed;
+package org.orekit.propagation.integration;
 
 import java.util.List;
 
 import org.apache.commons.math3.ode.ContinuousOutputModel;
-import org.orekit.attitudes.Attitude;
-import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.AbstractPropagator;
-import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.AdditionalStateData;
+import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
+import org.orekit.propagation.analytical.AdditionalStateProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -71,22 +66,13 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class IntegratedEphemeris
-    extends AbstractPropagator implements BoundedPropagator {
+    extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2135002726640830424L;
+    private static final long serialVersionUID = 4297289148511923674L;
 
-    /** Propagation orbit type. */
-    private final OrbitType orbitType;
-
-    /** Position angle type. */
-    private final PositionAngle angleType;
-
-    /** Reference frame. */
-    private final Frame referenceFrame;
-
-    /** Central body gravitational constant. */
-    private final double mu;
+    /** Mapper between raw double components and spacecraft state. */
+    private final StateMapper mapper;
 
     /** Start date of the integration (can be min or max). */
     private final AbsoluteDate startDate;
@@ -104,34 +90,25 @@ public class IntegratedEphemeris
      * @param startDate Start date of the integration (can be minDate or maxDate)
      * @param minDate first date of the range
      * @param maxDate last date of the range
-     * @param orbitType orbit type
-     * @param angleType position angle type
-     * @param attitudeProvider attitude provider
+     * @param mapper mapper between raw double components and spacecraft state
      * @param stateData list of additional state data providers
      * @param model underlying raw mathematical model
-     * @param referenceFrame reference referenceFrame
-     * @param mu central body attraction coefficient
      * @exception OrekitException if several providers have the same name
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                               final OrbitType orbitType, final PositionAngle angleType,
-                               final AttitudeProvider attitudeProvider,
+                               final StateMapper mapper,
                                final List<AdditionalStateData> stateData,
-                               final ContinuousOutputModel model,
-                               final Frame referenceFrame, final double mu)
+                               final ContinuousOutputModel model)
         throws OrekitException {
 
-        super(attitudeProvider);
+        super(mapper.getAttitudeProvider());
 
-        this.startDate        = startDate;
-        this.minDate          = minDate;
-        this.maxDate          = maxDate;
-        this.orbitType        = orbitType;
-        this.angleType        = angleType;
-        this.model            = model;
-        this.referenceFrame   = referenceFrame;
-        this.mu               = mu;
+        this.startDate = startDate;
+        this.minDate   = minDate;
+        this.maxDate   = maxDate;
+        this.mapper    = mapper;
+        this.model     = model;
 
         // set up providers to map the final elements of the model array to additional states
         int index = 7;
@@ -172,11 +149,7 @@ public class IntegratedEphemeris
         throws PropagationException {
         try {
             setInterpolationDate(date);
-            final double[] y = model.getInterpolatedState();
-            final Orbit orbit =
-                orbitType.mapArrayToOrbit(y, angleType, date, mu, referenceFrame);
-            final Attitude attitude = getAttitudeProvider().getAttitude(orbit, date, referenceFrame);
-            return new SpacecraftState(orbit, attitude, y[6]);
+            return mapper.mapArrayToState(model.getInterpolatedTime(), model.getInterpolatedState());
         } catch (OrekitExceptionWrapper oew) {
             if (oew.getException() instanceof PropagationException) {
                 throw (PropagationException) oew.getException();
