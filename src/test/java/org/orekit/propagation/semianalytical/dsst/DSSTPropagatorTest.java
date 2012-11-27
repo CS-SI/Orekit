@@ -51,6 +51,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AbstractIntegratedPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
@@ -549,7 +550,7 @@ public class DSSTPropagatorTest {
         return new SpacecraftState(new EquinoctialOrbit(new PVCoordinates(position, velocity), FramesFactory.getEME2000(), initDate, mu));
     }
 
-    private void setNumProp(SpacecraftState initialState) {
+    private void setNumProp(SpacecraftState initialState) throws PropagationException {
         final double[][] tol = NumericalPropagator.tolerances(1.0, initialState.getOrbit(), initialState.getOrbit().getType());
         final double minStep = 10.;
         final double maxStep = 1000.;
@@ -598,7 +599,7 @@ public class DSSTPropagatorTest {
     private static class StepChecker implements OrekitFixedStepHandler {
 
         /** Reference propagator */
-        private NumericalPropagator reference;
+        private AbstractIntegratedPropagator reference;
 
         private double              deltaAMax        = 0d;
         private double              deltaExMax       = 0d;
@@ -626,7 +627,7 @@ public class DSSTPropagatorTest {
          *            propagator : must contain (da, dex, dey, dhx, dhy, dlm)
          * @throws IOException
          */
-        private StepChecker(final NumericalPropagator propagatorRef,
+        private StepChecker(final AbstractIntegratedPropagator propagatorRef,
                             double[] tolerance)
                                                throws IOException {
             this.reference = propagatorRef;

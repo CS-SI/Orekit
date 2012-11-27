@@ -53,6 +53,7 @@ import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.OsculatingToMeanElementsConverter;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody;
@@ -123,7 +124,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author Romain Di Costanzo
  * @author Pascal Parraud
  */
-public class DSSTPropagator extends AbstractPropagator {
+public class DSSTPropagator extends AbstractAnalyticalPropagator {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 1498740972841393005L;

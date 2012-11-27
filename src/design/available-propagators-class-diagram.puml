@@ -58,46 +58,59 @@
         +AbsoluteDate getMaxDate()
       }
 
-      Propagator <|.. BoundedPropagator
       abstract class AbstractPropagator {
-        +PVCoordinatesProvider getPvProvider()
-        +SpacecraftState getInitialState()
-        +void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider)
       }
+
+      PVCoordinatesProvider <|.. Propagator
+      Propagator            <|.. AbstractPropagator
+      Propagator            <|.. BoundedPropagator
 
       package analytical #ECEBD8
 
-        AbstractPropagator <|-- AdapterPropagator
-        AbstractPropagator <|-- EcksteinHechlerPropagator
-        AbstractPropagator <|-- KeplerianPropagator
+        abstract class AbstractAnalyticalPropagator {
+          +PVCoordinatesProvider getPvProvider()
+          +void addAdditionalStateProvider(AdditionalStateProvider additionalStateProvider)
+        }
+
+        AbstractPropagator           <|-- AbstractAnalyticalPropagator
+        AbstractAnalyticalPropagator <|-- AdapterPropagator
+        AbstractAnalyticalPropagator <|-- EcksteinHechlerPropagator
+        AbstractAnalyticalPropagator <|-- KeplerianPropagator
+
+        AbstractAnalyticalPropagator <|-- Ephemeris
+        BoundedPropagator            <|.. Ephemeris
 
         package tle #DDEBD8
-          AbstractPropagator <|-- TLEPropagator
+          AbstractAnalyticalPropagator <|-- TLEPropagator
         end package
+
+     end package
+
+     package integration #ECEBD8
+
+       abstract class AbstractIntegratedPropagator {
+         +void setIntegrator(FirstOrderIntegrator integrator)
+         +void addAdditionalEquations(AdditionalEquations addEqu)
+         +void setInitialAdditionalState(String name, double[] addState)
+       }
+
+       BoundedPropagator            <|.. IntegratedEphemeris
+       AbstractIntegratedPropagator o-down-> IntegratedEphemeris : creates
+       AbstractPropagator           <|-- AbstractIntegratedPropagator
 
      end package
 
      package semianalytical #ECEBD8
 
        package dsst #DDEBD8
-         AbstractPropagator <|-- DSSTPropagator
+         AbstractIntegratedPropagator <|-right- DSSTPropagator
        end package
 
      end package
 
      package numerical #ECEBD8
-       Propagator <|-- NumericalPropagator
+       AbstractIntegratedPropagator <|-right- NumericalPropagator
      end package
-
-     package precomputed #ECEBD8
-       AbstractPropagator <|-- Ephemeris
-       BoundedPropagator  <|.. Ephemeris
-       BoundedPropagator  <|.. IntegratedEphemeris
-       NumericalPropagator o-down-> IntegratedEphemeris : creates
-     end package
-
-     PVCoordinatesProvider <|.down. Propagator
-     Propagator <|.right. AbstractPropagator
 
    end package
 

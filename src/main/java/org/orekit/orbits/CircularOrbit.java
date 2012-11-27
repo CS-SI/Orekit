@@ -531,7 +531,7 @@ public class CircularOrbit
      * </p>
      * <p>
      * If orbit interpolation on large samples is needed, using the {@link
-     * org.orekit.propagation.precomputed.Ephemeris} class is a better way tha using this
+     * org.orekit.propagation.analytical.Ephemeris} class is a better way than using this
      * low-level interpolation. The Ephemeris class automatically handles selection of
      * a neighboring sub-sample with a predefined number of point from a large global sample
      * in a thread-safe way.

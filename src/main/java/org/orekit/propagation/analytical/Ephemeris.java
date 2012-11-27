@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.precomputed;
+package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -28,7 +28,6 @@ import org.orekit.errors.PropagationException;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -46,10 +45,10 @@ import org.orekit.utils.TimeStampedGenerator;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Luc Maisonobe
  */
-public class Ephemeris extends AbstractPropagator implements BoundedPropagator {
+public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1523460404698149239L;
+    private static final long serialVersionUID = -7270780789524246722L;
 
     /** First date in range. */
     private final AbsoluteDate minDate;

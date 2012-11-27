@@ -1,4 +1,4 @@
-package org.orekit.propagation.precomputed;
+package org.orekit.propagation.analytical;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;

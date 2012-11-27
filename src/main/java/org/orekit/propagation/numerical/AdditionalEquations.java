@@ -49,12 +49,12 @@ import org.orekit.propagation.SpacecraftState;
  * </p>
  * <p>
  * This interface is the numerical (read not already integrated) counterpart of
- * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
+ * the {@link org.orekit.propagation.analytical.AdditionalStateProvider} interface.
  * It allows to append various additional state parameters to any {@link
  * NumericalPropagator numerical propagator}.
  * </p>
  * @see NumericalPropagator
- * @see org.orekit.propagation.AdditionalStateProvider
+ * @see org.orekit.propagation.analytical.AdditionalStateProvider
  * @author Luc Maisonobe
  */
 public interface AdditionalEquations {

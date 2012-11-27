@@ -24,7 +24,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -50,10 +49,7 @@ import org.orekit.time.AbsoluteDate;
  * @see org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel
  * @author Luc Maisonobe
  */
-public class AdapterPropagator extends AbstractPropagator {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -5953975769121996528L;
+public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** Interface for orbit differential effects. */
     public static interface DifferentialEffect {
