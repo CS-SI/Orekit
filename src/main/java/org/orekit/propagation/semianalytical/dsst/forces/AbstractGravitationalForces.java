@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.orekit.propagation.semianalytical.dsst.coefficients.ModifiedNewcombOperatorLoader;
 

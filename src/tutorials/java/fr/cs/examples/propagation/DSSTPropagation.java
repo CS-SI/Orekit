@@ -29,7 +29,9 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -40,7 +42,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.drag.SimpleExponentialAtmosphere;
+import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -58,10 +60,10 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -75,8 +77,6 @@ import fr.cs.examples.KeyValueFileParser;
  *  The parameters are read from the input file dsst-propagation.in located in the user's
  *  home directory (see commented example at src/tutorial/ressources/dsst-propagation.in).
  *  The results are written to the ouput file dsst-propagation.out in the same directory.
- *  </p>
- *  <p>
  *  </p>
  *  <p>
  *  Comparison between the DSST propagator and the numerical propagator can be optionally
@@ -150,6 +150,7 @@ public class DSSTPropagation {
         START_DATE,
         DURATION,
         OUTPUT_STEP,
+        FIXED_INTEGRATION_STEP,
         NUMERICAL_COMPARISON,
         CENTRAL_BODY_ORDER,
         CENTRAL_BODY_DEGREE,
@@ -178,9 +179,6 @@ public class DSSTPropagation {
             throw new IOException("Propagation duration is not defined.");
         }
 
-        // Inertial frame is EME2000
-        final Frame eme2000 = FramesFactory.getEME2000();
-
         // All dates in UTC
         final TimeScale utc = TimeScalesFactory.getUTC();
 
@@ -190,18 +188,22 @@ public class DSSTPropagation {
         // Central body attraction coefficient (m³/s²)
         final double mu = provider.getMu();
 
-        // Orbit definition
-        final Orbit orbit = createOrbit(parser, eme2000, utc, mu);
+        // Orbit definition (inertial frame is EME2000)
+        final Orbit orbit = createOrbit(parser, FramesFactory.getEME2000(), utc, mu);
 
         // DSST propagator definition
         Boolean isOsculating = false;
         if (parser.containsKey(ParameterKey.ORBIT_IS_OSCULATING)) {
             isOsculating = parser.getBoolean(ParameterKey.ORBIT_IS_OSCULATING);
         }
-        final DSSTPropagator dsstProp = createDSSTProp(orbit, isOsculating);
+        double fixedStepSize = -1.;
+        if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
+            fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
+        }
+        final DSSTPropagator dsstProp = createDSSTProp(orbit, isOsculating, fixedStepSize);
 
         // Set Force models
-        setForceModel(parser, provider, eme2000, dsstProp);
+        setForceModel(parser, provider, dsstProp);
 
         // Simulation properties
         AbsoluteDate start;
@@ -244,7 +246,7 @@ public class DSSTPropagation {
             final NumericalPropagator numProp = createNumProp(orbit);
             
             // Set Force models
-            setForceModel(parser, provider, eme2000, numProp);
+            setForceModel(parser, provider, numProp);
 
             // Add orbit handler
             OrbitHandler numHandler = new OrbitHandler();
@@ -340,19 +342,23 @@ public class DSSTPropagation {
      *
      *  @param orbit
      *  @param isOsculating if orbital elements are osculating
+     *  @param fixedStepSize step size for fixed step integrator (s)
      *  @throws OrekitException
      */
-    private DSSTPropagator createDSSTProp(Orbit orbit, boolean isOsculating) throws OrekitException {
+    private DSSTPropagator createDSSTProp(final Orbit orbit, final boolean isOsculating,
+                                          final double fixedStepSize) throws OrekitException {
 
-        /** TODO: this parameter will desappear soon */
-        final double TIME_SHIFT_TO_INITIALIZE = 10 * 86400;
+        FirstOrderIntegrator integrator;
+        if (fixedStepSize > 0.) {
+            integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
+        } else {
+            final double minStep = orbit.getKeplerianPeriod();
+            final double maxStep = minStep * 100.;
+            final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
+            integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+        }
 
-        final double minStep = orbit.getKeplerianPeriod();
-        final double maxStep = minStep * 100.;
-        final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
-        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
-
-        return new DSSTPropagator(integrator, orbit, isOsculating, TIME_SHIFT_TO_INITIALIZE);
+        return new DSSTPropagator(integrator, orbit, isOsculating);
     }
 
     /** Create the numerical propagator
@@ -377,14 +383,12 @@ public class DSSTPropagation {
      *
      *  @param provider potential coefficients provider
      *  @param parser input file parser
-     *  @param frame  inertial frame
      *  @param dsstProp DSST propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final PotentialCoefficientsProvider provider,
-                               final Frame frame,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
@@ -400,8 +404,7 @@ public class DSSTPropagation {
         // Central Body Force Model with un-normalized coefficients
         final double[][] Cnm = provider.getC(degree, order, false);
         final double[][] Snm = provider.getS(degree, order, false);
-        dsstProp.addForceModel(new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY,
-                                                   ae, mu, Cnm, Snm, null));
+        dsstProp.addForceModel(new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, Cnm, Snm));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -413,19 +416,18 @@ public class DSSTPropagation {
             dsstProp.addForceModel(new DSSTThirdBody(CelestialBodyFactory.getMoon()));
         }
 
-        // Drag Force
+        // Drag
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
-            OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
-                                                          Constants.WGS84_EARTH_FLATTENING,
-                                                          frame);
-            earth.setAngularThreshold(1.e-6);
-            Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
+            final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF2005());
+            final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
             dsstProp.addForceModel(new DSSTAtmosphericDrag(atm,
                                                            parser.getDouble(ParameterKey.DRAG_CD),
                                                            parser.getDouble(ParameterKey.DRAG_SF)));
         }
 
-        // Solar Radiation Pressure Force Model
+        // Solar Radiation Pressure
         if (parser.containsKey(ParameterKey.SOLAR_RADIATION_PRESSURE) && parser.getBoolean(ParameterKey.SOLAR_RADIATION_PRESSURE)) {
             dsstProp.addForceModel(new DSSTSolarRadiationPressure(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_CR),
                                                                   parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
@@ -437,14 +439,12 @@ public class DSSTPropagation {
      *
      *  @param provider potential coefficients provider
      *  @param parser  input file parser
-     *  @param frame   inertial frame
      *  @param numProp numerical propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final PotentialCoefficientsProvider provider,
-                               final Frame frame,
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
@@ -458,7 +458,7 @@ public class DSSTPropagation {
         }
 
         // Central Body (un-normalized coefficients)
-        numProp.addForceModel(new CunninghamAttractionModel(frame, ae, mu,
+        numProp.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
                                                             provider.getC(degree, order, false),
                                                             provider.getS(degree, order, false)));
 
@@ -474,13 +474,14 @@ public class DSSTPropagation {
 
         // Drag
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
-            OneAxisEllipsoid earth = new OneAxisEllipsoid(ae, Constants.WGS84_EARTH_FLATTENING, frame);
-            earth.setAngularThreshold(1.e-6);
-            Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
-            numProp.addForceModel(new DragForce(atm,
-                                                new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
-                                                                        parser.getDouble(ParameterKey.DRAG_CD),
-                                                                        0., 0.)));
+            final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
+                                                                Constants.WGS84_EARTH_FLATTENING,
+                                                                FramesFactory.getITRF2005());
+            final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
+            final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
+                                                                    parser.getDouble(ParameterKey.DRAG_CD),
+                                                                    0., 0.);
+            numProp.addForceModel(new DragForce(atm, ssc));
         }
 
         // Solar Radiation Pressure
@@ -492,7 +493,6 @@ public class DSSTPropagation {
             final double kR = 3.25 - 2.25 * cR;
             final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.SOLAR_RADIATION_PRESSURE_SF),
                                                                     0., 0., kR);
-
             numProp.addForceModel(new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, ssc));
         }
     }

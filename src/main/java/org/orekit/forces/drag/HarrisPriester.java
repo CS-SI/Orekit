@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -315,7 +316,9 @@ public class HarrisPriester implements Atmosphere {
         throws OrekitException {
 
         // compute sun geodetic position
-        final GeodeticPoint sunInBody = earth.transform(sun.getPVCoordinates(date, frame).getPosition(), frame, date);
+        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
+        final Vector3D sunClose = sunPosition.normalize().scalarMultiply(Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
+        final GeodeticPoint sunInBody = earth.transform(sunClose, frame, date);
         final double sunRAAN = sunInBody.getLongitude();
         final double sunDecl = sunInBody.getLatitude();
 

@@ -41,7 +41,7 @@ public class GammaMsnCoefficients {
 
     /** simple constructor.
      * @param gamma &gamma;
-     * @param I orbit representation : I = +1 for a prograde orbit, -1 otherwise
+     * @param I retrograde factor
      */
     public GammaMsnCoefficients(final double gamma, final int I) {
         this.gamma = gamma;

@@ -14,49 +14,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
-
-/**
- * Resonant couple used in the expression of the Tesseral resonant term for the
- * {@link DSSTCentralBody}.
+/** Resonant couple.
+ *  <p>
+ *  Resonant couples are used in the expression of the tesseral resonant terms
+ *  for the {@link DSSTCentralBody central body gravitational perturbation}.
+ *  </p>
  *
- * @author Romain Di Costanzo
+ *  @author Romain Di Costanzo
  */
 public class ResonantCouple implements Comparable<ResonantCouple> {
 
-    /** n value. */
+    /** Degree n */
     private final int n;
 
-    /** m value. */
+    /** Order m */
     private final int m;
 
     /** Simple constructor.
-     * @param n n-value
-     * @param m m-value
+     * @param n degree
+     * @param m order
      */
     public ResonantCouple(final int n, final int m) {
         this.n = n;
         this.m = m;
     }
 
-    /** Get the m-value.
-     * @return m-value
+    /** Get the order.
+     * @return order m
      */
     public int getM() {
         return m;
     }
 
-    /** Get the n-value.
-     * @return n-value
+    /** Get the degree.
+     * @return degree n
      */
     public int getN() {
         return n;
     }
 
-    /**
-     * {@inheritDoc}
-     * Compare a resonant couple to another one. Comparison is done on the order.
+    /** Compares a resonant couple to another one.
+     *  <p>
+     *  Comparison is done on the order first.
+     *  </p>
+     *
+     *  @param  couple the object to be compared.
+     *  @return a negative integer, zero, or a positive integer as this couple
+     *          is less than, equal to, or greater than the specified couple.
      */
     public int compareTo(final ResonantCouple couple) {
         int result = 1;

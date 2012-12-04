@@ -29,12 +29,12 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.OrbitFactory;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -189,7 +189,7 @@ public class OsculatingToMeanElementsConverterTest {
             SnmNotNorm = provider.getS(degree, order, false);
 
             // DSST force model parameters
-            DSSTForceModel centralBodyDSST = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, CnmNotNorm, CnmNotNorm, null);
+            DSSTForceModel centralBodyDSST = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, CnmNotNorm, CnmNotNorm);
             ForceModel centralBodyNUM = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, CnmNotNorm, SnmNotNorm);
             list.add(centralBodyDSST);
             propaNUM.addForceModel(centralBodyNUM);

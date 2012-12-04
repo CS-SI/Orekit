@@ -117,5 +117,12 @@ solar.radiation.pressure = false
 duration    = 31536000.0
 ## Time step between printed elements (seconds)
 output.step = 86400.0
+
+## Fixed integration step size for propagation (seconds) [-1.]
+## If fixed.step.size > 0, the ClassicalRungeKutta integrator
+## will be used with the given value for the step size, otherwise
+## the adaptative step size integrator DormandPrince853 will be used
+# fixed.step.size = 43200.
+
 ## Do we want to compare the DSST with the numerical propagator ? [false]
 numerical.comparison = false

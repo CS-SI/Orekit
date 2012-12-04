@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -24,56 +24,37 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/**
- * Solar radiation pressure contribution for {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator}.
- * <p>
- * The solar radiation pressure acceleration is computed as follows:<br>
- * &gamma; = (1/2 C<sub>R</sub> A / m) * (p<sub>ref</sub> * d<sup>2</sup><sub>ref</sub>) *
- * (r<sub>sat</sub> - R<sub>sun</sub>) / |r<sub>sat</sub> - R<sub>sun</sub>|<sup>3</sup>
- * </p>
+/** Solar radiation pressure contribution to the
+ *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
+ *  <p>
+ *  The solar radiation pressure acceleration is computed as follows:<br>
+ *  &gamma; = (1/2 C<sub>R</sub> A / m) * (p<sub>ref</sub> * d<sup>2</sup><sub>ref</sub>) *
+ *  (r<sub>sat</sub> - R<sub>sun</sub>) / |r<sub>sat</sub> - R<sub>sun</sub>|<sup>3</sup>
+ *  </p>
  *
- * @author Pascal Parraud
+ *  @author Pascal Parraud
  */
 public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution {
 
-    // Quadrature parameters
-    /** Number of points desired for quadrature (must be between 2 and 5 inclusive). */
-    private static final int[]          NB_POINTS         = {
-        5, 5, 5, 5, 5, 5
-    };
-
-    /** Relative accuracy of the result. */
-    private static final double[]       RELATIVE_ACCURACY = {
-        1.e-5, 1.e-3, 1.e-3, 1.e-3, 1.e-3, 1.e-3
-    };
-
-    /** Absolute accuracy of the result. */
-    private static final double[]       ABSOLUTE_ACCURACY = {
-        1.e-18, 1.e-20, 1.e-20, 1.e-20, 1.e-20, 1.e-20
-    };
-
-    /** Maximum number of evaluations. */
-    private static final int[]          MAX_EVAL          = {
-        1000000, 1000000, 1000000, 1000000, 1000000, 1000000
-    };
+    /** Number of points for quadrature (from 2 to 96). */
+    private static final int    NB_POINTS   = 48;
 
     /** Epsilon for quadratic resolution. */
-    private static final double         EPSILON           = 1e-3;
+    private static final double EPSILON     = 1e-3;
 
     /** A value smaller than ALMOST_ZERO is considered to be zero (0.0). */
-    private static final double         ALMOST_ZERO       = FastMath.ulp(1.0);
-
-    /**
-     * Flux on satellite: kRef = 0.5 * C<sub>R</sub> * Area * P<sub>Ref</sub> *
-     * D<sub>Ref</sub><sup>2</sup>.
-     */
-    private final double                kRef;
+    private static final double ALMOST_ZERO = FastMath.ulp(1.0);
 
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Square of Central Body radius: (R<sub>+</sub>)<sup>2</sup>. */
-    private final double                cbr2;
+    /** Flux on satellite:
+     * kRef = 0.5 * C<sub>R</sub> * Area * P<sub>Ref</sub> * D<sub>Ref</sub><sup>2</sup>.
+     */
+    private final double                kRef;
+
+    /** Central Body radius. */
+    private final double                ae;
 
     /** satellite radiation pressure coefficient (assuming total specular reflection). */
     private final double                cr;
@@ -94,7 +75,7 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
      * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area cross sectionnal area of satellite
      * @param sun Sun model
-     * @param equatorialRadius spherical shape model (for shadow computation)
+     * @param equatorialRadius central body equatrial radius (for shadow computation)
      */
     public DSSTSolarRadiationPressure(final double cr, final double area,
                                       final PVCoordinatesProvider sun,
@@ -116,28 +97,26 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
      * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area cross sectionnal area of satellite
      * @param sun Sun model
-     * @param equatorialRadius spherical shape model (for shadow computation)
+     * @param equatorialRadius central body equatrial radius (for shadow computation)
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
                                       final double cr, final double area,
                                       final PVCoordinatesProvider sun,
                                       final double equatorialRadius) {
+        super(NB_POINTS);
         this.kRef = pRef * dRef * dRef * cr * area;
         this.area = area;
-        this.cr = cr;
-        this.sun = sun;
-        this.cbr2 = equatorialRadius * equatorialRadius;
+        this.cr   = cr;
+        this.sun  = sun;
+        this.ae   = equatorialRadius;
     }
 
     /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
                                                final double[] meanElements)
         throws OrekitException {
-        // TODO: not implemented yet
-        // Short Periodic Variations are set to null
-        return new double[] {
-            0., 0., 0., 0., 0., 0.
-        };
+        // TODO: not implemented yet, Short Periodic Variations are set to null
+        return new double[] {0., 0., 0., 0., 0., 0.};
     }
 
     /** {@inheritDoc} */
@@ -156,32 +135,27 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
     /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
         // Default bounds without shadow [-PI, PI]
-        final double[] ll = {
-            -FastMath.PI, FastMath.PI
-        };
-        // Compute useful equinoctial parameters (A, B, C, f, g, w)
-        computeParameters(state);
+        final double[] ll = {-FastMath.PI, FastMath.PI};
         // Compute the coefficients of the quartic equation in cos(L) 3.5-(2)
-        final double h = getH();
-        final double k = getK();
         final double h2 = h * h;
         final double k2 = k * k;
-        final double mm = cbr2 / (getSemiMajorAxis() * getSemiMajorAxis() * (1 - k2 - h2));
-        final double m2 = mm * mm;
+        final double m  = ae / (a * B);
+        final double m2 = m * m;
+        final double m4 = m2 * m2;
         final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
-        final double alfa = sunDir.dotProduct(getF());
-        final double beta = sunDir.dotProduct(getG());
+        final double alfa = sunDir.dotProduct(f);
+        final double beta = sunDir.dotProduct(f);
         final double bet2 = beta * beta;
-        final double bb = alfa * beta + mm * h * k;
+        final double bb = alfa * beta + m2 * h * k;
         final double b2 = bb * bb;
-        final double cc = alfa * alfa - bet2 + mm * (k2 - h2);
-        final double dd = 1. - bet2 - mm * (1. + h2);
+        final double cc = alfa * alfa - bet2 + m2 * (k2 - h2);
+        final double dd = 1. - bet2 - m2 * (1. + h2);
         final double[] a = new double[5];
         a[0] = 4. * b2 + cc * cc;
-        a[1] = 8. * bb * mm * h + 4. * cc * mm * k;
-        a[2] = -4. * b2 + 4. * m2 * h2 - 2. * cc * dd + 4. * m2 * k2;
-        a[3] = -8. * bb * mm * h - 4. * dd * mm * k;
-        a[4] = -4. * m2 * h2 + dd * dd;
+        a[1] = 8. * bb * m2 * h + 4. * cc * m2 * k;
+        a[2] = -4. * b2 + 4. * m4 * h2 - 2. * cc * dd + 4. * m4 * k2;
+        a[3] = -8. * bb * m2 * h - 4. * dd * m2 * k;
+        a[4] = -4. * m4 * h2 + dd * dd;
         // Compute the real roots of the quartic equation 3.5-2
         final double[] cosL = new double[4];
         final int nbRoots = realQuarticRoots(a, cosL);
@@ -209,11 +183,11 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
                         final double sL = FastMath.sin(L);
                         final double t1 = 1. + k * cL + h * sL;
                         final double t2 = alfa * cL + beta * sL;
-                        final double S = 1. - mm * t1 * t1 - t2 * t2;
+                        final double S = 1. - m2 * t1 * t1 - t2 * t2;
                         // The solution must satisfy 3.5-1 and 3.5-3
                         if (t2 < 0. && FastMath.abs(S) < EPSILON) {
                             // Compute the derivative dS/dL
-                            final double dSdL = -2. * (mm * t1 * (h * cL + k * sL) + t2 * (beta * cL - alfa * sL));
+                            final double dSdL = -2. * (m2 * t1 * (h * cL + k * sL) + t2 * (beta * cL - alfa * sL));
                             if (dSdL > 0.) {
                                 // Exit from shadow: 3.5-4
                                 exitFound = true;
@@ -249,42 +223,22 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
         return ll;
     }
 
-    /** {@inheritDoc} */
-    protected int getNbPoints(final int element) {
-        return NB_POINTS[element];
-    }
-
-    /** {@inheritDoc} */
-    protected double getRelativeAccuracy(final int element) {
-        return RELATIVE_ACCURACY[element];
-    }
-
-    /** {@inheritDoc} */
-    protected double getAbsoluteAccuracy(final int element) {
-        return ABSOLUTE_ACCURACY[element];
-    }
-
-    /** {@inheritDoc} */
-    protected int getMaxEval(final int element) {
-        return MAX_EVAL[element];
-    }
-
     /** Get the central body equatorial radius.
-     * @return central body equatorial radius
+     *  @return central body equatorial radius (m)
      */
-    public final double getAe() {
-        return FastMath.sqrt(cbr2);
+    public final double getEquatorialRadius() {
+        return ae;
     }
 
-    /**Get satellite radiation pressure coefficient (assuming total specular reflection).
-     * @return satellite radiation pressure coefficient
+    /** Get the satellite radiation pressure coefficient (assuming total specular reflection).
+     *  @return satellite radiation pressure coefficient
      */
     public double getCr() {
         return cr;
     }
 
-    /** get cross sectional area of satellite.
-     * @return cross sectional section
+    /** Get the cross sectional area of satellite.
+     *  @return cross sectional section (m<sup>2</sup>
      */
     public double getArea() {
         return area;
@@ -505,11 +459,6 @@ public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution
         y[1] = (bb - sqrd) * oo2a;
 
         return 2;
-    }
-
-    /** {@inheritDoc} */
-    public void initialize(final SpacecraftState initialState) {
-        // Nothing to do
     }
 
 }

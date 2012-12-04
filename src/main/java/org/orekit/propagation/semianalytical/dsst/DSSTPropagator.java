@@ -49,14 +49,13 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTAtmosphericDrag;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTCentralBody;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTForceModel;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTSolarRadiationPressure;
-import org.orekit.propagation.semianalytical.dsst.dsstforcemodel.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.forces.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesProvider;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -101,9 +100,9 @@ import org.orekit.utils.PVCoordinatesProvider;
  * The state that is seen by the integrator is a simple six elements double array. These six
  * elements are:
  * <ul>
- * <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters} (a,
- * e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>v</sub>) in meters and
- * radians,</li>
+ * <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters}
+ * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>m</sub>)
+ * in meters and radians,</li>
  * </ul>
  * </p>
  * <p>
@@ -119,159 +118,121 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class DSSTPropagator extends AbstractIntegratedPropagator {
 
+    /** Retrograde factor I.
+     *  <p>
+     *  DSST model needs equinoctial orbit as internal representation.
+     *  Classical equinoctial elements have discontinuities when inclination
+     *  is close to zero. In this representation, I = +1. <br>
+     *  To avoid this discontinuity, another representation exists and equinoctial
+     *  elements can be expressed in a different way, called "retrograde" orbit.
+     *  This implies I = -1. <br>
+     *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
+     *  But for the sake of consistency with the theory, the retrograde factor
+     *  has been kept in the formulas. 
+     *  </p>
+     */
+    private static final int I = 1;
+
     /** Force models used during the extrapolation of the Orbit. */
     private final List<DSSTForceModel>     forceModels;
 
-    /**
-     * DSST truncation algorithm must be reset when orbital parameters have evolved too much. When
-     * integration reach the resetDate, the {@link DSSTForceModel#initialize(SpacecraftState)}
-     * method is called, and the next resetDate is set to resetDate + timeShiftToInitialize.
-     */
-    private AbsoluteDate                   resetDate;
-
-    /**
-     * DSST force model will be re-initialized every time the propagation date will be bigger than
-     * resetDate + timeShiftToInitialize. In seconds.
-     */
-    private double                         timeShiftToInitialize;
-
     /** Is the orbital state in osculating parameters. */
-    private boolean                        isOsculating;
+    private boolean      isOsculating;
 
     /** number of satellite revolutions in the averaging interval. */
-    private int                            satelliteRevolution;
+    private int          satelliteRevolution;
 
-    /**
-     * Build a DSSTPropagator from integrator and orbit.
-     * <p>
-     * Mass and attitude provider are set to unspecified non-null arbitrary values.
-     * </p>
-     * <p>
-     * After creation, there are no perturbing forces at all. This means that if
-     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
-     * follow a keplerian evolution only.
-     * </p>
+    /** Build a DSSTPropagator from integrator and orbit.
+     *  <p>
+     *  Mass and attitude provider are set to unspecified non-null arbitrary values.
+     *  </p>
+     *  <p>
+     *  After creation, there are no perturbing forces at all. This means that if
+     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     *  follow a keplerian evolution only.
+     *  </p>
      *
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @param isOsculating
-     *            is the orbital state in osculating parameters
-     * @param timeShiftToInitialize
-     *            DSST force model will be re-initialized every time the propagation date will be
-     *            bigger than resetDate + timeShiftToInitialize. In seconds.
-     * @throws OrekitException
-     *             if an error occurs in orbit averaging (i.e when transforming osculating elements
-     *             into mean elements)
+     *  @param integrator numerical integrator used to integrate mean elements.
+     *  @param initialOrbit initial orbit
+     *  @param isOsculating is the orbital state in osculating parameters
+     *  @throws OrekitException if an error occurs in orbit averaging
+     *          (i.e when transforming osculating elements into mean elements)
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit,
-                          final boolean isOsculating,
-                          final double timeShiftToInitialize)
+                          final boolean isOsculating)
         throws OrekitException {
-        this(integrator, initialOrbit, isOsculating, timeShiftToInitialize, DEFAULT_LAW, DEFAULT_MASS);
+        this(integrator, initialOrbit, isOsculating, DEFAULT_LAW, DEFAULT_MASS);
     }
 
-    /**
-     * Build a DSSTPropagator from integrator, orbit and attitude provider.
-     * <p>
-     * Mass is set to an unspecified non-null arbitrary value.
-     * </p>
-     * <p>
-     * After creation, there are no perturbing forces at all. This means that if
-     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
-     * follow a keplerian evolution only.
-     * </p>
+    /** Build a DSSTPropagator from integrator, orbit and attitude provider.
+     *  <p>
+     *  Mass is set to an unspecified non-null arbitrary value.
+     *  </p>
+     *  <p>
+     *  After creation, there are no perturbing forces at all. This means that if
+     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     *  follow a keplerian evolution only.
+     *  </p>
      *
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @param isOsculating
-     *            is the orbital state in osculating parameters
-     * @param timeShiftToInitialize
-     *            DSST force model will be re-initialized every time the propagation date will be
-     *            bigger than resetDate + timeShiftToInitialize. In seconds.
-     * @param attitudeProv
-     *            attitude provider
-     * @throws OrekitException
-     *             if an error occurs in orbit averaging (i.e when transforming osculating elements
-     *             into mean elements)
+     *  @param integrator numerical integrator used to integrate mean elements.
+     *  @param initialOrbit initial orbit
+     *  @param isOsculating is the orbital state in osculating parameters
+     *  @param attitudeProv attitude provider
+     *  @throws OrekitException if an error occurs in orbit averaging
+     *          (i.e when transforming osculating elements into mean elements)
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit,
                           final boolean isOsculating,
-                          final double timeShiftToInitialize,
                           final AttitudeProvider attitudeProv)
         throws OrekitException {
-        this(integrator, initialOrbit, isOsculating, timeShiftToInitialize, attitudeProv, DEFAULT_MASS);
+        this(integrator, initialOrbit, isOsculating, attitudeProv, DEFAULT_MASS);
     }
 
-    /**
-     * Build a DSSTPropagator from integrator, orbit and mass.
-     * <p>
-     * Attitude provider is set to an unspecified non-null arbitrary value.
-     * </p>
-     * <p>
-     * After creation, there are no perturbing forces at all. This means that if
-     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
-     * follow a keplerian evolution only.
-     * </p>
+    /** Build a DSSTPropagator from integrator, orbit and mass.
+     *  <p>
+     *  Attitude provider is set to an unspecified non-null arbitrary value.
+     *  </p>
+     *  <p>
+     *  After creation, there are no perturbing forces at all. This means that if
+     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     *  follow a keplerian evolution only.
+     *  </p>
      *
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @param isOsculating
-     *            is the orbital state in osculating parameters
-     * @param timeShiftToInitialize
-     *            DSST force model will be re-initialized every time the propagation date will be
-     *            bigger than resetDate + timeShiftToInitialize. In seconds.
-     * @param mass
-     *            spacecraft mass
-     * @throws OrekitException
-     *             if an error occurs in orbit averaging (i.e when transforming osculating elements
-     *             into mean elements)
+     *  @param integrator numerical integrator used to integrate mean elements.
+     *  @param initialOrbit initial orbit
+     *  @param isOsculating is the orbital state in osculating parameters
+     *  @param mass spacecraft mass
+     *  @throws OrekitException if an error occurs in orbit averaging
+     *          (i.e when transforming osculating elements into mean elements)
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit,
                           final boolean isOsculating,
-                          final double timeShiftToInitialize,
                           final double mass)
         throws OrekitException {
-        this(integrator, initialOrbit, isOsculating, timeShiftToInitialize, DEFAULT_LAW, mass);
+        this(integrator, initialOrbit, isOsculating, DEFAULT_LAW, mass);
     }
 
-    /**
-     * Build a DSSTPropagator from integrator, orbit, attitude provider and mass.
-     * <p>
-     * After creation, there are no perturbing forces at all. This means that if
-     * {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
-     * follow a keplerian evolution only.
-     * </p>
+    /** Build a DSSTPropagator from integrator, orbit, attitude provider and mass.
+     *  <p>
+     *  After creation, there are no perturbing forces at all. This means that if
+     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     *  follow a keplerian evolution only.
+     *  </p>
      *
-     * @param integrator
-     *            numerical integrator used to integrate mean coefficient defined by the SST theory.
-     * @param initialOrbit
-     *            initial orbit
-     * @param isOsculating
-     *            is the orbital state in osculating parameters
-     * @param timeShiftToInitialize
-     *            DSST force model will be re-initialized every time the propagation date will be
-     *            bigger than resetDate + timeShiftToInitialize. In seconds.
-     * @param attitudeProv
-     *            attitude provider
-     * @param mass
-     *            spacecraft mass
-     * @throws OrekitException
-     *             if an error occurs in orbit averaging (i.e when transforming osculating elements
-     *             into mean elements)
+     *  @param integrator numerical integrator used to integrate mean elements.
+     *  @param initialOrbit initial orbit
+     *  @param isOsculating is the orbital state in osculating parameters
+     *  @param attitudeProv attitude provider
+     *  @param mass spacecraft mass
+     *  @throws OrekitException if an error occurs in orbit averaging
+     *          (i.e when transforming osculating elements into mean elements)
      */
     public DSSTPropagator(final FirstOrderIntegrator integrator,
                           final Orbit initialOrbit,
                           final boolean isOsculating,
-                          final double timeShiftToInitialize,
                           final AttitudeProvider attitudeProv,
                           final double mass)
         throws OrekitException {
@@ -282,21 +243,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         setAttitudeProvider(attitudeProv);
         this.forceModels = new ArrayList<DSSTForceModel>();
-        this.timeShiftToInitialize = timeShiftToInitialize;
         this.isOsculating = isOsculating;
         // Average osculating elements over 2 orbits
         this.satelliteRevolution = 2;
 
         setIntegrator(integrator);
 
-        final PVCoordinatesProvider pvProv = new PVCoordinatesProvider() {
-            /** {@inheritDoc} */
-            public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f) {
-                return initialOrbit.getPVCoordinates();
-            }
-        };
         resetInitialState(new SpacecraftState(initialOrbit,
-                                              attitudeProv.getAttitude(pvProv,
+                                              attitudeProv.getAttitude(initialOrbit,
                                                                        initialOrbit.getDate(),
                                                                        initialOrbit.getFrame()),
                                                                        mass));
@@ -305,70 +259,49 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /**
      * Reset the initial state.
      *
-     * @param state
-     *            new initial state
-     * @throws PropagationException if initial state cannot be reset
+     *  @param state new initial state
+     *  @throws PropagationException if initial state cannot be reset
      */
     public void resetInitialState(final SpacecraftState state) throws PropagationException {
         super.setStartDate(state.getDate());
-        this.resetDate = state.getDate();
         super.resetInitialState(state);
     }
 
-    /**
-     * Add a force model to the global perturbation model.
-     * <p>
-     * If this method is not called at all, the integrated orbit will follow a keplerian evolution
-     * only.
-     * </p>
-     *
-     * @param forcemodel
-     *            perturbing {@link DSSTForceModel} to add
-     * @see #removeForceModels()
+    /** Add a force model to the global perturbation model.
+     *  <p>
+     *  If this method is not called at all,
+     *  the integrated orbit will follow a keplerian evolution only.
+     *  </p>
+     *  @param force perturbing {@link DSSTForceModel force} to add
+     *  @see #removeForceModels()
      */
-    public void addForceModel(final DSSTForceModel forcemodel) {
-        forceModels.add(forcemodel);
+    public void addForceModel(final DSSTForceModel force) {
+        forceModels.add(force);
     }
 
-    /**
-     * Remove all perturbing force models from the global perturbation model.
-     * <p>
-     * Once all perturbing forces have been removed (and as long as no new force model is added),
-     * the integrated orbit will follow a keplerian evolution only.
-     * </p>
-     *
-     * @see #addForceModel(DSSTForceModel)
+    /** Remove all perturbing force models from the global perturbation model.
+     *  <p>
+     *  Once all perturbing forces have been removed (and as long as no new force model is added),
+     *  the integrated orbit will follow a keplerian evolution only.
+     *  </p>
+     *  @see #addForceModel(DSSTForceModel)
      */
     public void removeForceModels() {
         forceModels.clear();
     }
 
-    /**
-     * Override the default value of the {@link DSSTPropagator#satelliteRevolution} parameter. By
-     * default, if the given orbit is an osculating one, it will be averaged over a specific number
-     * of revolution (2 revolution). This can be changed by using this method.
+    /** Override the default value of the {@link DSSTPropagator#satelliteRevolution} parameter.
+     *  By default, if the given orbit is an osculating one, it will be averaged
+     *  over a specific number of revolution (2 revolution).
+     *  This can be changed by using this method.
      *
-     * @param satelliteRevolution
-     *            number of satellite revolution to use for averaging process (osculating to mean
+     *  @param satelliteRevolution number of satellite revolution to use for averaging process (osculating to mean
      *            elements)
      */
     public void setSatelliteRevolution(final int satelliteRevolution) {
         this.satelliteRevolution = satelliteRevolution;
     }
 
-    /** Check if the DSST needs to be initialized again.
-     * @param tEnd target date at which state should be propagated
-     * @exception OrekitException if force models cannot be reinitialized
-     */
-    protected void beforeIntegration(final AbsoluteDate tEnd) throws OrekitException {
-        if (tEnd.compareTo(resetDate) >= 0) {
-            // Re-initialize every force model
-            for (final DSSTForceModel forceModel : forceModels) {
-                forceModel.initialize(getInitialState());
-            }
-            resetDate = resetDate.shiftedBy(timeShiftToInitialize);
-        }
-    }
 
     /** {@inheritDoc} */
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
@@ -456,8 +389,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             } else {
                 // the state is considered to be an osculating state
                 final Propagator propagator = createPropagator(state);
-                meanOrbit =
-                        new OsculatingToMeanElementsConverter(state, satelliteRevolution, propagator).convert().getOrbit();
+                meanOrbit = new OsculatingToMeanElementsConverter(state, satelliteRevolution, propagator).convert().getOrbit();
             }
 
             OrbitType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngle.MEAN, y);
@@ -489,30 +421,31 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     // Central body
                     final double[][] cnm = ((DSSTCentralBody) force).getCnm();
                     final double[][] snm = ((DSSTCentralBody) force).getSnm();
-                    final double ae = ((DSSTCentralBody) force).getAe();
+                    final double ae      = ((DSSTCentralBody) force).getEquatorialRadius();
                     final ForceModel cunningham = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae,
                                                                                 getMu(), cnm, snm);
                     propagator.addForceModel(cunningham);
                 } else if (force instanceof DSSTThirdBody) {
                     // Third body
                     final CelestialBody body = ((DSSTThirdBody) force).getBody();
-                    final ForceModel third = new ThirdBodyAttraction(body);
+                    final ForceModel third   = new ThirdBodyAttraction(body);
                     propagator.addForceModel(third);
                 } else if (force instanceof DSSTAtmosphericDrag) {
                     // Atmospheric drag
-                    final double dragCoef = ((DSSTAtmosphericDrag) force).getCd();
-                    final double crossSec = ((DSSTAtmosphericDrag) force).getArea();
                     final Atmosphere atm = ((DSSTAtmosphericDrag) force).getAtmosphere();
-                    final ForceModel drag = new DragForce(atm, new SphericalSpacecraft(dragCoef, crossSec, 0., 0.));
+                    final double area    = ((DSSTAtmosphericDrag) force).getArea();
+                    final double cd      = ((DSSTAtmosphericDrag) force).getCd();
+                    final SphericalSpacecraft scr = new SphericalSpacecraft(area, cd, 0., 0.);
+                    final ForceModel drag = new DragForce(atm, scr);
                     propagator.addForceModel(drag);
                 } else if (force instanceof DSSTSolarRadiationPressure) {
                     // Solar radiation pressure
-                    final double ae = ((DSSTSolarRadiationPressure) force).getAe();
-                    double cr = ((DSSTSolarRadiationPressure) force).getCr();
-                    // Convert DSST convention to numerical's one
-                    cr = 1 + (1 - cr) * 2.25;
+                    final double ae   = ((DSSTSolarRadiationPressure) force).getEquatorialRadius();
                     final double area = ((DSSTSolarRadiationPressure) force).getArea();
-                    final SphericalSpacecraft scr = new SphericalSpacecraft(area, 0d, 0d, cr);
+                    final double cr   = ((DSSTSolarRadiationPressure) force).getCr();
+                    // Convert DSST SRP coefficient convention to numerical's one 
+                    final double kr   = 3.25 - 2.25 * cr;
+                    final SphericalSpacecraft scr = new SphericalSpacecraft(area, 0., 0., kr);
                     final ForceModel pressure = new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, scr);
                     propagator.addForceModel(pressure);
                 }
@@ -541,6 +474,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
+            
+            // compute common auxiliary elements
+            final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
+
+            // initialize all perturbing forces
+            for (final DSSTForceModel force : forceModels) {
+                force.initialize(aux);
+            }
 
             Arrays.fill(yDot, 0.0);
 
@@ -557,38 +498,35 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             orbit.addKeplerContribution(PositionAngle.MEAN, getMu(), yDot);
 
             return yDot.clone();
-
         }
 
     }
 
-    /**
-     * Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
-     * <p>
-     * The errors are estimated from partial derivatives properties of orbits, starting from a
-     * scalar position error specified by the user. Considering the energy conservation equation V =
-     * sqrt(mu (2/r - 1/a)), we get at constant energy (i.e. on a Keplerian trajectory):
+    /** Estimate tolerance vectors for an AdaptativeStepsizeIntegrator.
+     *  <p>
+     *  The errors are estimated from partial derivatives properties of orbits,
+     *  starting from a scalar position error specified by the user.
+     *  Considering the energy conservation equation V = sqrt(mu (2/r - 1/a)),
+     *  we get at constant energy (i.e. on a Keplerian trajectory):
      *
-     * <pre>
-     * V<sup>2</sup> r |dV| = mu |dr|
-     * </pre>
+     *  <pre>
+     *  V<sup>2</sup> r |dV| = mu |dr|
+     *  </pre>
      *
-     * So we deduce a scalar velocity error consistent with the position error. From here, we apply
-     * orbits Jacobians matrices to get consistent errors on orbital parameters.
-     * </p>
-     * <p>
-     * The tolerances are only <em>orders of magnitude</em>, and integrator tolerances are only
-     * local estimates, not global ones. So some care must be taken when using these tolerances.
-     * Setting 1mm as a position error does NOT mean the tolerances will guarantee a 1mm error
-     * position after several orbits integration.
-     * </p>
+     *  So we deduce a scalar velocity error consistent with the position error. From here, we apply
+     *  orbits Jacobians matrices to get consistent errors on orbital parameters.
+     *  </p>
+     *  <p>
+     *  The tolerances are only <em>orders of magnitude</em>, and integrator tolerances are only
+     *  local estimates, not global ones. So some care must be taken when using these tolerances.
+     *  Setting 1mm as a position error does NOT mean the tolerances will guarantee a 1mm error
+     *  position after several orbits integration.
+     *  </p>
      *
-     * @param dP
-     *            user specified position error
-     * @param orbit
-     *            reference orbit
-     * @return a two rows array, row 0 being the absolute tolerance error and row 1 being the
-     *         relative tolerance error
+     * @param dP user specified position error (m)
+     * @param orbit reference orbit
+     * @return a two rows array, row 0 being the absolute tolerance error
+     *                       and row 1 being the relative tolerance error
      */
     public static double[][] tolerances(final double dP,
                                         final Orbit orbit) {

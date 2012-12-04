@@ -18,26 +18,25 @@ package org.orekit.propagation.semianalytical.dsst.coefficients;
 
 import org.apache.commons.math3.util.FastMath;
 
-/**
- * Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup> polynomials function in
- * the equinoctial elements h, k and the direction cosines &alpha; and &beta;<br>
- * and their partial derivatives to k, h, &alpha; and &beta; Those equation are issue from the
- * Danielson paper (Semi-Analytic Satellite Theory). The expression used here are equations at 2.7.5
- * - (1)(2).
- *
- * @author Romain Di Costanzo
+/** Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup>
+ *  polynomials in the equinoctial elements h, k and the direction cosines &alpha; and &beta;
+ *  and their partial derivatives with respect to k, h, &alpha; and &beta;.
+ *  <p>
+ *  The expressions used are equations 2.7.5-(1)(2) from the Danielson paper.
+ *  </p>
+ *  @author Romain Di Costanzo
  */
 public class GHmsjPolynomials {
 
     /** C<sub>j</sub>(k, h), S<sub>j</sub>(k, h) coefficient.
      * (k, h) are the (x, y) component of the eccentricity vector in equinoctial elements
      */
-    private final CiSiCoefficient cisiKH;
+    private final CjSjCoefficient cisiKH;
 
     /** C<sub>j</sub>(&alpha;, &beta;), S<sub>j</sub>(&alpha;, &beta;) coefficient.
      * (&alpha;, &beta;) are the direction cosines
      */
-    private final CiSiCoefficient cisiAB;
+    private final CjSjCoefficient cisiAB;
 
     /** Is the orbit represented as a retrograde orbit.
      * I = -1 if yes, +1 otherwise.
@@ -49,7 +48,7 @@ public class GHmsjPolynomials {
      * @param cisiAB {C<sub>j</sub>(&alpha;, &beta;), S<sub>j</sub>(&alpha;, &beta;) coefficient
      * @param isRetrograde Is the orbit is represented as a retrograde orbit I = -1, +1 otherwise
      **/
-    public GHmsjPolynomials(final CiSiCoefficient cisiHK, final CiSiCoefficient cisiAB,
+    public GHmsjPolynomials(final CjSjCoefficient cisiHK, final CjSjCoefficient cisiAB,
                             final int isRetrograde) {
         this.cisiKH = cisiHK;
         this.cisiAB = cisiAB;
@@ -67,12 +66,12 @@ public class GHmsjPolynomials {
         double gms = 0d;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
-            gms = cisiKH.getCi(abssMj) * cisiAB.getCi(mMis) -
-                  I * FastMath.signum(s - j) * cisiKH.getSi(abssMj) * cisiAB.getSi(mMis);
+            gms = cisiKH.getCj(abssMj) * cisiAB.getCj(mMis) -
+                  I * FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getSj(mMis);
         } else if (FastMath.abs(s) >= m) {
             final int sMim = FastMath.abs(s - I * m);
-            gms = cisiKH.getCi(abssMj) * cisiAB.getCi(sMim) +
-                  FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSi(abssMj) * cisiAB.getSi(sMim);
+            gms = cisiKH.getCj(abssMj) * cisiAB.getCj(sMim) +
+                  FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSj(abssMj) * cisiAB.getSj(sMim);
         }
         return gms;
     }
@@ -89,12 +88,12 @@ public class GHmsjPolynomials {
         double hms = 0d;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
-            hms = I * cisiKH.getCi(sMj) * cisiAB.getSi(mMis) + FastMath.signum(s - j) *
-                  cisiKH.getSi(sMj) * cisiAB.getCi(mMis);
+            hms = I * cisiKH.getCj(sMj) * cisiAB.getSj(mMis) + FastMath.signum(s - j) *
+                  cisiKH.getSj(sMj) * cisiAB.getCj(mMis);
         } else if (FastMath.abs(s) >= m) {
             final int sMim = FastMath.abs(s - I * m);
-            hms = -FastMath.signum(s - m) * cisiKH.getCi(sMj) * cisiAB.getSi(sMim) +
-                   FastMath.signum(s - j) * cisiKH.getSi(sMj) * cisiAB.getCi(sMim);
+            hms = -FastMath.signum(s - m) * cisiKH.getCj(sMj) * cisiAB.getSj(sMim) +
+                   FastMath.signum(s - j) * cisiKH.getSj(sMj) * cisiAB.getCj(sMim);
         }
         return hms;
     }
@@ -112,11 +111,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiAB.getCi(mMis) * cisiKH.getDciDk(sMj) -
-                   I * FastMath.signum(s - j) * cisiAB.getSi(mMis) * cisiKH.getDsiDk(sMj);
+            dGms = cisiAB.getCj(mMis) * cisiKH.getDcjDk(sMj) -
+                   I * FastMath.signum(s - j) * cisiAB.getSj(mMis) * cisiKH.getDsjDk(sMj);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiAB.getCi(sMim) * cisiKH.getDciDk(sMj) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSi(sMim) * cisiKH.getDsiDk(sMj);
+            dGms = cisiAB.getCj(sMim) * cisiKH.getDcjDk(sMj) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSj(sMim) * cisiKH.getDsjDk(sMj);
         }
         return dGms;
     }
@@ -134,11 +133,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiAB.getCi(mMis) * cisiKH.getDciDh(sMj) -
-                   I * FastMath.signum(s - j) * cisiAB.getSi(mMis) * cisiKH.getDsiDh(sMj);
+            dGms = cisiAB.getCj(mMis) * cisiKH.getDcjDh(sMj) -
+                   I * FastMath.signum(s - j) * cisiAB.getSj(mMis) * cisiKH.getDsjDh(sMj);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiAB.getCi(sMim) * cisiKH.getDciDh(sMj) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSi(sMim) * cisiKH.getDsiDh(sMj);
+            dGms = cisiAB.getCj(sMim) * cisiKH.getDcjDh(sMj) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSj(sMim) * cisiKH.getDsjDh(sMj);
         }
         return dGms;
     }
@@ -156,11 +155,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDk(mMis) -
-                   I * FastMath.signum(s - j) * cisiKH.getSi(sMj) * cisiAB.getDsiDk(mMis);
+            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDk(mMis) -
+                   I * FastMath.signum(s - j) * cisiKH.getSj(sMj) * cisiAB.getDsjDk(mMis);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDk(sMim) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSi(sMj) * cisiAB.getDsiDk(sMim);
+            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDk(sMim) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSj(sMj) * cisiAB.getDsjDk(sMim);
         }
         return dGms;
     }
@@ -178,11 +177,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDh(mMis) -
-                   I * FastMath.signum(s - j) * cisiKH.getSi(sMj) * cisiAB.getDsiDh(mMis);
+            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDh(mMis) -
+                   I * FastMath.signum(s - j) * cisiKH.getSj(sMj) * cisiAB.getDsjDh(mMis);
         } else if (FastMath.abs(s) > m) {
-            dGms = cisiKH.getCi(sMj) * cisiAB.getDciDh(sMim) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSi(sMj) * cisiAB.getDsiDh(sMim);
+            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDh(sMim) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSj(sMj) * cisiAB.getDsjDh(sMim);
         }
         return dGms;
     }
@@ -200,11 +199,11 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiAB.getSi(mMis) * cisiKH.getDciDk(abssMj) +
-                   FastMath.signum(s - j) * cisiAB.getCi(mMis) * cisiKH.getDsiDk(abssMj);
+            dHms = I * cisiAB.getSj(mMis) * cisiKH.getDcjDk(abssMj) +
+                   FastMath.signum(s - j) * cisiAB.getCj(mMis) * cisiKH.getDsjDk(abssMj);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiAB.getSi(abssMim) * cisiKH.getDciDk(abssMj) +
-                    FastMath.signum(s - j) * cisiAB.getCi(abssMim) * cisiKH.getDsiDk(abssMj);
+            dHms = -FastMath.signum(s - m) * cisiAB.getSj(abssMim) * cisiKH.getDcjDk(abssMj) +
+                    FastMath.signum(s - j) * cisiAB.getCj(abssMim) * cisiKH.getDsjDk(abssMj);
         }
         return dHms;
     }
@@ -222,11 +221,11 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiAB.getSi(mMis) * cisiKH.getDciDh(abssMj) +
-                   FastMath.signum(s - j) * cisiAB.getCi(mMis) * cisiKH.getDsiDh(abssMj);
+            dHms = I * cisiAB.getSj(mMis) * cisiKH.getDcjDh(abssMj) +
+                   FastMath.signum(s - j) * cisiAB.getCj(mMis) * cisiKH.getDsjDh(abssMj);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiAB.getSi(abssMim) * cisiKH.getDciDh(abssMj) +
-                    FastMath.signum(s - j) * cisiAB.getCi(abssMim) * cisiKH.getDsiDh(abssMj);
+            dHms = -FastMath.signum(s - m) * cisiAB.getSj(abssMim) * cisiKH.getDcjDh(abssMj) +
+                    FastMath.signum(s - j) * cisiAB.getCj(abssMim) * cisiKH.getDsjDh(abssMj);
         }
         return dHms;
     }
@@ -244,11 +243,11 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiKH.getCi(abssMj) * cisiAB.getDsiDk(mMis) +
-                   FastMath.signum(s - j) * cisiKH.getSi(abssMj) * cisiAB.getDciDk(mMis);
+            dHms = I * cisiKH.getCj(abssMj) * cisiAB.getDsjDk(mMis) +
+                   FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDk(mMis);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiKH.getCi(abssMj) * cisiAB.getDsiDk(abssMim) +
-                    FastMath.signum(s - j) * cisiKH.getSi(abssMj) * cisiAB.getDciDk(abssMim);
+            dHms = -FastMath.signum(s - m) * cisiKH.getCj(abssMj) * cisiAB.getDsjDk(abssMim) +
+                    FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDk(abssMim);
         }
         return dHms;
     }
@@ -266,11 +265,11 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiKH.getCi(abssMj) * cisiAB.getDsiDh(mMis) +
-                   FastMath.signum(s - j) * cisiKH.getSi(abssMj) * cisiAB.getDciDh(mMis);
+            dHms = I * cisiKH.getCj(abssMj) * cisiAB.getDsjDh(mMis) +
+                   FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDh(mMis);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiKH.getCi(abssMj) * cisiAB.getDsiDh(abssMim) +
-                    FastMath.signum(s - j) * cisiKH.getSi(abssMj) * cisiAB.getDciDh(abssMim);
+            dHms = -FastMath.signum(s - m) * cisiKH.getCj(abssMj) * cisiAB.getDsjDh(abssMim) +
+                    FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDh(abssMim);
         }
         return dHms;
     }

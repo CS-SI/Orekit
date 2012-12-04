@@ -31,6 +31,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.forces.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -61,6 +63,8 @@ public class DSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(), date, mu);
         final SpacecraftState state = new SpacecraftState(orbit);
 
+        force.initialize(new AuxiliaryElements(orbit, 1));
+
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
 
@@ -71,12 +75,12 @@ public class DSSTSolarRadiationPressureTest {
 //        System.out.println(daidtRef[4] + " " + daidt[4] + " " + (daidtRef[4] - daidt[4]));
 //        System.out.println(daidtRef[5] + " " + daidt[5] + " " + (daidtRef[5] - daidt[5]));
 
-        Assert.assertEquals(daidtRef[0], daidt[0], 5.e-9);
+        Assert.assertEquals(daidtRef[0], daidt[0], 2.e-5);
         Assert.assertEquals(daidtRef[1], daidt[1], 1.e-12);
-        Assert.assertEquals(daidtRef[2], daidt[2], 1.e-12);
-        Assert.assertEquals(daidtRef[3], daidt[3], 5.e-13);
-        Assert.assertEquals(daidtRef[4], daidt[4], 5.e-13);
-        Assert.assertEquals(daidtRef[5], daidt[5], 2.e-12);
+        Assert.assertEquals(daidtRef[2], daidt[2], 2.e-12);
+        Assert.assertEquals(daidtRef[3], daidt[3], 4.e-13);
+        Assert.assertEquals(daidtRef[4], daidt[4], 4.e-13);
+        Assert.assertEquals(daidtRef[5], daidt[5], 8.e-13);
 
     }
 
@@ -98,6 +102,8 @@ public class DSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(), date, mu);
         final SpacecraftState state = new SpacecraftState(orbit);
 
+        force.initialize(new AuxiliaryElements(orbit, 1));
+
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
 
@@ -108,12 +114,12 @@ public class DSSTSolarRadiationPressureTest {
 //        System.out.println(daidtRef[4] + " " + daidt[4] + " " + (daidtRef[4] - daidt[4]));
 //        System.out.println(daidtRef[5] + " " + daidt[5] + " " + (daidtRef[5] - daidt[5]));
 
-        Assert.assertEquals(daidtRef[0], daidt[0], 5.e-21);
-        Assert.assertEquals(daidtRef[1], daidt[1], 9.e-12);
-        Assert.assertEquals(daidtRef[2], daidt[2], 6.5e-12);
-        Assert.assertEquals(daidtRef[3], daidt[3], 2.e-14);
-        Assert.assertEquals(daidtRef[4], daidt[4], 5.e-14);
-        Assert.assertEquals(daidtRef[5], daidt[5], 4.5e-14);
+        Assert.assertEquals(daidtRef[0], daidt[0], 2.e-19);
+        Assert.assertEquals(daidtRef[1], daidt[1], 7.e-17);
+        Assert.assertEquals(daidtRef[2], daidt[2], 2.e-16);
+        Assert.assertEquals(daidtRef[3], daidt[3], 6.e-16);
+        Assert.assertEquals(daidtRef[4], daidt[4], 9.e-16);
+        Assert.assertEquals(daidtRef[5], daidt[5], 3.e-15);
 
     }
 
@@ -163,7 +169,8 @@ public class DSSTSolarRadiationPressureTest {
         final double gamma = sunPos.dotProduct(w);
 
         // Compute T coefficient
-        final double kRef = 0.5 * P_REF * D_REF * D_REF * cr * area;
+//        final double kRef = 0.5 * P_REF * D_REF * D_REF * cr * area;
+        final double kRef = P_REF * D_REF * D_REF * cr * area;
         final double T = kRef / state.getMass();
         // Compute R3^2
         final double R32 = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().getNormSq();

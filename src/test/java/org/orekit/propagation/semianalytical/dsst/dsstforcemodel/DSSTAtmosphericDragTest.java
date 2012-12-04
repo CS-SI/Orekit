@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -30,6 +31,9 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.forces.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -44,7 +48,6 @@ public class DSSTAtmosphericDragTest {
     public void testMeanElementRate() throws OrekitException {
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, FramesFactory.getITRF2005(true));
-        earth.setAngularThreshold(1.e-10);
         final Atmosphere atm = new HarrisPriester(sun, earth);
         final DSSTForceModel force = new DSSTAtmosphericDrag(atm, 2., 5.);
 
@@ -56,14 +59,24 @@ public class DSSTAtmosphericDragTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), date, mu);
 
+        force.initialize(new AuxiliaryElements(orbit, 1));
 //        long start1 = System.nanoTime(); // requires java 1.5
         double[] daidt = force.getMeanElementRate(new SpacecraftState(orbit));
 //        double dT1 = (System.nanoTime() - start1) * 1.0e-9;
 //        System.out.println("DT1: " + dT1);
 
-        for (int i = 0; i < daidt.length; i++) {
+//        for (int i = 0; i < daidt.length; i++) {
 //            System.out.println(daidt[i]);
-        }
+//        }
+
+        final double[] daidtRef = new double[6];
+
+        Assert.assertEquals(daidtRef[0], daidt[0], 4.1e-5);
+        Assert.assertEquals(daidtRef[1], daidt[1], 1.5e-12);
+        Assert.assertEquals(daidtRef[2], daidt[2], 1.4e-12);
+        Assert.assertEquals(daidtRef[3], daidt[3], 1.1e-13);
+        Assert.assertEquals(daidtRef[4], daidt[4], 6.5e-14);
+        Assert.assertEquals(daidtRef[5], daidt[5], 2.5e-15);
 
     }
 
