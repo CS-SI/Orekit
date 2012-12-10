@@ -43,9 +43,9 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.OsculatingToMeanElementsConverter;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.conversion.OsculatingToMeanElementsConverter;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -128,7 +128,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  This implies I = -1. <br>
      *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
      *  But for the sake of consistency with the theory, the retrograde factor
-     *  has been kept in the formulas. 
+     *  has been kept in the formulas.
      *  </p>
      */
     private static final int I = 1;
@@ -350,7 +350,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState mapArrayToState(final double t, final double[] y)
-                throws OrekitException {
+            throws OrekitException {
 
             final AbsoluteDate date = mapDoubleToDate(t);
 
@@ -359,10 +359,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             //  case we want to remain in mean parameters only)
             final double[] osculatingElements = y.clone();
             for (final DSSTForceModel forceModel : forceModels) {
-                final double[] shortPeriodicVariations =
-                        forceModel.getShortPeriodicVariations(date, y);
-                for (int i = 0; i < shortPeriodicVariations.length; i++) {
-                    osculatingElements[i] += shortPeriodicVariations[i];
+                final double[] shortPeriodic = forceModel.getShortPeriodicVariations(date, y);
+                for (int i = 0; i < shortPeriodic.length; i++) {
+                    osculatingElements[i] += shortPeriodic[i];
                 }
             }
 
@@ -394,14 +393,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             OrbitType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngle.MEAN, y);
             y[6] = state.getMass();
-        
+
         }
 
-        /**
-         * Create a reference numerical propagator to convert orbit to mean elements.
-         * @param initialState initial state
-         * @return propagator
-         * @throws OrekitException if some numerical force model cannot be built
+        /** Create a reference numerical propagator to convert orbit to mean elements.
+         *  @param initialState initial state
+         *  @return propagator
+         *  @throws OrekitException if some numerical force model cannot be built
          */
         private Propagator createPropagator(final SpacecraftState initialState)
             throws OrekitException {
@@ -443,7 +441,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     final double ae   = ((DSSTSolarRadiationPressure) force).getEquatorialRadius();
                     final double area = ((DSSTSolarRadiationPressure) force).getArea();
                     final double cr   = ((DSSTSolarRadiationPressure) force).getCr();
-                    // Convert DSST SRP coefficient convention to numerical's one 
+                    // Convert DSST SRP coefficient convention to numerical's one
                     final double kr   = 3.25 - 2.25 * cr;
                     final SphericalSpacecraft scr = new SphericalSpacecraft(area, 0., 0., kr);
                     final ForceModel pressure = new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, scr);
@@ -457,7 +455,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
     /** {@inheritDoc} */
     protected MainStateEquations getMainStateEquations() {
-         return new Main();
+        return new Main();
     }
 
     /** Internal class for mean parameters integration. */
@@ -474,7 +472,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public double[] computeDerivatives(final SpacecraftState state) throws OrekitException {
-            
+
             // compute common auxiliary elements
             final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
 
@@ -494,7 +492,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             }
 
             // finalize derivatives by adding the Kepler contribution
-            EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
+            final EquinoctialOrbit orbit = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(state.getOrbit());
             orbit.addKeplerContribution(PositionAngle.MEAN, getMu(), yDot);
 
             return yDot.clone();

@@ -55,4 +55,7 @@ interface TLEConstants {
                     NORMALIZED_EQUATORIAL_RADIUS;
     // CHECKSTYLE: resume JavadocVariable check
 
+    /** Earth gravity coefficient in m<sup>3</sup>/s<sup>2</sup>. */
+    double MU = XKE * XKE * EARTH_RADIUS * EARTH_RADIUS * EARTH_RADIUS * (1000 * 1000 * 1000) / (60 * 60);
+
 }

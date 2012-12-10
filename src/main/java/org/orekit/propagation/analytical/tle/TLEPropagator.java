@@ -63,13 +63,7 @@ import org.orekit.utils.PVCoordinates;
 public abstract class TLEPropagator extends AbstractAnalyticalPropagator implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4166754351969700567L;
-
-    /** Earth gravity coefficient in m<sup>3</sup>/s<sup>2</sup>. */
-    private static final double MU =
-        TLEConstants.XKE * TLEConstants.XKE *
-        TLEConstants.EARTH_RADIUS * TLEConstants.EARTH_RADIUS * TLEConstants.EARTH_RADIUS *
-        (1000 * 1000 * 1000) / (60 * 60);
+    private static final long serialVersionUID = 6389584529961457799L;
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
@@ -168,7 +162,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
     // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** TLE frame. */
-    private final Frame frame;
+    private final Frame teme;
 
     /** Spacecraft mass (kg). */
     private final double mass;
@@ -184,8 +178,8 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
         throws OrekitException {
         super(attitudeProvider);
         setStartDate(initialTLE.getDate());
-        tle = initialTLE;
-        frame = FramesFactory.getTEME();
+        this.tle  = initialTLE;
+        this.teme = FramesFactory.getTEME();
         this.mass = mass;
         initializeCommons();
         sxpInitialize();
@@ -229,6 +223,13 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
         } else {
             return new SGP4(tle, attitudeProvider, mass);
         }
+    }
+
+    /** Get the Earth gravity coefficient used for TLE propagation.
+     * @return the Earth gravity coefficient.
+     */
+    public static double getMU() {
+        return TLEConstants.MU;
     }
 
     /** Get the extrapolated position and velocity from an initial TLE.
@@ -483,7 +484,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
     /** {@inheritDoc} */
     protected Orbit propagateOrbit(final AbsoluteDate date) throws PropagationException {
         try {
-            return new CartesianOrbit(getPVCoordinates(date), FramesFactory.getTEME(), date, MU);
+            return new CartesianOrbit(getPVCoordinates(date), teme, date, TLEConstants.MU);
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
         }
@@ -498,7 +499,7 @@ public abstract class TLEPropagator extends AbstractAnalyticalPropagator impleme
 
     /** {@inheritDoc} */
     public Frame getFrame() {
-        return frame;
+        return teme;
     }
 
 }
