@@ -18,14 +18,12 @@ package org.orekit.forces.drag;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.bodies.BodyShape;
-import org.orekit.bodies.GeodeticPoint;
+import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -51,8 +49,15 @@ public class HarrisPriester implements Atmosphere {
 
     // Constants :
 
-    /** Lag angle in longitude. */
+    /** Default cosine exponent value. */
+    private static final int N_DEFAULT = 4;
+
+    /** Lag angle for diurnal bulge. */
     private static final double LAG = FastMath.toRadians(30.0);
+    /** Lag angle cosine. */
+    private static final double COSLAG = FastMath.cos(LAG);
+    /** Lag angle sine. */
+    private static final double SINLAG = FastMath.sin(LAG);
 
     // CHECKSTYLE: stop NoWhitespaceAfter
     /** Harris-Priester min-max density (kg/m3) vs. altitude (m) table.
@@ -118,7 +123,7 @@ public class HarrisPriester implements Atmosphere {
     private PVCoordinatesProvider sun;
 
     /** Earth body shape. */
-    private BodyShape earth;
+    private OneAxisEllipsoid earth;
 
     /** Density table. */
     private double[][] tabAltRho;
@@ -131,11 +136,9 @@ public class HarrisPriester implements Atmosphere {
      * @param sun the sun position
      * @param earth the earth body shape
      */
-    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth) {
-        this.sun       = sun;
-        this.earth     = earth;
-        this.tabAltRho = ALT_RHO;
-        setN(4);
+    public HarrisPriester(final PVCoordinatesProvider sun,
+                          final OneAxisEllipsoid earth) {
+        this(sun, earth, ALT_RHO, N_DEFAULT);
     }
 
     /** Constructor for Modified Harris-Priester atmosphere model.
@@ -148,11 +151,10 @@ public class HarrisPriester implements Atmosphere {
      * @param earth the earth body shape
      * @param n the cosine exponent
      */
-    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth, final double n) {
-        this.sun       = sun;
-        this.earth     = earth;
-        this.tabAltRho = ALT_RHO;
-        setN(n);
+    public HarrisPriester(final PVCoordinatesProvider sun,
+                          final OneAxisEllipsoid earth,
+                          final double n) {
+        this(sun, earth, ALT_RHO, n);
     }
 
     /** Constructor for Modified Harris-Priester atmosphere model.
@@ -170,12 +172,10 @@ public class HarrisPriester implements Atmosphere {
      * @param earth the earth body shape
      * @param tabAltRho the density table
      */
-    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
+    public HarrisPriester(final PVCoordinatesProvider sun,
+                          final OneAxisEllipsoid earth,
                           final double[][] tabAltRho) {
-        this.sun       = sun;
-        this.earth     = earth;
-        setN(4);
-        setTabDensity(tabAltRho);
+        this(sun, earth, tabAltRho, N_DEFAULT);
     }
 
     /** Constructor for Modified Harris-Priester atmosphere model.
@@ -195,12 +195,14 @@ public class HarrisPriester implements Atmosphere {
      * @param tabAltRho the density table
      * @param n the cosine exponent
      */
-    public HarrisPriester(final PVCoordinatesProvider sun, final BodyShape earth,
-                          final double[][] tabAltRho, final double n) {
-        this.sun       = sun;
-        this.earth     = earth;
-        setN(n);
+    public HarrisPriester(final PVCoordinatesProvider sun,
+                          final OneAxisEllipsoid earth,
+                          final double[][] tabAltRho,
+                          final double n) {
+        this.sun   = sun;
+        this.earth = earth;
         setTabDensity(tabAltRho);
+        setN(n);
     }
 
     /** Set parameter N, the cosine exponent.
@@ -259,38 +261,38 @@ public class HarrisPriester implements Atmosphere {
     }
 
     /** Get the local density.
-     * @param sunRAsc Right Ascension of Sun (radians)
-     * @param sunDecl Declination of Sun (radians)
-     * @param satPos  position of s/c in earth frame(m)
-     * @param satAlt  height of s/c (m)
+     * @param sunInEarth position of the Sun in Earth frame (m)
+     * @param posInEarth target position in Earth frame (m)
      * @return the local density (kg/m<sup>3</sup>)
      * @exception OrekitException if altitude is below the model minimal altitude
      */
-    public double getDensity(final double sunRAsc, final double sunDecl, final Vector3D satPos, final double satAlt)
+    public double getDensity(final Vector3D sunInEarth, final Vector3D posInEarth)
         throws OrekitException {
 
+        final double posAlt = getHeight(posInEarth);
         // Check for height boundaries
-        if (satAlt < getMinAlt()) {
-            throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, satAlt, getMinAlt());
+        if (posAlt < getMinAlt()) {
+            throw new OrekitException(OrekitMessages.ALTITUDE_BELOW_ALLOWED_THRESHOLD, posAlt, getMinAlt());
         }
-        if (satAlt > getMaxAlt()) {
+        if (posAlt > getMaxAlt()) {
             return 0.;
         }
 
         // Diurnal bulge apex direction
-        final double cosDec = FastMath.cos(sunDecl);
-        final Vector3D dDBA = new Vector3D(cosDec * FastMath.cos(sunRAsc + LAG),
-                                           cosDec * FastMath.sin(sunRAsc + LAG),
-                                           FastMath.sin(sunDecl));
+        final Vector3D sunDir = sunInEarth.normalize();
+        final double[] bulXYZ = {sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
+                                 sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
+                                 sunDir.getZ()};
+        final Vector3D bulDir = new Vector3D(bulXYZ);
 
         // Cosine of angle Psi between the diurnal bulge apex and the satellite
-        final double cosPsi = dDBA.normalize().dotProduct(satPos.normalize());
-        // (1 + cos(Psi))/2 = cos2(Psi/2)
-        final double c2Psi2 = 0.5 + 0.5 * cosPsi;
+        final double cosPsi = bulDir.normalize().dotProduct(posInEarth.normalize());
+        // (1 + cos(Psi))/2 = cos²(Psi/2)
+        final double c2Psi2 = (1. + cosPsi) / 2.;
 
         // Search altitude index in density table
         int ia = 0;
-        while (ia < tabAltRho.length - 2 && satAlt > tabAltRho[ia][0]) {
+        while (ia < tabAltRho.length - 2 && posAlt > tabAltRho[ia][0]) {
             ia++;
         }
 
@@ -298,15 +300,15 @@ public class HarrisPriester implements Atmosphere {
         final double altMin = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][1] / tabAltRho[ia][1]);
         final double altMax = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][2] / tabAltRho[ia][2]);
 
-        final double rhoMin = tabAltRho[ia][1] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMin);
-        final double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - satAlt) / altMax);
+        final double rhoMin = tabAltRho[ia][1] * FastMath.exp((tabAltRho[ia][0] - posAlt) / altMin);
+        final double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - posAlt) / altMax);
 
         return rhoMin + (rhoMax - rhoMin) * FastMath.pow(c2Psi2, n / 2);
     }
 
-    /** Get the local density.
+    /** Get the local density at some position.
      * @param date current date
-     * @param position current position in frame
+     * @param position current position
      * @param frame the frame in which is defined the position
      * @return local density (kg/m<sup>3</sup>)
      * @exception OrekitException if some frame conversion cannot be performed
@@ -315,19 +317,13 @@ public class HarrisPriester implements Atmosphere {
     public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
         throws OrekitException {
 
-        // compute sun geodetic position
-        final Vector3D sunPosition = sun.getPVCoordinates(date, frame).getPosition();
-        final Vector3D sunClose = sunPosition.normalize().scalarMultiply(Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        final GeodeticPoint sunInBody = earth.transform(sunClose, frame, date);
-        final double sunRAAN = sunInBody.getLongitude();
-        final double sunDecl = sunInBody.getLatitude();
+        // Sun position in earth frame
+        final Vector3D sunInEarth = sun.getPVCoordinates(date, earth.getBodyFrame()).getPosition();
 
-        // compute s/c position in earth frame
-        final GeodeticPoint satInBody = earth.transform(position, frame, date);
-        final double satAlt = satInBody.getAltitude();
-        final Vector3D posInBody = earth.transform(satInBody);
+        // Target position in earth frame
+        final Vector3D posInEarth = frame.getTransformTo(earth.getBodyFrame(), date).transformPosition(position);
 
-        return getDensity(sunRAAN, sunDecl, posInBody, satAlt);
+        return getDensity(sunInEarth, posInEarth);
     }
 
     /** Get the inertial velocity of atmosphere molecules.
@@ -336,7 +332,7 @@ public class HarrisPriester implements Atmosphere {
      * in earth frame.
      * </p>
      * @param date current date
-     * @param position current position in frame
+     * @param position current position
      * @param frame the frame in which is defined the position
      * @return velocity (m/s) (defined in the same frame as the position)
      * @exception OrekitException if some frame conversion cannot be performed
@@ -344,10 +340,29 @@ public class HarrisPriester implements Atmosphere {
     public Vector3D getVelocity(final AbsoluteDate date, final Vector3D position, final Frame frame)
         throws OrekitException {
         final Transform bodyToFrame = earth.getBodyFrame().getTransformTo(frame, date);
-        final Vector3D posInBody = bodyToFrame.getInverse().transformPosition(position);
-        final PVCoordinates pvBody = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
+        final Vector3D posInBody    = bodyToFrame.getInverse().transformPosition(position);
+        final PVCoordinates pvBody  = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
         final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
+    }
+
+    /** Get the height above the Earth for the given position.
+     *  <p>
+     *  The height computation is an approximation valid for the considered atmosphere.
+     *  </p>
+     *  @param position current position in Earth frame
+     *  @return height (m)
+     */
+    private double getHeight(final Vector3D position) {
+        final double a    = earth.getEquatorialRadius();
+        final double f    = earth.getFlattening();
+        final double e2   = f * (2. - f);
+        final double r    = position.getNorm();
+        final double sl   = position.getZ() / r;
+        final double cl2  = 1. - sl * sl;
+        final double coef = FastMath.sqrt((1. - e2) / (1. - e2 * cl2));
+
+        return r - a * coef;
     }
 
 }

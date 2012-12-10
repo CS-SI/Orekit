@@ -56,6 +56,12 @@ public class OneAxisEllipsoid implements BodyShape {
     /** Equatorial radius. */
     private final double ae;
 
+    /** Equatorial radius power 2. */
+    private final double ae2;
+
+    /** Flattening. */
+    private final double f;
+
     /** Eccentricity power 2. */
     private final double e2;
 
@@ -64,9 +70,6 @@ public class OneAxisEllipsoid implements BodyShape {
 
     /** g * g. */
     private final double g2;
-
-    /** Equatorial radius power 2. */
-    private final double ae2;
 
     /** Convergence limit. */
     private double closeApproachThreshold;
@@ -87,11 +90,12 @@ public class OneAxisEllipsoid implements BodyShape {
      * @see org.orekit.frames.FramesFactory#getITRF2005()
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
-        this.ae = ae;
-        e2      = f * (2.0 - f);
-        g       = 1.0 - f;
-        g2      = g * g;
-        ae2     = ae * ae;
+        this.ae  = ae;
+        this.f   = f;
+        this.ae2 = ae * ae;
+        this.e2  = f * (2.0 - f);
+        this.g   = 1.0 - f;
+        this.g2  = g * g;
         setCloseApproachThreshold(1.0e-10);
         setAngularThreshold(1.0e-14);
         this.bodyFrame = bodyFrame;
@@ -139,6 +143,13 @@ public class OneAxisEllipsoid implements BodyShape {
      */
     public double getEquatorialRadius() {
         return ae;
+    }
+
+    /** Get the flattening of the body: f = (a-b)/a.
+     * @return the flattening
+     */
+    public double getFlattening() {
+        return f;
     }
 
     /** Get the body frame related to body shape.
