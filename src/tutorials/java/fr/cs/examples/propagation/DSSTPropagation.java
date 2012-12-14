@@ -356,6 +356,7 @@ public class DSSTPropagation {
             final double maxStep = minStep * 100.;
             final double[][] tol = DSSTPropagator.tolerances(1.0, orbit);
             integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+            ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
 
         return new DSSTPropagator(integrator, orbit, isOsculating);

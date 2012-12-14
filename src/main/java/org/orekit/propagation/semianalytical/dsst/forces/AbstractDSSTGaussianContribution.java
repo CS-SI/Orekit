@@ -48,70 +48,71 @@ import org.orekit.propagation.SpacecraftState;
  */
 public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel {
 
-    /** Propagation orbit type */
+    /** Propagation orbit type. */
     protected static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
 
-    /** Position angle type */
+    /** Position angle type. */
     protected static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
+
+    // CHECKSTYLE: stop VisibilityModifierCheck
+
+    /** Retrograde factor. */
+    protected double I;
+
+    /** a. */
+    protected double a;
+    /** e<sub>x</sub>. */
+    protected double k;
+    /** e<sub>y</sub>. */
+    protected double h;
+    /** h<sub>x</sub>. */
+    protected double q;
+    /** h<sub>y</sub>. */
+    protected double p;
+    /** &lambda;<sub>M</sub>. */
+    protected double lm;
+
+    /** Eccentricity. */
+    protected double ecc;
+
+    /** Kepler mean motion: n = sqrt(&mu; / a<sup>3</sup>). */
+    protected double n;
+
+    /** Equinoctial frame f vector. */
+    protected Vector3D f;
+    /** Equinoctial frame g vector. */
+    protected Vector3D g;
+    /** Equinoctial frame w vector. */
+    protected Vector3D w;
+
+    /** A = sqrt(&mu; * a). */
+    protected double A;
+    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>). */
+    protected double B;
+    /** C = 1 + p<sup>2</sup> + q<sup>2</sup>. */
+    protected double C;
+
+    /** 2 / (n<sup>2</sup> * a) . */
+    protected double ton2a;
+    /** 1 / A .*/
+    protected double ooA;
+    /** 1 / (A * B) .*/
+    protected double ooAB;
+    /** C / (2 * A * B) .*/
+    protected double Co2AB;
+    /** 1 / (1 + B) .*/
+    protected double ooBpo;
+    /** 1 / &mu; .*/
+    protected double ooMu;
+
+    // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Gauss integrator. */
     private final GaussQuadrature integrator;
 
-    /** Retrograde factor */
-    protected double I;
-
-    // Equinoctial elements (according to DSST notation)
-    /** a */
-    protected double a;
-    /** ex */
-    protected double k;
-    /** ey */
-    protected double h;
-    /** hx */
-    protected double q;
-    /** hy */
-    protected double p;
-    /** lm */
-    protected double lm;
-
-    /** eccentricity */
-    protected double ecc;
-
-    // Kepler mean motion
-    /** n = sqrt(&mu; / a<sup>3</sup>) */
-    protected double n;
-
-    // Equinoctial reference frame vectors (according to DSST notation)
-    /** f */
-    protected Vector3D f;
-    /** g */
-    protected Vector3D g;
-    /** w */
-    protected Vector3D w;
-
-    // Useful equinoctial coefficients
-    /** A = sqrt(&mu; * a) */
-    protected double A;
-    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>) */
-    protected double B;
-    /** C = 1 + p<sup>2</sup> + q<sup>2</sup> */
-    protected double C;
-
-    // Common factors
-    /** 2 / (n<sup>2</sup> * a) */
-    protected double ton2a;
-    /** 1 / A */
-    protected double ooA;
-    /** 1 / (A * B) */
-    protected double ooAB;
-    /** C / (2 * A * B) */
-    protected double Co2AB;
-    /** 1 / (1 + B) */
-    protected double ooBpo;
-    /** 1 / &mu; */
-    protected double ooMu;
-
-    /** Build a new instance. */
+    /** Build a new instance.
+     *  @param quadrature_order order for Gauss quadrature
+     */
     protected AbstractDSSTGaussianContribution(final int quadrature_order) {
         this.integrator = new GaussQuadrature(quadrature_order);
     }
@@ -119,7 +120,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
     /** {@inheritDoc} */
     public void initialize(final AuxiliaryElements aux)
         throws OrekitException {
-    
+
         // Equinoctial elements
         a  = aux.getSma();
         k  = aux.getK();
@@ -127,13 +128,13 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         q  = aux.getQ();
         p  = aux.getP();
         lm = aux.getLM();
-        
+
         // Retrograde factor
         I = aux.getRetrogradeFactor();
-        
+
         // Eccentricity
         ecc = aux.getEcc();
-    
+
         // Equinoctial coefficients
         A = aux.getA();
         B = aux.getB();
@@ -155,9 +156,9 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
         Co2AB = C * ooAB / 2.;
         // 1 / (1 + B)
         ooBpo = 1. / (1. + B);
-        // 2 / (n<sup>2</sup> * a)
+        // 2 / (n² * a)
         ton2a = 2. / (n * n * a);
-        // 1 / &mu;
+        // 1 / mu
         ooMu  = 1. / aux.getMu();
     }
 

@@ -69,7 +69,7 @@ public interface DSSTForceModel {
     double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
 
     /** Compute the short periodic variations.
-     * 
+     *
      *  @param date current date
      *  @param meanElements mean elements at current date
      *  @return the short periodic variations

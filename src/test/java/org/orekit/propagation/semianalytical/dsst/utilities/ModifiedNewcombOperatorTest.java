@@ -1,4 +1,4 @@
-package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.semianalytical.dsst.coefficients.ModifiedNewcombOperators;
+import org.orekit.propagation.semianalytical.dsst.utilities.ModifiedNewcombOperators;
 
 public class ModifiedNewcombOperatorTest {
 

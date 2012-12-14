@@ -26,10 +26,10 @@ package org.orekit.propagation.semianalytical.dsst.forces;
  */
 public class ResonantCouple implements Comparable<ResonantCouple> {
 
-    /** Degree n */
+    /** Degree n. */
     private final int n;
 
-    /** Order m */
+    /** Order m. */
     private final int m;
 
     /** Simple constructor.
@@ -42,14 +42,14 @@ public class ResonantCouple implements Comparable<ResonantCouple> {
     }
 
     /** Get the order.
-     * @return order m
+     *  @return order m
      */
     public int getM() {
         return m;
     }
 
     /** Get the degree.
-     * @return degree n
+     *  @return degree n
      */
     public int getN() {
         return n;

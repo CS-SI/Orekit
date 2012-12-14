@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -60,14 +60,7 @@ public class DSSTAtmosphericDragTest {
                                                  FramesFactory.getEME2000(), date, mu);
 
         force.initialize(new AuxiliaryElements(orbit, 1));
-//        long start1 = System.nanoTime(); // requires java 1.5
-        double[] daidt = force.getMeanElementRate(new SpacecraftState(orbit));
-//        double dT1 = (System.nanoTime() - start1) * 1.0e-9;
-//        System.out.println("DT1: " + dT1);
-
-//        for (int i = 0; i < daidt.length; i++) {
-//            System.out.println(daidt[i]);
-//        }
+        final double[] daidt = force.getMeanElementRate(new SpacecraftState(orbit));
 
         final double[] daidtRef = new double[6];
 

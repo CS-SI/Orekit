@@ -23,21 +23,27 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
-import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
+import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.time.AbsoluteDate;
 
-/** Third body attraction contribution to the
+/** Third body attraction perturbation to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
  *
  *  @author Romain Di Costanzo
  *  @author Pascal Parraud
  */
-public class DSSTThirdBody extends AbstractGravitationalForces {
+public class DSSTThirdBody  implements DSSTForceModel {
 
-    /** Default N order for summation. */
-    private static final int       DEFAULT_ORDER = 5;
+    /** Max power for summation. */
+    private static final int       MAX_POWER = 22;
+
+    /** Truncation tolerance for big, eccentric  orbits. */
+    private static final double    BIG_TRUNCATION_TOLERANCE = 1.e-1;
+
+    /** Truncation tolerance for small orbits. */
+    private static final double    SMALL_TRUNCATION_TOLERANCE = 1.e-4;
 
     /** The 3rd body to consider. */
     private final CelestialBody    body;
@@ -45,78 +51,89 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
     /** Standard gravitational parameter &mu; for the body in m<sup>3</sup>/s<sup>2</sup>. */
     private final double           gm;
 
-    /** N order for summation. */
-    private final int              order;
+    /** Factorial. */
+    private final double[]         fact;
 
     /** V<sub>ns</sub> coefficients. */
     private TreeMap<NSKey, Double> Vns;
 
+    /** Distance from center of mass of the central body to the 3rd body. */
+    private double R3;
+
     // Equinoctial elements (according to DSST notation)
     /** a. */
     private double a;
-    /** ex. */
+    /** e<sub>x</sub>. */
     private double k;
-    /** ey. */
+    /** e<sub>y</sub>. */
     private double h;
-    /** hx. */
+    /** h<sub>x</sub>. */
     private double q;
-    /** hy. */
+    /** h<sub>y</sub>. */
     private double p;
 
-    // Eccentricity
+    /** Eccentricity. */
     private double ecc;
 
     // Direction cosines of the symmetry axis
-    /** &alpha; */
+    /** &alpha;. */
     private double alpha;
-    /** &beta; */
+    /** &beta;. */
     private double beta;
-    /** &gamma; */
+    /** &gamma;. */
     private double gamma;
 
     // Common factors for potential computation
-    /** &Chi;<sup>3</sup> = (1 / B)<sup>3</sup> */
-    private double X3;
-    /** a / A. */
-    private double aoA;
+    /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
+    private double X;
+    /** &Chi;<sup>2</sup>. */
+    private double XX;
+    /** &Chi;<sup>3</sup>. */
+    private double XXX;
+    /** -2 * a / A. */
+    private double m2aoA;
     /** B / A. */
     private double BoA;
     /** 1 / (A * B). */
     private double ooAB;
-    /** C / (2 * A * B). */
-    private double Co2AB;
+    /** -C / (2 * A * B). */
+    private double mCo2AB;
     /** B / A(1 + B). */
     private double BoABpo;
 
     /** Retrograde factor. */
     private int    I;
 
-    /** Distance from center of mass of the central body to the 3rd body. */
-    private double R3;
+    /** Maw power for a/R3 in the serie expansion. */
+    private int    maxAR3Pow;
 
-    /** Simple constructor.
-     * @param body the 3rd body to consider
-     * @see org.orekit.bodies.CelestialBodyFactory
-     */
-    public DSSTThirdBody(final CelestialBody body) {
-        this(body, DEFAULT_ORDER);
-    }
+    /** Maw power for e in the serie expansion. */
+    private int    maxECCPow;
 
     /** Complete constructor.
-     * @param body the 3rd body to consider
-     * @param order N order for summation
-     * @see org.orekit.bodies.CelestialBodyFactory
+     *  @param body the 3rd body to consider
+     *  @see org.orekit.bodies.CelestialBodyFactory
      */
-    public DSSTThirdBody(final CelestialBody body, final int order) {
+    public DSSTThirdBody(final CelestialBody body) {
         this.body = body;
         this.gm   = body.getGM();
 
-        this.order = order;
-        this.Vns = DSSTCoefficientFactory.computeVnsCoefficient(order + 1);
+        this.maxAR3Pow = Integer.MIN_VALUE;
+        this.maxECCPow = Integer.MIN_VALUE;
+
+        this.Vns = DSSTCoefficientFactory.computeVnsCoefficient(MAX_POWER);
+
+        // Factorials computation
+        final int dim = 2 * MAX_POWER;
+        this.fact = new double[dim];
+        fact[0] = 1.;
+        for (int i = 1; i < dim; i++) {
+            fact[i] = i * fact[i - 1];
+        }
     }
 
     /** Get third body.
-     * @return third body
+     *  @return third body
      */
     public final CelestialBody getBody() {
         return body;
@@ -124,14 +141,14 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
 
     /** {@inheritDoc} */
     public void initialize(final AuxiliaryElements aux) throws OrekitException {
-    
+
         // Equinoctial elements
         a = aux.getSma();
         k = aux.getK();
         h = aux.getH();
         q = aux.getQ();
         p = aux.getP();
-    
+
         // Retrograde factor
         I = aux.getRetrogradeFactor();
 
@@ -141,30 +158,38 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         // Distance from center of mass of the central body to the 3rd body
         final Vector3D bodyPos = body.getPVCoordinates(aux.getDate(), aux.getFrame()).getPosition();
         R3 = bodyPos.getNorm();
-    
+
         // Direction cosines
         final Vector3D bodyDir = bodyPos.normalize();
         alpha = bodyDir.dotProduct(aux.getVectorF());
         beta  = bodyDir.dotProduct(aux.getVectorG());
         gamma = bodyDir.dotProduct(aux.getVectorW());
-        
+
         // Equinoctial coefficients
         final double A = aux.getA();
         final double B = aux.getB();
         final double C = aux.getC();
 
-        // &Chi; = 1 / B
-        X3 = 1. / (B * B * B);
-        // 1 / A
-        aoA = a / A;
+        // &Chi;
+        X = 1. / B;
+        XX = X * X;
+        XXX = X * XX;
+        // -2 * a / A
+        m2aoA = a / A;
         // B / A
         BoA = B / A;
         // 1 / AB
         ooAB = 1. / (A * B);
-        // C / 2AB
-        Co2AB = C * ooAB / 2.;
+        // -C / 2AB
+        mCo2AB = -C * ooAB / 2.;
         // B / A(1 + B)
         BoABpo = BoA / (1. + B);
+
+        if (maxAR3Pow == Integer.MIN_VALUE) {
+            // Set the highest powers of e and a/R3 in the analytical power
+            // series expansion for 3rd body potential derivatives
+            truncation();
+        }
     }
 
     /** {@inheritDoc} */
@@ -179,21 +204,21 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         final double dUdBe = dU[4];
         final double dUdGa = dU[5];
 
-        // Compute cross derivatives from 2.2-(8)
+        // Compute cross derivatives [Eq. 2.2-(8)]
         // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
         final double UAlphaGamma   = alpha * dUdGa - gamma * dUdAl;
         // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
-        final double UBetaGamma    = beta * dUdGa - gamma * dUdBe;
+        final double UBetaGamma    =  beta * dUdGa - gamma * dUdBe;
         // Common factor
         final double pUAGmIqUBGoAB = (p * UAlphaGamma - I * q * UBetaGamma) * ooAB;
 
-        // Compute mean element rates from equation 3.1-(1)
-        final double da = 0.;
+        // Compute mean elements rates [Eq. 3.1-(1)]
+        final double da =  0.;
         final double dh =  BoA * dUdk + k * pUAGmIqUBGoAB;
         final double dk = -BoA * dUdh - h * pUAGmIqUBGoAB;
-        final double dp = -Co2AB * UBetaGamma;
-        final double dq = -I * Co2AB * UAlphaGamma;
-        final double dM = -2 * aoA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUAGmIqUBGoAB;
+        final double dp =  mCo2AB * UBetaGamma;
+        final double dq =  mCo2AB * UAlphaGamma * I;
+        final double dM =  m2aoA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUAGmIqUBGoAB;
 
         return new double[] {da, dk, dh, dq, dp, dM};
 
@@ -206,18 +231,88 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         return new double[] {0., 0., 0., 0., 0., 0.};
     }
 
+    /** Computes the highest power of the eccentricity and the highest power
+     *  of a/R3 to appear in the truncated analytical power series expansion.
+     *  <p>
+     *  This method computes the upper value for the 3rd body potential and
+     *  determines the maximal values from wich upper values give potential
+     *  terms inferior to a defined tolerance.
+     *  </p>
+     */
+    private void truncation() {
+        // Truncation tolerance.
+        final double aor = a / R3;
+        final double tol = ( aor > .3 || (aor > .15  && ecc > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
+
+        // Utilities for truncation
+        // Set a lower bound for eccentricity
+        final double eo2  = FastMath.max(0.0025, ecc / 2.);
+        final double x2o2 = XX / 2.;
+        final double[] eccPwr = new double[MAX_POWER];
+        final double[] chiPwr = new double[MAX_POWER];
+        eccPwr[0] = 1.;
+        chiPwr[0] = X;
+        for (int i = 1; i < MAX_POWER; i++) {
+            eccPwr[i] = eccPwr[i - 1] * eo2;
+            chiPwr[i] = chiPwr[i - 1] * x2o2;
+        }
+
+        // Auxiliary quantities.
+        final double ao2rxx = aor / (2. * XX);
+        double xmuarn       = ao2rxx * ao2rxx * gm / (X * R3);
+        double term         = 0.;
+
+        // Compute max power for a/R3 and e.
+        maxAR3Pow = 2;
+        maxECCPow = 0;
+        int n     = 2;
+        int m     = 2;
+        int nsmd2 = 0;
+
+        do {
+            // Upper bound for Tnm.
+            term =  xmuarn *
+                   (fact[n + m] / (fact[nsmd2] * fact[nsmd2 + m])) *
+                   (fact[n + m + 1] / (fact[m] * fact[n + 1])) *
+                   (fact[n - m + 1] / fact[n + 1]) *
+                   eccPwr[m] * UpperBounds.getDnl(XX, chiPwr[m], n + 2, m);
+
+            if (term < tol) {
+                if (m == 0) {
+                    break;
+                } else if (m < 2) {
+                    xmuarn *= ao2rxx;
+                    m = 0;
+                    n++;
+                    nsmd2++;
+                } else {
+                    m -= 2;
+                    nsmd2++;
+                }
+            } else {
+                maxAR3Pow = n;
+                maxECCPow = (maxECCPow < m) ? m : maxECCPow;
+                xmuarn *= ao2rxx;
+                m++;
+                n++;
+            }
+        } while (n < MAX_POWER);
+
+        maxECCPow = (maxECCPow > maxAR3Pow) ? maxAR3Pow : maxECCPow;
+    }
+
     /** Compute potential derivatives.
-     * @return derivatives of the potential with respect to orbital parameters
-     * @throws OrekitException if Hansen coefficients cannot be computed
+     *  @return derivatives of the potential with respect to orbital parameters
+     *  @throws OrekitException if Hansen coefficients cannot be computed
      */
     private double[] computeUDerivatives() throws OrekitException {
 
         // Hansen coefficients
-        final HansenCoefficients hansen = new HansenCoefficients(ecc);
+        final HansenThirdBody hansen = new HansenThirdBody();
         // Gs coefficients
-        final double[][] GsHs = DSSTCoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, order);
+        final double[][] GsHs = DSSTCoefficientFactory.computeGsHs(k, h, alpha, beta, maxECCPow);
         // Qns coefficients
-        final double[][] Qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, order);
+        final double[][] Qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, maxAR3Pow + 1);
         // mu3 / R3
         final double muoR3 = gm / R3;
         // a / R3
@@ -231,7 +326,7 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         double dUdBe = 0.;
         double dUdGa = 0.;
 
-        for (int s = 0; s <= order; s++) {
+        for (int s = 0; s <= maxECCPow; s++) {
             // Get the current Gs and Hs coefficient
             final double gs = GsHs[0][s];
             final double gsm1 = s > 0 ? GsHs[0][s - 1] : 0.;
@@ -246,32 +341,34 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
             // Kronecker symbol (2 - delta(0,s))
             final double delta0s = (s == 0) ? 1. : 2.;
 
-            for (int n = FastMath.max(2, s); n <= order; n++) {
-                // for (int n = s + 1; n <= order; n++) {
-                // Extract data from previous computation :
-                final double vns = Vns.get(new NSKey(n, s));
-                final double kns = hansen.getHansenKernelValue(0, n, s);
-                final double qns = Qns[n][s];
-                final double aoR3n = FastMath.pow(aoR3, n);
-                final double dkns = hansen.getHansenKernelDerivative(0, n, s);
-                final double coef0 = delta0s * aoR3n * vns;
-                final double coef1 = coef0 * qns;
-                // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
-                // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
-                final double dqns = (n == s) ? 0. : Qns[n][s + 1];
+            for (int n = FastMath.max(2, s); n <= maxAR3Pow; n++) {
+                // (n - s) must be even
+                if ((n - s) % 2 == 0) {
+                    // Extract data from previous computation :
+                    final double vns   = Vns.get(new NSKey(n, s));
+                    final double kns   = hansen.getValue(n, s);
+                    final double qns   = Qns[n][s];
+                    final double aoR3n = FastMath.pow(aoR3, n);
+                    final double dkns  = hansen.getDerivative(n, s);
+                    final double coef0 = delta0s * aoR3n * vns;
+                    final double coef1 = coef0 * qns;
+                    // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                    // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
+                    final double dqns = (n == s) ? 0. : Qns[n][s + 1];
 
-                // Compute dU / da :
-                dUda += coef1 * n * kns * gs;
-                // Compute dU / dh
-                dUdh += coef1 * (kns * dGsdh + h * X3 * gs * dkns);
-                // Compute dU / dk
-                dUdk += coef1 * (kns * dGsdk + k * X3 * gs * dkns);
-                // Compute dU / dAlpha
-                dUdAl += coef1 * kns * dGsdAl;
-                // Compute dU / dBeta
-                dUdBe += coef1 * kns * dGsdBe;
-                // Compute dU / dGamma with dQns/dGamma = Q(n, s + 1)
-                dUdGa += coef0 * kns * dqns * gs;
+                    // Compute dU / da :
+                    dUda += coef1 * n * kns * gs;
+                    // Compute dU / dh
+                    dUdh += coef1 * (kns * dGsdh + h * XXX * gs * dkns);
+                    // Compute dU / dk
+                    dUdk += coef1 * (kns * dGsdk + k * XXX * gs * dkns);
+                    // Compute dU / dAlpha
+                    dUdAl += coef1 * kns * dGsdAl;
+                    // Compute dU / dBeta
+                    dUdBe += coef1 * kns * dGsdBe;
+                    // Compute dU / dGamma with dQns/dGamma = Q(n, s + 1)
+                    dUdGa += coef0 * kns * dqns * gs;
+                }
             }
         }
 
@@ -283,6 +380,173 @@ public class DSSTThirdBody extends AbstractGravitationalForces {
         dUdGa *= muoR3;
 
         return new double[] {dUda, dUdk, dUdh, dUdAl, dUdBe, dUdGa};
+
+    }
+
+    /** Hansen coefficients for 3rd body force model.
+     *  <p>
+     *  Hansen coefficients are functions of the eccentricity.
+     *  For a given eccentricity, the computed elements are stored in a map.
+     *  </p>
+     */
+    private class HansenThirdBody {
+
+        /** Map to store every Hansen coefficient computed. */
+        private TreeMap<NSKey, Double> coefficients;
+
+        /** Map to store every Hansen coefficient derivative computed. */
+        private TreeMap<NSKey, Double> derivatives;
+
+        /** Simple constructor. */
+        public HansenThirdBody() {
+            coefficients = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
+            derivatives  = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
+            initialize();
+        }
+
+        /** Get the K<sub>0</sub><sup>n,s</sup> coefficient value.
+         *  @param n n value
+         *  @param s s value
+         *  @return K<sub>0</sub><sup>n,s</sup>
+         */
+        public final double getValue(final int n, final int s) {
+            if (coefficients.containsKey(new NSKey(n, s))) {
+                return coefficients.get(new NSKey(n, s));
+            } else {
+                // Compute the K0(n,s) coefficients
+                return computeValue(n, s);
+            }
+        }
+
+        /** Get the dK<sub>0</sub><sup>n,s</sup> / d&x; coefficient derivative.
+         *  @param n n value
+         *  @param s s value
+         *  @return dK<sub>j</sub><sup>n,s</sup> / d&x;
+         */
+        public final double getDerivative(final int n, final int s) {
+            if (derivatives.containsKey(new NSKey(n, s))) {
+                return derivatives.get(new NSKey(n, s));
+            } else {
+                // Compute the dK0(n,s) / dX derivative
+                return computeDerivative(n, s);
+            }
+        }
+
+        /** Initialization. */
+        private void initialize() {
+            final double ec2 = ecc * ecc;
+            coefficients.put(new NSKey(-1, 0), 0.);
+            coefficients.put(new NSKey(0, 0),  1.);
+            coefficients.put(new NSKey(0, 1), -1.);
+            coefficients.put(new NSKey(1, 0),  1. + 0.5 * ec2);
+            coefficients.put(new NSKey(1, 1), -1.5);
+            coefficients.put(new NSKey(2, 0),  1. + 1.5 * ec2);
+            coefficients.put(new NSKey(2, 1), -2. - 0.5 * ec2);
+            derivatives.put(new NSKey(0, 0), 0.);
+        }
+
+        /** Compute K<sub>0</sub><sup>n,s</sup> from Equation 2.7.3-(7)(8).
+         *  @param n n value
+         *  @param s s value
+         *  @return K<sub>0</sub><sup>n,s</sup>
+         */
+        private double computeValue(final int n, final int s) {
+            // Initialize return value
+            double kns = 0.;
+
+            if (n == (s - 1)) {
+
+                final NSKey key = new NSKey(s - 2, s - 1);
+                if (coefficients.containsKey(key)) {
+                    kns = coefficients.get(key);
+                } else {
+                    kns = computeValue(s - 2, s - 1);
+                }
+
+                kns *= -(2. * s - 1.) / s;
+
+            } else if (n == s) {
+
+                final NSKey key = new NSKey(s - 1, s);
+                if (coefficients.containsKey(key)) {
+                    kns = coefficients.get(key);
+                } else {
+                    kns = computeValue(s - 1, s);
+                }
+
+                kns *= (2. * s + 1.) / (s + 1.);
+
+            } else if (n > s) {
+
+                final NSKey key1 = new NSKey(n - 1, s);
+                double knM1 = 0.;
+                if (coefficients.containsKey(key1)) {
+                    knM1 = coefficients.get(key1);
+                } else {
+                    knM1 = computeValue(n - 1, s);
+                }
+
+                final NSKey key2 = new NSKey(n - 2, s);
+                double knM2 = 0.;
+                if (coefficients.containsKey(key2)) {
+                    knM2 = coefficients.get(key2);
+                } else {
+                    knM2 = computeValue(n - 2, s);
+                }
+
+                final double val1 = (2. * n + 1.) / (n + 1.);
+                final double val2 = (n + s) * (n - s) / (n * (n + 1.) * XX);
+
+                kns = val1 * knM1 - val2 * knM2;
+            }
+
+            coefficients.put(new NSKey(n, s), kns);
+            return kns;
+        }
+
+        /** Compute dK<sub>0</sub><sup>n,s</sup> / d&x; from Equation 3.2-(3).
+         *  @param n n value
+         *  @param s s value
+         *  @return dK<sub>0</sub><sup>n,s</sup> / d&x;
+         */
+        private double computeDerivative(final int n, final int s) {
+            // Initialize return value
+            double dknsdx = 0.;
+
+            final NSKey keyNS = new NSKey(n, s);
+            if ((n == s - 1) || (n == s)) {
+                derivatives.put(keyNS, 0.);
+            } else {
+
+                final NSKey keyNm1 = new NSKey(n - 1, s);
+                double dKnM1 = 0.;
+                if (derivatives.containsKey(keyNm1)) {
+                    dKnM1 = derivatives.get(keyNm1);
+                } else {
+                    dKnM1 = computeDerivative(n - 1, s);
+                }
+
+                final NSKey keyNm2 = new NSKey(n - 2, s);
+                double dKnM2 = 0.;
+                if (derivatives.containsKey(keyNm2)) {
+                    dKnM2 = derivatives.get(keyNm2);
+                } else {
+                    dKnM2 = computeDerivative(n - 2, s);
+                }
+
+                final double knM2 = getValue(n - 2, s);
+
+                final double val1 = (2. * n + 1.) / (n + 1.);
+                final double coef = (n + s) * (n - s) / (n * (n + 1.));
+                final double val2 = coef / XX;
+                final double val3 = 2. * coef / XXX;
+
+                dknsdx = val1 * dKnM1 - val2 * dKnM2 + val3 * knM2;
+            }
+
+            derivatives.put(keyNS, dknsdx);
+            return dknsdx;
+        }
 
     }
 

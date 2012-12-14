@@ -14,30 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.coefficients;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.MNSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory.MNSKey;
 
-/**
- * Compute the &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient evaluated at &gamma;.
+/** Compute the &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient.
  *
- * @author Romain Di Costanzo
+ *  @author Romain Di Costanzo
  */
 public class GammaMsnCoefficients {
 
-    /** &Gamma;. */
-    private final double      gamma;
-
-    /** I = +1 for a prograde orbit, -1 otherwise. */
-    private final int         I;
-
     /** Result map. */
     private final Map<MNSKey, Double> map;
+
+    /** &Gamma;. */
+    private final double gamma;
+
+    /** I = +1 for a prograde orbit, -1 otherwise. */
+    private final int    I;
 
     /** simple constructor.
      * @param gamma &gamma;

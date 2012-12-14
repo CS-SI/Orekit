@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.coefficients;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.apache.commons.math3.util.FastMath;
 

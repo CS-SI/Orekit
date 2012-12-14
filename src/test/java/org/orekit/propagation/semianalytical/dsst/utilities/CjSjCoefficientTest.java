@@ -1,13 +1,12 @@
-package org.orekit.propagation.semianalytical.dsst.coefficientcomputation;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.apache.commons.math3.complex.Complex;
 import org.junit.Assert;
 import org.junit.Test;
-import org.orekit.propagation.semianalytical.dsst.coefficients.CjSjCoefficient;
+import org.orekit.propagation.semianalytical.dsst.utilities.CjSjCoefficient;
 
 public class CjSjCoefficientTest {
 
-    /** Test the CjSj series generation */
     @Test
     public void testGetCjSj() {
         final double epsilon = 1e-15;

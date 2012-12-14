@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.dsstforcemodel;
+package org.orekit.propagation.semianalytical.dsst.forces;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -68,13 +68,6 @@ public class DSSTSolarRadiationPressureTest {
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
 
-//        System.out.println(daidtRef[0] + " " + daidt[0] + " " + (daidtRef[0] - daidt[0]));
-//        System.out.println(daidtRef[1] + " " + daidt[1] + " " + (daidtRef[1] - daidt[1]));
-//        System.out.println(daidtRef[2] + " " + daidt[2] + " " + (daidtRef[2] - daidt[2]));
-//        System.out.println(daidtRef[3] + " " + daidt[3] + " " + (daidtRef[3] - daidt[3]));
-//        System.out.println(daidtRef[4] + " " + daidt[4] + " " + (daidtRef[4] - daidt[4]));
-//        System.out.println(daidtRef[5] + " " + daidt[5] + " " + (daidtRef[5] - daidt[5]));
-
         Assert.assertEquals(daidtRef[0], daidt[0], 2.e-5);
         Assert.assertEquals(daidtRef[1], daidt[1], 1.e-12);
         Assert.assertEquals(daidtRef[2], daidt[2], 2.e-12);
@@ -106,13 +99,6 @@ public class DSSTSolarRadiationPressureTest {
 
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
-
-//        System.out.println(daidtRef[0] + " " + daidt[0] + " " + (daidtRef[0] - daidt[0]));
-//        System.out.println(daidtRef[1] + " " + daidt[1] + " " + (daidtRef[1] - daidt[1]));
-//        System.out.println(daidtRef[2] + " " + daidt[2] + " " + (daidtRef[2] - daidt[2]));
-//        System.out.println(daidtRef[3] + " " + daidt[3] + " " + (daidtRef[3] - daidt[3]));
-//        System.out.println(daidtRef[4] + " " + daidt[4] + " " + (daidtRef[4] - daidt[4]));
-//        System.out.println(daidtRef[5] + " " + daidt[5] + " " + (daidtRef[5] - daidt[5]));
 
         Assert.assertEquals(daidtRef[0], daidt[0], 2.e-19);
         Assert.assertEquals(daidtRef[1], daidt[1], 7.e-17);

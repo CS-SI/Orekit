@@ -41,10 +41,10 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** Equatorial radius of the Central Body. */
     private final double     r;
 
-    /** Un-normalized coefficients array (cosine part) */
+    /** Un-normalized coefficients array (cosine part). */
     private final double[][] C;
 
-    /** Un-normalized coefficients array (sine part) */
+    /** Un-normalized coefficients array (sine part). */
     private final double[][] S;
 
     /** Zonal harmonics contribution. */
@@ -59,8 +59,8 @@ public class DSSTCentralBody implements DSSTForceModel {
      * @param centralBodyRotationRate central body rotation rate (rad/s)
      * @param equatorialRadius equatorial radius of the central body (m)
      * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param C un-normalized coefficients array of the spherical harmonics (cosine part)
-     * @param S un-normalized coefficients array of the spherical harmonics (sine part)
+     * @param Cnm un-normalized coefficients array of the spherical harmonics (cosine part)
+     * @param Snm un-normalized coefficients array of the spherical harmonics (sine part)
      */
     public DSSTCentralBody(final double centralBodyRotationRate,
                            final double equatorialRadius,
@@ -81,8 +81,8 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         this.r = equatorialRadius;
-        this.C = Cnm;
-        this.S = Snm;
+        this.C = Cnm.clone();
+        this.S = Snm.clone();
 
         // Initialize the Jn coefficient for zonal harmonic series expansion
         final double[] Jn = new double[degree + 1];
@@ -116,16 +116,14 @@ public class DSSTCentralBody implements DSSTForceModel {
         throws OrekitException {
 
         // Get zonal harmonics contribution to mean elements
-        double[] meanElementRate = zonal.getMeanElementRate(spacecraftState);
+        final double[] meanElementRate = zonal.getMeanElementRate(spacecraftState);
 
         // Get tesseral resonant harmonics contribution to mean elements
-        double[] tesseralMeanRate = new double[6];
         if (tesseral != null) {
-            tesseralMeanRate = tesseral.getMeanElementRate(spacecraftState);
-        }
-
-        for (int i = 0; i < 6; i++) {
-            meanElementRate[i] += tesseralMeanRate[i];
+            final double[] tesseralMeanRate = tesseral.getMeanElementRate(spacecraftState);
+            for (int i = 0; i < 6; i++) {
+                meanElementRate[i] += tesseralMeanRate[i];
+            }
         }
 
         return meanElementRate;
@@ -136,43 +134,27 @@ public class DSSTCentralBody implements DSSTForceModel {
         throws OrekitException {
 
         // Get zonal harmonics contribution to short periodic variations
-        double[] shortPeriodics = zonal.getShortPeriodicVariations(date, meanElements);
+        final double[] shortPeriodics = zonal.getShortPeriodicVariations(date, meanElements);
 
         // Get tesseral resonant harmonics contribution to short periodic variations
-        double[] tesseralShort = new double[6];
         if (tesseral != null) {
-            tesseralShort = tesseral.getShortPeriodicVariations(date, meanElements);
-        }
-
-        for (int i = 0; i < 6; i++) {
-            shortPeriodics[i] += tesseralShort[i];
+            final double[] tesseralShort = tesseral.getShortPeriodicVariations(date, meanElements);
+            for (int i = 0; i < 6; i++) {
+                shortPeriodics[i] += tesseralShort[i];
+            }
         }
 
         return shortPeriodics;
     }
 
-    /** Set the highest power of the eccentricity to appear in the truncated analytical
-     * power series expansion for the averaged central-body zonal harmonic potential.
-     *
-     * @param zonalMaxEccPower highest power of the eccentricity
-     */
-    public final void setZonalMaximumEccentricityPower(final int zonalMaxEccPower) {
-        zonal.setZonalMaximumEccentricityPower(zonalMaxEccPower);
-    }
-
-    /** Set the Zonal truncature tolerance.
-     * @param zonalTruncatureTolerance Zonal truncature tolerance
-     */
-    public final void setZonalTruncatureTolerance(final double zonalTruncatureTolerance) {
-        zonal.setZonalTruncatureTolerance(zonalTruncatureTolerance);
-    }
-
     /** Set the resonant Tesseral harmonic couple term.
+     * <p>
      *  This parameter can be set to null or be an empty list.
      *  If so, the program will automatically determine the resonant couple to
      *  take in account. If not, only the resonant couple given by the user will
      *  be taken in account.
-     *  
+     *  </p>
+     *
      * @param resonantTesseral Resonant Tesseral harmonic couple term
      */
     public final void setResonantTesseral(final List<ResonantCouple> resonantTesseral) {
@@ -219,24 +201,24 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** Get the equatorial radius of the central body.
-     * @return the equatorial radius (m)
+     *  @return the equatorial radius (m)
      */
     public final double getEquatorialRadius() {
         return r;
     }
 
     /** Get the un-normalized coefficients array of the spherical harmonics (cosine part).
-     * @return Cnm
+     *  @return Cnm
      */
     public final double[][] getCnm() {
-        return C;
+        return C.clone();
     }
 
     /** Get the un-normalized coefficients array of the spherical harmonics (sine part).
-     * @return Snm
+     *  @return Snm
      */
     public final double[][] getSnm() {
-        return S;
+        return S.clone();
     }
 
 }

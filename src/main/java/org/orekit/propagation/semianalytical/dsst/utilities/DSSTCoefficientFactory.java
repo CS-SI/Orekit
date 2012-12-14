@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.coefficients;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
-import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -35,10 +34,10 @@ import org.orekit.errors.OrekitMessages;
 public class DSSTCoefficientFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation. */
-    private static TreeMap<NSKey, Double>         VNS            = new TreeMap<NSKey, Double>();
+    private static TreeMap<NSKey, Double> VNS = new TreeMap<NSKey, Double>();
 
     /** Last computed order for V<sub>ns</sub> coefficients. */
-    private static int                            LAST_VNS_ORDER = 2;
+    private static int         LAST_VNS_ORDER = 2;
 
     /** Map of the Qns derivatives, for each (n, s) couple. */
     private static Map<NSKey, PolynomialFunction> QNS_MAP        = new TreeMap<NSKey, PolynomialFunction>();
@@ -120,25 +119,26 @@ public class DSSTCoefficientFactory {
      * @param alpha 1st direction cosine
      * @param beta 2nd direction cosine
      * @param order development order
-     * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order. The 1st
-     *         column contains the G<sub>s</sub> values. The 2nd column contains the H<sub>s</sub>
-     *         values.
-     * @see #getGsCoefficient(double, double, double, double, int)
+     * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order.<br>
+     *         The 1st column contains the G<sub>s</sub> values.
+     *         The 2nd column contains the H<sub>s</sub> values.
      */
-    public static double[][] computeGsHsCoefficient(final double k, final double h,
-                                                    final double alpha, final double beta, final int order) {
-        // Initialization
-        final double[][] GsHs = new double[2][order + 1];
-        // First Gs coefficient
-        GsHs[0][0] = 1.;
-        // First Hs coefficient
-        GsHs[1][0] = 0.;
-
+    public static double[][] computeGsHs(final double k, final double h,
+                                         final double alpha, final double beta,
+                                         final int order) {
         // Constant terms
         final double hamkb = h * alpha - k * beta;
         final double kaphb = k * alpha + h * beta;
+        // Initialization
+        final double[][] GsHs = new double[2][order + 1];
+        // 1st & 2nd Gs coefficients
+        GsHs[0][0] = 1.;
+        GsHs[0][1] = kaphb;
+        // 1st & 2nd Hs coefficients
+        GsHs[1][0] = 0.;
+        GsHs[1][1] = hamkb;
 
-        for (int s = 1; s <= order; s++) {
+        for (int s = 2; s <= order; s++) {
             // Gs coefficient
             GsHs[0][s] = kaphb * GsHs[0][s - 1] - hamkb * GsHs[1][s - 1];
             // Hs coefficient
@@ -146,55 +146,6 @@ public class DSSTCoefficientFactory {
         }
 
         return GsHs;
-    }
-
-    /** Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4).
-     * @param k x-component of the eccentricity vector
-     * @param h y-component of the eccentricity vector
-     * @param alpha 1st direction cosine
-     * @param beta 2nd direction cosine
-     * @param s development order
-     * @return Array of G<sub>s</sub> and H<sub>s</sub> values for s. The 1st column contains the
-     *         G<sub>s</sub> value. The 2nd column contains the H<sub>s</sub> value.
-     */
-    public static double[] getGsHsCoefficient(final double k, final double h,
-                                              final double alpha, final double beta, final int s) {
-        final Complex as   = new Complex(k, h).pow(s);
-        final Complex bs   = new Complex(alpha, -beta).pow(s);
-        final Complex asbs = as.multiply(bs);
-        return new double[] {
-            asbs.getReal(), asbs.getImaginary()
-        };
-    }
-
-    /** Get the G<sub>s</sub> coefficient from relation 3.1-(4).
-     * @param k k
-     * @param h h
-     * @param alpha &alpha;
-     * @param beta &beta;
-     * @param s s
-     * @return G<sub>s</sub> coefficient
-     */
-    public static double getGsCoefficient(final double k, final double h,
-                                          final double alpha, final double beta, final int s) {
-        final Complex as = new Complex(k, h).pow(s);
-        final Complex bs = new Complex(alpha, -beta).pow(s);
-        return as.multiply(bs).getReal();
-    }
-
-    /** Get the H<sub>s</sub> coefficient from relation 3.1-(4).
-     * @param k k
-     * @param h h
-     * @param alpha &alpha;
-     * @param beta &beta;
-     * @param s s
-     * @return H<sub>s</sub> coefficient
-     */
-    public static double getHsCoefficient(final double k, final double h,
-                                          final double alpha, final double beta, final int s) {
-        final Complex as = new Complex(k, h).pow(s);
-        final Complex bs = new Complex(alpha, -beta).pow(s);
-        return as.multiply(bs).getImaginary();
     }
 
     /** Compute the V<sub>n, s</sub> coefficient from 2.8.2 - (1)(2).

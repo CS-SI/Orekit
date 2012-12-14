@@ -16,16 +16,13 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.math.BigInteger;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTFactorial;
-import org.orekit.propagation.semianalytical.dsst.coefficients.HansenCoefficients;
-import org.orekit.propagation.semianalytical.dsst.coefficients.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 /** Zonal contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
@@ -35,117 +32,112 @@ import org.orekit.time.AbsoluteDate;
  */
 class ZonalContribution implements DSSTForceModel {
 
-    /** Truncation tolerance */
+    /** Truncation tolerance. */
     private static final double TRUNCATION_TOLERANCE = 1e-10;
 
-    /** Equatorial radius of the central body */
-    private final double ae;
+    /** Equatorial radius of the central body. */
+    private final double r;
 
-    /** Central body attraction coefficient */
+    /** Central body attraction coefficient. */
     private final double mu;
-
-    /** Geopotential coefficient Jn = -Cn0 */
-    private final double[] Jn;
 
     /** Degree <i>n</i> of potential. */
     private final int    degree;
 
-    /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient */
+    /** Geopotential coefficient Jn = -Cn0. */
+    private final double[] Jn;
+
+    /** Factorial. */
+    private final double[] fact;
+
+    /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
     private final TreeMap<NSKey, Double> Vns;
 
     // Equinoctial elements (according to DSST notation)
-    /** a */
+    /** a. */
     private double a;
-    /** ex */
+    /** ex. */
     private double k;
-    /** ey */
+    /** ey. */
     private double h;
-    /** hx */
+    /** hx. */
     private double q;
-    /** hy */
+    /** hy. */
     private double p;
-    /** Retrograde factor */
+    /** Retrograde factor. */
     private int    I;
 
-    /** Eccentricity */
+    /** Eccentricity. */
     private double ecc;
 
-    /** Direction cosine &alpha */
+    /** Direction cosine &alpha. */
     private double alpha;
-    /** Direction cosine &beta */
+    /** Direction cosine &beta. */
     private double beta;
-    /** Direction cosine &gamma */
+    /** Direction cosine &gamma. */
     private double gamma;
 
     // Common factors for potential computation
-    /** &Chi;<sup>3</sup> = (1 / B)<sup>3</sup> */
-    private double X3;
-    /** 1 / (A * B) */
+    /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
+    private double X;
+    /** &Chi;<sup>2</sup>. */
+    private double XX;
+    /** &Chi;<sup>3</sup>. */
+    private double XXX;
+    /** 1 / (A * B) .*/
     private double ooAB;
-    /** B / A */
+    /** B / A .*/
     private double BoA;
-    /** B / A(1 + B) */
+    /** B / A(1 + B) .*/
     private double BoABpo;
-    /** C / (2 * A * B) */
-    private double Co2AB;
-    /** a / A */
-    private double aoA;
-    /** &mu; / a */
+    /** -C / (2 * A * B) .*/
+    private double mCo2AB;
+    /** -2 * a / A .*/
+    private double m2aoA;
+    /** &mu; / a .*/
     private double muoa;
 
-    /**
-     * Highest power of the eccentricity to appear in the truncated analytical power series
-     * expansion for the averaged central-body Zonal harmonic potential. The user can set this value
-     * by using the {@link #setZonalMaximumEccentricityPower(double)} method. If he doesn't, the
-     * software will compute a default value itself, through the
-     * {@link #computeZonalMaxEccentricityPower()} method.
-     */
-    private int    maxEccentricityPower;
+    /** Highest power of the eccentricity to be used in series expansion. */
+    private int    maxEccPow;
 
-    /** Maximal degree of the geopotential to be used in zonal series expansion.
-     *  <p>
-     *  This value won't be used if the {@link #maxEccentricityPower} is set through the
-     *  {@link #computeZonalMaxEccentricityPower()} method. If not, series expansion will
-     *  automatically be truncated.
-     *  </p>
-     */
+    /** Maximal degree of the potential to be used in series expansion. */
     private int    maxDegree;
 
-    /** Truncation tolerance.
-     *  <p>
-     *  This value is used by the {@link truncation()} method to
-     *  determine the upper bound of the zonal potential expansion.
-     *  </p>
-     */
-    private double truncationTolerance;
-
     /** Hansen coefficient. */
-    private HansenCoefficients hansen;
+    private HansenZonal hansen;
 
     /** Simple constructor.
      *  @param equatorialRadius equatorial radius of the central body (m)
      *  @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     *  @param Jn zonal coefficients of the potential
+     *  @param jn zonal coefficients of the potential
      */
     public ZonalContribution(final double equatorialRadius,
                              final double mu,
                              final double[] jn) {
 
-        this.ae     = equatorialRadius;
+        this.r      = equatorialRadius;
         this.mu     = mu;
         this.Jn     = jn.clone();
         this.degree = jn.length - 1;
 
-        // Initialize default values
-        this.maxEccentricityPower = Integer.MIN_VALUE;
-        this.truncationTolerance  = Double.NEGATIVE_INFINITY;
-
         this.Vns = DSSTCoefficientFactory.computeVnsCoefficient(degree + 1);
+
+        // Factorials computation
+        this.fact = new double[degree + 1];
+        fact[0] = 1.;
+        for (int i = 1; i <= degree; i++) {
+            fact[i] = i * fact[i - 1];
+        }
+
+        // Initialize default values
+//        this.maxEccPow = (degree == 2) ? 0 : Integer.MIN_VALUE;
+        this.maxDegree = degree;
+        this.maxEccPow = degree - 2;
     }
 
     /** {@inheritDoc} */
     public final void initialize(final AuxiliaryElements aux) throws OrekitException {
-        
+
         // Equinoctial elements
         a = aux.getSma();
         k = aux.getK();
@@ -163,29 +155,46 @@ class ZonalContribution implements DSSTForceModel {
         alpha = aux.getAlpha();
         beta  = aux.getBeta();
         gamma = aux.getGamma();
-    
+
         // Equinoctial coefficients
         final double A = aux.getA();
         final double B = aux.getB();
         final double C = aux.getC();
 
         // &Chi; = 1 / B
-        X3 = 1. / (B * B * B);
+        X = 1. / B;
+        XX = X * X;
+        XXX = X * XX;
         // 1 / AB
         ooAB = 1. / (A * B);
         // B / A
         BoA = B / A;
-        // C / 2AB
-        Co2AB = C * ooAB / 2.;
+        // -C / 2AB
+        mCo2AB = -C * ooAB / 2.;
         // B / A(1 + B)
         BoABpo = BoA / (1. + B);
-        // a / A
-        aoA = a / A;
+        // -2 * a / A
+        m2aoA = -2 * a / A;
         // &mu; / a
         muoa = mu / a;
 
         // Hansen coefficients
-        hansen = new HansenCoefficients(ecc);
+        hansen = new HansenZonal();
+
+        // Utilities for truncation
+        final double eo2 = ecc / 2.;
+        final double x2o2 = XX / 2.;
+        final double[] eccPwr = new double[degree + 1];
+        final double[] hafPwr = new double[degree + 1];
+        final double[] chiPwr = new double[degree + 1];
+        eccPwr[0] = 1.;
+        hafPwr[0] = 1.;
+        chiPwr[0] = X;
+        for (int i = 1; i <= degree; i++) {
+            eccPwr[i] = eccPwr[i - 1] * eo2;
+            hafPwr[i] = hafPwr[i - 1] * 0.5;
+            chiPwr[i] = chiPwr[i - 1] * x2o2;
+        }
 
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged low order zonal harmonic perturbation
@@ -206,9 +215,9 @@ class ZonalContribution implements DSSTForceModel {
         final double dUdGa = dU[5];
 
         // Compute cross derivatives [Eq. 2.2-(8)]
-        // U(alpha,gamma) = alpha * dU / dgamma - gamma * dU / dalpha
+        // U(alpha,gamma) = alpha * dU/dgamma - gamma * dU/dalpha
         final double UAlphaGamma   = alpha * dUdGa - gamma * dUdAl;
-        // U(beta,gamma) = beta * dU / dgamma - gamma * dU / dbeta
+        // U(beta,gamma) = beta * dU/dgamma - gamma * dU/dbeta
         final double UBetaGamma    =  beta * dUdGa - gamma * dUdBe;
         // Common factor
         final double pUAGmIqUBGoAB = (p * UAlphaGamma - I * q * UBetaGamma) * ooAB;
@@ -217,9 +226,9 @@ class ZonalContribution implements DSSTForceModel {
         final double da =  0.;
         final double dh =  BoA * dUdk + k * pUAGmIqUBGoAB;
         final double dk = -BoA * dUdh - h * pUAGmIqUBGoAB;
-        final double dp =      -Co2AB * UBetaGamma;
-        final double dq =  I * -Co2AB * UAlphaGamma;
-        final double dM = -2 * aoA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUAGmIqUBGoAB;
+        final double dp =  mCo2AB * UBetaGamma;
+        final double dq =  mCo2AB * UAlphaGamma * I;
+        final double dM =  m2aoA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUAGmIqUBGoAB;
 
         return new double[] {da, dk, dh, dq, dp, dM};
     }
@@ -230,22 +239,6 @@ class ZonalContribution implements DSSTForceModel {
         throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
-    }
-
-    /** Set the highest power of the eccentricity to appear in the truncated analytical
-     *  power series expansion for the averaged central-body zonal harmonic potential.
-     *
-     * @param zonalMaxEccPower highest power of the eccentricity
-     */
-    public final void setZonalMaximumEccentricityPower(final int zonalMaxEccPower) {
-        this.maxEccentricityPower = zonalMaxEccPower;
-    }
-
-    /** Set the Zonal truncature tolerance.
-     * @param zonalTruncatureTolerance Zonal truncature tolerance
-     */
-    public final void setZonalTruncatureTolerance(final double zonalTruncatureTolerance) {
-        this.truncationTolerance = zonalTruncatureTolerance;
     }
 
     /** Computes the highest power of the eccentricity and the maximal degree
@@ -261,89 +254,68 @@ class ZonalContribution implements DSSTForceModel {
      * @throws OrekitException if an error occurs in Hansen coefficient computation
      */
     private void truncation() throws OrekitException {
-        // Did a maximum eccentricity power has been found
-        boolean maxFound = false;
-        // Initialize the current spherical harmonic term to 0.
-        double term = 0.;
-        // Maximal degree of the geopotential expansion :
-        int nMax = Integer.MIN_VALUE;
-        // Maximal power of e
-        int sMax = Integer.MIN_VALUE;
-        // Find the truncation tolerance : set tolerance as a non dragged satellite if undefined by
-        // the user. Operation stops when term > tolerance
-        if (truncationTolerance == Double.NEGATIVE_INFINITY) {
-            truncationTolerance = TRUNCATION_TOLERANCE;
-        }
-        // Check if highest power of E has been given by the user :
-        if (maxEccentricityPower == Integer.MIN_VALUE) {
-            // Is the degree of the zonal harmonic field too small to allow more than one power of E
-            if (degree == 2) {
-                maxEccentricityPower = 0;
-                maxDegree = degree;
-            } else {
-                // Auxiliary quantities
-                final double r2a = ae / (2 * a);
-                double x2MuRaN = 2 * muoa * r2a;
-                // Search for the highest power of E for which the computed value is greater than
-                // the truncation tolerance in the power series
-                // s-loop :
-                for (int s = 0; s <= degree - 2; s++) {
-                    // n-loop
-                    for (int n = s + 2; n <= degree; n++) {
-                        // (n - s) must be even
-                        if ((n - s) % 2 == 0) {
-                            // Local values :
-                            final double gam2 = gamma * gamma;
-                            // Compute factorial :
-                            final BigInteger factorialNum = DSSTFactorial.fact(n - s);
-                            final BigInteger factorialDen = DSSTFactorial.fact((n + s) / 2).multiply(DSSTFactorial.fact((n - s) / 2));
-                            final double factorial = factorialNum.doubleValue() / factorialDen.doubleValue();
-                            final double k0 = hansen.getHansenKernelValue(0, -n - 1, s);
-                            // Compute the Qns(bound) upper bound :
-                            final double qns = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s));
-                            final double qns2 = qns * qns;
-                            final double factor = (1 - gam2) / (n * (n + 1) - s * (s + 1));
-                            // Compute dQns/dGamma
-                            final double dQns = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s + 1));
-                            final double dQns2 = dQns * dQns;
-                            final double qnsBound = FastMath.sqrt(qns2 + factor * dQns2);
-    
-                            // Get the current potential upper bound for the current (n, s) couple.
-                            final int sO2 = s / 2;
-                            term = x2MuRaN * r2a * FastMath.abs(Jn[n]) * factorial * k0 * qnsBound *
-                                   FastMath.pow(1 - gam2, sO2) * FastMath.pow(ecc, s) / FastMath.pow(2, n);
-    
-                            // Compare result with the tolerance parameter :
-                            if (term <= truncationTolerance) {
-                                // Stop here
-                                nMax = Math.max(nMax, n);
-                                sMax = Math.max(sMax, s);
-                                // truncature found
-                                maxFound = true;
-                                // Force a premature end loop
-                                n = degree;
-                                s = degree;
-                            }
+        // Check if highest power of E has been given already set
+        if (maxEccPow == Integer.MIN_VALUE) {
+            // Did a maximum eccentricity power has been found
+            boolean maxFound = false;
+            // Maximal degree of the geopotential expansion
+            int nMax = Integer.MIN_VALUE;
+            // Maximal power of e
+            int sMax = Integer.MIN_VALUE;
+
+            // Auxiliary quantities
+            final double omgg = 1. - gamma * gamma;
+            final double ro2a = r / (2. * a);
+            double x2MuRaN = 2. * muoa * ro2a;
+            // Search for the highest power of E for which the computed value is greater than
+            // the truncation tolerance in the power series
+            // s-loop :
+            for (int s = 0; s <= degree - 2; s++) {
+                final int so2 = s / 2;
+                final double omggpso2xeccps = FastMath.pow(omgg, so2) * FastMath.pow(ecc, s);
+                // n-loop
+                for (int n = s + 2; n <= degree; n++) {
+                    // (n - s) must be even
+                    if ((n - s) % 2 == 0) {
+                        // Local values :
+                        final double factor = fact[n - s] / (fact[(n + s) / 2] * fact[(n - s) / 2]);
+                        final double k0 = hansen.getValue(-n - 1, s);
+                        // Compute Qns
+                        final double qns  = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s));
+                        // Compute dQns/dGamma
+                        final double dQns = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s + 1));
+                        // Compute the Qns upper bound
+                        final double coef = omgg / (n * (n + 1) - s * (s + 1));
+                        final double qnsB = FastMath.sqrt(qns * qns + coef * dQns * dQns);
+
+                        // Get the current potential upper bound for the current (n, s) couple.
+                        final double term = x2MuRaN * ro2a * FastMath.abs(Jn[n]) * factor * k0 * qnsB *
+                                            omggpso2xeccps / FastMath.pow(2, n);
+
+                        // Compare result with the tolerance parameter :
+                        if (term <= TRUNCATION_TOLERANCE) {
+                            // Stop here
+                            nMax = Math.max(nMax, n);
+                            sMax = Math.max(sMax, s);
+                            // truncature found
+                            maxFound = true;
+                            // Force a premature end loop
+                            n = degree;
+                            s = degree;
                         }
                     }
-                    // Prepare next loop :
-                    x2MuRaN = 2 * mu / (a) * FastMath.pow(r2a, s + 1);
                 }
-                if (maxFound) {
-                    maxDegree = nMax;
-                    maxEccentricityPower = sMax;
-                } else {
-                    maxDegree = degree;
-                    maxEccentricityPower = degree - 2;
-                }
+                // Prepare next loop :
+                x2MuRaN = 2 * muoa * FastMath.pow(ro2a, s + 1);
             }
-    
-        } else {
-            // Value set by the user :
-            maxDegree = degree;
-            maxEccentricityPower = degree - 2;
+            if (maxFound) {
+                maxDegree = nMax;
+                maxEccPow = sMax;
+            } else {
+                maxDegree = degree;
+                maxEccPow = degree - 2;
+            }
         }
-    
     }
 
     /** Compute the derivatives of the gravitational potential U [Eq. 3.1-(6)].
@@ -358,10 +330,10 @@ class ZonalContribution implements DSSTForceModel {
         throws OrekitException {
 
         // Initialize data
-        final double[][] GsHs = DSSTCoefficientFactory.computeGsHsCoefficient(k, h, alpha, beta, maxDegree + 1);
+        final double[][] GsHs = DSSTCoefficientFactory.computeGsHs(k, h, alpha, beta, maxDegree + 1);
         final double[][] Qns  = DSSTCoefficientFactory.computeQnsCoefficient(gamma, maxDegree + 1);
 
-        final double Ra = ae / a;
+        final double roa = r / a;
 
         // Potential derivatives
         double dUda  = 0d;
@@ -371,7 +343,7 @@ class ZonalContribution implements DSSTForceModel {
         double dUdBe = 0d;
         double dUdGa = 0d;
 
-        for (int s = 0; s <= maxEccentricityPower; s++) {
+        for (int s = 0; s <= maxEccPow; s++) {
             // Get the current gs and hs coefficient :
             final double gs = GsHs[0][s];
 
@@ -389,27 +361,30 @@ class ZonalContribution implements DSSTForceModel {
             final double delta0s = (s == 0) ? 1 : 2;
 
             for (int n = s + 2; n <= maxDegree; n++) {
-                // Extract data from previous computation :
-                final double jn   = Jn[n];
-                final double vns  = Vns.get(new NSKey(n, s));
-                final double kns  = hansen.getHansenKernelValue(0, -n - 1, s);
-                final double qns  = Qns[n][s];
-                final double rapn = FastMath.pow(Ra, n);
-                final double dkns = hansen.getHansenKernelDerivative(0, -n - 1, s);
-                final double coef = delta0s * rapn * jn * vns;
+                // (n - s) must be even
+                if ((n - s) % 2 == 0) {
+                    // Extract data from previous computation :
+                    final double jn   = Jn[n];
+                    final double vns  = Vns.get(new NSKey(n, s));
+                    final double kns  = hansen.getValue(-n - 1, s);
+                    final double qns  = Qns[n][s];
+                    final double rapn = FastMath.pow(roa, n);
+                    final double dkns = hansen.getDerivative(-n - 1, s);
+                    final double coef = delta0s * rapn * jn * vns;
 
-                // Compute dU / da :
-                dUda += coef * kns * qns * (n + 1) * gs;
-                // Compute dU / dEx
-                dUdk += coef * qns * (kns * dGsdk + k * X3 * gs * dkns);
-                // Compute dU / dEy
-                dUdh += coef * qns * (kns * dGsdh + h * X3 * gs * dkns);
-                // Compute dU / dAlpha
-                dUdAl += coef * kns * qns * dGsdAl;
-                // Compute dU / dBeta
-                dUdBe += coef * kns * qns * dGsdBe;
-                // Compute dU / dGamma : here dQns/dGamma = Q(n, s + 1) from Equation 3.1 - (8)
-                dUdGa += coef * kns * Qns[n][s + 1] * gs;
+                    // Compute dU / da :
+                    dUda += coef * kns * qns * (n + 1) * gs;
+                    // Compute dU / dEx
+                    dUdk += coef * qns * (kns * dGsdk + k * XXX * gs * dkns);
+                    // Compute dU / dEy
+                    dUdh += coef * qns * (kns * dGsdh + h * XXX * gs * dkns);
+                    // Compute dU / dAlpha
+                    dUdAl += coef * kns * qns * dGsdAl;
+                    // Compute dU / dBeta
+                    dUdBe += coef * kns * qns * dGsdBe;
+                    // Compute dU / dGamma : here dQns/dGamma = Q(n, s + 1) from Equation 3.1 - (8)
+                    dUdGa += coef * kns * Qns[n][s + 1] * gs;
+                }
             }
         }
 
@@ -422,4 +397,150 @@ class ZonalContribution implements DSSTForceModel {
 
         return new double[] {dUda, dUdk, dUdh, dUdAl, dUdBe, dUdGa};
     }
+
+    /** Hansen coefficients for zonal contribution to central body force model.
+     *  <p>
+     *  Hansen coefficients are functions of the eccentricity.
+     *  For a given eccentricity, the computed elements are stored in a map.
+     *  </p>
+     */
+    private class HansenZonal {
+
+        /** Map to store every Hansen coefficient computed. */
+        private TreeMap<NSKey, Double> coefficients;
+
+        /** Map to store every Hansen coefficient derivative computed. */
+        private TreeMap<NSKey, Double> derivatives;
+
+        /** Simple constructor. */
+        public HansenZonal() {
+            coefficients = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
+            derivatives  = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
+            initialize();
+        }
+
+        /** Get the K<sub>0</sub><sup>-n-1,s</sup> coefficient value.
+         *  @param mnm1 -n-1 value
+         *  @param s s value
+         *  @return K<sub>0</sub><sup>-n-1,s</sup>
+         */
+        public final double getValue(final int mnm1, final int s) {
+            if (coefficients.containsKey(new NSKey(mnm1, s))) {
+                return coefficients.get(new NSKey(mnm1, s));
+            } else {
+                // Compute the K0(-n-1,s) coefficients
+                return computeValue(-mnm1 - 1, s);
+            }
+        }
+
+        /** Get the dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; coefficient derivative.
+         *  @param mnm1 -n-1 value
+         *  @param s s value
+         *  @return dK<sub>0</sub><sup>-n-1,s</sup> / d&chi;
+         */
+        public final double getDerivative(final int mnm1, final int s) {
+            if (derivatives.containsKey(new NSKey(mnm1, s))) {
+                return derivatives.get(new NSKey(mnm1, s));
+            } else {
+                // Compute the dK0(-n-1,s) / dX derivative
+                return computeDerivative(-mnm1 - 1, s);
+            }
+        }
+
+        /** Kernels initialization. */
+        private void initialize() {
+            coefficients.put(new NSKey(0, 0), 1.);
+            coefficients.put(new NSKey(-1, 0), 0.);
+            coefficients.put(new NSKey(-1, 1), 0.);
+            coefficients.put(new NSKey(-2, 0), X);
+            coefficients.put(new NSKey(-2, 1), 0.);
+            coefficients.put(new NSKey(-3, 0), XXX);
+            coefficients.put(new NSKey(-3, 1), 0.5 * XXX);
+            derivatives.put(new NSKey(0, 0), 0.);
+        }
+
+        /** Compute the K<sub>0</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(6).
+         * @param n n  positive value. For a given 'n', the K<sub>0</sub><sup>-n-1,s</sup> is returned.
+         * @param s s value
+         * @return K<sub>0</sub><sup>-n-1,s</sup>
+         */
+        private double computeValue(final int n, final int s) {
+            // Initialize return value
+            double kns = 0.;
+
+            final NSKey key = new NSKey(-n - 1, s);
+
+            if (coefficients.containsKey(key)) {
+                kns = coefficients.get(key);
+            } else {
+                if (n == s) {
+                    kns = 0.;
+                } else if (n == (s + 1)) {
+                    kns = FastMath.pow(X, 1 + 2 * s) / FastMath.pow(2, s);
+                } else {
+                    final NSKey keymNS = new NSKey(-n, s);
+                    double kmNS = 0.;
+                    if (coefficients.containsKey(keymNS)) {
+                        kmNS = coefficients.get(keymNS);
+                    } else {
+                        kmNS = computeValue(n - 1, s);
+                    }
+
+                    final NSKey keymNp1S = new NSKey(-(n - 1), s);
+                    double kmNp1S = 0.;
+                    if (coefficients.containsKey(keymNp1S)) {
+                        kmNp1S = coefficients.get(keymNp1S);
+                    } else {
+                        kmNp1S = computeValue(n - 2, s);
+                    }
+
+                    kns = (n - 1.) * XX * ((2. * n - 3.) * kmNS - (n - 2.) * kmNp1S);
+                    kns /= (n + s - 1.) * (n - s - 1.);
+                }
+                // Add K(-n-1, s)
+                coefficients.put(key, kns);
+            }
+            return kns;
+        }
+
+        /** Compute dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; from Equation 3.1-(7).
+         *  @param n n positive value. For a given 'n', the dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; is returned.
+         *  @param s s value
+         *  @return dK<sub>0</sub><sup>-n-1,s</sup> / d&chi;
+         */
+        private double computeDerivative(final int n, final int s) {
+            // Initialize return value
+            double dkdxns = 0.;
+
+            final NSKey key = new NSKey(-n - 1, s);
+            if (n == s) {
+                derivatives.put(key, 0.);
+            } else if (n == s + 1) {
+                dkdxns = (1. + 2. * s) * FastMath.pow(X, 2 * s) / FastMath.pow(2, s);
+            } else {
+                final NSKey keymN = new NSKey(-n, s);
+                double dkmN = 0.;
+                if (derivatives.containsKey(keymN)) {
+                    dkmN = derivatives.get(keymN);
+                } else {
+                    dkmN = computeDerivative(n - 1, s);
+                }
+                final NSKey keymNp1 = new NSKey(-n + 1, s);
+                double dkmNp1 = 0.;
+                if (derivatives.containsKey(keymNp1)) {
+                    dkmNp1 = derivatives.get(keymNp1);
+                } else {
+                    dkmNp1 = computeDerivative(n - 2, s);
+                }
+                final double kns = getValue(-n - 1, s);
+                dkdxns = (n - 1) * XX * ((2. * n - 3.) * dkmN - (n - 2.) * dkmNp1) / ((n + s - 1.) * (n - s - 1.));
+                dkdxns += 2. * kns / X;
+            }
+
+            derivatives.put(key, dkdxns);
+            return dkdxns;
+        }
+
+    }
+
 }

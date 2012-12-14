@@ -135,9 +135,10 @@
       <action dev="luc" type="fix">
         Fixed TLE propagation in deep space when inclination is exactly 0 (fixes bug #88).
       </action>
-      <action dev="luc" type="add" due-to="Francesco Rocca">
-        Added two different fitters to fit Two-Line Elements against a sample of
-        spacecraft states.
+      <action dev="pascal" type="add" due-to="Francesco Rocca">
+        Added a package for spacecraft states to propagators conversion extending an
+        original contribution for TLE (Orbit Converter for Two-Lines Elements) to all
+        propagators.
       </action>
       <action dev="luc" type="fix">
         Improved testing of error messages.

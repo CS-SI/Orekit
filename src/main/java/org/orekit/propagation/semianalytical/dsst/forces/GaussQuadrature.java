@@ -16,9 +16,6 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.Map;
-import java.util.TreeMap;
-
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.orekit.errors.OrekitException;
@@ -27,23 +24,19 @@ import org.orekit.errors.OrekitException;
  *  a {@link org.apache.commons.math3.analysis.UnivariateVectorFunction function}
  *  for the orbital elements using the Gaussian quadrature rule.
  *  <p>
- *  This class has been adapted to the specific needs of the DSST 
- *  from the org.apache.commons.math3.analysis.integration.gauss package.
+ *  This class has been adapted to the specific needs of the DSST from
+ *  the org.apache.commons.math3.analysis.integration.gauss package.
  *  </p>
  *
  *  @author Pascal Parraud
  */
 class GaussQuadrature {
 
-    /** List of points and weights, indexed by the order of the rule. */
-    private final Map<Integer, double[]> cachedPoints  = new TreeMap<Integer, double[]>();
-    private final Map<Integer, double[]> cachedWeights = new TreeMap<Integer, double[]>();
+    /** Node points. */
+    private final double[] nodePoints;
 
-    /** Nodes. */
-    private final double[] points;
-
-    /** Nodes weights. */
-    private final double[] weights;
+    /** Node weights. */
+    private final double[] nodeWeights;
 
     /** Simple constructor.
      *  <p>
@@ -52,14 +45,16 @@ class GaussQuadrature {
      *
      *  @param numberOfPoints Order of the integration rule.
      */
-    public GaussQuadrature(int numberOfPoints) {
+    public GaussQuadrature(final int numberOfPoints) {
+
         if (numberOfPoints <= 0) {
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.NUMBER_OF_POINTS, numberOfPoints);
         }
-        this.points  = new double[numberOfPoints];
-        this.weights = new double[numberOfPoints];
 
-        computePointsAndWeights(numberOfPoints, points, weights);
+        this.nodePoints  = new double[numberOfPoints];
+        this.nodeWeights = new double[numberOfPoints];
+        computePointsAndWeights(numberOfPoints, nodePoints, nodeWeights);
+
     }
 
     /** Integrates a given function on the given interval.
@@ -69,31 +64,36 @@ class GaussQuadrature {
      *  @param upperBound Upper bound of the integration interval.
      *  @return the integral of the weighted function.
      */
-    public double[] integrate(UnivariateVectorFunction f,
-                              double lowerBound, double upperBound) {
+    public double[] integrate(final UnivariateVectorFunction f,
+                              final double lowerBound, final double upperBound) {
 
-        double[] adaptedPoints  = points.clone();
-        double[] adaptedWeights = weights.clone();
+        final double[] adaptedPoints  = nodePoints.clone();
+        final double[] adaptedWeights = nodeWeights.clone();
         transform(adaptedPoints, adaptedWeights, lowerBound, upperBound);
         return basicIntegrate(f, adaptedPoints, adaptedWeights);
     }
 
-    private void computePointsAndWeights(int numberOfPoints, double[] points, double[] weights) {
+    /** Computes points and weights for the given quadrature order.
+     *
+     *  @param numberOfPoints quadrature order.
+     *  @param points points for quadrature.
+     *  @param weights weights for quadrature.
+     */
+    private void computePointsAndWeights(final int numberOfPoints,
+                                         final double[] points,
+                                         final double[] weights) {
 
         if (numberOfPoints == 1) {
             points[0]  = 0d;
             weights[0] = 2d;
-            addPointsAndWeights(points, weights);
-            // Break recursion.
             return;
         }
 
-        // Get previous points and weights.
-        // If they have not been computed yet, it will trigger a recursive call to this method.
+        // Get previous points and weights (recursive call).
         final int previousOrder = numberOfPoints - 1;
         final double[] previousPoints  = new double[previousOrder];
         final double[] previousWeights = new double[previousOrder];
-        getPointsAndWeights(numberOfPoints - 1, previousPoints, previousWeights);
+        computePointsAndWeights(previousOrder, previousPoints, previousWeights);
 
         // Find i-th root of P[n+1] by bracketing.
         final int iMax = numberOfPoints / 2;
@@ -182,33 +182,6 @@ class GaussQuadrature {
 
     }
 
-    /** Gets points and weights for the given order.
-     *
-     *  @param order Order of the rule to be retrieved.
-     *  @param points Points to be retrieved.
-     *  @param weights Weights to be retrieved.
-     * @throws NotStrictlyPositiveException if {@code numberOfPoints < 1}.
-     */
-    private void getPointsAndWeights(int order, double[] points, double[] weights) {
-        if (order > cachedPoints.size()) {
-            computePointsAndWeights(order, points, weights);
-            addPointsAndWeights(points, weights);
-        } else {
-            points  = cachedPoints.get(order);
-            weights = cachedWeights.get(order);
-        }
-    }
-
-    /** Stores points and weights.
-     *
-     *  @param points Points to be stored.
-     *  @param weights Weights to be stored.
-     */
-    private void addPointsAndWeights(double[] points, double[] weights) {
-        cachedPoints.put(points.length, points);
-        cachedWeights.put(weights.length, weights);
-    }
-
     /** Performs a change of variable so that the integration
      *  can be performed on an arbitrary interval {@code [a, b]}.
      *  <p>
@@ -220,7 +193,8 @@ class GaussQuadrature {
      * @param a Lower bound of the integration interval.
      * @param b Lower bound of the integration interval.
      */
-    private void transform(double[] points, double[] weights, double a, double b) {
+    private void transform(final double[] points, final double[] weights,
+                           final double a, final double b) {
         // Scaling
         final double scale = (b - a) / 2;
         final double shift = a + scale;
@@ -239,19 +213,19 @@ class GaussQuadrature {
      * @param weights Nodes weights.
      * @return the integral of the weighted function.
      */
-    private double[] basicIntegrate(UnivariateVectorFunction f,
+    private double[] basicIntegrate(final UnivariateVectorFunction f,
                                     final double[] points,
                                     final double[] weights) {
         double x = points[0];
         double w = weights[0];
         double[] v = f.value(x);
-        double[] y = new double[v.length];
+        final double[] y = new double[v.length];
         for (int j = 0; j < v.length; j++) {
             y[j] = w * v[j];
         }
-        double[] t = y.clone();
-        double[] c = new double[v.length];
-        double[] s = t.clone();
+        final double[] t = y.clone();
+        final double[] c = new double[v.length];
+        final double[] s = t.clone();
         for (int i = 1; i < points.length; i++) {
             x = points[i];
             w = weights[i];

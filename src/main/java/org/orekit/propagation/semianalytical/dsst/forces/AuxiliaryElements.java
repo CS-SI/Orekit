@@ -33,40 +33,40 @@ import org.orekit.time.AbsoluteDate;
  */
 public class AuxiliaryElements {
 
-    /** Orbit date */
+    /** Orbit date. */
     private final AbsoluteDate date;
 
-    /** Orbit frame */
+    /** Orbit frame. */
     private final Frame frame;
 
-    /** Central body attraction coefficient */
+    /** Central body attraction coefficient. */
     private final double mu;
 
-    /** Eccentricity */
+    /** Eccentricity. */
     private final double ecc;
 
-    /** Keplerian mean motion */
+    /** Keplerian mean motion. */
     private final double n;
 
-    /** Keplerian period */
+    /** Keplerian period. */
     private final double period;
 
-    /** Semi-major axis */
+    /** Semi-major axis. */
     private final double sma;
 
-    /** x component of eccentricity vector */
+    /** x component of eccentricity vector. */
     private final double k;
 
-    /** y component of eccentricity vector */
+    /** y component of eccentricity vector. */
     private final double h;
 
-    /** x component of inclination vector */
+    /** x component of inclination vector. */
     private final double q;
 
-    /** y component of inclination vector */
+    /** y component of inclination vector. */
     private final double p;
 
-    /** Mean longitude */
+    /** Mean longitude. */
     private final double lm;
 
     /** Retrograde factor I.
@@ -79,36 +79,36 @@ public class AuxiliaryElements {
      *  This implies I = -1. <br>
      *  As Orekit doesn't implement the retrograde orbit, I is always set to +1.
      *  But for the sake of consistency with the theory, the retrograde factor
-     *  has been kept in the formulas. 
+     *  has been kept in the formulas.
      *  </p>
      */
     private final int    I;
 
-    /** A = sqrt(&mu; * a) */
+    /** A = sqrt(&mu; * a). */
     private final double A;
 
-    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>) */
+    /** B = sqrt(1 - h<sup>2</sup> - k<sup>2</sup>). */
     private final double B;
 
-    /** C = 1 + p<sup>2</sup> + q<sup>2</sup> */
+    /** C = 1 + p<sup>2</sup> + q<sup>2</sup>. */
     private final double C;
 
-    /** Equinoctial frame f vector */
+    /** Equinoctial frame f vector. */
     private final Vector3D f;
 
-    /** Equinoctial frame g vector */
+    /** Equinoctial frame g vector. */
     private final Vector3D g;
 
-    /** Equinoctial frame w vector */
+    /** Equinoctial frame w vector. */
     private final Vector3D w;
 
-    /** Direction cosine &alpha; */
+    /** Direction cosine &alpha;. */
     private final double alpha;
 
-    /** Direction cosine &beta; */
+    /** Direction cosine &beta;. */
     private final double beta;
 
-    /** Direction cosine &gamma; */
+    /** Direction cosine &gamma;. */
     private final double gamma;
 
     /** Simple constructor.
@@ -156,10 +156,13 @@ public class AuxiliaryElements {
         C = 1 + q2 + p2;
 
         // Equinoctial reference frame [Eq. 2.1.4-(1)]
-        final double num = 1. / C;
-        f = new Vector3D(num, new Vector3D((1. - p2 + q2), (2 * p * q), (-2. * I * p)));
-        g = new Vector3D(num, new Vector3D((2. * I * p * q), (1. + p2 - q2) * I, (2. * q)));
-        w = new Vector3D(num, new Vector3D((2. * p), (-2. * q), (1. - p2 - q2) * I));
+        final double ooC = 1. / C;
+        final double px2 = 2. * p;
+        final double qx2 = 2. * q;
+        final double pq2 = px2 * q;
+        f = new Vector3D(ooC, new Vector3D(1. - p2 + q2, pq2, -px2 * I));
+        g = new Vector3D(ooC, new Vector3D(pq2 * I, (1. + p2 - q2) * I, qx2));
+        w = new Vector3D(ooC, new Vector3D(px2, -qx2, (1. - p2 - q2) * I));
 
         // Direction cosines for central body [Eq. 2.1.9-(1)]
         alpha = f.getZ();
@@ -175,7 +178,7 @@ public class AuxiliaryElements {
     }
 
     /** Get the definition frame of the orbit.
-     * @return the definition frame 
+     * @return the definition frame
      */
     public Frame getFrame() {
         return frame;

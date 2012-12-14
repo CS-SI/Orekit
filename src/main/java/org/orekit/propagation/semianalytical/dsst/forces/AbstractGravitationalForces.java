@@ -16,14 +16,14 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import org.orekit.propagation.semianalytical.dsst.coefficients.ModifiedNewcombOperatorLoader;
+import org.orekit.propagation.semianalytical.dsst.utilities.ModifiedNewcombOperatorLoader;
 
 /**
- * This abstract class represent gravitational forces and contains the {@link DSSTThirdBody} and the
- * {@link DSSTCentralBody} force model. .<br>
- * As resonant central body tesseral harmonics and third body potential expressions are using
- * Modified Newcomb Operator, we mainly use this class to define a common data loader to read the
- * Modified Newcomb Operator from an internal file.
+ * This abstract class represents gravitational forces for the
+ * {@link DSSTCentralBody} force model.<br>
+ * As resonant central body tesseral harmonics are using Modified Newcomb
+ * Operator, we mainly use this class to define a common data loader to read
+ * the Modified Newcomb Operator from an internal file.
  *
  * @author rdicosta
  */

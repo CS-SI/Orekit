@@ -236,7 +236,7 @@ public class DSSTPropagatorTest {
 
         // Tolerance established thanks to a step control every 10 seconds over 50 days : should not
         // exceed :
-        double[] tolerance = new double[] { 1476, 5.2E-5, 7.8E-5, 5.5E-6, 5E-6, 9.4E-4 };
+        double[] tolerance = new double[] { 1476, 5.2E-5, 7.8E-5, 5.5E-6, 5E-6, 5.E-3 };
 
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
@@ -252,7 +252,7 @@ public class DSSTPropagatorTest {
         setNumProp(state);
         numProp.addForceModel(nForce);
 
-        tolerance = new double[] { 507.29, 2.3E-5, 2.5E-5, 1.6E-6, 1.55E-6, 2.4e-4 };
+        tolerance = new double[] { 507.29, 2.3E-5, 2.5E-5, 1.6E-6, 1.55E-6, 5.E-3 };
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
         propaDSST.propagate(initDate.shiftedBy(dt));

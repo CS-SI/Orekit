@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.coefficients;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
@@ -24,7 +23,7 @@ import org.orekit.errors.OrekitException;
 
 /**
  * This class has been created for DSST purpose. The DSST needs large factorial values (for high
- * central body potential) and the {@link org.apache.commons.math3.util.ArithmeticUtils#factorial(int)}
+ * central body potentiad and the {@link org.apache.commons.math3.util.ArithmeticUtils#factorial(int)}
  * method only admit integer less than 20, due to the {@link Long} java upper value. This method is
  * based on {@link BigInteger} numbers which can have infinite precision, and so factorial can be computed
  * with large integer input. <br>
@@ -36,31 +35,31 @@ import org.orekit.errors.OrekitException;
 public class DSSTFactorial {
 
     /** Cache. */
-    private static ArrayList<BigInteger> TABLE = new ArrayList<BigInteger>(30);
+    private static ArrayList<Double> TABLE = new ArrayList<Double>(30);
 
     static {
         // Initialize the first elements
-        TABLE.add(BigInteger.valueOf(1L)); // 0!
-        TABLE.add(BigInteger.valueOf(1L)); // 1!
-        TABLE.add(BigInteger.valueOf(2L)); // 2!
-        TABLE.add(BigInteger.valueOf(6L)); // 3!
-        TABLE.add(BigInteger.valueOf(24L)); // 4!
-        TABLE.add(BigInteger.valueOf(120L)); // 5!
-        TABLE.add(BigInteger.valueOf(720L)); // 6!
-        TABLE.add(BigInteger.valueOf(5040L)); // 7!
-        TABLE.add(BigInteger.valueOf(40320L)); // 8!
-        TABLE.add(BigInteger.valueOf(362880L)); // 9!
-        TABLE.add(BigInteger.valueOf(3628800L)); // 10!
-        TABLE.add(BigInteger.valueOf(39916800L)); // 11!
-        TABLE.add(BigInteger.valueOf(479001600L)); // 12!
-        TABLE.add(BigInteger.valueOf(6227020800L)); // 13!
-        TABLE.add(BigInteger.valueOf(87178291200L)); // 14!
-        TABLE.add(BigInteger.valueOf(1307674368000L)); // 15!
-        TABLE.add(BigInteger.valueOf(20922789888000L)); // 16!
-        TABLE.add(BigInteger.valueOf(355687428096000L)); // 17!
-        TABLE.add(BigInteger.valueOf(6402373705728000L)); // 18!
-        TABLE.add(BigInteger.valueOf(121645100408832000L)); // 19!
-        TABLE.add(BigInteger.valueOf(2432902008176640000L)); // 20!
+        TABLE.add(1d); // 0!
+        TABLE.add(1d); // 1!
+        TABLE.add(2d); // 2!
+        TABLE.add(6d); // 3!
+        TABLE.add(24d); // 4!
+        TABLE.add(120d); // 5!
+        TABLE.add(720d); // 6!
+        TABLE.add(5040d); // 7!
+        TABLE.add(40320d); // 8!
+        TABLE.add(362880d); // 9!
+        TABLE.add(3628800d); // 10!
+        TABLE.add(39916800d); // 11!
+        TABLE.add(479001600d); // 12!
+        TABLE.add(6227020800d); // 13!
+        TABLE.add(87178291200d); // 14!
+        TABLE.add(1307674368000d); // 15!
+        TABLE.add(20922789888000d); // 16!
+        TABLE.add(355687428096000d); // 17!
+        TABLE.add(6402373705728000d); // 18!
+        TABLE.add(121645100408832000d); // 19!
+        TABLE.add(2432902008176640000d); // 20!
     }
 
     /** Private constructor, as class is a utility.
@@ -68,18 +67,16 @@ public class DSSTFactorial {
     private DSSTFactorial() {
     }
 
-    /** Factorial method, using {@link BigInteger} cached in the ArrayList.
-     * @param n integer for which we want factorial
-     * @return n!
+    /** Factorial method, using {@link Double} cached in the ArrayList.
+     *  @param n integer for which we want factorial
+     *  @return n!
      */
-    public static synchronized BigInteger fact(final int n) {
+    public static synchronized double fact(final int n) {
         if (n < 0) {
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.FACTORIAL_NEGATIVE_PARAMETER, n);
         }
         for (int size = TABLE.size(); size <= n; size++) {
-            final BigInteger lastfact = TABLE.get(size - 1);
-            final BigInteger nextfact = lastfact.multiply(BigInteger.valueOf(size));
-            TABLE.add(nextfact);
+            TABLE.add(TABLE.get(size - 1) * size);
         }
         return TABLE.get(n);
     }
