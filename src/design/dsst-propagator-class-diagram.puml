@@ -1,0 +1,92 @@
+' Copyright 2002-2012 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.apache.commons.math3.ode #DDEBD8
+
+    interface FirstOrderIntegrator
+
+  end package
+
+  package org.orekit.propagation #DDEBD8
+
+    package semianalytical.dsst #ECEBD8
+
+      class DSSTPropagator {
+        +void setInitialState(SpacecraftState state)
+        +void setInitialState(SpacecraftState state, boolean isOsculating)
+        +void addForceModel(DSSTForceModel model)
+        +void removeForceModels()
+        +SpacecraftState propagate(AbsoluteDate start, AbsoluteDate target)
+      }
+
+      FirstOrderIntegrator <--* "1" DSSTPropagator
+
+      package forces #DDEBD8
+
+        class AuxiliaryElements
+
+        interface DSSTForceModel {
+          +void initialize(SpacecraftState initialState)
+          +double[] getMeanElementRate(SpacecraftState state)
+          +double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
+        }
+
+        DSSTForceModel <|-- DSSTCentralBody
+        DSSTForceModel <|-- DSSTThirdBody
+        DSSTForceModel <|-- AbstractGaussianContribution
+        DSSTForceModel <|-- ZonalContribution
+        DSSTForceModel <|-- TesseralContribution
+
+        AbstractGaussianContribution <|-- DSSTAtmosphericDrag
+        AbstractGaussianContribution <|-- DSSTSolarRadiationPressure
+
+        DSSTCentralBody *--> ZonalContribution
+        DSSTCentralBody *--> TesseralContribution
+
+        package utilities #ECEBD8
+
+          DSSTThirdBody --> UpperBounds
+          ZonalContribution --> UpperBounds
+          DSSTThirdBody --> CoefficientFactory
+          ZonalContribution --> CoefficientFactory
+          TesseralContribution --> CoefficientFactory
+          DSSTAtmosphericDrag --> GaussQuadrature
+          DSSTSolarRadiationPressure --> GaussQuadrature
+          
+        end package
+
+      end package
+
+      DSSTPropagator "0..*" *--> DSSTForceModel
+      DSSTPropagator --> AuxiliaryElements
+
+    end package
+
+  end package
+
+
+@enduml

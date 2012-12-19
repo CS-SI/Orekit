@@ -35,7 +35,7 @@ import org.orekit.utils.Constants;
  *
  * @author Pascal Parraud
  */
-public class DSSTAtmosphericDrag extends AbstractDSSTGaussianContribution {
+public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** Number of points for quadrature (from 2 to 96). */
     private static final int NB_POINTS = 48;

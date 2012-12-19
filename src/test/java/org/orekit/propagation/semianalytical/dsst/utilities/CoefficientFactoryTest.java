@@ -9,8 +9,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 
 public class CoefficientFactoryTest {
 
@@ -21,7 +21,7 @@ public class CoefficientFactoryTest {
     @Test
     public void VnsCoefficientComputationTest() {
         final int order = 100;
-        TreeMap<NSKey, Double> Vns = DSSTCoefficientFactory.computeVnsCoefficient(order);
+        TreeMap<NSKey, Double> Vns = CoefficientsFactory.computeVnsCoefficient(order);
 
         // Odd terms are null
         for (int i = 0; i < order; i++) {
@@ -55,12 +55,12 @@ public class CoefficientFactoryTest {
      */
     @Test
     public void VmnsTestFromTwoMethods() throws OrekitException {
-        Assert.assertEquals(getVmns2(0, 0, 0), DSSTCoefficientFactory.getVmns(0, 0, 0), eps0);
-        Assert.assertEquals(getVmns2(0, 1, 1), DSSTCoefficientFactory.getVmns(0, 1, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 2, 2), DSSTCoefficientFactory.getVmns(0, 2, 2), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 1), DSSTCoefficientFactory.getVmns(0, 3, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 3), DSSTCoefficientFactory.getVmns(0, 3, 3), eps0);
-        Assert.assertEquals(getVmns2(2, 2, 2), DSSTCoefficientFactory.getVmns(2, 2, 2), eps0);
+        Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
+        Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3), eps0);
+        Assert.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2), eps0);
 
     }
 
@@ -68,7 +68,7 @@ public class CoefficientFactoryTest {
     @Test(expected = OrekitException.class)
     public void VmnsErrorCallingSequenceWrong_M_S_Test() throws OrekitException {
         // if m > n
-        DSSTCoefficientFactory.getVmns(3, 2, 1);
+        CoefficientsFactory.getVmns(3, 2, 1);
     }
 
     /**
@@ -77,16 +77,16 @@ public class CoefficientFactoryTest {
      */
     @Test
     public void testQNS() {
-        Assert.assertEquals(1., DSSTCoefficientFactory.getQnsPolynomialValue(0, 0, 0), 0.);
+        Assert.assertEquals(1., CoefficientsFactory.getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
         final int order = 10;
         final MersenneTwister random = new MersenneTwister(123456789);
         for (int g = 0; g < 1000; g++) {
             final double gamma = random.nextDouble();
-            double[][] qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, order);
+            double[][] qns = CoefficientsFactory.computeQnsCoefficient(gamma, order);
             for (int n = 0; n < order; n++) {
                 for (int s = 0; s <= n; s++) {
-                    Assert.assertEquals(qns[n][s], DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s), Math.abs(eps11 * qns[n][s]));
+                    Assert.assertEquals(qns[n][s], CoefficientsFactory.getQnsPolynomialValue(gamma, n, s), Math.abs(eps11 * qns[n][s]));
                 }
             }
         }
@@ -104,7 +104,7 @@ public class CoefficientFactoryTest {
             final double h = random.nextDouble();
             final double a = random.nextDouble();
             final double b = random.nextDouble();
-            final double[][] GH = DSSTCoefficientFactory.computeGsHs(k, h, a, b, s);
+            final double[][] GH = CoefficientsFactory.computeGsHs(k, h, a, b, s);
             for (int j = 1; j < s; j++) {
                 final double[] GsHs = getGsHs(k, h, a, b, j);
                 Assert.assertEquals(GsHs[0], GH[0][j], Math.abs(eps12 * GsHs[0]));

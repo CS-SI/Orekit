@@ -49,29 +49,27 @@ import org.orekit.propagation.conversion.OsculatingToMeanElementsConverter;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.semianalytical.dsst.forces.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
  * <p>
- * The DSST theory, as exposed by D.A.Danielson & al. (1995), describes a semianalytical propagator
- * that combines the accuracy of numerical propagators with the speed of analytical propagators.
- * Whereas analytical propagators are configured only thanks to their various constructors and can
- * be used immediately after construction, such a semianalytical propagator configuration involves
- * setting several parameters between construction time and propagation time, just as numerical
- * propagators.
+ * Whereas analytical propagators are configured only thanks to their various
+ * constructors and can be used immediately after construction, such a semianalytical
+ * propagator configuration involves setting several parameters between construction
+ * time and propagation time, just as numerical propagators.
  * </p>
  * <p>
  * The configuration parameters that can be set are:
  * </p>
  * <ul>
- * <li>the initial spacecraft state ({@link #resetInitialState(SpacecraftState)})</li>
+ * <li>the initial spacecraft state ({@link #setInitialState(SpacecraftState)})</li>
  * <li>the various force models ({@link #addForceModel(DSSTForceModel)},
  * {@link #removeForceModels()})</li>
  * <li>the discrete events that should be triggered during propagation (
@@ -83,22 +81,24 @@ import org.orekit.time.AbsoluteDate;
  * {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>
- * From these configuration parameters, only the initial state is mandatory. The default propagation
- * settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
- * {@link PositionAngle#TRUE true} longitude argument. The central attraction coefficient used to
- * define the initial orbit will be used. However, specifying only the initial state would mean the
- * propagator would use only keplerian forces. In this case, the simpler
- * {@link org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator} class would
- * perhaps be more effective.
+ * From these configuration parameters, only the initial state is mandatory.
+ * The default propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial}
+ * parameters with {@link PositionAngle#TRUE true} longitude argument.
+ * The central attraction coefficient used to define the initial orbit will be used.
+ * However, specifying only the initial state would mean the propagator would use
+ * only keplerian forces. In this case, the simpler
+ * {@link org.orekit.propagation.analytical.KeplerianPropagator KeplerianPropagator}
+ * class would be more effective.
  * </p>
  * <p>
- * The underlying numerical integrator set up in the constructor may also have its own configuration
- * parameters. Typical configuration parameters for adaptive stepsize integrators are the min, max
- * and perhaps start step size as well as the absolute and/or relative errors thresholds.
+ * The underlying numerical integrator set up in the constructor may also have
+ * its own configuration parameters. Typical configuration parameters for adaptive
+ * stepsize integrators are the min, max and perhaps start step size as well as
+ * the absolute and/or relative errors thresholds.
  * </p>
  * <p>
- * The state that is seen by the integrator is a simple six elements double array. These six
- * elements are:
+ * The state that is seen by the integrator is a simple six elements double array.
+ * These six elements are:
  * <ul>
  * <li>the {@link org.orekit.orbits.EquinoctialOrbit equinoctial orbit parameters}
  * (a, e<sub>x</sub>, e<sub>y</sub>, h<sub>x</sub>, h<sub>y</sub>, &lambda;<sub>m</sub>)
@@ -106,9 +106,10 @@ import org.orekit.time.AbsoluteDate;
  * </ul>
  * </p>
  * <p>
- * The same propagator can be reused for several orbit extrapolations, by resetting the initial
- * state without modifying the other configuration parameters. However, the same instance cannot be
- * used simultaneously by different threads, the class is <em>not</em> thread-safe.
+ * The same propagator can be reused for several orbit extrapolations,
+ * by resetting the initial state without modifying the other configuration
+ * parameters. However, the same instance cannot be used simultaneously by
+ * different threads, the class is <em>not</em> thread-safe.
  * </p>
  *
  * @see SpacecraftState
@@ -133,131 +134,59 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private static final int I = 1;
 
-    /** Force models used during the extrapolation of the Orbit. */
-    private final List<DSSTForceModel>     forceModels;
+    /** Force models used during the extrapolation of the orbit. */
+    private final List<DSSTForceModel> forceModels;
 
-    /** Is the orbital state in osculating parameters. */
-    private boolean      isOsculating;
+    /** Determine if the initial orbital state is given with osculating elements. */
+    private boolean isOsculating;
 
-    /** number of satellite revolutions in the averaging interval. */
-    private int          satelliteRevolution;
+    /** Number of satellite revolutions defining the averaging interval. */
+    private int     satelliteRevolution;
 
-    /** Build a DSSTPropagator from integrator and orbit.
+    /** Create a new instance of DSSTPropagator.
      *  <p>
-     *  Mass and attitude provider are set to unspecified non-null arbitrary values.
-     *  </p>
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that if
-     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
+     *  After creation, there are no perturbing forces at all.
+     *  This means that if {@link #addForceModel addForceModel}
+     *  is not called after creation, the integrated orbit will
      *  follow a keplerian evolution only.
      *  </p>
-     *
-     *  @param integrator numerical integrator used to integrate mean elements.
-     *  @param initialOrbit initial orbit
-     *  @param isOsculating is the orbital state in osculating parameters
-     *  @throws OrekitException if an error occurs in orbit averaging
-     *          (i.e when transforming osculating elements into mean elements)
+     *  @param integrator numerical integrator to use for propagation.
      */
-    public DSSTPropagator(final FirstOrderIntegrator integrator,
-                          final Orbit initialOrbit,
-                          final boolean isOsculating)
-        throws OrekitException {
-        this(integrator, initialOrbit, isOsculating, DEFAULT_LAW, DEFAULT_MASS);
-    }
-
-    /** Build a DSSTPropagator from integrator, orbit and attitude provider.
-     *  <p>
-     *  Mass is set to an unspecified non-null arbitrary value.
-     *  </p>
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that if
-     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
-     *  follow a keplerian evolution only.
-     *  </p>
-     *
-     *  @param integrator numerical integrator used to integrate mean elements.
-     *  @param initialOrbit initial orbit
-     *  @param isOsculating is the orbital state in osculating parameters
-     *  @param attitudeProv attitude provider
-     *  @throws OrekitException if an error occurs in orbit averaging
-     *          (i.e when transforming osculating elements into mean elements)
-     */
-    public DSSTPropagator(final FirstOrderIntegrator integrator,
-                          final Orbit initialOrbit,
-                          final boolean isOsculating,
-                          final AttitudeProvider attitudeProv)
-        throws OrekitException {
-        this(integrator, initialOrbit, isOsculating, attitudeProv, DEFAULT_MASS);
-    }
-
-    /** Build a DSSTPropagator from integrator, orbit and mass.
-     *  <p>
-     *  Attitude provider is set to an unspecified non-null arbitrary value.
-     *  </p>
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that if
-     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
-     *  follow a keplerian evolution only.
-     *  </p>
-     *
-     *  @param integrator numerical integrator used to integrate mean elements.
-     *  @param initialOrbit initial orbit
-     *  @param isOsculating is the orbital state in osculating parameters
-     *  @param mass spacecraft mass
-     *  @throws OrekitException if an error occurs in orbit averaging
-     *          (i.e when transforming osculating elements into mean elements)
-     */
-    public DSSTPropagator(final FirstOrderIntegrator integrator,
-                          final Orbit initialOrbit,
-                          final boolean isOsculating,
-                          final double mass)
-        throws OrekitException {
-        this(integrator, initialOrbit, isOsculating, DEFAULT_LAW, mass);
-    }
-
-    /** Build a DSSTPropagator from integrator, orbit, attitude provider and mass.
-     *  <p>
-     *  After creation, there are no perturbing forces at all. This means that if
-     *  {@link #addForceModel addForceModel} is not called after creation, the integrated orbit will
-     *  follow a keplerian evolution only.
-     *  </p>
-     *
-     *  @param integrator numerical integrator used to integrate mean elements.
-     *  @param initialOrbit initial orbit
-     *  @param isOsculating is the orbital state in osculating parameters
-     *  @param attitudeProv attitude provider
-     *  @param mass spacecraft mass
-     *  @throws OrekitException if an error occurs in orbit averaging
-     *          (i.e when transforming osculating elements into mean elements)
-     */
-    public DSSTPropagator(final FirstOrderIntegrator integrator,
-                          final Orbit initialOrbit,
-                          final boolean isOsculating,
-                          final AttitudeProvider attitudeProv,
-                          final double mass)
-        throws OrekitException {
-
+    public DSSTPropagator(final FirstOrderIntegrator integrator) {
+        super(integrator);
+        this.forceModels = new ArrayList<DSSTForceModel>();
+        this.isOsculating = true;
+        // Default averaging period for conversion from osculating to mean elements
+        this.satelliteRevolution = 2;
+        initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
-        setPositionAngleType(PositionAngle.MEAN);
-
-        setAttitudeProvider(attitudeProv);
-        this.forceModels = new ArrayList<DSSTForceModel>();
-        this.isOsculating = isOsculating;
-        // Average osculating elements over 2 orbits
-        this.satelliteRevolution = 2;
-
-        setIntegrator(integrator);
-
-        resetInitialState(new SpacecraftState(initialOrbit,
-                                              attitudeProv.getAttitude(initialOrbit,
-                                                                       initialOrbit.getDate(),
-                                                                       initialOrbit.getFrame()),
-                                                                       mass));
+        setPositionAngleType(PositionAngle.TRUE);
+        setAttitudeProvider(DEFAULT_LAW);
     }
 
-    /**
-     * Reset the initial state.
+    /** Set the initial state with osculating orbital elements.
+     *  @param initialState initial state (defined with osculating elements)
+     *  @throws PropagationException if the initial state cannot be set
+     */
+    public void setInitialState(final SpacecraftState initialState)
+        throws PropagationException {
+        setInitialState(initialState, true);
+    }
+
+    /** Set the initial state.
+     *  @param initialState initial state
+     *  @param withOsculatingElements true if the orbital state is defined with osculating elements
+     *  @throws PropagationException if the initial state cannot be set
+     */
+    public void setInitialState(final SpacecraftState initialState,
+                                final boolean withOsculatingElements)
+        throws PropagationException {
+        this.isOsculating = withOsculatingElements;
+        resetInitialState(initialState);
+    }
+
+    /** Reset the initial state.
      *
      *  @param state new initial state
      *  @throws PropagationException if initial state cannot be reset
@@ -290,18 +219,18 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         forceModels.clear();
     }
 
-    /** Override the default value of the {@link DSSTPropagator#satelliteRevolution} parameter.
-     *  By default, if the given orbit is an osculating one, it will be averaged
-     *  over a specific number of revolution (2 revolution).
+    /** Override the default value of the parameter.
+     *  <p>
+     *  By default, if the initial orbit is defined as osculating,
+     *  it will be averaged over 2 satellite revolutions.
      *  This can be changed by using this method.
-     *
-     *  @param satelliteRevolution number of satellite revolution to use for averaging process (osculating to mean
-     *            elements)
+     *  </p>
+     *  @param satelliteRevolution number of satellite revolutions to use for converting osculating to mean
+     *                             elements
      */
     public void setSatelliteRevolution(final int satelliteRevolution) {
         this.satelliteRevolution = satelliteRevolution;
     }
-
 
     /** {@inheritDoc} */
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,

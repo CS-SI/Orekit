@@ -21,6 +21,8 @@ import java.util.List;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.ResonantCouple;
 import org.orekit.time.AbsoluteDate;
 
 /** Central body gravitational contribution to the

@@ -101,7 +101,6 @@ public enum OrekitMessages implements Localizable {
     ORBIT_AND_ATTITUDE_DATES_MISMATCH("orbit date ({0}) does not match attitude date ({1})"),
     FRAMES_MISMATCH("frame {0} does not match frame {1}"),
     INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION("initial state not specified for orbit propagation"),
-    ODE_INTEGRATOR_NOT_SET_FOR_ORBIT_PROPAGATION("ODE integrator not set for orbit propagation"),
     PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE("propagator is not in ephemeris generation mode"),
     EVENT_DATE_TOO_CLOSE("event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added"),
     UNABLE_TO_READ_JPL_HEADER("unable to read header record from JPL ephemerides binary file {0}"),

@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 
 /** This interface represents a force modifying spacecraft motion for a {@link

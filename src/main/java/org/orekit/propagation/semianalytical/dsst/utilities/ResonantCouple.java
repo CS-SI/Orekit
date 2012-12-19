@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.forces;
+package org.orekit.propagation.semianalytical.dsst.utilities;
+
 
 /** Resonant couple.
  *  <p>
- *  Resonant couples are used in the expression of the tesseral resonant terms
- *  for the {@link DSSTCentralBody central body gravitational perturbation}.
+ *  Resonant couples are used in the expression of the tesseral
+ *  resonant terms for the central body gravitational perturbation.
  *  </p>
  *
  *  @author Romain Di Costanzo

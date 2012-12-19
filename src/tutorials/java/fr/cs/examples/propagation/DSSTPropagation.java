@@ -359,7 +359,10 @@ public class DSSTPropagation {
             ((AdaptiveStepsizeIntegrator) integrator).setInitialStepSize(10. * minStep);
         }
 
-        return new DSSTPropagator(integrator, orbit, isOsculating);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator);
+        dsstProp.setInitialState(new SpacecraftState(orbit), isOsculating);
+
+        return dsstProp;
     }
 
     /** Create the numerical propagator

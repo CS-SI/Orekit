@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.forces;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
@@ -30,7 +30,7 @@ import org.orekit.errors.OrekitException;
  *
  *  @author Pascal Parraud
  */
-class GaussQuadrature {
+public class GaussQuadrature {
 
     /** Node points. */
     private final double[] nodePoints;

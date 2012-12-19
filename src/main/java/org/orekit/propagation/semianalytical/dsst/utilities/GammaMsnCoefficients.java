@@ -21,7 +21,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory.MNSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
 
 /** Compute the &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient.
  *

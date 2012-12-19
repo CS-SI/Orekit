@@ -246,11 +246,16 @@ public class NumericalPropagatorTest {
         final double maxStep = 1000;
 
         double[][] tol = NumericalPropagator.tolerances(dP, state.getOrbit(), type);
-        propagator.setIntegrator(new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]));
-        propagator.setOrbitType(type);
-        propagator.setPositionAngleType(angle);
-        propagator.setInitialState(state);
-        return propagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
+        AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+        NumericalPropagator newPropagator = new NumericalPropagator(integrator);
+        newPropagator.setOrbitType(type);
+        newPropagator.setPositionAngleType(angle);
+        newPropagator.setInitialState(state);
+        for (ForceModel force: propagator.getForceModels()) {
+            newPropagator.addForceModel(force);
+        }
+        return newPropagator.propagate(state.getDate().shiftedBy(dt)).getPVCoordinates();
 
     }
 
@@ -473,7 +478,7 @@ public class NumericalPropagatorTest {
             1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
         };
         AdaptiveStepsizeIntegrator integrator =
-            new DormandPrince853Integrator(0.001, 200, absTolerance, relTolerance);
+                new DormandPrince853Integrator(0.001, 200, absTolerance, relTolerance);
         integrator.setInitialStepSize(60);
         propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);

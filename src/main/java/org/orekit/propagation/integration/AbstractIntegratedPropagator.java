@@ -37,14 +37,12 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.sampling.OrekitStepHandler;
@@ -52,8 +50,9 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Common handling of {@link Propagator} methods for both numerical and semi-analytical propagators.
- * @author Luc Maisonobe
+/** Common handling of {@link org.orekit.propagation.Propagator Propagator}
+ *  methods for both numerical and semi-analytical propagators.
+ *  @author Luc Maisonobe
  */
 public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
@@ -67,7 +66,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private final List<EventDetector> detectors;
 
     /** Integrator selected by the user for the orbital extrapolation process. */
-    private FirstOrderIntegrator integrator;
+    private final FirstOrderIntegrator integrator;
 
     /** Mode handler. */
     private ModeHandler modeHandler;
@@ -85,26 +84,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private StateMapper stateMapper;
 
     /** Build a new instance.
+     * @param integrator numerical integrator to use for propagation.
      */
-    protected AbstractIntegratedPropagator() {
+    protected AbstractIntegratedPropagator(final FirstOrderIntegrator integrator) {
         detectors           = new ArrayList<EventDetector>();
         addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
         stateVector         = new double[7];
-        stateMapper         = createMapper(null, Double.NaN, null, null, null, null);
+        this.integrator     = integrator;
     }
 
-    /** Set the integrator.
-     * @param integrator numerical integrator to use for propagation.
-     */
-    public void setIntegrator(final FirstOrderIntegrator integrator) {
-        this.integrator = integrator;
-    }
-
-    /** Get the integrator.
-     * @return numerical integrator to use for propagation.
-     */
-    protected FirstOrderIntegrator getIntegrator() {
-        return integrator;
+    /** Initialize the mapper. */
+    protected void initMapper() {
+        stateMapper = createMapper(null, Double.NaN, null, null, null, null);
     }
 
     /**  {@inheritDoc} */
@@ -154,25 +145,23 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Set the central attraction coefficient &mu;.
-    * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-    * @see #getMu()
-    * @see #addForceModel(ForceModel)
-    */
-   public void setMu(final double mu) {
-       stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
-                                  stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
-                                  stateMapper.getAttitudeProvider(), stateMapper.getFrame());
-   }
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public void setMu(final double mu) {
+        stateMapper = createMapper(stateMapper.getReferenceDate(), mu,
+                                   stateMapper.getOrbitType(), stateMapper.getPositionAngleType(),
+                                   stateMapper.getAttitudeProvider(), stateMapper.getFrame());
+    }
 
-   /** Get the central attraction coefficient &mu;.
-    * @return mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-    * @see #setMu(double)
-    */
-   public double getMu() {
-       return stateMapper.getMu();
-   }
+    /** Get the central attraction coefficient &mu;.
+     * @return mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @see #setMu(double)
+     */
+    public double getMu() {
+        return stateMapper.getMu();
+    }
 
-   /** Get the number of calls to the differential equations computation method.
+    /** Get the number of calls to the differential equations computation method.
      * <p>The number of calls is reset each time the {@link #propagate(AbsoluteDate)}
      * method is called.</p>
      * @return number of calls to the differential equations computation method
@@ -248,17 +237,17 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     protected void setUpUserEventDetectors() {
         for (final EventDetector detector : detectors) {
             setUpEventDetector(detector);
-        }        
+        }
     }
 
     /** Wrap an Orekit event detector and register it to the integrator.
-     * @param osf event handler to wrap
+     *  @param detector event detector to wrap
      */
     protected void setUpEventDetector(final EventDetector detector) {
-       integrator.addEventHandler(new AdaptedEventDetector(detector),
-                                  detector.getMaxCheckInterval(),
-                                  detector.getThreshold(),
-                                  detector.getMaxIterationCount());
+        integrator.addEventHandler(new AdaptedEventDetector(detector),
+                                   detector.getMaxCheckInterval(),
+                                   detector.getThreshold(),
+                                   detector.getMaxIterationCount());
     }
 
     /** {@inheritDoc}
@@ -408,9 +397,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 // don't extrapolate
                 return getInitialState();
             }
-            if (getIntegrator() == null) {
-                throw new PropagationException(OrekitMessages.ODE_INTEGRATOR_NOT_SET_FOR_ORBIT_PROPAGATION);
-            }
 
             // space dynamics view
             stateMapper = createMapper(getInitialState().getDate(), stateMapper.getMu(),
@@ -456,7 +442,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 index += addState.length;
             }
 
-            getIntegrator().clearEventHandlers();
+            integrator.clearEventHandlers();
 
             // set up events added by user
             setUpUserEventDetectors();
@@ -467,8 +453,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             }
             final double stopTime;
             try {
-                beforeIntegration(tEnd);
-                stopTime = getIntegrator().integrate(new CompleteDifferentialEquations(getMainStateEquations()),
+                beforeIntegration(getInitialState(), tEnd);
+                stopTime = integrator.integrate(new CompleteDifferentialEquations(getMainStateEquations()),
                                                      t0, stateVector, t1, stateVector);
                 afterIntegration();
             } catch (OrekitExceptionWrapper oew) {
@@ -509,10 +495,12 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      * <p>
      * The default implementation does nothing, it may be specialized in subclasses.
      * </p>
+     * @param initialState initial state
      * @param tEnd target date at which state should be propagated
      * @exception OrekitException if hook cannot be run
      */
-    protected void beforeIntegration(final AbsoluteDate tEnd)
+    protected void beforeIntegration(final SpacecraftState initialState,
+                                     final AbsoluteDate tEnd)
         throws OrekitException {
         // do nothing by default
     }
@@ -608,7 +596,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         double[] computeDerivatives(final SpacecraftState state) throws OrekitException;
 
     }
- 
+
     /** Differential equations for main state and additional state. */
     private class CompleteDifferentialEquations implements FirstOrderDifferentialEquations {
 
@@ -629,7 +617,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void computeDerivatives(double t, double[] y, double[] yDot)
+        public void computeDerivatives(final double t, final double[] y, final double[] yDot)
             throws OrekitExceptionWrapper {
 
             try {

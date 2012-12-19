@@ -31,7 +31,7 @@ import org.orekit.errors.OrekitMessages;
  *
  * @author Romain Di Costanzo
  */
-public class DSSTCoefficientFactory {
+public class CoefficientsFactory {
 
     /** Internal storage of the polynomial values. Reused for further computation. */
     private static TreeMap<NSKey, Double> VNS = new TreeMap<NSKey, Double>();
@@ -52,7 +52,7 @@ public class DSSTCoefficientFactory {
 
     /** Private constructor as the class is a utility class.
      */
-    private DSSTCoefficientFactory() {
+    private CoefficientsFactory() {
     }
 
     /** Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma; This method is using the

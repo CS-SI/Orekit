@@ -24,6 +24,8 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.GaussQuadrature;
 
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
  * <p>
@@ -46,7 +48,7 @@ import org.orekit.propagation.SpacecraftState;
  * </p>
  * @author Pascal Parraud
  */
-public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel {
+public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** Propagation orbit type. */
     protected static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
@@ -113,7 +115,7 @@ public abstract class AbstractDSSTGaussianContribution implements DSSTForceModel
     /** Build a new instance.
      *  @param quadrature_order order for Gauss quadrature
      */
-    protected AbstractDSSTGaussianContribution(final int quadrature_order) {
+    protected AbstractGaussianContribution(final int quadrature_order) {
         this.integrator = new GaussQuadrature(quadrature_order);
     }
 

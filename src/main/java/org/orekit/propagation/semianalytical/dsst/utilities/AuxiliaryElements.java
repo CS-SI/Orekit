@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.semianalytical.dsst.forces;
+package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -24,8 +24,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.time.AbsoluteDate;
 
 
-/** Container class for common parameters used by all
- *  {@link DSSTForceModel DSST force models}.
+/** Container class for common parameters used by all DSST forces.
  *  <p>
  *  Most of them are defined in Danielson paper at § 2.1.
  *  </p>

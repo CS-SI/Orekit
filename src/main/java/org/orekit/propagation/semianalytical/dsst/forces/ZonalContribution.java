@@ -21,8 +21,9 @@ import java.util.TreeMap;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
 /** Zonal contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
@@ -120,7 +121,7 @@ class ZonalContribution implements DSSTForceModel {
         this.Jn     = jn.clone();
         this.degree = jn.length - 1;
 
-        this.Vns = DSSTCoefficientFactory.computeVnsCoefficient(degree + 1);
+        this.Vns = CoefficientsFactory.computeVnsCoefficient(degree + 1);
 
         // Factorials computation
         this.fact = new double[degree + 1];
@@ -281,9 +282,9 @@ class ZonalContribution implements DSSTForceModel {
                         final double factor = fact[n - s] / (fact[(n + s) / 2] * fact[(n - s) / 2]);
                         final double k0 = hansen.getValue(-n - 1, s);
                         // Compute Qns
-                        final double qns  = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s));
+                        final double qns  = FastMath.abs(CoefficientsFactory.getQnsPolynomialValue(gamma, n, s));
                         // Compute dQns/dGamma
-                        final double dQns = FastMath.abs(DSSTCoefficientFactory.getQnsPolynomialValue(gamma, n, s + 1));
+                        final double dQns = FastMath.abs(CoefficientsFactory.getQnsPolynomialValue(gamma, n, s + 1));
                         // Compute the Qns upper bound
                         final double coef = omgg / (n * (n + 1) - s * (s + 1));
                         final double qnsB = FastMath.sqrt(qns * qns + coef * dQns * dQns);
@@ -330,8 +331,8 @@ class ZonalContribution implements DSSTForceModel {
         throws OrekitException {
 
         // Initialize data
-        final double[][] GsHs = DSSTCoefficientFactory.computeGsHs(k, h, alpha, beta, maxDegree + 1);
-        final double[][] Qns  = DSSTCoefficientFactory.computeQnsCoefficient(gamma, maxDegree + 1);
+        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxDegree + 1);
+        final double[][] Qns  = CoefficientsFactory.computeQnsCoefficient(gamma, maxDegree + 1);
 
         final double roa = r / a;
 
@@ -347,7 +348,7 @@ class ZonalContribution implements DSSTForceModel {
             // Get the current gs and hs coefficient :
             final double gs = GsHs[0][s];
 
-            // Compute partial derivatives of Gs from equ. (9) :
+            // Compute partial derivatives of Gs from 3.1-(9)
             // First get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF < 0
             final double sxgsm1 = s > 0 ? s * GsHs[0][s - 1] : 0;
             final double sxhsm1 = s > 0 ? s * GsHs[1][s - 1] : 0;
@@ -414,8 +415,8 @@ class ZonalContribution implements DSSTForceModel {
 
         /** Simple constructor. */
         public HansenZonal() {
-            coefficients = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
-            derivatives  = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
+            coefficients = new TreeMap<CoefficientsFactory.NSKey, Double>();
+            derivatives  = new TreeMap<CoefficientsFactory.NSKey, Double>();
             initialize();
         }
 

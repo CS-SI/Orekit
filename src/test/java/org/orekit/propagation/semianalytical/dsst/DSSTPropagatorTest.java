@@ -169,7 +169,9 @@ public class DSSTPropagatorTest {
 
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
         FirstOrderIntegrator integrator = new DormandPrince853Integrator(10., 1000., tol[0], tol[1]);
-        DSSTPropagator propagator = new DSSTPropagator(integrator, initialOrbit, false, new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
+        DSSTPropagator propagator = new DSSTPropagator(integrator);
+        propagator.setInitialState(new SpacecraftState(initialOrbit), false);
+        propagator.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
         propagator.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()), new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = propagator.propagate(initialOrbit.getDate().shiftedBy(8000));
         Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
@@ -234,10 +236,9 @@ public class DSSTPropagatorTest {
         setNumProp(state);
         numProp.addForceModel(nForce);
 
-        // Tolerance established thanks to a step control every 10 seconds over 50 days : should not
-        // exceed :
-        double[] tolerance = new double[] { 1476, 5.2E-5, 7.8E-5, 5.5E-6, 5E-6, 5.E-3 };
-
+        // Max difference between DSST and numerical propagator
+        double[] tolerance = new double[] { 1476, 6E-5, 7.8E-5, 5.5E-6, 5E-6, 5.E-3 };
+        // Check extrapolation process via the step handler :
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
         propaDSST.propagate(initDate.shiftedBy(dt));
@@ -252,7 +253,9 @@ public class DSSTPropagatorTest {
         setNumProp(state);
         numProp.addForceModel(nForce);
 
-        tolerance = new double[] { 507.29, 2.3E-5, 2.5E-5, 1.6E-6, 1.55E-6, 5.E-3 };
+        // Max difference between DSST and numerical propagator
+        tolerance = new double[] { 507.29, 3.E-5, 2.5E-5, 1.6E-6, 1.55E-6, 5.E-3 };
+        // Check extrapolation process via the step handler :
         propaDSST.setMasterMode(checkStep, new StepChecker(numProp, tolerance));
 
         propaDSST.propagate(initDate.shiftedBy(dt));
@@ -441,7 +444,8 @@ public class DSSTPropagatorTest {
         final double maxStep = 1.e5;
         final double[][] tol = DSSTPropagator.tolerances(1.0, initialState.getOrbit());
         AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
-        propaDSST = new DSSTPropagator(integrator, initialState.getOrbit(), false, 864000.);
+        propaDSST = new DSSTPropagator(integrator);
+        propaDSST.setInitialState(initialState, false);
 
     }
 

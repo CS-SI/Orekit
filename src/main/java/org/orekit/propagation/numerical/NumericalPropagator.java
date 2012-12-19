@@ -38,10 +38,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
-import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.integration.StateMapper;
-import org.orekit.propagation.sampling.OrekitFixedStepHandler;
-import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -66,16 +63,16 @@ import org.orekit.utils.PVCoordinates;
  *   <li>the {@link PositionAngle type} of position angle to be used in orbital parameters
  *   to be used for propagation where it is relevant ({@link
  *   #setPositionAngleType(PositionAngle)}),
- *   <li>whether {@link AdditionalEquations additional equations} (for example {@link
- *   PartialDerivativesEquations Jacobians}) should be propagated along with orbital state
- *   ({@link #addAdditionalEquations(AdditionalEquations)}),
+ *   <li>whether {@link org.orekit.propagation.integration.AdditionalEquations additional equations}
+ *   (for example {@link PartialDerivativesEquations Jacobians}) should be propagated along with orbital state
+ *   ({@link #addAdditionalEquations(org.orekit.propagation.integration.AdditionalEquations)}),
  *   <li>the discrete events that should be triggered during propagation
  *   ({@link #addEventDetector(EventDetector)},
  *   {@link #clearEventsDetectors()})</li>
  *   <li>the binding logic with the rest of the application ({@link #setSlaveMode()},
- *   {@link #setMasterMode(double, OrekitFixedStepHandler)}, {@link
- *   #setMasterMode(OrekitStepHandler)}, {@link #setEphemerisMode()}, {@link
- *   #getGeneratedEphemeris()})</li>
+ *   {@link #setMasterMode(double, org.orekit.propagation.sampling.OrekitFixedStepHandler)},
+ *   {@link #setMasterMode(org.orekit.propagation.sampling.OrekitStepHandler)},
+ *   {@link #setEphemerisMode()}, {@link #getGeneratedEphemeris()})</li>
  * </ul>
  * <p>From these configuration parameters, only the initial state is mandatory. The default
  * propagation settings are in {@link OrbitType#EQUINOCTIAL equinoctial} parameters with
@@ -124,8 +121,8 @@ import org.orekit.utils.PVCoordinates;
 
  * @see SpacecraftState
  * @see ForceModel
- * @see OrekitStepHandler
- * @see OrekitFixedStepHandler
+ * @see org.orekit.propagation.sampling.OrekitStepHandler
+ * @see org.orekit.propagation.sampling.OrekitFixedStepHandler
  * @see org.orekit.propagation.integration.IntegratedEphemeris
  * @see TimeDerivativesEquations
  *
@@ -155,10 +152,11 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final FirstOrderIntegrator integrator) {
+        super(integrator);
         forceModels = new ArrayList<ForceModel>();
+        initMapper();
         setAttitudeProvider(DEFAULT_LAW);
         setMu(Double.NaN);
-        setIntegrator(integrator);
         setSlaveMode();
         setOrbitType(OrbitType.EQUINOCTIAL);
         setPositionAngleType(PositionAngle.TRUE);
@@ -257,6 +255,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
     /** Set the initial state.
      * @param initialState initial state
+     * @exception PropagationException if initial state cannot be set
      */
     public void setInitialState(final SpacecraftState initialState) throws PropagationException {
         resetInitialState(initialState);
@@ -312,7 +311,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
 
         /** {@inheritDoc} */
         public SpacecraftState mapArrayToState(final double t, final double[] y)
-                throws OrekitException {
+            throws OrekitException {
 
             final double mass = y[6];
             if (mass <= 0.0) {

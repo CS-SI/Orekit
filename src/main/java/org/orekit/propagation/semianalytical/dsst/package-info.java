@@ -18,10 +18,12 @@
  * This package provides an implementation of the Drapper Semi-analytical
  * Satellite Theory (DSST).
  * <p>
- * DSST has been originated from P. J. Cefola and his colleagues at mid 70's.
+ * The DSST theory, originated from P. J. Cefola and his colleagues (mid 70's),
+ * describes a semianalytical propagator that combines the accuracy of numerical
+ * propagators with the speed of analytical propagators.
  * </p>
  * <p>
- * All the equations are referenced according to Danielson's paper:<br>
+ * All the references for the equations in the code come from:<br>
  * SEMIANALYTIC SATELLITE THEORY<br>
  * D. A. Danielson, C. P. Sagovac, B. Neta, L. W. Early<br>
  * Mathematics Department - Naval Postgraduate School - Monterey, CA 93943<br>

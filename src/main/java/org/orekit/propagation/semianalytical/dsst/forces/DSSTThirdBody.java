@@ -23,8 +23,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.DSSTCoefficientFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.time.AbsoluteDate;
 
@@ -121,7 +122,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         this.maxAR3Pow = Integer.MIN_VALUE;
         this.maxECCPow = Integer.MIN_VALUE;
 
-        this.Vns = DSSTCoefficientFactory.computeVnsCoefficient(MAX_POWER);
+        this.Vns = CoefficientsFactory.computeVnsCoefficient(MAX_POWER);
 
         // Factorials computation
         final int dim = 2 * MAX_POWER;
@@ -310,9 +311,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
         // Hansen coefficients
         final HansenThirdBody hansen = new HansenThirdBody();
         // Gs coefficients
-        final double[][] GsHs = DSSTCoefficientFactory.computeGsHs(k, h, alpha, beta, maxECCPow);
+        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxECCPow);
         // Qns coefficients
-        final double[][] Qns = DSSTCoefficientFactory.computeQnsCoefficient(gamma, maxAR3Pow + 1);
+        final double[][] Qns = CoefficientsFactory.computeQnsCoefficient(gamma, maxAR3Pow + 1);
         // mu3 / R3
         final double muoR3 = gm / R3;
         // a / R3
@@ -329,14 +330,16 @@ public class DSSTThirdBody  implements DSSTForceModel {
         for (int s = 0; s <= maxECCPow; s++) {
             // Get the current Gs and Hs coefficient
             final double gs = GsHs[0][s];
-            final double gsm1 = s > 0 ? GsHs[0][s - 1] : 0.;
-            final double hsm1 = s > 0 ? GsHs[1][s - 1] : 0.;
 
             // Compute partial derivatives of Gs from 3.1-(9)
-            final double dGsdh  = s * beta * gsm1 - s * alpha * hsm1;
-            final double dGsdk  = s * alpha * gsm1 + s * beta * hsm1;
-            final double dGsdAl = s * k * gsm1 - s * h * hsm1;
-            final double dGsdBe = s * h * gsm1 + s * k * hsm1;
+            // First get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF < 0
+            final double sxgsm1 = s > 0 ? s * GsHs[0][s - 1] : 0.;
+            final double sxhsm1 = s > 0 ? s * GsHs[1][s - 1] : 0.;
+            // Get derivatives
+            final double dGsdh  = beta  * sxgsm1 - alpha * sxhsm1;
+            final double dGsdk  = alpha * sxgsm1 + beta  * sxhsm1;
+            final double dGsdAl = k * sxgsm1 - h * sxhsm1;
+            final double dGsdBe = h * sxgsm1 + k * sxhsm1;
 
             // Kronecker symbol (2 - delta(0,s))
             final double delta0s = (s == 0) ? 1. : 2.;
@@ -399,8 +402,8 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         /** Simple constructor. */
         public HansenThirdBody() {
-            coefficients = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
-            derivatives  = new TreeMap<DSSTCoefficientFactory.NSKey, Double>();
+            coefficients = new TreeMap<CoefficientsFactory.NSKey, Double>();
+            derivatives  = new TreeMap<CoefficientsFactory.NSKey, Double>();
             initialize();
         }
 
@@ -435,14 +438,17 @@ public class DSSTThirdBody  implements DSSTForceModel {
         /** Initialization. */
         private void initialize() {
             final double ec2 = ecc * ecc;
-            coefficients.put(new NSKey(-1, 0), 0.);
+            final double oX3 = 1. / XXX;
             coefficients.put(new NSKey(0, 0),  1.);
             coefficients.put(new NSKey(0, 1), -1.);
             coefficients.put(new NSKey(1, 0),  1. + 0.5 * ec2);
             coefficients.put(new NSKey(1, 1), -1.5);
             coefficients.put(new NSKey(2, 0),  1. + 1.5 * ec2);
             coefficients.put(new NSKey(2, 1), -2. - 0.5 * ec2);
-            derivatives.put(new NSKey(0, 0), 0.);
+            derivatives.put(new NSKey(0, 0),  0.);
+            derivatives.put(new NSKey(1, 0),  oX3);
+            derivatives.put(new NSKey(2, 0),  3. * oX3);
+            derivatives.put(new NSKey(2, 1), -oX3);
         }
 
         /** Compute K<sub>0</sub><sup>n,s</sup> from Equation 2.7.3-(7)(8).
@@ -513,10 +519,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             // Initialize return value
             double dknsdx = 0.;
 
-            final NSKey keyNS = new NSKey(n, s);
-            if ((n == s - 1) || (n == s)) {
-                derivatives.put(keyNS, 0.);
-            } else {
+            if (n > s) {
 
                 final NSKey keyNm1 = new NSKey(n - 1, s);
                 double dKnM1 = 0.;
@@ -544,7 +547,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
                 dknsdx = val1 * dKnM1 - val2 * dKnM2 + val3 * knM2;
             }
 
-            derivatives.put(keyNS, dknsdx);
+            derivatives.put(new NSKey(n, s), dknsdx);
             return dknsdx;
         }
 

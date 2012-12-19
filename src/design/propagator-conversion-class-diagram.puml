@@ -1,0 +1,103 @@
+' Copyright 2002-2012 CS Systèmes d'Information
+' Licensed to CS Systèmes d'Information (CS) under one or more
+' contributor license agreements.  See the NOTICE file distributed with
+' this work for additional information regarding copyright ownership.
+' CS licenses this file to You under the Apache License, Version 2.0
+' (the "License"); you may not use this file except in compliance with
+' the License.  You may obtain a copy of the License at
+'
+'   http://www.apache.org/licenses/LICENSE-2.0
+'
+' Unless required by applicable law or agreed to in writing, software
+' distributed under the License is distributed on an "AS IS" BASIS,
+' WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+' See the License for the specific language governing permissions and
+' limitations under the License.
+ 
+@startuml
+
+  skinparam svek                  true
+  skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
+  skinparam ClassArrowColor       #691616
+  skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+
+  package org.apache.commons.math3.ode #ECEBD8
+
+    interface Parameterizable {
+      +Collection<String> getParametersNames()
+      +boolean isSupported(String name) 
+    }
+
+    interface ParameterizedODE {
+      +double getParameter(String name) 
+      +void setParameter(String name, double value)
+    }
+    
+    Parameterizable <|.. ParameterizedODE
+
+  end package
+
+  package org.orekit.propagation.conversion #DDEBD8
+
+    interface PropagatorBuilder {
+      +Propagator buildPropagator(AbsoluteDate date, double[] parameters)
+      +Frame getFrame()
+      +void setFreeParameters(Collection<String> parameters)
+    }
+
+    class EcksteinHechlerPropagatorBuilder
+    class KeplerianPropagatorBuilder
+    class TLEPropagatorBuilder
+
+    class NumericalPropagatorBuilder {
+      +void addForceModel(ForceModel model)
+      +void setAttitudeProvider(AttitudeProvider attitudeProvider)
+      +void setMass(double mass)
+    }
+
+    interface PropagatorConverter {
+      +Propagator convert(Propagator source, double timeSpan, int nbPoints, Collection<String> freeParameters)
+      +Propagator convert(Propagator source, double timeSpan, int nbPoints, String ... freeParameters)
+      +Propagator convert(List<SpacecraftState> states, boolean positionOnly, Collection<String> freeParameters)
+      +Propagator convert(List<SpacecraftState> states, boolean positionOnly, String ... freeParameters)
+    }
+
+    abstract class AbstractPropagatorConverter {
+      +Propagator getAdaptedPropagator()
+      +double getRMS()
+      +int getEvaluations()
+      +Collection<String> getAvailableParameters()
+      +boolean isAvailable(String name)
+    }
+
+    class FiniteDifferencePropagatorConverter
+    class JacobianPropagatorConverter
+
+    interface IntegratorBuilder {
+      +FirstOrderIntegrator buildIntegrator()
+    }
+
+    ParameterizedODE  <|.. PropagatorBuilder
+    PropagatorBuilder <|.. EcksteinHechlerPropagatorBuilder
+    PropagatorBuilder <|.. KeplerianPropagatorBuilder
+    PropagatorBuilder <|.. NumericalPropagatorBuilder
+    PropagatorBuilder <|.. TLEPropagatorBuilder
+
+    PropagatorConverter <|.. AbstractPropagatorConverter
+    AbstractPropagatorConverter <|.. JacobianPropagatorConverter
+    AbstractPropagatorConverter <|.. FiniteDifferencePropagatorConverter
+
+    PropagatorBuilder <--* "1" AbstractPropagatorConverter
+
+    NumericalPropagatorBuilder <-* "1" JacobianPropagatorConverter
+
+    NumericalPropagatorBuilder "1" *--> IntegratorBuilder
+
+  end package
+
+
+@enduml

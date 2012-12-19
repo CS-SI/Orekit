@@ -34,7 +34,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  *
  *  @author Pascal Parraud
  */
-public class DSSTSolarRadiationPressure extends AbstractDSSTGaussianContribution {
+public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
     /** Number of points for quadrature (from 2 to 96). */
     private static final int    NB_POINTS   = 48;
