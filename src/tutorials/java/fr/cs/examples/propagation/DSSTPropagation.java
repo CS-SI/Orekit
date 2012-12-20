@@ -566,6 +566,7 @@ public class DSSTPropagation {
             final double vz = o.getPVCoordinates().getVelocity().getZ() / 1000.;
             buffer.write(f.format(format, time, a, e, i, ra, pa, am, h, k, p, q, lm, px, py, pz, vx, vy, vz).toString());
             buffer.newLine();
+            f.close();
         }
         buffer.close();
     }
