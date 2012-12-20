@@ -122,6 +122,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     public void initialize(final AuxiliaryElements aux)
         throws OrekitException {
+        // Nothing to do for gaussian contributions at the beginning of the propagation.
+    }
+
+    /** {@inheritDoc} */
+    public void initializeStep(final AuxiliaryElements aux)
+        throws OrekitException {
 
         // Equinoctial elements
         a  = aux.getSma();

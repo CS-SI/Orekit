@@ -29,9 +29,14 @@ import org.orekit.time.AbsoluteDate;
  *  before the propagation is started.
  *  </p>
  *  <p>
- *  The propagator will call at each step:
+ *  The propagator will call at the very beginning of a propagation the {@link
+ *  #initialize(AuxiliaryElements)} method allowing preliminary computation such
+ *  as truncation if needed.
+ *  </p>
+ *  <p>
+ *  Then the propagator will call at each step:
  *  <ol>
- *  <li>the {@link #initialize(AuxiliaryElements)} method.
+ *  <li>the {@link #initializeStep(AuxiliaryElements)} method.
  *  The force model instance will extract all the elements needed before
  *  computing the mean element rates.</li>
  *  <li>the {@link #getMeanElementRate(SpacecraftState)} method.
@@ -50,10 +55,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface DSSTForceModel {
 
-    /** Perform initializations for the current force model.
+    /** Performs initialization prior to propagation for the current force model.
      *  <p>
-     *  This method will be called at each integration step
-     *  before mean elements rates computation.
+     *  This method aims at being called at the very beginning of a propagation.
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
      *  @throws OrekitException if some specific error occurs
@@ -61,7 +65,17 @@ public interface DSSTForceModel {
     void initialize(AuxiliaryElements aux)
         throws OrekitException;
 
-    /** Compute the mean equinoctial elements rates da<sub>i</sub> / dt.
+    /** Performs initialization at each integration step for the current force model.
+     *  <p>
+     *  This method aims at being called before mean elements rates computation.
+     *  </p>
+     *  @param aux auxiliary elements related to the current orbit
+     *  @throws OrekitException if some specific error occurs
+     */
+    void initializeStep(AuxiliaryElements aux)
+        throws OrekitException;
+
+    /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
      *
      *  @param state current state information: date, kinematics, attitude
      *  @return the mean element rates dai/dt
@@ -69,7 +83,7 @@ public interface DSSTForceModel {
      */
     double[] getMeanElementRate(SpacecraftState state) throws OrekitException;
 
-    /** Compute the short periodic variations.
+    /** Computes the short periodic variations.
      *
      *  @param date current date
      *  @param meanElements mean elements at current date

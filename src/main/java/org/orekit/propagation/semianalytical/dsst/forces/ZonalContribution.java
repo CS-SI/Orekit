@@ -23,6 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.time.AbsoluteDate;
 
@@ -34,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
 class ZonalContribution implements DSSTForceModel {
 
     /** Truncation tolerance. */
-    private static final double TRUNCATION_TOLERANCE = 1e-10;
+    private static final double TRUNCATION_TOLERANCE = 1e-4;
 
     /** Equatorial radius of the central body. */
     private final double r;
@@ -42,11 +43,17 @@ class ZonalContribution implements DSSTForceModel {
     /** Central body attraction coefficient. */
     private final double mu;
 
-    /** Degree <i>n</i> of potential. */
-    private final int    degree;
+    /** Un-normalized coefficients array (cosine part). */
+    private final double[][] C;
 
-    /** Geopotential coefficient Jn = -Cn0. */
-    private final double[] Jn;
+    /** Un-normalized coefficients array (sine part). */
+    private final double[][] S;
+
+    /** Degree <i>n</i> of potential. */
+    private final int degree;
+
+    /** Order <i>m</i> of potential. */
+    private final int order;
 
     /** Factorial. */
     private final double[] fact;
@@ -99,45 +106,166 @@ class ZonalContribution implements DSSTForceModel {
     private double muoa;
 
     /** Highest power of the eccentricity to be used in series expansion. */
-    private int    maxEccPow;
-
-    /** Maximal degree of the potential to be used in series expansion. */
-    private int    maxDegree;
-
-    /** Hansen coefficient. */
-    private HansenZonal hansen;
+    private int maxEccPow;
 
     /** Simple constructor.
      *  @param equatorialRadius equatorial radius of the central body (m)
      *  @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     *  @param jn zonal coefficients of the potential
+    *   @param Cnm un-normalized coefficients array of the spherical harmonics (cosine part)
+    *   @param Snm un-normalized coefficients array of the spherical harmonics (sine part)
      */
     public ZonalContribution(final double equatorialRadius,
                              final double mu,
-                             final double[] jn) {
+                             final double[][] Cnm,
+                             final double[][] Snm) {
 
         this.r      = equatorialRadius;
         this.mu     = mu;
-        this.Jn     = jn.clone();
-        this.degree = jn.length - 1;
+        this.C      = Cnm.clone();
+        this.S      = Snm.clone();
+        this.degree = Cnm.length - 1;
+        this.order  = Cnm[degree].length - 1;
 
         this.Vns = CoefficientsFactory.computeVnsCoefficient(degree + 1);
 
         // Factorials computation
-        this.fact = new double[degree + 1];
+        final int maxFact = 2 * degree + 1;
+        this.fact = new double[maxFact];
         fact[0] = 1.;
-        for (int i = 1; i <= degree; i++) {
+        for (int i = 1; i < maxFact; i++) {
             fact[i] = i * fact[i - 1];
         }
 
         // Initialize default values
-//        this.maxEccPow = (degree == 2) ? 0 : Integer.MIN_VALUE;
-        this.maxDegree = degree;
-        this.maxEccPow = degree - 2;
+        this.maxEccPow = (degree == 2) ? 0 : Integer.MIN_VALUE;
+    }
+
+    /** Get the equatorial radius of the central body.
+     *  @return the equatorial radius (m)
+     */
+    public double getEquatorialRadius() {
+        return r;
+    }
+
+    /** Get the un-normalized coefficients array of the spherical harmonics (cosine part).
+     *  @return Cnm
+     */
+    public double[][] getCnm() {
+        return C.clone();
+    }
+
+    /** Get the un-normalized coefficients array of the spherical harmonics (sine part).
+     *  @return Snm
+     */
+    public double[][] getSnm() {
+        return S.clone();
+    }
+
+    /** Computes the highest power of the eccentricity to appear in the truncated
+     *  analytical power series expansion.
+     *  <p>
+     *  This method computes the upper value for the central body potential and
+     *  determines the maximal power of the eccentricity from potential terms
+     *  less than a defined tolerance.
+     *
+     *  @param aux auxiliary elements related to the current orbit
+     *  @throws OrekitException if some specific error occurs
+     */
+    public void initialize(final AuxiliaryElements aux)
+        throws OrekitException {
+
+        if (degree == 2) {
+            maxEccPow = 0;
+        } else {
+            // Initializes specific parameters.
+            initializeStep(aux);
+
+            // Utilities for truncation
+            // Set a lower bound for eccentricity
+            final double eo2  = FastMath.max(0.0025, ecc / 2.);
+            final double x2o2 = XX / 2.;
+            final double[] eccPwr = new double[degree + 1];
+            final double[] chiPwr = new double[degree + 1];
+            final double[] hafPwr = new double[degree + 1];
+            eccPwr[0] = 1.;
+            chiPwr[0] = X;
+            hafPwr[0] = 1.;
+            for (int i = 1; i <= degree; i++) {
+                eccPwr[i] = eccPwr[i - 1] * eo2;
+                chiPwr[i] = chiPwr[i - 1] * x2o2;
+                hafPwr[i] = hafPwr[i - 1] * 0.5;
+            }
+
+            // Auxiliary quantities.
+            final double ax2or = 2. * a / r;
+            double xmuran = mu / (a * FastMath.pow(ax2or, degree));
+
+            // Set highest power of e and degree of current spherical harmonic.
+            maxEccPow = 0;
+            int n = degree;
+            // Loop over n
+            do {
+                // Set order of current spherical harmonic.
+                int m = 0;
+                // Loop over m
+                do {
+                    // Compute magnitude of current spherical harmonic coefficient.
+                    final double csnm = FastMath.sqrt(C[n][m] * C[n][m] + S[n][m] * S[n][m]);
+                    if (csnm == 0.) break;
+                    // Set magnitude of last spherical harmonic term.
+                    double lastTerm = 0.;
+                    // Set current power of e and related indices.
+                    int nsld2 = (n - maxEccPow - 1) / 2;
+                    int l = n - 2 * nsld2;
+                    // Loop over l
+                    double term = 0.;
+                    do {
+                        // Compute magnitude of current spherical harmonic term.
+                        if (m < l) {
+                            term = csnm * xmuran *
+                                    (fact[n - l] / (fact[n - m])) *
+                                    (fact[n + l] / (fact[nsld2] * fact[nsld2 + l])) *
+                                    eccPwr[l] * UpperBounds.getDnl(XX, chiPwr[l], n, l) *
+                                    (UpperBounds.getRnml(gamma, n, l, m, 1, I) + UpperBounds.getRnml(gamma, n, l, m, -1, I));
+                        } else {
+                            term = csnm * xmuran *
+                                    (fact[n + m] / (fact[nsld2] * fact[nsld2 + l])) *
+                                    eccPwr[l] * hafPwr[m - l] * UpperBounds.getDnl(XX, chiPwr[l], n, l) *
+                                    (UpperBounds.getRnml(gamma, n, m, l, 1, I) + UpperBounds.getRnml(gamma, n, m, l, -1, I));
+                        }
+                        // Is the current spherical harmonic term bigger than the truncation tolerance ?
+                        if (term >= TRUNCATION_TOLERANCE) {
+                            maxEccPow = l;
+                        } else {
+                            // Is the current term smaller than the last term ?
+                            if (term < lastTerm) {
+                                break;
+                            }
+                        }
+                        // Procced to next power of e.
+                        lastTerm = term;
+                        l += 2;
+                        nsld2--;
+                    } while (l < n);
+                    // Is the current spherical harmonic term bigger than the truncation tolerance ?
+                    if (term >= TRUNCATION_TOLERANCE) {
+                        maxEccPow = FastMath.min(degree - 2, maxEccPow);
+                        return;
+                    }
+                    // Procced to next order.
+                    m++;
+                } while (m <= order);
+                // Procced to next degree.
+                xmuran *= ax2or;
+                n--;
+            } while (n >= maxEccPow + 4);
+
+            maxEccPow = FastMath.min(degree - 2, maxEccPow);
+        }
     }
 
     /** {@inheritDoc} */
-    public final void initialize(final AuxiliaryElements aux) throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
 
         // Equinoctial elements
         a = aux.getSma();
@@ -158,48 +286,26 @@ class ZonalContribution implements DSSTForceModel {
         gamma = aux.getGamma();
 
         // Equinoctial coefficients
-        final double A = aux.getA();
-        final double B = aux.getB();
-        final double C = aux.getC();
+        final double AA = aux.getA();
+        final double BB = aux.getB();
+        final double CC = aux.getC();
 
         // &Chi; = 1 / B
-        X = 1. / B;
+        X = 1. / BB;
         XX = X * X;
         XXX = X * XX;
         // 1 / AB
-        ooAB = 1. / (A * B);
+        ooAB = 1. / (AA * BB);
         // B / A
-        BoA = B / A;
+        BoA = BB / AA;
         // -C / 2AB
-        mCo2AB = -C * ooAB / 2.;
+        mCo2AB = -CC * ooAB / 2.;
         // B / A(1 + B)
-        BoABpo = BoA / (1. + B);
+        BoABpo = BoA / (1. + BB);
         // -2 * a / A
-        m2aoA = -2 * a / A;
+        m2aoA = -2 * a / AA;
         // &mu; / a
         muoa = mu / a;
-
-        // Hansen coefficients
-        hansen = new HansenZonal();
-
-        // Utilities for truncation
-        final double eo2 = ecc / 2.;
-        final double x2o2 = XX / 2.;
-        final double[] eccPwr = new double[degree + 1];
-        final double[] hafPwr = new double[degree + 1];
-        final double[] chiPwr = new double[degree + 1];
-        eccPwr[0] = 1.;
-        hafPwr[0] = 1.;
-        chiPwr[0] = X;
-        for (int i = 1; i <= degree; i++) {
-            eccPwr[i] = eccPwr[i - 1] * eo2;
-            hafPwr[i] = hafPwr[i - 1] * 0.5;
-            chiPwr[i] = chiPwr[i - 1] * x2o2;
-        }
-
-        // Set the highest power of the eccentricity in the analytical power
-        // series expansion for the averaged low order zonal harmonic perturbation
-        truncation();
 
     }
 
@@ -242,83 +348,6 @@ class ZonalContribution implements DSSTForceModel {
         return new double[] {0., 0., 0., 0., 0., 0.};
     }
 
-    /** Computes the highest power of the eccentricity and the maximal degree
-     *  to appear in the truncated analytical power series expansion for the
-     *  averaged central-body zonal harmonic potential.
-     *  <p>
-     *  This method is computing the upper value for the central body geopotential
-     *  and then determine the maximal values from with upper values give geopotential
-     *  terms inferior to a defined tolerance.
-     *  </p>
-     *  Algorithm description can be found in the D.A Danielson paper at paragraph 6.2.
-     *
-     * @throws OrekitException if an error occurs in Hansen coefficient computation
-     */
-    private void truncation() throws OrekitException {
-        // Check if highest power of E has been given already set
-        if (maxEccPow == Integer.MIN_VALUE) {
-            // Did a maximum eccentricity power has been found
-            boolean maxFound = false;
-            // Maximal degree of the geopotential expansion
-            int nMax = Integer.MIN_VALUE;
-            // Maximal power of e
-            int sMax = Integer.MIN_VALUE;
-
-            // Auxiliary quantities
-            final double omgg = 1. - gamma * gamma;
-            final double ro2a = r / (2. * a);
-            double x2MuRaN = 2. * muoa * ro2a;
-            // Search for the highest power of E for which the computed value is greater than
-            // the truncation tolerance in the power series
-            // s-loop :
-            for (int s = 0; s <= degree - 2; s++) {
-                final int so2 = s / 2;
-                final double omggpso2xeccps = FastMath.pow(omgg, so2) * FastMath.pow(ecc, s);
-                // n-loop
-                for (int n = s + 2; n <= degree; n++) {
-                    // (n - s) must be even
-                    if ((n - s) % 2 == 0) {
-                        // Local values :
-                        final double factor = fact[n - s] / (fact[(n + s) / 2] * fact[(n - s) / 2]);
-                        final double k0 = hansen.getValue(-n - 1, s);
-                        // Compute Qns
-                        final double qns  = FastMath.abs(CoefficientsFactory.getQnsPolynomialValue(gamma, n, s));
-                        // Compute dQns/dGamma
-                        final double dQns = FastMath.abs(CoefficientsFactory.getQnsPolynomialValue(gamma, n, s + 1));
-                        // Compute the Qns upper bound
-                        final double coef = omgg / (n * (n + 1) - s * (s + 1));
-                        final double qnsB = FastMath.sqrt(qns * qns + coef * dQns * dQns);
-
-                        // Get the current potential upper bound for the current (n, s) couple.
-                        final double term = x2MuRaN * ro2a * FastMath.abs(Jn[n]) * factor * k0 * qnsB *
-                                            omggpso2xeccps / FastMath.pow(2, n);
-
-                        // Compare result with the tolerance parameter :
-                        if (term <= TRUNCATION_TOLERANCE) {
-                            // Stop here
-                            nMax = Math.max(nMax, n);
-                            sMax = Math.max(sMax, s);
-                            // truncature found
-                            maxFound = true;
-                            // Force a premature end loop
-                            n = degree;
-                            s = degree;
-                        }
-                    }
-                }
-                // Prepare next loop :
-                x2MuRaN = 2 * muoa * FastMath.pow(ro2a, s + 1);
-            }
-            if (maxFound) {
-                maxDegree = nMax;
-                maxEccPow = sMax;
-            } else {
-                maxDegree = degree;
-                maxEccPow = degree - 2;
-            }
-        }
-    }
-
     /** Compute the derivatives of the gravitational potential U [Eq. 3.1-(6)].
      *  <p>
      *  The result is the array
@@ -327,13 +356,15 @@ class ZonalContribution implements DSSTForceModel {
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs in hansen computation
      */
-    private double[] computeUDerivatives()
-        throws OrekitException {
+    private double[] computeUDerivatives() throws OrekitException {
 
-        // Initialize data
-        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxDegree + 1);
-        final double[][] Qns  = CoefficientsFactory.computeQnsCoefficient(gamma, maxDegree + 1);
-
+        // Hansen coefficients
+        final HansenZonal hansen = new HansenZonal();
+        // Gs and Hs coefficients
+        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, degree + 1);
+        // Qns coefficients
+        final double[][] Qns  = CoefficientsFactory.computeQnsCoefficient(gamma, degree + 1);
+        // r / a
         final double roa = r / a;
 
         // Potential derivatives
@@ -361,11 +392,11 @@ class ZonalContribution implements DSSTForceModel {
             // Kronecker symbol (2 - delta(0,s))
             final double delta0s = (s == 0) ? 1 : 2;
 
-            for (int n = s + 2; n <= maxDegree; n++) {
+            for (int n = s + 2; n <= degree; n++) {
                 // (n - s) must be even
                 if ((n - s) % 2 == 0) {
                     // Extract data from previous computation :
-                    final double jn   = Jn[n];
+                    final double jn   = -C[n][0];
                     final double vns  = Vns.get(new NSKey(n, s));
                     final double kns  = hansen.getValue(-n - 1, s);
                     final double qns  = Qns[n][s];
@@ -425,7 +456,7 @@ class ZonalContribution implements DSSTForceModel {
          *  @param s s value
          *  @return K<sub>0</sub><sup>-n-1,s</sup>
          */
-        public final double getValue(final int mnm1, final int s) {
+        public double getValue(final int mnm1, final int s) {
             if (coefficients.containsKey(new NSKey(mnm1, s))) {
                 return coefficients.get(new NSKey(mnm1, s));
             } else {
@@ -439,7 +470,7 @@ class ZonalContribution implements DSSTForceModel {
          *  @param s s value
          *  @return dK<sub>0</sub><sup>-n-1,s</sup> / d&chi;
          */
-        public final double getDerivative(final int mnm1, final int s) {
+        public double getDerivative(final int mnm1, final int s) {
             if (derivatives.containsKey(new NSKey(mnm1, s))) {
                 return derivatives.get(new NSKey(mnm1, s));
             } else {
@@ -450,14 +481,19 @@ class ZonalContribution implements DSSTForceModel {
 
         /** Kernels initialization. */
         private void initialize() {
-            coefficients.put(new NSKey(0, 0), 1.);
+            // coefficients
+//            coefficients.put(new NSKey(0, 0), 1.);
             coefficients.put(new NSKey(-1, 0), 0.);
             coefficients.put(new NSKey(-1, 1), 0.);
             coefficients.put(new NSKey(-2, 0), X);
             coefficients.put(new NSKey(-2, 1), 0.);
             coefficients.put(new NSKey(-3, 0), XXX);
             coefficients.put(new NSKey(-3, 1), 0.5 * XXX);
-            derivatives.put(new NSKey(0, 0), 0.);
+            // derivatives
+            derivatives.put(new NSKey(-1, 0), 0.);
+            derivatives.put(new NSKey(-2, 0), 1.);
+            derivatives.put(new NSKey(-2, 1), 0.);
+            derivatives.put(new NSKey(-3, 1), 1.5 * XX);
         }
 
         /** Compute the K<sub>0</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(6).

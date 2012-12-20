@@ -232,6 +232,28 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         this.satelliteRevolution = satelliteRevolution;
     }
 
+    /** Method called just before integration.
+     * <p>
+     * The default implementation does nothing, it may be specialized in subclasses.
+     * </p>
+     * @param initialState initial state
+     * @param tEnd target date at which state should be propagated
+     * @exception OrekitException if hook cannot be run
+     */
+    protected void beforeIntegration(final SpacecraftState initialState,
+                                     final AbsoluteDate tEnd)
+        throws OrekitException {
+
+        // compute common auxiliary elements
+        final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
+
+        // initialize all perturbing forces
+        for (final DSSTForceModel force : forceModels) {
+            force.initialize(aux);
+        }
+
+    }
+
     /** {@inheritDoc} */
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
                                        final OrbitType orbitType, final PositionAngle positionAngleType,
@@ -407,7 +429,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
             // initialize all perturbing forces
             for (final DSSTForceModel force : forceModels) {
-                force.initialize(aux);
+                force.initializeStep(aux);
             }
 
             Arrays.fill(yDot, 0.0);

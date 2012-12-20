@@ -23,7 +23,7 @@ import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
 
-/** Compute the &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient.
+/** Compute the &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficients from equation 2.7.1-(13).
  *
  *  @author Romain Di Costanzo
  */

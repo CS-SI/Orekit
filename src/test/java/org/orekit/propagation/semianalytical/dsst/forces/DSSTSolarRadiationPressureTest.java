@@ -63,7 +63,7 @@ public class DSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(), date, mu);
         final SpacecraftState state = new SpacecraftState(orbit);
 
-        force.initialize(new AuxiliaryElements(orbit, 1));
+        force.initializeStep(new AuxiliaryElements(orbit, 1));
 
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
@@ -95,7 +95,7 @@ public class DSSTSolarRadiationPressureTest {
                                                  FramesFactory.getEME2000(), date, mu);
         final SpacecraftState state = new SpacecraftState(orbit);
 
-        force.initialize(new AuxiliaryElements(orbit, 1));
+        force.initializeStep(new AuxiliaryElements(orbit, 1));
 
         final double[] daidt    = force.getMeanElementRate(state);
         final double[] daidtRef = getDirectMeanElementRate(state, cR, aC, sun);
