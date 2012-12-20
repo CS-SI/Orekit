@@ -126,7 +126,6 @@ public class DataProvidersManagerTest {
         Assert.assertNotNull(manager.removeProvider(providers.get(0)));
         Assert.assertEquals(0, manager.getProviders().size());
         DataProvider provider = new DataProvider() {
-            private static final long serialVersionUID = -5312255682914297696L;
             public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
                 return true;
             }
@@ -138,7 +137,6 @@ public class DataProvidersManagerTest {
         Assert.assertNotNull(manager.removeProvider(provider));
         Assert.assertEquals(1, manager.getProviders().size());
         Assert.assertNull(manager.removeProvider(new DataProvider() {
-            private static final long serialVersionUID = 6368246625696570910L;
             public boolean feed(Pattern supported, DataLoader visitor) throws OrekitException {
                 throw new OrekitException(new DummyLocalizable("oops!"));
             }
