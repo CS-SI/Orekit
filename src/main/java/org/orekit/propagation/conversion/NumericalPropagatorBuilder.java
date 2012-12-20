@@ -104,7 +104,6 @@ public class NumericalPropagatorBuilder implements PropagatorBuilder {
     }
 
     /** {@inheritDoc} */
-    @Override
     public NumericalPropagator buildPropagator(final AbsoluteDate date, final double[] parameters)
         throws OrekitException {
 
