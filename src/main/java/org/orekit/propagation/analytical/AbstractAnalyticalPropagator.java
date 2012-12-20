@@ -457,7 +457,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState getInitialState() throws OrekitException {
+        public SpacecraftState getInitialState() throws PropagationException {
             return AbstractAnalyticalPropagator.this.getInitialState();
         }
 

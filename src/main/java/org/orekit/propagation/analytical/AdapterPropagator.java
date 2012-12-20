@@ -109,7 +109,7 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() throws PropagationException {
         return reference.getInitialState();
     }
 

@@ -20,7 +20,6 @@ import java.util.Collection;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
-import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
@@ -138,9 +137,9 @@ public interface Propagator extends PVCoordinatesProvider {
 
     /** Get the propagator initial state.
      * @return initial state
-     * @exception OrekitException if state cannot be retrieved
+     * @exception PropagationException if state cannot be retrieved
      */
-    SpacecraftState getInitialState() throws OrekitException;
+    SpacecraftState getInitialState() throws PropagationException;
 
     /** Reset the propagator initial state.
      * @param state new initial state to consider

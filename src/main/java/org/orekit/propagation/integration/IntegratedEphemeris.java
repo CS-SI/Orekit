@@ -203,7 +203,7 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState getInitialState() throws OrekitException {
+    public SpacecraftState getInitialState() throws PropagationException {
         return basicPropagate(getMinDate());
     }
 
