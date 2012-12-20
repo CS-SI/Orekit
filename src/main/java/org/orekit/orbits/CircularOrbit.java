@@ -788,17 +788,21 @@ public class CircularOrbit
     /** {@inheritDoc} */
     public void addKeplerContribution(final PositionAngle type, final double gm,
                                       final double[] pDot) {
-        final double oMe2  = 1 - ex * ex - ey * ey;
-        final double n     = FastMath.sqrt(gm / a) / a;
-        final double ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
+        final double oMe2;
+        final double ksi;
+        final double n = FastMath.sqrt(gm / a) / a;
         switch (type) {
         case MEAN :
             pDot[5] += n;
             break;
         case ECCENTRIC :
+            oMe2  = 1 - ex * ex - ey * ey;
+            ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
             pDot[5] += n * ksi / oMe2;
             break;
         case TRUE :
+            oMe2  = 1 - ex * ex - ey * ey;
+            ksi   = 1 + ex * FastMath.cos(alphaV) + ey * FastMath.sin(alphaV);
             pDot[5] += n * ksi * ksi / (oMe2 * FastMath.sqrt(oMe2));
             break;
         default :

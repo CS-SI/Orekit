@@ -63,7 +63,9 @@ public abstract class AbstractPropagator implements Propagator {
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        setSlaveMode();
+        mode          = SLAVE_MODE;
+        stepHandler   = null;
+        fixedStepSize = Double.NaN;
     }
 
     /** Set a start date.

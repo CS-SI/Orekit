@@ -59,7 +59,7 @@ public class DSSTAtmosphericDragTest {
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), date, mu);
 
-        force.initialize(new AuxiliaryElements(orbit, 1));
+        force.initializeStep(new AuxiliaryElements(orbit, 1));
         final double[] daidt = force.getMeanElementRate(new SpacecraftState(orbit));
 
         final double[] daidtRef = new double[6];

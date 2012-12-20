@@ -78,7 +78,7 @@ public class UpperBounds {
         final double sininc = FastMath.max(0.03, FastMath.sqrt(sinisq));
         final double onepig = 1. + gamma * irf;
         final double sinincPowLmMEI = FastMath.pow(sininc, l - mei);
-        final double onepigPowLmMEI = FastMath.pow(onepig, l - mei);
+        final double onepigPowLmMEI = FastMath.pow(onepig, mei);
 
         // Bound for index 0
         double rBound = sinincPowLmMEI * onepigPowLmMEI;

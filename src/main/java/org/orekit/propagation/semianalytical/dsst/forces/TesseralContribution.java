@@ -24,9 +24,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
-import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
@@ -42,15 +40,22 @@ import org.orekit.propagation.semianalytical.dsst.utilities.ModifiedNewcombOpera
 import org.orekit.propagation.semianalytical.dsst.utilities.ResonantCouple;
 import org.orekit.time.AbsoluteDate;
 
-/** Tesseral contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
+/** Tesseral contribution to the {@link DSSTCentralBody central body gravitational
+ *  perturbation}.
+ *  <p>
+ *  Only resonant tesserals are considered.
+ *  </p>
  *
- *   @author Romain Di Costanzo
- *   @author Pascal Parraud
+ *  @author Romain Di Costanzo
+ *  @author Pascal Parraud
  */
 class TesseralContribution implements DSSTForceModel {
 
-    /** Truncation tolerance for orbits always in vacuum. */
-    private static final double TRUNCATION_TOLERANCE = 1e-10;
+    /** Max truncation tolerance for orbits always in vacuum. */
+//    private static final double TRUNCATION_TOLERANCE = 1e-10;
+
+    /** Effective tesseral trucation tolerance. */
+//    private double tesseralTruncationTolerance;
 
     /** Maximum resonant order. */
     private int maxResonantOrder;
@@ -76,13 +81,6 @@ class TesseralContribution implements DSSTForceModel {
     private double resonantMinPeriodInSatRev;
 
     /**
-     * Tesseral trucation tolerance. This value is used by the
-     * {@link DSSTCentralBody#tesseralTruncation(SpacecraftState)} method which determines the upper
-     * bound for geopotential summation.
-     */
-    private double tesseralTruncationTolerance;
-
-    /**
      * Highest power of the eccentricity to appear in the truncated analytical power series
      * expansion for the averaged central-body resonant Tesseral harmonic potential. The user can
      * set this value by using the {@link #setTesseralMaximumEccentricityPower(double)} method. If
@@ -102,9 +100,6 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Maximum power of the eccentricity in the Hansen coefficient kernels. */
     private int maximumHansen;
-
-    /** Hansen coefficient. */
-    private HansenTesseral hansen;
 
     /** Central-body rotation period (seconds). */
     private final double bodyPeriod;
@@ -177,9 +172,6 @@ class TesseralContribution implements DSSTForceModel {
     /** &mu; / a .*/
     private double moa;
 
-    /** &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient from equations 2.7.1 - (13). */
-    private GammaMsnCoefficients gammaMNS;
-
     /** Single constructor.
     * @param centralBodyRotationRate central body rotation rate (rad/s)
     * @param equatorialRadius equatorial radius of the central body (m)
@@ -206,7 +198,7 @@ class TesseralContribution implements DSSTForceModel {
         this.resonantMinPeriodInSec = 864000d;
         this.resonantMinPeriodInSatRev = 10d;
         this.tesseralMaxEccentricityPower = Integer.MIN_VALUE;
-        this.tesseralTruncationTolerance = Double.NEGATIVE_INFINITY;
+//        this.tesseralTruncationTolerance = Double.NEGATIVE_INFINITY;
 
         // Initialize default values
         this.maximumHansen = Integer.MIN_VALUE;
@@ -220,7 +212,37 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public final void initialize(final AuxiliaryElements aux) throws OrekitException {
+    public void initialize(final AuxiliaryElements aux)
+        throws OrekitException {
+
+        // Initializes specific parameters.
+        initializeStep(aux);
+
+        // Compute the central body resonant tesseral harmonic terms
+        computeResonantTesseral();
+
+        // Set the highest power of the eccentricity in the analytical power series expansion for
+        // the averaged high order resonant central body spherical harmonic perturbation
+        computeResonantTesseralMaxEccPower();
+
+        // Get the maximum power of E to use in Hansen coefficient Kernel expansion
+        computeHansenMaximumEccentricity();
+
+        // TODO Not sure about this part :
+        // Truncation of the central body tesseral harmonic :
+        if (resonantTesseralHarmonic.size() > 0) {
+//            truncation();
+            tessMaxN = Collections.max(resonantTesseralHarmonic).getN();
+        } else {
+            tessMaxN = degree;
+        }
+        tessMinS = tesseralMaxEccentricityPower;
+        tessMaxS = tesseralMaxEccentricityPower;
+
+    }
+
+    /** {@inheritDoc} */
+    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
 
         // Equinoctial elements
         a  = aux.getSma();
@@ -268,33 +290,6 @@ class TesseralContribution implements DSSTForceModel {
         BoABpo = BoA / (1. + B);
         // &mu / a
         moa  = mu / a;
-
-        // Compute  &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficient
-        gammaMNS = new GammaMsnCoefficients(gamma, I);
-
-        // Get the maximum power of E to use in Hansen coefficient Kernel expansion
-        computeHansenMaximumEccentricity();
-
-        // Initialize hansen coefficient
-        hansen   = new HansenTesseral(ecc, maximumHansen);
-
-        // Compute the central body resonant tesseral harmonic terms
-        computeResonantTesseral();
-
-        // Set the highest power of the eccentricity in the analytical power series expansion for
-        // the averaged high order resonant central body spherical harmonic perturbation
-        computeResonantTesseralMaxEccPower();
-
-        // TODO Not sure about this part :
-        // Truncation of the central body tesseral harmonic :
-        if (resonantTesseralHarmonic.size() > 0) {
-//            tesseralTruncation();
-            tessMaxN = Collections.max(resonantTesseralHarmonic).getN();
-        } else {
-            tessMaxN = degree;
-        }
-        tessMinS = tesseralMaxEccentricityPower;
-        tessMaxS = tesseralMaxEccentricityPower;
 
     }
 
@@ -346,7 +341,7 @@ class TesseralContribution implements DSSTForceModel {
      *
      *  @param resonantTesseral Resonant Tesseral harmonic couple term
      */
-    public final void setResonantTesseral(final List<ResonantCouple> resonantTesseral) {
+    public void setResonantTesseral(final List<ResonantCouple> resonantTesseral) {
 
         // Store local variables
         if (resonantTesseral != null) {
@@ -372,7 +367,7 @@ class TesseralContribution implements DSSTForceModel {
      *  </p>
      * @param resonantMinPeriodInSec minimum period in seconds
      */
-    public final void setResonantMinPeriodInSec(final double resonantMinPeriodInSec) {
+    public void setResonantMinPeriodInSec(final double resonantMinPeriodInSec) {
         this.resonantMinPeriodInSec = resonantMinPeriodInSec;
     }
 
@@ -383,7 +378,7 @@ class TesseralContribution implements DSSTForceModel {
      *  </p>
      * @param resonantMinPeriodInSatRev minimum period in satellite revolutions
      */
-    public final void setResonantMinPeriodInSatRev(final double resonantMinPeriodInSatRev) {
+    public void setResonantMinPeriodInSatRev(final double resonantMinPeriodInSatRev) {
         this.resonantMinPeriodInSatRev = resonantMinPeriodInSatRev;
     }
 
@@ -392,7 +387,7 @@ class TesseralContribution implements DSSTForceModel {
      *
      * @param tesseralMaxEccPower highest power of the eccentricity
      */
-    public final void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
+    public void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
         this.tesseralMaxEccentricityPower = tesseralMaxEccPower;
     }
 
@@ -502,132 +497,138 @@ class TesseralContribution implements DSSTForceModel {
      *
      *  @throws OrekitException if an error occurs when computing Hansen upper bound
      */
-    private void truncation() throws OrekitException {
+//    private void truncation() throws OrekitException {
+//
+//        // Check if a value has been entered by the user :
+//        if (tesseralTruncationTolerance == Double.NEGATIVE_INFINITY) {
+//            tesseralTruncationTolerance = TRUNCATION_TOLERANCE;
+//        }
+//
+//        // Temporary variables :
+//        int sMin = Integer.MAX_VALUE;
+//        int sMax = Integer.MIN_VALUE;
+//        int n;
+//        boolean sLoop = true;
+//
+//        // J-loop j = 0, +-1, +-2 ...
+//        // Resonant term identified :
+//        final Iterator<ResonantCouple> iterator = resonantTesseralHarmonic.iterator();
+//        // Iterative process :
+//        while (iterator.hasNext()) {
+//            final ResonantCouple resonantTesseralCouple = iterator.next();
+//            final int j = resonantTesseralCouple.getN();
+//            int m = resonantTesseralCouple.getM();
+//            int sbis = 0;
+//            // S-loop : s = j, j+-1, j+-2 ...
+//            int s = j;
+//            while (sLoop) {
+//                final int signS = (int) FastMath.pow(-1, s);
+//                sbis += s * signS;
+//                sMin = FastMath.min(sMin, sbis);
+//                sMax = FastMath.max(sMax, sbis);
+//
+//                // N-loop : n = Max(2, m, |s|), n-m even and n < N. N being the maximum
+//                // potential degree
+//                n = FastMath.max(FastMath.max(2, m), FastMath.abs(sbis));
+//
+//                if (n > degree) {
+//                    break;
+//                }
+//
+//                if ((n - sbis) % 2 == 0) {
+//
+//                    // Compute the perturbation function upper bound :
+//                    final double hansenUp = HansenTesseral.computeUpperBound(ecc, j, -n - 1, sbis);
+//
+//                    // Compute Jacobi polynomials upper bound :
+//                    final int l = (sbis <= m) ? (n - m) : n - sbis;
+//                    final int v = FastMath.abs(m - sbis);
+//                    final int w = FastMath.abs(m + sbis);
+//
+//                    final PolynomialFunction jacobi = PolynomialsUtils.createJacobiPolynomial(l, v, w);
+//                    final double jacDer = jacobi.derivative().value(gamma);
+//                    final double jacDer2 = jacDer * jacDer;
+//                    final double jacGam = jacobi.value(gamma);
+//                    final double jacGam2 = jacGam * jacGam;
+//                    final double jacFact = (1 - gamma * gamma) / (l * (v + w + l + 1));
+//                    final double jacobiUp = FastMath.sqrt(jacGam2 + jacFact * jacDer2);
+//
+//                    // Upper bound for |Cnm - iSnm|
+//                    final double cnm = Cnm[n][m];
+//                    final double cnm2 = cnm * cnm;
+//                    final double snm = Snm[n][m];
+//                    final double snm2 = snm * snm;
+//                    final double csnmUp = FastMath.sqrt(cnm2 + snm2);
+//
+//                    // Upper bound for the |Gmsj + iHmsj|
+//                    final double maxE = FastMath.pow(ecc, FastMath.abs(sbis - j));
+//                    final int pp = FastMath.abs(sbis - I * m) / 2;
+//                    final double maxG = FastMath.pow(1 - gamma * gamma, pp);
+//                    final double ghmsUp = maxE * maxG;
+//
+//                    // Upper bound for Vmns
+//                    final double vmnsUp = FastMath.abs(CoefficientsFactory.getVmns(m, n, sbis));
+//                    // Upper bound for Gammamsn
+//                    final GammaMsnCoefficients gmns = new GammaMsnCoefficients(gamma, I);
+//                    final double gmnsUp = FastMath.abs(gmns.getGammaMsn(n, sbis, m));
+//
+//                    // Upper perturbation function value
+//                    final double common = moa * FastMath.pow(ae / a, n);
+//                    final double upperValue = common * vmnsUp * gmnsUp * hansenUp * jacobiUp * csnmUp * ghmsUp;
+//
+//                    if (upperValue <= tesseralTruncationTolerance) {
+//                        // Store values :
+//                        tessMinS = FastMath.abs(sMin);
+//                        tessMaxS = sMax;
+//                        tessMaxN = n;
+//
+//                        // Force loop to stop :
+//                        sLoop = false;
+//                        m = order;
+//                        n = degree;
+//                    }
+//                }
+//                s++;
+//            }
+//        }
+//    }
 
-        // Check if a value has been entered by the user :
-        if (tesseralTruncationTolerance == Double.NEGATIVE_INFINITY) {
-            tesseralTruncationTolerance = TRUNCATION_TOLERANCE;
-        }
-
-        // Temporary variables :
-        int sMin = Integer.MAX_VALUE;
-        int sMax = Integer.MIN_VALUE;
-        int n;
-        boolean sLoop = true;
-
-        // J-loop j = 0, +-1, +-2 ...
-        // Resonant term identified :
-        final Iterator<ResonantCouple> iterator = resonantTesseralHarmonic.iterator();
-        // Iterative process :
-        while (iterator.hasNext()) {
-            final ResonantCouple resonantTesseralCouple = iterator.next();
-            final int j = resonantTesseralCouple.getN();
-            int m = resonantTesseralCouple.getM();
-            int sbis = 0;
-            // S-loop : s = j, j+-1, j+-2 ...
-            int s = j;
-            while (sLoop) {
-                final int signS = (int) FastMath.pow(-1, s);
-                sbis += s * signS;
-                sMin = FastMath.min(sMin, sbis);
-                sMax = FastMath.max(sMax, sbis);
-
-                // N-loop : n = Max(2, m, |s|), n-m even and n < N. N being the maximum
-                // potential degree
-                n = FastMath.max(FastMath.max(2, m), FastMath.abs(sbis));
-
-                if (n > degree) {
-                    break;
-                }
-
-                if ((n - sbis) % 2 == 0) {
-
-                    // Compute the perturbation function upper bound :
-                    final double hansenUp = HansenTesseral.computeUpperBound(ecc, j, -n - 1, sbis);
-
-                    // Compute Jacobi polynomials upper bound :
-                    final int l = (sbis <= m) ? (n - m) : n - sbis;
-                    final int v = FastMath.abs(m - sbis);
-                    final int w = FastMath.abs(m + sbis);
-
-                    final PolynomialFunction jacobi = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                    final double jacDer = jacobi.derivative().value(gamma);
-                    final double jacDer2 = jacDer * jacDer;
-                    final double jacGam = jacobi.value(gamma);
-                    final double jacGam2 = jacGam * jacGam;
-                    final double jacFact = (1 - gamma * gamma) / (l * (v + w + l + 1));
-                    final double jacobiUp = FastMath.sqrt(jacGam2 + jacFact * jacDer2);
-
-                    // Upper bound for |Cnm - iSnm|
-                    final double cnm = Cnm[n][m];
-                    final double cnm2 = cnm * cnm;
-                    final double snm = Snm[n][m];
-                    final double snm2 = snm * snm;
-                    final double csnmUp = FastMath.sqrt(cnm2 + snm2);
-
-                    // Upper bound for the |Gmsj + iHmsj|
-                    final double maxE = FastMath.pow(ecc, FastMath.abs(sbis - j));
-                    final int pp = FastMath.abs(sbis - I * m) / 2;
-                    final double maxG = FastMath.pow(1 - gamma * gamma, pp);
-                    final double ghmsUp = maxE * maxG;
-
-                    // Upper bound for Vmns
-                    final double vmnsUp = FastMath.abs(CoefficientsFactory.getVmns(m, n, sbis));
-                    // Upper bound for Gammamsn
-                    final GammaMsnCoefficients gmns = new GammaMsnCoefficients(gamma, I);
-                    final double gmnsUp = FastMath.abs(gmns.getGammaMsn(n, sbis, m));
-
-                    // Upper perturbation function value
-                    final double common = moa * FastMath.pow(ae / a, n);
-                    final double upperValue = common * vmnsUp * gmnsUp * hansenUp * jacobiUp * csnmUp * ghmsUp;
-
-                    if (upperValue <= tesseralTruncationTolerance) {
-                        // Store values :
-                        tessMinS = FastMath.abs(sMin);
-                        tessMaxS = sMax;
-                        tessMaxN = n;
-
-                        // Force loop to stop :
-                        sLoop = false;
-                        m = order;
-                        n = degree;
-                    }
-                }
-                s++;
-            }
-        }
-    }
-
-    /**
-     * Compute the following elements from expression 3.3 - (4).
-     * If tesseral harmonic have been identified (automatically or set by user),
-     * they are the only one to be taken in account.
-     * If no resonant term have been found, we compute non resonant tesseral term from those
-     * found by the {@link tesseralTruncation(SpacecraftState)} method.
+    /** Computes the potential U derivatives.
+     *  <p>The following elements are computed from expression 3.3 - (4).
+     *  <pre>
+     *  dU / da
+     *  dU / dh
+     *  dU / dk
+     *  dU / d&lambda;
+     *  dU / d&alpha;
+     *  dU / d&beta;
+     *  dU / d&gamma;
+     *  </pre>
+     *  </p>
+     *  If tesseral harmonic have been identified (automatically or set by user),
+     *  they are the only one to be taken in account.<br>
+     *  If no resonant term have been found, we compute non resonant tesseral term from those
+     *  found by the {@link #truncation()} method.
      *
-     * <pre>
-     * dU / da
-     * dU / dh
-     * dU / dk
-     * dU / d&lambda;
-     * dU / d&alpha;
-     * dU / d&beta;
-     * dU / d&gamma;
-     *
-     * </pre>
-     *
-     * @return potential derivatives
-     * @throws OrekitException if an error occurs in Hansen computation
+     *  @return potential derivatives
+     *  @throws OrekitException if an error occurs in Hansen computation
      */
     private double[] computeUDerivatives() throws OrekitException {
-        // Result initialization
-        double duda  = 0d;
-        double dudh  = 0d;
-        double dudk  = 0d;
-        double dudl  = 0d;
-        double dudal = 0d;
-        double dudbe = 0d;
-        double dudga = 0d;
+
+        // &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficients
+        final GammaMsnCoefficients gammaMNS = new GammaMsnCoefficients(gamma, I);
+
+        // Hansen coefficients
+        final HansenTesseral hansen = new HansenTesseral(ecc, maximumHansen);
+
+        // Potential derivatives
+        double dUda  = 0.;
+        double dUdh  = 0.;
+        double dUdk  = 0.;
+        double dUdl  = 0.;
+        double dUdAl = 0.;
+        double dUdBe = 0.;
+        double dUdGa = 0.;
 
         // Resonant term identified :
         final Iterator<ResonantCouple> iterator = resonantTesseralHarmonic.iterator();
@@ -635,47 +636,51 @@ class TesseralContribution implements DSSTForceModel {
 
         while (iterator.hasNext()) {
             final ResonantCouple resonantTesseralCouple = iterator.next();
-            final int j = resonantTesseralCouple.getN();
+            final int n = resonantTesseralCouple.getN();
             final int m = resonantTesseralCouple.getM();
 
-            final double[] potential = tesseralPotentialComputation(j, m);
-            duda  += potential[0];
-            dudh  += potential[1];
-            dudk  += potential[2];
-            dudl  += potential[3];
-            dudal += potential[4];
-            dudbe += potential[5];
-            dudga += potential[6];
+            final double[] potential = computeUnmDerivatives(n, m, gammaMNS, hansen);
+            dUda  += potential[0];
+            dUdh  += potential[1];
+            dUdk  += potential[2];
+            dUdl  += potential[3];
+            dUdAl += potential[4];
+            dUdBe += potential[5];
+            dUdGa += potential[6];
         }
 
-        duda  *= -moa / a;
-        dudh  *=  moa;
-        dudk  *=  moa;
-        dudl  *=  moa;
-        dudal *=  moa;
-        dudbe *=  moa;
-        dudga *=  moa;
+        dUda  *= -moa / a;
+        dUdh  *=  moa;
+        dUdk  *=  moa;
+        dUdl  *=  moa;
+        dUdAl *=  moa;
+        dUdBe *=  moa;
+        dUdGa *=  moa;
 
-        return new double[] {duda, dudh, dudk, dudl, dudal, dudbe, dudga};
+        return new double[] {dUda, dUdh, dUdk, dUdl, dUdAl, dUdBe, dUdGa};
     }
 
-    /** Compute potential for tesseral harmonic terms.
-     * @param j j-index
-     * @param m m-index
-     * @return potential derivatives
-     * @throws OrekitException if an error occurs in Hansen computation
+    /** Compute potential derivatives for each resonant tesseral term.
+     *  @param j degree <i>j</i> of potential
+     *  @param m order <i>m</i> of potential
+     *  @param gammaMNS &Gamma;<sub>n, s</sub> <sup>m</sup> (&gamma;) coefficients
+     *  @param hansen Hansen coefficients
+     *  @return U<sub>j,m</sub> derivatives
+     *  @throws OrekitException if an error occurs in Hansen computation
      */
-    private double[] tesseralPotentialComputation(final int j, final int m)
+    private double[] computeUnmDerivatives(final int j, final int m,
+                                           final GammaMsnCoefficients gammaMNS,
+                                           final HansenTesseral hansen)
         throws OrekitException {
 
-        // Result initialization
-        double duda  = 0d;
-        double dudh  = 0d;
-        double dudk  = 0d;
-        double dudl  = 0d;
-        double dudal = 0d;
-        double dudbe = 0d;
-        double dudga = 0d;
+        // Potential derivatives
+        double dUda  = 0.;
+        double dUdh  = 0.;
+        double dUdk  = 0.;
+        double dUdl  = 0.;
+        double dUdAl = 0.;
+        double dUdBe = 0.;
+        double dUdGa = 0.;
 
         final double ra = ae / a;
 
@@ -731,41 +736,41 @@ class TesseralContribution implements DSSTForceModel {
                 // Compute dU / da from expansion of equation (4-a)
                 double realCosFactor = (gms * cnm + hms * snm) * cosPhi;
                 double realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                duda += (n + 1) * ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
+                dUda += (n + 1) * ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
 
                 // Compute dU / dh from expansion of equation (4-b)
                 realCosFactor = (cnm * kjn_1 * dGdh + 2 * cnm * h * (gms + hms) * dkjn_1 + snm * kjn_1 * dHdh) * cosPhi;
                 realSinFactor = (-cnm * kjn_1 * dHdh + 2 * snm * h * (gms + hms) * dkjn_1 + snm * kjn_1 * dGdh) * sinPhi;
-                dudh += ran * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
+                dUdh += ran * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
 
                 // Compute dU / dk from expansion of equation (4-c)
                 realCosFactor = (cnm * kjn_1 * dGdk + 2 * cnm * k * (gms + hms) * dkjn_1 + snm * kjn_1 * dHdk) * cosPhi;
                 realSinFactor = (-cnm * kjn_1 * dHdk + 2 * snm * k * (gms + hms) * dkjn_1 + snm * kjn_1 * dGdk) * sinPhi;
-                dudk += ran * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
+                dUdk += ran * Im * vmsn * gamMsn * jacobi * (realCosFactor + realSinFactor);
 
                 // Compute dU / dLambda from expansion of equation (4-d)
                 realCosFactor = (snm * gms - hms * cnm) * cosPhi;
                 realSinFactor = (snm * hms + gms * cnm) * sinPhi;
-                dudl += j * ran * Im * vmsn * kjn_1 * jacobi * (realCosFactor - realSinFactor);
+                dUdl += j * ran * Im * vmsn * kjn_1 * jacobi * (realCosFactor - realSinFactor);
 
                 // Compute dU / alpha from expansion of equation (4-e)
                 realCosFactor = (dGdA * cnm + dHdA * snm) * cosPhi;
                 realSinFactor = (dGdA * snm - dHdA * cnm) * sinPhi;
-                dudal += ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
+                dUdAl += ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
 
                 // Compute dU / dBeta from expansion of equation (4-f)
                 realCosFactor = (dGdB * cnm + dHdB * snm) * cosPhi;
                 realSinFactor = (dGdB * snm - dHdB * cnm) * sinPhi;
-                dudbe += ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
+                dUdBe += ran * Im * vmsn * gamMsn * kjn_1 * jacobi * (realCosFactor + realSinFactor);
 
                 // Compute dU / dGamma from expansion of equation (4-g)
                 realCosFactor = (gms * cnm + hms * snm) * cosPhi;
                 realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                dudga += ran * Im * vmsn * kjn_1 * (jacobi * dGamma + gamMsn * dJacobi) * (realCosFactor + realSinFactor);
+                dUdGa += ran * Im * vmsn * kjn_1 * (jacobi * dGamma + gamMsn * dJacobi) * (realCosFactor + realSinFactor);
             }
         }
 
-        return new double[] {duda, dudh, dudk, dudl, dudal, dudbe, dudga};
+        return new double[] {dUda, dUdh, dUdk, dUdl, dUdAl, dUdBe, dUdGa};
     }
 
     /** Hansen coefficients for tesseral contribution to central body force model.
@@ -821,7 +826,7 @@ class TesseralContribution implements DSSTForceModel {
          * @return K<sub>j</sub><sup>n,s</sup>
          * @throws OrekitException if some error occurred
          */
-        public final double getValue(final int j, final int n, final int s)
+        public double getValue(final int j, final int n, final int s)
             throws OrekitException {
             if (coefficients.containsKey(new MNSKey(j, n, s))) {
                 return coefficients.get(new MNSKey(j, n, s));
@@ -838,7 +843,7 @@ class TesseralContribution implements DSSTForceModel {
          *  @return dK<sub>j</sub><sup>n,s</sup> / d&chi;
          *  @throws OrekitException if some error occurred
          */
-        public final double getDerivative(final int j, final int n, final int s)
+        public double getDerivative(final int j, final int n, final int s)
             throws OrekitException {
             if (derivatives.containsKey(new MNSKey(j, n, s))) {
                 return derivatives.get(new MNSKey(j, n, s));
@@ -975,25 +980,25 @@ class TesseralContribution implements DSSTForceModel {
          * @return upper bound
          * @throws OrekitException If an error occurs in {@link ModifiedNewcombOperators} computation
          */
-        public static double computeUpperBound(final double e, final int j, final int n, final int s)
-            throws OrekitException {
-
-            final double commonFactor = FastMath.pow(1 - e * e, n + 1.5);
-
-            // Compute maximum value for e = 0
-            final double kn0 = computeUpperBoundZeroE(j, n, s);
-
-            // Compute maximal value for e = 1
-            double kn1 = 0d;
-            for (int k = 0; k <= (-n - 2); k++) {
-                if (k >= FastMath.abs(s)) {
-                    final double binomialNK = ArithmeticUtils.binomialCoefficientDouble(-n - 2, k);
-                    final double binomialKS = ArithmeticUtils.binomialCoefficientDouble(k, (k - s) / 2);
-                    kn1 += binomialNK * (1 + FastMath.pow(-1, k + s)) * binomialKS;
-                }
-            }
-            return FastMath.abs(commonFactor * FastMath.max(kn0, kn1));
-        }
+//        public static double computeUpperBound(final double e, final int j, final int n, final int s)
+//            throws OrekitException {
+//
+//            final double commonFactor = FastMath.pow(1 - e * e, n + 1.5);
+//
+//            // Compute maximum value for e = 0
+//            final double kn0 = computeUpperBoundZeroE(j, n, s);
+//
+//            // Compute maximal value for e = 1
+//            double kn1 = 0d;
+//            for (int k = 0; k <= (-n - 2); k++) {
+//                if (k >= FastMath.abs(s)) {
+//                    final double binomialNK = ArithmeticUtils.binomialCoefficientDouble(-n - 2, k);
+//                    final double binomialKS = ArithmeticUtils.binomialCoefficientDouble(k, (k - s) / 2);
+//                    kn1 += binomialNK * (1 + FastMath.pow(-1, k + s)) * binomialKS;
+//                }
+//            }
+//            return FastMath.abs(commonFactor * FastMath.max(kn0, kn1));
+//        }
 
         /** Compute the hansen kernel enveloppe, i.e upper value for null eccentricity.
          * See equation in 6.3
@@ -1003,28 +1008,28 @@ class TesseralContribution implements DSSTForceModel {
          * @param s s
          * @return The Hansen upper value for 0 eccentricity
          */
-        private static double computeUpperBoundZeroE(final int j, final int n, final int s) {
-            double result = 0d;
-            double commonFact = 0d;
-            if (s >= j) {
-                commonFact = FastMath.pow(-0.5, s - j);
-                for (int k = 0; k <= (s - j); k++) {
-                    final double product = pochhammer(n + j + k + 2, s - j - k);
-                    final double jk = FastMath.pow(j, k);
-                    final double den = Factorial.fact(k) * Factorial.fact(s - j - k);
-                    result += product * jk / den;
-                }
-            } else {
-                commonFact = FastMath.pow(-0.5, j - s);
-                for (int k = 0; k <= (j - s); k++) {
-                    final double product = pochhammer(n - j + k + 2, j - s - k);
-                    final double jk = FastMath.pow(-j, k);
-                    final double den = Factorial.fact(k) * Factorial.fact(j - s - k);
-                    result += product * jk / den;
-                }
-            }
-            return commonFact * result;
-        }
+//        private static double computeUpperBoundZeroE(final int j, final int n, final int s) {
+//            double result = 0d;
+//            double commonFact = 0d;
+//            if (s >= j) {
+//                commonFact = FastMath.pow(-0.5, s - j);
+//                for (int k = 0; k <= (s - j); k++) {
+//                    final double product = pochhammer(n + j + k + 2, s - j - k);
+//                    final double jk = FastMath.pow(j, k);
+//                    final double den = Factorial.fact(k) * Factorial.fact(s - j - k);
+//                    result += product * jk / den;
+//                }
+//            } else {
+//                commonFact = FastMath.pow(-0.5, j - s);
+//                for (int k = 0; k <= (j - s); k++) {
+//                    final double product = pochhammer(n - j + k + 2, j - s - k);
+//                    final double jk = FastMath.pow(-j, k);
+//                    final double den = Factorial.fact(k) * Factorial.fact(j - s - k);
+//                    result += product * jk / den;
+//                }
+//            }
+//            return commonFact * result;
+//        }
 
         /** Compute the Pochhammer product.
          *  <pre>
@@ -1035,73 +1040,73 @@ class TesseralContribution implements DSSTForceModel {
          *  @param k k
          *  @return pochhammer product
          */
-        private static double pochhammer(final int alpha, final int k) {
-
-            if (k == 0) {
-                return 1;
-            } else if ((alpha + k - 1) == 0) {
-                return 0;
-            }
-            // Pochhammer product :
-            double product = alpha;
-            for (int sum = 0; sum <= (alpha + k - 1); sum++) {
-                product *= alpha + sum;
-            }
-            return product;
-        }
+//        private static double pochhammer(final int alpha, final int k) {
+//
+//            if (k == 0) {
+//                return 1;
+//            } else if ((alpha + k - 1) == 0) {
+//                return 0;
+//            }
+//            // Pochhammer product :
+//            double product = alpha;
+//            for (int sum = 0; sum <= (alpha + k - 1); sum++) {
+//                product *= alpha + sum;
+//            }
+//            return product;
+//        }
 
     }
 
     /** This class computes factorials for DSST purpose. */
-    private static class Factorial {
-
-        /** Cache. */
-        private static ArrayList<Double> TABLE = new ArrayList<Double>(30);
-
-        static {
-            // Initialize the first elements
-            TABLE.add(1d); // 0!
-            TABLE.add(1d); // 1!
-            TABLE.add(2d); // 2!
-            TABLE.add(6d); // 3!
-            TABLE.add(24d); // 4!
-            TABLE.add(120d); // 5!
-            TABLE.add(720d); // 6!
-            TABLE.add(5040d); // 7!
-            TABLE.add(40320d); // 8!
-            TABLE.add(362880d); // 9!
-            TABLE.add(3628800d); // 10!
-            TABLE.add(39916800d); // 11!
-            TABLE.add(479001600d); // 12!
-            TABLE.add(6227020800d); // 13!
-            TABLE.add(87178291200d); // 14!
-            TABLE.add(1307674368000d); // 15!
-            TABLE.add(20922789888000d); // 16!
-            TABLE.add(355687428096000d); // 17!
-            TABLE.add(6402373705728000d); // 18!
-            TABLE.add(121645100408832000d); // 19!
-            TABLE.add(2432902008176640000d); // 20!
-        }
-
-        /** Private constructor, as class is a utility.
-         */
-        private Factorial() {
-        }
-
-        /** Factorial method, using {@link Double} cached in the ArrayList.
-         *  @param n integer for which we want factorial
-         *  @return n!
-         */
-        public static double fact(final int n) {
-            if (n < 0) {
-                throw OrekitException.createIllegalArgumentException(LocalizedFormats.FACTORIAL_NEGATIVE_PARAMETER, n);
-            }
-            for (int size = TABLE.size(); size <= n; size++) {
-                TABLE.add(TABLE.get(size - 1) * size);
-            }
-            return TABLE.get(n);
-        }
-
-    }
+//    private static class Factorial {
+//
+//        /** Cache. */
+//        private static ArrayList<Double> TABLE = new ArrayList<Double>(30);
+//
+//        static {
+//            // Initialize the first elements
+//            TABLE.add(1d); // 0!
+//            TABLE.add(1d); // 1!
+//            TABLE.add(2d); // 2!
+//            TABLE.add(6d); // 3!
+//            TABLE.add(24d); // 4!
+//            TABLE.add(120d); // 5!
+//            TABLE.add(720d); // 6!
+//            TABLE.add(5040d); // 7!
+//            TABLE.add(40320d); // 8!
+//            TABLE.add(362880d); // 9!
+//            TABLE.add(3628800d); // 10!
+//            TABLE.add(39916800d); // 11!
+//            TABLE.add(479001600d); // 12!
+//            TABLE.add(6227020800d); // 13!
+//            TABLE.add(87178291200d); // 14!
+//            TABLE.add(1307674368000d); // 15!
+//            TABLE.add(20922789888000d); // 16!
+//            TABLE.add(355687428096000d); // 17!
+//            TABLE.add(6402373705728000d); // 18!
+//            TABLE.add(121645100408832000d); // 19!
+//            TABLE.add(2432902008176640000d); // 20!
+//        }
+//
+//        /** Private constructor, as class is a utility.
+//         */
+//        private Factorial() {
+//        }
+//
+//        /** Factorial method, using {@link Double} cached in the ArrayList.
+//         *  @param n integer for which we want factorial
+//         *  @return n!
+//         */
+//        public static double fact(final int n) {
+//            if (n < 0) {
+//                throw OrekitException.createIllegalArgumentException(LocalizedFormats.FACTORIAL_NEGATIVE_PARAMETER, n);
+//            }
+//            for (int size = TABLE.size(); size <= n; size++) {
+//                TABLE.add(TABLE.get(size - 1) * size);
+//            }
+//            return TABLE.get(n);
+//        }
+//
+//    }
 
 }

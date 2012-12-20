@@ -203,12 +203,13 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             }
             // Must be an entry and an exit or none
             if (!(entryFound == exitFound)) {
-                // TODO problem with exception : entry or exit found but not both ! In this case,
-                // consider there is no eclipse...
-                // throw new OrekitException(OrekitMessages.DSST_SPR_SHADOW_INCONSISTENT,
-                // entryFound, exitFound);
+                // entry or exit found but not both !
+                // In this case, consider there is no eclipse...
                 ll[0] = -FastMath.PI;
                 ll[1] = FastMath.PI;
+                // or ...
+                // throw new OrekitException(OrekitMessages.DSST_SPR_SHADOW_INCONSISTENT,
+                //                          entryFound, exitFound);
             }
             // Quadrature between L at exit and L at entry so Lexit must be lower than Lentry
             if (ll[0] > ll[1]) {
@@ -226,7 +227,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** Get the central body equatorial radius.
      *  @return central body equatorial radius (m)
      */
-    public final double getEquatorialRadius() {
+    public double getEquatorialRadius() {
         return ae;
     }
 

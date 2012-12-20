@@ -109,7 +109,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
     private int    maxAR3Pow;
 
     /** Maw power for e in the serie expansion. */
-    private int    maxECCPow;
+    private int    maxEccPow;
 
     /** Complete constructor.
      *  @param body the 3rd body to consider
@@ -120,7 +120,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         this.gm   = body.getGM();
 
         this.maxAR3Pow = Integer.MIN_VALUE;
-        this.maxECCPow = Integer.MIN_VALUE;
+        this.maxEccPow = Integer.MIN_VALUE;
 
         this.Vns = CoefficientsFactory.computeVnsCoefficient(MAX_POWER);
 
@@ -136,12 +136,91 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** Get third body.
      *  @return third body
      */
-    public final CelestialBody getBody() {
+    public CelestialBody getBody() {
         return body;
     }
 
+    /** Computes the highest power of the eccentricity and the highest power
+     *  of a/R3 to appear in the truncated analytical power series expansion.
+     *  <p>
+     *  This method computes the upper value for the 3rd body potential and
+     *  determines the maximal values from wich upper values give potential
+     *  terms less than a defined tolerance.
+     *  </p>
+     *
+     *  @param aux auxiliary elements related to the current orbit
+     *  @throws OrekitException if some specific error occurs
+     */
+    public void initialize(final AuxiliaryElements aux)
+        throws OrekitException {
+
+        // Initializes specific parameters.
+        initializeStep(aux);
+
+        // Truncation tolerance.
+        final double aor = a / R3;
+        final double tol = ( aor > .3 || (aor > .15  && ecc > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
+
+        // Utilities for truncation
+        // Set a lower bound for eccentricity
+        final double eo2  = FastMath.max(0.0025, ecc / 2.);
+        final double x2o2 = XX / 2.;
+        final double[] eccPwr = new double[MAX_POWER];
+        final double[] chiPwr = new double[MAX_POWER];
+        eccPwr[0] = 1.;
+        chiPwr[0] = X;
+        for (int i = 1; i < MAX_POWER; i++) {
+            eccPwr[i] = eccPwr[i - 1] * eo2;
+            chiPwr[i] = chiPwr[i - 1] * x2o2;
+        }
+
+        // Auxiliary quantities.
+        final double ao2rxx = aor / (2. * XX);
+        double xmuarn       = ao2rxx * ao2rxx * gm / (X * R3);
+        double term         = 0.;
+
+        // Compute max power for a/R3 and e.
+        maxAR3Pow = 2;
+        maxEccPow = 0;
+        int n     = 2;
+        int m     = 2;
+        int nsmd2 = 0;
+
+        do {
+            // Upper bound for Tnm.
+            term =  xmuarn *
+                   (fact[n + m] / (fact[nsmd2] * fact[nsmd2 + m])) *
+                   (fact[n + m + 1] / (fact[m] * fact[n + 1])) *
+                   (fact[n - m + 1] / fact[n + 1]) *
+                   eccPwr[m] * UpperBounds.getDnl(XX, chiPwr[m], n + 2, m);
+
+            if (term < tol) {
+                if (m == 0) {
+                    break;
+                } else if (m < 2) {
+                    xmuarn *= ao2rxx;
+                    m = 0;
+                    n++;
+                    nsmd2++;
+                } else {
+                    m -= 2;
+                    nsmd2++;
+                }
+            } else {
+                maxAR3Pow = n;
+                maxEccPow = FastMath.max(m, maxEccPow);
+                xmuarn *= ao2rxx;
+                m++;
+                n++;
+            }
+        } while (n < MAX_POWER);
+
+        maxEccPow = FastMath.min(maxAR3Pow, maxEccPow);
+
+    }
+
     /** {@inheritDoc} */
-    public void initialize(final AuxiliaryElements aux) throws OrekitException {
+    public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
 
         // Equinoctial elements
         a = aux.getSma();
@@ -186,11 +265,6 @@ public class DSSTThirdBody  implements DSSTForceModel {
         // B / A(1 + B)
         BoABpo = BoA / (1. + B);
 
-        if (maxAR3Pow == Integer.MIN_VALUE) {
-            // Set the highest powers of e and a/R3 in the analytical power
-            // series expansion for 3rd body potential derivatives
-            truncation();
-        }
     }
 
     /** {@inheritDoc} */
@@ -232,76 +306,6 @@ public class DSSTThirdBody  implements DSSTForceModel {
         return new double[] {0., 0., 0., 0., 0., 0.};
     }
 
-    /** Computes the highest power of the eccentricity and the highest power
-     *  of a/R3 to appear in the truncated analytical power series expansion.
-     *  <p>
-     *  This method computes the upper value for the 3rd body potential and
-     *  determines the maximal values from wich upper values give potential
-     *  terms inferior to a defined tolerance.
-     *  </p>
-     */
-    private void truncation() {
-        // Truncation tolerance.
-        final double aor = a / R3;
-        final double tol = ( aor > .3 || (aor > .15  && ecc > .25) ) ? BIG_TRUNCATION_TOLERANCE : SMALL_TRUNCATION_TOLERANCE;
-
-        // Utilities for truncation
-        // Set a lower bound for eccentricity
-        final double eo2  = FastMath.max(0.0025, ecc / 2.);
-        final double x2o2 = XX / 2.;
-        final double[] eccPwr = new double[MAX_POWER];
-        final double[] chiPwr = new double[MAX_POWER];
-        eccPwr[0] = 1.;
-        chiPwr[0] = X;
-        for (int i = 1; i < MAX_POWER; i++) {
-            eccPwr[i] = eccPwr[i - 1] * eo2;
-            chiPwr[i] = chiPwr[i - 1] * x2o2;
-        }
-
-        // Auxiliary quantities.
-        final double ao2rxx = aor / (2. * XX);
-        double xmuarn       = ao2rxx * ao2rxx * gm / (X * R3);
-        double term         = 0.;
-
-        // Compute max power for a/R3 and e.
-        maxAR3Pow = 2;
-        maxECCPow = 0;
-        int n     = 2;
-        int m     = 2;
-        int nsmd2 = 0;
-
-        do {
-            // Upper bound for Tnm.
-            term =  xmuarn *
-                   (fact[n + m] / (fact[nsmd2] * fact[nsmd2 + m])) *
-                   (fact[n + m + 1] / (fact[m] * fact[n + 1])) *
-                   (fact[n - m + 1] / fact[n + 1]) *
-                   eccPwr[m] * UpperBounds.getDnl(XX, chiPwr[m], n + 2, m);
-
-            if (term < tol) {
-                if (m == 0) {
-                    break;
-                } else if (m < 2) {
-                    xmuarn *= ao2rxx;
-                    m = 0;
-                    n++;
-                    nsmd2++;
-                } else {
-                    m -= 2;
-                    nsmd2++;
-                }
-            } else {
-                maxAR3Pow = n;
-                maxECCPow = (maxECCPow < m) ? m : maxECCPow;
-                xmuarn *= ao2rxx;
-                m++;
-                n++;
-            }
-        } while (n < MAX_POWER);
-
-        maxECCPow = (maxECCPow > maxAR3Pow) ? maxAR3Pow : maxECCPow;
-    }
-
     /** Compute potential derivatives.
      *  @return derivatives of the potential with respect to orbital parameters
      *  @throws OrekitException if Hansen coefficients cannot be computed
@@ -310,8 +314,8 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         // Hansen coefficients
         final HansenThirdBody hansen = new HansenThirdBody();
-        // Gs coefficients
-        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxECCPow);
+        // Gs and Hs coefficients
+        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
         // Qns coefficients
         final double[][] Qns = CoefficientsFactory.computeQnsCoefficient(gamma, maxAR3Pow + 1);
         // mu3 / R3
@@ -327,7 +331,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         double dUdBe = 0.;
         double dUdGa = 0.;
 
-        for (int s = 0; s <= maxECCPow; s++) {
+        for (int s = 0; s <= maxEccPow; s++) {
             // Get the current Gs and Hs coefficient
             final double gs = GsHs[0][s];
 
@@ -412,7 +416,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          *  @param s s value
          *  @return K<sub>0</sub><sup>n,s</sup>
          */
-        public final double getValue(final int n, final int s) {
+        public double getValue(final int n, final int s) {
             if (coefficients.containsKey(new NSKey(n, s))) {
                 return coefficients.get(new NSKey(n, s));
             } else {
@@ -426,7 +430,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          *  @param s s value
          *  @return dK<sub>j</sub><sup>n,s</sup> / d&x;
          */
-        public final double getDerivative(final int n, final int s) {
+        public double getDerivative(final int n, final int s) {
             if (derivatives.containsKey(new NSKey(n, s))) {
                 return derivatives.get(new NSKey(n, s));
             } else {

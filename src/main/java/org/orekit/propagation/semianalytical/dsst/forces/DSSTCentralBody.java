@@ -35,27 +35,15 @@ import org.orekit.time.AbsoluteDate;
  *  </ol>
  *  </p>
  *
- *   @author Romain Di Costanzo
  *   @author Pascal Parraud
  */
 public class DSSTCentralBody implements DSSTForceModel {
-
-    /** Equatorial radius of the Central Body. */
-    private final double     r;
-
-    /** Un-normalized coefficients array (cosine part). */
-    private final double[][] C;
-
-    /** Un-normalized coefficients array (sine part). */
-    private final double[][] S;
 
     /** Zonal harmonics contribution. */
     private final ZonalContribution    zonal;
 
     /** Tesseral harmonics contribution. */
     private final TesseralContribution tesseral;
-
-    // Internal variables.
 
     /** DSST Central body constructor.
      * @param centralBodyRotationRate central body rotation rate (rad/s)
@@ -82,18 +70,8 @@ public class DSSTCentralBody implements DSSTForceModel {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD, order, degree);
         }
 
-        this.r = equatorialRadius;
-        this.C = Cnm.clone();
-        this.S = Snm.clone();
-
-        // Initialize the Jn coefficient for zonal harmonic series expansion
-        final double[] Jn = new double[degree + 1];
-        for (int i = 1; i <= degree; i++) {
-            Jn[i] = -Cnm[i][0];
-        }
-
         // Zonal harmonics contribution
-        this.zonal = new ZonalContribution(equatorialRadius, mu, Jn);
+        this.zonal = new ZonalContribution(equatorialRadius, mu, Cnm, Snm);
 
         // Tesseral harmonics contribution (only if order > 0)
         this.tesseral = (order == 0) ? null : new TesseralContribution(centralBodyRotationRate, equatorialRadius, mu, Cnm, Snm);
@@ -101,7 +79,7 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public final void initialize(final AuxiliaryElements aux)
+    public void initialize(final AuxiliaryElements aux)
         throws OrekitException {
 
         // Initialize zonal contribution
@@ -114,7 +92,20 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public final double[] getMeanElementRate(final SpacecraftState spacecraftState)
+    public void initializeStep(final AuxiliaryElements aux)
+        throws OrekitException {
+
+        // Initialize zonal contribution
+        zonal.initializeStep(aux);
+
+        // Initialize tesseral contribution if needed
+        if (tesseral != null) {
+            tesseral.initializeStep(aux);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public double[] getMeanElementRate(final SpacecraftState spacecraftState)
         throws OrekitException {
 
         // Get zonal harmonics contribution to mean elements
@@ -132,7 +123,7 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public final double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
+    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
         throws OrekitException {
 
         // Get zonal harmonics contribution to short periodic variations
@@ -159,7 +150,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      *
      * @param resonantTesseral Resonant Tesseral harmonic couple term
      */
-    public final void setResonantTesseral(final List<ResonantCouple> resonantTesseral) {
+    public void setResonantTesseral(final List<ResonantCouple> resonantTesseral) {
         if (tesseral != null) {
             tesseral.setResonantTesseral(resonantTesseral);
         }
@@ -172,7 +163,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      *  </p>
      * @param resonantMinPeriodInSec minimum period in seconds
      */
-    public final void setResonantMinPeriodInSec(final double resonantMinPeriodInSec) {
+    public void setResonantMinPeriodInSec(final double resonantMinPeriodInSec) {
         if (tesseral != null) {
             tesseral.setResonantMinPeriodInSec(resonantMinPeriodInSec);
         }
@@ -185,7 +176,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      *  </p>
      * @param resonantMinPeriodInSatRev minimum period in satellite revolutions
      */
-    public final void setResonantMinPeriodInSatRev(final double resonantMinPeriodInSatRev) {
+    public void setResonantMinPeriodInSatRev(final double resonantMinPeriodInSatRev) {
         if (tesseral != null) {
             tesseral.setResonantMinPeriodInSatRev(resonantMinPeriodInSatRev);
         }
@@ -196,7 +187,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      *
      * @param tesseralMaxEccPower highest power of the eccentricity
      */
-    public final void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
+    public void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
         if (tesseral != null) {
             tesseral.setTesseralMaximumEccentricityPower(tesseralMaxEccPower);
         }
@@ -205,22 +196,22 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** Get the equatorial radius of the central body.
      *  @return the equatorial radius (m)
      */
-    public final double getEquatorialRadius() {
-        return r;
+    public double getEquatorialRadius() {
+        return zonal.getEquatorialRadius();
     }
 
     /** Get the un-normalized coefficients array of the spherical harmonics (cosine part).
      *  @return Cnm
      */
-    public final double[][] getCnm() {
-        return C.clone();
+    public double[][] getCnm() {
+        return zonal.getCnm();
     }
 
     /** Get the un-normalized coefficients array of the spherical harmonics (sine part).
      *  @return Snm
      */
-    public final double[][] getSnm() {
-        return S.clone();
+    public double[][] getSnm() {
+        return zonal.getSnm();
     }
 
 }
