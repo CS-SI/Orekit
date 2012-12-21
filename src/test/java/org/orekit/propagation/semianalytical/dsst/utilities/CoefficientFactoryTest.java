@@ -1,7 +1,10 @@
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.util.ArithmeticUtils;
@@ -14,14 +17,17 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
 
 public class CoefficientFactoryTest {
 
-    private static final double eps0  = 0d;
-    private static final double eps11 = 1e-11;
+    private static final double eps0  = 0.;
+    private static final double eps10 = 1e-10;
     private static final double eps12 = 1e-12;
 
+    /** Map of the Qns derivatives, for each (n, s) couple. */
+    private static Map<NSKey, PolynomialFunction> QNS_MAP = new TreeMap<NSKey, PolynomialFunction>();
+
     @Test
-    public void VnsCoefficientComputationTest() {
+    public void testVns() {
         final int order = 100;
-        TreeMap<NSKey, Double> Vns = CoefficientsFactory.computeVnsCoefficient(order);
+        TreeMap<NSKey, Double> Vns = CoefficientsFactory.computeVns(order);
 
         // Odd terms are null
         for (int i = 0; i < order; i++) {
@@ -54,7 +60,7 @@ public class CoefficientFactoryTest {
      * current element
      */
     @Test
-    public void VmnsTestFromTwoMethods() throws OrekitException {
+    public void testVmns() throws OrekitException {
         Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
         Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
         Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
@@ -66,7 +72,7 @@ public class CoefficientFactoryTest {
 
     /** Error if m > n */
     @Test(expected = OrekitException.class)
-    public void VmnsErrorCallingSequenceWrong_M_S_Test() throws OrekitException {
+    public void testVmnsError() throws OrekitException {
         // if m > n
         CoefficientsFactory.getVmns(3, 2, 1);
     }
@@ -76,17 +82,20 @@ public class CoefficientFactoryTest {
      * results, we assume them to be consistent.
      */
     @Test
-    public void testQNS() {
-        Assert.assertEquals(1., CoefficientsFactory.getQnsPolynomialValue(0, 0, 0), 0.);
+    public void testQns() {
+        Assert.assertEquals(1., getQnsPolynomialValue(0, 0, 0), 0.);
         // Method comparison :
-        final int order = 10;
+        final int nmax = 10;
+        final int smax = 10;
         final MersenneTwister random = new MersenneTwister(123456789);
         for (int g = 0; g < 1000; g++) {
             final double gamma = random.nextDouble();
-            double[][] qns = CoefficientsFactory.computeQnsCoefficient(gamma, order);
-            for (int n = 0; n < order; n++) {
-                for (int s = 0; s <= n; s++) {
-                    Assert.assertEquals(qns[n][s], CoefficientsFactory.getQnsPolynomialValue(gamma, n, s), Math.abs(eps11 * qns[n][s]));
+            double[][] qns = CoefficientsFactory.computeQns(gamma, nmax, smax);
+            for (int n = 0; n <= nmax; n++) {
+                final int sdim = FastMath.min(smax + 2, n);
+                for (int s = 0; s <= sdim; s++) {
+                    final double qp = getQnsPolynomialValue(gamma, n, s);
+                    Assert.assertEquals(qns[n][s], qp, Math.abs(eps10 * qns[n][s]));
                 }
             }
         }
@@ -96,7 +105,7 @@ public class CoefficientFactoryTest {
      *  If they give same results, we assume them to be consistent.
      */
     @Test
-    public void GsHsComputationTest() {
+    public void testGsHs() {
         final int s = 50;
         final MersenneTwister random = new MersenneTwister(123456789);
         for (int i = 0; i < 10; i++) {
@@ -118,7 +127,7 @@ public class CoefficientFactoryTest {
      * 
      * @throws OrekitException
      */
-    public static double getVmns2(final int m,
+    private static double getVmns2(final int m,
                                   final int n,
                                   final int s) throws OrekitException {
         double vmsn = 0d;
@@ -129,6 +138,31 @@ public class CoefficientFactoryTest {
             vmsn = num / den;
         }
         return vmsn;
+    }
+
+    /** Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma; This method is using the
+     * Legendre polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method
+     * allows to store the polynomials value in a static map. If the Q<sub>ns</sub> had been
+     * computed already, they just will be evaluated at &gamma;
+     *
+     * @param gamma &gamma; angle for which Q<sub>ns</sub> is evaluated
+     * @param n n value
+     * @param s s value
+     * @return the polynomial value evaluated at &gamma;
+     */
+    private static double getQnsPolynomialValue(final double gamma, final int n, final int s) {
+        PolynomialFunction derivative;
+        if (QNS_MAP.containsKey(new NSKey(n, s))) {
+            derivative = QNS_MAP.get(new NSKey(n, s));
+        } else {
+            final PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
+            derivative = legendre;
+            for (int i = 0; i < s; i++) {
+                derivative = (PolynomialFunction) derivative.derivative();
+            }
+            QNS_MAP.put(new NSKey(n, s), derivative);
+        }
+        return derivative.value(gamma);
     }
 
     /** Compute directly G<sub>s</sub> and H<sub>s</sub> coefficients from equation 3.1-(4).
