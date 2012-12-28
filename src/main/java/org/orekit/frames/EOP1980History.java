@@ -16,9 +16,9 @@
  */
 package org.orekit.frames;
 
+import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.HermiteInterpolator;
 
 /** This class holds Earth Orientation Parameters (IAU1980) data throughout a large time range.
  * @author Pascal Parraud

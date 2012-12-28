@@ -19,6 +19,8 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.Collection;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.time.AbsoluteDate;
@@ -220,11 +222,16 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         }
 
         // interpolate
-        final double[] p = interpolator.value(0);
-        final double[] v = interpolator.derivative(0);
+        final DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
+        final DerivativeStructure[] p  = interpolator.value(zero);
 
         // build a new interpolated instance
-        return new PVCoordinates(new Vector3D(p[0], p[1], p[2]), new Vector3D(v[0], v[1], v[2]));
+        return new PVCoordinates(new Vector3D(p[0].getValue(),
+                                              p[1].getValue(),
+                                              p[2].getValue()),
+                                 new Vector3D(p[0].getPartialDerivative(1),
+                                              p[1].getPartialDerivative(1),
+                                              p[2].getPartialDerivative(1)));
 
     }
 

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
@@ -30,7 +31,6 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
-import org.orekit.utils.HermiteInterpolator;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.TimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
