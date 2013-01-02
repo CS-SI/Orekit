@@ -138,7 +138,7 @@ public class NumericalPropagatorTest {
     @Test
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
                                           provider.getC(5, 5, true), provider.getS(5, 5, true));
@@ -201,7 +201,7 @@ public class NumericalPropagatorTest {
                                                    FramesFactory.getEME2000(), initDate,
                                                    mu));
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
                                           provider.getC(5, 5, true), provider.getS(5, 5, true));

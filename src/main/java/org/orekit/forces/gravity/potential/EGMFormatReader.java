@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -68,38 +69,41 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
                 final int i = Integer.parseInt(tab[0]);
                 final int j = Integer.parseInt(tab[1]);
-                final double c = Double.parseDouble(tab[2]);
-                final double s = Double.parseDouble(tab[3]);
+                if (i <= maxReadDegree && j <= maxReadOrder) {
 
-                // extend the cl array if needed
-                final int ck = cl.size();
-                for (int k = ck; k <= i; ++k) {
-                    final double[] d = new double[k + 1];
-                    if (!missingCoefficientsAllowed()) {
-                        Arrays.fill(d, Double.NaN);
-                    } else {
-                        if (k == 0) {
-                            d[0] = 1.0;
+                    final double c = Double.parseDouble(tab[2]);
+                    final double s = Double.parseDouble(tab[3]);
+
+                    // extend the cl array if needed
+                    final int ck = cl.size();
+                    for (int k = ck; k <= i; ++k) {
+                        final double[] d = new double[FastMath.min(maxReadOrder, k) + 1];
+                        if (!missingCoefficientsAllowed()) {
+                            Arrays.fill(d, Double.NaN);
+                        } else {
+                            if (k == 0) {
+                                d[0] = 1.0;
+                            }
                         }
+                        cl.add(d);
                     }
-                    cl.add(new double[k + 1]);
-                }
-                final double[] cli = cl.get(i);
+                    final double[] cli = cl.get(i);
 
-                // extend the sl array if needed
-                final int sk = sl.size();
-                for (int k = sk; k <= i; ++k) {
-                    final double[] d = new double[k + 1];
-                    if (!missingCoefficientsAllowed()) {
-                        Arrays.fill(d, Double.NaN);
+                    // extend the sl array if needed
+                    final int sk = sl.size();
+                    for (int k = sk; k <= i; ++k) {
+                        final double[] d = new double[FastMath.min(maxReadOrder, k) + 1];
+                        if (!missingCoefficientsAllowed()) {
+                            Arrays.fill(d, Double.NaN);
+                        }
+                        sl.add(d);
                     }
-                    sl.add(new double[k + 1]);
-                }
-                final double[] sli = sl.get(i);
+                    final double[] sli = sl.get(i);
 
-                // store the terms
-                cli[j] = c;
-                sli[j] = s;
+                    // store the terms
+                    cli[j] = c;
+                    sli[j] = s;
+                }
 
             }
         }

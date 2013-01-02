@@ -76,7 +76,7 @@ public class Phasing {
     private final GTODProvider gtod;
 
     /** Gravity field. */
-    private final PotentialCoefficientsProvider gravityField;
+    private PotentialCoefficientsProvider gravityField;
 
     /** Earth model. */
     private final BodyShape earth;
@@ -149,7 +149,6 @@ public class Phasing {
     public Phasing() throws IOException, ParseException, OrekitException {
         Frame gtodFrame = FramesFactory.getGTOD(false);
         gtod         = (GTODProvider) gtodFrame.getTransformProvider();
-        gravityField = GravityFieldFactory.getPotentialProvider();
         earth        = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                             Constants.WGS84_EARTH_FLATTENING,
                                             gtodFrame);
@@ -188,6 +187,8 @@ public class Phasing {
             parser.getBoolean(ParameterKey.GRID_ASCENDING_4),
             parser.getBoolean(ParameterKey.GRID_ASCENDING_5)
         };
+
+        gravityField = GravityFieldFactory.getPotentialProvider(degree, order);
 
         // initial guess for orbit
         CircularOrbit orbit = guessOrbit(date, FramesFactory.getEME2000(), nbOrbits, nbDays,

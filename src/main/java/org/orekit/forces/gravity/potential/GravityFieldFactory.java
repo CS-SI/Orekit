@@ -104,13 +104,16 @@ public class GravityFieldFactory {
      * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
      * method will be called automatically.
      * </p>
+     * @param maxReadDegree maximal degree to read
+     * @param maxReadOrder maximal order to read
      * @return a gravity field coefficients provider containing already loaded data
      * @exception IOException if data can't be read
      * @exception ParseException if data can't be parsed
      * @exception OrekitException if some data is missing
      * or if some loader specific error occurs
      */
-    public static PotentialCoefficientsProvider getPotentialProvider()
+    public static PotentialCoefficientsProvider getPotentialProvider(final int maxReadDegree,
+                                                                     final int maxReadOrder)
         throws IOException, ParseException, OrekitException {
 
         synchronized (READERS) {
@@ -119,8 +122,10 @@ public class GravityFieldFactory {
                 addDefaultPotentialCoefficientsReaders();
             }
 
-            // test the available READERS
+            // test the available readers
             for (final PotentialCoefficientsReader reader : READERS) {
+                reader.setMaxReadDegree(maxReadDegree);
+                reader.setMaxReadOrder(maxReadOrder);
                 DataProvidersManager.getInstance().feed(reader.getSupportedNames(), reader);
                 if (!reader.stillAcceptsData()) {
                     return reader;

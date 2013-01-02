@@ -142,7 +142,7 @@ public class NumericalConverterTest {
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(2, 0);
         gravity = new CunninghamAttractionModel(FramesFactory.getITRF2005(),
                                                 provider.getAe(),
                                                 provider.getMu(),

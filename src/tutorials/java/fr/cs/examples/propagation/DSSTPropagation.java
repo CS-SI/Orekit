@@ -183,7 +183,8 @@ public class DSSTPropagation {
         final TimeScale utc = TimeScalesFactory.getUTC();
 
         // Potential coefficients provider
-        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        final PotentialCoefficientsProvider provider =
+                GravityFieldFactory.getPotentialProvider(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
         // Central body attraction coefficient (m³/s²)
         final double mu = provider.getMu();

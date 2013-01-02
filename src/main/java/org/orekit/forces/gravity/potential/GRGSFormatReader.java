@@ -122,12 +122,13 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                 okConstants = true;
             } else if (lineNumber == 5) {
                 // header line defining max degree
-                final int maxDegree = Integer.parseInt(matcher.group(1));
+                final int maxDegree = FastMath.min(maxReadDegree, Integer.parseInt(matcher.group(1)));
                 normalizedC = new double[maxDegree + 1][];
                 normalizedS = new double[maxDegree + 1][];
                 for (int k = 0; k < normalizedC.length; k++) {
-                    normalizedC[k] = new double[k + 1];
-                    normalizedS[k] = new double[k + 1];
+                    final int maxOrder = FastMath.min(maxReadOrder, k);
+                    normalizedC[k] = new double[maxOrder + 1];
+                    normalizedS[k] = new double[maxOrder + 1];
                     if (!missingCoefficientsAllowed()) {
                         Arrays.fill(normalizedC[k], Double.NaN);
                         Arrays.fill(normalizedS[k], Double.NaN);
@@ -144,9 +145,11 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
                     // non-dot data line
                     final int i = Integer.parseInt(matcher.group(1).trim());
                     final int j = Integer.parseInt(matcher.group(2).trim());
-                    normalizedC[i][j] = Double.parseDouble(matcher.group(4).replace('D', 'E'));
-                    normalizedS[i][j] = Double.parseDouble(matcher.group(5).replace('D', 'E'));
-                    okCoeffs = true;
+                    if (i <= maxReadDegree && j <= maxReadOrder) {
+                        normalizedC[i][j] = Double.parseDouble(matcher.group(4).replace('D', 'E'));
+                        normalizedS[i][j] = Double.parseDouble(matcher.group(5).replace('D', 'E'));
+                        okCoeffs = true;
+                    }
                 }
             }
 

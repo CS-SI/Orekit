@@ -22,6 +22,15 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update" >
+        Added a way to speed up parsing and reduce memory consumption when
+        loading gravity fields. Now the user can specify the maximal degree
+        and order before reading the file.
+      </action>
+      <action dev="luc" type="fix" >
+        The EGM gravity field reader did not complain when files with missing
+        coefficients were provided, even when asked to complain.
+      </action>
       <action dev="luc" type="fix" >
         Fixed serialization of all predefined frames. This fix implied
         also fixing serialization of celestial bodies as the predefined

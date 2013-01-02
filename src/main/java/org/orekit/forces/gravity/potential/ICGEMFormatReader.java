@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.Arrays;
 
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -129,14 +130,15 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         okAe = true;
                     } else if ((tab.length == 2) && MAX_DEGREE.equals(tab[0])) {
 
-                        final int maxDegree = Integer.parseInt(tab[1]);
+                        final int maxDegree = FastMath.min(maxReadDegree, Integer.parseInt(tab[1]));
 
                         // allocate arrays
                         normalizedC = new double[maxDegree + 1][];
                         normalizedS = new double[maxDegree + 1][];
                         for (int k = 0; k < normalizedC.length; k++) {
-                            normalizedC[k] = new double[k + 1];
-                            normalizedS[k] = new double[k + 1];
+                            final int maxOrder = FastMath.min(maxReadOrder, k);
+                            normalizedC[k] = new double[maxOrder + 1];
+                            normalizedS[k] = new double[maxOrder + 1];
                             if (!missingCoefficientsAllowed()) {
                                 Arrays.fill(normalizedC[k], Double.NaN);
                                 Arrays.fill(normalizedS[k], Double.NaN);
@@ -160,8 +162,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         ((tab.length == 8) && GFCT.equals(tab[0]))) {
                         final int degree = Integer.parseInt(tab[1]);
                         final int order  = Integer.parseInt(tab[2]);
-                        normalizedC[degree][order] = Double.parseDouble(tab[3].replace('D', 'E'));
-                        normalizedS[degree][order] = Double.parseDouble(tab[4].replace('D', 'E'));
+                        if (degree <= maxReadDegree && order <= maxReadOrder) {
+                            normalizedC[degree][order] = Double.parseDouble(tab[3].replace('D', 'E'));
+                            normalizedS[degree][order] = Double.parseDouble(tab[4].replace('D', 'E'));
+                        }
                     } else if (((tab.length == 7) && DOT.equals(tab[0])) ||
                                ((tab.length == 7) && TRND.equals(tab[0])) ||
                                ((tab.length == 8) && ASIN.equals(tab[0])) ||

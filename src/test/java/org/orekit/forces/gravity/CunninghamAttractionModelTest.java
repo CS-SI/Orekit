@@ -268,7 +268,7 @@ public class CunninghamAttractionModelTest {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(70, 70);
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);

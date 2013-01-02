@@ -68,7 +68,7 @@ public class PropagatorConversion {
             Autoconfiguration.configureOrekit();
 
             // gravity field
-            PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+            PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(2, 0);
             double mu =  provider.getMu();
 
             // inertial frame

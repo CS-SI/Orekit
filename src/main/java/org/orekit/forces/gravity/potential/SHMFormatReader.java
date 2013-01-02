@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.Arrays;
 
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -82,12 +83,13 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
                     // initialize the arrays
                     if ("SHM".equals(tab[0])) {
-                        final int i = Integer.parseInt(tab[1]);
-                        normalizedC = new double[i + 1][];
-                        normalizedS = new double[i + 1][];
+                        final int maxDegree = FastMath.min(maxReadDegree, Integer.parseInt(tab[1]));
+                        normalizedC = new double[maxDegree + 1][];
+                        normalizedS = new double[maxDegree + 1][];
                         for (int k = 0; k < normalizedC.length; k++) {
-                            normalizedC[k] = new double[k + 1];
-                            normalizedS[k] = new double[k + 1];
+                            final int maxOrder = FastMath.min(maxReadOrder, k);
+                            normalizedC[k] = new double[maxOrder + 1];
+                            normalizedS[k] = new double[maxOrder + 1];
                             if (!missingCoefficientsAllowed()) {
                                 Arrays.fill(normalizedC[k], Double.NaN);
                                 Arrays.fill(normalizedS[k], Double.NaN);
@@ -104,16 +106,20 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                     if (GRCOEF.equals(line.substring(0, 6))) {
                         final int i = Integer.parseInt(tab[1]);
                         final int j = Integer.parseInt(tab[2]);
-                        normalizedC[i][j] = Double.parseDouble(tab[3].replace('D', 'E'));
-                        normalizedS[i][j] = Double.parseDouble(tab[4].replace('D', 'E'));
-                        okCoeffs = true;
+                        if (i <= maxReadDegree && j <= maxReadOrder) {
+                            normalizedC[i][j] = Double.parseDouble(tab[3].replace('D', 'E'));
+                            normalizedS[i][j] = Double.parseDouble(tab[4].replace('D', 'E'));
+                            okCoeffs = true;
+                        }
                     }
                     if (GRCOF2.equals(tab[0])) {
                         final int i = Integer.parseInt(tab[1]);
                         final int j = Integer.parseInt(tab[2]);
-                        normalizedC[i][j] = Double.parseDouble(tab[3].replace('D', 'E'));
-                        normalizedS[i][j] = Double.parseDouble(tab[4].replace('D', 'E'));
-                        okCoeffs = true;
+                        if (i <= maxReadDegree && j <= maxReadOrder) {
+                            normalizedC[i][j] = Double.parseDouble(tab[3].replace('D', 'E'));
+                            normalizedS[i][j] = Double.parseDouble(tab[4].replace('D', 'E'));
+                            okCoeffs = true;
+                        }
                     }
 
                 }

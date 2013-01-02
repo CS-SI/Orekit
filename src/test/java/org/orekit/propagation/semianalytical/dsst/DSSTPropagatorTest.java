@@ -452,7 +452,7 @@ public class DSSTPropagatorTest {
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        provider = GravityFieldFactory.getPotentialProvider();
+        provider = GravityFieldFactory.getPotentialProvider(5, 0);
         mu = provider.getMu();
         ae = provider.getAe();
         gotHere = false;

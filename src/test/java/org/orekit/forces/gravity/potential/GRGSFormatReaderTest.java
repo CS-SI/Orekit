@@ -31,7 +31,7 @@ public class GRGSFormatReaderTest {
     public void testAdditionalColumn() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         double[][] C = provider.getC(5, 5, true);
         double[][] S = provider.getS(5, 5, true);
 
@@ -48,7 +48,7 @@ public class GRGSFormatReaderTest {
     public void testRegular05c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         double[][] C = provider.getC(5, 5, true);
         double[][] S = provider.getS(5, 5, true);
 
@@ -61,25 +61,53 @@ public class GRGSFormatReaderTest {
 
     }
 
+    @Test
+    public void testReadLimits() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(3, 2);
+        try {
+            provider.getC(3, 3, true);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            // expected
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+        }
+        try {
+            provider.getC(4, 2, true);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            // expected
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+        }
+        double[][] c = provider.getC(3,  2, true);
+        Assert.assertEquals(4, c.length);
+        Assert.assertEquals(2, c[1].length);
+        Assert.assertEquals(3, c[2].length);
+        Assert.assertEquals(3, c[3].length);
+    }
+
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted1.dat", false));
-        GravityFieldFactory.getPotentialProvider();
+        GravityFieldFactory.getPotentialProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted2.dat", false));
-        GravityFieldFactory.getPotentialProvider();
+        GravityFieldFactory.getPotentialProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted3.dat", false));
-        GravityFieldFactory.getPotentialProvider();
+        GravityFieldFactory.getPotentialProvider(5, 5);
     }
 
 }

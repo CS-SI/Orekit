@@ -62,7 +62,7 @@ public class PartialDerivativesTest {
     @Test
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         double mu = provider.getMu();
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
@@ -128,7 +128,7 @@ public class PartialDerivativesTest {
     @Test
     public void testPropagationTypesHyperbolic() throws OrekitException, ParseException, IOException {
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         double mu = provider.getMu();
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,

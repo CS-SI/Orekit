@@ -44,6 +44,12 @@ public abstract class PotentialCoefficientsReader
     /** Indicator for completed read. */
     protected boolean readCompleted;
 
+    /** Maximal degree to read. */
+    protected int maxReadDegree;
+
+    /** Maximal order to read. */
+    protected int maxReadOrder;
+
     /** Central body reference radius. */
     protected double ae;
 
@@ -86,6 +92,8 @@ public abstract class PotentialCoefficientsReader
         this.supportedNames = supportedNames;
         this.missingCoefficientsAllowed = missingCoefficientsAllowed;
         readCompleted = false;
+        maxReadDegree = Integer.MAX_VALUE;
+        maxReadOrder  = Integer.MAX_VALUE;
         ae = Double.NaN;
         mu = Double.NaN;
         normalizedJ = null;
@@ -108,6 +116,20 @@ public abstract class PotentialCoefficientsReader
      */
     public boolean missingCoefficientsAllowed() {
         return missingCoefficientsAllowed;
+    }
+
+    /** Set the degree limit for the next file read.
+     * @param maxReadDegree maximal degree to read
+     */
+    public void setMaxReadDegree(final int maxReadDegree) {
+        this.maxReadDegree = maxReadDegree;
+    }
+
+    /** Set the order limit for the next file read.
+     * @param maxReadOrder maximal order to read
+     */
+    public void setMaxReadOrder(final int maxReadOrder) {
+        this.maxReadOrder = maxReadOrder;
     }
 
     /** {@inheritDoc} */
@@ -271,8 +293,8 @@ public abstract class PotentialCoefficientsReader
 
         // unnormalize the coefficients
         for (int n = 1; n < normalized.length; n++) {
-            final double[] uRow = new double[n + 1];
             final double[] nRow = normalized[n];
+            final double[] uRow = new double[nRow.length];
             final double coeffN = 2.0 * (2 * n + 1);
             factN *= n;
             mfactNMinusM = factN;

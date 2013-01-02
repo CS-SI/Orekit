@@ -170,7 +170,7 @@ public class AdapterPropagatorTest {
         // setup a specific coefficient file for gravity potential as it will also
         // try to read a corrupted one otherwise
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
-        PotentialCoefficientsProvider gravityField = GravityFieldFactory.getPotentialProvider();
+        PotentialCoefficientsProvider gravityField = GravityFieldFactory.getPotentialProvider(8, 8);
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, 10,
                                                          new LofOffset(leo.getFrame(), LOFType.VNC),
                                                          t0, Vector3D.ZERO, f, isp,
