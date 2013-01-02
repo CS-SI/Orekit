@@ -126,7 +126,7 @@ class ZonalContribution implements DSSTForceModel {
         this.degree = Cnm.length - 1;
         this.order  = Cnm[degree].length - 1;
 
-        this.Vns = CoefficientsFactory.computeVnsCoefficient(degree + 1);
+        this.Vns = CoefficientsFactory.computeVns(degree + 1);
 
         // Factorials computation
         final int maxFact = 2 * degree + 1;
@@ -165,9 +165,9 @@ class ZonalContribution implements DSSTForceModel {
      *  analytical power series expansion.
      *  <p>
      *  This method computes the upper value for the central body potential and
-     *  determines the maximal power of the eccentricity from potential terms
-     *  less than a defined tolerance.
-     *
+     *  determines the maximal power for the eccentricity producing potential
+     *  terms bigger than a defined tolerance.
+     *  </p>
      *  @param aux auxiliary elements related to the current orbit
      *  @throws OrekitException if some specific error occurs
      */
@@ -361,33 +361,44 @@ class ZonalContribution implements DSSTForceModel {
         // Hansen coefficients
         final HansenZonal hansen = new HansenZonal();
         // Gs and Hs coefficients
-        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, degree + 1);
+        final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
         // Qns coefficients
-        final double[][] Qns  = CoefficientsFactory.computeQnsCoefficient(gamma, degree + 1);
-        // r / a
+        final double[][] Qns  = CoefficientsFactory.computeQns(gamma, degree, maxEccPow);
+        // r / a up to power degree
         final double roa = r / a;
+        final double[] roaPow = new double[degree + 1];
+        roaPow[0] = 1.;
+        for (int i = 1; i <= degree; i++) {
+            roaPow[i] = roa * roaPow[i - 1];
+        }
 
         // Potential derivatives
-        double dUda  = 0d;
-        double dUdk  = 0d;
-        double dUdh  = 0d;
-        double dUdAl = 0d;
-        double dUdBe = 0d;
-        double dUdGa = 0d;
+        double dUda  = 0.;
+        double dUdk  = 0.;
+        double dUdh  = 0.;
+        double dUdAl = 0.;
+        double dUdBe = 0.;
+        double dUdGa = 0.;
 
         for (int s = 0; s <= maxEccPow; s++) {
-            // Get the current gs and hs coefficient :
+            // Get the current Gs coefficient
             final double gs = GsHs[0][s];
 
-            // Compute partial derivatives of Gs from 3.1-(9)
-            // First get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF < 0
-            final double sxgsm1 = s > 0 ? s * GsHs[0][s - 1] : 0;
-            final double sxhsm1 = s > 0 ? s * GsHs[1][s - 1] : 0;
-            // Get derivatives
-            final double dGsdh  = beta  * sxgsm1 - alpha * sxhsm1;
-            final double dGsdk  = alpha * sxgsm1 + beta  * sxhsm1;
-            final double dGsdAl = k * sxgsm1 - h * sxhsm1;
-            final double dGsdBe = h * sxgsm1 + k * sxhsm1;
+            // Compute Gs partial derivatives from 3.1-(9)
+            double dGsdh  = 0.;
+            double dGsdk  = 0.;
+            double dGsdAl = 0.;
+            double dGsdBe = 0.;
+            if (s > 0) {
+                // First get the G(s-1) and the H(s-1) coefficients
+                final double sxgsm1 = s * GsHs[0][s - 1];
+                final double sxhsm1 = s * GsHs[1][s - 1];
+                // Then compute derivatives
+                dGsdh  = beta  * sxgsm1 - alpha * sxhsm1;
+                dGsdk  = alpha * sxgsm1 + beta  * sxhsm1;
+                dGsdAl = k * sxgsm1 - h * sxhsm1;
+                dGsdBe = h * sxgsm1 + k * sxhsm1;
+            }
 
             // Kronecker symbol (2 - delta(0,s))
             final double delta0s = (s == 0) ? 1 : 2;
@@ -396,38 +407,39 @@ class ZonalContribution implements DSSTForceModel {
                 // (n - s) must be even
                 if ((n - s) % 2 == 0) {
                     // Extract data from previous computation :
-                    final double jn   = -C[n][0];
-                    final double vns  = Vns.get(new NSKey(n, s));
-                    final double kns  = hansen.getValue(-n - 1, s);
-                    final double qns  = Qns[n][s];
-                    final double rapn = FastMath.pow(roa, n);
-                    final double dkns = hansen.getDerivative(-n - 1, s);
-                    final double coef = delta0s * rapn * jn * vns;
+                    final double kns   = hansen.getValue(-n - 1, s);
+                    final double dkns  = hansen.getDerivative(-n - 1, s);
+                    final double vns   = Vns.get(new NSKey(n, s));
+                    final double coef0 = delta0s * roaPow[n] * vns * -C[n][0];
+                    final double coef1 = coef0 * Qns[n][s];
+                    final double coef2 = coef1 * kns;
+                    // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
+                    final double dqns  = Qns[n][s + 1];
 
                     // Compute dU / da :
-                    dUda += coef * kns * qns * (n + 1) * gs;
+                    dUda += coef2 * (n + 1) * gs;
                     // Compute dU / dEx
-                    dUdk += coef * qns * (kns * dGsdk + k * XXX * gs * dkns);
+                    dUdk += coef1 * (kns * dGsdk + k * XXX * gs * dkns);
                     // Compute dU / dEy
-                    dUdh += coef * qns * (kns * dGsdh + h * XXX * gs * dkns);
+                    dUdh += coef1 * (kns * dGsdh + h * XXX * gs * dkns);
                     // Compute dU / dAlpha
-                    dUdAl += coef * kns * qns * dGsdAl;
+                    dUdAl += coef2 * dGsdAl;
                     // Compute dU / dBeta
-                    dUdBe += coef * kns * qns * dGsdBe;
-                    // Compute dU / dGamma : here dQns/dGamma = Q(n, s + 1) from Equation 3.1 - (8)
-                    dUdGa += coef * kns * Qns[n][s + 1] * gs;
+                    dUdBe += coef2 * dGsdBe;
+                    // Compute dU / dGamma
+                    dUdGa += coef0 * kns * dqns * gs;
                 }
             }
         }
 
-        dUda  *=  muoa / a;
-        dUdk  *= -muoa;
-        dUdh  *= -muoa;
-        dUdAl *= -muoa;
-        dUdBe *= -muoa;
-        dUdGa *= -muoa;
-
-        return new double[] {dUda, dUdk, dUdh, dUdAl, dUdBe, dUdGa};
+        return new double[] {
+            dUda  *  muoa / a,
+            dUdk  * -muoa,
+            dUdh  * -muoa,
+            dUdAl * -muoa,
+            dUdBe * -muoa,
+            dUdGa * -muoa
+        };
     }
 
     /** Hansen coefficients for zonal contribution to central body force model.

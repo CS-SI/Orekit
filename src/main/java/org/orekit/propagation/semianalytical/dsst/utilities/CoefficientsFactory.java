@@ -16,11 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
-import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -39,9 +36,6 @@ public class CoefficientsFactory {
     /** Last computed order for V<sub>ns</sub> coefficients. */
     private static int         LAST_VNS_ORDER = 2;
 
-    /** Map of the Qns derivatives, for each (n, s) couple. */
-    private static Map<NSKey, PolynomialFunction> QNS_MAP        = new TreeMap<NSKey, PolynomialFunction>();
-
     /** Static initialization for the V<sub>ns</sub> coefficient. */
     static {
         // Initialization
@@ -55,50 +49,32 @@ public class CoefficientsFactory {
     private CoefficientsFactory() {
     }
 
-    /** Get the Q<sub>ns</sub> value from 2.8.1-(4) evaluated in &gamma; This method is using the
-     * Legendre polynomial to compute the Q<sub>ns</sub>'s one. This direct computation method
-     * allows to store the polynomials value in a static map. If the Q<sub>ns</sub> had been
-     * computed already, they just will be evaluated at &gamma;
-     *
-     * @param gamma &gamma; angle for which Q<sub>ns</sub> is evaluated
-     * @param n n value
-     * @param s s value
-     * @return the polynomial value evaluated at &gamma;
+    /** Compute the Q<sub>n,s</sub> coefficients evaluated at &gamma; from the recurrence formula 2.8.3-(2).
+     *  <p>
+     *  Q<sub>n,s</sub> coefficients are computed for n = 0 to nMax
+     *  and s = 0 to sMax + 1 in order to also get the derivative dQ<sub>n,s</sub>/d&gamma; = Q(n, s + 1)
+     *  </p>
+     *  @param gamma &gamma; angle
+     *  @param nMax n max value
+     *  @param sMax s max value
+     *  @return Q<sub>n,s</sub> coefficients array
      */
-    public static double getQnsPolynomialValue(final double gamma, final int n, final int s) {
-        PolynomialFunction derivative;
-        if (QNS_MAP.containsKey(new NSKey(n, s))) {
-            derivative = QNS_MAP.get(new NSKey(n, s));
-        } else {
-            final PolynomialFunction legendre = PolynomialsUtils.createLegendrePolynomial(n);
-            derivative = legendre;
-            for (int i = 0; i < s; i++) {
-                derivative = (PolynomialFunction) derivative.derivative();
-            }
-            QNS_MAP.put(new NSKey(n, s), derivative);
-        }
-        return derivative.value(gamma);
-    }
-
-    /** Compute the Q<sub>ns</sub> array evaluated at &gamma; from the recurrence formula 2.8.3-(2).
-     * As this method directly evaluate the polynomial at &gamma;, values aren't stored.
-     * @param gamma &gamma; angle
-     * @param order order N of computation
-     * @return Q<sub>ns</sub> array
-     */
-    public static double[][] computeQnsCoefficient(final double gamma, final int order) {
+    public static double[][] computeQns(final double gamma, final int nMax, final int sMax) {
 
         // Initialization
-        final double[][] Qns = new double[order + 1][];
-        for (int i = 0; i < order + 1; i++) {
-            Qns[i] = new double[i + 1];
+        final int sDim = FastMath.min(sMax + 1, nMax) + 1;
+        final double[][] Qns = new double[nMax + 1][];
+        for (int i = 0; i <= nMax; i++) {
+            final int snDim = FastMath.min(i + 1, sDim);
+            Qns[i] = new double[snDim];
         }
 
         // first element
         Qns[0][0] = 1;
 
-        for (int n = 1; n <= order; n++) {
-            for (int s = 0; s <= n; s++) {
+        for (int n = 1; n <= nMax; n++) {
+            final int snDim = FastMath.min(n + 1, sDim);
+            for (int s = 0; s < snDim; s++) {
                 if (n == s) {
                     Qns[n][s] = (2. * s - 1.) * Qns[s - 1][s - 1];
                 } else if (n == (s + 1)) {
@@ -114,14 +90,14 @@ public class CoefficientsFactory {
     }
 
     /** Compute recursively G<sub>s</sub> and H<sub>s</sub> polynomials from equation 3.1-(5).
-     * @param k x-component of the eccentricity vector
-     * @param h y-component of the eccentricity vector
-     * @param alpha 1st direction cosine
-     * @param beta 2nd direction cosine
-     * @param order development order
-     * @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order.<br>
-     *         The 1st column contains the G<sub>s</sub> values.
-     *         The 2nd column contains the H<sub>s</sub> values.
+     *  @param k x-component of the eccentricity vector
+     *  @param h y-component of the eccentricity vector
+     *  @param alpha 1st direction cosine
+     *  @param beta 2nd direction cosine
+     *  @param order development order
+     *  @return Array of G<sub>s</sub> and H<sub>s</sub> polynomials for s from 0 to order.<br>
+     *          The 1st column contains the G<sub>s</sub> values.
+     *          The 2nd column contains the H<sub>s</sub> values.
      */
     public static double[][] computeGsHs(final double k, final double h,
                                          final double alpha, final double beta,
@@ -131,14 +107,10 @@ public class CoefficientsFactory {
         final double kaphb = k * alpha + h * beta;
         // Initialization
         final double[][] GsHs = new double[2][order + 1];
-        // 1st & 2nd Gs coefficients
         GsHs[0][0] = 1.;
-        GsHs[0][1] = kaphb;
-        // 1st & 2nd Hs coefficients
         GsHs[1][0] = 0.;
-        GsHs[1][1] = hamkb;
 
-        for (int s = 2; s <= order; s++) {
+        for (int s = 1; s <= order; s++) {
             // Gs coefficient
             GsHs[0][s] = kaphb * GsHs[0][s - 1] - hamkb * GsHs[1][s - 1];
             // Hs coefficient
@@ -148,11 +120,11 @@ public class CoefficientsFactory {
         return GsHs;
     }
 
-    /** Compute the V<sub>n, s</sub> coefficient from 2.8.2 - (1)(2).
-     * @param order Order of the computation. Computation will be done from order 0 to order -1
-     * @return Map of the V<sub>n, s</sub> coefficient
+    /** Compute the V<sub>n,s</sub> coefficients from 2.8.2-(1)(2).
+     * @param order Order of the computation. Computation will be done from 0 to order -1
+     * @return Map of the V<sub>n, s</sub> coefficients
      */
-    public static TreeMap<NSKey, Double> computeVnsCoefficient(final int order) {
+    public static TreeMap<NSKey, Double> computeVns(final int order) {
 
         if (order > LAST_VNS_ORDER) {
             // Compute coefficient
@@ -195,7 +167,7 @@ public class CoefficientsFactory {
 
         if ((n + 1) > LAST_VNS_ORDER) {
             // Update the Vns coefficient
-            computeVnsCoefficient(n + 1);
+            computeVns(n + 1);
         }
 
         // If (n -s) is odd, the Vmsn coefficient is null

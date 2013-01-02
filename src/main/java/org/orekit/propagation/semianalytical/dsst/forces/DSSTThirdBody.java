@@ -122,7 +122,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         this.maxAR3Pow = Integer.MIN_VALUE;
         this.maxEccPow = Integer.MIN_VALUE;
 
-        this.Vns = CoefficientsFactory.computeVnsCoefficient(MAX_POWER);
+        this.Vns = CoefficientsFactory.computeVns(MAX_POWER);
 
         // Factorials computation
         final int dim = 2 * MAX_POWER;
@@ -144,10 +144,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
      *  of a/R3 to appear in the truncated analytical power series expansion.
      *  <p>
      *  This method computes the upper value for the 3rd body potential and
-     *  determines the maximal values from wich upper values give potential
-     *  terms less than a defined tolerance.
+     *  determines the maximal powers for the eccentricity and a/R3 producing
+     *  potential terms bigger than a defined tolerance.
      *  </p>
-     *
      *  @param aux auxiliary elements related to the current orbit
      *  @throws OrekitException if some specific error occurs
      */
@@ -317,11 +316,14 @@ public class DSSTThirdBody  implements DSSTForceModel {
         // Gs and Hs coefficients
         final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
         // Qns coefficients
-        final double[][] Qns = CoefficientsFactory.computeQnsCoefficient(gamma, maxAR3Pow + 1);
-        // mu3 / R3
-        final double muoR3 = gm / R3;
-        // a / R3
-        final double aoR3  = a / R3;
+        final double[][] Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPow);
+        // a / R3 up to power maxAR3Pow
+        final double aoR3 = a / R3;
+        final double[] aoR3Pow = new double[maxAR3Pow + 1];
+        aoR3Pow[0] = 1.;
+        for (int i = 1; i <= maxAR3Pow; i++) {
+            aoR3Pow[i] = aoR3 * aoR3Pow[i - 1];
+        }
 
         // Potential derivatives
         double dUda  = 0.;
@@ -332,18 +334,24 @@ public class DSSTThirdBody  implements DSSTForceModel {
         double dUdGa = 0.;
 
         for (int s = 0; s <= maxEccPow; s++) {
-            // Get the current Gs and Hs coefficient
+            // Get the current Gs coefficient
             final double gs = GsHs[0][s];
 
-            // Compute partial derivatives of Gs from 3.1-(9)
-            // First get the G(s-1) and the H(s-1) coefficient : SET TO 0 IF < 0
-            final double sxgsm1 = s > 0 ? s * GsHs[0][s - 1] : 0.;
-            final double sxhsm1 = s > 0 ? s * GsHs[1][s - 1] : 0.;
-            // Get derivatives
-            final double dGsdh  = beta  * sxgsm1 - alpha * sxhsm1;
-            final double dGsdk  = alpha * sxgsm1 + beta  * sxhsm1;
-            final double dGsdAl = k * sxgsm1 - h * sxhsm1;
-            final double dGsdBe = h * sxgsm1 + k * sxhsm1;
+            // Compute Gs partial derivatives from 3.1-(9)
+            double dGsdh  = 0.;
+            double dGsdk  = 0.;
+            double dGsdAl = 0.;
+            double dGsdBe = 0.;
+            if (s > 0) {
+                // First get the G(s-1) and the H(s-1) coefficients
+                final double sxGsm1 = s * GsHs[0][s - 1];
+                final double sxHsm1 = s * GsHs[1][s - 1];
+                // Then compute derivatives
+                dGsdh  = beta  * sxGsm1 - alpha * sxHsm1;
+                dGsdk  = alpha * sxGsm1 + beta  * sxHsm1;
+                dGsdAl = k * sxGsm1 - h * sxHsm1;
+                dGsdBe = h * sxGsm1 + k * sxHsm1;
+            }
 
             // Kronecker symbol (2 - delta(0,s))
             final double delta0s = (s == 0) ? 1. : 2.;
@@ -352,41 +360,43 @@ public class DSSTThirdBody  implements DSSTForceModel {
                 // (n - s) must be even
                 if ((n - s) % 2 == 0) {
                     // Extract data from previous computation :
-                    final double vns   = Vns.get(new NSKey(n, s));
                     final double kns   = hansen.getValue(n, s);
-                    final double qns   = Qns[n][s];
-                    final double aoR3n = FastMath.pow(aoR3, n);
                     final double dkns  = hansen.getDerivative(n, s);
-                    final double coef0 = delta0s * aoR3n * vns;
-                    final double coef1 = coef0 * qns;
+                    final double vns   = Vns.get(new NSKey(n, s));
+                    final double coef0 = delta0s * aoR3Pow[n] * vns;
+                    final double coef1 = coef0 * Qns[n][s];
+                    final double coef2 = coef1 * kns;
                     // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
                     // for n = s, Q(n, n + 1) = 0. (Cefola & Broucke, 1975)
                     final double dqns = (n == s) ? 0. : Qns[n][s + 1];
 
                     // Compute dU / da :
-                    dUda += coef1 * n * kns * gs;
+                    dUda += coef2 * n * gs;
                     // Compute dU / dh
                     dUdh += coef1 * (kns * dGsdh + h * XXX * gs * dkns);
                     // Compute dU / dk
                     dUdk += coef1 * (kns * dGsdk + k * XXX * gs * dkns);
                     // Compute dU / dAlpha
-                    dUdAl += coef1 * kns * dGsdAl;
+                    dUdAl += coef2 * dGsdAl;
                     // Compute dU / dBeta
-                    dUdBe += coef1 * kns * dGsdBe;
-                    // Compute dU / dGamma with dQns/dGamma = Q(n, s + 1)
+                    dUdBe += coef2 * dGsdBe;
+                    // Compute dU / dGamma
                     dUdGa += coef0 * kns * dqns * gs;
                 }
             }
         }
 
-        dUda  *= muoR3 / a;
-        dUdk  *= muoR3;
-        dUdh  *= muoR3;
-        dUdAl *= muoR3;
-        dUdBe *= muoR3;
-        dUdGa *= muoR3;
+        // mu3 / R3
+        final double muoR3 = gm / R3;
 
-        return new double[] {dUda, dUdk, dUdh, dUdAl, dUdBe, dUdGa};
+        return new double[] {
+            dUda  * muoR3 / a,
+            dUdk  * muoR3,
+            dUdh  * muoR3,
+            dUdAl * muoR3,
+            dUdBe * muoR3,
+            dUdGa * muoR3
+        };
 
     }
 
