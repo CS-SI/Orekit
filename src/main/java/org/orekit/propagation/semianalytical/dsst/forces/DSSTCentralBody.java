@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.List;
+import java.util.Set;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -39,6 +39,21 @@ import org.orekit.time.AbsoluteDate;
  */
 public class DSSTCentralBody implements DSSTForceModel {
 
+    /** Equatorial radius of the central body (m). */
+    private final double equatorialRadius;
+
+    /** Un-normalized coefficients array (cosine part). */
+    private final double[][] C;
+
+    /** Un-normalized coefficients array (sine part). */
+    private final double[][] S;
+
+    /** Degree <i>n</i> of potential. */
+    private final int degree;
+
+    /** Order <i>m</i> of potential. */
+    private final int order;
+
     /** Zonal harmonics contribution. */
     private final ZonalContribution    zonal;
 
@@ -58,8 +73,8 @@ public class DSSTCentralBody implements DSSTForceModel {
                            final double[][] Cnm,
                            final double[][] Snm) {
 
-        final int degree = Cnm.length - 1;
-        final int order  = Cnm[degree].length - 1;
+        this.degree = Cnm.length - 1;
+        this.order  = Cnm[degree].length - 1;
 
         // Check potential coefficients consistency
         if ((Cnm.length != Snm.length) || (Cnm[degree].length != Snm[degree].length)) {
@@ -70,11 +85,18 @@ public class DSSTCentralBody implements DSSTForceModel {
             throw OrekitException.createIllegalArgumentException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD, order, degree);
         }
 
+        // Equatorial radius of the central body
+        this.equatorialRadius = equatorialRadius;
+
+        // Potential coefficients
+        this.C = Cnm.clone();
+        this.S = Snm.clone();
+
         // Zonal harmonics contribution
-        this.zonal = new ZonalContribution(equatorialRadius, mu, Cnm, Snm);
+        this.zonal = new ZonalContribution(this, mu);
 
         // Tesseral harmonics contribution (only if order > 0)
-        this.tesseral = (order == 0) ? null : new TesseralContribution(centralBodyRotationRate, equatorialRadius, mu, Cnm, Snm);
+        this.tesseral = (order == 0) ? null : new TesseralContribution(this, centralBodyRotationRate, mu);
 
     }
 
@@ -140,56 +162,16 @@ public class DSSTCentralBody implements DSSTForceModel {
         return shortPeriodics;
     }
 
-    /** Set the resonant Tesseral harmonic couple term.
-     * <p>
-     *  This parameter can be set to null or be an empty list.
-     *  If so, the program will automatically determine the resonant couple to
-     *  take in account. If not, only the resonant couple given by the user will
-     *  be taken in account.
-     *  </p>
-     *
-     * @param resonantTesseral Resonant Tesseral harmonic couple term
-     */
-    public void setResonantTesseral(final List<ResonantCouple> resonantTesseral) {
-        if (tesseral != null) {
-            tesseral.setResonantTesseral(resonantTesseral);
-        }
-    }
-
-    /** Set the minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in seconds.
+    /** Set the resonant harmonic couples.
      *  <p>
-     *  Set to 10 days by default.
+     *  If the set is null or empty, the resonant couples will be automatically computed.
+     *  If it is not null nor empty, only these resonant couples will be taken in account.
      *  </p>
-     * @param resonantMinPeriodInSec minimum period in seconds
+     *  @param resonantTesseral Set of resonant terms
      */
-    public void setResonantMinPeriodInSec(final double resonantMinPeriodInSec) {
+    public void setResonantTesseral(final Set<ResonantCouple> resonantTesseral) {
         if (tesseral != null) {
-            tesseral.setResonantMinPeriodInSec(resonantMinPeriodInSec);
-        }
-    }
-
-    /** Set the minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in number of satellite revolutions.
-     *  <p>
-     *  Set to 10 days by default.
-     *  </p>
-     * @param resonantMinPeriodInSatRev minimum period in satellite revolutions
-     */
-    public void setResonantMinPeriodInSatRev(final double resonantMinPeriodInSatRev) {
-        if (tesseral != null) {
-            tesseral.setResonantMinPeriodInSatRev(resonantMinPeriodInSatRev);
-        }
-    }
-
-    /** Set the highest power of the eccentricity to appear in the truncated analytical
-     *  power series expansion for the averaged central-body tesseral harmonic potential.
-     *
-     * @param tesseralMaxEccPower highest power of the eccentricity
-     */
-    public void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
-        if (tesseral != null) {
-            tesseral.setTesseralMaximumEccentricityPower(tesseralMaxEccPower);
+            tesseral.setResonantTesseralTerms(resonantTesseral);
         }
     }
 
@@ -197,21 +179,61 @@ public class DSSTCentralBody implements DSSTForceModel {
      *  @return the equatorial radius (m)
      */
     public double getEquatorialRadius() {
-        return zonal.getEquatorialRadius();
+        return equatorialRadius;
     }
 
     /** Get the un-normalized coefficients array of the spherical harmonics (cosine part).
-     *  @return Cnm
+     *  @return the Cnm array
      */
     public double[][] getCnm() {
-        return zonal.getCnm();
+        return C.clone();
     }
 
     /** Get the un-normalized coefficients array of the spherical harmonics (sine part).
-     *  @return Snm
+     *  @return the Snm array
      */
     public double[][] getSnm() {
-        return zonal.getSnm();
+        return S.clone();
+    }
+
+    /** Get the maximum degree of the spherical harmonics.
+     *  @return the maximum degree
+     */
+    public int getMaxDegree() {
+        return degree;
+    }
+
+    /** Get the maximum order of the spherical harmonics.
+     *  @return the maximum order
+     */
+    public int getMaxOrder() {
+        return order;
+    }
+
+    /** Get one Cnm coefficient of the spherical harmonics.
+     *  @param n the degree
+     *  @param m the order
+     *  @return the Cnm coefficient
+     */
+    public double getCnm(final int n, final int m) {
+        return C[n][m];
+    }
+
+    /** Get one Jn coefficient (i.e. -C[n][0]) of the spherical harmonics.
+     *  @param n the degree
+     *  @return the Jn coefficient
+     */
+    public double getJn(final int n) {
+        return -C[n][0];
+    }
+
+    /** Get one Snm coefficient of the spherical harmonics.
+     *  @param n the degree
+     *  @param m the order
+     *  @return the Snm coefficient
+     */
+    public double getSnm(final int n, final int m) {
+        return S[n][m];
     }
 
 }

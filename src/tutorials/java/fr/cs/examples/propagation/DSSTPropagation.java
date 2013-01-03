@@ -149,6 +149,7 @@ public class DSSTPropagation {
         ORBIT_IS_OSCULATING,
         START_DATE,
         DURATION,
+        DURATION_IN_DAYS,
         OUTPUT_STEP,
         FIXED_INTEGRATION_STEP,
         NUMERICAL_COMPARISON,
@@ -175,16 +176,18 @@ public class DSSTPropagation {
         if (!parser.containsKey(ParameterKey.ORBIT_DATE)) {
             throw new IOException("Orbit date is not defined.");
         }
-        if (!parser.containsKey(ParameterKey.DURATION)) {
+        if (!parser.containsKey(ParameterKey.DURATION) && !parser.containsKey(ParameterKey.DURATION_IN_DAYS)) {
             throw new IOException("Propagation duration is not defined.");
         }
 
         // All dates in UTC
         final TimeScale utc = TimeScalesFactory.getUTC();
+        
+        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
+        final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
         // Potential coefficients provider
-        final PotentialCoefficientsProvider provider =
-                GravityFieldFactory.getPotentialProvider(Integer.MAX_VALUE, Integer.MAX_VALUE);
+        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(degree, order);
 
         // Central body attraction coefficient (m³/s²)
         final double mu = provider.getMu();
@@ -204,7 +207,7 @@ public class DSSTPropagation {
         final DSSTPropagator dsstProp = createDSSTProp(orbit, isOsculating, fixedStepSize);
 
         // Set Force models
-        setForceModel(parser, provider, dsstProp);
+        setForceModel(parser, provider, degree, order, dsstProp);
 
         // Simulation properties
         AbsoluteDate start;
@@ -213,8 +216,14 @@ public class DSSTPropagation {
         } else {
             start = parser.getDate(ParameterKey.ORBIT_DATE, utc);
         }
-        double duration = parser.getDouble(ParameterKey.DURATION);
-        double outStep  = parser.getDouble(ParameterKey.OUTPUT_STEP);
+        double duration = 0.;
+        if (parser.containsKey(ParameterKey.DURATION)) {
+            duration = parser.getDouble(ParameterKey.DURATION);
+        }
+        if (parser.containsKey(ParameterKey.DURATION_IN_DAYS)) {
+            duration = parser.getDouble(ParameterKey.DURATION_IN_DAYS) * Constants.JULIAN_DAY;
+        }
+        double outStep = parser.getDouble(ParameterKey.OUTPUT_STEP);
 
         // Add orbit handler
         OrbitHandler dsstHandler = new OrbitHandler();
@@ -247,7 +256,7 @@ public class DSSTPropagation {
             final NumericalPropagator numProp = createNumProp(orbit);
             
             // Set Force models
-            setForceModel(parser, provider, numProp);
+            setForceModel(parser, provider, degree, order, numProp);
 
             // Add orbit handler
             OrbitHandler numHandler = new OrbitHandler();
@@ -386,25 +395,21 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
-     *  @param provider potential coefficients provider
      *  @param parser input file parser
+     *  @param provider potential coefficients provider
+     *  @param degree max potential degree
+     *  @param order  max potential order
      *  @param dsstProp DSST propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final PotentialCoefficientsProvider provider,
+                               final int degree, final int order,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
         final double mu = provider.getMu();
-        
-        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
-        final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
-
-        if (order > degree) {
-            throw new IOException("Potential order cannot be higher than potential degree");
-        }
 
         // Central Body Force Model with un-normalized coefficients
         final double[][] Cnm = provider.getC(degree, order, false);
@@ -442,25 +447,21 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
+     *  @param parser   input file parser
      *  @param provider potential coefficients provider
-     *  @param parser  input file parser
-     *  @param numProp numerical propagator
+     *  @param degree   max potential degree
+     *  @param order    max potential order
+     *  @param numProp  numerical propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final PotentialCoefficientsProvider provider,
+                               final int degree, final int order,
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
         final double mu = provider.getMu();
-        
-        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
-        final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
-
-        if (order > degree) {
-            throw new IOException("Potential order cannot be higher than potential degree");
-        }
 
         // Central Body (un-normalized coefficients)
         numProp.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
