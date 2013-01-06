@@ -66,12 +66,12 @@ public class PartialDerivativesTest {
         double mu = provider.getMu();
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+                                          provider.getC(5, 5, false), provider.getS(5, 5, false));
         SpacecraftState initialState =
             new SpacecraftState(new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, mu));
 
-        double dt = 3200;
+        double dt = 900;
         double dP = 0.001;
         for (OrbitType orbitType : OrbitType.values()) {
             for (PositionAngle angleType : PositionAngle.values()) {
@@ -115,7 +115,7 @@ public class PartialDerivativesTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 3.0e-4);
+                        Assert.assertEquals(0, error, 6.0e-2);
 
                     }
                 }
@@ -132,13 +132,13 @@ public class PartialDerivativesTest {
         double mu = provider.getMu();
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+                                          provider.getC(5, 5, false), provider.getS(5, 5, false));
         SpacecraftState initialState =
             new SpacecraftState(new KeplerianOrbit(new PVCoordinates(new Vector3D(-1551946.0, 708899.0, 6788204.0),
                                                                      new Vector3D(-9875.0, -3941.0, -1845.0)),
                                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, mu));
 
-        double dt = 3200;
+        double dt = 900;
         double dP = 0.001;
         for (OrbitType orbitType : new OrbitType[] { OrbitType.KEPLERIAN, OrbitType.CARTESIAN }) {
             for (PositionAngle angleType : PositionAngle.values()) {
@@ -182,7 +182,7 @@ public class PartialDerivativesTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 9.0e-4);
+                        Assert.assertEquals(0, error, 1.0e-3);
 
                     }
                 }
