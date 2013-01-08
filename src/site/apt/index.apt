@@ -91,7 +91,7 @@ Overview
 
         * central attraction
 
-        * gravity models
+        * gravity models including time-dependent like trends and pulsations
           (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
           EGM and GRGS gravity field files formats, even compressed)
 

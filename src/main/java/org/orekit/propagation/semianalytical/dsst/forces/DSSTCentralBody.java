@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.Set;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.ResonantCouple;
@@ -39,21 +39,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class DSSTCentralBody implements DSSTForceModel {
 
-    /** Equatorial radius of the central body (m). */
-    private final double equatorialRadius;
-
-    /** Un-normalized coefficients array (cosine part). */
-    private final double[][] C;
-
-    /** Un-normalized coefficients array (sine part). */
-    private final double[][] S;
-
-    /** Degree <i>n</i> of potential. */
-    private final int degree;
-
-    /** Order <i>m</i> of potential. */
-    private final int order;
-
     /** Zonal harmonics contribution. */
     private final ZonalContribution    zonal;
 
@@ -62,41 +47,17 @@ public class DSSTCentralBody implements DSSTForceModel {
 
     /** DSST Central body constructor.
      * @param centralBodyRotationRate central body rotation rate (rad/s)
-     * @param equatorialRadius equatorial radius of the central body (m)
-     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param Cnm un-normalized coefficients array of the spherical harmonics (cosine part)
-     * @param Snm un-normalized coefficients array of the spherical harmonics (sine part)
+     * @param provider provider for spherical harmonics
      */
     public DSSTCentralBody(final double centralBodyRotationRate,
-                           final double equatorialRadius,
-                           final double mu,
-                           final double[][] Cnm,
-                           final double[][] Snm) {
-
-        this.degree = Cnm.length - 1;
-        this.order  = Cnm[degree].length - 1;
-
-        // Check potential coefficients consistency
-        if ((Cnm.length != Snm.length) || (Cnm[degree].length != Snm[degree].length)) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH,
-                                                                 Cnm.length, Cnm[degree].length, Snm.length, Snm[degree].length);
-        }
-        if (degree < order) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD, order, degree);
-        }
-
-        // Equatorial radius of the central body
-        this.equatorialRadius = equatorialRadius;
-
-        // Potential coefficients
-        this.C = Cnm.clone();
-        this.S = Snm.clone();
+                           final SphericalHarmonicsProvider provider) {
 
         // Zonal harmonics contribution
-        this.zonal = new ZonalContribution(this, mu);
+        this.zonal = new ZonalContribution(provider);
 
         // Tesseral harmonics contribution (only if order > 0)
-        this.tesseral = (order == 0) ? null : new TesseralContribution(this, centralBodyRotationRate, mu);
+        this.tesseral = (provider.getMaxOrder() == 0) ?
+                        null : new TesseralContribution(centralBodyRotationRate, provider);
 
     }
 
@@ -175,65 +136,11 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
     }
 
-    /** Get the equatorial radius of the central body.
-     *  @return the equatorial radius (m)
+    /** Get the spherical harmonics provider
+     *  @return the spherical harmonics provider
      */
-    public double getEquatorialRadius() {
-        return equatorialRadius;
-    }
-
-    /** Get the un-normalized coefficients array of the spherical harmonics (cosine part).
-     *  @return the Cnm array
-     */
-    public double[][] getCnm() {
-        return C.clone();
-    }
-
-    /** Get the un-normalized coefficients array of the spherical harmonics (sine part).
-     *  @return the Snm array
-     */
-    public double[][] getSnm() {
-        return S.clone();
-    }
-
-    /** Get the maximum degree of the spherical harmonics.
-     *  @return the maximum degree
-     */
-    public int getMaxDegree() {
-        return degree;
-    }
-
-    /** Get the maximum order of the spherical harmonics.
-     *  @return the maximum order
-     */
-    public int getMaxOrder() {
-        return order;
-    }
-
-    /** Get one Cnm coefficient of the spherical harmonics.
-     *  @param n the degree
-     *  @param m the order
-     *  @return the Cnm coefficient
-     */
-    public double getCnm(final int n, final int m) {
-        return C[n][m];
-    }
-
-    /** Get one Jn coefficient (i.e. -C[n][0]) of the spherical harmonics.
-     *  @param n the degree
-     *  @return the Jn coefficient
-     */
-    public double getJn(final int n) {
-        return -C[n][0];
-    }
-
-    /** Get one Snm coefficient of the spherical harmonics.
-     *  @param n the degree
-     *  @param m the order
-     *  @return the Snm coefficient
-     */
-    public double getSnm(final int n, final int m) {
-        return S[n][m];
+    public SphericalHarmonicsProvider getProvider() {
+        return zonal.getProvider();
     }
 
 }

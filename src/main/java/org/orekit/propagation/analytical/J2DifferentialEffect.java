@@ -18,7 +18,7 @@ package org.orekit.propagation.analytical;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -68,10 +68,11 @@ public class J2DifferentialEffect
     public J2DifferentialEffect(final SpacecraftState original,
                                 final AdapterPropagator.DifferentialEffect directEffect,
                                 final boolean applyBefore,
-                                final PotentialCoefficientsProvider gravityField)
+                                final SphericalHarmonicsProvider gravityField)
         throws OrekitException {
         this(original, directEffect, applyBefore,
-             gravityField.getAe(), gravityField.getMu(), gravityField.getJ(false, 2)[2]);
+             gravityField.getAe(), gravityField.getMu(),
+             -gravityField.getUnnormalizedCnm(gravityField.getOffset(original.getDate()), 2, 0));
     }
 
     /** Simple constructor.
@@ -88,10 +89,11 @@ public class J2DifferentialEffect
          * @exception OrekitException if gravity field does not contain J2 coefficient
          */
     public J2DifferentialEffect(final Orbit orbit0, final Orbit orbit1, final boolean applyBefore,
-                                final PotentialCoefficientsProvider gravityField)
+                                final SphericalHarmonicsProvider gravityField)
         throws OrekitException {
         this(orbit0, orbit1, applyBefore,
-             gravityField.getAe(), gravityField.getMu(), gravityField.getJ(false, 2)[2]);
+             gravityField.getAe(), gravityField.getMu(),
+             -gravityField.getUnnormalizedCnm(gravityField.getOffset(orbit0.getDate()), 2, 0));
     }
 
     /** Simple constructor.

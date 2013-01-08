@@ -21,7 +21,9 @@ import org.orekit.errors.OrekitException;
 /** Interface used to provide gravity field coefficients.
  * @see GravityFieldFactory
  * @author Luc Maisonobe
+ * @deprecated since 6.0, replaced by {@link SphericalHarmonicsProvider}
  */
+@Deprecated
 public interface PotentialCoefficientsProvider {
 
     /** Get the zonal coefficients.

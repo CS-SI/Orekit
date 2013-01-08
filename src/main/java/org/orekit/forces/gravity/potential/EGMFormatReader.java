@@ -22,18 +22,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.utils.Constants;
 
 /**This reader is adapted to the EGM Format.
  *
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
- *  which will determine which reader to use with the selected potential
- *  coefficients file <p>
+ *  which will determine which reader to use with the selected gravity field file.</p>
  *
  * @see GravityFieldFactory
  * @author Fabien Maussion
@@ -46,17 +46,24 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      */
     public EGMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         super(supportedNames, missingCoefficientsAllowed);
-        ae = 6378136.3;
-        mu = 398600.4415e9;
     }
 
     /** {@inheritDoc} */
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
+        // reset the indicator before loading any data
+        setReadComplete(false);
+
+        // both EGM96 and EGM2008 use the same values for ae and mu
+        // if a new EGM model changes them, we should have some selection logic
+        // based on file name (a better way would be to have the data in the file...)
+        setAe(Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
+        setMu(Constants.EGM96_EARTH_MU);
+
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));
-        final List<double[]> cl = new ArrayList<double[]>();
-        final List<double[]> sl = new ArrayList<double[]>();
+        final List<List<Double>> c = new ArrayList<List<Double>>();
+        final List<List<Double>> s = new ArrayList<List<Double>>();
         boolean okFields = true;
         for (String line = r.readLine(); okFields && line != null; line = r.readLine()) {
             if (line.length() >= 15) {
@@ -69,73 +76,56 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
 
                 final int i = Integer.parseInt(tab[0]);
                 final int j = Integer.parseInt(tab[1]);
-                if (i <= maxReadDegree && j <= maxReadOrder) {
-
-                    final double c = Double.parseDouble(tab[2]);
-                    final double s = Double.parseDouble(tab[3]);
-
-                    // extend the cl array if needed
-                    final int ck = cl.size();
-                    for (int k = ck; k <= i; ++k) {
-                        final double[] d = new double[FastMath.min(maxReadOrder, k) + 1];
-                        if (!missingCoefficientsAllowed()) {
-                            Arrays.fill(d, Double.NaN);
-                        } else {
-                            if (k == 0) {
-                                d[0] = 1.0;
-                            }
-                        }
-                        cl.add(d);
+                if (i <= getMaxParseDegree() && j <= getMaxParseOrder()) {
+                    for (int k = 0; k <= i; ++k) {
+                        extendListOfLists(c, k, FastMath.min(k, getMaxParseOrder()),
+                                          missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                        extendListOfLists(s, k, FastMath.min(k, getMaxParseOrder()),
+                                          missingCoefficientsAllowed() ? 0.0 : Double.NaN);
                     }
-                    final double[] cli = cl.get(i);
-
-                    // extend the sl array if needed
-                    final int sk = sl.size();
-                    for (int k = sk; k <= i; ++k) {
-                        final double[] d = new double[FastMath.min(maxReadOrder, k) + 1];
-                        if (!missingCoefficientsAllowed()) {
-                            Arrays.fill(d, Double.NaN);
-                        }
-                        sl.add(d);
-                    }
-                    final double[] sli = sl.get(i);
-
-                    // store the terms
-                    cli[j] = c;
-                    sli[j] = s;
+                    parseCoefficient(tab[2], c, i, j, "C", name);
+                    parseCoefficient(tab[3], s, i, j, "S", name);
                 }
 
             }
         }
 
-        boolean okCoeffs = true;
-        for (int k = 0; okCoeffs && k < cl.size(); k++) {
-            final double[] cK = cl.get(k);
-            for (int i = 0; okCoeffs && i < cK.length; ++i) {
-                if (Double.isNaN(cK[i])) {
-                    okCoeffs = false;
-                }
-            }
-            final double[] sK = sl.get(k);
-            for (int i = 0; okCoeffs && i < sK.length; ++i) {
-                if (Double.isNaN(sK[i])) {
-                    okCoeffs = false;
-                }
+        if (missingCoefficientsAllowed() && getMaxParseDegree() > 0 && getMaxParseOrder() > 0) {
+            // ensure at least the (0, 0) element is properly set
+            extendListOfLists(c, 0, 0, 0.0);
+            extendListOfLists(s, 0, 0, 0.0);
+            if (Precision.equals(c.get(0).get(0), 0.0, 1)) {
+                c.get(0).set(0, 1.0);
             }
         }
 
-        if ((!okFields) || (cl.size() < 1) || (!okCoeffs)) {
+        if ((!okFields) || (c.size() < 1)) {
             String loaderName = getClass().getName();
             loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
                                       name, loaderName);
         }
 
-        // convert to simple triangular arrays
-        normalizedC = cl.toArray(new double[cl.size()][]);
-        normalizedS = sl.toArray(new double[sl.size()][]);
-        readCompleted = true;
+        setNormalizedC(toArray(c), name);
+        setNormalizedS(toArray(s), name);
+        setReadComplete(true);
 
+    }
+
+    /** Get a provider for read spherical harmonics coefficients.
+     * <p>
+     * EGM fields don't include time-dependent parts, so this method returns
+     * directly a constant provider.
+     * </p>
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a new provider
+     * @exception OrekitException if the requested maximal degree or order exceeds the
+     * available degree or order or if no gravity field has read yet
+     */
+    public SphericalHarmonicsProvider getProvider(int degree, int order)
+        throws OrekitException {
+        return getConstantProvider(degree, order);
     }
 
 }

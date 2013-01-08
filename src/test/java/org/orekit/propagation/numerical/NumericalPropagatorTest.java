@@ -35,7 +35,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -138,10 +138,9 @@ public class NumericalPropagatorTest {
     @Test
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, false), provider.getS(5, 5, false));
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(),
+                                          GravityFieldFactory.getSphericalHarmonicsProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
@@ -201,10 +200,9 @@ public class NumericalPropagatorTest {
                                                    FramesFactory.getEME2000(), initDate,
                                                    mu));
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, false), provider.getS(5, 5, false));
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(),
+                                          GravityFieldFactory.getSphericalHarmonicsProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
@@ -464,21 +462,17 @@ public class NumericalPropagatorTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        mu  = 3.9860047e14;
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
+        mu  = GravityFieldFactory.getSphericalHarmonicsProvider(0, 0).getMu();
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         initDate = AbsoluteDate.J2000_EPOCH;
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        double[] absTolerance = {
-            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
-        };
-        double[] relTolerance = {
-            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
-        };
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
-                new DormandPrince853Integrator(0.001, 200, absTolerance, relTolerance);
+                new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);

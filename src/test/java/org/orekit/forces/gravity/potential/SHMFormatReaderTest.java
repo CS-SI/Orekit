@@ -20,10 +20,15 @@ package org.orekit.forces.gravity.potential;
 import java.io.IOException;
 import java.text.ParseException;
 
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 
 public class SHMFormatReaderTest {
 
@@ -31,9 +36,9 @@ public class SHMFormatReaderTest {
     public void testReadLimits() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(3, 2);
+        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
         try {
-            provider.getC(3, 3, true);
+            provider.getUnnormalizedCnm(0.0, 3, 3);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
@@ -41,32 +46,38 @@ public class SHMFormatReaderTest {
             Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
         try {
-            provider.getC(4, 2, true);
+            provider.getUnnormalizedCnm(0.0, 4, 2);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             // expected
         } catch (Exception e) {
             Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
         }
-        double[][] c = provider.getC(3,  2, true);
-        Assert.assertEquals(4, c.length);
-        Assert.assertEquals(2, c[1].length);
-        Assert.assertEquals(3, c[2].length);
-        Assert.assertEquals(3, c[3].length);
+        provider.getUnnormalizedCnm(0.0, 3, 2);
+        Assert.assertEquals(3, provider.getMaxDegree());
+        Assert.assertEquals(2, provider.getMaxOrder());
     }
 
     @Test
     public void testRegular03c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
-        double[][] C = provider.getC(5, 5, true);;
-        double[][] S = provider.getS(5, 5, true);
+        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
 
-        Assert.assertEquals(0.957201462136E-06,C[3][0],  0);
-        Assert.assertEquals(0.174786174485E-06,C[5][5],  0);
-        Assert.assertEquals(0, S[4][0],  0);
-        Assert.assertEquals(0.308834784975E-06 ,S[4][4],  0);
+        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
+        Assert.assertEquals(refDate, provider.getReferenceDate());
+        AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
+        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
+
+        int maxUlps = 2;
+        checkValue(provider.getUnnormalizedCnm( provider.getOffset(date), 3, 0), date, 3, 0,
+                   1997, 1, 1, 0.957201462136e-06, 0.490000000000e-11, maxUlps);
+        checkValue(provider.getUnnormalizedCnm( provider.getOffset(date), 5, 5), date, 5, 5,
+                   1997, 1, 1, 0.174786174485e-06, 0.0, maxUlps);
+        checkValue(provider.getUnnormalizedSnm( provider.getOffset(date), 4, 0), date, 4, 0,
+                   1997, 1, 1, 0, 0, maxUlps);
+        checkValue(provider.getUnnormalizedSnm( provider.getOffset(date), 4, 4), date, 4, 4,
+                   1997, 1, 1, 0.308834784975e-06, 0, maxUlps);
         Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
         Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
 
@@ -76,37 +87,59 @@ public class SHMFormatReaderTest {
     public void testReadCompressed01c() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen-cg01c_coef", false));
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(5, 5);
-        double[][] C = provider.getC(5, 5, true);;
-        double[][] S = provider.getS(5, 5, true);;
+        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
 
-        Assert.assertEquals(0.957187536534E-06,C[3][0],  0);
-        Assert.assertEquals(0.174787189024E-06,C[5][5],  0);
-        Assert.assertEquals(0, S[4][0],  0);
-        Assert.assertEquals(0.308834848269E-06 ,S[4][4],  0);
+        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
+        Assert.assertEquals(refDate, provider.getReferenceDate());
+        AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
+        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
+
+        int maxUlps = 2;
+        checkValue(provider.getUnnormalizedCnm( provider.getOffset(date), 3, 0), date, 3, 0,
+                   1997, 1, 1, 0.957187536534E-06, 0.490000000000E-11, maxUlps);
+        checkValue(provider.getUnnormalizedCnm( provider.getOffset(date), 5, 5), date, 5, 5,
+                   1997, 1, 1, 0.174787189024E-06, 0.0, maxUlps);
+        checkValue(provider.getUnnormalizedSnm( provider.getOffset(date), 4, 0), date, 4, 0,
+                   1997, 1, 1, 0, 0, maxUlps);
+        checkValue(provider.getUnnormalizedSnm( provider.getOffset(date), 4, 4), date, 4, 4,
+                   1997, 1, 1, 0.308834848269E-06, 0, maxUlps);
         Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
         Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
+
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted1_coef", false));
-        GravityFieldFactory.getPotentialProvider(5, 5);
+        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted2_coef", false));
-        GravityFieldFactory.getPotentialProvider(5, 5);
+        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted3_coef", false));
-        GravityFieldFactory.getPotentialProvider(5, 5);
+        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+    }
+
+    private void checkValue(final double value,
+                            final AbsoluteDate date, final int n, final int m,
+                            final int refYear, final int refMonth, final int refDay,
+                            final double constant, final double trend,
+                            final int maxUlps) {
+        double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
+        AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
+        double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;
+        double normalized = factor * (constant + trend * dtYear);
+        double epsilon = maxUlps * FastMath.ulp(normalized);
+        Assert.assertEquals(normalized, value, epsilon);
     }
 
 }

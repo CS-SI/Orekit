@@ -46,7 +46,7 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -187,7 +187,8 @@ public class DSSTPropagation {
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
         // Potential coefficients provider
-        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider(degree, order);
+        final SphericalHarmonicsProvider provider =
+                GravityFieldFactory.getSphericalHarmonicsProvider(degree, order);
 
         // Central body attraction coefficient (m³/s²)
         final double mu = provider.getMu();
@@ -207,7 +208,7 @@ public class DSSTPropagation {
         final DSSTPropagator dsstProp = createDSSTProp(orbit, isOsculating, fixedStepSize);
 
         // Set Force models
-        setForceModel(parser, provider, degree, order, dsstProp);
+        setForceModel(parser, provider, dsstProp);
 
         // Simulation properties
         AbsoluteDate start;
@@ -256,7 +257,7 @@ public class DSSTPropagation {
             final NumericalPropagator numProp = createNumProp(orbit);
             
             // Set Force models
-            setForceModel(parser, provider, degree, order, numProp);
+            setForceModel(parser, provider, numProp);
 
             // Add orbit handler
             OrbitHandler numHandler = new OrbitHandler();
@@ -395,6 +396,7 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
+     *  @param provider spherical harmonics provider
      *  @param parser input file parser
      *  @param provider potential coefficients provider
      *  @param degree max potential degree
@@ -404,17 +406,20 @@ public class DSSTPropagation {
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
-                               final PotentialCoefficientsProvider provider,
-                               final int degree, final int order,
+                               final SphericalHarmonicsProvider provider,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
-        final double mu = provider.getMu();
+        
+        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
+        final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
+
+        if (order > degree) {
+            throw new IOException("Potential order cannot be higher than potential degree");
+        }
 
         // Central Body Force Model with un-normalized coefficients
-        final double[][] Cnm = provider.getC(degree, order, false);
-        final double[][] Snm = provider.getS(degree, order, false);
-        dsstProp.addForceModel(new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, Cnm, Snm));
+        dsstProp.addForceModel(new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -447,26 +452,27 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
-     *  @param parser   input file parser
-     *  @param provider potential coefficients provider
-     *  @param degree   max potential degree
-     *  @param order    max potential order
-     *  @param numProp  numerical propagator
+     *  @param provider spherical harmonics provider
+     *  @param parser  input file parser
+     *  @param numProp numerical propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
-                               final PotentialCoefficientsProvider provider,
-                               final int degree, final int order,
+                               final SphericalHarmonicsProvider provider,
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
-        final double mu = provider.getMu();
+        
+        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
+        final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
+
+        if (order > degree) {
+            throw new IOException("Potential order cannot be higher than potential degree");
+        }
 
         // Central Body (un-normalized coefficients)
-        numProp.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
-                                                            provider.getC(degree, order, false),
-                                                            provider.getS(degree, order, false)));
+        numProp.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {

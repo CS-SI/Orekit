@@ -25,7 +25,6 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Interface for celestial bodies like Sun, Moon or solar system planets.
  * @author Luc Maisonobe
  * @see CelestialBodyFactory
- * @see IAUPole
  */
 public interface CelestialBody extends Serializable, PVCoordinatesProvider {
 

@@ -22,11 +22,14 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.potential.ConstantSphericalHarmonics;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.time.AbsoluteDate;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
@@ -41,77 +44,51 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 public class DrozinerAttractionModel extends AbstractParameterizable implements ForceModel {
 
-    /** Reference equatorial radius of the potential. */
-    private final double equatorialRadius;
+    /** Provider for the spherical harmonics. */
+    private final SphericalHarmonicsProvider provider;
 
     /** Central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
     private double mu;
 
-    /** First normalized potential tesseral coefficients array. */
-    private final double[][]   C;
-
-    /** Second normalized potential tesseral coefficients array. */
-    private final double[][]   S;
-
-    /** Frame for the central body. */
+    /** Rotating body. */
     private final Frame centralBodyFrame;
 
-    /** Number of zonal coefficients. */
-    private final int degree;
-
-    /** Number of tesseral coefficients. */
-    private final int order;
-
     /** Creates a new instance.
-     *
-     * @param centralBodyFrame rotating body frame
-     * @param equatorialRadius reference equatorial radius of the potential
-     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param C un-normalized coefficients array (cosine part)
-     * @param S un-normalized coefficients array (sine part)
-     * @exception IllegalArgumentException if coefficients array do not match
-     */
-    public DrozinerAttractionModel(final Frame centralBodyFrame,
-                                   final double equatorialRadius, final double mu,
-                                   final double[][] C, final double[][] S)
-        throws IllegalArgumentException {
+    * @param centralBodyFrame rotating body frame
+    * @param equatorialRadius reference equatorial radius of the potential
+    * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+    * @param C un-normalized coefficients array (cosine part)
+    * @param S un-normalized coefficients array (sine part)
+    * @deprecated since 6.0, replaced by {@link #DrozinerAttractionModel(Frame, SphericalHarmonicsProvider)}
+    */
+   public DrozinerAttractionModel(final Frame centralBodyFrame,
+                                    final double equatorialRadius, final double mu,
+                                    final double[][] C, final double[][] S) {
+       this(centralBodyFrame, new ConstantSphericalHarmonics(equatorialRadius, mu, C, S));
+   }
 
-        super("central attraction coefficient");
-        this.centralBodyFrame = centralBodyFrame;
-        this.equatorialRadius = equatorialRadius;
-        this.mu = mu;
-        degree = C.length - 1;
-        order = C[degree].length - 1;
+   /** Creates a new instance.
+   * @param centralBodyFrame rotating body frame
+   * @param provider provider for spherical harmonics
+   * @since 6.0
+   */
+  public DrozinerAttractionModel(final Frame centralBodyFrame,
+                                   final SphericalHarmonicsProvider provider) {
+      super("central attraction coefficient");
 
-        if ((C.length != S.length) || (C[C.length - 1].length != S[S.length - 1].length)) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH,
-                                                                 C.length, C[degree].length, S.length, S[degree].length);
-        }
+      this.provider         = provider;
+      this.mu               = provider.getMu();
+      this.centralBodyFrame = centralBodyFrame;
 
-        if (C.length < 1) {
-            this.C = new double[1][1];
-            this.S = new double[1][1];
-        } else {
-            // invert the arrays (optimization for later "line per line" seeking)
-            this.C = new double[C[degree].length][C.length];
-            this.S = new double[S[degree].length][S.length];
-            for (int i = 0; i <= degree; i++) {
-                final double[] cT = C[i];
-                final double[] sT = S[i];
-                for (int j = 0; j < cT.length; j++) {
-                    this.C[j][i] = cT[j];
-                    this.S[j][i] = sT[j];
+  }
 
-                }
-            }
-        }
-    }
-
-    /** {@inheritDoc} */
-    public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
-        throws OrekitException {
+  /** {@inheritDoc} */
+  public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
+      throws OrekitException {
         // Get the position in body frame
-        final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), s.getDate());
+        final AbsoluteDate date = s.getDate();
+        final double dateOffset = provider.getOffset(date);
+        final Transform bodyToInertial = centralBodyFrame.getTransformTo(s.getFrame(), date);
         final Vector3D posInBody =
             bodyToInertial.getInverse().transformVector(s.getPVCoordinates().getPosition());
         final double xBody = posInBody.getX();
@@ -126,6 +103,7 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
         }
         final double r2 = r12 + zBody * zBody;
         final double r  = FastMath.sqrt(r2);
+        final double equatorialRadius = provider.getAe();
         if (r <= equatorialRadius) {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
         }
@@ -144,21 +122,20 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
         double sumB = 0.0;
         double bk1 = zOnr;
         double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
-        final double[] cC = C[0];
-        double jk = -cC[1];
+        double jk = -provider.getUnnormalizedCnm(dateOffset, 1, 0);
 
         // first zonal term
         sumA += jk * (2 * aeOnr * bk1 - zOnr * bk0);
         sumB += jk * bk0;
 
         // other terms
-        for (int k = 2; k <= degree; k++) {
+        for (int k = 2; k <= provider.getMaxDegree(); k++) {
             final double bk2 = bk1;
             bk1 = bk0;
             final double p = (1.0 + k) / k;
             bk0 = aeOnr * ((1 + p) * zOnr * bk1 - (k * aeOnr * bk2) / (k - 1));
             final double ak0 = p * aeOnr * bk1 - zOnr * bk0;
-            jk = -cC[k];
+            jk = -provider.getUnnormalizedCnm(dateOffset, k, 0);
             sumA += jk * ak0;
             sumB += jk * bk0;
         }
@@ -171,7 +148,7 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
 
 
         // Tessereal-sectorial part of acceleration
-        if (order > 0) {
+        if (provider.getMaxOrder() > 0) {
             // latitude and longitude in body frame
             final double cosL = xBody / r1;
             final double sinL = yBody / r1;
@@ -190,8 +167,10 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
             double Bkminus1kminus1 = Bkm1j;
 
             // first terms
-            double Gkj  = C[1][1] * cosL + S[1][1] * sinL;
-            double Hkj  = C[1][1] * sinL - S[1][1] * cosL;
+            final double c11 = provider.getUnnormalizedCnm(dateOffset, 1, 1);
+            final double s11 = provider.getUnnormalizedSnm(dateOffset, 1, 1);
+            double Gkj  = c11 * cosL + s11 * sinL;
+            double Hkj  = c11 * sinL - s11 * cosL;
             double Akj  = 2 * r1Onr * betaKminus1 - zOnr * Bkminus1kminus1;
             double Dkj  = (Akj + zOnr * Bkminus1kminus1) * 0.5;
             double sum1 = Akj * Gkj;
@@ -199,45 +178,42 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
             double sum3 = Dkj * Hkj;
 
             // the other terms
-            for (int j = 1; j <= order; ++j) {
+            for (int j = 1; j <= provider.getMaxOrder(); ++j) {
 
                 double innerSum1 = 0.0;
                 double innerSum2 = 0.0;
                 double innerSum3 = 0.0;
-                final double[] cJ = C[j];
-                final double[] sJ = S[j];
 
-                for (int k = 2; k <= degree; ++k) {
+                for (int k = FastMath.max(2, j); k <= provider.getMaxDegree(); ++k) {
 
-                    if (k < cJ.length) {
+                    final double ckj = provider.getUnnormalizedCnm(dateOffset, k, j);
+                    final double skj = provider.getUnnormalizedSnm(dateOffset, k, j);
+                    Gkj = ckj * cosjL + skj * sinjL;
+                    Hkj = ckj * sinjL - skj * cosjL;
 
-                        Gkj = cJ[k] * cosjL + sJ[k] * sinjL;
-                        Hkj = cJ[k] * sinjL - sJ[k] * cosjL;
-
-                        if (j <= (k - 2)) {
-                            Bkj = aeOnr * (zOnr * Bkm1j * (2.0 * k + 1.0) / (k - j) -
-                                           aeOnr * Bkm2j * (k + j) / (k - 1 - j));
-                            Akj = aeOnr * Bkm1j * (k + 1.0) / (k - j) - zOnr * Bkj;
-                        } else if (j == (k - 1)) {
-                            betaK =  aeOnr * (2.0 * k - 1.0) * r1Onr * betaKminus1;
-                            Bkj = aeOnr * (2.0 * k + 1.0) * zOnr * Bkm1j - betaK;
-                            Akj = aeOnr *  (k + 1.0) * Bkm1j - zOnr * Bkj;
-                            betaKminus1 = betaK;
-                        } else if (j == k) {
-                            Bkj = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
-                            Akj = (k + 1) * r1Onr * betaK - zOnr * Bkj;
-                            Bkminus1kminus1 = Bkj;
-                        }
-
-                        Dkj =  (Akj + zOnr * Bkj) * j / (k + 1.0);
-
-                        Bkm2j = Bkm1j;
-                        Bkm1j = Bkj;
-
-                        innerSum1 += Akj * Gkj;
-                        innerSum2 += Bkj * Gkj;
-                        innerSum3 += Dkj * Hkj;
+                    if (j <= (k - 2)) {
+                        Bkj = aeOnr * (zOnr * Bkm1j * (2.0 * k + 1.0) / (k - j) -
+                                aeOnr * Bkm2j * (k + j) / (k - 1 - j));
+                        Akj = aeOnr * Bkm1j * (k + 1.0) / (k - j) - zOnr * Bkj;
+                    } else if (j == (k - 1)) {
+                        betaK =  aeOnr * (2.0 * k - 1.0) * r1Onr * betaKminus1;
+                        Bkj = aeOnr * (2.0 * k + 1.0) * zOnr * Bkm1j - betaK;
+                        Akj = aeOnr *  (k + 1.0) * Bkm1j - zOnr * Bkj;
+                        betaKminus1 = betaK;
+                    } else if (j == k) {
+                        Bkj = (2 * k + 1) * aeOnr * r1Onr * Bkminus1kminus1;
+                        Akj = (k + 1) * r1Onr * betaK - zOnr * Bkj;
+                        Bkminus1kminus1 = Bkj;
                     }
+
+                    Dkj =  (Akj + zOnr * Bkj) * j / (k + 1.0);
+
+                    Bkm2j = Bkm1j;
+                    Bkm1j = Bkj;
+
+                    innerSum1 += Akj * Gkj;
+                    innerSum2 += Bkj * Gkj;
+                    innerSum3 += Dkj * Hkj;
                 }
 
                 sum1 += innerSum1;

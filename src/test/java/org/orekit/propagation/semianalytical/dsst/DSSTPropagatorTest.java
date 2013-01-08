@@ -42,7 +42,7 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
@@ -50,6 +50,7 @@ import org.orekit.frames.LOFType;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
@@ -81,7 +82,7 @@ public class DSSTPropagatorTest {
     private boolean                       gotHere;
     private double                        mu;
     private double                        ae;
-    private PotentialCoefficientsProvider provider;
+    private SphericalHarmonicsProvider    provider;
 
     @Test
     public void testNoExtrapolation() throws OrekitException {
@@ -196,12 +197,9 @@ public class DSSTPropagatorTest {
         // Now add force model :
 
         // Central Body Force Model 5x0
-        double[][] Cnm = provider.getC(5, 0, false);
-        double[][] Snm = provider.getS(5, 0, false);
-
         // force expression :
-        DSSTForceModel force = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, Cnm, Cnm);
-        ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu, Cnm, Snm);
+        DSSTForceModel force = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
 
         // Reset propagators
         setNumProp(orbit);
@@ -452,7 +450,7 @@ public class DSSTPropagatorTest {
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        provider = GravityFieldFactory.getPotentialProvider(5, 0);
+        provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 0);
         mu = provider.getMu();
         ae = provider.getAe();
         gotHere = false;
@@ -501,15 +499,12 @@ public class DSSTPropagatorTest {
         }
 
         /** {@inheritDoc} */
-        public void handleStep(SpacecraftState currentState, boolean isLast) {
+        public void handleStep(SpacecraftState currentState, boolean isLast)
+            throws PropagationException {
 
             EquinoctialOrbit orb = new EquinoctialOrbit(currentState.getOrbit());
-            EquinoctialOrbit orbRef = null;
-            try {
-                orbRef = new EquinoctialOrbit(reference.propagate(currentState.getDate()).getOrbit());
-            } catch (PropagationException e) {
-                e.printStackTrace();
-            }
+            EquinoctialOrbit orbRef =
+                (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(reference.propagate(currentState.getDate()).getOrbit());
 
             Assert.assertEquals(orbRef.getA(), orb.getA(), tolerance[0]);
             Assert.assertEquals(orbRef.getEquinoctialEx(), orb.getEquinoctialEx(), tolerance[1]);

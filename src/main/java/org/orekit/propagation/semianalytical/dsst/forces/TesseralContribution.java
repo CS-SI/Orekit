@@ -26,6 +26,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -51,6 +52,10 @@ class TesseralContribution implements DSSTForceModel {
      *  central body spherical harmonics in seconds.
      */
     private static final double MIN_PERIOD_IN_SECONDS = 864000.;
+
+    /** Provider for spherical harmonics. */
+    private final SphericalHarmonicsProvider provider;
+
     /** Maximum resonant order. */
     /** Minimum period for analytically averaged high-order resonant
      *  central body spherical harmonics in satellite revolutions.
@@ -81,20 +86,8 @@ class TesseralContribution implements DSSTForceModel {
     /** Minimal integer value for the N index truncation in tesseral harmonic expansion. */
     private int maxS;
 
-    /** Central body gravitational contribution. */
-    private final DSSTCentralBody centralBody;
-
     /** Central body rotation period (seconds). */
     private final double bodyPeriod;
-
-    /** Central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private final double mu;
-
-    /** Degree <i>n</i> of potential. */
-    private final int degree;
-
-    /** Order <i>m</i> of potential. */
-    private final int order;
 
     /** Retrograde factor. */
     private int    I;
@@ -155,23 +148,15 @@ class TesseralContribution implements DSSTForceModel {
     private double roa;
 
     /** Single constructor.
-     *  @param centralBody central body gravitational contribution
-     *  @param centralBodyRotationRate central body rotation rate (rad/s)
-     *  @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param centralBodyRotationRate central body rotation rate (rad/s)
+     * @param provider provider for spherical harmonics
      */
-    public TesseralContribution(final DSSTCentralBody centralBody,
-                                final double centralBodyRotationRate,
-                                final double mu) {
+    public TesseralContribution(final double centralBodyRotationRate,
+                                final SphericalHarmonicsProvider provider) {
 
-        this.centralBody = centralBody;
-        this.degree      = centralBody.getMaxDegree();
-        this.order       = centralBody.getMaxOrder();
-
-        // Central body rotation period in seconds
-        this.bodyPeriod  = MathUtils.TWO_PI / centralBodyRotationRate;
-
-        // Central body attraction coefficient
-        this.mu = mu;
+        // Set the central-body rotation period
+        this.bodyPeriod = MathUtils.TWO_PI / centralBodyRotationRate;
+        this.provider   = provider;
 
         // Initialize default values
         this.resIndexSet  = new TreeSet<Integer>();
@@ -233,8 +218,8 @@ class TesseralContribution implements DSSTForceModel {
         maxHansen = maxEccPow / 2;
 
         // Set the boundary values for s index to use in potential series expansion.
-        minS = degree;
-        maxS = degree;
+        minS = provider.getMaxDegree();
+        maxS = provider.getMaxDegree();
 
     }
 
@@ -286,9 +271,8 @@ class TesseralContribution implements DSSTForceModel {
         // B / (A * (1 + B))
         BoABpo = BoA / (1. + B);
         // &mu / a
-        moa = mu / a;
-        // r / a
-        roa = centralBody.getEquatorialRadius() / a;
+        moa  = provider.getMu() / a;
+        roa = provider.getAe() / a;
 
     }
 
@@ -296,7 +280,7 @@ class TesseralContribution implements DSSTForceModel {
     public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
 
         // Compute potential derivatives
-        final double[] dU  = computeUDerivatives();
+        final double[] dU  = computeUDerivatives(provider.getOffset(spacecraftState.getDate()));
         final double duda  = dU[0];
         final double dudh  = dU[1];
         final double dudk  = dU[2];
@@ -342,7 +326,7 @@ class TesseralContribution implements DSSTForceModel {
                                                        MIN_PERIOD_IN_SECONDS / orbitPeriod);
 
             // Search the resonant orders in the tesseral harmonic field
-            for (int m = 1; m <= order; m++) {
+            for (int m = 1; m <= provider.getMaxOrder(); m++) {
                 final double resonance = ratio * m;
                 final int j = (int) FastMath.round(resonance);
                 if (j > 0 && FastMath.abs(resonance - j) <= tolerance) {
@@ -350,7 +334,7 @@ class TesseralContribution implements DSSTForceModel {
                     resIndexSet.add(j);
                     resOrderSet.add(m);
                     // Store each resonant couple for a given order
-                    for (int n = m; n <= degree; n++) {
+                    for (int n = m; n <= provider.getMaxDegree(); n++) {
                         resCoupleSet.add(new ResonantCouple(n, m));
                     }
                 }
@@ -381,10 +365,11 @@ class TesseralContribution implements DSSTForceModel {
      *  </pre>
      *  </p>
      *
+     *  @param dateOffset offset between current date and gravity field reference date
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs in Hansen computation
      */
-    private double[] computeUDerivatives() throws OrekitException {
+    private double[] computeUDerivatives(final double dateOffset) throws OrekitException {
 
         // Gmsj and Hmsj polynomials
         final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(k, h, alpha, beta, I);
@@ -408,7 +393,7 @@ class TesseralContribution implements DSSTForceModel {
         for (int j : resIndexSet) {
             // m-SUM over resonant orders
             for (int m : resOrderSet) {
-                final double[] potential = computeUsnDerivatives(j, m, ghMSJ, gammaMNS, hansen);
+                final double[] potential = computeUsnDerivatives(dateOffset, j, m, ghMSJ, gammaMNS, hansen);
                 dUda  += potential[0];
                 dUdh  += potential[1];
                 dUdk  += potential[2];
@@ -431,6 +416,7 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** Compute potential derivatives for each resonant tesseral term.
+     *  @param dateOffset offset between current date and gravity field reference date
      *  @param j resonant index <i>j</i>
      *  @param m resonant order <i>m</i>
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
@@ -439,7 +425,7 @@ class TesseralContribution implements DSSTForceModel {
      *  @return U<sub>s,n</sub> derivatives
      *  @throws OrekitException if an error occurs in Hansen computation
      */
-    private double[] computeUsnDerivatives(final int j, final int m,
+    private double[] computeUsnDerivatives(final double dateOffset, final int j, final int m,
                                            final GHmsjPolynomials ghMSJ,
                                            final GammaMnsFunction gammaMNS,
                                            final HansenTesseral hansen)
@@ -468,7 +454,7 @@ class TesseralContribution implements DSSTForceModel {
             final int w = FastMath.abs(m + s);
             // n-SUM from (Max(2, m, |s|)) to N
             final int nmin = Math.max(Math.max(2, m), Math.abs(s));
-            for (int n = nmin; n <= degree; n++) {
+            for (int n = nmin; n <= provider.getMaxDegree(); n++) {
                 // (R / a)^n
                 final double ran    = FastMath.pow(roa, n);
                 final double vMNS   = CoefficientsFactory.getVmns(m, n, s);
@@ -492,8 +478,8 @@ class TesseralContribution implements DSSTForceModel {
                 final double dJacobi = jacobiPoly.derivative().value(gamma);
                 final double gms = ghMSJ.getGmsj(m, s, j);
                 final double hms = ghMSJ.getHmsj(m, s, j);
-                final double cnm = centralBody.getCnm(n, m);
-                final double snm = centralBody.getSnm(n, m);
+                final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
+                final double snm = provider.getUnnormalizedCnm(dateOffset, n, m);
 
                 // Compute dU / da from expansion of equation (4-a)
                 double realCosFactor = (gms * cnm + hms * snm) * cosPhi;

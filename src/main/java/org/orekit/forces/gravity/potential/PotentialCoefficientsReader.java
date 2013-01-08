@@ -19,8 +19,12 @@ package org.orekit.forces.gravity.potential;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -36,51 +40,34 @@ import org.orekit.errors.OrekitMessages;
  * @see GravityFieldFactory
  * @author Fabien Maussion
  */
-public abstract class PotentialCoefficientsReader
-    implements DataLoader, PotentialCoefficientsProvider {
+public abstract class PotentialCoefficientsReader implements DataLoader {
 
-    // CHECKSTYLE: stop VisibilityModifierCheck
+    /** Maximal degree to parse. */
+    private int maxParseDegree;
 
-    /** Indicator for completed read. */
-    protected boolean readCompleted;
-
-    /** Maximal degree to read. */
-    protected int maxReadDegree;
-
-    /** Maximal order to read. */
-    protected int maxReadOrder;
-
-    /** Central body reference radius. */
-    protected double ae;
-
-    /** Central body attraction coefficient. */
-    protected double mu;
-
-    /** fully normalized zonal coefficients array. */
-    protected double[] normalizedJ;
-
-    /** fully normalized tesseral-sectorial coefficients matrix. */
-    protected double[][] normalizedC;
-
-    /** fully normalized tesseral-sectorial coefficients matrix. */
-    protected double[][] normalizedS;
-
-    // CHECKSTYLE: resume VisibilityModifierCheck
-
-    /** un-normalized zonal coefficients array. */
-    private double[] unNormalizedJ;
-
-    /** un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedC;
-
-    /** un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedS;
+    /** Maximal order to parse. */
+    private int maxParseOrder;
 
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
     /** Allow missing coefficients in the input data. */
     private final boolean missingCoefficientsAllowed;
+
+    /** Indicator for complete read. */
+    private boolean readComplete;
+
+    /** Central body reference radius. */
+    private double ae;
+
+    /** Central body attraction coefficient. */
+    private double mu;
+
+    /** Un-normalized tesseral-sectorial coefficients matrix. */
+    private double[][] unNormalizedC;
+
+    /** Un-normalized tesseral-sectorial coefficients matrix. */
+    private double[][] unNormalizedS;
 
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
@@ -89,19 +76,15 @@ public abstract class PotentialCoefficientsReader
      */
     protected PotentialCoefficientsReader(final String supportedNames,
                                           final boolean missingCoefficientsAllowed) {
-        this.supportedNames = supportedNames;
+        this.supportedNames             = supportedNames;
         this.missingCoefficientsAllowed = missingCoefficientsAllowed;
-        readCompleted = false;
-        maxReadDegree = Integer.MAX_VALUE;
-        maxReadOrder  = Integer.MAX_VALUE;
-        ae = Double.NaN;
-        mu = Double.NaN;
-        normalizedJ = null;
-        normalizedC = null;
-        normalizedS = null;
-        unNormalizedJ = null;
-        unNormalizedC = null;
-        unNormalizedS = null;
+        this.maxParseDegree              = Integer.MAX_VALUE;
+        this.maxParseOrder               = Integer.MAX_VALUE;
+        this.readComplete               = false;
+        this.ae                         = Double.NaN;
+        this.mu                         = Double.NaN;
+        this.unNormalizedC              = null;
+        this.unNormalizedS              = null;
     }
 
     /** Get the regular expression for supported files names.
@@ -118,198 +101,364 @@ public abstract class PotentialCoefficientsReader
         return missingCoefficientsAllowed;
     }
 
-    /** Set the degree limit for the next file read.
-     * @param maxReadDegree maximal degree to read
+    /** Set the degree limit for the next file parsing.
+     * @param maxParseDegree maximal degree to parse (may be safely
+     * set to {@link Integer#MAX_VALUE} to parse all available coefficients)
      */
-    public void setMaxReadDegree(final int maxReadDegree) {
-        this.maxReadDegree = maxReadDegree;
+    public void setMaxParseDegree(final int maxParseDegree) {
+        this.maxParseDegree = maxParseDegree;
     }
 
-    /** Set the order limit for the next file read.
-     * @param maxReadOrder maximal order to read
+    /** Get the degree limit for the next file parsing.
+     * @return degree limit for the next file parsing
      */
-    public void setMaxReadOrder(final int maxReadOrder) {
-        this.maxReadOrder = maxReadOrder;
+    public int getMaxParseDegree() {
+        return maxParseDegree;
+    }
+
+    /** Set the order limit for the next file parsing.
+     * @param maxParseOrder maximal order to parse (may be safely
+     * set to {@link Integer#MAX_VALUE} to parse all available coefficients)
+     */
+    public void setMaxParseOrder(final int maxParseOrder) {
+        this.maxParseOrder = maxParseOrder;
+    }
+
+    /** Get the order limit for the next file parsing.
+     * @return order limit for the next file parsing
+     */
+    public int getMaxParseOrder() {
+        return maxParseOrder;
     }
 
     /** {@inheritDoc} */
     public boolean stillAcceptsData() {
-        return !readCompleted;
+        return !(readComplete &&
+                 getMaxAvailableDegree() >= getMaxParseDegree() &&
+                 getMaxAvailableOrder()  >= getMaxParseOrder());
+    }
+
+    /** Set the indicator for completed read.
+     * @param readComplete if true, a gravity field has been completely read
+     */
+    protected void setReadComplete(final boolean readComplete) {
+        this.readComplete = readComplete;
+    }
+
+    /** Set the central body reference radius.
+     * @param central body reference radius
+     */
+    protected void setAe(final double ae) {
+        this.ae = ae;
+    }
+
+    /** Get the central body reference radius.
+     * @return central body reference radius
+     */
+    protected double getAe() {
+        return ae;
+    }
+
+    /** Set the central body attraction coefficient.
+     * @param central body attraction coefficient
+     */
+    protected void setMu(final double mu) {
+        this.mu = mu;
+    }
+
+    /** Get the central body attraction coefficient.
+     * @return central body attraction coefficient
+     */
+    protected double getMu() {
+        return mu;
+    }
+
+    /** Set the normalized tesseral-sectorial coefficients matrix.
+     * @param normalizedC tesseral-sectorial coefficients matrix
+     * (a reference to the array will be stored, <em>and</em>
+     * the elements will be un-normalized in-place)
+     * @param name name of the file (or zip entry)
+     * @exception OrekitException if a coefficient is missing
+     */
+    protected void setNormalizedC(final double[][] normalizedC, final String name)
+        throws OrekitException {
+        final int degree = normalizedC.length - 1;
+        final int order  = normalizedC[degree].length - 1;
+        final double[][] factors = GravityFieldFactory.getUnnormalizationFactors(degree, order);
+        for (int i = 0; i < normalizedC.length; ++i) {
+            for (int j = 0; j < normalizedC[i].length; ++j) {
+                normalizedC[i][j] *= factors[i][j];
+            }
+        }
+        setUnNormalizedC(normalizedC, name);
+    }
+
+    /** Set the un-normalized tesseral-sectorial coefficients matrix.
+     * @param unNormalizedC un-normalized tesseral-sectorial coefficients matrix
+     * (a reference to the array will be stored)
+     * @param name name of the file (or zip entry)
+     * @exception OrekitException if a coefficient is missing
+     */
+    protected void setUnNormalizedC(final double[][] unNormalizedC, final String name)
+        throws OrekitException {
+
+        for (int i = 0; i < unNormalizedC.length; ++i) {
+            for (int j = 0; j < unNormalizedC[i].length; ++j) {
+                if (Double.isNaN(unNormalizedC[i][j])) {
+                    throw new OrekitException(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                              'C', i, j, name);
+                }
+            }
+        }
+
+        this.unNormalizedC = unNormalizedC;
+
+    }
+
+    /** Get a truncated copy of the un-normalized tesseral-sectorial coefficients matrix.
+     * @param degree truncation degree
+     * @param order truncation order
+     * @return truncated copy of the un-normalized tesseral-sectorial coefficients matrix
+     */
+    protected double[][] getUnNormalizedC(final int degree, final int order) {
+        return truncateArray(degree, order, unNormalizedC);
+    }
+
+    /** Set the normalized tesseral-sectorial coefficients matrix.
+     * @param normalizedS tesseral-sectorial coefficients matrix
+     * (a reference to the array will be stored, <em>and</em>
+     * the elements will be un-normalized in-place)
+     * @param name name of the file (or zip entry)
+     * @exception OrekitException if a coefficient is missing
+     */
+    protected void setNormalizedS(final double[][] normalizedS, final String name)
+        throws OrekitException {
+        final int degree = normalizedS.length - 1;
+        final int order  = normalizedS[degree].length - 1;
+        final double[][] factors = GravityFieldFactory.getUnnormalizationFactors(degree, order);
+        for (int i = 0; i < normalizedS.length; ++i) {
+            for (int j = 0; j < normalizedS[i].length; ++j) {
+                normalizedS[i][j] *= factors[i][j];
+            }
+        }
+        setUnNormalizedS(normalizedS, name);
+    }
+
+    /** Set the un-normalized tesseral-sectorial coefficients matrix.
+     * @param unNormalizedS un-normalized tesseral-sectorial coefficients matrix
+     * (a reference to the array will be stored)
+     * @param name name of the file (or zip entry)
+     * @exception OrekitException if a coefficient is missing
+     */
+    protected void setUnNormalizedS(final double[][] unNormalizedS, final String name)
+        throws OrekitException {
+
+        for (int i = 0; i < unNormalizedS.length; ++i) {
+            for (int j = 0; j < unNormalizedS[i].length; ++j) {
+                if (Double.isNaN(unNormalizedS[i][j])) {
+                    throw new OrekitException(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                              'S', i, j, name);
+                }
+            }
+        }
+
+        this.unNormalizedS = unNormalizedS;
+
+    }
+
+    /** Get a truncated copy of the un-normalized tesseral-sectorial coefficients matrix.
+     * @param degree truncation degree
+     * @param order truncation order
+     * @return truncated copy of the un-normalized tesseral-sectorial coefficients matrix
+     */
+    protected double[][] getUnNormalizedS(final int degree, final int order) {
+        return truncateArray(degree, order, unNormalizedS);
+    }
+
+    /** Get the maximal degree available in the last file parsed.
+     * @return maximal degree available in the last file parsed
+     */
+    public int getMaxAvailableDegree() {
+        return unNormalizedC.length - 1;
+    }
+
+    /** Get the maximal order available in the last file parsed.
+     * @return maximal order available in the last file parsed
+     */
+    public int getMaxAvailableOrder() {
+        return unNormalizedC[unNormalizedC.length - 1].length - 1;
     }
 
     /** {@inheritDoc} */
     public abstract void loadData(InputStream input, String name)
         throws IOException, ParseException, OrekitException;
 
-    /** {@inheritDoc} */
-    public double[] getJ(final boolean normalized, final int n)
-        throws OrekitException {
-        if (n >= normalizedC.length) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD, n, normalizedC.length - 1);
-        }
-
-        final double[] completeJ = normalized ? getNormalizedJ() : getUnNormalizedJ();
-
-        // truncate the array as per caller request
-        final double[] result = new double[n + 1];
-        System.arraycopy(completeJ, 0, result, 0, n + 1);
-
-        return result;
-
-    }
-
-    /** {@inheritDoc} */
-    public double[][] getC(final int n, final int m, final boolean normalized)
-        throws OrekitException {
-        return truncateArray(n, m, normalized ? getNormalizedC() : getUnNormalizedC());
-    }
-
-    /** {@inheritDoc} */
-    public double[][] getS(final int n, final int m, final boolean normalized)
-        throws OrekitException {
-        return truncateArray(n, m, normalized ? getNormalizedS() : getUnNormalizedS());
-    }
-
-    /** {@inheritDoc} */
-    public double getMu() {
-        return mu;
-    }
-
-    /** {@inheritDoc} */
-    public double getAe() {
-        return ae;
-    }
-
-    /** Get the tesseral-sectorial and zonal coefficients.
-     * @param n the degree
-     * @param m the order
-     * @param complete the complete array
-     * @return the trunctated coefficients array
+    /** Get a provider for read spherical harmonics coefficients.
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a new provider
      * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
+     * available degree or order or if no gravity field has read yet
      */
-    private double[][] truncateArray(final int n, final int m, final double[][] complete)
+    public abstract SphericalHarmonicsProvider getProvider(int degree, int order)
+        throws OrekitException;
+
+    /** Get a time-independent provider for read spherical harmonics coefficients.
+     * <p>
+     * This method provides only the time-independent part of gravity fields. It
+     * is intended mainly for comparison and testing, proper propagation should
+     * take the time-dependent part into account.
+     * </p>
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a new provider, with no time-dependent parts
+     * @exception OrekitException if the requested maximal degree or order exceeds the
+     * available degree or order or if no gravity field has read yet
+     * @see #getProvider(int, int)
+     */
+    public ConstantSphericalHarmonics getConstantProvider(int degree, int order)
         throws OrekitException {
 
-        // safety checks
-        if (n >= complete.length) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD, n, complete.length - 1);
-        }
-        if (m >= complete[complete.length - 1].length) {
-            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD, m, complete[complete.length - 1].length - 1);
+        if (!readComplete) {
+            throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
         }
 
-        // truncate each array row in turn
-        final double[][] result = new double[n + 1][];
-        for (int i = 0; i <= n; i++) {
-            final double[] ri = new double[FastMath.min(i, m) + 1];
-            System.arraycopy(complete[i], 0, ri, 0, ri.length);
-            result[i] = ri;
+        if (degree >= unNormalizedC.length) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
+                                      degree, unNormalizedC.length - 1);
         }
 
-        return result;
+        if (order >= unNormalizedC[unNormalizedC.length - 1].length) {
+            throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
+                                      order, unNormalizedC[unNormalizedC.length - 1].length);
+        }
+
+        return new ConstantSphericalHarmonics(ae, mu,
+                                              truncateArray(degree, order, unNormalizedC),
+                                              truncateArray(degree, order, unNormalizedS));
 
     }
 
-    /** Get the fully normalized zonal coefficients.
-     * @return J the coefficients matrix
+    /** Build a coefficients triangular array.
+     * @param degree array degree
+     * @param order array order
+     * @param value initial value to put in array elements
+     * @return built array
      */
-    private double[] getNormalizedJ() {
-        if (normalizedJ == null) {
-            normalizedJ = new double[normalizedC.length];
-            for (int i = 0; i < normalizedC.length; i++) {
-                normalizedJ[i] = -normalizedC[i][0];
+    protected static double[][] buildTriangularArray(final int degree, final int order, final double value) {
+        final double[][] array = new double[degree + 1][];
+        for (int k = 0; k < array.length; ++k) {
+            array[k] = buildRow(k, order, value);
+        }
+        return array;
+    }
+
+    /** Build a coefficients row.
+     * @param degree row degree
+     * @param order row order
+     * @param value initial value to put in array elements
+     * @return built row
+     */
+    protected static double[] buildRow(final int degree, final int order, final double value) {
+        final double[] row = new double[FastMath.min(order, degree) + 1];
+        Arrays.fill(row, value);
+        return row;
+    }
+
+    /** Extend a list of lists of coefficients if needed.
+     * @param list list of lists of coefficients
+     * @param degree degree required to be present
+     * @param order order required to be present
+     * @param value initial value to put in list elements
+     */
+    protected void extendListOfLists(final List<List<Double>> list, final int degree, final int order,
+                                     final double value) {
+        for (int i = list.size(); i <= degree; ++i) {
+            list.add(new ArrayList<Double>());
+        }
+        final List<Double> listN = list.get(degree);
+        final Double v = Double.valueOf(value);
+        for (int j = listN.size(); j <= order; ++j) {
+            listN.add(v);
+        }
+    }
+
+    /** Convert a list of list into an array.
+     * @param list list of lists of coefficients
+     * @return a new array
+     */
+    protected double[][] toArray(final List<List<Double>> list) {
+        final double[][] array = new double[list.size()][];
+        for (int i = 0; i < array.length; ++i) {
+            array[i] = new double[list.get(i).size()];
+            for (int j = 0; j < array[i].length; ++j) {
+                array[i][j] = list.get(i).get(j);
             }
         }
-        return normalizedJ;
+        return array;
     }
 
-    /** Get the fully normalized tesseral-sectorial and zonal coefficients.
-     * @return C the coefficients matrix
+    /** Parse a coefficient.
+     * @param field text field to parse
+     * @param list list where to put the coefficient
+     * @param i first index in the list
+     * @param j second index in the list
+     * @param cName name of the coefficient
+     * @param name name of the file
+     * @exception OrekitException if the coefficient is already set
      */
-    private double[][] getNormalizedC() {
-        return normalizedC;
-    }
-
-    /** Get the fully normalized tesseral-sectorial coefficients.
-     * @return S the coefficients matrix
-     */
-    private double[][] getNormalizedS() {
-        return normalizedS;
-    }
-
-    /** Get the un-normalized  zonal coefficients.
-     * @return J the zonal coefficients array.
-     */
-    private double[] getUnNormalizedJ() {
-        if (unNormalizedJ == null) {
-            final double[][] uC = getUnNormalizedC();
-            unNormalizedJ = new double[uC.length];
-            for (int i = 0; i < uC.length; i++) {
-                unNormalizedJ[i] = -uC[i][0];
-            }
+    protected void parseCoefficient(final String field, final List<List<Double>> list,
+                                    final int i, final int j,
+                                    final String cName, final String name)
+        throws OrekitException {
+        final double value    = Double.parseDouble(field.replace('D', 'E'));
+        final double oldValue = list.get(i).get(j);
+        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 1)) {
+            // the coefficient was not already initialized
+            list.get(i).set(j, value);
+        } else {
+            throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                      "Cdot", i, j, name);
         }
-        return unNormalizedJ;
     }
 
-    /** Get the un-normalized tesseral-sectorial and zonal coefficients.
-     * @return C the coefficients matrix
+    /** Parse a coefficient.
+     * @param field text field to parse
+     * @param array array where to put the coefficient
+     * @param i first index in the list
+     * @param j second index in the list
+     * @param cName name of the coefficient
+     * @param name name of the file
+     * @exception OrekitException if the coefficient is already set
      */
-    private double[][] getUnNormalizedC() {
-        // calculate only if asked
-        if (unNormalizedC == null) {
-            unNormalizedC = unNormalize(normalizedC);
+    protected void parseCoefficient(final String field, final double[][] array,
+                                    final int i, final int j,
+                                    final String cName, final String name)
+        throws OrekitException {
+        final double value    = Double.parseDouble(field.replace('D', 'E'));
+        final double oldValue = array[i][j];
+        if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 1)) {
+            // the coefficient was not already initialized
+            array[i][j] = value;
+        } else {
+            throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                      "Cdot", i, j, name);
         }
-        return unNormalizedC;
     }
 
-    /** Get the un-normalized tesseral-sectorial coefficients.
-     * @return S the coefficients matrix
+    /** Get a truncated copy of a triangular array.
+     * @param degree truncation degree
+     * @param order truncation order
+     * @param array triangular array to truncate
+     * @return a new truncated array
      */
-    private double[][] getUnNormalizedS() {
-        // calculate only if asked
-        if (unNormalizedS == null) {
-            unNormalizedS = unNormalize(normalizedS);
+    protected static double[][] truncateArray(final int degree, final int order,
+                                              final double[][] array) {
+        final double[][] truncated = buildTriangularArray(degree, order, 0.0);
+        for (int i = 0; i <= degree; ++i) {
+            System.arraycopy(array[i], 0, truncated[i], 0, truncated[i].length);
         }
-        return unNormalizedS;
-    }
-
-    /** Unnormalize a coefficients array.
-     * @param normalized normalized coefficients array
-     * @return unnormalized array
-     */
-    private double[][] unNormalize(final double[][] normalized) {
-
-        // allocate a triangular array
-        final double[][] unNormalized = new double[normalized.length][];
-        unNormalized[0] = new double[] {
-            normalized[0][0]
-        };
-
-        // initialization
-        double factN = 1.0;
-        double mfactNMinusM = 1.0;
-        double mfactNPlusM = 1.0;
-
-        // unnormalize the coefficients
-        for (int n = 1; n < normalized.length; n++) {
-            final double[] nRow = normalized[n];
-            final double[] uRow = new double[nRow.length];
-            final double coeffN = 2.0 * (2 * n + 1);
-            factN *= n;
-            mfactNMinusM = factN;
-            mfactNPlusM = factN;
-            uRow[0] = FastMath.sqrt(2 * n + 1) * normalized[n][0];
-            for (int m = 1; m < uRow.length; m++) {
-                mfactNPlusM  *= n + m;
-                mfactNMinusM /= n - m + 1;
-                uRow[m] = FastMath.sqrt((coeffN * mfactNMinusM) / mfactNPlusM) * nRow[m];
-            }
-            unNormalized[n] = uRow;
-        }
-
-        return unNormalized;
-
+        return truncated;
     }
 
 }

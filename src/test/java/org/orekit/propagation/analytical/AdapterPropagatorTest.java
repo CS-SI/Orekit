@@ -36,7 +36,7 @@ import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel;
 import org.orekit.frames.FramesFactory;
@@ -79,11 +79,11 @@ public class AdapterPropagatorTest {
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, 5,
                                                          new LofOffset(leo.getFrame(), LOFType.LVLH),
                                                          t0, Vector3D.ZERO, f, isp,
-                                                         false, false, null, 0, 0);
+                                                         false, false, null);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, 5,
                                                          new LofOffset(leo.getFrame(), LOFType.LVLH),
                                                          t0, dV, f, isp,
-                                                         false, false, null, 0, 0);
+                                                         false, false, null);
 
         // we set up a model that reverts the maneuvers
         AdapterPropagator adapterPropagator = new AdapterPropagator(withManeuver);
@@ -124,11 +124,11 @@ public class AdapterPropagatorTest {
         BoundedPropagator withoutManeuver = getEphemeris(heo, mass, 5,
                                                          new LofOffset(heo.getFrame(), LOFType.LVLH),
                                                          t0, Vector3D.ZERO, f, isp,
-                                                         false, false, null, 0, 0);
+                                                         false, false, null);
         BoundedPropagator withManeuver    = getEphemeris(heo, mass, 5,
                                                          new LofOffset(heo.getFrame(), LOFType.LVLH),
                                                          t0, dV, f, isp,
-                                                         false, false, null, 0, 0);
+                                                         false, false, null);
 
         // we set up a model that reverts the maneuvers
         AdapterPropagator adapterPropagator = new AdapterPropagator(withManeuver);
@@ -170,15 +170,15 @@ public class AdapterPropagatorTest {
         // setup a specific coefficient file for gravity potential as it will also
         // try to read a corrupted one otherwise
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
-        PotentialCoefficientsProvider gravityField = GravityFieldFactory.getPotentialProvider(8, 8);
+        SphericalHarmonicsProvider gravityField = GravityFieldFactory.getSphericalHarmonicsProvider(8, 8);
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, 10,
                                                          new LofOffset(leo.getFrame(), LOFType.VNC),
                                                          t0, Vector3D.ZERO, f, isp,
-                                                         true, true, gravityField, 8, 8);
+                                                         true, true, gravityField);
         BoundedPropagator withManeuver    = getEphemeris(leo, mass, 10,
                                                          new LofOffset(leo.getFrame(), LOFType.VNC),
                                                          t0, dV, f, isp,
-                                                         true, true, gravityField, 8, 8);
+                                                         true, true, gravityField);
 
         // we set up a model that reverts the maneuvers
         AdapterPropagator adapterPropagator = new AdapterPropagator(withManeuver);
@@ -213,8 +213,7 @@ public class AdapterPropagatorTest {
                                            final AbsoluteDate t0, final Vector3D dV,
                                            final double f, final double isp,
                                            final boolean sunAttraction, final boolean moonAttraction,
-                                           final PotentialCoefficientsProvider gravityField,
-                                           final int degree, final int order)
+                                           final SphericalHarmonicsProvider gravityField)
         throws OrekitException, ParseException, IOException {
 
         final SpacecraftState initialState =
@@ -250,10 +249,7 @@ public class AdapterPropagatorTest {
 
         if (gravityField != null) {
             propagator.addForceModel(new CunninghamAttractionModel(FramesFactory.getGTOD(false),
-                                                                   gravityField.getAe(),
-                                                                   gravityField.getMu(),
-                                                                   gravityField.getC(degree, order, false),
-                                                                   gravityField.getS(degree, order, false)));
+                                                                   gravityField));
         }
 
         propagator.setEphemerisMode();

@@ -22,6 +22,13 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added support for time-dependent gravity fields. All recent gravity
+        fields include time-dependent coefficients (linear trends and pulsations
+        at several different periods). They are now properly handled by Orekit.
+        For comparison purposes, it is still possible to retrieve only the constant
+        part of a field even if the file contains time-dependent coefficients too.
+      </action>
       <action dev="luc" type="update" >
         Added a way to speed up parsing and reduce memory consumption when
         loading gravity fields. Now the user can specify the maximal degree
