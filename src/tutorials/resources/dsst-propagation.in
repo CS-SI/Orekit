@@ -113,8 +113,12 @@ solar.radiation.pressure = false
 ### Simulation parameters
 ## Start date (UTC) [orbit.date]
 # start.date  = 2011-12-12T11:57:20.000
+## One duration must be set, whether in seconds or in days
+## If both durations are set, duration.in.days will overwrite duration
 ## Duration (seconds)
-duration    = 31536000.0
+# duration = 31536000.0
+## Duration (days)
+duration.in.days = 365.0
 ## Time step between printed elements (seconds)
 output.step = 86400.0
 

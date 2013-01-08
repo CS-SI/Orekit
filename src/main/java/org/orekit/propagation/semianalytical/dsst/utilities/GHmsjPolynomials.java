@@ -16,6 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.util.FastMath;
 
 /** Compute the G<sub>ms</sub><sup>j</sup> and the H<sub>ms</sub><sup>j</sup>
@@ -31,12 +35,12 @@ public class GHmsjPolynomials {
     /** C<sub>j</sub>(k, h), S<sub>j</sub>(k, h) coefficient.
      * (k, h) are the (x, y) component of the eccentricity vector in equinoctial elements
      */
-    private final CjSjCoefficient cisiKH;
+    private final CjSjCoefficient cjsjKH;
 
     /** C<sub>j</sub>(&alpha;, &beta;), S<sub>j</sub>(&alpha;, &beta;) coefficient.
      * (&alpha;, &beta;) are the direction cosines
      */
-    private final CjSjCoefficient cisiAB;
+    private final CjSjCoefficient cjsjAB;
 
     /** Is the orbit represented as a retrograde orbit.
      * I = -1 if yes, +1 otherwise.
@@ -44,14 +48,17 @@ public class GHmsjPolynomials {
     private int                   I;
 
     /** Create a set of G<sub>ms</sub><sup>j</sup> and H<sub>ms</sub><sup>j</sup> polynomials.
-     * @param cisiHK {C<sub>j</sub>(k, h), S<sub>j</sub>(k, h) coefficient
-     * @param cisiAB {C<sub>j</sub>(&alpha;, &beta;), S<sub>j</sub>(&alpha;, &beta;) coefficient
-     * @param isRetrograde Is the orbit is represented as a retrograde orbit I = -1, +1 otherwise
+     *  @param k X component of the eccentricity vector
+     *  @param h Y component of the eccentricity vector
+     *  @param alpha direction cosine &alpha;
+     *  @param beta direction cosine &beta;
+     *  @param isRetrograde Is the orbit is represented as a retrograde orbit I = -1, +1 otherwise
      **/
-    public GHmsjPolynomials(final CjSjCoefficient cisiHK, final CjSjCoefficient cisiAB,
+    public GHmsjPolynomials(final double k, final double h,
+                            final double alpha, final double beta,
                             final int isRetrograde) {
-        this.cisiKH = cisiHK;
-        this.cisiAB = cisiAB;
+        this.cjsjKH = new CjSjCoefficient(k, h);
+        this.cjsjAB = new CjSjCoefficient(alpha, beta);
         this.I = isRetrograde;
     }
 
@@ -66,12 +73,12 @@ public class GHmsjPolynomials {
         double gms = 0d;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
-            gms = cisiKH.getCj(abssMj) * cisiAB.getCj(mMis) -
-                  I * FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getSj(mMis);
+            gms = cjsjKH.getCj(abssMj) * cjsjAB.getCj(mMis) -
+                  I * FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getSj(mMis);
         } else if (FastMath.abs(s) >= m) {
             final int sMim = FastMath.abs(s - I * m);
-            gms = cisiKH.getCj(abssMj) * cisiAB.getCj(sMim) +
-                  FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSj(abssMj) * cisiAB.getSj(sMim);
+            gms = cjsjKH.getCj(abssMj) * cjsjAB.getCj(sMim) +
+                  FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjKH.getSj(abssMj) * cjsjAB.getSj(sMim);
         }
         return gms;
     }
@@ -88,12 +95,12 @@ public class GHmsjPolynomials {
         double hms = 0d;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
-            hms = I * cisiKH.getCj(sMj) * cisiAB.getSj(mMis) + FastMath.signum(s - j) *
-                  cisiKH.getSj(sMj) * cisiAB.getCj(mMis);
+            hms = I * cjsjKH.getCj(sMj) * cjsjAB.getSj(mMis) + FastMath.signum(s - j) *
+                  cjsjKH.getSj(sMj) * cjsjAB.getCj(mMis);
         } else if (FastMath.abs(s) >= m) {
             final int sMim = FastMath.abs(s - I * m);
-            hms = -FastMath.signum(s - m) * cisiKH.getCj(sMj) * cisiAB.getSj(sMim) +
-                   FastMath.signum(s - j) * cisiKH.getSj(sMj) * cisiAB.getCj(sMim);
+            hms = -FastMath.signum(s - m) * cjsjKH.getCj(sMj) * cjsjAB.getSj(sMim) +
+                   FastMath.signum(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getCj(sMim);
         }
         return hms;
     }
@@ -111,11 +118,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiAB.getCj(mMis) * cisiKH.getDcjDk(sMj) -
-                   I * FastMath.signum(s - j) * cisiAB.getSj(mMis) * cisiKH.getDsjDk(sMj);
+            dGms = cjsjAB.getCj(mMis) * cjsjKH.getDcjDk(sMj) -
+                   I * FastMath.signum(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDk(sMj);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiAB.getCj(sMim) * cisiKH.getDcjDk(sMj) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSj(sMim) * cisiKH.getDsjDk(sMj);
+            dGms = cjsjAB.getCj(sMim) * cjsjKH.getDcjDk(sMj) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDk(sMj);
         }
         return dGms;
     }
@@ -133,11 +140,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiAB.getCj(mMis) * cisiKH.getDcjDh(sMj) -
-                   I * FastMath.signum(s - j) * cisiAB.getSj(mMis) * cisiKH.getDsjDh(sMj);
+            dGms = cjsjAB.getCj(mMis) * cjsjKH.getDcjDh(sMj) -
+                   I * FastMath.signum(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDh(sMj);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiAB.getCj(sMim) * cisiKH.getDcjDh(sMj) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiAB.getSj(sMim) * cisiKH.getDsjDh(sMj);
+            dGms = cjsjAB.getCj(sMim) * cjsjKH.getDcjDh(sMj) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDh(sMj);
         }
         return dGms;
     }
@@ -155,11 +162,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDk(mMis) -
-                   I * FastMath.signum(s - j) * cisiKH.getSj(sMj) * cisiAB.getDsjDk(mMis);
+            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(mMis) -
+                   I * FastMath.signum(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(mMis);
         } else if (FastMath.abs(s) >= m) {
-            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDk(sMim) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSj(sMj) * cisiAB.getDsjDk(sMim);
+            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(sMim) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(sMim);
         }
         return dGms;
     }
@@ -177,11 +184,11 @@ public class GHmsjPolynomials {
 
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDh(mMis) -
-                   I * FastMath.signum(s - j) * cisiKH.getSj(sMj) * cisiAB.getDsjDh(mMis);
+            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(mMis) -
+                   I * FastMath.signum(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(mMis);
         } else if (FastMath.abs(s) > m) {
-            dGms = cisiKH.getCj(sMj) * cisiAB.getDcjDh(sMim) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cisiKH.getSj(sMj) * cisiAB.getDsjDh(sMim);
+            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(sMim) +
+                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(sMim);
         }
         return dGms;
     }
@@ -199,11 +206,11 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiAB.getSj(mMis) * cisiKH.getDcjDk(abssMj) +
-                   FastMath.signum(s - j) * cisiAB.getCj(mMis) * cisiKH.getDsjDk(abssMj);
+            dHms = I * cjsjAB.getSj(mMis) * cjsjKH.getDcjDk(abssMj) +
+                   FastMath.signum(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDk(abssMj);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiAB.getSj(abssMim) * cisiKH.getDcjDk(abssMj) +
-                    FastMath.signum(s - j) * cisiAB.getCj(abssMim) * cisiKH.getDsjDk(abssMj);
+            dHms = -FastMath.signum(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDk(abssMj) +
+                    FastMath.signum(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDk(abssMj);
         }
         return dHms;
     }
@@ -221,11 +228,11 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiAB.getSj(mMis) * cisiKH.getDcjDh(abssMj) +
-                   FastMath.signum(s - j) * cisiAB.getCj(mMis) * cisiKH.getDsjDh(abssMj);
+            dHms = I * cjsjAB.getSj(mMis) * cjsjKH.getDcjDh(abssMj) +
+                   FastMath.signum(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDh(abssMj);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiAB.getSj(abssMim) * cisiKH.getDcjDh(abssMj) +
-                    FastMath.signum(s - j) * cisiAB.getCj(abssMim) * cisiKH.getDsjDh(abssMj);
+            dHms = -FastMath.signum(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDh(abssMj) +
+                    FastMath.signum(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDh(abssMj);
         }
         return dHms;
     }
@@ -243,11 +250,11 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiKH.getCj(abssMj) * cisiAB.getDsjDk(mMis) +
-                   FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDk(mMis);
+            dHms = I * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDk(mMis) +
+                   FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(mMis);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiKH.getCj(abssMj) * cisiAB.getDsjDk(abssMim) +
-                    FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDk(abssMim);
+            dHms = -FastMath.signum(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDk(abssMim) +
+                    FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(abssMim);
         }
         return dHms;
     }
@@ -265,13 +272,117 @@ public class GHmsjPolynomials {
 
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cisiKH.getCj(abssMj) * cisiAB.getDsjDh(mMis) +
-                   FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDh(mMis);
+            dHms = I * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDh(mMis) +
+                   FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(mMis);
         } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cisiKH.getCj(abssMj) * cisiAB.getDsjDh(abssMim) +
-                    FastMath.signum(s - j) * cisiKH.getSj(abssMj) * cisiAB.getDcjDh(abssMim);
+            dHms = -FastMath.signum(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDh(abssMim) +
+                    FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(abssMim);
         }
         return dHms;
+    }
+
+    /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series
+     *  and their partial derivatives with respect to k and h.
+     *  <p>
+     *  Those series are given in Danielson paper by expression 2.5.3-(5):
+     *  <pre>C<sub>j</sub>(k, h) + i S<sub>j</sub>(k, h) = (k+ih)<sup>j</sup> </pre>
+     *  </p>
+     *  The C<sub>j</sub>(k, h) and the S<sub>j</sub>(k, h) elements are store as an
+     *  {@link ArrayList} of {@link Complex} number, the C<sub>j</sub>(k, h) being
+     *  represented by the real and the S<sub>j</sub>(k, h) by the imaginary part.
+     */
+    private static class CjSjCoefficient {
+
+        /** Last computed order j. */
+        private int jLast;
+
+        /** Complex base (k + ih) of the C<sub>j</sub>, S<sub>j</sub> series. */
+        private final Complex kih;
+
+        /** List of computed elements. */
+        private final List<Complex> cjsj;
+
+        /** C<sub>j</sub>(k, h) and S<sub>j</sub>(k, h) constructor.
+         * @param k k value
+         * @param h h value
+         */
+        public CjSjCoefficient(final double k, final double h) {
+            kih  = new Complex(k, h);
+            cjsj = new ArrayList<Complex>();
+            cjsj.add(new Complex(1, 0));
+            cjsj.add(kih);
+            jLast = 1;
+        }
+
+        /** Get the C<sub>j</sub> coefficient.
+         * @param j order
+         * @return C<sub>j</sub>
+         */
+        public double getCj(final int j) {
+            if (j > jLast) {
+                // Update to order j
+                updateCjSj(j);
+            }
+            return cjsj.get(j).getReal();
+        }
+
+        /** Get the S<sub>j</sub> coefficient.
+         * @param j order
+         * @return S<sub>j</sub>
+         */
+        public double getSj(final int j) {
+            if (j > jLast) {
+                // Update to order j
+                updateCjSj(j);
+            }
+            return cjsj.get(j).getImaginary();
+        }
+
+        /** Get the dC<sub>j</sub> / dk coefficient.
+         * @param j order
+         * @return dC<sub>j</sub> / d<sub>k</sub>
+         */
+        public double getDcjDk(final int j) {
+            return j == 0 ? 0 : j * getCj(j - 1);
+        }
+
+        /** Get the dS<sub>j</sub> / dk coefficient.
+         * @param j order
+         * @return dS<sub>j</sub> / d<sub>k</sub>
+         */
+        public double getDsjDk(final int j) {
+            return j == 0 ? 0 : j * getSj(j - 1);
+        }
+
+        /** Get the dC<sub>j</sub> / dh coefficient.
+         * @param j order
+         * @return dC<sub>i</sub> / d<sub>k</sub>
+         */
+        public double getDcjDh(final int j) {
+            return j == 0 ? 0 : -j * getSj(j - 1);
+        }
+
+        /** Get the dS<sub>j</sub> / dh coefficient.
+         * @param j order
+         * @return dS<sub>j</sub> / d<sub>h</sub>
+         */
+        public double getDsjDh(final int j) {
+            return j == 0 ? 0 : j * getCj(j - 1);
+        }
+
+        /** Update the cjsj up to order j.
+         * @param j order
+         */
+        private void updateCjSj(final int j) {
+            Complex last = cjsj.get(cjsj.size() - 1);
+            for (int i = jLast; i < j; i++) {
+                final Complex next = last.multiply(kih);
+                cjsj.add(next);
+                last = next;
+            }
+            jLast = j;
+        }
+
     }
 
 }
