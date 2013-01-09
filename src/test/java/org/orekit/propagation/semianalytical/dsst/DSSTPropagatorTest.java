@@ -81,7 +81,6 @@ public class DSSTPropagatorTest {
     private NumericalPropagator           numProp;
     private boolean                       gotHere;
     private double                        mu;
-    private double                        ae;
     private SphericalHarmonicsProvider    provider;
 
     @Test
@@ -198,7 +197,7 @@ public class DSSTPropagatorTest {
 
         // Central Body Force Model 5x0
         // force expression :
-        DSSTForceModel force = new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
+        DSSTForceModel force = new DSSTCentralBody(FramesFactory.getITRF2005(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
         ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
 
         // Reset propagators
@@ -270,10 +269,11 @@ public class DSSTPropagatorTest {
         final double dt = 864000.;
 
         // Drag Force Model
-        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF2005());
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getITRF2005());
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         Atmosphere atm = new HarrisPriester(sun, earth);
-//        Atmosphere atm = new SimpleExponentialAtmosphere(earth, 4.e-13, 500000.0, 60000.0);
         final double cd = 2.0;
         final double sf = 5.0;
         DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, sf);
@@ -413,8 +413,9 @@ public class DSSTPropagatorTest {
     private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {
         // No shadow at this date
         initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
-        final Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3, FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3), FastMath.tan(0.001745329)
-                                                                                                                                        * FastMath.sin(2 * FastMath.PI / 3), 0.1, PositionAngle.TRUE, FramesFactory.getEME2000(), initDate, mu);
+        final Orbit orbit = new EquinoctialOrbit(42164000, 10e-3, 10e-3, FastMath.tan(0.001745329) * FastMath.cos(2 * FastMath.PI / 3),
+                                                 FastMath.tan(0.001745329) * FastMath.sin(2 * FastMath.PI / 3), 0.1,
+                                                 PositionAngle.TRUE, FramesFactory.getEME2000(), initDate, mu);
         return new SpacecraftState(orbit);
     }
 
@@ -452,7 +453,6 @@ public class DSSTPropagatorTest {
         Utils.setDataRoot("regular-data:potential/shm-format");
         provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 0);
         mu = provider.getMu();
-        ae = provider.getAe();
         gotHere = false;
     }
 

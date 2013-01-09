@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.ResonantCouple;
@@ -46,10 +47,12 @@ public class DSSTCentralBody implements DSSTForceModel {
     private final TesseralContribution tesseral;
 
     /** DSST Central body constructor.
+     * @param centralBodyFrame rotating body frame
      * @param centralBodyRotationRate central body rotation rate (rad/s)
      * @param provider provider for spherical harmonics
      */
-    public DSSTCentralBody(final double centralBodyRotationRate,
+    public DSSTCentralBody(final Frame centralBodyFrame,
+                           final double centralBodyRotationRate,
                            final SphericalHarmonicsProvider provider) {
 
         // Zonal harmonics contribution
@@ -57,7 +60,9 @@ public class DSSTCentralBody implements DSSTForceModel {
 
         // Tesseral harmonics contribution (only if order > 0)
         this.tesseral = (provider.getMaxOrder() == 0) ?
-                        null : new TesseralContribution(centralBodyRotationRate, provider);
+                        null : new TesseralContribution(centralBodyFrame,
+                                                        centralBodyRotationRate,
+                                                        provider);
 
     }
 
@@ -132,7 +137,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      */
     public void setResonantTesseral(final Set<ResonantCouple> resonantTesseral) {
         if (tesseral != null) {
-            tesseral.setResonantTesseralTerms(resonantTesseral);
+            tesseral.setResonantCouples(resonantTesseral);
         }
     }
 

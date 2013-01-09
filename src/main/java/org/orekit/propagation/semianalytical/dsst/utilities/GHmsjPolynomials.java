@@ -52,14 +52,14 @@ public class GHmsjPolynomials {
      *  @param h Y component of the eccentricity vector
      *  @param alpha direction cosine &alpha;
      *  @param beta direction cosine &beta;
-     *  @param isRetrograde Is the orbit is represented as a retrograde orbit I = -1, +1 otherwise
+     *  @param retroFactor -1 if the orbit is represented as retrograde, +1 otherwise
      **/
     public GHmsjPolynomials(final double k, final double h,
                             final double alpha, final double beta,
-                            final int isRetrograde) {
+                            final int retroFactor) {
         this.cjsjKH = new CjSjCoefficient(k, h);
         this.cjsjAB = new CjSjCoefficient(alpha, beta);
-        this.I = isRetrograde;
+        this.I = retroFactor;
     }
 
     /** Get the G<sub>ms</sub><sup>j</sup> coefficient.
@@ -69,16 +69,16 @@ public class GHmsjPolynomials {
      * @return the G<sub>ms</sub><sup>j</sup>
      */
     public double getGmsj(final int m, final int s, final int j) {
-        final int abssMj = FastMath.abs(s - j);
+        final int sMj = FastMath.abs(s - j);
         double gms = 0d;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
-            gms = cjsjKH.getCj(abssMj) * cjsjAB.getCj(mMis) -
-                  I * FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getSj(mMis);
-        } else if (FastMath.abs(s) >= m) {
+            gms = cjsjKH.getCj(sMj) * cjsjAB.getCj(mMis) -
+                  I * sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getSj(mMis);
+        } else {
             final int sMim = FastMath.abs(s - I * m);
-            gms = cjsjKH.getCj(abssMj) * cjsjAB.getCj(sMim) +
-                  FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjKH.getSj(abssMj) * cjsjAB.getSj(sMim);
+            gms = cjsjKH.getCj(sMj) * cjsjAB.getCj(sMim) +
+                  sgn(s - j) * sgn(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getSj(sMim);
         }
         return gms;
     }
@@ -95,12 +95,12 @@ public class GHmsjPolynomials {
         double hms = 0d;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
-            hms = I * cjsjKH.getCj(sMj) * cjsjAB.getSj(mMis) + FastMath.signum(s - j) *
+            hms = I * cjsjKH.getCj(sMj) * cjsjAB.getSj(mMis) + sgn(s - j) *
                   cjsjKH.getSj(sMj) * cjsjAB.getCj(mMis);
-        } else if (FastMath.abs(s) >= m) {
+        } else {
             final int sMim = FastMath.abs(s - I * m);
-            hms = -FastMath.signum(s - m) * cjsjKH.getCj(sMj) * cjsjAB.getSj(sMim) +
-                   FastMath.signum(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getCj(sMim);
+            hms = -sgn(s - m) * cjsjKH.getCj(sMj) * cjsjAB.getSj(sMim) +
+                   sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getCj(sMim);
         }
         return hms;
     }
@@ -119,10 +119,10 @@ public class GHmsjPolynomials {
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
             dGms = cjsjAB.getCj(mMis) * cjsjKH.getDcjDk(sMj) -
-                   I * FastMath.signum(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDk(sMj);
-        } else if (FastMath.abs(s) >= m) {
+                   I * sgn(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDk(sMj);
+        } else {
             dGms = cjsjAB.getCj(sMim) * cjsjKH.getDcjDk(sMj) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDk(sMj);
+                   sgn(s - j) * sgn(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDk(sMj);
         }
         return dGms;
     }
@@ -141,10 +141,10 @@ public class GHmsjPolynomials {
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
             dGms = cjsjAB.getCj(mMis) * cjsjKH.getDcjDh(sMj) -
-                   I * FastMath.signum(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDh(sMj);
-        } else if (FastMath.abs(s) >= m) {
+                   I * sgn(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDh(sMj);
+        } else {
             dGms = cjsjAB.getCj(sMim) * cjsjKH.getDcjDh(sMj) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDh(sMj);
+                   sgn(s - j) * sgn(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDh(sMj);
         }
         return dGms;
     }
@@ -163,10 +163,10 @@ public class GHmsjPolynomials {
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
             dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(mMis) -
-                   I * FastMath.signum(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(mMis);
-        } else if (FastMath.abs(s) >= m) {
+                   I * sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(mMis);
+        } else {
             dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(sMim) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(sMim);
+                   sgn(s - j) * sgn(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(sMim);
         }
         return dGms;
     }
@@ -185,10 +185,10 @@ public class GHmsjPolynomials {
         double dGms = 0d;
         if (FastMath.abs(s) <= m) {
             dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(mMis) -
-                   I * FastMath.signum(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(mMis);
-        } else if (FastMath.abs(s) > m) {
+                   I * sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(mMis);
+        } else {
             dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(sMim) +
-                   FastMath.signum(s - j) * FastMath.signum(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(sMim);
+                   sgn(s - j) * sgn(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(sMim);
         }
         return dGms;
     }
@@ -207,10 +207,10 @@ public class GHmsjPolynomials {
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
             dHms = I * cjsjAB.getSj(mMis) * cjsjKH.getDcjDk(abssMj) +
-                   FastMath.signum(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDk(abssMj);
-        } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDk(abssMj) +
-                    FastMath.signum(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDk(abssMj);
+                   sgn(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDk(abssMj);
+        } else {
+            dHms = -sgn(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDk(abssMj) +
+                    sgn(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDk(abssMj);
         }
         return dHms;
     }
@@ -229,10 +229,10 @@ public class GHmsjPolynomials {
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
             dHms = I * cjsjAB.getSj(mMis) * cjsjKH.getDcjDh(abssMj) +
-                   FastMath.signum(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDh(abssMj);
-        } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDh(abssMj) +
-                    FastMath.signum(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDh(abssMj);
+                   sgn(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDh(abssMj);
+        } else {
+            dHms = -sgn(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDh(abssMj) +
+                    sgn(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDh(abssMj);
         }
         return dHms;
     }
@@ -251,10 +251,10 @@ public class GHmsjPolynomials {
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
             dHms = I * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDk(mMis) +
-                   FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(mMis);
-        } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDk(abssMim) +
-                    FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(abssMim);
+                   sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(mMis);
+        } else {
+            dHms = -sgn(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDk(abssMim) +
+                    sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(abssMim);
         }
         return dHms;
     }
@@ -273,12 +273,20 @@ public class GHmsjPolynomials {
         double dHms = 0d;
         if (FastMath.abs(s) <= m) {
             dHms = I * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDh(mMis) +
-                   FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(mMis);
-        } else if (FastMath.abs(s) > m) {
-            dHms = -FastMath.signum(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDh(abssMim) +
-                    FastMath.signum(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(abssMim);
+                   sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(mMis);
+        } else {
+            dHms = -sgn(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDh(abssMim) +
+                    sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(abssMim);
         }
         return dHms;
+    }
+
+    /** Get the sign of an integer.
+     *  @param i number on which evaluation is done
+     *  @return -1 or +1 depending on sign of i
+     */
+    private int sgn(final int i) {
+        return (i < 0) ? -1 : 1;
     }
 
     /** Compute the S<sub>j</sub>(k, h) and the C<sub>j</sub>(k, h) series

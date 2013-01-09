@@ -419,7 +419,8 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+        dsstProp.addForceModel(new DSSTCentralBody(FramesFactory.getITRFEquinox(),
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -435,7 +436,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
                                                                 Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF2005());
+                                                                FramesFactory.getITRFEquinox());
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
             dsstProp.addForceModel(new DSSTAtmosphericDrag(atm,
                                                            parser.getDouble(ParameterKey.DRAG_CD),
@@ -488,7 +489,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
                                                                 Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF2005());
+                                                                FramesFactory.getITRFEquinox());
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
             final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
                                                                     parser.getDouble(ParameterKey.DRAG_CD),

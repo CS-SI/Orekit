@@ -16,9 +16,10 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
@@ -27,6 +28,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -62,32 +65,30 @@ class TesseralContribution implements DSSTForceModel {
      */
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
-    /** Set of resonant index. */
-    private Set<Integer> resIndexSet;
-
-    /** Set of resonant orders. */
-    private Set<Integer> resOrderSet;
+    /** List of resonant orders. */
+    private List<Integer> resOrders;
 
     /** Set of resonant tesseral harmonic couples. */
-    private Set<ResonantCouple> resCoupleSet;
+    private List<ResonantCouple> resCouple;
 
-    /** Highest power of the eccentricity to appear in the truncated analytical
-     *  power series expansion for the averaged central-body resonant tesseral
-     *  harmonics potential.
+    /** Maximal degree to consider for harmonics potential.
      */
-    private int maxEccPow;
+    private int maxDegree;
 
     /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
-    private int maxHansen;
+    private int maxEc2Pow;
 
-    /** Maximal integer value for the s index truncation in tesseral harmonic expansion. */
-    private int minS;
-
-    /** Minimal integer value for the N index truncation in tesseral harmonic expansion. */
-    private int maxS;
+    /** Central rotating body frame. */
+    private final Frame bodyFrame;
 
     /** Central body rotation period (seconds). */
     private final double bodyPeriod;
+
+    /** Keplerian period. */
+    private double orbitPeriod;
+
+    /** Ratio of satellite period to central body rotation period. */
+    private double ratio;
 
     /** Retrograde factor. */
     private int    I;
@@ -105,12 +106,6 @@ class TesseralContribution implements DSSTForceModel {
     private double p;
     /** lm. */
     private double lm;
-
-    /** Keplerian period. */
-    private double orbitPeriod;
-
-    /** Ratio of satellite period to central body rotation period. */
-    private double ratio;
 
     /** Eccentricity. */
     private double ecc;
@@ -144,40 +139,47 @@ class TesseralContribution implements DSSTForceModel {
     private double Co2AB;
     /** &mu; / a .*/
     private double moa;
-    /** r / a .*/
+    /** R / a .*/
     private double roa;
 
     /** Single constructor.
-     * @param centralBodyRotationRate central body rotation rate (rad/s)
-     * @param provider provider for spherical harmonics
+     *  @param centralBodyFrame rotating body frame
+     *  @param centralBodyRotationRate central body rotation rate (rad/s)
+     *  @param provider provider for spherical harmonics
      */
-    public TesseralContribution(final double centralBodyRotationRate,
+    public TesseralContribution(final Frame centralBodyFrame,
+                                final double centralBodyRotationRate,
                                 final SphericalHarmonicsProvider provider) {
 
-        // Set the central-body rotation period
+        // Central body rotating frame
+        this.bodyFrame = centralBodyFrame;
+
+        // Central body rotation period in seconds
         this.bodyPeriod = MathUtils.TWO_PI / centralBodyRotationRate;
-        this.provider   = provider;
+
+        // Provider for spherical harmonics
+        this.provider  = provider;
+        this.maxDegree = provider.getMaxDegree();
 
         // Initialize default values
-        this.resIndexSet  = new TreeSet<Integer>();
-        this.resOrderSet  = new TreeSet<Integer>();
-        this.resCoupleSet = new TreeSet<ResonantCouple>();
-        this.maxEccPow    = 0;
-        this.maxHansen    = 0;
+        this.resOrders = new ArrayList<Integer>();
+        this.resCouple = new ArrayList<ResonantCouple>();
+        this.maxEc2Pow = 0;
 
     }
 
-    /** Set the resonant Tesseral harmonic couple term.
+    /** Set the resonant couples (n, m).
      *  <p>
-     *  If the list is null or empty, the resonant couples will be automatically computed.
+     *  If the set is null or empty, the resonant couples will be automatically computed.
      *  If it is not null nor empty, only these resonant couples will be taken in account.
      *  </p>
-     *  @param resonantTesseral List of resonant terms
+     *  @param resonantTesseral Set of resonant couples
      */
-    public void setResonantTesseralTerms(final Set<ResonantCouple> resonantTesseral) {
-
+    public void setResonantCouples(final Set<ResonantCouple> resonantTesseral) {
         if (resonantTesseral != null && !resonantTesseral.isEmpty()) {
-            resCoupleSet = resonantTesseral;
+            for (final ResonantCouple couple : resonantTesseral) {
+                resCouple.add(couple);
+            }
         }
     }
 
@@ -198,6 +200,7 @@ class TesseralContribution implements DSSTForceModel {
         // series expansion for the averaged high order resonant central body
         // spherical harmonic perturbation
         final double e = aux.getEcc();
+        int maxEccPow = 0;
         if (e <= 0.005) {
             maxEccPow = 3;
         } else if (e <= 0.02) {
@@ -215,11 +218,7 @@ class TesseralContribution implements DSSTForceModel {
         }
 
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
-        maxHansen = maxEccPow / 2;
-
-        // Set the boundary values for s index to use in potential series expansion.
-        minS = provider.getMaxDegree();
-        maxS = provider.getMaxDegree();
+        maxEc2Pow = maxEccPow / 2;
 
     }
 
@@ -245,7 +244,18 @@ class TesseralContribution implements DSSTForceModel {
         g = aux.getVectorG();
 
         // Central body rotation angle from equation 2.7.1-(3)(4).
-        theta = FastMath.atan2(-f.getY() + I * g.getX(), f.getX() + I * g.getY());
+//        final CelestialBody earth = CelestialBodyFactory.getEarth();
+//        final Transform t = earth.getBodyOrientedFrame().getTransformTo(earth.getInertiallyOrientedFrame(), aux.getDate());
+//        final Vector3D xB = t1.transformVector(Vector3D.PLUS_I);
+//        final Vector3D yB = t1.transformVector(Vector3D.PLUS_J);
+//        theta = FastMath.atan2(-f.dotProduct(yB) + I * g.dotProduct(xB),
+//                                            f.dotProduct(xB) + I * g.dotProduct(yB));
+
+        final Transform t = bodyFrame.getTransformTo(aux.getFrame(), aux.getDate());
+        final Vector3D xB = t.transformVector(Vector3D.PLUS_I);
+        final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
+        theta = FastMath.atan2(-f.dotProduct(yB) + I * g.dotProduct(xB),
+                               f.dotProduct(xB) + I * g.dotProduct(yB));
 
         // Direction cosines
         alpha = aux.getAlpha();
@@ -271,7 +281,8 @@ class TesseralContribution implements DSSTForceModel {
         // B / (A * (1 + B))
         BoABpo = BoA / (1. + B);
         // &mu / a
-        moa  = provider.getMu() / a;
+        moa = provider.getMu() / a;
+        // R / a
         roa = provider.getAe() / a;
 
     }
@@ -281,28 +292,28 @@ class TesseralContribution implements DSSTForceModel {
 
         // Compute potential derivatives
         final double[] dU  = computeUDerivatives(provider.getOffset(spacecraftState.getDate()));
-        final double duda  = dU[0];
-        final double dudh  = dU[1];
-        final double dudk  = dU[2];
-        final double dudl  = dU[3];
-        final double dudal = dU[4];
-        final double dudbe = dU[5];
-        final double dudga = dU[6];
+        final double dUda  = dU[0];
+        final double dUdh  = dU[1];
+        final double dUdk  = dU[2];
+        final double dUdl  = dU[3];
+        final double dUdAl = dU[4];
+        final double dUdBe = dU[5];
+        final double dUdGa = dU[6];
 
         // Compute the cross derivative operator :
-        final double UAlphaGamma   = alpha * dudga - gamma * dudal;
-        final double UAlphaBeta    = alpha * dudbe - beta  * dudal;
-        final double UBetaGamma    =  beta * dudga - gamma * dudbe;
-        final double Uhk           =     h * dudk  -     k * dudh;
-        final double pUAGmIqUBGoAB = (p * UAlphaGamma - I * q * UBetaGamma) * ooAB;
-        final double UhkmUabmdudl  =  Uhk - UAlphaBeta - dudl;
+        final double UAlphaGamma   = alpha * dUdGa - gamma * dUdAl;
+        final double UAlphaBeta    = alpha * dUdBe - beta  * dUdAl;
+        final double UBetaGamma    =  beta * dUdGa - gamma * dUdBe;
+        final double Uhk           =     h * dUdk  -     k * dUdh;
+        final double pUagmIqUbgoAB = (p * UAlphaGamma - I * q * UBetaGamma) * ooAB;
+        final double UhkmUabmdUdl  =  Uhk - UAlphaBeta - dUdl;
 
-        final double aDot =  ax2oA * dudl;
-        final double hDot =    BoA * dudk + k * pUAGmIqUBGoAB - h * BoABpo * dudl;
-        final double kDot =  -(BoA * dudh + h * pUAGmIqUBGoAB + k * BoABpo * dudl);
-        final double pDot =  Co2AB * (p * UhkmUabmdudl - UBetaGamma);
-        final double qDot =  Co2AB * (q * UhkmUabmdudl - I * UAlphaGamma);
-        final double lDot = -ax2oA * duda + BoABpo * (h * dudh + k * dudk) + pUAGmIqUBGoAB;
+        final double aDot =  ax2oA * dUdl;
+        final double hDot =    BoA * dUdk + k * pUagmIqUbgoAB - h * BoABpo * dUdl;
+        final double kDot =  -(BoA * dUdh + h * pUagmIqUbgoAB + k * BoABpo * dUdl);
+        final double pDot =  Co2AB * (p * UhkmUabmdUdl - UBetaGamma);
+        final double qDot =  Co2AB * (q * UhkmUabmdUdl - I * UAlphaGamma);
+        final double lDot = -ax2oA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUagmIqUbgoAB;
 
         return new double[] {aDot, hDot, kDot, pDot, qDot, lDot};
 
@@ -320,7 +331,7 @@ class TesseralContribution implements DSSTForceModel {
      */
     private void getResonantTerms() {
 
-        if (resCoupleSet.isEmpty()) {
+        if (resCouple.isEmpty()) {
             // Compute natural resonant terms
             final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
                                                        MIN_PERIOD_IN_SECONDS / orbitPeriod);
@@ -331,21 +342,17 @@ class TesseralContribution implements DSSTForceModel {
                 final int j = (int) FastMath.round(resonance);
                 if (j > 0 && FastMath.abs(resonance - j) <= tolerance) {
                     // Store each resonant index and order
-                    resIndexSet.add(j);
-                    resOrderSet.add(m);
+                    resOrders.add(m);
                     // Store each resonant couple for a given order
-                    for (int n = m; n <= provider.getMaxDegree(); n++) {
-                        resCoupleSet.add(new ResonantCouple(n, m));
+                    for (int n = m; n <= maxDegree; n++) {
+                        resCouple.add(new ResonantCouple(n, m));
                     }
                 }
             }
         } else {
             // Get user defined resonant terms
-            for (ResonantCouple resCouple : resCoupleSet) {
-                final int resOrder = resCouple.getM();
-                final int resIndex = (int) FastMath.round(ratio * resOrder);
-                resOrderSet.add(resOrder);
-                resIndexSet.add(FastMath.max(1, resIndex));
+            for (ResonantCouple couple : resCouple) {
+                resOrders.add(couple.getM());
             }
 
         }
@@ -378,7 +385,14 @@ class TesseralContribution implements DSSTForceModel {
         final GammaMnsFunction gammaMNS = new GammaMnsFunction(gamma, I);
 
         // Hansen coefficients
-        final HansenTesseral hansen = new HansenTesseral(ecc, maxHansen);
+        final HansenTesseral hansen = new HansenTesseral(ecc, maxEc2Pow);
+
+        // R / a up to power degree
+        final double[] roaPow = new double[maxDegree + 1];
+        roaPow[0] = 1.;
+        for (int i = 1; i <= maxDegree; i++) {
+            roaPow[i] = roa * roaPow[i - 1];
+        }
 
         // Potential derivatives
         double dUda  = 0.;
@@ -389,19 +403,17 @@ class TesseralContribution implements DSSTForceModel {
         double dUdBe = 0.;
         double dUdGa = 0.;
 
-        // j-SUM over resonant indexes
-        for (int j : resIndexSet) {
-            // m-SUM over resonant orders
-            for (int m : resOrderSet) {
-                final double[] potential = computeUsnDerivatives(dateOffset, j, m, ghMSJ, gammaMNS, hansen);
-                dUda  += potential[0];
-                dUdh  += potential[1];
-                dUdk  += potential[2];
-                dUdl  += potential[3];
-                dUdAl += potential[4];
-                dUdBe += potential[5];
-                dUdGa += potential[6];
-            }
+        // SUM over resonant terms {j,m}
+        for (int m : resOrders) {
+            final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
+            final double[] potential = computeUsnDerivatives(dateOffset, j, m, roaPow, ghMSJ, gammaMNS, hansen);
+            dUda  += potential[0];
+            dUdh  += potential[1];
+            dUdk  += potential[2];
+            dUdl  += potential[3];
+            dUdAl += potential[4];
+            dUdBe += potential[5];
+            dUdGa += potential[6];
         }
 
         dUda  *= -moa / a;
@@ -419,13 +431,16 @@ class TesseralContribution implements DSSTForceModel {
      *  @param dateOffset offset between current date and gravity field reference date
      *  @param j resonant index <i>j</i>
      *  @param m resonant order <i>m</i>
+     *  @param roaPow powers of R/a up to degree
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(&gamma;) function
      *  @param hansen Hansen coefficients
      *  @return U<sub>s,n</sub> derivatives
      *  @throws OrekitException if an error occurs in Hansen computation
      */
-    private double[] computeUsnDerivatives(final double dateOffset, final int j, final int m,
+    private double[] computeUsnDerivatives(final double dateOffset,
+                                           final int j, final int m,
+                                           final double[] roaPow,
                                            final GHmsjPolynomials ghMSJ,
                                            final GammaMnsFunction gammaMNS,
                                            final HansenTesseral hansen)
@@ -440,81 +455,100 @@ class TesseralContribution implements DSSTForceModel {
         double dUdBe = 0.;
         double dUdGa = 0.;
 
-        // Jacobi indices
+        // Resonance angle
         final double jlMmt  = j * lm - m * theta;
         final double sinPhi = FastMath.sin(jlMmt);
         final double cosPhi = FastMath.cos(jlMmt);
 
-        final int Im = (int) FastMath.pow(I, m);
+        // I^m
+        final int Im = I > 0 ? 1 : (m % 2 == 0 ? 1 : -1);
+
         // s-SUM from -N to N
-        for (int s = -minS; s <= maxS; s++) {
+        for (int s = -maxDegree; s <= maxDegree; s++) {
 
             // jacobi v, w, indices from 2.7.1-(15)
             final int v = FastMath.abs(m - s);
             final int w = FastMath.abs(m + s);
             // n-SUM from (Max(2, m, |s|)) to N
             final int nmin = Math.max(Math.max(2, m), Math.abs(s));
-            for (int n = nmin; n <= provider.getMaxDegree(); n++) {
-                // (R / a)^n
-                final double ran    = FastMath.pow(roa, n);
-                final double vMNS   = CoefficientsFactory.getVmns(m, n, s);
-                final double gaMNS  = gammaMNS.getValue(m, n, s);
-                final double dGaMNS = gammaMNS.getDerivative(m, n, s);
-                final double kJNS   = hansen.getValue(j, -n - 1, s);
-                final double dkJNS  = hansen.getDerivative(j, -n - 1, s);
-                final double dGdh   = ghMSJ.getdGmsdh(m, s, j);
-                final double dGdk   = ghMSJ.getdGmsdk(m, s, j);
-                final double dGdA   = ghMSJ.getdGmsdAlpha(m, s, j);
-                final double dGdB   = ghMSJ.getdGmsdBeta(m, s, j);
-                final double dHdh   = ghMSJ.getdHmsdh(m, s, j);
-                final double dHdk   = ghMSJ.getdHmsdk(m, s, j);
-                final double dHdA   = ghMSJ.getdHmsdAlpha(m, s, j);
-                final double dHdB   = ghMSJ.getdHmsdBeta(m, s, j);
+            for (int n = nmin; n <= maxDegree; n++) {
+                // If (n - s) is odd, the contribution is null because of Vmns
+                if ((n - s) % 2 == 0) {
+                    final double vMNS   = CoefficientsFactory.getVmns(m, n, s);
 
-                // Jacobi l-indices from 2.7.1-(15)
-                final int l = FastMath.min(n - m, n - FastMath.abs(s));
-                final PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                final double jacobi  = jacobiPoly.value(gamma);
-                final double dJacobi = jacobiPoly.derivative().value(gamma);
-                final double gms = ghMSJ.getGmsj(m, s, j);
-                final double hms = ghMSJ.getHmsj(m, s, j);
-                final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
-                final double snm = provider.getUnnormalizedCnm(dateOffset, n, m);
+                    final double gaMNS  = gammaMNS.getValue(m, n, s);
+                    final double dGaMNS = gammaMNS.getDerivative(m, n, s);
 
-                // Compute dU / da from expansion of equation (4-a)
-                double realCosFactor = (gms * cnm + hms * snm) * cosPhi;
-                double realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                dUda += (n + 1) * ran * Im * vMNS * gaMNS * kJNS * jacobi * (realCosFactor + realSinFactor);
+                    final double kJNS   = hansen.getValue(j, -n - 1, s);
+                    final double dkJNS  = hansen.getDerivative(j, -n - 1, s);
 
-                // Compute dU / dh from expansion of equation (4-b)
-                realCosFactor = ( cnm * kJNS * dGdh + 2 * cnm * h * (gms + hms) * dkJNS + snm * kJNS * dHdh) * cosPhi;
-                realSinFactor = (-cnm * kJNS * dHdh + 2 * snm * h * (gms + hms) * dkJNS + snm * kJNS * dGdh) * sinPhi;
-                dUdh += ran * Im * vMNS * gaMNS * jacobi * (realCosFactor + realSinFactor);
+                    final double gMSJ   = ghMSJ.getGmsj(m, s, j);
+                    final double hMSJ   = ghMSJ.getHmsj(m, s, j);
+                    final double dGdh   = ghMSJ.getdGmsdh(m, s, j);
+                    final double dGdk   = ghMSJ.getdGmsdk(m, s, j);
+                    final double dGdA   = ghMSJ.getdGmsdAlpha(m, s, j);
+                    final double dGdB   = ghMSJ.getdGmsdBeta(m, s, j);
+                    final double dHdh   = ghMSJ.getdHmsdh(m, s, j);
+                    final double dHdk   = ghMSJ.getdHmsdk(m, s, j);
+                    final double dHdA   = ghMSJ.getdHmsdAlpha(m, s, j);
+                    final double dHdB   = ghMSJ.getdHmsdBeta(m, s, j);
 
-                // Compute dU / dk from expansion of equation (4-c)
-                realCosFactor = ( cnm * kJNS * dGdk + 2 * cnm * k * (gms + hms) * dkJNS + snm * kJNS * dHdk) * cosPhi;
-                realSinFactor = (-cnm * kJNS * dHdk + 2 * snm * k * (gms + hms) * dkJNS + snm * kJNS * dGdk) * sinPhi;
-                dUdk += ran * Im * vMNS * gaMNS * jacobi * (realCosFactor + realSinFactor);
+                    // Jacobi l-index from 2.7.1-(15)
+                    final int l = FastMath.min(n - m, n - FastMath.abs(s));
+                    final PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
+                    final double jacobi  = jacobiPoly.value(gamma);
+                    final double dJacobi = jacobiPoly.derivative().value(gamma);
 
-                // Compute dU / dLambda from expansion of equation (4-d)
-                realCosFactor = (snm * gms - hms * cnm) * cosPhi;
-                realSinFactor = (snm * hms + gms * cnm) * sinPhi;
-                dUdl += j * ran * Im * vMNS * kJNS * jacobi * (realCosFactor - realSinFactor);
+                    final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
+                    final double snm = provider.getUnnormalizedCnm(dateOffset, n, m);
 
-                // Compute dU / alpha from expansion of equation (4-e)
-                realCosFactor = (dGdA * cnm + dHdA * snm) * cosPhi;
-                realSinFactor = (dGdA * snm - dHdA * cnm) * sinPhi;
-                dUdAl += ran * Im * vMNS * gaMNS * kJNS * jacobi * (realCosFactor + realSinFactor);
+                    // Common factors
+                    final double cf_0  = roaPow[n] * Im * vMNS;
+                    final double cf_1  = cf_0 * gaMNS * jacobi;
+                    final double cf_2  = cf_1 * kJNS;
+                    final double gcPhs = gMSJ * cnm + hMSJ * snm;
+                    final double gsMhc = gMSJ * snm - hMSJ * cnm;
+                    final double gPh   = gMSJ + hMSJ;
+                    final double ck    = cnm * kJNS;
+                    final double sk    = snm * kJNS;
+                    final double cghdk = 2 * cnm * gPh * dkJNS;
+                    final double sghdk = 2 * snm * gPh * dkJNS;
 
-                // Compute dU / dBeta from expansion of equation (4-f)
-                realCosFactor = (dGdB * cnm + dHdB * snm) * cosPhi;
-                realSinFactor = (dGdB * snm - dHdB * cnm) * sinPhi;
-                dUdBe += ran * Im * vMNS * gaMNS * kJNS * jacobi * (realCosFactor + realSinFactor);
+                    // Compute dU / da from expansion of equation (4-a)
+                    double realCosFactor = gcPhs * cosPhi;
+                    double realSinFactor = gsMhc * sinPhi;
+                    dUda += (n + 1) * cf_2 * (realCosFactor + realSinFactor);
 
-                // Compute dU / dGamma from expansion of equation (4-g)
-                realCosFactor = (gms * cnm + hms * snm) * cosPhi;
-                realSinFactor = (gms * snm - hms * cnm) * sinPhi;
-                dUdGa += ran * Im * vMNS * kJNS * (jacobi * dGaMNS + gaMNS * dJacobi) * (realCosFactor + realSinFactor);
+                    // Compute dU / dh from expansion of equation (4-b)
+                    realCosFactor = ( ck * dGdh + cghdk * h + sk * dHdh) * cosPhi;
+                    realSinFactor = (-ck * dHdh + sghdk * h + sk * dGdh) * sinPhi;
+                    dUdh += cf_1 * (realCosFactor + realSinFactor);
+
+                    // Compute dU / dk from expansion of equation (4-c)
+                    realCosFactor = ( ck * dGdk + cghdk * k + sk * dHdk) * cosPhi;
+                    realSinFactor = (-ck * dHdk + sghdk * k + sk * dGdk) * sinPhi;
+                    dUdk += cf_1 * (realCosFactor + realSinFactor);
+
+                    // Compute dU / dLambda from expansion of equation (4-d)
+                    realCosFactor = gsMhc * cosPhi;
+                    realSinFactor = gcPhs * sinPhi;
+                    dUdl += j * cf_2 * (realCosFactor - realSinFactor);
+
+                    // Compute dU / alpha from expansion of equation (4-e)
+                    realCosFactor = (dGdA * cnm + dHdA * snm) * cosPhi;
+                    realSinFactor = (dGdA * snm - dHdA * cnm) * sinPhi;
+                    dUdAl += cf_2 * (realCosFactor + realSinFactor);
+
+                    // Compute dU / dBeta from expansion of equation (4-f)
+                    realCosFactor = (dGdB * cnm + dHdB * snm) * cosPhi;
+                    realSinFactor = (dGdB * snm - dHdB * cnm) * sinPhi;
+                    dUdBe += cf_2 * (realCosFactor + realSinFactor);
+
+                    // Compute dU / dGamma from expansion of equation (4-g)
+                    realCosFactor = gcPhs * cosPhi;
+                    realSinFactor = gsMhc * sinPhi;
+                    dUdGa += cf_0 * kJNS * (jacobi * dGaMNS + gaMNS * dJacobi) * (realCosFactor + realSinFactor);
+                }
             }
         }
 
@@ -669,9 +703,9 @@ class TesseralContribution implements DSSTForceModel {
             final int b = FastMath.max(s - j, 0);
 
             // Expansion until the maximum power in e^2 is reached
-            double sum     = 0.;
             // e^2(alpha-1)
-            double e2Pam1  = 1.;
+            double e2Pam1 = 1.;
+            double sum    = 0.;
             for (int alpha = 1; alpha < maxE2Power; alpha++) {
                 final double newcomb = ModifiedNewcombOperators.getValue(alpha + a, alpha + b, -n - 1, s);
                 sum += alpha * newcomb * e2Pam1;
@@ -700,9 +734,9 @@ class TesseralContribution implements DSSTForceModel {
             final int b = FastMath.max(s - j, 0);
 
             // Expansion until the maximum power in e^2 is reached
-            double sum  = 0.;
             // e2^alpha
             double e2Pa = 1.;
+            double sum  = 0.;
             for (int alpha = 0; alpha <= maxE2Power; alpha++) {
                 final double newcomb = ModifiedNewcombOperators.getValue(alpha + a, alpha + b, n, s);
                 sum += newcomb * e2Pa;
