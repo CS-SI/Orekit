@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,7 +35,7 @@ import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
@@ -138,10 +138,9 @@ public class NumericalPropagatorTest {
     @Test
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(),
+                                          GravityFieldFactory.getSphericalHarmonicsProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
@@ -165,30 +164,30 @@ public class NumericalPropagatorTest {
         final PVCoordinates pveT = propagateInType(initialState, dP, OrbitType.EQUINOCTIAL, PositionAngle.TRUE);
         final PVCoordinates pvkT = propagateInType(initialState, dP, OrbitType.KEPLERIAN,   PositionAngle.TRUE);
 
-        Assert.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 5);
-        Assert.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2);
-        Assert.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 2);
-        Assert.assertEquals(0, pviM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.7);
-        Assert.assertEquals(0, pvkM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
-        Assert.assertEquals(0, pvkM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.09);
-        Assert.assertEquals(0, pveM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
-        Assert.assertEquals(0, pveM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.08);
+        Assert.assertEquals(0, pvcM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
+        Assert.assertEquals(0, pvcM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
+        Assert.assertEquals(0, pviM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.6);
+        Assert.assertEquals(0, pviM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.4);
+        Assert.assertEquals(0, pvkM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.5);
+        Assert.assertEquals(0, pvkM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.3);
+        Assert.assertEquals(0, pveM.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.2);
+        Assert.assertEquals(0, pveM.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
 
-        Assert.assertEquals(0, pvcE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 5);
-        Assert.assertEquals(0, pvcE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2);
-        Assert.assertEquals(0, pviE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 2);
-        Assert.assertEquals(0, pviE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.7);
-        Assert.assertEquals(0, pvkE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.3);
-        Assert.assertEquals(0, pvkE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.09);
-        Assert.assertEquals(0, pveE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.7);
-        Assert.assertEquals(0, pveE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.4);
+        Assert.assertEquals(0, pvcE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
+        Assert.assertEquals(0, pvcE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
+        Assert.assertEquals(0, pviE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.03);
+        Assert.assertEquals(0, pviE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.04);
+        Assert.assertEquals(0, pvkE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
+        Assert.assertEquals(0, pvkE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.3);
+        Assert.assertEquals(0, pveE.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.2);
+        Assert.assertEquals(0, pveE.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.07);
 
-        Assert.assertEquals(0, pvcT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 5);
-        Assert.assertEquals(0, pvcT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2);
-        Assert.assertEquals(0, pviT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 2);
-        Assert.assertEquals(0, pviT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.7);
-        Assert.assertEquals(0, pvkT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.04);
-        Assert.assertEquals(0, pvkT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.03);
+        Assert.assertEquals(0, pvcT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 3.0);
+        Assert.assertEquals(0, pvcT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 2.0);
+        Assert.assertEquals(0, pviT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.3);
+        Assert.assertEquals(0, pviT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
+        Assert.assertEquals(0, pvkT.getPosition().subtract(pveT.getPosition()).getNorm() / dP, 0.4);
+        Assert.assertEquals(0, pvkT.getVelocity().subtract(pveT.getVelocity()).getNorm() / dV, 0.2);
 
     }
 
@@ -201,10 +200,9 @@ public class NumericalPropagatorTest {
                                                    FramesFactory.getEME2000(), initDate,
                                                    mu));
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(),
+                                          GravityFieldFactory.getSphericalHarmonicsProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
@@ -224,13 +222,13 @@ public class NumericalPropagatorTest {
 
         Assert.assertEquals(0, pvcM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
         Assert.assertEquals(0, pvcM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
-        Assert.assertEquals(0, pvkM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.09);
-        Assert.assertEquals(0, pvkM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.2);
+        Assert.assertEquals(0, pvkM.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.2);
+        Assert.assertEquals(0, pvkM.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.3);
 
         Assert.assertEquals(0, pvcE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
         Assert.assertEquals(0, pvcE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
-        Assert.assertEquals(0, pvkE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.04);
-        Assert.assertEquals(0, pvkE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.05);
+        Assert.assertEquals(0, pvkE.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.009);
+        Assert.assertEquals(0, pvkE.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.006);
 
         Assert.assertEquals(0, pvcT.getPosition().subtract(pvkT.getPosition()).getNorm() / dP, 0.3);
         Assert.assertEquals(0, pvcT.getVelocity().subtract(pvkT.getVelocity()).getNorm() / dV, 0.4);
@@ -464,21 +462,17 @@ public class NumericalPropagatorTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        mu  = 3.9860047e14;
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
+        mu  = GravityFieldFactory.getSphericalHarmonicsProvider(0, 0).getMu();
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         initDate = AbsoluteDate.J2000_EPOCH;
         final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
                                                  FramesFactory.getEME2000(), initDate, mu);
         initialState = new SpacecraftState(orbit);
-        double[] absTolerance = {
-            0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
-        };
-        double[] relTolerance = {
-            1.0e-7, 1.0e-4, 1.0e-4, 1.0e-7, 1.0e-7, 1.0e-7, 1.0e-7
-        };
+        double[][] tolerance = NumericalPropagator.tolerances(0.001, orbit, OrbitType.EQUINOCTIAL);
         AdaptiveStepsizeIntegrator integrator =
-                new DormandPrince853Integrator(0.001, 200, absTolerance, relTolerance);
+                new DormandPrince853Integrator(0.001, 200, tolerance[0], tolerance[1]);
         integrator.setInitialStepSize(60);
         propagator = new NumericalPropagator(integrator);
         propagator.setInitialState(initialState);

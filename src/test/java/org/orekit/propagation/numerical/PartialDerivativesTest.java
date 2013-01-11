@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,8 @@ import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SHMFormatReader;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -62,16 +63,15 @@ public class PartialDerivativesTest {
     @Test
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
-        double mu = provider.getMu();
+        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
         SpacecraftState initialState =
             new SpacecraftState(new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
-                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, mu));
+                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                                   provider.getMu()));
 
-        double dt = 3200;
+        double dt = 900;
         double dP = 0.001;
         for (OrbitType orbitType : OrbitType.values()) {
             for (PositionAngle angleType : PositionAngle.values()) {
@@ -115,7 +115,7 @@ public class PartialDerivativesTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 3.0e-4);
+                        Assert.assertEquals(0, error, 6.0e-2);
 
                     }
                 }
@@ -128,17 +128,16 @@ public class PartialDerivativesTest {
     @Test
     public void testPropagationTypesHyperbolic() throws OrekitException, ParseException, IOException {
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
-        double mu = provider.getMu();
+        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(), 6378136.460, mu,
-                                          provider.getC(5, 5, true), provider.getS(5, 5, true));
+            new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
         SpacecraftState initialState =
             new SpacecraftState(new KeplerianOrbit(new PVCoordinates(new Vector3D(-1551946.0, 708899.0, 6788204.0),
                                                                      new Vector3D(-9875.0, -3941.0, -1845.0)),
-                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, mu));
+                                                   FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
+                                                   provider.getMu()));
 
-        double dt = 3200;
+        double dt = 900;
         double dP = 0.001;
         for (OrbitType orbitType : new OrbitType[] { OrbitType.KEPLERIAN, OrbitType.CARTESIAN }) {
             for (PositionAngle angleType : PositionAngle.values()) {
@@ -182,7 +181,7 @@ public class PartialDerivativesTest {
                 for (int i = 0; i < 6; ++i) {
                     for (int j = 0; j < 6; ++j) {
                         double error = FastMath.abs((dYdY0[i][j] - dYdY0Ref[i][j]) / dYdY0Ref[i][j]);
-                        Assert.assertEquals(0, error, 9.0e-4);
+                        Assert.assertEquals(0, error, 1.0e-3);
 
                     }
                 }
@@ -456,6 +455,7 @@ public class PartialDerivativesTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
     }
 
 }

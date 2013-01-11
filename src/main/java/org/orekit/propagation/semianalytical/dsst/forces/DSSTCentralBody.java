@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,10 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.List;
+import java.util.Set;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.ResonantCouple;
@@ -46,35 +47,22 @@ public class DSSTCentralBody implements DSSTForceModel {
     private final TesseralContribution tesseral;
 
     /** DSST Central body constructor.
+     * @param centralBodyFrame rotating body frame
      * @param centralBodyRotationRate central body rotation rate (rad/s)
-     * @param equatorialRadius equatorial radius of the central body (m)
-     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param Cnm un-normalized coefficients array of the spherical harmonics (cosine part)
-     * @param Snm un-normalized coefficients array of the spherical harmonics (sine part)
+     * @param provider provider for spherical harmonics
      */
-    public DSSTCentralBody(final double centralBodyRotationRate,
-                           final double equatorialRadius,
-                           final double mu,
-                           final double[][] Cnm,
-                           final double[][] Snm) {
-
-        final int degree = Cnm.length - 1;
-        final int order  = Cnm[degree].length - 1;
-
-        // Check potential coefficients consistency
-        if ((Cnm.length != Snm.length) || (Cnm[degree].length != Snm[degree].length)) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH,
-                                                                 Cnm.length, Cnm[degree].length, Snm.length, Snm[degree].length);
-        }
-        if (degree < order) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD, order, degree);
-        }
+    public DSSTCentralBody(final Frame centralBodyFrame,
+                           final double centralBodyRotationRate,
+                           final SphericalHarmonicsProvider provider) {
 
         // Zonal harmonics contribution
-        this.zonal = new ZonalContribution(equatorialRadius, mu, Cnm, Snm);
+        this.zonal = new ZonalContribution(provider);
 
         // Tesseral harmonics contribution (only if order > 0)
-        this.tesseral = (order == 0) ? null : new TesseralContribution(centralBodyRotationRate, equatorialRadius, mu, Cnm, Snm);
+        this.tesseral = (provider.getMaxOrder() == 0) ?
+                        null : new TesseralContribution(centralBodyFrame,
+                                                        centralBodyRotationRate,
+                                                        provider);
 
     }
 
@@ -140,78 +128,24 @@ public class DSSTCentralBody implements DSSTForceModel {
         return shortPeriodics;
     }
 
-    /** Set the resonant Tesseral harmonic couple term.
-     * <p>
-     *  This parameter can be set to null or be an empty list.
-     *  If so, the program will automatically determine the resonant couple to
-     *  take in account. If not, only the resonant couple given by the user will
-     *  be taken in account.
-     *  </p>
-     *
-     * @param resonantTesseral Resonant Tesseral harmonic couple term
-     */
-    public void setResonantTesseral(final List<ResonantCouple> resonantTesseral) {
-        if (tesseral != null) {
-            tesseral.setResonantTesseral(resonantTesseral);
-        }
-    }
-
-    /** Set the minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in seconds.
+    /** Set the resonant harmonic couples.
      *  <p>
-     *  Set to 10 days by default.
+     *  If the set is null or empty, the resonant couples will be automatically computed.
+     *  If it is not null nor empty, only these resonant couples will be taken in account.
      *  </p>
-     * @param resonantMinPeriodInSec minimum period in seconds
+     *  @param resonantTesseral Set of resonant terms
      */
-    public void setResonantMinPeriodInSec(final double resonantMinPeriodInSec) {
+    public void setResonantTesseral(final Set<ResonantCouple> resonantTesseral) {
         if (tesseral != null) {
-            tesseral.setResonantMinPeriodInSec(resonantMinPeriodInSec);
+            tesseral.setResonantCouples(resonantTesseral);
         }
     }
 
-    /** Set the minimum period for analytically averaged high-order resonant
-     *  central body spherical harmonics in number of satellite revolutions.
-     *  <p>
-     *  Set to 10 days by default.
-     *  </p>
-     * @param resonantMinPeriodInSatRev minimum period in satellite revolutions
+    /** Get the spherical harmonics provider
+     *  @return the spherical harmonics provider
      */
-    public void setResonantMinPeriodInSatRev(final double resonantMinPeriodInSatRev) {
-        if (tesseral != null) {
-            tesseral.setResonantMinPeriodInSatRev(resonantMinPeriodInSatRev);
-        }
-    }
-
-    /** Set the highest power of the eccentricity to appear in the truncated analytical
-     *  power series expansion for the averaged central-body tesseral harmonic potential.
-     *
-     * @param tesseralMaxEccPower highest power of the eccentricity
-     */
-    public void setTesseralMaximumEccentricityPower(final int tesseralMaxEccPower) {
-        if (tesseral != null) {
-            tesseral.setTesseralMaximumEccentricityPower(tesseralMaxEccPower);
-        }
-    }
-
-    /** Get the equatorial radius of the central body.
-     *  @return the equatorial radius (m)
-     */
-    public double getEquatorialRadius() {
-        return zonal.getEquatorialRadius();
-    }
-
-    /** Get the un-normalized coefficients array of the spherical harmonics (cosine part).
-     *  @return Cnm
-     */
-    public double[][] getCnm() {
-        return zonal.getCnm();
-    }
-
-    /** Get the un-normalized coefficients array of the spherical harmonics (sine part).
-     *  @return Snm
-     */
-    public double[][] getSnm() {
-        return zonal.getSnm();
+    public SphericalHarmonicsProvider getProvider() {
+        return zonal.getProvider();
     }
 
 }

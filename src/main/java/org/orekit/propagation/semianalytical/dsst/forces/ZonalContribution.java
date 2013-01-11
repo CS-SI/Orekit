@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,11 +20,12 @@ import java.util.TreeMap;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
-import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
+import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
 import org.orekit.time.AbsoluteDate;
 
 /** Zonal contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
@@ -37,23 +38,8 @@ class ZonalContribution implements DSSTForceModel {
     /** Truncation tolerance. */
     private static final double TRUNCATION_TOLERANCE = 1e-4;
 
-    /** Equatorial radius of the central body. */
-    private final double r;
-
-    /** Central body attraction coefficient. */
-    private final double mu;
-
-    /** Un-normalized coefficients array (cosine part). */
-    private final double[][] C;
-
-    /** Un-normalized coefficients array (sine part). */
-    private final double[][] S;
-
-    /** Degree <i>n</i> of potential. */
-    private final int degree;
-
-    /** Order <i>m</i> of potential. */
-    private final int order;
+    /** Provider for spherical harmonics. */
+    private final SphericalHarmonicsProvider provider;
 
     /** Factorial. */
     private final double[] fact;
@@ -109,27 +95,15 @@ class ZonalContribution implements DSSTForceModel {
     private int maxEccPow;
 
     /** Simple constructor.
-     *  @param equatorialRadius equatorial radius of the central body (m)
-     *  @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-    *   @param Cnm un-normalized coefficients array of the spherical harmonics (cosine part)
-    *   @param Snm un-normalized coefficients array of the spherical harmonics (sine part)
+     * @param provider provider for spherical harmonics
      */
-    public ZonalContribution(final double equatorialRadius,
-                             final double mu,
-                             final double[][] Cnm,
-                             final double[][] Snm) {
+    public ZonalContribution(final SphericalHarmonicsProvider provider) {
 
-        this.r      = equatorialRadius;
-        this.mu     = mu;
-        this.C      = Cnm.clone();
-        this.S      = Snm.clone();
-        this.degree = Cnm.length - 1;
-        this.order  = Cnm[degree].length - 1;
-
-        this.Vns = CoefficientsFactory.computeVns(degree + 1);
+        this.provider = provider;
+        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
 
         // Factorials computation
-        final int maxFact = 2 * degree + 1;
+        final int maxFact = 2 * provider.getMaxDegree() + 1;
         this.fact = new double[maxFact];
         fact[0] = 1.;
         for (int i = 1; i < maxFact; i++) {
@@ -137,28 +111,14 @@ class ZonalContribution implements DSSTForceModel {
         }
 
         // Initialize default values
-        this.maxEccPow = (degree == 2) ? 0 : Integer.MIN_VALUE;
+        this.maxEccPow = (provider.getMaxDegree() == 2) ? 0 : Integer.MIN_VALUE;
     }
 
-    /** Get the equatorial radius of the central body.
-     *  @return the equatorial radius (m)
+    /** Get the spherical harmonics provider
+     *  @return the spherical harmonics provider
      */
-    public double getEquatorialRadius() {
-        return r;
-    }
-
-    /** Get the un-normalized coefficients array of the spherical harmonics (cosine part).
-     *  @return Cnm
-     */
-    public double[][] getCnm() {
-        return C.clone();
-    }
-
-    /** Get the un-normalized coefficients array of the spherical harmonics (sine part).
-     *  @return Snm
-     */
-    public double[][] getSnm() {
-        return S.clone();
+    public SphericalHarmonicsProvider getProvider() {
+        return provider;
     }
 
     /** Computes the highest power of the eccentricity to appear in the truncated
@@ -174,6 +134,8 @@ class ZonalContribution implements DSSTForceModel {
     public void initialize(final AuxiliaryElements aux)
         throws OrekitException {
 
+        final int degree = provider.getMaxDegree();
+        final double dateOffset = provider.getOffset(aux.getDate());
         if (degree == 2) {
             maxEccPow = 0;
         } else {
@@ -197,8 +159,8 @@ class ZonalContribution implements DSSTForceModel {
             }
 
             // Auxiliary quantities.
-            final double ax2or = 2. * a / r;
-            double xmuran = mu / (a * FastMath.pow(ax2or, degree));
+            final double ax2or = 2. * a / provider.getAe();
+            double xmuran = provider.getMu() / (a * FastMath.pow(ax2or, degree));
 
             // Set highest power of e and degree of current spherical harmonic.
             maxEccPow = 0;
@@ -210,7 +172,9 @@ class ZonalContribution implements DSSTForceModel {
                 // Loop over m
                 do {
                     // Compute magnitude of current spherical harmonic coefficient.
-                    final double csnm = FastMath.sqrt(C[n][m] * C[n][m] + S[n][m] * S[n][m]);
+                    final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
+                    final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+                    final double csnm = FastMath.hypot(cnm, snm);
                     if (csnm == 0.) break;
                     // Set magnitude of last spherical harmonic term.
                     double lastTerm = 0.;
@@ -242,7 +206,7 @@ class ZonalContribution implements DSSTForceModel {
                                 break;
                             }
                         }
-                        // Procced to next power of e.
+                        // Proceed to next power of e.
                         lastTerm = term;
                         l += 2;
                         nsld2--;
@@ -252,13 +216,13 @@ class ZonalContribution implements DSSTForceModel {
                         maxEccPow = FastMath.min(degree - 2, maxEccPow);
                         return;
                     }
-                    // Procced to next order.
+                    // Proceed to next order.
                     m++;
-                } while (m <= order);
+                } while (m <= FastMath.min(n, provider.getMaxOrder()));
                 // Procced to next degree.
                 xmuran *= ax2or;
                 n--;
-            } while (n >= maxEccPow + 4);
+            } while (n > maxEccPow + 2);
 
             maxEccPow = FastMath.min(degree - 2, maxEccPow);
         }
@@ -305,7 +269,7 @@ class ZonalContribution implements DSSTForceModel {
         // -2 * a / A
         m2aoA = -2 * a / AA;
         // &mu; / a
-        muoa = mu / a;
+        muoa = provider.getMu() / a;
 
     }
 
@@ -313,7 +277,7 @@ class ZonalContribution implements DSSTForceModel {
     public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
 
         // Compute potential derivative
-        final double[] dU  = computeUDerivatives();
+        final double[] dU  = computeUDerivatives(spacecraftState.getDate());
         final double dUda  = dU[0];
         final double dUdk  = dU[1];
         final double dUdh  = dU[2];
@@ -353,10 +317,14 @@ class ZonalContribution implements DSSTForceModel {
      *  The result is the array
      *  [dU/da, dU/dk, dU/dh, dU/d&alpha;, dU/d&beta;, dU/d&gamma;]
      *  </p>
+     *  @param date current date
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs in hansen computation
      */
-    private double[] computeUDerivatives() throws OrekitException {
+    private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
+
+        final int degree = provider.getMaxDegree();
+        final double dateOffset = provider.getOffset(date);
 
         // Hansen coefficients
         final HansenZonal hansen = new HansenZonal();
@@ -365,7 +333,8 @@ class ZonalContribution implements DSSTForceModel {
         // Qns coefficients
         final double[][] Qns  = CoefficientsFactory.computeQns(gamma, degree, maxEccPow);
         // r / a up to power degree
-        final double roa = r / a;
+        final double roa = provider.getAe() / a;
+
         final double[] roaPow = new double[degree + 1];
         roaPow[0] = 1.;
         for (int i = 1; i <= degree; i++) {
@@ -401,7 +370,7 @@ class ZonalContribution implements DSSTForceModel {
             }
 
             // Kronecker symbol (2 - delta(0,s))
-            final double delta0s = (s == 0) ? 1 : 2;
+            final double d0s = (s == 0) ? 1 : 2;
 
             for (int n = s + 2; n <= degree; n++) {
                 // (n - s) must be even
@@ -410,7 +379,7 @@ class ZonalContribution implements DSSTForceModel {
                     final double kns   = hansen.getValue(-n - 1, s);
                     final double dkns  = hansen.getDerivative(-n - 1, s);
                     final double vns   = Vns.get(new NSKey(n, s));
-                    final double coef0 = delta0s * roaPow[n] * vns * -C[n][0];
+                    final double coef0 = d0s * roaPow[n] * vns * -provider.getUnnormalizedCnm(dateOffset, n, 0);
                     final double coef1 = coef0 * Qns[n][s];
                     final double coef2 = coef1 * kns;
                     // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)

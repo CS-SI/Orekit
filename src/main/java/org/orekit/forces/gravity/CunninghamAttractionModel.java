@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,11 +23,14 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.potential.ConstantSphericalHarmonics;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.time.AbsoluteDate;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
@@ -44,82 +47,52 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 
 public class CunninghamAttractionModel extends AbstractParameterizable implements ForceModel {
 
-    /** Equatorial radius of the Central Body. */
-    private final double equatorialRadius;
+    /** Provider for the spherical harmonics. */
+    private final SphericalHarmonicsProvider provider;
 
-    /** Central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    /** Central attraction coefficient. */
     private double mu;
-
-    /** First normalized potential tesseral coefficients array. */
-    private final double[][] C;
-
-    /** Second normalized potential tesseral coefficients array. */
-    private final double[][] S;
-
-    /** Degree of potential. */
-    private final int degree;
-
-    /** Order of potential. */
-    private final int order;
 
     /** Rotating body. */
     private final Frame bodyFrame;
 
     /** Creates a new instance.
-     *
-     * @param centralBodyFrame rotating body frame
-     * @param equatorialRadius reference equatorial radius of the potential
-     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
-     * @param C un-normalized coefficients array (cosine part)
-     * @param S un-normalized coefficients array (sine part)
-     * @exception IllegalArgumentException if coefficients array do not match
-     */
-    public CunninghamAttractionModel(final Frame centralBodyFrame,
-                                     final double equatorialRadius, final double mu,
-                                     final double[][] C, final double[][] S)
-        throws IllegalArgumentException {
-        super("central attraction coefficient");
+    * @param centralBodyFrame rotating body frame
+    * @param equatorialRadius reference equatorial radius of the potential
+    * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+    * @param C un-normalized coefficients array (cosine part)
+    * @param S un-normalized coefficients array (sine part)
+    * @deprecated since 6.0, replaced by {@link #CunninghamAttractionModel(Frame, SphericalHarmonicsProvider)}
+    */
+   public CunninghamAttractionModel(final Frame centralBodyFrame,
+                                    final double equatorialRadius, final double mu,
+                                    final double[][] C, final double[][] S) {
+       this(centralBodyFrame, new ConstantSphericalHarmonics(equatorialRadius, mu, C, S));
+   }
 
-        this.bodyFrame = centralBodyFrame;
-        this.equatorialRadius = equatorialRadius;
-        this.mu = mu;
-        degree  = C.length - 1;
-        order   = C[degree].length - 1;
+   /** Creates a new instance.
+   * @param centralBodyFrame rotating body frame
+   * @param provider provider for spherical harmonics
+   * @since 6.0
+   */
+  public CunninghamAttractionModel(final Frame centralBodyFrame,
+                                   final SphericalHarmonicsProvider provider) {
+      super("central attraction coefficient");
 
-        if ((C.length != S.length) ||
-            (C[C.length - 1].length != S[S.length - 1].length)) {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.POTENTIAL_ARRAYS_SIZES_MISMATCH,
-                                                                 C.length, C[degree].length, S.length, S[degree].length);
-        }
+      this.provider  = provider;
+      this.mu        = provider.getMu();
+      this.bodyFrame = centralBodyFrame;
 
-        if (C.length < 1) {
-            this.C = new double[1][1];
-            this.S = new double[1][1];
-        } else {
-            // invert the arrays (optimization for later "line per line" seeking)
-            this.C = new double[C[degree].length][C.length];
-            this.S = new double[S[degree].length][S.length];
-
-            for (int i = 0; i <= degree; i++) {
-                final double[] cT = C[i];
-                final double[] sT = S[i];
-                for (int j = 0; j < cT.length; j++) {
-                    this.C[j][i] = cT[j];
-                    this.S[j][i] = sT[j];
-                }
-            }
-        }
-
-        // do not compute keplerian evolution
-        this.C[0][0] = 0.0;
-
-    }
+  }
 
     /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
+
         // get the position in body frame
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), s.getDate());
+        final AbsoluteDate date = s.getDate();
+        final double dateOffset = provider.getOffset(date);
+        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
         final Transform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
 
@@ -132,6 +105,7 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
         final double z2 = z * z;
         final double r2 = x2 + y2 + z2;
         final double r = FastMath.sqrt(r2);
+        final double equatorialRadius = provider.getAe();
         if (r <= equatorialRadius) {
             throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
         }
@@ -217,11 +191,7 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
         double vdZ = 0.0;
 
         // start calculating
-        for (int m = 0; m <= order; m++) {
-
-            // intermediate variables to compute incrementation
-            final double[] Cm = C[m];
-            final double[] Sm = S[m];
+        for (int m = 0; m <= provider.getMaxOrder(); m++) {
 
             double cx = cmx;
             double cy = cmy;
@@ -234,7 +204,7 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
             double dcydz = dcmydz;
             double dczdz = dcmzdz;
 
-            for (int n = m; n <= degree; n++) {
+            for (int n = m; n <= provider.getMaxDegree(); n++) {
 
                 if (n == m) {
                     // calculate the first element of the next column
@@ -326,12 +296,13 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
                 gradZVin1 = gradZVin;
 
                 // compute the acceleration due to the Cnm and Snm coefficients
-                // ( as the matrix is inversed, Cnm actually is Cmn )
-
-                if (Cm[n] != 0.0 || Sm[n] != 0.0) { // avoid doing the processing if not necessary
-                    vdX += Cm[n] * gradXVrn + Sm[n] * gradXVin;
-                    vdY += Cm[n] * gradYVrn + Sm[n] * gradYVin;
-                    vdZ += Cm[n] * gradZVrn + Sm[n] * gradZVin;
+                // ignoring the central attraction
+                if (n > 0) {
+                    final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
+                    final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+                    vdX += cnm * gradXVrn + snm * gradXVin;
+                    vdY += cnm * gradYVrn + snm * gradYVin;
+                    vdZ += cnm * gradZVrn + snm * gradZVin;
                 }
 
             }

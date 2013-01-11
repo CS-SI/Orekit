@@ -1,4 +1,4 @@
-~~ Copyright 2002-2012 CS Systèmes d'Information
+~~ Copyright 2002-2013 CS Systèmes d'Information
 ~~ Licensed under the Apache License, Version 2.0 (the "License");
 ~~ you may not use this file except in compliance with the License.
 ~~ You may obtain a copy of the License at
@@ -43,8 +43,9 @@ Forces
 
   * atmospheric drag forces,
   
-  * central gravity forces. Several attraction model are available for representing 
-  the gravitational field of a celestial body: 
+  * central gravity forces, including time-dependent parts (linear trends and
+    pulasation at several different periods). Several attraction model are
+    available for representing the gravitational field of a celestial body: 
   
       ** Andrzej Droziner model (Institute of Mathematical Machines, Warsaw) in
           his 1976 paper: <An algorithm for recurrent calculation of gravitational

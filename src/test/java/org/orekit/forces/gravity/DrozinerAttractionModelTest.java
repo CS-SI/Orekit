@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -35,6 +35,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.gravity.potential.ConstantSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -78,9 +79,10 @@ public class DrozinerAttractionModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, poleAligned, date, mu);
 
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, 6378136.460, mu,
+        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
+                                                             new ConstantSphericalHarmonics(6378136.460, mu,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
-                                                             new double[][] { { 0.0 }, { 0.0 }, { 0.0 } }));
+                                                             new double[][] { { 0.0 }, { 0.0 }, { 0.0 } })));
 
         // let the step handler perform the test
         propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler());
@@ -143,7 +145,8 @@ public class DrozinerAttractionModelTest {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, ae, mu,
+        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
+                                                             new ConstantSphericalHarmonics(ae, mu,
                                                              new double[][] {
                 { 1.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -151,7 +154,7 @@ public class DrozinerAttractionModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        }));
+        })));
 
         // let the step handler perform the test
         propagator.setMasterMode(20,
@@ -220,12 +223,12 @@ public class DrozinerAttractionModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu, C, S));
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, new ConstantSphericalHarmonics(ae, mu, C, S)));
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         propagator.removeForceModels();
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, ae, mu, C, S));
+        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, new ConstantSphericalHarmonics(ae, mu, C, S)));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));

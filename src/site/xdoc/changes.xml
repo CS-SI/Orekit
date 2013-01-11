@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2012 CS Systèmes d'Information
+<!-- Copyright 2002-2013 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -22,6 +22,22 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added support for time-dependent gravity fields. All recent gravity
+        fields include time-dependent coefficients (linear trends and pulsations
+        at several different periods). They are now properly handled by Orekit.
+        For comparison purposes, it is still possible to retrieve only the constant
+        part of a field even if the file contains time-dependent coefficients too.
+      </action>
+      <action dev="luc" type="update" >
+        Added a way to speed up parsing and reduce memory consumption when
+        loading gravity fields. Now the user can specify the maximal degree
+        and order before reading the file.
+      </action>
+      <action dev="luc" type="fix" >
+        The EGM gravity field reader did not complain when files with missing
+        coefficients were provided, even when asked to complain.
+      </action>
       <action dev="luc" type="fix" >
         Fixed serialization of all predefined frames. This fix implied
         also fixing serialization of celestial bodies as the predefined

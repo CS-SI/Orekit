@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -19,9 +19,7 @@ package fr.cs.examples.conversion;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -68,7 +66,7 @@ public class PropagatorConversion {
             Autoconfiguration.configureOrekit();
 
             // gravity field
-            PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+            SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(2, 0);
             double mu =  provider.getMu();
 
             // inertial frame
@@ -108,11 +106,7 @@ public class PropagatorConversion {
 
             // Force Models:
             // 1 - Perturbing gravity field (only J2 is considered here)
-            ForceModel gravity = new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                                               provider.getAe(),
-                                                               provider.getMu(),
-                                                               provider.getC(2, 0, false),
-                                                               provider.getS(2, 0, false));
+            ForceModel gravity = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
 
             // Add force models to the propagator
             numProp.addForceModel(gravity);
@@ -201,12 +195,6 @@ public class PropagatorConversion {
             System.exit(1);
         } catch (FileNotFoundException fnfe) {
             System.err.println(fnfe.getLocalizedMessage());
-            System.exit(1);
-        } catch (IOException ioe) {
-            System.err.println(ioe.getLocalizedMessage());
-            System.exit(1);
-        } catch (ParseException pe) {
-            System.err.println(pe.getLocalizedMessage());
             System.exit(1);
         }
     }

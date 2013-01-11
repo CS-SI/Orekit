@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,10 +21,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.ParseException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.DateComponents;
+import org.orekit.utils.Constants;
 
 /** Reader for the ICGEM gravity field format.
  *
@@ -37,12 +44,32 @@ import org.orekit.errors.OrekitMessages;
  * href="http://icgem.gfz-potsdam.de/ICGEM/documents/ICGEM-Format-2011.pdf">here</a>.
  * These versions differ in time-dependent coefficients, which are linear-only prior
  * to 2011 (up to eigen-5 model) and have also harmonic effects after that date
- * (starting with eigen-6 model). Both versions are supported
- * by the class (for now, they simply ignore the time-dependent parts).</p>
+ * (starting with eigen-6 model). Both versions are supported by the class.</p>
+ * <p>
+ * In order to simplify implementation, some design choices have been made: the
+ * reference date and the periods of harmonic pulsations are stored globally and
+ * not on a per-coefficient basis. This has the following implications:
+ * </p>
+ * <ul>
+ *   <li>
+ *     all time-stamped coefficients must share the same reference date, otherwise
+ *     an error will be triggered during parsing,
+ *   </li>
+ *   <li>
+ *     in order to avoid too large memory and CPU consumption, only a few different
+ *     periods should appear in the file,
+ *   </li>
+ *   <li>
+ *     only one occurrence of the each coefficient may appear in the file, otherwise
+ *     an error will be triggered during parsing. Multiple occurrences with different
+ *     time stamps are forbidden (both because they correspond to a duplicated entry
+ *     and because they define two different reference dates as per previous design
+ *     choice).
+ *   </li>
+ * </ul>
  *
  * <p> The proper way to use this class is to call the {@link GravityFieldFactory}
- *  which will determine which reader to use with the selected potential
- *  coefficients file <p>
+ *  which will determine which reader to use with the selected gravity field file.</p>
  *
  * @see GravityFieldFactory
  * @author Luc Maisonobe
@@ -70,6 +97,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Indicator value for normalized coefficients. */
     private static final String NORMALIZED              = "fully_normalized";
 
+    /** Indicator value for un-normalized coefficients. */
+    private static final String UNNORMALIZED            = "unnormalized";
+
     /** End of header marker. */
     private static final String END_OF_HEADER           = "end_of_head";
 
@@ -91,22 +121,67 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Gravity field coefficient cosine amplitude. */
     private static final String ACOS                    = "acos";
 
+    /** Indicator for normalized coeffcients. */
+    private boolean normalized;
+
+    /** Reference date. */
+    private DateComponents referenceDate;
+
+    /** Secular trend of the cosine coefficients. */
+    private final List<List<Double>> cTrend;
+
+    /** Secular trend of the sine coefficients. */
+    private final List<List<Double>> sTrend;
+
+    /** Cosine part of the cosine coefficients pulsation. */
+    private final Map<Double, List<List<Double>>> cCos;
+
+    /** Sine part of the cosine coefficients pulsation. */
+    private final Map<Double, List<List<Double>>> cSin;
+
+    /** Cosine part of the sine coefficients pulsation. */
+    private final Map<Double, List<List<Double>>> sCos;
+
+    /** Sine part of the sine coefficients pulsation. */
+    private final Map<Double, List<List<Double>>> sSin;
+
     /** Simple constructor.
      * @param supportedNames regular expression for supported files names
      * @param missingCoefficientsAllowed if true, allows missing coefficients in the input data
      */
     public ICGEMFormatReader(final String supportedNames, final boolean missingCoefficientsAllowed) {
         super(supportedNames, missingCoefficientsAllowed);
+        referenceDate = null;
+        cTrend = new ArrayList<List<Double>>();
+        sTrend = new ArrayList<List<Double>>();
+        cCos   = new HashMap<Double, List<List<Double>>>();
+        cSin   = new HashMap<Double, List<List<Double>>>();
+        sCos   = new HashMap<Double, List<List<Double>>>();
+        sSin   = new HashMap<Double, List<List<Double>>>();
     }
 
     /** {@inheritDoc} */
     public void loadData(final InputStream input, final String name)
         throws IOException, ParseException, OrekitException {
 
+        // reset the indicator before loading any data
+        setReadComplete(false);
+        referenceDate = null;
+        cTrend.clear();
+        sTrend.clear();
+        cCos.clear();
+        cSin.clear();
+        sCos.clear();
+        sSin.clear();
+
+        // by default, the field is normalized (will be overridden later if non-default)
+        normalized = true;
+
         final BufferedReader r = new BufferedReader(new InputStreamReader(input));
         boolean inHeader = true;
-        boolean okMu     = false;
-        boolean okAe     = false;
+        double[][] c               = null;
+        double[][] s               = null;
+        boolean okCoeffs           = false;
         int lineNumber   = 0;
         for (String line = r.readLine(); line != null; line = r.readLine()) {
             try {
@@ -122,33 +197,22 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                                                        lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && GRAVITY_CONSTANT.equals(tab[0])) {
-                        mu   = Double.parseDouble(tab[1].replace('D', 'E'));
-                        okMu = true;
+                        setMu(Double.parseDouble(tab[1].replace('D', 'E')));
                     } else if ((tab.length == 2) && REFERENCE_RADIUS.equals(tab[0])) {
-                        ae   = Double.parseDouble(tab[1].replace('D', 'E'));
-                        okAe = true;
+                        setAe(Double.parseDouble(tab[1].replace('D', 'E')));
                     } else if ((tab.length == 2) && MAX_DEGREE.equals(tab[0])) {
 
-                        final int maxDegree = Integer.parseInt(tab[1]);
-
-                        // allocate arrays
-                        normalizedC = new double[maxDegree + 1][];
-                        normalizedS = new double[maxDegree + 1][];
-                        for (int k = 0; k < normalizedC.length; k++) {
-                            normalizedC[k] = new double[k + 1];
-                            normalizedS[k] = new double[k + 1];
-                            if (!missingCoefficientsAllowed()) {
-                                Arrays.fill(normalizedC[k], Double.NaN);
-                                Arrays.fill(normalizedS[k], Double.NaN);
-                            }
-                        }
-                        if (missingCoefficientsAllowed()) {
-                            // set the default value for the only expected non-zero coefficient
-                            normalizedC[0][0] = 1.0;
-                        }
+                        final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));
+                        final int order  = FastMath.min(getMaxParseOrder(), degree);
+                        c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                        s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
 
                     } else if ((tab.length == 2) && NORMALIZATION_INDICATOR.equals(tab[0])) {
-                        if (!NORMALIZED.equals(tab[1])) {
+                        if (NORMALIZED.equals(tab[1])) {
+                            normalized = true;
+                        } else if (UNNORMALIZED.equals(tab[1])) {
+                            normalized = false;
+                        } else {
                             throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                        lineNumber, name, line);
                         }
@@ -156,17 +220,79 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         inHeader = false;
                     }
                 } else {
-                    if (((tab.length == 7) && GFC.equals(tab[0])) ||
-                        ((tab.length == 8) && GFCT.equals(tab[0]))) {
-                        final int degree = Integer.parseInt(tab[1]);
-                        final int order  = Integer.parseInt(tab[2]);
-                        normalizedC[degree][order] = Double.parseDouble(tab[3].replace('D', 'E'));
-                        normalizedS[degree][order] = Double.parseDouble(tab[4].replace('D', 'E'));
-                    } else if (((tab.length == 7) && DOT.equals(tab[0])) ||
-                               ((tab.length == 7) && TRND.equals(tab[0])) ||
-                               ((tab.length == 8) && ASIN.equals(tab[0])) ||
-                               ((tab.length == 8) && ACOS.equals(tab[0]))) {
-                        // we ignore the time derivative records
+                    if ((tab.length == 7 && GFC.equals(tab[0])) || (tab.length == 8 && GFCT.equals(tab[0]))) {
+
+                        final int i = Integer.parseInt(tab[1]);
+                        final int j = Integer.parseInt(tab[2]);
+                        if (i < c.length && j < c[i].length) {
+
+                            parseCoefficient(tab[3], c, i, j, "C", name);
+                            parseCoefficient(tab[4], s, i, j, "S", name);
+                            okCoeffs = true;
+
+                            if (tab.length == 8) {
+                                // check the reference date (format yyyymmdd)
+                                final DateComponents localRef = new DateComponents(Integer.parseInt(tab[7].substring(0, 4)),
+                                                                                   Integer.parseInt(tab[7].substring(4, 6)),
+                                                                                   Integer.parseInt(tab[7].substring(6, 8)));
+                                if (referenceDate == null) {
+                                    // first reference found, store it
+                                    referenceDate = localRef;
+                                } else if (!referenceDate.equals(localRef)) {
+                                    throw new OrekitException(OrekitMessages.SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD,
+                                                              referenceDate, localRef, name);
+                                }
+                            }
+
+                        }
+                    } else if (tab.length == 7 && (DOT.equals(tab[0]) || TRND.equals(tab[0]))) {
+
+                        final int i = Integer.parseInt(tab[1]);
+                        final int j = Integer.parseInt(tab[2]);
+                        if (i < c.length && j < c[i].length) {
+
+                            // store the secular trend coefficients
+                            extendListOfLists(cTrend, i, j, 0.0);
+                            extendListOfLists(sTrend, i, j, 0.0);
+                            parseCoefficient(tab[3], cTrend, i, j, "Ctrend", name);
+                            parseCoefficient(tab[4], sTrend, i, j, "Strend", name);
+
+                        }
+
+                    } else if (tab.length == 8 && (ASIN.equals(tab[0])|| ACOS.equals(tab[0]))) {
+
+                        final int i = Integer.parseInt(tab[1]);
+                        final int j = Integer.parseInt(tab[2]);
+                        if (i < c.length && j < c[i].length) {
+
+                            // extract arrays corresponding to period
+                            Double period = Double.valueOf(tab[7]);
+                            if (! cCos.containsKey(period)) {
+                                cCos.put(period, new ArrayList<List<Double>>());
+                                cSin.put(period, new ArrayList<List<Double>>());
+                                sCos.put(period, new ArrayList<List<Double>>());
+                                sSin.put(period, new ArrayList<List<Double>>());
+                            }
+                            final List<List<Double>> cCosPeriod = cCos.get(period);
+                            final List<List<Double>> cSinPeriod = cSin.get(period);
+                            final List<List<Double>> sCosPeriod = sCos.get(period);
+                            final List<List<Double>> sSinPeriod = sSin.get(period);
+
+                            // store the pulsation coefficients
+                            extendListOfLists(cCosPeriod, i, j, 0.0);
+                            extendListOfLists(cSinPeriod, i, j, 0.0);
+                            extendListOfLists(sCosPeriod, i, j, 0.0);
+                            extendListOfLists(sSinPeriod, i, j, 0.0);
+                            if (ACOS.equals(tab[0])) {
+                                parseCoefficient(tab[3], cCosPeriod, i, j, "Ccos", name);
+                                parseCoefficient(tab[4], sCosPeriod, i, j, "SCos", name);
+                            } else {
+                                parseCoefficient(tab[3], cSinPeriod, i, j, "Csin", name);
+                                parseCoefficient(tab[4], sSinPeriod, i, j, "Ssin", name);
+                            }
+
+                        }
+
                     } else {
                         throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                                    lineNumber, name, line);
@@ -178,30 +304,108 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
             }
         }
 
-        boolean okCoeffs = true;
-        for (int k = 0; okCoeffs && k < normalizedC.length; k++) {
-            final double[] cK = normalizedC[k];
-            final double[] sK = normalizedS[k];
-            for (int i = 0; okCoeffs && i < cK.length; ++i) {
-                if (Double.isNaN(cK[i])) {
-                    okCoeffs = false;
-                }
-            }
-            for (int i = 0; okCoeffs && i < sK.length; ++i) {
-                if (Double.isNaN(sK[i])) {
-                    okCoeffs = false;
-                }
+        if (missingCoefficientsAllowed() && c.length > 0 && c[0].length > 0) {
+            // ensure at least the (0, 0) element is properly set
+            if (Precision.equals(c[0][0], 0.0, 1)) {
+                c[0][0] = 1.0;
             }
         }
 
-        if (!(okMu && okAe && okCoeffs)) {
+        if (Double.isNaN(getAe()) || Double.isNaN(getMu()) || !okCoeffs) {
             String loaderName = getClass().getName();
             loaderName = loaderName.substring(loaderName.lastIndexOf('.') + 1);
             throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
                                       name, loaderName);
         }
 
-        readCompleted = true;
+        if (normalized) {
+            setNormalizedC(c, name);
+            setNormalizedS(s, name);
+        } else {
+            setUnNormalizedC(c, name);
+            setUnNormalizedS(s, name);
+        }
+        setReadComplete(true);
+
+    }
+
+    /** Get a provider for read spherical harmonics coefficients.
+     * <p>
+     * ICGEM fields do include time-dependent parts which are taken into account
+     * in the returned provider.
+     * </p>
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a new provider
+     * @exception OrekitException if the requested maximal degree or order exceeds the
+     * available degree or order or if no gravity field has read yet
+     */
+    public SphericalHarmonicsProvider getProvider(int degree, int order)
+        throws OrekitException {
+
+        SphericalHarmonicsProvider provider = getConstantProvider(degree, order);
+        if (cTrend.isEmpty() && cCos.isEmpty()) {
+            // there are no time-dependent coefficients
+            return provider;
+        }
+
+        // precompute normalization factors for all time-dependent coefficients
+        final double[][] factors = normalized ?
+                                   GravityFieldFactory.getUnnormalizationFactors(degree, order) :
+                                   null;
+
+        if (!cTrend.isEmpty()) {
+
+            // copy the time-dependent coefficients
+            final double[][] cArray = toArray(cTrend);
+            final double[][] sArray = toArray(sTrend);
+            for (int i = 0; i < cArray.length; ++i) {
+                final List<Double> cTi = cTrend.get(i);
+                final List<Double> sTi = sTrend.get(i);
+                for (int j = 0; j < cArray[i].length; ++j) {
+                    final double f = (normalized ? factors[i][j] : 1.0) / Constants.JULIAN_YEAR;
+                    cArray[i][j] = f * cTi.get(j);
+                    sArray[i][j] = f * sTi.get(j);
+                }
+            }
+
+            // add the secular trend layer
+            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, cArray, sArray);
+
+        }
+
+        for (final Double period : cCos.keySet()) {
+
+            // copy the time-dependent coefficients
+            final List<List<Double>> ccL = cCos.get(period);
+            final List<List<Double>> csL = cSin.get(period);
+            final List<List<Double>> scL = sCos.get(period);
+            final List<List<Double>> ssL = sSin.get(period);
+            final double[][] cCosArray = toArray(ccL);
+            final double[][] cSinArray = toArray(csL);
+            final double[][] sCosArray = toArray(scL);
+            final double[][] sSinArray = toArray(ssL);
+            for (int i = 0; i < cCosArray.length; ++i) {
+                final List<Double> cCosi = ccL.get(i);
+                final List<Double> cSini = csL.get(i);
+                final List<Double> sCosi = scL.get(i);
+                final List<Double> sSini = ssL.get(i);
+                for (int j = 0; j < cCosArray[i].length; ++j) {
+                    final double f = normalized ? factors[i][j] : 1.0;
+                    cCosArray[i][j] = f * cCosi.get(j);
+                    cSinArray[i][j] = f * cSini.get(j);
+                    sCosArray[i][j] = f * sCosi.get(j);
+                    sSinArray[i][j] = f * sSini.get(j);
+                }
+            }
+
+            // add the pulsating layer for the current period
+            provider = new PulsatingSphericalHarmonics(provider, period * Constants.JULIAN_YEAR,
+                                                     cCosArray, cSinArray, sCosArray, sSinArray);
+
+        }
+
+        return provider;
 
     }
 

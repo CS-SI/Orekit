@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -23,6 +23,7 @@ import java.text.ParseException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
@@ -36,9 +37,11 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
+import org.orekit.forces.gravity.potential.ConstantSphericalHarmonics;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -46,7 +49,9 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -87,7 +92,8 @@ public class CunninghamAttractionModelTest {
         c[0][0] = 0.0;
         c[2][0] = c20;
         double[][] s = new double[3][1];
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, 6378136.460, mu, c, s));
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+                                                               new ConstantSphericalHarmonics(6378136.460, mu, c, s)));
 
         // let the step handler perform the test
         propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
@@ -151,7 +157,8 @@ public class CunninghamAttractionModelTest {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+                                                               new ConstantSphericalHarmonics(ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -159,7 +166,7 @@ public class CunninghamAttractionModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        }));
+        })));
 
         // let the step handler perform the test
         propagator.setInitialState(new SpacecraftState(initialOrbit));
@@ -230,7 +237,8 @@ public class CunninghamAttractionModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
 
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, ae, mu,
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+                                                               new ConstantSphericalHarmonics(ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -238,14 +246,15 @@ public class CunninghamAttractionModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        }));
+        })));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         propagator.removeForceModels();
 
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, ae, mu,
+        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
+                                                             new ConstantSphericalHarmonics(ae, mu,
                                                              new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -253,7 +262,7 @@ public class CunninghamAttractionModelTest {
         new double[][] {
                 { 0.0 }, { 0.0 }, { 0.0 }, { 0.0 },
                 { 0.0 }, { 0.0 }, { 0.0 },
-        }));
+        })));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
@@ -268,7 +277,6 @@ public class CunninghamAttractionModelTest {
 
         Utils.setDataRoot("regular-data:potential/grgs-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
-        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
 
         // pos-vel (from a ZOOM ephemeris reference)
         final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
@@ -277,20 +285,17 @@ public class CunninghamAttractionModelTest {
                 new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
                                                        FramesFactory.getGCRF(),
                                                        new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       provider.getMu()));
+                                                       GravityFieldFactory.getSphericalHarmonicsProvider(1, 1).getMu()));
 
         AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
         for (int i = 2; i <= 69; i++) {
-            // we get the data as extracted from the file
-            final double[][] C = provider.getC(i, i, false);
-            final double[][] S = provider.getS(i, i, false);
             // perturbing force (ITRF2008 central body frame)
             final ForceModel cunModel =
-                    new CunninghamAttractionModel(FramesFactory.getITRF2008(), provider.getAe(),
-                                                  provider.getMu(), C, S);
+                    new CunninghamAttractionModel(FramesFactory.getITRF2008(),
+                                                  GravityFieldFactory.getSphericalHarmonicsProvider(i, i));
             final ForceModel droModel =
-                    new DrozinerAttractionModel(FramesFactory.getITRF2008(), provider.getAe(),
-                                                provider.getMu(), C, S);
+                    new DrozinerAttractionModel(FramesFactory.getITRF2008(),
+                                                GravityFieldFactory.getSphericalHarmonicsProvider(i, i));
 
             /**
              * Compute acceleration
@@ -329,6 +334,68 @@ public class CunninghamAttractionModelTest {
             return acceleration;
         }
 
+    }
+
+    @Test
+    public void testTimeDependentField() throws IOException, ParseException, OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", true));
+
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState spacecraftState =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       GravityFieldFactory.getSphericalHarmonicsProvider(1, 1).getMu()));
+
+        double dP = 0.1;
+        double duration = 3 * Constants.JULIAN_DAY;
+        BoundedPropagator fixedFieldEphemeris   = createEphemeris(dP, spacecraftState, duration,
+                                                                  GravityFieldFactory.getConstantSphericalHarmonicsProvider(8, 8));
+        BoundedPropagator varyingFieldEphemeris = createEphemeris(dP, spacecraftState, duration,
+                                                                  GravityFieldFactory.getSphericalHarmonicsProvider(8, 8));
+
+        double step = 60.0;
+        double maxDeltaT = 0;
+        double maxDeltaN = 0;
+        double maxDeltaW = 0;
+        for (AbsoluteDate date = fixedFieldEphemeris.getMinDate();
+             date.compareTo(fixedFieldEphemeris.getMaxDate()) < 0;
+             date = date.shiftedBy(step)) {
+            PVCoordinates pvFixedField   = fixedFieldEphemeris.getPVCoordinates(date, FramesFactory.getGCRF());
+            PVCoordinates pvVaryingField = varyingFieldEphemeris.getPVCoordinates(date, FramesFactory.getGCRF());
+            Vector3D t = pvFixedField.getVelocity().normalize();
+            Vector3D w = pvFixedField.getMomentum().normalize();
+            Vector3D n = Vector3D.crossProduct(w, t);
+            Vector3D delta = pvVaryingField.getPosition().subtract(pvFixedField.getPosition());
+            maxDeltaT = FastMath.max(maxDeltaT, FastMath.abs(Vector3D.dotProduct(delta, t)));
+            maxDeltaN = FastMath.max(maxDeltaN, FastMath.abs(Vector3D.dotProduct(delta, n)));
+            maxDeltaW = FastMath.max(maxDeltaW, FastMath.abs(Vector3D.dotProduct(delta, w)));
+        }
+        Assert.assertTrue(maxDeltaT > 0.15);
+        Assert.assertTrue(maxDeltaT < 0.25);
+        Assert.assertTrue(maxDeltaN > 0.01);
+        Assert.assertTrue(maxDeltaN < 0.02);
+        Assert.assertTrue(maxDeltaW > 0.05);
+        Assert.assertTrue(maxDeltaW < 0.10);
+
+    }
+
+    private BoundedPropagator createEphemeris(double dP, SpacecraftState initialState, double duration,
+                                              SphericalHarmonicsProvider provider)
+        throws OrekitException {
+        double[][] tol = NumericalPropagator.tolerances(dP, initialState.getOrbit(), OrbitType.CARTESIAN);
+        FirstOrderIntegrator integrator =
+                new DormandPrince853Integrator(0.001, 120.0, tol[0], tol[1]);
+        NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.setEphemerisMode();
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2008(), provider));
+        propagator.setInitialState(initialState);
+        propagator.propagate(initialState.getDate().shiftedBy(duration));
+        return propagator.getGeneratedEphemeris();
     }
 
     @Before

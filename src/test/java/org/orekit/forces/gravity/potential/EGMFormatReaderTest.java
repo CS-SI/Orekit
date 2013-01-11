@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -21,55 +21,92 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
 
 public class EGMFormatReaderTest {
 
     @Test
     public void testRead() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", false));
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
-        double[][] C = provider.getC(5, 5, true);
-        double[][] S = provider.getS(5, 5, true);
-        Assert.assertEquals(0.957254173792E-06 ,C[3][0],  0);
-        Assert.assertEquals(0.174971983203E-06,C[5][5],  0);
-        Assert.assertEquals(0, S[4][0],  0);
-        Assert.assertEquals(0.308853169333E-06,S[4][4],  0);
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
+        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        int maxUlps = 1;
+        checkValue(provider.getUnnormalizedCnm(Double.NaN, 3, 0), 3, 0, 0.957254173792E-06, maxUlps);
+        checkValue(provider.getUnnormalizedCnm(Double.NaN, 5, 5), 5, 5, 0.174971983203E-06, maxUlps);
+        checkValue(provider.getUnnormalizedSnm(Double.NaN, 4, 0), 4, 0, 0.0,                maxUlps);
+        checkValue(provider.getUnnormalizedSnm(Double.NaN, 4, 4), 4, 4, 0.308853169333E-06, maxUlps);
 
-        double[][] UC = provider.getC(5, 5, false);
         double a = (-0.295301647654E-06);
         double b = 9*8*7*6*5*4*3*2;
         double c = 2*11/b;
         double result = a*FastMath.sqrt(c);
 
-        Assert.assertEquals(result,UC[5][4],  0);
+        Assert.assertEquals(result, provider.getUnnormalizedCnm(Double.NaN, 5, 4), 1.0e-20);
 
         a = -0.188560802735E-06;
         b = 8*7*6*5*4*3*2;
         c=2*9/b;
         result = a*FastMath.sqrt(c);
-        Assert.assertEquals(result,UC[4][4],  0);
+        Assert.assertEquals(result, provider.getUnnormalizedCnm(Double.NaN, 4, 4), 1.0e-20);
 
-        Assert.assertEquals(1.0826266835531513e-3, provider.getJ(false, 2)[2],0);
+        Assert.assertEquals(1.0826266835531513e-3, -provider.getUnnormalizedCnm(Double.NaN, 2, 0), 1.0e-20);
 
+        Assert.assertNull(provider.getReferenceDate());
+        Assert.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
+        Assert.assertEquals(0, provider.getOffset(AbsoluteDate.MODIFIED_JULIAN_EPOCH), Precision.SAFE_MIN);
+    }
+
+    @Test
+    public void testReadLimits() throws IOException, ParseException, OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
+        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
+        try {
+            provider.getUnnormalizedCnm(0.0, 3, 3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            // expected
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+        }
+        try {
+            provider.getUnnormalizedCnm(0.0, 4, 2);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            // expected
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught: " + e.getLocalizedMessage());
+        }
+        provider.getUnnormalizedCnm(0.0, 3, 2);
+        Assert.assertEquals(3, provider.getMaxDegree());
+        Assert.assertEquals(2, provider.getMaxOrder());
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-1", false));
-        GravityFieldFactory.getPotentialProvider();
+        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-2", false));
-        GravityFieldFactory.getPotentialProvider();
+        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+    }
+
+    private void checkValue(final double value, final int n, final int m,
+                            final double constant, final int maxUlps) {
+        double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
+        double normalized = factor * constant;
+        double epsilon = maxUlps * FastMath.ulp(normalized);
+        Assert.assertEquals(normalized, value, epsilon);
     }
 
 }

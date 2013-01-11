@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,6 +36,7 @@ import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -368,11 +369,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             for (final DSSTForceModel force : forceModels) {
                 if (force instanceof DSSTCentralBody) {
                     // Central body
-                    final double[][] cnm = ((DSSTCentralBody) force).getCnm();
-                    final double[][] snm = ((DSSTCentralBody) force).getSnm();
-                    final double ae      = ((DSSTCentralBody) force).getEquatorialRadius();
-                    final ForceModel cunningham = new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae,
-                                                                                getMu(), cnm, snm);
+                    final SphericalHarmonicsProvider provider = ((DSSTCentralBody) force).getProvider();
+                    final ForceModel cunningham = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
                     propagator.addForceModel(cunningham);
                 } else if (force instanceof DSSTThirdBody) {
                     // Third body

@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -36,7 +36,6 @@ import org.orekit.forces.drag.SimpleExponentialAtmosphere;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -142,12 +141,8 @@ public class NumericalConverterTest {
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
-        PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
         gravity = new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                                provider.getAe(),
-                                                provider.getMu(),
-                                                provider.getC(2, 0, false),
-                                                provider.getS(2, 0, false));
+                                                GravityFieldFactory.getSphericalHarmonicsProvider(2, 0));
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,

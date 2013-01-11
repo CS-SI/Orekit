@@ -1,4 +1,4 @@
-/* Copyright 2002-2012 CS Systèmes d'Information
+/* Copyright 2002-2013 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -46,7 +46,7 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.PotentialCoefficientsProvider;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -149,6 +149,7 @@ public class DSSTPropagation {
         ORBIT_IS_OSCULATING,
         START_DATE,
         DURATION,
+        DURATION_IN_DAYS,
         OUTPUT_STEP,
         FIXED_INTEGRATION_STEP,
         NUMERICAL_COMPARISON,
@@ -175,15 +176,19 @@ public class DSSTPropagation {
         if (!parser.containsKey(ParameterKey.ORBIT_DATE)) {
             throw new IOException("Orbit date is not defined.");
         }
-        if (!parser.containsKey(ParameterKey.DURATION)) {
+        if (!parser.containsKey(ParameterKey.DURATION) && !parser.containsKey(ParameterKey.DURATION_IN_DAYS)) {
             throw new IOException("Propagation duration is not defined.");
         }
 
         // All dates in UTC
         final TimeScale utc = TimeScalesFactory.getUTC();
+        
+        final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
+        final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
         // Potential coefficients provider
-        final PotentialCoefficientsProvider provider = GravityFieldFactory.getPotentialProvider();
+        final SphericalHarmonicsProvider provider =
+                GravityFieldFactory.getSphericalHarmonicsProvider(degree, order);
 
         // Central body attraction coefficient (m³/s²)
         final double mu = provider.getMu();
@@ -212,8 +217,14 @@ public class DSSTPropagation {
         } else {
             start = parser.getDate(ParameterKey.ORBIT_DATE, utc);
         }
-        double duration = parser.getDouble(ParameterKey.DURATION);
-        double outStep  = parser.getDouble(ParameterKey.OUTPUT_STEP);
+        double duration = 0.;
+        if (parser.containsKey(ParameterKey.DURATION)) {
+            duration = parser.getDouble(ParameterKey.DURATION);
+        }
+        if (parser.containsKey(ParameterKey.DURATION_IN_DAYS)) {
+            duration = parser.getDouble(ParameterKey.DURATION_IN_DAYS) * Constants.JULIAN_DAY;
+        }
+        double outStep = parser.getDouble(ParameterKey.OUTPUT_STEP);
 
         // Add orbit handler
         OrbitHandler dsstHandler = new OrbitHandler();
@@ -385,18 +396,20 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
-     *  @param provider potential coefficients provider
+     *  @param provider spherical harmonics provider
      *  @param parser input file parser
+     *  @param provider potential coefficients provider
+     *  @param degree max potential degree
+     *  @param order  max potential order
      *  @param dsstProp DSST propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
-                               final PotentialCoefficientsProvider provider,
+                               final SphericalHarmonicsProvider provider,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
-        final double mu = provider.getMu();
         
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
@@ -406,9 +419,8 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        final double[][] Cnm = provider.getC(degree, order, false);
-        final double[][] Snm = provider.getS(degree, order, false);
-        dsstProp.addForceModel(new DSSTCentralBody(Constants.WGS84_EARTH_ANGULAR_VELOCITY, ae, mu, Cnm, Snm));
+        dsstProp.addForceModel(new DSSTCentralBody(FramesFactory.getITRFEquinox(),
+                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -424,7 +436,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
                                                                 Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF2005());
+                                                                FramesFactory.getITRFEquinox());
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
             dsstProp.addForceModel(new DSSTAtmosphericDrag(atm,
                                                            parser.getDouble(ParameterKey.DRAG_CD),
@@ -441,18 +453,17 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
-     *  @param provider potential coefficients provider
+     *  @param provider spherical harmonics provider
      *  @param parser  input file parser
      *  @param numProp numerical propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
-                               final PotentialCoefficientsProvider provider,
+                               final SphericalHarmonicsProvider provider,
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
-        final double mu = provider.getMu();
         
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = parser.getInt(ParameterKey.CENTRAL_BODY_ORDER);
@@ -462,9 +473,7 @@ public class DSSTPropagation {
         }
 
         // Central Body (un-normalized coefficients)
-        numProp.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), ae, mu,
-                                                            provider.getC(degree, order, false),
-                                                            provider.getS(degree, order, false)));
+        numProp.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -480,7 +489,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
             final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
                                                                 Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRF2005());
+                                                                FramesFactory.getITRFEquinox());
             final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
             final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
                                                                     parser.getDouble(ParameterKey.DRAG_CD),
