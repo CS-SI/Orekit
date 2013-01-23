@@ -17,9 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -34,7 +31,7 @@ import org.orekit.utils.Constants;
 public class GRGSFormatReaderTest {
 
     @Test
-    public void testAdditionalColumn() throws IOException, ParseException, OrekitException {
+    public void testAdditionalColumn() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
 
@@ -58,7 +55,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testRegular05c() throws IOException, ParseException, OrekitException {
+    public void testRegular05c() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
 
@@ -82,7 +79,7 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testReadLimits() throws IOException, ParseException, OrekitException {
+    public void testReadLimits() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
         try {
@@ -107,20 +104,20 @@ public class GRGSFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted1.dat", false));
+    public void testCorruptedFile1() throws OrekitException {
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-1-grim5.dat", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted2.dat", false));
+    public void testCorruptedFile2() throws OrekitException {
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-2-grim5.dat", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
-        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_corrupted3.dat", false));
+    public void testCorruptedFile3() throws OrekitException {
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-3-grim5.dat", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 

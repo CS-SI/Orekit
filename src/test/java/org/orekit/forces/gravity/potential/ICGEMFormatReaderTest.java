@@ -17,9 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.Precision;
@@ -34,7 +31,7 @@ import org.orekit.utils.Constants;
 public class ICGEMFormatReaderTest {
 
     @Test
-    public void testReadLimits() throws IOException, ParseException, OrekitException {
+    public void testReadLimits() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
@@ -60,7 +57,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testRegular05c() throws IOException, ParseException, OrekitException {
+    public void testRegular05c() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
@@ -86,7 +83,7 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test
-    public void testEigen06() throws IOException, ParseException, OrekitException {
+    public void testEigen06() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
@@ -115,16 +112,16 @@ public class ICGEMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
+    public void testCorruptedFile1() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_corrupted1_coef", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-1-g007_eigen_coef", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
+    public void testCorruptedFile2() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_corrupted2_coef", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-2-g007_eigen_coef", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 

@@ -17,9 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -31,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
 public class EGMFormatReaderTest {
 
     @Test
-    public void testRead() throws IOException, ParseException, OrekitException {
+    public void testRead() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
@@ -62,7 +59,7 @@ public class EGMFormatReaderTest {
     }
 
     @Test
-    public void testReadLimits() throws IOException, ParseException, OrekitException {
+    public void testReadLimits() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
@@ -88,16 +85,16 @@ public class EGMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
+    public void testCorruptedFile1() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-1", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-1-egm96_to5", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
+    public void testCorruptedFile2() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.corrupted-2", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-2-egm96_to5", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 

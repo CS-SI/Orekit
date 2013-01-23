@@ -17,9 +17,6 @@
 package org.orekit.forces.gravity.potential;
 
 
-import java.io.IOException;
-import java.text.ParseException;
-
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -33,7 +30,7 @@ import org.orekit.utils.Constants;
 public class SHMFormatReaderTest {
 
     @Test
-    public void testReadLimits() throws IOException, ParseException, OrekitException {
+    public void testReadLimits() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
@@ -59,7 +56,7 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testRegular03c() throws IOException, ParseException, OrekitException {
+    public void testRegular03c() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
@@ -84,9 +81,9 @@ public class SHMFormatReaderTest {
     }
 
     @Test
-    public void testReadCompressed01c() throws IOException, ParseException, OrekitException {
+    public void testReadCompressed01c() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen-cg01c_coef", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("compressed-eigen-cg01c_coef", false));
         SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
@@ -109,23 +106,23 @@ public class SHMFormatReaderTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile1() throws IOException, ParseException, OrekitException {
+    public void testCorruptedFile1() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted1_coef", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-1-eigen_coef", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile2() throws IOException, ParseException, OrekitException {
+    public void testCorruptedFile2() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted2_coef", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-2-eigen_coef", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
-    public void testCorruptedFile3() throws IOException, ParseException, OrekitException {
+    public void testCorruptedFile3() throws OrekitException {
         Utils.setDataRoot("potential");
-        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_corrupted3_coef", false));
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-3-eigen_coef", false));
         GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
     }
 
