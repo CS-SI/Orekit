@@ -130,7 +130,8 @@ public class SHMFormatReaderTest {
                             final AbsoluteDate date, final int n, final int m,
                             final int refYear, final int refMonth, final int refDay,
                             final double constant, final double trend,
-                            final int maxUlps) {
+                            final int maxUlps)
+        throws OrekitException {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
         double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;

@@ -20,6 +20,9 @@ package org.orekit.forces.gravity.potential;
 import java.io.File;
 import java.util.Set;
 
+import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -81,6 +84,67 @@ public class GravityFieldFactoryTest {
         Set<String> loaded = DataProvidersManager.getInstance().getLoadedDataNames();
         Assert.assertEquals(1, loaded.size());
         Assert.assertEquals("eigen_cg03c_coef", new File(loaded.iterator().next()).getName());
+    }
+
+    @Test
+    public void testNormalizationFirstElements() throws OrekitException {
+        int max = 50;
+        double[][] factors = GravityFieldFactory.getUnnormalizationFactors(max, max);
+        Assert.assertEquals(max + 1, factors.length);
+        for (int i = 0; i <= max; ++i) {
+            Assert.assertEquals(i + 1, factors[i].length);
+            for (int j = 0; j <= i; ++j) {
+                double ref = FastMath.sqrt((2 * i + 1) *
+                                           ArithmeticUtils.factorialDouble(i - j) /
+                                           ArithmeticUtils.factorialDouble(i + j));
+                if (j > 0) {
+                    ref *= FastMath.sqrt(2);
+                }
+                Assert.assertEquals(ref, factors[i][j], 2.0e-15);
+            }
+        }
+    }
+
+    @Test
+    public void testNormalizationSquareField() throws OrekitException {
+        int max = 89;
+        double[][] factors = GravityFieldFactory.getUnnormalizationFactors(max, max);
+        Assert.assertEquals(max + 1, factors.length);
+        for (int i = 0; i <= max; ++i) {
+            Assert.assertEquals(i + 1, factors[i].length);
+            for (int j = 0; j <= i; ++j) {
+                Assert.assertTrue(factors[i][j] > Precision.SAFE_MIN);
+            }
+        }
+    }
+
+    @Test
+    public void testNormalizationLowOrder() throws OrekitException {
+        int maxDegree = 393;
+        int maxOrder  = 63;
+        double[][] factors = GravityFieldFactory.getUnnormalizationFactors(maxDegree, maxOrder);
+        Assert.assertEquals(maxDegree + 1, factors.length);
+        for (int i = 0; i <= maxDegree; ++i) {
+            Assert.assertEquals(FastMath.min(i, maxOrder) + 1, factors[i].length);
+            for (int j = 0; j <= FastMath.min(i, maxOrder); ++j) {
+                Assert.assertTrue(factors[i][j] > Precision.SAFE_MIN);
+            }
+        }
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNormalizationUnderflowSquareField() throws OrekitException {
+        GravityFieldFactory.getUnnormalizationFactors(90, 90);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNormalizationUnderflowLowOrder1() throws OrekitException {
+        GravityFieldFactory.getUnnormalizationFactors(394, 63);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNormalizationUnderflowLowOrde2() throws OrekitException {
+        GravityFieldFactory.getUnnormalizationFactors(393, 64);
     }
 
 }

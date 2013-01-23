@@ -72,6 +72,7 @@ public enum OrekitMessages implements Localizable {
     SPACECRAFT_MASS_BECOMES_NEGATIVE("spacecraft mass becomes negative: {0} kg"),
     POSITIVE_FLOW_RATE("positive flow rate (q: {0})"),
     NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
+    GRAVITY_FIELD_NORMALIZATION_UNDERFLOW("gravity field normalization underflow for degree {0} and order {1}"),
     POLAR_TRAJECTORY("polar trajectory (distance to polar axis: {0})"),
     UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER("unexpected format error for file {0} with loader {1}"),
     DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE("duplicated gravity field coefficient {0}({1}, {2}) in file {3}"),

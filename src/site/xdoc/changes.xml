@@ -22,6 +22,14 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Improved gravity field un-normalization to allow higher degrees/order with Cunningham and
+        Droziner models. Formerly, the coefficients computation underflowed for square fields
+        degree = order = 85, and for non-square fields at degree = 130 for order = 40. Now square
+        fields can go slightly higher (degree = order = 89) and non-square fields can go much
+        higher (degree = 393 for order = 63 for example). Attempts to use un-normalization past
+        the underflow limit now raises an exception.
+      </action>
       <action dev="luc" type="update" >
         Updated Orekit to version 3.1.1 of Apache Commons Math.
       </action>

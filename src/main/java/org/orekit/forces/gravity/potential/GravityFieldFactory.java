@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -210,9 +211,12 @@ public class GravityFieldFactory {
      * @param degree maximal degree
      * @param order maximal order
      * @return triangular un-normalization factors array
+     * @exception OrekitException if degree and order are too large
+     * and the latest coefficients underflow
      * @since 6.0
      */
-    public static double[][] getUnnormalizationFactors(final int degree, final int order) {
+    public static double[][] getUnnormalizationFactors(final int degree, final int order)
+        throws OrekitException {
 
         // allocate a triangular array
         final double[][] factor = new double[degree + 1][];
@@ -220,23 +224,18 @@ public class GravityFieldFactory {
             1.0
         };
 
-        // initialization
-        double factN = 1.0;
-        double mfactNMinusM = 1.0;
-        double mfactNPlusM = 1.0;
-
         // compute the factors
         for (int n = 1; n <= degree; n++) {
             final double[] row = new double[FastMath.min(n, order) + 1];
-            final double coeffN = 2.0 * (2 * n + 1);
-            factN       *= n;
-            mfactNMinusM = factN;
-            mfactNPlusM  = factN;
-            row[0]       = FastMath.sqrt(2 * n + 1);
+            row[0] = FastMath.sqrt(2 * n + 1);
+            double coeff = 2.0 * (2 * n + 1);
             for (int m = 1; m < row.length; m++) {
-                mfactNPlusM  *= n + m;
-                mfactNMinusM /= n - m + 1;
-                row[m] = FastMath.sqrt((coeffN * mfactNMinusM) / mfactNPlusM);
+                coeff /= (n - m + 1) * (n + m);
+                row[m] = FastMath.sqrt(coeff);
+                if (row[m] < Precision.SAFE_MIN) {
+                    throw new OrekitException(OrekitMessages.GRAVITY_FIELD_NORMALIZATION_UNDERFLOW,
+                                              n, m);
+                }
             }
             factor[n] = row;
         }

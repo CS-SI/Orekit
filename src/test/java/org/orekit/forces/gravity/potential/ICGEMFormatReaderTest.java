@@ -131,7 +131,8 @@ public class ICGEMFormatReaderTest {
                             final double constant, final double trend,
                             final double cosYear, final double sinYear,
                             final double cosHalfYear, final double sinHalfYear,
-                            final int maxUlps) {
+                            final int maxUlps)
+        throws OrekitException {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         AbsoluteDate refDate = new AbsoluteDate(refYear, refMonth, refDay, 12, 0, 0, TimeScalesFactory.getTT());
         double dtYear = date.durationFrom(refDate) / Constants.JULIAN_YEAR;

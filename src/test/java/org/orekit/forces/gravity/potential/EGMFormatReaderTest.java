@@ -99,7 +99,8 @@ public class EGMFormatReaderTest {
     }
 
     private void checkValue(final double value, final int n, final int m,
-                            final double constant, final int maxUlps) {
+                            final double constant, final int maxUlps)
+        throws OrekitException {
         double factor = GravityFieldFactory.getUnnormalizationFactors(n, m)[n][m];
         double normalized = factor * constant;
         double epsilon = maxUlps * FastMath.ulp(normalized);
