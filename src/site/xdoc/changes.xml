@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update" >
+        Updated Orekit to version 3.1.1 of Apache Commons Math.
+      </action>
       <action dev="luc" type="add" >
         Added support for time-dependent gravity fields. All recent gravity
         fields include time-dependent coefficients (linear trends and pulsations

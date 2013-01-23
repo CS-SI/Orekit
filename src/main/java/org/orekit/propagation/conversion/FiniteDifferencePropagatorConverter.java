@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.analysis.DifferentiableMultivariateVectorFunction;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
@@ -32,9 +32,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConverter {
 
-    /** Function computing position/velocity at sample points. */
-    private final ObjectiveFunction objectiveFunction;
-
     /** Propagator builder. */
     private final PropagatorBuilder builder;
 
@@ -48,16 +45,20 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
                                                final int maxIterations) {
         super(factory, threshold, maxIterations);
         this.builder = factory;
-        this.objectiveFunction = new ObjectiveFunction();
     }
 
     /** {@inheritDoc} */
-    protected DifferentiableMultivariateVectorFunction getObjectiveFunction() {
-        return objectiveFunction;
+    protected MultivariateVectorFunction getObjectiveFunction() {
+        return new ObjectiveFunction();
+    }
+
+    /** {@inheritDoc} */
+    protected MultivariateMatrixFunction getObjectiveFunctionJacobian() {
+        return new ObjectiveFunctionJacobian();
     }
 
     /** Internal class for computing position/velocity at sample points. */
-    private class ObjectiveFunction implements DifferentiableMultivariateVectorFunction {
+    private class ObjectiveFunction implements MultivariateVectorFunction {
 
         /** {@inheritDoc} */
         public double[] value(final double[] arg)
@@ -84,35 +85,35 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
                 throw new OrekitExceptionWrapper(ex);
             }
         }
+    }
+
+    /** Internal class for computing position/velocity Jacobian at sample points. */
+    private class ObjectiveFunctionJacobian implements MultivariateMatrixFunction {
 
         /** {@inheritDoc} */
-        public MultivariateMatrixFunction jacobian() {
-            return new MultivariateMatrixFunction() {
+        public double[][] value(final double[] arg)
+                throws IllegalArgumentException, OrekitExceptionWrapper {
 
-                /** {@inheritDoc} */
-                public double[][] value(final double[] arg)
-                    throws IllegalArgumentException, OrekitExceptionWrapper {
-                    final double[][] jacob = new double[getTargetSize()][arg.length];
-                    final double[] eval = ObjectiveFunction.this.value(arg);
-                    final double[] arg1 = new double[arg.length];
-                    double increment = 0;
-                    for (int j = 0; j < arg.length; j++) {
-                        System.arraycopy(arg, 0, arg1, 0, arg.length);
-                        increment = FastMath.sqrt(Precision.EPSILON) * FastMath.abs(arg[j]);
-                        if (increment <= Precision.SAFE_MIN) {
-                            increment = FastMath.sqrt(Precision.EPSILON);
-                        }
-                        arg1[j] += increment;
-                        final double[] eval1 = ObjectiveFunction.this.value(arg1);
-                        for (int t = 0; t < eval.length; t++) {
-                            jacob[t][j] = (eval1[t] - eval[t]) / increment;
-                        }
-                    }
+            final MultivariateVectorFunction f = new ObjectiveFunction();
 
-                    return jacob;
+            final double[][] jacob = new double[getTargetSize()][arg.length];
+            final double[] eval = f.value(arg);
+            final double[] arg1 = new double[arg.length];
+            double increment = 0;
+            for (int j = 0; j < arg.length; j++) {
+                System.arraycopy(arg, 0, arg1, 0, arg.length);
+                increment = FastMath.sqrt(Precision.EPSILON) * FastMath.abs(arg[j]);
+                if (increment <= Precision.SAFE_MIN) {
+                    increment = FastMath.sqrt(Precision.EPSILON);
                 }
+                arg1[j] += increment;
+                final double[] eval1 = f.value(arg1);
+                for (int t = 0; t < eval.length; t++) {
+                    jacob[t][j] = (eval1[t] - eval[t]) / increment;
+                }
+            }
 
-            };
+            return jacob;
         }
 
     }

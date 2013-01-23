@@ -17,9 +17,9 @@
 package org.orekit.utils;
 
 import org.apache.commons.math3.analysis.ParametricUnivariateFunction;
-import org.apache.commons.math3.optimization.fitting.CurveFitter;
-import org.apache.commons.math3.optimization.fitting.PolynomialFitter;
-import org.apache.commons.math3.optimization.general.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.fitting.CurveFitter;
+import org.apache.commons.math3.fitting.PolynomialFitter;
+import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 
@@ -39,7 +39,7 @@ public class SecularAndHarmonic {
     private final double[] pulsations;
 
     /** Curve fitting engine. */
-    private CurveFitter fitter;
+    private CurveFitter<LocalParametricFunction> fitter;
 
     /** Reference date for the model. */
     private AbsoluteDate reference;
@@ -62,7 +62,7 @@ public class SecularAndHarmonic {
      * @see #getReferenceDate()
      */
     public void resetFitting(final AbsoluteDate date, final double ... initialGuess) {
-        fitter    = new CurveFitter(new LevenbergMarquardtOptimizer());
+        fitter    = new CurveFitter<LocalParametricFunction>(new LevenbergMarquardtOptimizer());
         reference = date;
         fitted    = initialGuess.clone();
     }
@@ -99,35 +99,36 @@ public class SecularAndHarmonic {
      * @see #getFittedParameters()
      */
     public void fit() {
+        fitted = fitter.fit(new LocalParametricFunction(), fitted);
+    }
 
-        fitted = fitter.fit(new ParametricUnivariateFunction() {
+    /** Local parametric function used for fitting. */
+    private class LocalParametricFunction implements ParametricUnivariateFunction {
 
-            /** {@inheritDoc} */
-            public double value(final double x, final double... parameters) {
-                return truncatedValue(secularDegree, pulsations.length, x, parameters);
+        /** {@inheritDoc} */
+        public double value(final double x, final double... parameters) {
+            return truncatedValue(secularDegree, pulsations.length, x, parameters);
+        }
+
+        /** {@inheritDoc} */
+        public double[] gradient(final double x, final double... parameters) {
+            final double[] gradient = new double[secularDegree + 1 + 2 * pulsations.length];
+
+            // secular part
+            double xN = 1.0;
+            for (int i = 0; i <= secularDegree; ++i) {
+                gradient[i] = xN;
+                xN *= x;
             }
 
-            /** {@inheritDoc} */
-            public double[] gradient(final double x, final double... parameters) {
-                final double[] gradient = new double[secularDegree + 1 + 2 * pulsations.length];
-
-                // secular part
-                double xN = 1.0;
-                for (int i = 0; i <= secularDegree; ++i) {
-                    gradient[i] = xN;
-                    xN *= x;
-                }
-
-                // harmonic part
-                for (int i = 0; i < pulsations.length; ++i) {
-                    gradient[secularDegree + 2 * i + 1] = FastMath.cos(pulsations[i] * x);
-                    gradient[secularDegree + 2 * i + 2] = FastMath.sin(pulsations[i] * x);
-                }
-
-                return gradient;
+            // harmonic part
+            for (int i = 0; i < pulsations.length; ++i) {
+                gradient[secularDegree + 2 * i + 1] = FastMath.cos(pulsations[i] * x);
+                gradient[secularDegree + 2 * i + 2] = FastMath.sin(pulsations[i] * x);
             }
 
-        }, fitted);
+            return gradient;
+        }
 
     }
 
@@ -210,13 +211,12 @@ public class SecularAndHarmonic {
                                                 final int meanDegree, final int meanHarmonics,
                                                 final AbsoluteDate start, final AbsoluteDate end,
                                                 final double step) {
-        final PolynomialFitter pf =
-                new PolynomialFitter(combinedDegree, new LevenbergMarquardtOptimizer());
+        final PolynomialFitter pf = new PolynomialFitter(new LevenbergMarquardtOptimizer());
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(step)) {
             pf.addObservedPoint(date.durationFrom(combinedReference),
-                                    meanValue(date, meanDegree, meanHarmonics));
+                                meanValue(date, meanDegree, meanHarmonics));
         }
-        return pf.fit();
+        return pf.fit(new double[combinedDegree + 1]);
     }
 
     /** Get mean second derivative, truncated to first components.

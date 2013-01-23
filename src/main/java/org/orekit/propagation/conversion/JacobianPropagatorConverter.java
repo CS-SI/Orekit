@@ -16,8 +16,8 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.analysis.DifferentiableMultivariateVectorFunction;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.PropagationException;
@@ -36,9 +36,6 @@ import org.orekit.utils.PVCoordinates;
  */
 public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
 
-    /** Function computing position/velocity at sample points. */
-    private final ObjectiveFunction objectiveFunction;
-
     /** Numerical propagator builder. */
     private final NumericalPropagatorBuilder builder;
 
@@ -52,16 +49,20 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                                        final int maxIterations) {
         super(builder, threshold, maxIterations);
         this.builder = builder;
-        this.objectiveFunction = new ObjectiveFunction();
     }
 
     /** {@inheritDoc} */
-    protected DifferentiableMultivariateVectorFunction getObjectiveFunction() {
-        return objectiveFunction;
+    protected MultivariateVectorFunction getObjectiveFunction() {
+        return new ObjectiveFunction();
+    }
+
+    /** {@inheritDoc} */
+    protected MultivariateMatrixFunction getObjectiveFunctionJacobian() {
+        return new ObjectiveFunctionJacobian();
     }
 
     /** Internal class for computing position/velocity at sample points. */
-    private class ObjectiveFunction implements DifferentiableMultivariateVectorFunction {
+    private class ObjectiveFunction implements MultivariateVectorFunction {
 
         /** {@inheritDoc} */
         public double[] value(final double[] arg)
@@ -91,48 +92,47 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
             }
         }
 
+    }
+
+    /** Internal class for computing position/velocity Jacobian at sample points. */
+    private class ObjectiveFunctionJacobian implements MultivariateMatrixFunction {
+
         /** {@inheritDoc} */
-        public MultivariateMatrixFunction jacobian() {
-            return new MultivariateMatrixFunction() {
+        public double[][] value(final double[] arg)
+            throws IllegalArgumentException, OrekitExceptionWrapper {
+            try {
+                final double[][] jacob = new double[getTargetSize()][arg.length];
 
-                /** {@inheritDoc} */
-                public double[][] value(final double[] arg)
-                    throws IllegalArgumentException, OrekitExceptionWrapper {
-                    try {
-                        final double[][] jacob = new double[getTargetSize()][arg.length];
+                final NumericalPropagator prop  = builder.buildPropagator(getDate(), arg);
+                final int stateSize = isOnlyPosition() ? 3 : 6;
+                final int paramSize = getFreeParameters().size();
+                final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
+                pde.selectParameters(getFreeParameters().toArray(new String[0]));
+                pde.setInitialJacobians(prop.getInitialState(), stateSize, paramSize);
+                final JacobiansMapper mapper  = pde.getMapper();
+                final JacobianHandler handler = new JacobianHandler(mapper);
+                prop.setMasterMode(handler);
 
-                        final NumericalPropagator prop  = builder.buildPropagator(getDate(), arg);
-                        final int stateSize = isOnlyPosition() ? 3 : 6;
-                        final int paramSize = getFreeParameters().size();
-                        final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
-                        pde.selectParameters(getFreeParameters().toArray(new String[0]));
-                        pde.setInitialJacobians(prop.getInitialState(), stateSize, paramSize);
-                        final JacobiansMapper mapper  = pde.getMapper();
-                        final JacobianHandler handler = new JacobianHandler(mapper);
-                        prop.setMasterMode(handler);
-
-                        int i = 0;
-                        for (SpacecraftState state : getSample()) {
-                            prop.propagate(state.getDate());
-                            final double[][] dYdY0 = handler.getdYdY0();
-                            final double[][] dYdP  = handler.getdYdP();
-                            for (int k = 0; k < stateSize; k++, i++) {
-                                System.arraycopy(dYdY0[k], 0, jacob[i], 0, stateSize);
-                                System.arraycopy(dYdP[k], 0, jacob[i], stateSize, paramSize);
-                            }
-                        }
-
-                        return jacob;
-
-                    } catch (OrekitException ex) {
-                        throw new OrekitExceptionWrapper(ex);
+                int i = 0;
+                for (SpacecraftState state : getSample()) {
+                    prop.propagate(state.getDate());
+                    final double[][] dYdY0 = handler.getdYdY0();
+                    final double[][] dYdP  = handler.getdYdP();
+                    for (int k = 0; k < stateSize; k++, i++) {
+                        System.arraycopy(dYdY0[k], 0, jacob[i], 0, stateSize);
+                        System.arraycopy(dYdP[k], 0, jacob[i], stateSize, paramSize);
                     }
                 }
 
-            };
+                return jacob;
+
+            } catch (OrekitException ex) {
+                throw new OrekitExceptionWrapper(ex);
+            }
         }
 
     }
+
 
     /** Internal class for jacobians handling. */
     private static class JacobianHandler implements OrekitStepHandler {

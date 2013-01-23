@@ -20,11 +20,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.DifferentiableMultivariateVectorFunction;
+import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
+import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.optimization.PointVectorValuePair;
-import org.apache.commons.math3.optimization.SimpleVectorValueChecker;
-import org.apache.commons.math3.optimization.general.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.optim.InitialGuess;
+import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.optim.PointVectorValuePair;
+import org.apache.commons.math3.optim.SimpleVectorValueChecker;
+import org.apache.commons.math3.optim.nonlinear.vector.ModelFunction;
+import org.apache.commons.math3.optim.nonlinear.vector.ModelFunctionJacobian;
+import org.apache.commons.math3.optim.nonlinear.vector.Target;
+import org.apache.commons.math3.optim.nonlinear.vector.Weight;
+import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -233,7 +240,12 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Get the function computing position/velocity at sample points.
      * @return function computing position/velocity at sample points
      */
-    protected abstract DifferentiableMultivariateVectorFunction getObjectiveFunction();
+    protected abstract MultivariateVectorFunction getObjectiveFunction();
+
+    /** Get the Jacobian of the function computing position/velocity at sample points.
+     * @return Jacobian of the function computing position/velocity at sample points
+     */
+    protected abstract MultivariateMatrixFunction getObjectiveFunctionJacobian();
 
     /** Check if fitting uses only sample positions.
      * @return true if fitting uses only sample positions
@@ -382,9 +394,12 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private double[] fit(final double[] initial)
         throws OrekitException, MaxCountExceededException {
 
-        final PointVectorValuePair optimum = optimizer.optimize(maxIterations,
-                                                                getObjectiveFunction(),
-                                                                target, weight, initial);
+        final PointVectorValuePair optimum = optimizer.optimize(new MaxEval(maxIterations),
+                                                                new ModelFunction(getObjectiveFunction()),
+                                                                new ModelFunctionJacobian(getObjectiveFunctionJacobian()),
+                                                                new Target(target),
+                                                                new Weight(weight),
+                                                                new InitialGuess(initial));
         return optimum.getPoint();
     }
 
