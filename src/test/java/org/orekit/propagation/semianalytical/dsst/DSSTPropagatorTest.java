@@ -42,7 +42,7 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.FramesFactory;
@@ -81,7 +81,7 @@ public class DSSTPropagatorTest {
     private NumericalPropagator           numProp;
     private boolean                       gotHere;
     private double                        mu;
-    private SphericalHarmonicsProvider    provider;
+    private UnnormalizedSphericalHarmonicsProvider    provider;
 
     @Test
     public void testNoExtrapolation() throws OrekitException {
@@ -451,7 +451,7 @@ public class DSSTPropagatorTest {
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 0);
+        provider = GravityFieldFactory.getUnnormalizedProvider(5, 0);
         mu = provider.getMu();
         gotHere = false;
     }

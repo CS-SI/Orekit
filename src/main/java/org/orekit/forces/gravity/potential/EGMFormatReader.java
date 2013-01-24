@@ -106,8 +106,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
                                       name, loaderName);
         }
 
-        setNormalizedC(toArray(c), name);
-        setNormalizedS(toArray(s), name);
+        setRawCoefficients(true, toArray(c), toArray(s), name);
         setReadComplete(true);
 
     }
@@ -117,15 +116,19 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
      * EGM fields don't include time-dependent parts, so this method returns
      * directly a constant provider.
      * </p>
+     * @param wantNormalized if true, the provider will provide normalized coefficients,
+     * otherwise it will provide un-normalized coefficients
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order or if no gravity field has read yet
+     * @since 6.0
      */
-    public SphericalHarmonicsProvider getProvider(int degree, int order)
+    public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
+                                                     final int degree, final int order)
         throws OrekitException {
-        return getConstantProvider(degree, order);
+        return getConstantProvider(wantNormalized, degree, order);
     }
 
 }

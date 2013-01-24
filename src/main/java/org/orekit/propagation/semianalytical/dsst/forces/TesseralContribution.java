@@ -27,7 +27,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -57,7 +57,7 @@ class TesseralContribution implements DSSTForceModel {
     private static final double MIN_PERIOD_IN_SECONDS = 864000.;
 
     /** Provider for spherical harmonics. */
-    private final SphericalHarmonicsProvider provider;
+    private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Maximum resonant order. */
     /** Minimum period for analytically averaged high-order resonant
@@ -149,7 +149,7 @@ class TesseralContribution implements DSSTForceModel {
      */
     public TesseralContribution(final Frame centralBodyFrame,
                                 final double centralBodyRotationRate,
-                                final SphericalHarmonicsProvider provider) {
+                                final UnnormalizedSphericalHarmonicsProvider provider) {
 
         // Central body rotating frame
         this.bodyFrame = centralBodyFrame;

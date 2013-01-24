@@ -22,7 +22,7 @@ import org.orekit.errors.OrekitMessages;
 
 /** Converter providing the older {@link PotentialCoefficientsProvider} interface.
  * <p>
- * This converter is a temporary one, used to convert the new {@link SphericalHarmonicsProvider}
+ * This converter is a temporary one, used to convert the new {@link UnnormalizedSphericalHarmonicsProvider}
  * interface to the old {@link PotentialCoefficientsProvider} interface for people who still
  * need it.
  * </p>
@@ -47,7 +47,7 @@ public class ProviderConverter implements PotentialCoefficientsProvider {
      * @param provider provider to convert
      * @exception OrekitException if provider cannot be converted
      */
-    public ProviderConverter(final SphericalHarmonicsProvider provider)
+    public ProviderConverter(final UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
 
         // constant terms

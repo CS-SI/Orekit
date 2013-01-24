@@ -63,11 +63,14 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     /** Central body attraction coefficient. */
     private double mu;
 
-    /** Un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedC;
+    /** Raw tesseral-sectorial coefficients matrix. */
+    private double[][] rawC;
 
-    /** Un-normalized tesseral-sectorial coefficients matrix. */
-    private double[][] unNormalizedS;
+    /** Raw tesseral-sectorial coefficients matrix. */
+    private double[][] rawS;
+
+    /** Indicator for normalized raw coefficients. */
+    private boolean normalized;
 
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
@@ -78,13 +81,14 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                                           final boolean missingCoefficientsAllowed) {
         this.supportedNames             = supportedNames;
         this.missingCoefficientsAllowed = missingCoefficientsAllowed;
-        this.maxParseDegree              = Integer.MAX_VALUE;
-        this.maxParseOrder               = Integer.MAX_VALUE;
+        this.maxParseDegree             = Integer.MAX_VALUE;
+        this.maxParseOrder              = Integer.MAX_VALUE;
         this.readComplete               = false;
         this.ae                         = Double.NaN;
         this.mu                         = Double.NaN;
-        this.unNormalizedC              = null;
-        this.unNormalizedS              = null;
+        this.rawC                       = null;
+        this.rawS                       = null;
+        this.normalized                 = false;
     }
 
     /** Get the regular expression for supported files names.
@@ -104,6 +108,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     /** Set the degree limit for the next file parsing.
      * @param maxParseDegree maximal degree to parse (may be safely
      * set to {@link Integer#MAX_VALUE} to parse all available coefficients)
+     * @since 6.0
      */
     public void setMaxParseDegree(final int maxParseDegree) {
         this.maxParseDegree = maxParseDegree;
@@ -111,6 +116,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
 
     /** Get the degree limit for the next file parsing.
      * @return degree limit for the next file parsing
+     * @since 6.0
      */
     public int getMaxParseDegree() {
         return maxParseDegree;
@@ -119,6 +125,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     /** Set the order limit for the next file parsing.
      * @param maxParseOrder maximal order to parse (may be safely
      * set to {@link Integer#MAX_VALUE} to parse all available coefficients)
+     * @since 6.0
      */
     public void setMaxParseOrder(final int maxParseOrder) {
         this.maxParseOrder = maxParseOrder;
@@ -126,6 +133,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
 
     /** Get the order limit for the next file parsing.
      * @return order limit for the next file parsing
+     * @since 6.0
      */
     public int getMaxParseOrder() {
         return maxParseOrder;
@@ -173,55 +181,45 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         return mu;
     }
 
-    /** Set the normalized tesseral-sectorial coefficients matrix.
-     * @param normalizedC tesseral-sectorial coefficients matrix
-     * (a reference to the array will be stored, <em>and</em>
-     * the elements will be un-normalized in-place)
-     * @param name name of the file (or zip entry)
-     * @exception OrekitException if a coefficient is missing
-     */
-    protected void setNormalizedC(final double[][] normalizedC, final String name)
-        throws OrekitException {
-        final int degree = normalizedC.length - 1;
-        final int order  = normalizedC[degree].length - 1;
-        final double[][] factors = GravityFieldFactory.getUnnormalizationFactors(degree, order);
-        for (int i = 0; i < normalizedC.length; ++i) {
-            for (int j = 0; j < normalizedC[i].length; ++j) {
-                normalizedC[i][j] *= factors[i][j];
-            }
-        }
-        setUnNormalizedC(normalizedC, name);
-    }
-
-    /** Set the un-normalized tesseral-sectorial coefficients matrix.
-     * @param unNormalizedC un-normalized tesseral-sectorial coefficients matrix
+    /** Set the tesseral-sectorial coefficients matrix.
+     * @param rawNormalized if true, raw coefficients are normalized
+     * @param c raw tesseral-sectorial coefficients matrix
+     * (a reference to the array will be stored)
+     * @param s raw tesseral-sectorial coefficients matrix
      * (a reference to the array will be stored)
      * @param name name of the file (or zip entry)
      * @exception OrekitException if a coefficient is missing
      */
-    protected void setUnNormalizedC(final double[][] unNormalizedC, final String name)
+    protected void setRawCoefficients(final boolean rawNormalized,
+                                      final double[][] c, final double[][] s,
+                                      final String name)
         throws OrekitException {
 
-        for (int i = 0; i < unNormalizedC.length; ++i) {
-            for (int j = 0; j < unNormalizedC[i].length; ++j) {
-                if (Double.isNaN(unNormalizedC[i][j])) {
+        // normalization indicator
+        normalized = rawNormalized;
+
+        // cosine part
+        for (int i = 0; i < c.length; ++i) {
+            for (int j = 0; j < c[i].length; ++j) {
+                if (Double.isNaN(c[i][j])) {
                     throw new OrekitException(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
                                               'C', i, j, name);
                 }
             }
         }
+        rawC = c;
 
-        this.unNormalizedC = unNormalizedC;
+        // sine part
+        for (int i = 0; i < s.length; ++i) {
+            for (int j = 0; j < s[i].length; ++j) {
+                if (Double.isNaN(s[i][j])) {
+                    throw new OrekitException(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
+                                              'S', i, j, name);
+                }
+            }
+        }
+        rawS = s;
 
-    }
-
-    /** Get a truncated copy of the un-normalized tesseral-sectorial coefficients matrix.
-     * @param degree truncation degree
-     * @param order truncation order
-     * @return truncated copy of the un-normalized tesseral-sectorial coefficients matrix
-     */
-    protected double[][] getUnNormalizedC(final int degree, final int order) {
-        return truncateArray(degree, order, unNormalizedC);
     }
 
     /** Set the normalized tesseral-sectorial coefficients matrix.
@@ -262,31 +260,24 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
             }
         }
 
-        this.unNormalizedS = unNormalizedS;
+        this.rawS = unNormalizedS;
 
-    }
-
-    /** Get a truncated copy of the un-normalized tesseral-sectorial coefficients matrix.
-     * @param degree truncation degree
-     * @param order truncation order
-     * @return truncated copy of the un-normalized tesseral-sectorial coefficients matrix
-     */
-    protected double[][] getUnNormalizedS(final int degree, final int order) {
-        return truncateArray(degree, order, unNormalizedS);
     }
 
     /** Get the maximal degree available in the last file parsed.
      * @return maximal degree available in the last file parsed
+     * @since 6.0
      */
     public int getMaxAvailableDegree() {
-        return unNormalizedC.length - 1;
+        return rawC.length - 1;
     }
 
     /** Get the maximal order available in the last file parsed.
      * @return maximal order available in the last file parsed
+     * @since 6.0
      */
     public int getMaxAvailableOrder() {
-        return unNormalizedC[unNormalizedC.length - 1].length - 1;
+        return rawC[rawC.length - 1].length - 1;
     }
 
     /** {@inheritDoc} */
@@ -294,48 +285,54 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         throws IOException, ParseException, OrekitException;
 
     /** Get a provider for read spherical harmonics coefficients.
+     * @param wantNormalized if true, the provider will provide normalized coefficients,
+     * otherwise it will provide un-normalized coefficients
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order or if no gravity field has read yet
+     * @see #getConstantProvider(boolean, int, int)
+     * @since 6.0
      */
-    public abstract SphericalHarmonicsProvider getProvider(int degree, int order)
+    public abstract RawSphericalHarmonicsProvider getProvider(boolean wantNormalized, int degree, int order)
         throws OrekitException;
 
     /** Get a time-independent provider for read spherical harmonics coefficients.
-     * <p>
-     * This method provides only the time-independent part of gravity fields. It
-     * is intended mainly for comparison and testing, proper propagation should
-     * take the time-dependent part into account.
-     * </p>
+     * @param wantNormalized if true, the raw provider must provide normalized coefficients,
+     * otherwise it will provide un-normalized coefficients
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider, with no time-dependent parts
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order or if no gravity field has read yet
-     * @see #getProvider(int, int)
+     * @see #getProvider(boolean, int, int)
+     * @since 6.0
      */
-    public ConstantSphericalHarmonics getConstantProvider(int degree, int order)
+    protected ConstantSphericalHarmonics getConstantProvider(final boolean wantNormalized,
+                                                             final int degree, final int order)
         throws OrekitException {
 
         if (!readComplete) {
             throw new OrekitException(OrekitMessages.NO_GRAVITY_FIELD_DATA_LOADED);
         }
 
-        if (degree >= unNormalizedC.length) {
+        if (degree >= rawC.length) {
             throw new OrekitException(OrekitMessages.TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD,
-                                      degree, unNormalizedC.length - 1);
+                                      degree, rawC.length - 1);
         }
 
-        if (order >= unNormalizedC[unNormalizedC.length - 1].length) {
+        if (order >= rawC[rawC.length - 1].length) {
             throw new OrekitException(OrekitMessages.TOO_LARGE_ORDER_FOR_GRAVITY_FIELD,
-                                      order, unNormalizedC[unNormalizedC.length - 1].length);
+                                      order, rawC[rawC.length - 1].length);
         }
 
-        return new ConstantSphericalHarmonics(ae, mu,
-                                              truncateArray(degree, order, unNormalizedC),
-                                              truncateArray(degree, order, unNormalizedS));
+        // fix normalization
+        final double[][] truncatedC = buildTriangularArray(degree, order, 0.0);
+        final double[][] truncatedS = buildTriangularArray(degree, order, 0.0);
+        rescale(1.0, normalized, rawC, rawS, wantNormalized, truncatedC, truncatedS);
+
+        return new ConstantSphericalHarmonics(ae, mu, truncatedC, truncatedS);
 
     }
 
@@ -446,19 +443,75 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         }
     }
 
-    /** Get a truncated copy of a triangular array.
-     * @param degree truncation degree
-     * @param order truncation order
-     * @param array triangular array to truncate
-     * @return a new truncated array
+    /** Rescale coefficients arrays.
+     * @param scale general scaling factor to apply to all elements
+     * @param normalizedOrigin if true, the origin coefficients are normalized
+     * @param originC cosine part of the origina coefficients
+     * @param originS sine part of the origin coefficients
+     * @param wantNormalized if true, the rescaled coefficients must be normalized
+     * @param rescaledC cosine part of the rescaled coefficients to fill in (may be the originC array)
+     * @param rescaledS sine part of the rescaled coefficients to fill in (may be the originS array)
+     * @exception OrekitException if normalization/unnormalization fails because of an underflow
+     * due to too high degree/order
      */
-    protected static double[][] truncateArray(final int degree, final int order,
-                                              final double[][] array) {
-        final double[][] truncated = buildTriangularArray(degree, order, 0.0);
-        for (int i = 0; i <= degree; ++i) {
-            System.arraycopy(array[i], 0, truncated[i], 0, truncated[i].length);
+    protected static void rescale(final double scale,
+                                  final boolean normalizedOrigin, final double[][] originC,
+                                  final double[][] originS, final boolean wantNormalized,
+                                  final double[][] rescaledC, final double[][] rescaledS)
+        throws OrekitException {
+
+        if (wantNormalized == normalizedOrigin) {
+            // apply only the general scaling factor
+            for (int i = 0; i < rescaledC.length; ++i) {
+                final double[] rCi = rescaledC[i];
+                final double[] rSi = rescaledS[i];
+                final double[] oCi = originC[i];
+                final double[] oSi = originS[i];
+                for (int j = 0; j < rCi.length; ++j) {
+                    rCi[j] = oCi[j] * scale;
+                    rSi[j] = oSi[j] * scale;
+                }
+            }
+        } else {
+
+            // we have to re-scale the coefficients
+            // (we use rescaledC.length - 1 for the order instead of rescaledC[rescaledC.length - 1].length - 1
+            //  because typically trend or pulsation arrays are irregular, some test cases have
+            //  order 2 elements at degree 2, but only order 1 elements for higher degrees for example)
+            final double[][] factors = GravityFieldFactory.getUnnormalizationFactors(rescaledC.length - 1,
+                                                                                     rescaledC.length - 1);
+
+            if (wantNormalized) {
+                // normalize the coefficients
+                for (int i = 0; i < rescaledC.length; ++i) {
+                    final double[] rCi = rescaledC[i];
+                    final double[] rSi = rescaledS[i];
+                    final double[] oCi = originC[i];
+                    final double[] oSi = originS[i];
+                    final double[] fi  = factors[i];
+                    for (int j = 0; j < rCi.length; ++j) {
+                        final double factor = scale / fi[j];
+                        rCi[j] = oCi[j] * factor;
+                        rSi[j] = oSi[j] * factor;
+                    }
+                }
+            } else {
+                // un-normalize the coefficients
+                for (int i = 0; i < rescaledC.length; ++i) {
+                    final double[] rCi = rescaledC[i];
+                    final double[] rSi = rescaledS[i];
+                    final double[] oCi = originC[i];
+                    final double[] oSi = originS[i];
+                    final double[] fi  = factors[i];
+                    for (int j = 0; j < rCi.length; ++j) {
+                        final double factor = scale * fi[j];
+                        rCi[j] = oCi[j] * factor;
+                        rSi[j] = oSi[j] * factor;
+                    }
+                }
+            }
+
         }
-        return truncated;
     }
 
 }

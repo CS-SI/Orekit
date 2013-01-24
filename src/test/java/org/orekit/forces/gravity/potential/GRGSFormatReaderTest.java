@@ -33,7 +33,7 @@ public class GRGSFormatReaderTest {
     @Test
     public void testAdditionalColumn() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
@@ -55,9 +55,30 @@ public class GRGSFormatReaderTest {
     }
 
     @Test
-    public void testRegular05c() throws OrekitException {
+    public void testRegular05cNormalized() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+
+        AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
+        Assert.assertEquals(refDate, provider.getReferenceDate());
+        AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
+        Assert.assertEquals(date.durationFrom(refDate), provider.getOffset(date), Precision.SAFE_MIN);
+
+        double offset     = date.durationFrom(refDate);
+        double offsetYear = offset / Constants.JULIAN_YEAR;
+        Assert.assertEquals(0.95857491635129E-06 + offsetYear * 0.28175700027753E-11,
+                            provider.getNormalizedCnm(offset, 3, 0), 1.0e-15);
+        Assert.assertEquals( 0.17481512311600E-06, provider.getNormalizedCnm(offset, 5, 5), 1.0e-15);
+        Assert.assertEquals( 0.0,                provider.getNormalizedSnm(offset, 4, 0), 1.0e-15);
+        Assert.assertEquals( 0.30882755318300E-06, provider.getNormalizedSnm(offset, 4, 4), 1.0e-15);
+        Assert.assertEquals(0.3986004415E+15 ,provider.getMu(),  0);
+        Assert.assertEquals(0.6378136460E+07 ,provider.getAe(),  0);
+    }
+
+    @Test
+    public void testRegular05cUnnormalized() throws OrekitException {
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
@@ -81,7 +102,7 @@ public class GRGSFormatReaderTest {
     @Test
     public void testReadLimits() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
         try {
             provider.getUnnormalizedCnm(0.0, 3, 3);
             Assert.fail("an exception should have been thrown");
@@ -106,19 +127,19 @@ public class GRGSFormatReaderTest {
     @Test(expected=OrekitException.class)
     public void testCorruptedFile1() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-1-grim5.dat", false));
-        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-2-grim5.dat", false));
-        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile3() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("corrupted-3-grim5.dat", false));
-        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Before

@@ -95,6 +95,31 @@ public class GravityFieldFactory {
         }
     }
 
+    /** Get the constant gravity field coefficients provider from the first supported file.
+     * <p>
+     * If no {@link PotentialCoefficientsReader} has been added by calling {@link
+     * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
+     * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
+     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
+     * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
+     * method will be called automatically.
+     * </p>
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a gravity field coefficients provider containing already loaded data
+     * @exception OrekitException if some data can't be read (missing or read error)
+     * or if some loader specific error occurs
+     * @since 6.0
+     * @see #getNormalizedProvider(int, int)
+     */
+    public static NormalizedSphericalHarmonicsProvider getConstantNormalizedProvider(final int degree,
+                                                                                     final int order)
+        throws OrekitException {
+        final PotentialCoefficientsReader reader = readGravityField(degree, order);
+        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(true, degree, order);
+        return new WrappingNormalizedProvider(provider);
+    }
+
     /** Get the gravity field coefficients provider from the first supported file.
      * <p>
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link
@@ -110,12 +135,31 @@ public class GravityFieldFactory {
      * @exception OrekitException if some data can't be read (missing or read error)
      * or if some loader specific error occurs
      * @since 6.0
-     * @see #getConstantSphericalHarmonicsProvider(int, int)
+     * @see #getConstantNormalizedProvider(int, int)
      */
-    public static SphericalHarmonicsProvider getSphericalHarmonicsProvider(final int degree,
-                                                                           final int order)
+    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final int degree,
+                                                                             final int order)
         throws OrekitException {
-        return readGravityField(degree, order).getProvider(degree, order);
+        final PotentialCoefficientsReader reader = readGravityField(degree, order);
+        final RawSphericalHarmonicsProvider provider = reader.getProvider(true, degree, order);
+        return new WrappingNormalizedProvider(provider);
+    }
+
+    /** Create a time-independent {@link NormalizedSphericalHarmonicsProvider} from canonical coefficients.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data
+     * </p>
+     * @param ae central body reference radius
+     * @param mu central body attraction coefficient
+     * @param normalizedC normalized tesseral-sectorial coefficients (cosine part)
+     * @param normalizedS normalized tesseral-sectorial coefficients (sine part)
+     * @since 6.0
+     */
+    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final double ae, final double mu,
+                                                                             final double[][] normalizedC,
+                                                                             final double[][] normalizedS) {
+        return new WrappingNormalizedProvider(new ConstantSphericalHarmonics(ae, mu, normalizedC, normalizedS));
     }
 
     /** Get the constant gravity field coefficients provider from the first supported file.
@@ -133,12 +177,56 @@ public class GravityFieldFactory {
      * @exception OrekitException if some data can't be read (missing or read error)
      * or if some loader specific error occurs
      * @since 6.0
-     * @see #getSphericalHarmonicsProvider(int, int)
+     * @see #getUnnormalizedProvider(int, int)
      */
-    public static ConstantSphericalHarmonics getConstantSphericalHarmonicsProvider(final int degree,
-                                                                                   final int order)
+    public static UnnormalizedSphericalHarmonicsProvider getConstantUnnormalizedProvider(final int degree,
+                                                                                         final int order)
         throws OrekitException {
-        return readGravityField(degree, order).getConstantProvider(degree, order);
+        final PotentialCoefficientsReader reader = readGravityField(degree, order);
+        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(false, degree, order);
+        return new WrappingUnnormalizedProvider(provider);
+    }
+
+    /** Get the gravity field coefficients provider from the first supported file.
+     * <p>
+     * If no {@link PotentialCoefficientsReader} has been added by calling {@link
+     * #addPotentialCoefficientsReader(PotentialCoefficientsReader)
+     * addPotentialCoefficientsReader} or if {@link #clearPotentialCoefficientsReaders()
+     * clearPotentialCoefficientsReaders} has been called afterwards,the {@link
+     * #addDefaultPotentialCoefficientsReaders() addDefaultPotentialCoefficientsReaders}
+     * method will be called automatically.
+     * </p>
+     * @param degree maximal degree
+     * @param order maximal order
+     * @return a gravity field coefficients provider containing already loaded data
+     * @exception OrekitException if some data can't be read (missing or read error)
+     * or if some loader specific error occurs
+     * @since 6.0
+     * @see #getConstantUnnormalizedProvider(int, int)
+     */
+    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final int degree,
+                                                                                 final int order)
+        throws OrekitException {
+        final PotentialCoefficientsReader reader = readGravityField(degree, order);
+        final RawSphericalHarmonicsProvider provider = reader.getProvider(false, degree, order);
+        return new WrappingUnnormalizedProvider(provider);
+    }
+
+    /** Create a time-independent {@link UnnormalizedSphericalHarmonicsProvider} from canonical coefficients.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data
+     * </p>
+     * @param ae central body reference radius
+     * @param mu central body attraction coefficient
+     * @param unnormalizedC un-normalized tesseral-sectorial coefficients (cosine part)
+     * @param unnormalizedS un-normalized tesseral-sectorial coefficients (sine part)
+     * @since 6.0
+     */
+    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final double ae, final double mu,
+                                                                                 final double[][] unnormalizedC,
+                                                                                 final double[][] unnormalizedS) {
+        return new WrappingUnnormalizedProvider(new ConstantSphericalHarmonics(ae, mu, unnormalizedC, unnormalizedS));
     }
 
     /** Get the gravity field coefficients provider from the first supported file.
@@ -153,13 +241,15 @@ public class GravityFieldFactory {
      * @return a gravity field coefficients provider containing already loaded data
      * @exception OrekitException if some data is missing
      * or if some loader specific error occurs
-     * @deprecated as of 6.0, replaced by {@link #getSphericalHarmonicsProvider(int, int)}
+     * @deprecated as of 6.0, replaced by {@link #getUnnormalizedProvider(int, int)}
      */
     public static PotentialCoefficientsProvider getPotentialProvider()
         throws OrekitException {
         final PotentialCoefficientsReader reader = readGravityField(Integer.MAX_VALUE, Integer.MAX_VALUE);
-        return new ProviderConverter(reader.getConstantProvider(reader.getMaxAvailableDegree(),
-                                                                reader.getMaxAvailableOrder()));
+        final RawSphericalHarmonicsProvider provider = reader.getConstantProvider(false,
+                                                                                  reader.getMaxAvailableDegree(),
+                                                                                  reader.getMaxAvailableOrder());
+        return new ProviderConverter(new WrappingUnnormalizedProvider(provider));
     }
 
     /** Read a gravity field coefficients provider from the first supported file.

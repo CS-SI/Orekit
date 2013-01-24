@@ -31,7 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -66,7 +66,7 @@ public class PropagatorConversion {
             Autoconfiguration.configureOrekit();
 
             // gravity field
-            SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(2, 0);
+            UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
             double mu =  provider.getMu();
 
             // inertial frame

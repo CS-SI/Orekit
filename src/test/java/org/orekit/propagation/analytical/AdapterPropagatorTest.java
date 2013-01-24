@@ -36,7 +36,7 @@ import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.forces.maneuvers.SmallManeuverAnalyticalModel;
 import org.orekit.frames.FramesFactory;
@@ -170,7 +170,7 @@ public class AdapterPropagatorTest {
         // setup a specific coefficient file for gravity potential as it will also
         // try to read a corrupted one otherwise
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
-        SphericalHarmonicsProvider gravityField = GravityFieldFactory.getSphericalHarmonicsProvider(8, 8);
+        UnnormalizedSphericalHarmonicsProvider gravityField = GravityFieldFactory.getUnnormalizedProvider(8, 8);
         BoundedPropagator withoutManeuver = getEphemeris(leo, mass, 10,
                                                          new LofOffset(leo.getFrame(), LOFType.VNC),
                                                          t0, Vector3D.ZERO, f, isp,
@@ -213,7 +213,7 @@ public class AdapterPropagatorTest {
                                            final AbsoluteDate t0, final Vector3D dV,
                                            final double f, final double isp,
                                            final boolean sunAttraction, final boolean moonAttraction,
-                                           final SphericalHarmonicsProvider gravityField)
+                                           final UnnormalizedSphericalHarmonicsProvider gravityField)
         throws OrekitException, ParseException, IOException {
 
         final SpacecraftState initialState =

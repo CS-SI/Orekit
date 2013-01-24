@@ -37,7 +37,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ConstantThrustManeuver;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -63,7 +63,7 @@ public class PartialDerivativesTest {
     @Test
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
         SpacecraftState initialState =
@@ -128,7 +128,7 @@ public class PartialDerivativesTest {
     @Test
     public void testPropagationTypesHyperbolic() throws OrekitException, ParseException, IOException {
 
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
         SpacecraftState initialState =

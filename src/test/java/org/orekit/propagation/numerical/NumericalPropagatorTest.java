@@ -140,7 +140,7 @@ public class NumericalPropagatorTest {
 
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                          GravityFieldFactory.getSphericalHarmonicsProvider(5, 5));
+                                          GravityFieldFactory.getUnnormalizedProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
@@ -202,7 +202,7 @@ public class NumericalPropagatorTest {
 
         ForceModel gravityField =
             new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                          GravityFieldFactory.getSphericalHarmonicsProvider(5, 5));
+                                          GravityFieldFactory.getUnnormalizedProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
@@ -463,7 +463,7 @@ public class NumericalPropagatorTest {
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data:potential/shm-format");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("^eigen_cg03c_coef$", false));
-        mu  = GravityFieldFactory.getSphericalHarmonicsProvider(0, 0).getMu();
+        mu  = GravityFieldFactory.getUnnormalizedProvider(0, 0).getMu();
         final Vector3D position = new Vector3D(7.0e6, 1.0e6, 4.0e6);
         final Vector3D velocity = new Vector3D(-500.0, 8000.0, 1000.0);
         initDate = AbsoluteDate.J2000_EPOCH;

@@ -28,10 +28,26 @@ import org.orekit.time.AbsoluteDate;
 public class EGMFormatReaderTest {
 
     @Test
-    public void testRead() throws OrekitException {
+    public void testReadNormalized() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals( 0.957254173792E-06, provider.getNormalizedCnm(Double.NaN, 3, 0), 1.0e-15);
+        Assert.assertEquals( 0.174971983203E-06, provider.getNormalizedCnm(Double.NaN, 5, 5), 1.0e-15);
+        Assert.assertEquals( 0.0,                provider.getNormalizedSnm(Double.NaN, 4, 0), 1.0e-15);
+        Assert.assertEquals( 0.308853169333E-06, provider.getNormalizedSnm(Double.NaN, 4, 4), 1.0e-15);
+        Assert.assertEquals(-0.295301647654E-06, provider.getNormalizedCnm(Double.NaN, 5, 4), 1.0e-15);
+
+        Assert.assertNull(provider.getReferenceDate());
+        Assert.assertEquals(0, provider.getOffset(AbsoluteDate.J2000_EPOCH), Precision.SAFE_MIN);
+        Assert.assertEquals(0, provider.getOffset(AbsoluteDate.MODIFIED_JULIAN_EPOCH), Precision.SAFE_MIN);
+    }
+
+    @Test
+    public void testReadUnnormalized() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
         int maxUlps = 1;
         checkValue(provider.getUnnormalizedCnm(Double.NaN, 3, 0), 3, 0, 0.957254173792E-06, maxUlps);
         checkValue(provider.getUnnormalizedCnm(Double.NaN, 5, 5), 5, 5, 0.174971983203E-06, maxUlps);
@@ -62,7 +78,7 @@ public class EGMFormatReaderTest {
     public void testReadLimits() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(3, 2);
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
         try {
             provider.getUnnormalizedCnm(0.0, 3, 3);
             Assert.fail("an exception should have been thrown");
@@ -88,14 +104,14 @@ public class EGMFormatReaderTest {
     public void testCorruptedFile1() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-1-egm96_to5", false));
-        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     @Test(expected=OrekitException.class)
     public void testCorruptedFile2() throws OrekitException {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-2-egm96_to5", false));
-        GravityFieldFactory.getSphericalHarmonicsProvider(5, 5);
+        GravityFieldFactory.getUnnormalizedProvider(5, 5);
     }
 
     private void checkValue(final double value, final int n, final int m,

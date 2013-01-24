@@ -21,14 +21,14 @@ import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
-/** Simple implementation of {@link SphericalHarmonicsProvider} for pulsating gravity fields.
+/** Simple implementation of {@link RawSphericalHarmonicsProvider} for pulsating gravity fields.
  * @author Luc Maisonobe
  * @since 6.0
  */
-public class PulsatingSphericalHarmonics implements SphericalHarmonicsProvider {
+class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
     /** Underlying part of the field. */
-    private final SphericalHarmonicsProvider provider;
+    private final RawSphericalHarmonicsProvider provider;
 
     /** Pulsation (rad/s). */
     private final double pulsation;
@@ -53,7 +53,7 @@ public class PulsatingSphericalHarmonics implements SphericalHarmonicsProvider {
      * @param cosS cosine component of the sine coefficients
      * @param sinS sine component of the sine coefficients
      */
-    public PulsatingSphericalHarmonics(final SphericalHarmonicsProvider provider,
+    public PulsatingSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
                                      final double period,
                                      final double[][] cosC, final double[][] sinC,
                                      final double[][] cosS, final double[][] sinS) {
@@ -96,11 +96,11 @@ public class PulsatingSphericalHarmonics implements SphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
-    public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
+    public double getRawCnm(final double dateOffset, final int n, final int m)
             throws OrekitException {
 
         // retrieve the underlying part of the coefficient
-        double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
+        double cnm = provider.getRawCnm(dateOffset, n, m);
 
         if (n < cosC.length && m < cosC[n].length) {
             // add pulsation
@@ -113,11 +113,11 @@ public class PulsatingSphericalHarmonics implements SphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
-    public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
+    public double getRawSnm(final double dateOffset, final int n, final int m)
             throws OrekitException {
 
         // retrieve the constant part of the coefficient
-        double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+        double snm = provider.getRawSnm(dateOffset, n, m);
 
         if (n < cosS.length && m < cosS[n].length) {
             // add pulsation

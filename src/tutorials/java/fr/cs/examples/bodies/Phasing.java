@@ -46,7 +46,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.GTODProvider;
@@ -76,7 +76,7 @@ public class Phasing {
     private final GTODProvider gtod;
 
     /** Gravity field. */
-    private SphericalHarmonicsProvider gravityField;
+    private UnnormalizedSphericalHarmonicsProvider gravityField;
 
     /** Earth model. */
     private final BodyShape earth;
@@ -188,7 +188,7 @@ public class Phasing {
             parser.getBoolean(ParameterKey.GRID_ASCENDING_5)
         };
 
-        gravityField = GravityFieldFactory.getSphericalHarmonicsProvider(degree, order);
+        gravityField = GravityFieldFactory.getUnnormalizedProvider(degree, order);
 
         // initial guess for orbit
         CircularOrbit orbit = guessOrbit(date, FramesFactory.getEME2000(), nbOrbits, nbDays,

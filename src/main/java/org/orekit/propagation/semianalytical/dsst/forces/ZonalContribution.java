@@ -20,7 +20,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
@@ -39,7 +39,7 @@ class ZonalContribution implements DSSTForceModel {
     private static final double TRUNCATION_TOLERANCE = 1e-4;
 
     /** Provider for spherical harmonics. */
-    private final SphericalHarmonicsProvider provider;
+    private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Factorial. */
     private final double[] fact;
@@ -97,7 +97,7 @@ class ZonalContribution implements DSSTForceModel {
     /** Simple constructor.
      * @param provider provider for spherical harmonics
      */
-    public ZonalContribution(final SphericalHarmonicsProvider provider) {
+    public ZonalContribution(final UnnormalizedSphericalHarmonicsProvider provider) {
 
         this.provider = provider;
         this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
@@ -117,7 +117,7 @@ class ZonalContribution implements DSSTForceModel {
     /** Get the spherical harmonics provider
      *  @return the spherical harmonics provider
      */
-    public SphericalHarmonicsProvider getProvider() {
+    public UnnormalizedSphericalHarmonicsProvider getProvider() {
         return provider;
     }
 

@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitException;
 /** Interface used to provide gravity field coefficients.
  * @see GravityFieldFactory
  * @author Luc Maisonobe
- * @deprecated since 6.0, replaced by {@link SphericalHarmonicsProvider}
+ * @deprecated since 6.0, replaced by {@link UnnormalizedSphericalHarmonicsProvider}
  */
 @Deprecated
 public interface PotentialCoefficientsProvider {

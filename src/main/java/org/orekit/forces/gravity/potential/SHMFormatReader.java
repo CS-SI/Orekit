@@ -171,8 +171,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                       name, loaderName);
         }
 
-        setNormalizedC(c, name);
-        setNormalizedS(s, name);
+        setRawCoefficients(true, c, s, name);
         setReadComplete(true);
 
     }
@@ -182,34 +181,33 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
      * SHM fields do include time-dependent parts which are taken into account
      * in the returned provider.
      * </p>
+     * @param wantNormalized if true, the provider will provide normalized coefficients,
+     * otherwise it will provide un-normalized coefficients
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order or if no gravity field has read yet
+     * @since 6.0
      */
-    public SphericalHarmonicsProvider getProvider(int degree, int order)
+    public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
+                                                     final int degree, final int order)
         throws OrekitException {
 
-        final ConstantSphericalHarmonics constant = getConstantProvider(degree, order);
-        if (cDot.isEmpty()) {
-            // there are no time-dependent coefficients
-            return constant;
+        // get the constant part
+        RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
+
+        if (!cDot.isEmpty()) {
+
+            // add the secular trend layer
+            final double[][] cArray = toArray(cDot);
+            final double[][] sArray = toArray(sDot);
+            rescale(1.0 / Constants.JULIAN_YEAR, true, cArray, sArray, wantNormalized, cArray, sArray);
+            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, cArray, sArray);
+
         }
 
-        // copy the time-dependent coefficients
-        final double[][] cArray = toArray(cDot);
-        final double[][] sArray = toArray(sDot);
-        final double[][] factors = GravityFieldFactory.getUnnormalizationFactors(cArray.length, cArray.length);
-        for (int i = 0; i < cArray.length; ++i) {
-            for (int j = 0; j < cArray[i].length; ++j) {
-                final double f = factors[i][j] / Constants.JULIAN_YEAR;
-                cArray[i][j] = f * cDot.get(i).get(j);
-                sArray[i][j] = f * sDot.get(i).get(j);
-            }
-        }
-
-        return new SecularTrendSphericalHarmonics(constant, referenceDate, cArray, sArray);
+        return provider;
 
     }
 

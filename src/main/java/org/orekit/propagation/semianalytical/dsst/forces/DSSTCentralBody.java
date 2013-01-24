@@ -19,7 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.Set;
 
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -53,7 +53,7 @@ public class DSSTCentralBody implements DSSTForceModel {
      */
     public DSSTCentralBody(final Frame centralBodyFrame,
                            final double centralBodyRotationRate,
-                           final SphericalHarmonicsProvider provider) {
+                           final UnnormalizedSphericalHarmonicsProvider provider) {
 
         // Zonal harmonics contribution
         this.zonal = new ZonalContribution(provider);
@@ -144,7 +144,7 @@ public class DSSTCentralBody implements DSSTForceModel {
     /** Get the spherical harmonics provider
      *  @return the spherical harmonics provider
      */
-    public SphericalHarmonicsProvider getProvider() {
+    public UnnormalizedSphericalHarmonicsProvider getProvider() {
         return zonal.getProvider();
     }
 

@@ -46,7 +46,7 @@ import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -187,8 +187,8 @@ public class DSSTPropagation {
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
         // Potential coefficients provider
-        final SphericalHarmonicsProvider provider =
-                GravityFieldFactory.getSphericalHarmonicsProvider(degree, order);
+        final UnnormalizedSphericalHarmonicsProvider provider =
+                GravityFieldFactory.getUnnormalizedProvider(degree, order);
 
         // Central body attraction coefficient (m³/s²)
         final double mu = provider.getMu();
@@ -406,7 +406,7 @@ public class DSSTPropagation {
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
-                               final SphericalHarmonicsProvider provider,
+                               final UnnormalizedSphericalHarmonicsProvider provider,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
@@ -460,7 +460,7 @@ public class DSSTPropagation {
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
-                               final SphericalHarmonicsProvider provider,
+                               final UnnormalizedSphericalHarmonicsProvider provider,
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();

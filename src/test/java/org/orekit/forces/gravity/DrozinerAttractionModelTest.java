@@ -35,7 +35,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
-import org.orekit.forces.gravity.potential.ConstantSphericalHarmonics;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -80,7 +80,7 @@ public class DrozinerAttractionModelTest {
                                          0, PositionAngle.MEAN, poleAligned, date, mu);
 
         propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
-                                                             new ConstantSphericalHarmonics(6378136.460, mu,
+                                                             GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } })));
 
@@ -146,7 +146,7 @@ public class DrozinerAttractionModelTest {
                                                 poleAligned, date, mu);
 
         propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
-                                                             new ConstantSphericalHarmonics(ae, mu,
+                                                             GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                              new double[][] {
                 { 1.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -223,12 +223,12 @@ public class DrozinerAttractionModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, new ConstantSphericalHarmonics(ae, mu, C, S)));
+        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, GravityFieldFactory.getUnnormalizedProvider(ae, mu, C, S)));
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         propagator.removeForceModels();
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, new ConstantSphericalHarmonics(ae, mu, C, S)));
+        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, GravityFieldFactory.getUnnormalizedProvider(ae, mu, C, S)));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));

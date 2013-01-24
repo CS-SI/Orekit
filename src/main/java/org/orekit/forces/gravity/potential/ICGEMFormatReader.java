@@ -318,13 +318,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                       name, loaderName);
         }
 
-        if (normalized) {
-            setNormalizedC(c, name);
-            setNormalizedS(s, name);
-        } else {
-            setUnNormalizedC(c, name);
-            setUnNormalizedS(s, name);
-        }
+        setRawCoefficients(normalized, c, s, name);
         setReadComplete(true);
 
     }
@@ -334,74 +328,46 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
      * ICGEM fields do include time-dependent parts which are taken into account
      * in the returned provider.
      * </p>
+     * @param wantNormalized if true, the provider will provide normalized coefficients,
+     * otherwise it will provide un-normalized coefficients
      * @param degree maximal degree
      * @param order maximal order
      * @return a new provider
      * @exception OrekitException if the requested maximal degree or order exceeds the
      * available degree or order or if no gravity field has read yet
+     * @since 6.0
      */
-    public SphericalHarmonicsProvider getProvider(int degree, int order)
+    public RawSphericalHarmonicsProvider getProvider(final boolean wantNormalized,
+                                                     final int degree, final int order)
         throws OrekitException {
 
-        SphericalHarmonicsProvider provider = getConstantProvider(degree, order);
+        RawSphericalHarmonicsProvider provider = getConstantProvider(wantNormalized, degree, order);
         if (cTrend.isEmpty() && cCos.isEmpty()) {
             // there are no time-dependent coefficients
             return provider;
         }
 
-        // precompute normalization factors for all time-dependent coefficients
-        final double[][] factors = normalized ?
-                                   GravityFieldFactory.getUnnormalizationFactors(degree, order) :
-                                   null;
-
         if (!cTrend.isEmpty()) {
 
-            // copy the time-dependent coefficients
-            final double[][] cArray = toArray(cTrend);
-            final double[][] sArray = toArray(sTrend);
-            for (int i = 0; i < cArray.length; ++i) {
-                final List<Double> cTi = cTrend.get(i);
-                final List<Double> sTi = sTrend.get(i);
-                for (int j = 0; j < cArray[i].length; ++j) {
-                    final double f = (normalized ? factors[i][j] : 1.0) / Constants.JULIAN_YEAR;
-                    cArray[i][j] = f * cTi.get(j);
-                    sArray[i][j] = f * sTi.get(j);
-                }
-            }
-
             // add the secular trend layer
-            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, cArray, sArray);
+            final double[][] cArrayTrend = toArray(cTrend);
+            final double[][] sArrayTrend = toArray(sTrend);
+            rescale(1.0 / Constants.JULIAN_YEAR, normalized, cArrayTrend, sArrayTrend, wantNormalized, cArrayTrend, sArrayTrend);
+            provider = new SecularTrendSphericalHarmonics(provider, referenceDate, cArrayTrend, sArrayTrend);
 
         }
 
         for (final Double period : cCos.keySet()) {
 
-            // copy the time-dependent coefficients
-            final List<List<Double>> ccL = cCos.get(period);
-            final List<List<Double>> csL = cSin.get(period);
-            final List<List<Double>> scL = sCos.get(period);
-            final List<List<Double>> ssL = sSin.get(period);
-            final double[][] cCosArray = toArray(ccL);
-            final double[][] cSinArray = toArray(csL);
-            final double[][] sCosArray = toArray(scL);
-            final double[][] sSinArray = toArray(ssL);
-            for (int i = 0; i < cCosArray.length; ++i) {
-                final List<Double> cCosi = ccL.get(i);
-                final List<Double> cSini = csL.get(i);
-                final List<Double> sCosi = scL.get(i);
-                final List<Double> sSini = ssL.get(i);
-                for (int j = 0; j < cCosArray[i].length; ++j) {
-                    final double f = normalized ? factors[i][j] : 1.0;
-                    cCosArray[i][j] = f * cCosi.get(j);
-                    cSinArray[i][j] = f * cSini.get(j);
-                    sCosArray[i][j] = f * sCosi.get(j);
-                    sSinArray[i][j] = f * sSini.get(j);
-                }
-            }
-
             // add the pulsating layer for the current period
+            final double[][] cArrayCos = toArray(cCos.get(period));
+            final double[][] sArrayCos = toArray(sCos.get(period));
+            final double[][] cArraySin = toArray(cSin.get(period));
+            final double[][] sArraySin = toArray(sSin.get(period));
+            rescale(1.0, normalized, cArrayCos, sArrayCos, wantNormalized, cArrayCos, sArrayCos);
+            rescale(1.0, normalized, cArraySin, sArraySin, wantNormalized, cArraySin, sArraySin);
             provider = new PulsatingSphericalHarmonics(provider, period * Constants.JULIAN_YEAR,
-                                                     cCosArray, cSinArray, sCosArray, sSinArray);
+                                                       cArrayCos, cArraySin, sArrayCos, sArraySin);
 
         }
 

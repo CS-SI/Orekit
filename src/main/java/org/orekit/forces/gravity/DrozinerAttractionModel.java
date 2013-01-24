@@ -22,8 +22,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.potential.ConstantSphericalHarmonics;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -45,7 +45,7 @@ import org.orekit.time.AbsoluteDate;
 public class DrozinerAttractionModel extends AbstractParameterizable implements ForceModel {
 
     /** Provider for the spherical harmonics. */
-    private final SphericalHarmonicsProvider provider;
+    private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
     private double mu;
@@ -59,12 +59,12 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
     * @param mu central body attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
     * @param C un-normalized coefficients array (cosine part)
     * @param S un-normalized coefficients array (sine part)
-    * @deprecated since 6.0, replaced by {@link #DrozinerAttractionModel(Frame, SphericalHarmonicsProvider)}
+    * @deprecated since 6.0, replaced by {@link #DrozinerAttractionModel(Frame, UnnormalizedSphericalHarmonicsProvider)}
     */
    public DrozinerAttractionModel(final Frame centralBodyFrame,
                                     final double equatorialRadius, final double mu,
                                     final double[][] C, final double[][] S) {
-       this(centralBodyFrame, new ConstantSphericalHarmonics(equatorialRadius, mu, C, S));
+       this(centralBodyFrame, GravityFieldFactory.getUnnormalizedProvider(equatorialRadius, mu, C, S));
    }
 
    /** Creates a new instance.
@@ -73,7 +73,7 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
    * @since 6.0
    */
   public DrozinerAttractionModel(final Frame centralBodyFrame,
-                                   final SphericalHarmonicsProvider provider) {
+                                   final UnnormalizedSphericalHarmonicsProvider provider) {
       super("central attraction coefficient");
 
       this.provider         = provider;

@@ -37,11 +37,10 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.potential.ConstantSphericalHarmonics;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
-import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -93,7 +92,7 @@ public class CunninghamAttractionModelTest {
         c[2][0] = c20;
         double[][] s = new double[3][1];
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
-                                                               new ConstantSphericalHarmonics(6378136.460, mu, c, s)));
+                                                               GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu, c, s)));
 
         // let the step handler perform the test
         propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
@@ -158,7 +157,7 @@ public class CunninghamAttractionModelTest {
                                                 poleAligned, date, mu);
 
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
-                                                               new ConstantSphericalHarmonics(ae, mu,
+                                                               GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -238,7 +237,7 @@ public class CunninghamAttractionModelTest {
 
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
-                                                               new ConstantSphericalHarmonics(ae, mu,
+                                                               GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -254,7 +253,7 @@ public class CunninghamAttractionModelTest {
         propagator.removeForceModels();
 
         propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
-                                                             new ConstantSphericalHarmonics(ae, mu,
+                                                             GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                              new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -285,17 +284,17 @@ public class CunninghamAttractionModelTest {
                 new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
                                                        FramesFactory.getGCRF(),
                                                        new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       GravityFieldFactory.getSphericalHarmonicsProvider(1, 1).getMu()));
+                                                       GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
 
         AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
         for (int i = 2; i <= 69; i++) {
             // perturbing force (ITRF2008 central body frame)
             final ForceModel cunModel =
                     new CunninghamAttractionModel(FramesFactory.getITRF2008(),
-                                                  GravityFieldFactory.getSphericalHarmonicsProvider(i, i));
+                                                  GravityFieldFactory.getUnnormalizedProvider(i, i));
             final ForceModel droModel =
                     new DrozinerAttractionModel(FramesFactory.getITRF2008(),
-                                                GravityFieldFactory.getSphericalHarmonicsProvider(i, i));
+                                                GravityFieldFactory.getUnnormalizedProvider(i, i));
 
             /**
              * Compute acceleration
@@ -348,14 +347,14 @@ public class CunninghamAttractionModelTest {
                 new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
                                                        FramesFactory.getGCRF(),
                                                        new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
-                                                       GravityFieldFactory.getSphericalHarmonicsProvider(1, 1).getMu()));
+                                                       GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
 
         double dP = 0.1;
         double duration = 3 * Constants.JULIAN_DAY;
         BoundedPropagator fixedFieldEphemeris   = createEphemeris(dP, spacecraftState, duration,
-                                                                  GravityFieldFactory.getConstantSphericalHarmonicsProvider(8, 8));
+                                                                  GravityFieldFactory.getConstantUnnormalizedProvider(8, 8));
         BoundedPropagator varyingFieldEphemeris = createEphemeris(dP, spacecraftState, duration,
-                                                                  GravityFieldFactory.getSphericalHarmonicsProvider(8, 8));
+                                                                  GravityFieldFactory.getUnnormalizedProvider(8, 8));
 
         double step = 60.0;
         double maxDeltaT = 0;
@@ -384,7 +383,7 @@ public class CunninghamAttractionModelTest {
     }
 
     private BoundedPropagator createEphemeris(double dP, SpacecraftState initialState, double duration,
-                                              SphericalHarmonicsProvider provider)
+                                              UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
         double[][] tol = NumericalPropagator.tolerances(dP, initialState.getOrbit(), OrbitType.CARTESIAN);
         FirstOrderIntegrator integrator =

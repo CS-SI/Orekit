@@ -142,7 +142,7 @@ public class NumericalConverterTest {
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
         gravity = new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                                GravityFieldFactory.getSphericalHarmonicsProvider(2, 0));
+                                                GravityFieldFactory.getUnnormalizedProvider(2, 0));
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,

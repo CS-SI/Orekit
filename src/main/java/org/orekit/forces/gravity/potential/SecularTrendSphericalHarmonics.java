@@ -22,14 +22,14 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 
-/** Simple implementation of {@link SphericalHarmonicsProvider} for gravity fields with secular trend.
+/** Simple implementation of {@link RawSphericalHarmonicsProvider} for gravity fields with secular trend.
  * @author Luc Maisonobe
  * @since 6.0
  */
-public class SecularTrendSphericalHarmonics implements SphericalHarmonicsProvider {
+class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
     /** Non-secular part of the field. */
-    private final SphericalHarmonicsProvider provider;
+    private final RawSphericalHarmonicsProvider provider;
 
     /** Reference date for the harmonics. */
     private final AbsoluteDate referenceDate;
@@ -43,10 +43,10 @@ public class SecularTrendSphericalHarmonics implements SphericalHarmonicsProvide
     /** Simple constructor.
      * @param provider underlying provider for the non secular part
      * @param referenceDate reference date for the harmonics (considered to be at 12:00 TT)
-     * @param cTrend un-normalized trend of the cosine coefficients (s<sup>-1</sup>)
-     * @param sTrend un-normalized trend of the sine coefficients (s<sup>-1</sup>)
+     * @param cTrend secular trend of the cosine coefficients (s<sup>-1</sup>)
+     * @param sTrend secular trend of the sine coefficients (s<sup>-1</sup>)
      */
-    public SecularTrendSphericalHarmonics(final SphericalHarmonicsProvider provider,
+    public SecularTrendSphericalHarmonics(final RawSphericalHarmonicsProvider provider,
                                           final DateComponents referenceDate,
                                           final double[][] cTrend, final double[][] sTrend) {
         this.provider      = provider;
@@ -86,11 +86,11 @@ public class SecularTrendSphericalHarmonics implements SphericalHarmonicsProvide
     }
 
     /** {@inheritDoc} */
-    public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
+    public double getRawCnm(final double dateOffset, final int n, final int m)
             throws OrekitException {
 
         // retrieve the constant part of the coefficient
-        double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
+        double cnm = provider.getRawCnm(dateOffset, n, m);
 
         if (n < cTrend.length && m < cTrend[n].length) {
             // add secular trend
@@ -102,11 +102,11 @@ public class SecularTrendSphericalHarmonics implements SphericalHarmonicsProvide
     }
 
     /** {@inheritDoc} */
-    public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
+    public double getRawSnm(final double dateOffset, final int n, final int m)
             throws OrekitException {
 
         // retrieve the constant part of the coefficient
-        double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+        double snm = provider.getRawSnm(dateOffset, n, m);
 
         if (n < sTrend.length && m < sTrend[n].length) {
             // add secular trend

@@ -38,7 +38,7 @@ public class GravityFieldFactoryTest {
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
         try {
-            GravityFieldFactory.getSphericalHarmonicsProvider(5, 3);
+            GravityFieldFactory.getUnnormalizedProvider(5, 3);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE, oe.getSpecifier());
@@ -52,7 +52,7 @@ public class GravityFieldFactoryTest {
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
         try {
-            GravityFieldFactory.getSphericalHarmonicsProvider(5, 3);
+            GravityFieldFactory.getUnnormalizedProvider(5, 3);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE, oe.getSpecifier());
@@ -65,7 +65,7 @@ public class GravityFieldFactoryTest {
         Utils.setDataRoot("potential/icgem-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 3);
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 3);
         Assert.assertEquals(5, provider.getMaxDegree());
         Assert.assertEquals(3, provider.getMaxOrder());
         Set<String> loaded = DataProvidersManager.getInstance().getLoadedDataNames();
@@ -78,7 +78,7 @@ public class GravityFieldFactoryTest {
         Utils.setDataRoot("potential/shm-format");
         // we explicitly DON'T call GravityFieldFactory.addPotentialCoefficientsReader
         // to make sure we use only the default readers
-        SphericalHarmonicsProvider provider = GravityFieldFactory.getSphericalHarmonicsProvider(5, 3);
+        UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 3);
         Assert.assertEquals(5, provider.getMaxDegree());
         Assert.assertEquals(3, provider.getMaxOrder());
         Set<String> loaded = DataProvidersManager.getInstance().getLoadedDataNames();
