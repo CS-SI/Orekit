@@ -18,6 +18,7 @@ package org.orekit.forces.drag;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -51,6 +52,9 @@ public class HarrisPriester implements Atmosphere {
 
     /** Default cosine exponent value. */
     private static final int N_DEFAULT = 4;
+
+    /** Minimal value for calculating poxer of cosine. */
+    private static final double MIN_COS = 1.e-12;
 
     /** Lag angle for diurnal bulge. */
     private static final double LAG = FastMath.toRadians(30.0);
@@ -289,6 +293,8 @@ public class HarrisPriester implements Atmosphere {
         final double cosPsi = bulDir.normalize().dotProduct(posInEarth.normalize());
         // (1 + cos(Psi))/2 = cos²(Psi/2)
         final double c2Psi2 = (1. + cosPsi) / 2.;
+        final double cPsi2  = FastMath.sqrt(c2Psi2);
+        final double cosPow = (cPsi2 > MIN_COS) ? c2Psi2 * FastMath.pow(cPsi2, n - 2) : 0.;
 
         // Search altitude index in density table
         int ia = 0;
@@ -298,12 +304,16 @@ public class HarrisPriester implements Atmosphere {
 
         // Exponential density interpolation
         final double altMin = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][1] / tabAltRho[ia][1]);
-        final double altMax = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][2] / tabAltRho[ia][2]);
-
         final double rhoMin = tabAltRho[ia][1] * FastMath.exp((tabAltRho[ia][0] - posAlt) / altMin);
-        final double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - posAlt) / altMax);
 
-        return rhoMin + (rhoMax - rhoMin) * FastMath.pow(c2Psi2, n / 2);
+        if (Precision.equals(cosPow, 0.)) {
+            return rhoMin;
+        } else {
+            final double altMax = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][2] / tabAltRho[ia][2]);
+            final double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - posAlt) / altMax);
+            return rhoMin + (rhoMax - rhoMin) * cosPow;
+        }
+
     }
 
     /** Get the local density at some position.

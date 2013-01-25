@@ -18,7 +18,6 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 
 import java.util.TreeMap;
 
-import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -151,34 +150,36 @@ public class CoefficientsFactory {
         return VNS;
     }
 
-    /** Initialize the V<sub>n, s</sub> <sup>m</sup> coefficient from the V<sub>n, s</sub>
-     * <sup>m</sup> expression as function of the V<sub>n, s</sub> coefficients. See text in 2.8.2
+    /** Get the V<sub>n,s</sub><sup>m</sup> coefficient from V<sub>n,s</sub>.
+     *  <br>See § 2.8.2 in Danielson paper.
      * @param m m
      * @param n n
      * @param s s
+     * @param fns (n + |s|)!
+     * @param fnm (n - m)!
      * @return The V<sub>n, s</sub> <sup>m</sup> coefficient
-     * @throws OrekitException if m > s
+     * @throws OrekitException if m > n
      */
-    public static double getVmns(final int m, final int n, final int s)
+    public static double getVmns(final int m, final int n, final int s,
+                                 final double fns, final double fnm)
         throws OrekitException {
         if (m > n) {
-            throw new OrekitException(OrekitMessages.DSST_VMSN_COEFFICIENT_ERROR_MS, m, s);
+            throw new OrekitException(OrekitMessages.DSST_VMNS_COEFFICIENT_ERROR_MS, m, n);
         }
 
-        if ((n + 1) > LAST_VNS_ORDER) {
-            // Update the Vns coefficient
-            computeVns(n + 1);
-        }
-
-        // If (n -s) is odd, the Vmsn coefficient is null
         double result = 0;
+        // If (n - s) is odd, the Vmsn coefficient is null
         if ((n - s) % 2 == 0) {
+            // Update the Vns coefficient
+            if ((n + 1) > LAST_VNS_ORDER) {
+                computeVns(n + 1);
+            }
             if (s >= 0) {
-                result = ArithmeticUtils.factorial(n + s)  * VNS.get(new NSKey(n, s)) / ArithmeticUtils.factorial(n - m);
+                result = fns  * VNS.get(new NSKey(n, s)) / fnm;
             } else {
                 // If s < 0 : Vmn-s = (-1)^(-s) Vmns
-                result = FastMath.pow(-1, -s) * ArithmeticUtils.factorial(n - s) * VNS.get(new NSKey(n, -s)) /
-                        ArithmeticUtils.factorial(n - m);
+                final int mops = (s % 2 == 0) ? 1 : -1;
+                result = mops * fns * VNS.get(new NSKey(n, -s)) / fnm;
             }
         }
         return result;

@@ -43,7 +43,7 @@ public class GHmsjPolynomials {
     private final CjSjCoefficient cjsjAB;
 
     /** Is the orbit represented as a retrograde orbit.
-     * I = -1 if yes, +1 otherwise.
+     *  I = -1 if yes, +1 otherwise.
      */
     private int                   I;
 
@@ -90,7 +90,6 @@ public class GHmsjPolynomials {
      * @return the H<sub>ms</sub><sup>j</sup>
      */
     public double getHmsj(final int m, final int s, final int j) {
-
         final int sMj = FastMath.abs(s - j);
         double hms = 0d;
         if (FastMath.abs(s) <= m) {
@@ -113,18 +112,17 @@ public class GHmsjPolynomials {
      */
     public double getdGmsdk(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        final int mMis = m - I * s;
-        final int sMim = FastMath.abs(s - I * m);
-
-        double dGms = 0d;
+        double dGmsdk = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cjsjAB.getCj(mMis) * cjsjKH.getDcjDk(sMj) -
-                   I * sgn(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDk(sMj);
+            final int mMis = m - I * s;
+            dGmsdk = cjsjKH.getDcjDk(sMj) * cjsjAB.getCj(mMis) -
+                   I * sgn(s - j) * cjsjKH.getDsjDk(sMj) * cjsjAB.getSj(mMis);
         } else {
-            dGms = cjsjAB.getCj(sMim) * cjsjKH.getDcjDk(sMj) +
-                   sgn(s - j) * sgn(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDk(sMj);
+            final int sMim = FastMath.abs(s - I * m);
+            dGmsdk = cjsjKH.getDcjDk(sMj) * cjsjAB.getCj(sMim) +
+                    sgn(s - j) * sgn(s - m) * cjsjKH.getDsjDk(sMj) * cjsjAB.getSj(sMim);
         }
-        return dGms;
+        return dGmsdk;
     }
 
     /** Get the dG<sub>ms</sub><sup>j</sup> / d<sub>h</sub> coefficient.
@@ -134,19 +132,18 @@ public class GHmsjPolynomials {
      * @return dG<sub>ms</sub><sup>j</sup> / d<sub>h</sub>
      */
     public double getdGmsdh(final int m, final int s, final int j) {
-        final int mMis = m - I * s;
-        final int sMim = FastMath.abs(s - I * m);
         final int sMj = FastMath.abs(s - j);
-
-        double dGms = 0d;
+        double dGmsdh = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cjsjAB.getCj(mMis) * cjsjKH.getDcjDh(sMj) -
-                   I * sgn(s - j) * cjsjAB.getSj(mMis) * cjsjKH.getDsjDh(sMj);
+            final int mMis = m - I * s;
+            dGmsdh = cjsjKH.getDcjDh(sMj) * cjsjAB.getCj(mMis) -
+                    I * sgn(s - j) * cjsjKH.getDsjDh(sMj) * cjsjAB.getSj(mMis);
         } else {
-            dGms = cjsjAB.getCj(sMim) * cjsjKH.getDcjDh(sMj) +
-                   sgn(s - j) * sgn(s - m) * cjsjAB.getSj(sMim) * cjsjKH.getDsjDh(sMj);
+            final int sMim = FastMath.abs(s - I * m);
+            dGmsdh = cjsjKH.getDcjDh(sMj) * cjsjAB.getCj(sMim) +
+                    sgn(s - j) * sgn(s - m) * cjsjKH.getDsjDh(sMj) * cjsjAB.getSj(sMim);
         }
-        return dGms;
+        return dGmsdh;
     }
 
     /** Get the dG<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub> coefficient.
@@ -156,19 +153,18 @@ public class GHmsjPolynomials {
      * @return dG<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub>
      */
     public double getdGmsdAlpha(final int m, final int s, final int j) {
-        final int sMj = FastMath.abs(s - j);
-        final int mMis = m - I * s;
-        final int sMim = FastMath.abs(s - I * m);
-
-        double dGms = 0d;
+        final int sMj  = FastMath.abs(s - j);
+        double dGmsdAl = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(mMis) -
+            final int mMis = m - I * s;
+            dGmsdAl = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(mMis) -
                    I * sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(mMis);
         } else {
-            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(sMim) +
-                   sgn(s - j) * sgn(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(sMim);
+            final int sMim = FastMath.abs(s - I * m);
+            dGmsdAl = cjsjKH.getCj(sMj) * cjsjAB.getDcjDk(sMim) +
+                    sgn(s - j) * sgn(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDk(sMim);
         }
-        return dGms;
+        return dGmsdAl;
     }
 
     /** Get the dG<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub> coefficient.
@@ -179,18 +175,17 @@ public class GHmsjPolynomials {
      */
     public double getdGmsdBeta(final int m, final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        final int mMis = m - I * s;
-        final int sMim = FastMath.abs(s - I * m);
-
-        double dGms = 0d;
+        double dGmsdBe = 0d;
         if (FastMath.abs(s) <= m) {
-            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(mMis) -
-                   I * sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(mMis);
+            final int mMis = m - I * s;
+            dGmsdBe = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(mMis) -
+                    I * sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(mMis);
         } else {
-            dGms = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(sMim) +
-                   sgn(s - j) * sgn(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(sMim);
+            final int sMim = FastMath.abs(s - I * m);
+            dGmsdBe = cjsjKH.getCj(sMj) * cjsjAB.getDcjDh(sMim) +
+                    sgn(s - j) * sgn(s - m) * cjsjKH.getSj(sMj) * cjsjAB.getDsjDh(sMim);
         }
-        return dGms;
+        return dGmsdBe;
     }
 
     /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>k</sub> coefficient.
@@ -200,19 +195,18 @@ public class GHmsjPolynomials {
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>k</sub>
      */
     public double getdHmsdk(final int m, final int s, final int j) {
-        final int abssMj = FastMath.abs(s - j);
-        final int mMis = m - I * s;
-        final int abssMim = FastMath.abs(s - I * m);
-
-        double dHms = 0d;
+        final int sMj = FastMath.abs(s - j);
+        double dHmsdk = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cjsjAB.getSj(mMis) * cjsjKH.getDcjDk(abssMj) +
-                   sgn(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDk(abssMj);
+            final int mMis = m - I * s;
+            dHmsdk = I * cjsjKH.getDcjDk(sMj) * cjsjAB.getSj(mMis) +
+                    sgn(s - j) * cjsjKH.getDsjDk(sMj) * cjsjAB.getCj(mMis);
         } else {
-            dHms = -sgn(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDk(abssMj) +
-                    sgn(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDk(abssMj);
+            final int sMim = FastMath.abs(s - I * m);
+            dHmsdk = -sgn(s - m) * cjsjKH.getDcjDk(sMj) * cjsjAB.getSj(sMim) +
+                    sgn(s - j) * cjsjKH.getDsjDk(sMj) * cjsjAB.getCj(sMim);
         }
-        return dHms;
+        return dHmsdk;
     }
 
     /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>h</sub> coefficient.
@@ -222,19 +216,18 @@ public class GHmsjPolynomials {
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>h</sub>
      */
     public double getdHmsdh(final int m,  final int s, final int j) {
-        final int abssMj = FastMath.abs(s - j);
-        final int mMis = m - I * s;
-        final int abssMim = FastMath.abs(s - I * m);
-
-        double dHms = 0d;
+        final int sMj = FastMath.abs(s - j);
+        double dHmsdk = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cjsjAB.getSj(mMis) * cjsjKH.getDcjDh(abssMj) +
-                   sgn(s - j) * cjsjAB.getCj(mMis) * cjsjKH.getDsjDh(abssMj);
+            final int mMis = m - I * s;
+            dHmsdk = I * cjsjKH.getDcjDh(sMj) * cjsjAB.getSj(mMis) +
+                    sgn(s - j) * cjsjKH.getDsjDh(sMj) * cjsjAB.getCj(mMis);
         } else {
-            dHms = -sgn(s - m) * cjsjAB.getSj(abssMim) * cjsjKH.getDcjDh(abssMj) +
-                    sgn(s - j) * cjsjAB.getCj(abssMim) * cjsjKH.getDsjDh(abssMj);
+            final int sMim = FastMath.abs(s - I * m);
+            dHmsdk = -sgn(s - m) * cjsjKH.getDcjDh(sMj) * cjsjAB.getSj(sMim) +
+                    sgn(s - j) * cjsjKH.getDsjDh(sMj) * cjsjAB.getCj(sMim);
         }
-        return dHms;
+        return dHmsdk;
     }
 
     /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub> coefficient.
@@ -244,19 +237,18 @@ public class GHmsjPolynomials {
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub>
      */
     public double getdHmsdAlpha(final int m, final int s, final int j) {
-        final int abssMj = FastMath.abs(s - j);
-        final int mMis = m - I * s;
-        final int abssMim = FastMath.abs(s - I * m);
-
-        double dHms = 0d;
+        final int sMj  = FastMath.abs(s - j);
+        double dHmsdAl = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDk(mMis) +
-                   sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(mMis);
+            final int mMis = m - I * s;
+            dHmsdAl = I * cjsjKH.getCj(sMj) * cjsjAB.getDsjDk(mMis) +
+                    sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDcjDk(mMis);
         } else {
-            dHms = -sgn(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDk(abssMim) +
-                    sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDk(abssMim);
+            final int sMim = FastMath.abs(s - I * m);
+            dHmsdAl = -sgn(s - m) * cjsjKH.getCj(sMj) * cjsjAB.getDsjDk(sMim) +
+                    sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDcjDk(sMim);
         }
-        return dHms;
+        return dHmsdAl;
     }
 
     /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub> coefficient.
@@ -266,19 +258,18 @@ public class GHmsjPolynomials {
      * @return dH<sub>ms</sub><sup>j</sup> / d<sub>&beta;</sub>
      */
     public double getdHmsdBeta(final int m, final int s, final int j) {
-        final int abssMj = FastMath.abs(s - j);
-        final int mMis = m - I * s;
-        final int abssMim = FastMath.abs(s - I * m);
-
-        double dHms = 0d;
+        final int sMj = FastMath.abs(s - j);
+        double dHmsdBe = 0d;
         if (FastMath.abs(s) <= m) {
-            dHms = I * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDh(mMis) +
-                   sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(mMis);
+            final int mMis = m - I * s;
+            dHmsdBe = I * cjsjKH.getCj(sMj) * cjsjAB.getDsjDh(mMis) +
+                   sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDcjDh(mMis);
         } else {
-            dHms = -sgn(s - m) * cjsjKH.getCj(abssMj) * cjsjAB.getDsjDh(abssMim) +
-                    sgn(s - j) * cjsjKH.getSj(abssMj) * cjsjAB.getDcjDh(abssMim);
+            final int sMim = FastMath.abs(s - I * m);
+            dHmsdBe = -sgn(s - m) * cjsjKH.getCj(sMj) * cjsjAB.getDsjDh(sMim) +
+                    sgn(s - j) * cjsjKH.getSj(sMj) * cjsjAB.getDcjDh(sMim);
         }
-        return dHms;
+        return dHmsdBe;
     }
 
     /** Get the sign of an integer.

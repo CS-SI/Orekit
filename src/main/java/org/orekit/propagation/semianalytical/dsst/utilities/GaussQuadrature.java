@@ -20,7 +20,7 @@ import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.orekit.errors.OrekitException;
 
-/** Class used for {@link #integrate(UnivariateVectorFunction) integrating}
+/** Class used for {@link #integrate(UnivariateVectorFunction, double, double) integrating}
  *  a {@link org.apache.commons.math3.analysis.UnivariateVectorFunction function}
  *  for the orbital elements using the Gaussian quadrature rule.
  *  <p>

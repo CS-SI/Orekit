@@ -19,7 +19,6 @@ package org.orekit.propagation.semianalytical.dsst.utilities;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.util.ArithmeticUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
 
@@ -32,6 +31,9 @@ public class GammaMnsFunction {
     /** Storage map. */
     private final Map<MNSKey, Double> map;
 
+    /** Factorial. */
+    private final double[] fact;
+
     /** &gamma;. */
     private final double gamma;
 
@@ -39,10 +41,12 @@ public class GammaMnsFunction {
     private final int    I;
 
     /** Simple constructor.
+     *  @param fact factorial array
      *  @param gamma &gamma;
      *  @param I retrograde factor
      */
-    public GammaMnsFunction(final double gamma, final int I) {
+    public GammaMnsFunction(final double[] fact, final double gamma, final int I) {
+        this.fact  = fact.clone();
         this.gamma = gamma;
         this.I     = I;
         this.map   = new TreeMap<MNSKey, Double>();
@@ -64,10 +68,9 @@ public class GammaMnsFunction {
             } else if (s >= m) {
                 res = FastMath.pow(2, -s) * FastMath.pow(1 + I * gamma, I * m);
             } else {
-                res = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) *
-                      ArithmeticUtils.factorial(n + m) * ArithmeticUtils.factorial(n - m) *
-                      FastMath.pow(1 + I * gamma, I * s);
-                res /= ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
+                res = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * FastMath.pow(1 + I * gamma, I * s);
+                res *= fact[n + m] * fact[n - m];
+                res /= fact[n + s] * fact[n - s];
             }
             map.put(new MNSKey(m, n, s), res);
         }

@@ -27,6 +27,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.HarrisPriester;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -47,12 +48,16 @@ public class DSSTAtmosphericDragTest {
     @Test
     public void testMeanElementRate() throws OrekitException {
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
-        final OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, FramesFactory.getITRF2005(true));
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        final OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101,
+                                                            earthFrame);
         final Atmosphere atm = new HarrisPriester(sun, earth);
         final DSSTForceModel force = new DSSTAtmosphericDrag(atm, 2., 5.);
 
         // Equinoxe 21 mars 2003 à 1h00m
-        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 03, 21),
+                                             new TimeComponents(1, 0, 0.),
+                                             TimeScalesFactory.getUTC());
         final double mu   = 3.9860047e14;
         final Vector3D position  = new Vector3D(-6142438.668, 3492467.560, -25767.25680);
         final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);

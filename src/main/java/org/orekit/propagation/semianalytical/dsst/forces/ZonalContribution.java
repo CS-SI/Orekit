@@ -41,11 +41,20 @@ class ZonalContribution implements DSSTForceModel {
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
+    /** Maximal degree to consider for harmonics potential. */
+    private final int maxDegree;
+
+    /** Maximal degree to consider for harmonics potential. */
+    private final int maxOrder;
+
     /** Factorial. */
     private final double[] fact;
 
     /** Coefficient used to define the mean disturbing function V<sub>ns</sub> coefficient. */
     private final TreeMap<NSKey, Double> Vns;
+
+    /** Highest power of the eccentricity to be used in series expansion. */
+    private int maxEccPow;
 
     // Equinoctial elements (according to DSST notation)
     /** a. */
@@ -91,19 +100,20 @@ class ZonalContribution implements DSSTForceModel {
     /** &mu; / a .*/
     private double muoa;
 
-    /** Highest power of the eccentricity to be used in series expansion. */
-    private int maxEccPow;
-
     /** Simple constructor.
      * @param provider provider for spherical harmonics
      */
     public ZonalContribution(final UnnormalizedSphericalHarmonicsProvider provider) {
 
-        this.provider = provider;
-        this.Vns = CoefficientsFactory.computeVns(provider.getMaxDegree() + 1);
+        this.provider  = provider;
+        this.maxDegree = provider.getMaxDegree();
+        this.maxOrder  = provider.getMaxOrder();
+
+        // Vns coefficients
+        this.Vns = CoefficientsFactory.computeVns(maxDegree + 1);
 
         // Factorials computation
-        final int maxFact = 2 * provider.getMaxDegree() + 1;
+        final int maxFact = 2 * maxDegree + 1;
         this.fact = new double[maxFact];
         fact[0] = 1.;
         for (int i = 1; i < maxFact; i++) {
@@ -111,10 +121,10 @@ class ZonalContribution implements DSSTForceModel {
         }
 
         // Initialize default values
-        this.maxEccPow = (provider.getMaxDegree() == 2) ? 0 : Integer.MIN_VALUE;
+        this.maxEccPow = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
     }
 
-    /** Get the spherical harmonics provider
+    /** Get the spherical harmonics provider.
      *  @return the spherical harmonics provider
      */
     public UnnormalizedSphericalHarmonicsProvider getProvider() {
@@ -134,37 +144,35 @@ class ZonalContribution implements DSSTForceModel {
     public void initialize(final AuxiliaryElements aux)
         throws OrekitException {
 
-        final int degree = provider.getMaxDegree();
-        final double dateOffset = provider.getOffset(aux.getDate());
-        if (degree == 2) {
+        if (maxDegree == 2) {
             maxEccPow = 0;
         } else {
             // Initializes specific parameters.
             initializeStep(aux);
+            final double dateOffset = provider.getOffset(aux.getDate());
 
             // Utilities for truncation
+            final double ax2or = 2. * a / provider.getAe();
+            double xmuran = provider.getMu() / a;
             // Set a lower bound for eccentricity
             final double eo2  = FastMath.max(0.0025, ecc / 2.);
             final double x2o2 = XX / 2.;
-            final double[] eccPwr = new double[degree + 1];
-            final double[] chiPwr = new double[degree + 1];
-            final double[] hafPwr = new double[degree + 1];
+            final double[] eccPwr = new double[maxDegree + 1];
+            final double[] chiPwr = new double[maxDegree + 1];
+            final double[] hafPwr = new double[maxDegree + 1];
             eccPwr[0] = 1.;
             chiPwr[0] = X;
             hafPwr[0] = 1.;
-            for (int i = 1; i <= degree; i++) {
+            for (int i = 1; i <= maxDegree; i++) {
                 eccPwr[i] = eccPwr[i - 1] * eo2;
                 chiPwr[i] = chiPwr[i - 1] * x2o2;
                 hafPwr[i] = hafPwr[i - 1] * 0.5;
+                xmuran  /= ax2or;
             }
-
-            // Auxiliary quantities.
-            final double ax2or = 2. * a / provider.getAe();
-            double xmuran = provider.getMu() / (a * FastMath.pow(ax2or, degree));
 
             // Set highest power of e and degree of current spherical harmonic.
             maxEccPow = 0;
-            int n = degree;
+            int n = maxDegree;
             // Loop over n
             do {
                 // Set order of current spherical harmonic.
@@ -213,18 +221,18 @@ class ZonalContribution implements DSSTForceModel {
                     } while (l < n);
                     // Is the current spherical harmonic term bigger than the truncation tolerance ?
                     if (term >= TRUNCATION_TOLERANCE) {
-                        maxEccPow = FastMath.min(degree - 2, maxEccPow);
+                        maxEccPow = FastMath.min(maxDegree - 2, maxEccPow);
                         return;
                     }
                     // Proceed to next order.
                     m++;
-                } while (m <= FastMath.min(n, provider.getMaxOrder()));
+                } while (m <= FastMath.min(n, maxOrder));
                 // Procced to next degree.
                 xmuran *= ax2or;
                 n--;
             } while (n > maxEccPow + 2);
 
-            maxEccPow = FastMath.min(degree - 2, maxEccPow);
+            maxEccPow = FastMath.min(maxDegree - 2, maxEccPow);
         }
     }
 
@@ -323,7 +331,6 @@ class ZonalContribution implements DSSTForceModel {
      */
     private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
 
-        final int degree = provider.getMaxDegree();
         final double dateOffset = provider.getOffset(date);
 
         // Hansen coefficients
@@ -331,13 +338,13 @@ class ZonalContribution implements DSSTForceModel {
         // Gs and Hs coefficients
         final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
         // Qns coefficients
-        final double[][] Qns  = CoefficientsFactory.computeQns(gamma, degree, maxEccPow);
+        final double[][] Qns  = CoefficientsFactory.computeQns(gamma, maxDegree, maxEccPow);
         // r / a up to power degree
         final double roa = provider.getAe() / a;
 
-        final double[] roaPow = new double[degree + 1];
+        final double[] roaPow = new double[maxDegree + 1];
         roaPow[0] = 1.;
-        for (int i = 1; i <= degree; i++) {
+        for (int i = 1; i <= maxDegree; i++) {
             roaPow[i] = roa * roaPow[i - 1];
         }
 
@@ -372,7 +379,7 @@ class ZonalContribution implements DSSTForceModel {
             // Kronecker symbol (2 - delta(0,s))
             final double d0s = (s == 0) ? 1 : 2;
 
-            for (int n = s + 2; n <= degree; n++) {
+            for (int n = s + 2; n <= maxDegree; n++) {
                 // (n - s) must be even
                 if ((n - s) % 2 == 0) {
                     // Extract data from previous computation :

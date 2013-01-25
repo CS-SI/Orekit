@@ -27,7 +27,6 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -43,8 +42,8 @@ public class HarrisPriesterTest {
     // Earth
     private OneAxisEllipsoid earth;
 
-    // Frame
-    private Frame itrf;
+    // Earth rotating frame
+    private Frame earthFrame;
 
     // Time Scale
     private TimeScale utc;
@@ -55,59 +54,59 @@ public class HarrisPriesterTest {
     @Test
     public void testStandard() throws OrekitException {
 
-        HarrisPriester hp = new HarrisPriester(sun, earth);
-
-        // Position at 500 km height
-        GeodeticPoint point = new GeodeticPoint(0, 0, 500000.);
-        Vector3D pos = earth.transform(point);
-
-        // COMPUTE DENSITY KG/M3 RHO
-        double rho = hp.getDensity(date, pos, itrf);
-
-        Assert.assertEquals(3.9236341626253185E-13, rho, 1.0e-21);
-
-    }
-
-    @Test
-    public void testParameterN() throws OrekitException {
-
-        HarrisPriester hp = new HarrisPriester(sun, earth);
+        final HarrisPriester hp = new HarrisPriester(sun, earth);
 
         // Position at 500 km height
         final GeodeticPoint point = new GeodeticPoint(0, 0, 500000.);
         final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        final double rho4 = hp.getDensity(date, pos, itrf);
+        final double rho = hp.getDensity(date, pos, earthFrame);
 
+        Assert.assertEquals(3.9237E-13, rho, 1.0e-17);
 
-        HarrisPriester hp2 = new HarrisPriester(sun, earth, 2);
+    }
+
+    @Test
+    public void testParameterN() throws OrekitException {
+
+        final HarrisPriester hp = new HarrisPriester(sun, earth);
+
+        // Position at 500 km height
+        final GeodeticPoint point = new GeodeticPoint(0, 0, 500000.);
+        final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        final double rho2 = hp2.getDensity(date, pos, itrf);
+        final double rho4 = hp.getDensity(date, pos, earthFrame);
 
-        HarrisPriester hp6 = new HarrisPriester(sun, earth, 6);
+
+        final HarrisPriester hp2 = new HarrisPriester(sun, earth, 2);
 
         // COMPUTE DENSITY KG/M3 RHO
-        double rho6 = hp6.getDensity(date, pos, itrf);
+        final double rho2 = hp2.getDensity(date, pos, earthFrame);
 
-        final double c2Psi2 = 2.150731005787848e-2;
+        final HarrisPriester hp6 = new HarrisPriester(sun, earth, 6);
 
-        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho4-rho2) - 1., 1.e-10);
+        // COMPUTE DENSITY KG/M3 RHO
+        final double rho6 = hp6.getDensity(date, pos, earthFrame);
+
+        final double c2Psi2 = 0.021637889734841487;
+
+        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho4-rho2) - 1., 1.e-14);
 
     }
 
     @Test
     public void testMaxAlt() throws OrekitException {
 
-        HarrisPriester hp = new HarrisPriester(sun, earth);
+        final HarrisPriester hp = new HarrisPriester(sun, earth);
 
         // Position at 1500 km height
         final GeodeticPoint point = new GeodeticPoint(0, 0, 1500000.);
         final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        final double rho = hp.getDensity(date, pos, itrf);
+        final double rho = hp.getDensity(date, pos, earthFrame);
 
         Assert.assertEquals(0.0, rho, 0.0);
     }
@@ -182,36 +181,36 @@ public class HarrisPriesterTest {
         final GeodeticPoint point = new GeodeticPoint(0, 0, 1500000.);
         final Vector3D pos = earth.transform(point);
 
-        HarrisPriester hp = new HarrisPriester(sun, earth, userTab);
+        final HarrisPriester hp = new HarrisPriester(sun, earth, userTab);
 
         // COMPUTE DENSITY KG/M3 RHO
-        final double rho = hp.getDensity(date, pos, itrf);
+        final double rho = hp.getDensity(date, pos, earthFrame);
 
-        Assert.assertEquals(2.9049031824908125E-7, rho, 1.0e-17);
+        Assert.assertEquals(2.9049E-7, rho, 1.0e-11);
 
-        HarrisPriester hp6 = new HarrisPriester(sun, earth, userTab, 6);
-        final double rho6 = hp6.getDensity(date, pos, itrf);
+        final HarrisPriester hp6 = new HarrisPriester(sun, earth, userTab, 6);
+        final double rho6 = hp6.getDensity(date, pos, earthFrame);
 
-        HarrisPriester hp2 = new HarrisPriester(sun, earth, userTab, 2);
-        final double rho2 = hp2.getDensity(date, pos, itrf);
+        final HarrisPriester hp2 = new HarrisPriester(sun, earth, userTab, 2);
+        final double rho2 = hp2.getDensity(date, pos, earthFrame);
 
-        final double c2Psi2 = 2.150731005787848e-2;
+        final double c2Psi2 = 0.021637889734841487;
 
-        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho-rho2) - 1., 1.e-10);
+        Assert.assertEquals(c2Psi2, (rho6-rho2)/(rho-rho2) - 1., 1.e-14);
 
     }
 
     @Test(expected=OrekitException.class)
     public void testOutOfRange() throws OrekitException {
 
-        HarrisPriester hp = new HarrisPriester(sun, earth);
+        final HarrisPriester hp = new HarrisPriester(sun, earth);
 
         // Position at 50 km height
         final GeodeticPoint point = new GeodeticPoint(0, 0, 50000.);
         final Vector3D pos = earth.transform(point);
 
         // COMPUTE DENSITY KG/M3 RHO
-        hp.getDensity(date, pos, itrf);
+        hp.getDensity(date, pos, earthFrame);
     }
 
     @Before
@@ -219,9 +218,8 @@ public class HarrisPriesterTest {
         Utils.setDataRoot("regular-data");
         sun = CelestialBodyFactory.getSun();
 
-        itrf  = FramesFactory.getITRF2005(true);
-        earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
-        earth.setAngularThreshold(1.e-10);
+        earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, earthFrame);
 
         // Equinoxe 21 mars 2003 à 1h00m
         utc  = TimeScalesFactory.getUTC();

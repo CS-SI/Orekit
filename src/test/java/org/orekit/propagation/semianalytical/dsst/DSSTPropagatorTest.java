@@ -271,7 +271,7 @@ public class DSSTPropagatorTest {
         // Drag Force Model
         OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
-                                                      FramesFactory.getITRF2005());
+                                                      CelestialBodyFactory.getEarth().getBodyOrientedFrame());
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         Atmosphere atm = new HarrisPriester(sun, earth);
         final double cd = 2.0;
@@ -287,12 +287,18 @@ public class DSSTPropagatorTest {
         numProp.addForceModel(ndrag);
         PVCoordinates pvn = numProp.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
-        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(), 10.e+3);
-        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(),  2.e+3);
-        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(), 22.e+3);
-        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(), 20.);
-        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(), 13.);
-        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 10.);
+//        System.out.println((pvn.getPosition().getX() - pvd.getPosition().getX()));
+//        System.out.println((pvn.getPosition().getY() - pvd.getPosition().getY()));
+//        System.out.println((pvn.getPosition().getZ() - pvd.getPosition().getZ()));
+//        System.out.println((pvn.getVelocity().getX() - pvd.getVelocity().getX()));
+//        System.out.println((pvn.getVelocity().getY() - pvd.getVelocity().getY()));
+//        System.out.println((pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
+        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(), 2.0);
+        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(), 0.4);
+        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(), 5.0);
+        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(), 4.e-3);
+        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(), 3.e-3);
+        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 3.e-3);
     }
 
     @Test
@@ -301,7 +307,7 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         // Propagation duration
-        final double dt = 86400.;
+        final double dt = 864000.;
 
         // DSST Propagation with no force (reference Keplerian motion)
         PVCoordinates pv = propaDSST.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
@@ -326,31 +332,31 @@ public class DSSTPropagatorTest {
         numProp.addForceModel(nsrp);
         PVCoordinates pvn = numProp.propagate(initDate.shiftedBy(dt)).getPVCoordinates();
 
-        // System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
-        // + (pvn.getPosition().getX() - pvd.getPosition().getX()));
-        // System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
-        // + (pvn.getPosition().getY() - pvd.getPosition().getY()));
-        // System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
-        // + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
-        // System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
-        // + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
-        // System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
-        // + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
-        // System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
-        // + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
-        Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 40.0);
-        Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 50.0);
-        Assert.assertEquals(pv.getPosition().getZ(), pvd.getPosition().getZ(), 0.2);
-        Assert.assertEquals(pv.getVelocity().getX(), pvd.getVelocity().getX(), 3.e-3);
-        Assert.assertEquals(pv.getVelocity().getY(), pvd.getVelocity().getY(), 5.e-3);
-        Assert.assertEquals(pv.getVelocity().getZ(), pvd.getVelocity().getZ(), 1.e-5);
+//        System.out.println((pv.getPosition().getX() - pvd.getPosition().getX()) + " "
+//                + (pvn.getPosition().getX() - pvd.getPosition().getX()));
+//        System.out.println((pv.getPosition().getY() - pvd.getPosition().getY()) + " "
+//                + (pvn.getPosition().getY() - pvd.getPosition().getY()));
+//        System.out.println((pv.getPosition().getZ() - pvd.getPosition().getZ()) + " "
+//                + (pvn.getPosition().getZ() - pvd.getPosition().getZ()));
+//        System.out.println((pv.getVelocity().getX() - pvd.getVelocity().getX()) + " "
+//                + (pvn.getVelocity().getX() - pvd.getVelocity().getX()));
+//        System.out.println((pv.getVelocity().getY() - pvd.getVelocity().getY()) + " "
+//                + (pvn.getVelocity().getY() - pvd.getVelocity().getY()));
+//        System.out.println((pv.getVelocity().getZ() - pvd.getVelocity().getZ()) + " "
+//                + (pvn.getVelocity().getZ() - pvd.getVelocity().getZ()));
+        Assert.assertEquals(pv.getPosition().getX(), pvd.getPosition().getX(), 450.0);
+        Assert.assertEquals(pv.getPosition().getY(), pvd.getPosition().getY(), 500.0);
+        Assert.assertEquals(pv.getPosition().getZ(), pvd.getPosition().getZ(),   2.0);
+        Assert.assertEquals(pv.getVelocity().getX(), pvd.getVelocity().getX(), 3.e-2);
+        Assert.assertEquals(pv.getVelocity().getY(), pvd.getVelocity().getY(), 2.e-2);
+        Assert.assertEquals(pv.getVelocity().getZ(), pvd.getVelocity().getZ(), 1.e-4);
 
-        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(), 7.0);
-        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(), 55.0);
-        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(), 0.1);
-        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(), 4.e-3);
-        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(), 5.e-4);
-        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 2.e-5);
+        Assert.assertEquals(pvn.getPosition().getX(), pvd.getPosition().getX(), 150.0);
+        Assert.assertEquals(pvn.getPosition().getY(), pvd.getPosition().getY(), 510.0);
+        Assert.assertEquals(pvn.getPosition().getZ(), pvd.getPosition().getZ(),   0.3);
+        Assert.assertEquals(pvn.getVelocity().getX(), pvd.getVelocity().getX(), 4.e-2);
+        Assert.assertEquals(pvn.getVelocity().getY(), pvd.getVelocity().getY(), 2.e-2);
+        Assert.assertEquals(pvn.getVelocity().getZ(), pvd.getVelocity().getZ(), 2.e-4);
     }
 
     @Test

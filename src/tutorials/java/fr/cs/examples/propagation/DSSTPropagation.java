@@ -193,6 +193,9 @@ public class DSSTPropagation {
         // Central body attraction coefficient (m³/s²)
         final double mu = provider.getMu();
 
+        // Earth frame definition (for faster computation)
+        final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+
         // Orbit definition (inertial frame is EME2000)
         final Orbit orbit = createOrbit(parser, FramesFactory.getEME2000(), utc, mu);
 
@@ -208,7 +211,7 @@ public class DSSTPropagation {
         final DSSTPropagator dsstProp = createDSSTProp(orbit, isOsculating, fixedStepSize);
 
         // Set Force models
-        setForceModel(parser, provider, dsstProp);
+        setForceModel(parser, provider, earthFrame, dsstProp);
 
         // Simulation properties
         AbsoluteDate start;
@@ -257,7 +260,7 @@ public class DSSTPropagation {
             final NumericalPropagator numProp = createNumProp(orbit);
             
             // Set Force models
-            setForceModel(parser, provider, numProp);
+            setForceModel(parser, provider, earthFrame, numProp);
 
             // Add orbit handler
             OrbitHandler numHandler = new OrbitHandler();
@@ -396,17 +399,16 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
-     *  @param provider spherical harmonics provider
      *  @param parser input file parser
-     *  @param provider potential coefficients provider
-     *  @param degree max potential degree
-     *  @param order  max potential order
+     *  @param provider spherical harmonics provider
+     *  @param earthFrame Earth rotating frame
      *  @param dsstProp DSST propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final UnnormalizedSphericalHarmonicsProvider provider,
+                               final Frame earthFrame,
                                final DSSTPropagator dsstProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
@@ -419,8 +421,7 @@ public class DSSTPropagation {
         }
 
         // Central Body Force Model with un-normalized coefficients
-        dsstProp.addForceModel(new DSSTCentralBody(FramesFactory.getITRFEquinox(),
-                                                   Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
+        dsstProp.addForceModel(new DSSTCentralBody(earthFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {
@@ -434,10 +435,8 @@ public class DSSTPropagation {
 
         // Drag
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
-            final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRFEquinox());
-            final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
+            final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae, Constants.WGS84_EARTH_FLATTENING, earthFrame);
+            final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
             dsstProp.addForceModel(new DSSTAtmosphericDrag(atm,
                                                            parser.getDouble(ParameterKey.DRAG_CD),
                                                            parser.getDouble(ParameterKey.DRAG_SF)));
@@ -453,14 +452,16 @@ public class DSSTPropagation {
 
     /** Set DSST propagator force models
      *
-     *  @param provider spherical harmonics provider
      *  @param parser  input file parser
+     *  @param provider spherical harmonics provider
+     *  @param earthFrame Earth rotating frame
      *  @param numProp numerical propagator
      *  @throws IOException
      *  @throws OrekitException
      */
     private void setForceModel(final KeyValueFileParser<ParameterKey> parser,
                                final UnnormalizedSphericalHarmonicsProvider provider,
+                               final Frame earthFrame,
                                final NumericalPropagator numProp) throws IOException, OrekitException {
 
         final double ae = provider.getAe();
@@ -487,10 +488,8 @@ public class DSSTPropagation {
 
         // Drag
         if (parser.containsKey(ParameterKey.DRAG) && parser.getBoolean(ParameterKey.DRAG)) {
-            final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae,
-                                                                Constants.WGS84_EARTH_FLATTENING,
-                                                                FramesFactory.getITRFEquinox());
-            final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth);
+            final OneAxisEllipsoid earth = new OneAxisEllipsoid(ae, Constants.WGS84_EARTH_FLATTENING, earthFrame);
+            final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
             final SphericalSpacecraft ssc = new SphericalSpacecraft(parser.getDouble(ParameterKey.DRAG_SF),
                                                                     parser.getDouble(ParameterKey.DRAG_CD),
                                                                     0., 0.);

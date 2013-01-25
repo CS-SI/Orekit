@@ -23,6 +23,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -92,14 +94,14 @@ public class MasterMode {
             propagator.setOrbitType(propagationType);
 
             // Force Model (reduced to perturbing gravity field)
-            Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
-            double ae  =  6378137.; // equatorial radius in meter
-            double c20 = -1.08262631303e-3; // J2 potential coefficient
-            double[][] c = new double[3][1];
-            c[0][0] = 0.0;
-            c[2][0] = c20;
-            double[][] s = new double[3][1]; // potential coefficients arrays (only J2 is considered here)
-            ForceModel cunningham = new CunninghamAttractionModel(ITRF2005, ae, mu, c, s);
+            // Earth equatorial radius in meter
+            final double ae =  6378137.;
+            // Potential coefficients arrays (only J2 is considered here)
+            final double[][] c = new double[3][1];
+            final double[][] s = new double[3][1];
+            c[2][0] = -1.08262631303e-3;
+            final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, c, s);
+            ForceModel cunningham = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
 
             // Add force model to the propagator
             propagator.addForceModel(cunningham);

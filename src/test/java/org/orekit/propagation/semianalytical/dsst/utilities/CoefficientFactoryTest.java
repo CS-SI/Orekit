@@ -61,20 +61,31 @@ public class CoefficientFactoryTest {
      */
     @Test
     public void testVmns() throws OrekitException {
-        Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0), eps0);
-        Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1), eps0);
-        Assert.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3), eps0);
-        Assert.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2), eps0);
-
+        Assert.assertEquals(getVmns2(0, 0, 0), CoefficientsFactory.getVmns(0, 0, 0,   1, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 1, 1), CoefficientsFactory.getVmns(0, 1, 1,   2, 1), eps0);
+        Assert.assertEquals(getVmns2(0, 2, 2), CoefficientsFactory.getVmns(0, 2, 2,  24, 2), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 1), CoefficientsFactory.getVmns(0, 3, 1,  24, 6), eps0);
+        Assert.assertEquals(getVmns2(0, 3, 3), CoefficientsFactory.getVmns(0, 3, 3, 720, 6), eps0);
+        Assert.assertEquals(getVmns2(2, 2, 2), CoefficientsFactory.getVmns(2, 2, 2,  24, 1), eps0);
+        final double vmnsp = getVmns2(12, 26, 20);
+        Assert.assertEquals(vmnsp,
+                            CoefficientsFactory.getVmns(12, 26, 20,
+                                                        ArithmeticUtils.factorialDouble(26 + 20),
+                                                        ArithmeticUtils.factorialDouble(26 - 12)),
+                            Math.abs(eps12 * vmnsp));
+        final double vmnsm = getVmns2(12, 27, -21);
+        Assert.assertEquals(vmnsm,
+                            CoefficientsFactory.getVmns(12, 27, -21,
+                                                        ArithmeticUtils.factorialDouble(27 + 21),
+                                                        ArithmeticUtils.factorialDouble(27 - 12)),
+                            Math.abs(eps12 * vmnsm));
     }
 
     /** Error if m > n */
     @Test(expected = OrekitException.class)
     public void testVmnsError() throws OrekitException {
         // if m > n
-        CoefficientsFactory.getVmns(3, 2, 1);
+        CoefficientsFactory.getVmns(3, 2, 1, 0, 0);
     }
 
     /**
@@ -128,14 +139,16 @@ public class CoefficientFactoryTest {
      * @throws OrekitException
      */
     private static double getVmns2(final int m,
-                                  final int n,
-                                  final int s) throws OrekitException {
+                                   final int n,
+                                   final int s) throws OrekitException {
         double vmsn = 0d;
         if ((n - s) % 2 == 0) {
-            final double num = FastMath.pow(-1, (n - s) / 2d) * ArithmeticUtils.factorial(n + s) * ArithmeticUtils.factorial(n - s);
-            final double den = FastMath.pow(2, n) * ArithmeticUtils.factorial(n - m) * ArithmeticUtils.factorial((n + s) / 2)
-                            * ArithmeticUtils.factorial((n - s) / 2);
-            vmsn = num / den;
+            final int coef = (s > 0 || s % 2 == 0) ? 1 : -1; 
+            final int ss = (s > 0) ? s : -s;
+            final double num = FastMath.pow(-1, (n - ss) / 2) * ArithmeticUtils.factorialDouble(n + ss) * ArithmeticUtils.factorialDouble(n - ss);
+            final double den = FastMath.pow(2, n) * ArithmeticUtils.factorialDouble(n - m) * ArithmeticUtils.factorialDouble((n + ss) / 2)
+                    * ArithmeticUtils.factorialDouble((n - ss) / 2);
+            vmsn = coef * num / den;
         }
         return vmsn;
     }
