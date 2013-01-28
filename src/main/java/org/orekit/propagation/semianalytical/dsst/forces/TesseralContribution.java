@@ -504,7 +504,7 @@ class TesseralContribution implements DSSTForceModel {
                     final double dJacobi = jacobiPoly.derivative().value(gamma);
 
                     final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
-                    final double snm = provider.getUnnormalizedCnm(dateOffset, n, m);
+                    final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
 
                     // Common factors
                     final double cf_0 = roaPow[n] * Im * vMNS;
