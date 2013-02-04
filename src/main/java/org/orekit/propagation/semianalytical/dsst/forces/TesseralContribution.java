@@ -310,15 +310,14 @@ class TesseralContribution implements DSSTForceModel {
         final double pUagmIqUbgoAB = (p * UAlphaGamma - I * q * UBetaGamma) * ooAB;
         final double UhkmUabmdUdl  =  Uhk - UAlphaBeta - dUdl;
 
-        final double aDot =  ax2oA * dUdl;
-        final double hDot =    BoA * dUdk + k * pUagmIqUbgoAB - h * BoABpo * dUdl;
-        final double kDot =  -(BoA * dUdh + h * pUagmIqUbgoAB + k * BoABpo * dUdl);
-        final double pDot =  Co2AB * (p * UhkmUabmdUdl - UBetaGamma);
-        final double qDot =  Co2AB * (q * UhkmUabmdUdl - I * UAlphaGamma);
-        final double lDot = -ax2oA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUagmIqUbgoAB;
+        final double da =  ax2oA * dUdl;
+        final double dh =    BoA * dUdk + k * pUagmIqUbgoAB - h * BoABpo * dUdl;
+        final double dk =  -(BoA * dUdh + h * pUagmIqUbgoAB + k * BoABpo * dUdl);
+        final double dp =  Co2AB * (p * UhkmUabmdUdl - UBetaGamma);
+        final double dq =  Co2AB * (q * UhkmUabmdUdl - I * UAlphaGamma);
+        final double dM = -ax2oA * dUda + BoABpo * (h * dUdh + k * dUdk) + pUagmIqUbgoAB;
 
-        return new double[] {aDot, hDot, kDot, pDot, qDot, lDot};
-
+        return new double[] {da, dk, dh, dq, dp, dM};
     }
 
     /** {@inheritDoc} */
