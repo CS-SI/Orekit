@@ -31,7 +31,7 @@ import org.orekit.propagation.integration.AdditionalEquations;
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
  * <p>
- * This set of equations are automaticall added to a {@link NumericalPropagator numerical propagator}
+ * This set of equations are automatically added to a {@link NumericalPropagator numerical propagator}
  * in order to compute partial derivatives of the orbit along with the orbit itself. This is
  * useful for example in orbit determination applications.
  * </p>
