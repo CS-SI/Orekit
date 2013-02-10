@@ -1,0 +1,142 @@
+/* Copyright 2002-2013 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.forces.gravity;
+
+
+import org.apache.commons.math3.dfp.Dfp;
+import org.apache.commons.math3.dfp.DfpField;
+import org.apache.commons.math3.dfp.DfpMath;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
+import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.time.AbsoluteDate;
+
+
+/** Implementation of gravity field model from defining formulas.
+ * <p>
+ * This implementation is for test purposes only! It is extremely slow.
+ * </p>
+ * <p>
+ * The major features of this implementation are:
+ * <ul>
+ *   <li>its accuracy can be adjusted at will to any number of digits,</li>
+ *   <li>it relies on direct defining formulas and hence is completely independent from
+ *   the optimized practical recursions.</li>
+ * </ul>
+ * Both features are helpful for cross-checking practical optimized implementations.
+ * </p>
+ * <p>
+ * Note that since this uses defining formulas to perform direct computation, it is
+ * subject to the high instability of these formulas near poles. Tests performed
+ * with the D. M. Gleason resting testing regime have shown for example that setting
+ * the accuracy to 28 digits for the computation leads to field values having only about
+ * 11 digits accuracy left near poles! In order to get 16 digits and be able to use this
+ * class as a reference for testing other implementations, we needed to set accuracy to
+ * at lest 30 digits. Further tests have shown that setting accuracy to 40 digits for
+ * computation leads to about 24 digits left near poles.
+ * </p>
+ * <p>
+ * An interesting conclusion from the above examples is that simply using better
+ * arithmetic as we do here is much <em>less</em> efficient than using dedicated
+ * stable algorithms (like {@link HolmesFeatherstoneAttractionModel Holmes-Featherstone}
+ * algorithms.
+ * </p>
+ * @author Luc Maisonobe
+ */
+class ReferenceFieldModel {
+
+    private final DfpField dfpField;
+    private final SphericalHarmonicsProvider provider;
+    private final AssociatedLegendreFunction[][] alf;
+
+    public ReferenceFieldModel(NormalizedSphericalHarmonicsProvider provider, int digits) {
+        this.dfpField = new DfpField(digits);
+        this.provider = provider;
+        this.alf = createAlf(provider.getMaxDegree(), provider.getMaxOrder(), true, dfpField);
+    }
+
+    public ReferenceFieldModel(UnnormalizedSphericalHarmonicsProvider provider, int digits) {
+        this.dfpField = new DfpField(digits);
+        this.provider = provider;
+        this.alf = createAlf(provider.getMaxDegree(), provider.getMaxOrder(), false, dfpField);
+    }
+
+    private static AssociatedLegendreFunction[][] createAlf(int degree, int order, boolean isNormalized,
+                                                            DfpField dfpField) {
+        AssociatedLegendreFunction[][] alf = new AssociatedLegendreFunction[degree + 1][];
+        for (int n = 2; n < alf.length; ++n) {
+            alf[n] = new AssociatedLegendreFunction[FastMath.min(n, order) + 1];
+            for (int m = 0; m < alf[n].length; ++m) {
+                alf[n][m] = new AssociatedLegendreFunction(true, n, m, dfpField);
+            }
+        }
+        return alf;
+    }
+
+    public Dfp nonCentralPart(final AbsoluteDate date, final Vector3D position)
+            throws OrekitException {
+
+        int degree = provider.getMaxDegree();
+        int order  = provider.getMaxOrder();
+        double dateOffset = provider.getOffset(date);
+
+        Dfp x      = dfpField.newDfp(position.getX());
+        Dfp y      = dfpField.newDfp(position.getY());
+        Dfp z      = dfpField.newDfp(position.getZ());
+
+        Dfp rho2     = x.multiply(x).add(y.multiply(y));
+        Dfp rho      = rho2.sqrt();
+        Dfp r2       = rho2.add(z.multiply(z));
+        Dfp r        = r2.sqrt();
+        Dfp aOr      = dfpField.newDfp(provider.getAe()).divide(r);
+        Dfp lambda   = position.getX() > 0 ?
+                       dfpField.getTwo().multiply(DfpMath.atan(y.divide(rho.add(x)))) :
+                       dfpField.getPi().subtract(dfpField.getTwo().multiply(DfpMath.atan(y.divide(rho.subtract(x)))));
+        Dfp cosTheta = z.divide(r);
+
+        Dfp value = dfpField.getZero();
+        Dfp aOrN      = aOr;
+        for (int n = 2; n <= degree; ++n) {
+            Dfp sum = dfpField.getZero();
+            for (int m = 0; m <= FastMath.min(n, order); ++m) {
+                double cnm;
+                double snm;
+                if (provider instanceof NormalizedSphericalHarmonicsProvider) {
+                    cnm = ((NormalizedSphericalHarmonicsProvider) provider).getNormalizedCnm(dateOffset, n, m);
+                    snm = ((NormalizedSphericalHarmonicsProvider) provider).getNormalizedSnm(dateOffset, n, m);
+                } else {
+                    cnm = ((UnnormalizedSphericalHarmonicsProvider) provider).getUnnormalizedCnm(dateOffset, n, m);
+                    snm = ((UnnormalizedSphericalHarmonicsProvider) provider).getUnnormalizedSnm(dateOffset, n, m);
+                }
+                Dfp mLambda = lambda.multiply(m);
+                Dfp c       = DfpMath.cos(mLambda).multiply(dfpField.newDfp(cnm));
+                Dfp s       = DfpMath.sin(mLambda).multiply(dfpField.newDfp(snm));
+                Dfp pnm     = alf[n][m].value(cosTheta);
+                 sum = sum.add(pnm.multiply(c.add(s)));
+            }
+            aOrN = aOrN.multiply(aOr);
+            value = value.add(aOrN.multiply(sum));
+        }
+
+        return value.multiply(dfpField.newDfp(provider.getMu())).divide(r);
+
+    }
+
+}

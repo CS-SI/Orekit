@@ -76,7 +76,7 @@ public class ProviderConverter implements PotentialCoefficientsProvider {
     /** {@inheritDoc} */
     @Deprecated
     public double[] getJ(final boolean normalized, final int n)
-            throws OrekitException {
+        throws OrekitException {
 
         // safety check
         if (n >= unNormalizedC.length) {

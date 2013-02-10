@@ -154,7 +154,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     }
 
     /** Set the central body reference radius.
-     * @param central body reference radius
+     * @param ae central body reference radius
      */
     protected void setAe(final double ae) {
         this.ae = ae;
@@ -168,7 +168,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     }
 
     /** Set the central body attraction coefficient.
-     * @param central body attraction coefficient
+     * @param mu central body attraction coefficient
      */
     protected void setMu(final double mu) {
         this.mu = mu;
@@ -415,7 +415,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
             list.get(i).set(j, value);
         } else {
             throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
-                                      "Cdot", i, j, name);
+                                      name, i, j, name);
         }
     }
 
@@ -439,7 +439,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
             array[i][j] = value;
         } else {
             throw new OrekitException(OrekitMessages.DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
-                                      "Cdot", i, j, name);
+                                      name, i, j, name);
         }
     }
 

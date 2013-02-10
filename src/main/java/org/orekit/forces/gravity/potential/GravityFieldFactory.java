@@ -154,6 +154,7 @@ public class GravityFieldFactory {
      * @param mu central body attraction coefficient
      * @param normalizedC normalized tesseral-sectorial coefficients (cosine part)
      * @param normalizedS normalized tesseral-sectorial coefficients (sine part)
+     * @return provider for normalized coefficients
      * @since 6.0
      */
     public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final double ae, final double mu,
@@ -221,6 +222,7 @@ public class GravityFieldFactory {
      * @param mu central body attraction coefficient
      * @param unnormalizedC un-normalized tesseral-sectorial coefficients (cosine part)
      * @param unnormalizedS un-normalized tesseral-sectorial coefficients (sine part)
+     * @return provider for un-normalized coefficients
      * @since 6.0
      */
     public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final double ae, final double mu,

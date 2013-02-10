@@ -97,7 +97,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     public double getRawCnm(final double dateOffset, final int n, final int m)
-            throws OrekitException {
+        throws OrekitException {
 
         // retrieve the underlying part of the coefficient
         double cnm = provider.getRawCnm(dateOffset, n, m);
@@ -114,7 +114,7 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     public double getRawSnm(final double dateOffset, final int n, final int m)
-            throws OrekitException {
+        throws OrekitException {
 
         // retrieve the constant part of the coefficient
         double snm = provider.getRawSnm(dateOffset, n, m);

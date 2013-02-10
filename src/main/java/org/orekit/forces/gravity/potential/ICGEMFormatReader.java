@@ -259,15 +259,15 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
                         }
 
-                    } else if (tab.length == 8 && (ASIN.equals(tab[0])|| ACOS.equals(tab[0]))) {
+                    } else if (tab.length == 8 && (ASIN.equals(tab[0]) || ACOS.equals(tab[0]))) {
 
                         final int i = Integer.parseInt(tab[1]);
                         final int j = Integer.parseInt(tab[2]);
                         if (i < c.length && j < c[i].length) {
 
                             // extract arrays corresponding to period
-                            Double period = Double.valueOf(tab[7]);
-                            if (! cCos.containsKey(period)) {
+                            final Double period = Double.valueOf(tab[7]);
+                            if (!cCos.containsKey(period)) {
                                 cCos.put(period, new ArrayList<List<Double>>());
                                 cSin.put(period, new ArrayList<List<Double>>());
                                 sCos.put(period, new ArrayList<List<Double>>());

@@ -22,6 +22,16 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added a new force model for central body gravity field, based on Holmes and Featherstone
+        algorithms. This model is a great improvement over Cunningham and Droziner models. It
+        allows much higher degrees (it uses normalized coefficients and carefully crafted
+        recursions to avoid overflows and underflows). It computes analytically all partial
+        derivatives and hence can be used to compute accurate state transition matrices. It is
+        also much faster than the other models (for example a 10 days propagation of a low Earth
+        orbit with a 1cm tolerance setting and a 69x69 gravity field was about 45% faster with
+        Holmes and Featherstone than with Cunningham).
+      </action>
       <action dev="luc" type="fix" >
         Improved gravity field un-normalization to allow higher degrees/order with Cunningham and
         Droziner models. Formerly, the coefficients computation underflowed for square fields

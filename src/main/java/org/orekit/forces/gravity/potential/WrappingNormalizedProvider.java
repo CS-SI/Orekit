@@ -65,20 +65,20 @@ class WrappingNormalizedProvider implements NormalizedSphericalHarmonicsProvider
     }
 
     /** {@inheritDoc} */
-    public double getOffset(AbsoluteDate date) {
+    public double getOffset(final AbsoluteDate date) {
         return rawProvider.getOffset(date);
     }
 
     /** {@inheritDoc} */
-    public double getNormalizedCnm(double dateOffset, int n, int m)
-            throws OrekitException {
+    public double getNormalizedCnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
         // no conversion is done here
         return rawProvider.getRawCnm(dateOffset, n, m);
     }
 
     /** {@inheritDoc} */
-    public double getNormalizedSnm(double dateOffset, int n, int m)
-            throws OrekitException {
+    public double getNormalizedSnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
         // no conversion is done here
         return rawProvider.getRawSnm(dateOffset, n, m);
     }

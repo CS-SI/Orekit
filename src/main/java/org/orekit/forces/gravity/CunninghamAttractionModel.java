@@ -64,26 +64,26 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
     * @param S un-normalized coefficients array (sine part)
     * @deprecated since 6.0, replaced by {@link #CunninghamAttractionModel(Frame, UnnormalizedSphericalHarmonicsProvider)}
     */
-   public CunninghamAttractionModel(final Frame centralBodyFrame,
-                                    final double equatorialRadius, final double mu,
-                                    final double[][] C, final double[][] S) {
-       this(centralBodyFrame, GravityFieldFactory.getUnnormalizedProvider(equatorialRadius, mu, C, S));
-   }
+    public CunninghamAttractionModel(final Frame centralBodyFrame,
+                                     final double equatorialRadius, final double mu,
+                                     final double[][] C, final double[][] S) {
+        this(centralBodyFrame, GravityFieldFactory.getUnnormalizedProvider(equatorialRadius, mu, C, S));
+    }
 
    /** Creates a new instance.
    * @param centralBodyFrame rotating body frame
    * @param provider provider for spherical harmonics
    * @since 6.0
    */
-  public CunninghamAttractionModel(final Frame centralBodyFrame,
-                                   final UnnormalizedSphericalHarmonicsProvider provider) {
-      super("central attraction coefficient");
+    public CunninghamAttractionModel(final Frame centralBodyFrame,
+                                     final UnnormalizedSphericalHarmonicsProvider provider) {
+        super("central attraction coefficient");
 
-      this.provider  = provider;
-      this.mu        = provider.getMu();
-      this.bodyFrame = centralBodyFrame;
+        this.provider  = provider;
+        this.mu        = provider.getMu();
+        this.bodyFrame = centralBodyFrame;
 
-  }
+    }
 
     /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
