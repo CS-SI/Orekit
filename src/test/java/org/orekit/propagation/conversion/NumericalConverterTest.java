@@ -19,10 +19,9 @@ package org.orekit.propagation.conversion;
 import java.io.IOException;
 import java.text.ParseException;
 
-import junit.framework.Assert;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;

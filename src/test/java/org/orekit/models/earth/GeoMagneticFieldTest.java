@@ -24,9 +24,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.StringTokenizer;
 
-import junit.framework.Assert;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.orekit.Utils;
