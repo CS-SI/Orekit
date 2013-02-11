@@ -52,7 +52,7 @@ import org.orekit.time.AbsoluteDate;
 public class AdapterPropagator extends AbstractAnalyticalPropagator {
 
     /** Interface for orbit differential effects. */
-    public static interface DifferentialEffect {
+    public interface DifferentialEffect {
 
         /** Apply the effect to a {@link SpacecraftState spacecraft state}.
          * <p>

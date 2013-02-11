@@ -18,7 +18,6 @@ package org.orekit.propagation.integration;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.numerical.NumericalPropagator;
 
 /** This interface allows users to add their own differential equations to a numerical propagator.
  *
@@ -30,12 +29,13 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * equations for the relative motion.
  * </p>
  * <p>
- * This interface allows users to add such equations to a {@link NumericalPropagator numerical
- * propagator}. Users provide the equations as an implementation of this interface and register
- * it to the propagator thanks to its {@link
- * NumericalPropagator#addAdditionalEquations(AdditionalEquations)} method. Several such objects
- * can be registered with each numerical propagator, but it is recommended to gather in the same
- * object the sets of parameters which equations can interact on each others states.
+ * This interface allows users to add such equations to a {@link
+ * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}. Users provide the
+ * equations as an implementation of this interface and register it to the propagator thanks to
+ * its {@link org.orekit.propagation.numerical.NumericalPropagator#addAdditionalEquations(AdditionalEquations)}
+ * method. Several such objects can be registered with each numerical propagator, but it is
+ * recommended to gather in the same object the sets of parameters which equations can interact
+ * on each others states.
  * </p>
  * <p>
  * The additional parameters are gathered in a simple p array. The additional equations compute
@@ -52,9 +52,9 @@ import org.orekit.propagation.numerical.NumericalPropagator;
  * This interface is the numerical (read not already integrated) counterpart of
  * the {@link org.orekit.propagation.analytical.AdditionalStateProvider} interface.
  * It allows to append various additional state parameters to any {@link
- * NumericalPropagator numerical propagator}.
+ * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}.
  * </p>
- * @see NumericalPropagator
+ * @see org.orekit.propagation.numerical.NumericalPropagator
  * @see org.orekit.propagation.analytical.AdditionalStateProvider
  * @author Luc Maisonobe
  */

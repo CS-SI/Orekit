@@ -173,7 +173,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     }
 
     /** Interface for raw position-velocity retrieval. */
-    public static interface RawPVProvider {
+    public interface RawPVProvider {
         /** Get the position-velocity at date.
          * @param date date at which the position-velocity is desired
          * @return position-velocity at the specified date

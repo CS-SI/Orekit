@@ -583,7 +583,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** Differential equations for the main state (orbit, attitude and mass). */
-    public static interface MainStateEquations {
+    public interface MainStateEquations {
 
         /** Compute differential equations for main state.
          * @param state current state

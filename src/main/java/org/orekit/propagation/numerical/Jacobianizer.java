@@ -94,7 +94,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
                                             final Vector3D p, final Vector3D v, final double m)
         throws OrekitException {
         final Orbit shiftedORbit = new CartesianOrbit(new PVCoordinates(p, v), s.getFrame(), s.getDate(), s.getMu());
-        retriever.initDerivatives(null, shiftedORbit);
+        retriever.setOrbit(shiftedORbit);
         forceModel.addContribution(new SpacecraftState(shiftedORbit, s.getAttitude(), m), retriever);
     }
 
@@ -165,12 +165,12 @@ class Jacobianizer implements AccelerationJacobiansProvider {
     public void addDAccDParam(final SpacecraftState s, final String paramName,
                               final double[] dAccdParam) throws OrekitException {
         final double hP = hParam.get(paramName);
-        nominal.initDerivatives(null, s.getOrbit());
+        nominal.setOrbit(s.getOrbit());
         forceModel.addContribution(s, nominal);
 
         final double paramValue = forceModel.getParameter(paramName);
         forceModel.setParameter(paramName,  paramValue + hP);
-        shifted.initDerivatives(null, s.getOrbit());
+        shifted.setOrbit(s.getOrbit());
         forceModel.addContribution(s, shifted);
         forceModel.setParameter(paramName,  paramValue);
 
@@ -236,14 +236,14 @@ class Jacobianizer implements AccelerationJacobiansProvider {
             return acceleration[2];
         }
 
-        /** {@inheritDoc} */
-        public void initDerivatives(final double[] yDot, final Orbit currentOrbit) {
-
+        /** Set the current orbit.
+         * @param orbit current orbit
+         */
+        public void setOrbit(final Orbit orbit) {
             acceleration[0] = 0;
             acceleration[1] = 0;
             acceleration[2] = 0;
-            this.orbit      = currentOrbit;
-
+            this.orbit      = orbit;
         }
 
         /** {@inheritDoc} */

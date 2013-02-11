@@ -389,11 +389,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public void initDerivatives(final double[] yDot, final Orbit currentOrbit)
-            throws PropagationException {
-        }
-
-        /** {@inheritDoc} */
         public void addKeplerContribution(final double mu) {
             orbit.addKeplerContribution(getPositionAngleType(), mu, yDot);
         }

@@ -619,9 +619,6 @@ public class HolmesFeatherstoneAttractionModelTest {
 
         private Vector3D acceleration;
 
-        public void initDerivatives(double[] yDot, Orbit currentOrbit) {
-        }
-
         public void addKeplerContribution(double mu) {
         }
 

@@ -141,7 +141,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
     }
 
-    /** Get the spherical harmonics provider
+    /** Get the spherical harmonics provider.
      *  @return the spherical harmonics provider
      */
     public UnnormalizedSphericalHarmonicsProvider getProvider() {

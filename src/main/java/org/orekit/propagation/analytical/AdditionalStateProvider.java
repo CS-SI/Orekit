@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical;
 
 import org.orekit.errors.PropagationException;
-import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.SpacecraftState;
 
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
@@ -25,9 +24,9 @@ import org.orekit.propagation.SpacecraftState;
  * This interface is the analytical (read already integrated) counterpart of
  * the {@link org.orekit.propagation.integration.AdditionalEquations} interface.
  * It allows to append various additional state parameters to any {@link
- * AbstractPropagator abstract propagator}.
+ * org.orekit.propagation.AbstractPropagator abstract propagator}.
  * </p>
- * @see AbstractPropagator
+ * @see org.orekit.propagation.AbstractPropagator
  * @see org.orekit.propagation.integration.AdditionalEquations
  * @author Luc Maisonobe
  */

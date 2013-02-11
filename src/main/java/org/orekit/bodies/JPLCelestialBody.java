@@ -39,7 +39,7 @@ class JPLCelestialBody implements CelestialBody {
     private static final long serialVersionUID = 3809787672779740923L;
 
     /** J2000 frame, cached. */
-    private static final Frame eme2000 = FramesFactory.getEME2000();
+    private static final Frame EME2000 = FramesFactory.getEME2000();
 
     /** Name of the body. */
     private final String name;
@@ -77,8 +77,6 @@ class JPLCelestialBody implements CelestialBody {
      * @param scale scaling factor for position-velocity
      * @param iauPole IAU pole implementation
      * @param definingFrame frame in which celestial body coordinates are defined
-     * @param inertialFrameName name to use for inertially oriented body centered frame
-     * @param bodyFrameName name to use for body oriented body centered frame
      */
     public JPLCelestialBody(final String name, final String supportedNames,
                             final JPLEphemeridesLoader.EphemerisType generateType,
@@ -158,9 +156,6 @@ class JPLCelestialBody implements CelestialBody {
         private static final String INERTIAL_FRAME_SUFFIX = "/inertial";
 
         /** Simple constructor.
-         * @param loader JPL loader for the celestial body
-         * @param scale scaling factor for position-velocity
-         * @param iauPole IAU pole implementation
          * @param definingFrame frame in which celestial body coordinates are defined
          */
         public InertiallyOriented(final Frame definingFrame) {
@@ -170,7 +165,7 @@ class JPLCelestialBody implements CelestialBody {
                 private static final long serialVersionUID = -8610328386110652400L;
 
                 /** {@inheritDoc} */
-                public Transform getTransform(AbsoluteDate date) throws OrekitException {
+                public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
                     // compute translation from parent frame to self
                     final PVCoordinates pv = getPVCoordinates(date, definingFrame);
@@ -193,7 +188,7 @@ class JPLCelestialBody implements CelestialBody {
                     final Rotation r2000 = new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
 
                     // compute rotation from parent frame to self
-                    final Transform t  = definingFrame.getTransformTo(eme2000, date);
+                    final Transform t  = definingFrame.getTransformTo(EME2000, date);
                     final Transform rotation = new Transform(date, r2000.applyTo(t.getRotation()));
 
                     // update transform from parent to self
@@ -261,7 +256,7 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** Internal class used only for serialization. */
-    private static abstract class DataTransferObject implements Serializable {
+    private abstract static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 674742836536072422L;

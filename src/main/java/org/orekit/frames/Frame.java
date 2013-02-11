@@ -230,7 +230,7 @@ public class Frame implements Serializable {
      * @exception IllegalArgumentException if n is larger than the depth
      * of the instance
      */
-    public Frame getAncestor(int n) throws IllegalArgumentException {
+    public Frame getAncestor(final int n) throws IllegalArgumentException {
 
         // safety check
         if (n > depth) {
@@ -240,7 +240,7 @@ public class Frame implements Serializable {
 
         // go upward to find ancestor
         Frame current = this;
-        while (n-- > 0) {
+        for (int i = 0; i < n; ++i) {
             current = current.parent;
         }
 

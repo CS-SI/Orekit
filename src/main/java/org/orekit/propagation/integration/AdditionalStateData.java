@@ -18,8 +18,6 @@ package org.orekit.propagation.integration;
 
 import java.io.Serializable;
 
-import org.orekit.propagation.numerical.NumericalPropagator;
-
 /** This class is a container for additional state parameters and the name of their associated evolution equation.
 *
 * <p>
@@ -27,7 +25,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 * states and the corresponding equations. It allows to set additional state values, get current
 * additional state value and by reference on the associated additional state name.
 * </p>
-* @see NumericalPropagator
+* @see org.orekit.propagation.numerical.NumericalPropagator
 * @see AdditionalEquations
 * @author Luc Maisonobe
 */

@@ -92,7 +92,7 @@ public class FiniteDifferencePropagatorConverter extends AbstractPropagatorConve
 
         /** {@inheritDoc} */
         public double[][] value(final double[] arg)
-                throws IllegalArgumentException, OrekitExceptionWrapper {
+            throws IllegalArgumentException, OrekitExceptionWrapper {
 
             final MultivariateVectorFunction f = new ObjectiveFunction();
 

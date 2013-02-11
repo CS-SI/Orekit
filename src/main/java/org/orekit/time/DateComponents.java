@@ -468,7 +468,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     }
 
     /** Interface for dealing with years sequences according to some calendar. */
-    private static interface YearFactory {
+    private interface YearFactory {
 
         /** Get the year number for a given day number with respect to J2000 epoch.
          * @param j2000Day day number with respect to J2000 epoch
@@ -563,7 +563,7 @@ public class DateComponents implements Serializable, Comparable<DateComponents> 
     }
 
     /** Interface for dealing with months sequences according to leap/common years. */
-    private static interface MonthDayFactory {
+    private interface MonthDayFactory {
 
         /** Get the month number for a given day number within year.
          * @param dayInYear day number within year

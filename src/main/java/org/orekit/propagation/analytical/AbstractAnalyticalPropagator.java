@@ -39,7 +39,6 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
@@ -48,14 +47,14 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Common handling of {@link Propagator} methods for analytical propagators.
+/** Common handling of {@link org.orekit.propagation.Propagator} methods for analytical propagators.
  * <p>
- * This abstract class allows to provide easily the full set of {@link Propagator}
- * methods, including all propagation modes support and discrete events support for
- * any simple propagation method. Only two methods must be implemented by derived
- * classes: {@link #propagateOrbit(AbsoluteDate)} and {@link #getMass(AbsoluteDate)}.
- * The first method should perform straightforward propagation starting from some
- * internally stored initial state up to the specified target date.
+ * This abstract class allows to provide easily the full set of {@link
+ * org.orekit.propagation.Propagator Propagator} methods, including all propagation
+ * modes support and discrete events support for any simple propagation method. Only
+ * two methods must be implemented by derived classes: {@link #propagateOrbit(AbsoluteDate)}
+ * and {@link #getMass(AbsoluteDate)}. The first method should perform straightforward
+ * propagation starting from some internally stored initial state up to the specified target date.
  * </p>
  * @author Luc Maisonobe
  */
@@ -88,7 +87,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
      */
-    protected AbstractAnalyticalPropagator(AttitudeProvider attitudeProvider) {
+    protected AbstractAnalyticalPropagator(final AttitudeProvider attitudeProvider) {
         setAttitudeProvider(attitudeProvider);
         interpolator             = new BasicStepInterpolator();
         pvProvider               = new LocalPVProvider();

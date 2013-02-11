@@ -18,10 +18,7 @@ package org.orekit.propagation.numerical;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.Orbit;
-import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 
 /** Interface summing up the contribution of several forces into orbit and mass derivatives.
  *
@@ -30,8 +27,8 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
  * {@link org.orekit.orbits.Orbit} plus one mass derivatives. It implements Gauss
  * equations for different kind of parameters.</p>
  * <p>An implementation of this interface is automatically provided by {@link
- * AbstractIntegratedPropagator integration-based propagators}, which are either
- * semi-analytical or numerical propagators.
+ * org.orekit.propagation.integration.AbstractIntegratedPropagator integration-based
+ * propagators}, which are either semi-analytical or numerical propagators.
  * </p>
  * @see org.orekit.forces.ForceModel
  * @see org.orekit.propagation.numerical.NumericalPropagator
@@ -40,13 +37,6 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public interface TimeDerivativesEquations {
-
-    /** Initialize all derivatives to zero.
-     * @param yDot reference to the array where to put the derivatives.
-     * @param currentOrbit current orbit parameters
-     * @exception PropagationException if the orbit evolve out of supported range
-     */
-    void initDerivatives(double[] yDot, Orbit currentOrbit) throws PropagationException;
 
     /** Add the contribution of the Kepler evolution.
      * <p>Since the Kepler evolution is the most important, it should
