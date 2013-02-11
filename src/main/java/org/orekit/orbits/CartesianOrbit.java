@@ -453,7 +453,7 @@ public class CartesianOrbit extends Orbit {
      * <p>
      * This intermediate class serializes all needed parameters,
      * including position-velocity which are <em>not</em> serialized by parent
-     * {@link Orekit} class.
+     * {@link Orbit} class.
      * </p>
      * @return data transfer object that will be serialized
      */

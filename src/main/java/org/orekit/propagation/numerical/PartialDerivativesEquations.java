@@ -128,7 +128,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      * @see ForceModel
-     * @see org.orekit.forces.Parameterizable
+     * @see org.apache.commons.math3.ode.Parameterizable
+
      */
     public void selectParameters(final String ... parameters) {
 
@@ -149,7 +150,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * @see NumericalPropagator#addForceModel(ForceModel)
      * @see #setInitialJacobians(SpacecraftState, double[][], double[][])
      * @see ForceModel
-     * @see org.orekit.forces.Parameterizable
+     * @see org.apache.commons.math3.ode.Parameterizable
      */
     public void selectParamAndStep(final String parameter, final double hP) {
         selectedParameters.add(new ParameterConfiguration(parameter, hP));

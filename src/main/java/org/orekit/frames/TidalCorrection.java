@@ -187,7 +187,7 @@ public class TidalCorrection implements Serializable {
         +0.04726 *  MICRO_SECONDS_TO_SECONDS
     };
 
-    /** Cache of computed {@link Correction tidal corrections}. */
+    /** Cache of computed tidal corrections. */
     private final TimeStampedCache<CorrectionData> cache;
 
     /** Simple constructor.

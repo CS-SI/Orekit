@@ -33,10 +33,7 @@ import org.orekit.utils.PVCoordinates;
  * <p>
  * This abstract class allows to provide easily the full set of {@link Propagator}
  * methods, including all propagation modes support and discrete events support for
- * any simple propagation method. Only two methods must be implemented by derived
- * classes: {@link #propagateOrbit(AbsoluteDate)} and {@link #getMass(AbsoluteDate)}.
- * The first method should perform straightforward propagation starting from some
- * internally stored initial state up to the specified target date.
+ * any simple propagation method.
  * </p>
  * @author Luc Maisonobe
  */

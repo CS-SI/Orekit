@@ -268,7 +268,7 @@ public class TimeStampedCache<T extends TimeStamped> {
      * @param central central date
      * @return array of cached entries surrounding specified date (the size
      * of the array is fixed to the one specified in the {@link #TimeStampedCache(int,
-     * double, Class, TimeStampedGenerator, int) constructor})
+     * int, double, double, TimeStampedGenerator, Class) constructor})
      * @exception TimeStampedCacheException if entries are not chronologically
      * sorted or if new data cannot be generated
      * @see #getEarliest()

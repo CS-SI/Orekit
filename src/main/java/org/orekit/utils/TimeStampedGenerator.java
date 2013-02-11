@@ -78,7 +78,6 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
      * </p>
      * @param existing closest already existing entry (may be null)
      * @param date date that must be covered by the range of the generated array
-     * (guaranteed to lie between {@link #getEarliest()} and {@link #getLatest()})
      * @return chronologically sorted list of generated entries
      * @exception TimeStampedCacheException if time stamped data cannot be generated
      */
