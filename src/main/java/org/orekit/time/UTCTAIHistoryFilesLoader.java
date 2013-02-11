@@ -138,7 +138,7 @@ class UTCTAIHistoryFilesLoader implements UTCTAILoader {
         entries.clear();
 
         // set up a reader for line-oriented file
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
 
         // read all file, ignoring not recognized lines
         boolean foundEntries = false;

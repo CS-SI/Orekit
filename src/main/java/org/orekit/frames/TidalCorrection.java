@@ -16,7 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,10 +37,7 @@ import org.orekit.utils.TimeStampedGenerator;
  * @author Pascal Parraud
  * @author Evan Ward
  */
-public class TidalCorrection implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 9143236723147294697L;
+public class TidalCorrection {
 
     /** pi;/2. */
     private static final double HALF_PI = FastMath.PI / 2.0;

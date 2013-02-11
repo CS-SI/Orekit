@@ -240,7 +240,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         // set up a reader for line-oriented bulletin B files
         lineNumber = 0;
         line       = null;
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
 
         synchronized (this) {
 

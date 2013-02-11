@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.sampling;
 
-import java.io.Serializable;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
@@ -30,7 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * provides a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public interface OrekitStepInterpolator extends Serializable {
+public interface OrekitStepInterpolator {
 
     /** Get the current grid date.
      * @return current grid date

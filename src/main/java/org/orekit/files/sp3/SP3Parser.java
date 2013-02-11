@@ -92,7 +92,7 @@ public class SP3Parser implements OrbitFileParser {
     private SP3File parseInternal(final InputStream stream)
         throws OrekitException, IOException {
 
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
 
         // initialize internal data structures
         final ParseInfo pi = new ParseInfo();

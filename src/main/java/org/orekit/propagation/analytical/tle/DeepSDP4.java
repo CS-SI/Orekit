@@ -39,9 +39,6 @@ import org.orekit.utils.Constants;
  */
 class DeepSDP4 extends SDP4 {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7155645502511295218L;
-
     // CHECKSTYLE: stop JavadocVariable check
 
     // Internal constants

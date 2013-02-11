@@ -120,7 +120,7 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
         throws IOException, OrekitException {
 
         // set up a reader for line-oriented bulletin B files
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
 
         // read all file, ignoring header
         synchronized (this) {

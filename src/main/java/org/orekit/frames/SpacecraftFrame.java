@@ -16,6 +16,12 @@
  */
 package org.orekit.frames;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
@@ -25,6 +31,16 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 /** Spacecraft frame.
  * <p>Frame associated to a satellite body, taking into account orbit and attitude.</p>
+ * <p>
+ * Use of this frame is not recommended, and it will probably be withdrawn in a future version.
+ * In many cases, rather than using this frame and its {@link #getTransformTo(Frame, AbsoluteDate)
+ * getTransformTo} method, users should directly get a {@link Transform} using
+ * {@link org.orekit.propagation.SpacecraftState#toTransform()}.
+ * </p>
+ * <p>
+ * Note that despite it extends {@link Frame}, this frame is <em>NOT</em> serializable,
+ * as it relies on {@link Propagator}.
+ * </p>
  * @author Luc Maisonobe
  */
 public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
@@ -32,23 +48,19 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 6012707827832395314L;
 
-    /** Propagator to use. */
-    private final Propagator propagator;
-
     /** Simple constructor.
      * @param propagator orbit/attitude propagator computing spacecraft state evolution
      * @param name name of the frame
      */
     public SpacecraftFrame(final Propagator propagator, final String name) {
         super(propagator.getFrame(), new LocalProvider(propagator), name, false);
-        this.propagator = propagator;
     }
 
     /** Get the underlying propagator.
      * @return underlying propagator
      */
     public Propagator getPropagator() {
-        return propagator;
+        return ((LocalProvider) getTransformProvider()).getPropagator();
     }
 
     /** Get the {@link PVCoordinates} of the spacecraft frame origin in the selected frame.
@@ -59,17 +71,17 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
      */
     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return propagator.getPVCoordinates(date, frame);
+        return getPropagator().getPVCoordinates(date, frame);
     }
 
     /** Local provider for transforms. */
-    private static class LocalProvider implements TransformProvider {
+    private static class LocalProvider implements TransformProvider, Externalizable {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 386815086579675823L;
 
         /** Propagator to use. */
-        private final Propagator propagator;
+        private final transient Propagator propagator;
 
         /** Simple constructor.
          * @param propagator orbit/attitude propagator computing spacecraft state evolution
@@ -81,6 +93,23 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
         /** {@inheritDoc} */
         public Transform getTransform(final AbsoluteDate date) throws OrekitException {
             return propagator.propagate(date).toTransform();
+        }
+
+        /** Get the underlying propagator.
+         * @return underlying propagator
+         */
+        public Propagator getPropagator() {
+            return propagator;
+        }
+
+        /** {@inheritDoc} */
+        public void readExternal(final ObjectInput input) throws IOException {
+            throw new NotSerializableException();
+        }
+
+        /** {@inheritDoc} */
+        public void writeExternal(final ObjectOutput output) throws IOException {
+            throw new NotSerializableException();
         }
 
     }

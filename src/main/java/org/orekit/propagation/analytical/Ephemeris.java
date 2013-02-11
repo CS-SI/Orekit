@@ -47,9 +47,6 @@ import org.orekit.utils.TimeStampedGenerator;
  */
 public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -7270780789524246722L;
-
     /** First date in range. */
     private final AbsoluteDate minDate;
 

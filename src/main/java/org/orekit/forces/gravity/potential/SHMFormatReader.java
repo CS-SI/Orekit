@@ -86,7 +86,7 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         cDot.clear();
         sDot.clear();
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         boolean okEarth            = false;
         boolean okSHM              = false;
         boolean okCoeffs           = false;

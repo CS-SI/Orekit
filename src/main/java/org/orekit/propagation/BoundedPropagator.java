@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation;
 
-import java.io.Serializable;
-
 import org.orekit.time.AbsoluteDate;
 
 /** This interface is intended for ephemerides valid only during a time range.
@@ -31,7 +29,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  *
  */
-public interface BoundedPropagator extends Propagator, Serializable {
+public interface BoundedPropagator extends Propagator {
 
     /** Get the first date of the range.
      * @return the first date of the range

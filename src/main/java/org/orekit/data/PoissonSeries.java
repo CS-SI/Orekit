@@ -90,7 +90,7 @@ public class PoissonSeries implements Serializable {
 
 
             // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
             String line = reader.readLine();
             int lineNumber = 1;
 

@@ -87,7 +87,7 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
 
             // read all file, ignoring header
             synchronized (this) {
-                reader.parse(new InputSource(new InputStreamReader(input)));
+                reader.parse(new InputSource(new InputStreamReader(input, "UTF-8")));
             }
 
         } catch (SAXException se) {

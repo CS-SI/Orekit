@@ -140,21 +140,28 @@ public class ZipJarCrawler implements DataProvider {
         try {
 
             // open the raw data stream
-            final InputStream rawStream;
-            if (file != null) {
-                rawStream = new FileInputStream(file);
-            } else if (resource != null) {
-                rawStream = classLoader.getResourceAsStream(resource);
-            } else {
-                rawStream = url.openConnection().getInputStream();
+            InputStream    rawStream = null;
+            ZipInputStream zip       = null;
+            try {
+                if (file != null) {
+                    rawStream = new FileInputStream(file);
+                } else if (resource != null) {
+                    rawStream = classLoader.getResourceAsStream(resource);
+                } else {
+                    rawStream = url.openConnection().getInputStream();
+                }
+
+                // add the zip format analysis layer and browse the archive
+                zip = new ZipInputStream(rawStream);
+                return feed(name, supported, visitor, zip);
+            } finally {
+                if (zip != null) {
+                    zip.close();
+                }
+                if (rawStream != null) {
+                    rawStream.close();
+                }
             }
-
-            // add the zip format analysis layer and browse the archive
-            final ZipInputStream zip = new ZipInputStream(rawStream);
-            final boolean loaded = feed(name, supported, visitor, zip);
-            zip.close();
-
-            return loaded;
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

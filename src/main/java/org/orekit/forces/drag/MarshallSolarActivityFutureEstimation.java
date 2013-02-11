@@ -439,7 +439,7 @@ public class MarshallSolarActivityFutureEstimation implements DTM2000InputParame
         }
 
         // read the data
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         boolean inData = false;
         final TimeScale utc = TimeScalesFactory.getUTC();
         DateComponents fileDate = null;

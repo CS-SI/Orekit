@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.integration;
 
-import java.io.Serializable;
-
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -30,10 +28,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 6.0
  */
-public abstract class StateMapper implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6503521886256031804L;
+public abstract class StateMapper {
 
     /** Reference date. */
     private final AbsoluteDate referenceDate;

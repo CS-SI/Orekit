@@ -61,7 +61,7 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         setAe(Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
         setMu(Constants.EGM96_EARTH_MU);
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         final List<List<Double>> c = new ArrayList<List<Double>>();
         final List<List<Double>> s = new ArrayList<List<Double>>();
         boolean okFields = true;

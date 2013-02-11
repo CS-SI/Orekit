@@ -28,9 +28,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class BasicStepInterpolator implements OrekitStepInterpolator {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7847540541046397037L;
-
     /** Underlying propagator. */
     private final Propagator propagator;
 

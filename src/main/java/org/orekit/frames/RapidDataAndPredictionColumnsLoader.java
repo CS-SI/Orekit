@@ -145,7 +145,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
         throws OrekitException, IOException {
 
         // set up a reader for line-oriented bulletin B files
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
 
         // Init
         double x    = 0;

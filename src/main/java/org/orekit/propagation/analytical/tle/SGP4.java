@@ -34,9 +34,6 @@ import org.orekit.errors.OrekitException;
  */
 class SGP4 extends TLEPropagator {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -7860984112560308900L;
-
     /** If perige is less than 220 km, some calculus are avoided. */
     private boolean lessThan220;
 

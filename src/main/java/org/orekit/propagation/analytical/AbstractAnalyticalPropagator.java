@@ -399,9 +399,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** {@link BoundedPropagator} view of the instance. */
     private class BoundedPropagatorView extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -3340036098040553110L;
-
         /** Min date. */
         private final AbsoluteDate minDate;
 
@@ -464,9 +461,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
     /** Internal class for local propagation. */
     private class BasicStepInterpolator implements OrekitStepInterpolator {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 26269718303505539L;
 
         /** Global previous date. */
         private AbsoluteDate globalPreviousDate;

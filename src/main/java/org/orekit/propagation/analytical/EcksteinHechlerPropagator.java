@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -40,10 +38,7 @@ import org.orekit.time.AbsoluteDate;
  * @see Orbit
  * @author Guylaine Prat
  */
-public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -3473187502871065348L;
+public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
     /** Mean parameters at the initial date. */
     private CircularOrbit mean;

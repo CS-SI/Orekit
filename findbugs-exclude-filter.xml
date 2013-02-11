@@ -18,6 +18,12 @@
     <Bug pattern="SE_INNER_CLASS" />
   </Match>
 
+  <!-- The following is an intentional behaviour, to be removed when class is suppressed -->
+  <Match>
+    <Class name="~.*\.SpacecraftFrame\$LocalProvider$"/>
+    <Bug pattern="SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION" />
+  </Match>
+
   <!-- the following are in fact false positives from findbugs -->
   <!-- their occurrence depends on the java compiler used      -->
   <Match>
@@ -63,7 +69,19 @@
     <Local name="fiftyDays" />
     <Bug pattern="DLS_DEAD_LOCAL_STORE" />
   </Match>
-
+  <Match>
+    <Class name="~.*\.JB2006$"/>
+    <Method name="getDensity" />
+    <Local name="FACT1" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  <Match>
+    <Class name="~.*\.JB2006$"/>
+    <Method name="dTc" />
+    <Local name="HP" />
+    <Bug pattern="DLS_DEAD_LOCAL_STORE" />
+  </Match>
+  
   <!-- The following is a false positive from findbugs -->
   <Match>
     <Class name="~.*\.IntegratedEphemeris\$LocalProvider$"/>
@@ -87,24 +105,14 @@
        They are used to pass data back and forth between classes
     -->
   <Match>
-    <Class name="org.orekit.propagation.numerical.AdditionalStateData"/>
+    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
     <Method name ="getAdditionalState" params="" returns="double[]" />
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
   <Match>
-    <Class name="org.orekit.propagation.numerical.AdditionalStateData"/>
+    <Class name="org.orekit.propagation.integration.AdditionalStateData"/>
     <Method name ="getAdditionalStateDot" params="" returns="double[]" />
     <Bug pattern="EI_EXPOSE_REP" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.propagation.numerical.TimeDerivativesEquationsCartesian"/>
-    <Method name ="initDerivatives" params="double[],org.orekit.orbits.Orbit" returns="void" />
-    <Bug pattern="EI_EXPOSE_REP2" />
-  </Match>
-  <Match>
-    <Class name="org.orekit.propagation.numerical.TimeDerivativesEquationsEquinoctial"/>
-    <Method name ="initDerivatives" params="double[],org.orekit.orbits.Orbit" returns="void" />
-    <Bug pattern="EI_EXPOSE_REP2" />
   </Match>
 
   <!-- the following is an intended switch fall-through in the SP3Parser -->

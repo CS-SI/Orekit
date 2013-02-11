@@ -165,22 +165,10 @@ public abstract class AbstractPropagator implements Propagator {
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
-        try {
-            if (startDate == null) {
-                startDate = getInitialState().getDate();
-            }
-            return propagate(startDate, target);
-        } catch (OrekitException oe) {
-
-            // recover a possible embedded PropagationException
-            for (Throwable t = oe; t != null; t = t.getCause()) {
-                if (t instanceof PropagationException) {
-                    throw (PropagationException) t;
-                }
-            }
-            throw new PropagationException(oe);
-
+        if (startDate == null) {
+            startDate = getInitialState().getDate();
         }
+        return propagate(startDate, target);
     }
 
     /** {@inheritDoc} */

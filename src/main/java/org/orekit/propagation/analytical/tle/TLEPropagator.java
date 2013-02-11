@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical.tle;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -60,10 +58,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Fabien Maussion (java translation)
  * @see TLE
  */
-public abstract class TLEPropagator extends AbstractAnalyticalPropagator implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6389584529961457799L;
+public abstract class TLEPropagator extends AbstractAnalyticalPropagator {
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 

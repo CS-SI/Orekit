@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -51,10 +50,7 @@ import org.orekit.utils.PVCoordinates;
  * @author Fabien Maussion
  * @author Luc Maisonobe
  */
-public class TLESeries implements DataLoader, Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -1120722267423537022L;
+public class TLESeries implements DataLoader {
 
     /** Default supported files name pattern. */
     private static final String DEFAULT_SUPPORTED_NAMES = ".*\\.tle$";
@@ -256,7 +252,7 @@ public class TLESeries implements DataLoader, Serializable {
     public void loadData(final InputStream input, final String name)
         throws IOException, OrekitException {
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         try {
 
             int lineNumber     = 0;

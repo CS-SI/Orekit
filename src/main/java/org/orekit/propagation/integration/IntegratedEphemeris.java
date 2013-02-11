@@ -68,9 +68,6 @@ import org.orekit.utils.PVCoordinates;
 public class IntegratedEphemeris
     extends AbstractAnalyticalPropagator implements BoundedPropagator {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 4297289148511923674L;
-
     /** Mapper between raw double components and spacecraft state. */
     private final StateMapper mapper;
 

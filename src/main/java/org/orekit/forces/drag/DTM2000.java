@@ -754,7 +754,7 @@ public class DTM2000 implements Atmosphere {
         BufferedReader r = null;
         try {
 
-            r = new BufferedReader(new InputStreamReader(in));
+            r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             r.readLine();
             r.readLine();
             for (String line = r.readLine(); line != null; line = r.readLine()) {

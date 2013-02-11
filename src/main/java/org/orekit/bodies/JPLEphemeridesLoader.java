@@ -1031,7 +1031,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     }
 
     /** Raw position-velocity provider providing always zero. */
-    private class ZeroRawPVProvider implements RawPVProvider {
+    private static class ZeroRawPVProvider implements RawPVProvider {
 
         /** {@inheritDoc} */
         public PVCoordinates getRawPV(final AbsoluteDate date) {

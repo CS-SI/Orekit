@@ -177,7 +177,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         // by default, the field is normalized (will be overridden later if non-default)
         normalized = true;
 
-        final BufferedReader r = new BufferedReader(new InputStreamReader(input));
+        final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         boolean inHeader = true;
         double[][] c               = null;
         double[][] s               = null;

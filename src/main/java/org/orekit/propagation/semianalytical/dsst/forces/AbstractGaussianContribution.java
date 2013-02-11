@@ -101,7 +101,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** 1 / (A * B) .*/
     protected double ooAB;
     /** C / (2 * A * B) .*/
-    protected double Co2AB;
+    protected double co2AB;
     /** 1 / (1 + B) .*/
     protected double ooBpo;
     /** 1 / &mu; .*/
@@ -161,7 +161,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         // 1 / AB
         ooAB = ooA / B;
         // C / 2AB
-        Co2AB = C * ooAB / 2.;
+        co2AB = C * ooAB / 2.;
         // 1 / (1 + B)
         ooBpo = 1. / (1. + B);
         // 2 / (n² * a)
@@ -302,7 +302,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @return &delta;p/&delta;v
          */
         private Vector3D getPoV(final double Y) {
-            return new Vector3D(Co2AB * Y, w);
+            return new Vector3D(co2AB * Y, w);
         }
 
         /** Compute &delta;q/&delta;v.
@@ -310,7 +310,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          *  @return &delta;q/&delta;v
          */
         private Vector3D getQoV(final double X) {
-            return new Vector3D(I * Co2AB * X, w);
+            return new Vector3D(I * co2AB * X, w);
         }
 
         /** Compute &delta;&lambda;/&delta;v.

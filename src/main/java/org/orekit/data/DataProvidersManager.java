@@ -19,7 +19,6 @@ package org.orekit.data;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,13 +63,10 @@ import org.orekit.errors.OrekitMessages;
  * @see DirectoryCrawler
  * @see ClasspathCrawler
  */
-public class DataProvidersManager implements Serializable {
+public class DataProvidersManager {
 
     /** Name of the property defining the root directories or zip/jar files path for default configuration. */
     public static final String OREKIT_DATA_PATH = "orekit.data.path";
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6462388122735180273L;
 
     /** Supported data providers. */
     private final List<DataProvider> providers;

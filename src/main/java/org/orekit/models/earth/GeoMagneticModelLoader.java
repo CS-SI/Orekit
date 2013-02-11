@@ -70,7 +70,7 @@ public class GeoMagneticModelLoader implements DataLoader {
         throws IOException, ParseException {
 
         // open data file and parse values
-        final StreamTokenizer str = new StreamTokenizer(new InputStreamReader(input));
+        final StreamTokenizer str = new StreamTokenizer(new InputStreamReader(input, "UTF-8"));
 
         while (true) {
             final GeoMagneticField model = readModel(str);

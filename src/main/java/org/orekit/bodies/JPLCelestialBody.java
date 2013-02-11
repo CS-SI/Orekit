@@ -51,7 +51,7 @@ class JPLCelestialBody implements CelestialBody {
     private final JPLEphemeridesLoader.EphemerisType generateType;
 
     /** Raw position-velocity provider. */
-    private final JPLEphemeridesLoader.RawPVProvider rawPVProvider;
+    private final transient JPLEphemeridesLoader.RawPVProvider rawPVProvider;
 
     /** Attraction coefficient of the body (m<sup>3</sup>/s<sup>2</sup>). */
     private final double gm;

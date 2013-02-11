@@ -286,9 +286,6 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     /** Internal mapper using directly osculating parameters. */
     private static class OsculatingMapper extends StateMapper {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -1525946167852572811L;
-
         /** Simple constructor.
          * <p>
          * The position parameter type is meaningful only if {@link

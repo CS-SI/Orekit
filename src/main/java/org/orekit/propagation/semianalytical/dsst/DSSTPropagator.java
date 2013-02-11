@@ -267,9 +267,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     /** Internal mapper using mean parameters plus short periodic terms. */
     private static class MeanPlusShortPeriodicMapper extends StateMapper {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 5880502847862113166L;
-
         /** Force models used to compute short periodic terms. */
         private final List<DSSTForceModel> forceModels;
 

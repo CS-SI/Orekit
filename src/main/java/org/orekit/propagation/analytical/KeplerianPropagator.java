@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.analytical;
 
-import java.io.Serializable;
-
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
@@ -29,10 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * @see Orbit
  * @author Guylaine Prat
  */
-public class KeplerianPropagator extends AbstractAnalyticalPropagator implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6136628786648938677L;
+public class KeplerianPropagator extends AbstractAnalyticalPropagator {
 
     /** Initial state. */
     private SpacecraftState initialState;

@@ -96,7 +96,7 @@ public class InterpolationTableLoader implements DataLoader {
         final LinkedList<List<Double>> cellValues = new LinkedList<List<Double>>();
 
         final StreamTokenizer tokenizer =
-            new StreamTokenizer(new BufferedReader(new InputStreamReader(input)));
+            new StreamTokenizer(new BufferedReader(new InputStreamReader(input, "UTF-8")));
 
         // ignore comments starting with a #
         tokenizer.commentChar('#');

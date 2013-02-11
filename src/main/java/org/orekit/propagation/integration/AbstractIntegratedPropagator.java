@@ -741,9 +741,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     private class AdaptedStepHandler
         implements OrekitStepInterpolator, StepHandler, ModeHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -3674883225252719093L;
-
         /** Additional state data list. */
         private List <AdditionalStateData> addStateData;
 
