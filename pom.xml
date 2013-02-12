@@ -273,6 +273,7 @@
                 <complexityRatio>85</complexityRatio>
                 <lineRatio>90</lineRatio>
               </check>
+              <haltOnFailure>false</haltOnFailure>
             </configuration>
           </execution>
         </executions>
