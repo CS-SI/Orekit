@@ -259,7 +259,7 @@ Satellite velocity in EME2000: {-150.5129516; -532.0397437; 7436.0742692}
   The complete code for this example can be found in the source tree of the library,
   in file <<<src/tutorials/fr/cs/examples/frames/Frames2.java>>>.
 
-* A useful frame : the SpacecraftFrame
+* Direct use of transforms : coordinates with respect to spacecraft frame
 
 ** The problem to be solved
 
@@ -268,6 +268,8 @@ Satellite velocity in EME2000: {-150.5129516; -532.0397437; 7436.0742692}
 
 ** An immediate solution
 
+  There was once a SpacecraftFrame in Orekit, but it could not be used in
+  master propagation mode and has been deprecated as of 6.0, so we won't use it.
   First, an initial orbit for the spacecraft is defined with:
 
   ** an inertial frame
@@ -315,7 +317,7 @@ NadirPointing nadirLaw = new NadirPointing(earth);
 +---------------------
 
 +---------------------
-PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 YawSteering yawSteeringLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 +---------------------
     
@@ -335,22 +337,30 @@ Propagator propagator =
   {{{../architecture/propagation.html}propagation section}} of the library
   architecture documentation.
 
-  Then, the spacecraft frame is just associated with the propagator.
+  Then, we associate a step handler with the propagator which directly computes
+  the desired data in spacecraft frame using the current spacecraft state
 
 +---------------------
-SpacecraftFrame scFrame = new SpacecraftFrame(propagator, "Spacecraft");
-+---------------------
+propagator.setMasterMode(10, new OrekitFixedStepHandler() {
 
-  Finally, we simply get the position of the Sun in spacecraft frame and the spacecraft
-  rotational rate in the inertial frame at any date with two single instructions:
+    public void init(SpacecraftState s0, AbsoluteDate t)
+        // write file header
+    }
+                
+    public void handleStep(SpacecraftState currentState, boolean isLast)
+        throws PropagationException {
 
-+---------------------
-Vector3D sunSat = sun.getPVCoordinates(date, scFrame).getPosition();
-Vector3D spin = eme2000.getTransformTo(scFrame, date).getRotationRate();
-+---------------------
+        Transform inertToSpacecraft = currentState.toTransform();
+        Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();
+        Vector3D sunSat = inertToSpacecraft.transformPosition(sunInert);
+        Vector3D spin = inertToSpacecraft.getRotationRate();
 
-  The user doesn't need to bother about propagation and transforms, everything is
-  done in the background.
+        // write data to file
+
+    }
+               
+}
++---------------------
 
   So, computing over an orbit, we can plot the following results showing clearly a
   typical yaw steering behavior:

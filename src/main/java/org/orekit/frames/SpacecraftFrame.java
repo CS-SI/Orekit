@@ -41,8 +41,10 @@ import org.orekit.utils.PVCoordinatesProvider;
  * Note that despite it extends {@link Frame}, this frame is <em>NOT</em> serializable,
  * as it relies on {@link Propagator}.
  * </p>
+ * @deprecated as of 6.0 replaced by {@link org.orekit.propagation.SpacecraftState#toTransform()}
  * @author Luc Maisonobe
  */
+@Deprecated
 public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
 
     /** Serializable UID. */

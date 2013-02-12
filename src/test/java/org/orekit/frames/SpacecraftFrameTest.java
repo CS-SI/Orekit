@@ -40,6 +40,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class SpacecraftFrameTest {
 
     @Test

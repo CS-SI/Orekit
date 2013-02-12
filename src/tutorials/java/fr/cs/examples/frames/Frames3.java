@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.NadirPointing;
@@ -32,14 +33,17 @@ import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.SpacecraftFrame;
+import org.orekit.frames.Transform;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
+import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -48,9 +52,9 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 import fr.cs.examples.Autoconfiguration;
 
-/** Orekit tutorial for spacecraft frame support.
- * <p>This tutorial shows the very simple usage of spacecraft frame.</p>
+/** Orekit tutorial for computing spacecraft related data WITHOUT using the deprecated SpacecraftFrame.
  * @author Pascal Parraud
+ * @author Luc Maisonobe
  */
 public class Frames3 {
 
@@ -60,8 +64,8 @@ public class Frames3 {
             // configure Orekit and printing format
             Autoconfiguration.configureOrekit();
             DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-            DecimalFormat d3 = new DecimalFormat("0.000", symbols);
-            DecimalFormat d7 = new DecimalFormat("0.0000000", symbols);
+            final DecimalFormat d3 = new DecimalFormat("0.000", symbols);
+            final DecimalFormat d7 = new DecimalFormat("0.0000000", symbols);
 
             // Initial state definition :
             // ==========================
@@ -98,7 +102,7 @@ public class Frames3 {
             NadirPointing nadirLaw = new NadirPointing(earth);
 
             // Target pointing attitude provider with yaw compensation
-            PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
+            final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             YawSteering yawSteeringLaw =
                 new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
@@ -112,50 +116,67 @@ public class Frames3 {
                 new EcksteinHechlerPropagator(orbit, yawSteeringLaw,
                                               ae, mu, c20, c30, c40, c50, c60);
 
-            // The spacecraft frame is associated with the propagator.
-            SpacecraftFrame scFrame = new SpacecraftFrame(propagator, "Spacecraft");
-
             // Let's write the results in a file in order to draw some plots.
-            final String homeRep = System.getProperty("user.home");
-            FileWriter fileRes = new FileWriter(new File(homeRep, "XYZ.dat"));
+            final File file = new File(System.getProperty("user.home"), "XYZ.dat");
+            final FileWriter fileRes = new FileWriter(file);
+            propagator.setMasterMode(10, new OrekitFixedStepHandler() {
+                
+                public void init(SpacecraftState s0, AbsoluteDate t)
+                    throws PropagationException {
+                    try {
+                        fileRes.write("#time X Y Z Wx Wy Wz\n");
+                    } catch (IOException ioe) {
+                        throw new PropagationException(ioe,
+                                                       LocalizedFormats.SIMPLE_MESSAGE,
+                                                       ioe.getLocalizedMessage());
+                    }
+                }
+                
+                public void handleStep(SpacecraftState currentState, boolean isLast)
+                    throws PropagationException {
+                    try {
 
-            fileRes.write("#time X Y Z Wx Wy Wz\n");
+                        // get the transform from orbit/attitude reference frame to spacecraft frame
+                        Transform inertToSpacecraft = currentState.toTransform();
 
-            System.out.println("...");
+                        // get the position of the Sun in orbit/attitude reference frame
+                        Vector3D sunInert = sun.getPVCoordinates(currentState.getDate(), currentState.getFrame()).getPosition();
 
-            // Loop
-            // from
-            AbsoluteDate extrapDate = initialDate;
-            // to
-            final AbsoluteDate finalDate = extrapDate.shiftedBy(6000);
+                        // convert Sun position to spacecraft frame
+                        Vector3D sunSat = inertToSpacecraft.transformPosition(sunInert);
 
-            while (extrapDate.compareTo(finalDate) <= 0)  {
-                // We can simply get the position of the Sun in spacecraft frame at any time
-                Vector3D sunSat = sun.getPVCoordinates(extrapDate, scFrame).getPosition();
+                        // and the spacecraft rotational rate also
+                        Vector3D spin = inertToSpacecraft.getRotationRate();
 
-                // and the spacecraft rotational rate also
-                Vector3D spin = eme2000.getTransformTo(scFrame, extrapDate).getRotationRate();
+                        // Lets calculate the reduced coordinates
+                        double sunX = sunSat.getX() / sunSat.getNorm();
+                        double sunY = sunSat.getY() / sunSat.getNorm();
+                        double sunZ = sunSat.getZ() / sunSat.getNorm();
 
-                // Lets calculate the reduced coordinates
-                double sunX = sunSat.getX() / sunSat.getNorm();
-                double sunY = sunSat.getY() / sunSat.getNorm();
-                double sunZ = sunSat.getZ() / sunSat.getNorm();
+                        fileRes.write(currentState.getDate()
+                                      + "  " + d3.format(sunX)
+                                      + "  " + d3.format(sunY)
+                                      + "  " + d3.format(sunZ)
+                                      + "  " + d7.format(spin.getX())
+                                      + "  " + d7.format(spin.getY())
+                                      + "  " + d7.format(spin.getZ())
+                                      + System.getProperty("line.separator"));
 
-                fileRes.write(extrapDate
-                              + "  " + d3.format(sunX)
-                              + "  " + d3.format(sunY)
-                              + "  " + d3.format(sunZ)
-                              + "  " + d7.format(spin.getX())
-                              + "  " + d7.format(spin.getY())
-                              + "  " + d7.format(spin.getZ()) + "\n");
+                    } catch (OrekitException oe) {
+                        throw new PropagationException(oe);
+                    } catch (IOException ioe) {
+                        throw new PropagationException(ioe,
+                                                       LocalizedFormats.SIMPLE_MESSAGE,
+                                                       ioe.getLocalizedMessage());
+                    }
+                }
 
-                extrapDate = extrapDate.shiftedBy(10);
+            });
 
-            }
-
+            System.out.println("Running...");
+            propagator.propagate(initialDate.shiftedBy(6000));
             fileRes.close();
-
-            System.out.println("Done");
+            System.out.println("Results written to file: " + file.getAbsolutePath());
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
