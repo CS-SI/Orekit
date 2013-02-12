@@ -29,9 +29,9 @@ public interface AccelerationJacobiansProvider extends Parameterizable {
 
     /** Compute acceleration derivatives with respect to state parameters.
      * @param s spacecraft state
-     * @param dAccdPos acceleration derivatives with respect to position
-     * @param dAccdVel acceleration derivatives with respect to velocity
-     * @param dAccdM acceleration derivatives with respect to mass (may be null when
+     * @param dAccdPos array where to <em>accumulate</em> acceleration derivatives with respect to position
+     * @param dAccdVel array where to <em>accumulate</em> acceleration derivatives with respect to velocity
+     * @param dAccdM array where to <em>accumulate</em> acceleration derivatives with respect to mass (may be null when
      * the caller does not need the derivatives with respect to mass)
      * @exception OrekitException if derivatives cannot be computed
      */
@@ -41,7 +41,7 @@ public interface AccelerationJacobiansProvider extends Parameterizable {
     /** Compute acceleration derivatives with respect to additional parameters.
      * @param s spacecraft state
      * @param paramName name of the parameter with respect to which derivatives are required
-     * @param dAccdParam acceleration derivatives with respect to specified parameters
+     * @param dAccdParam array where to <em>accumulate</em> acceleration derivatives with respect to specified parameters
      * @exception OrekitException if derivatives cannot be computed
      */
     void addDAccDParam(SpacecraftState s, String paramName, double[] dAccdParam)
