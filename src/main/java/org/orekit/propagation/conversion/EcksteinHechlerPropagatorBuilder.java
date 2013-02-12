@@ -23,7 +23,8 @@ import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.propagation.Propagator;
@@ -38,32 +39,25 @@ import org.orekit.utils.PVCoordinates;
 public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
                                               implements PropagatorBuilder {
 
-    /** Reference radius of the central body attraction model (m). */
-    private final double referenceRadius;
-
-    /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
-    private final double mu;
-
-    /** Un-normalized zonal coefficient (about -1.08e-3 for Earth). */
-    private final double c20;
-
-    /** Un-normalized zonal coefficient (about +2.53e-6 for Earth). */
-    private final double c30;
-
-    /** Un-normalized zonal coefficient (about +1.62e-6 for Earth). */
-    private final double c40;
-
-    /** Un-normalized zonal coefficient (about +2.28e-7 for Earth). */
-    private final double c50;
-
-    /** Un-normalized zonal coefficient (about -5.41e-7 for Earth). */
-    private final double c60;
+    /** Provider for un-normalized coefficients. */
+    private final UnnormalizedSphericalHarmonicsProvider provider;
 
     /** Frame in which the orbit is propagated. */
     private final Frame frame;
 
     /** List of the free parameters names. */
     private Collection<String> freeParameters;
+
+    /** Build a new instance.
+     * @param frame the frame in which the orbit is propagated
+     *        (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param provider for un-normalized zonal coefficients
+     */
+    public EcksteinHechlerPropagatorBuilder(final Frame frame,
+                                            final UnnormalizedSphericalHarmonicsProvider provider) {
+        this.frame    = frame;
+        this.provider = provider;
+    }
 
     /** Build a new instance.
      * @param frame the frame in which the orbit is propagated
@@ -84,19 +78,46 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
                                             final double c40,
                                             final double c50,
                                             final double c60) {
-        this.frame           = frame;
-        this.referenceRadius = referenceRadius;
-        this.mu              = mu;
-        this.c20             = c20;
-        this.c30             = c30;
-        this.c40             = c40;
-        this.c50             = c50;
-        this.c60             = c60;
+        this(frame,
+             GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu,
+                                                         new double[][] {
+                                                             {
+                                                                 0
+                                                             }, {
+                                                                 0
+                                                             }, {
+                                                                 c20
+                                                             }, {
+                                                                 c30
+                                                             }, {
+                                                                 c40
+                                                             }, {
+                                                                 c50
+                                                             }, {
+                                                                 c60
+                                                             }
+                                                         }, new double[][] {
+                                                             {
+                                                                 0
+                                                             }, {
+                                                                 0
+                                                             }, {
+                                                                 0
+                                                             }, {
+                                                                 0
+                                                             }, {
+                                                                 0
+                                                             }, {
+                                                                 0
+                                                             }, {
+                                                                 0
+                                                             }
+                                                         }));
     }
 
     /** {@inheritDoc} */
     public Propagator buildPropagator(final AbsoluteDate date, final double[] parameters)
-        throws PropagationException {
+        throws OrekitException {
 
         if (parameters.length != (freeParameters.size() + 6)) {
             throw OrekitException.createIllegalArgumentException(LocalizedFormats.DIMENSIONS_MISMATCH);
@@ -108,9 +129,9 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
                                                                       new Vector3D(parameters[3],
                                                                                    parameters[4],
                                                                                    parameters[5])),
-                                                    frame, date, mu);
+                                                    frame, date, provider.getMu());
 
-        return new EcksteinHechlerPropagator(orb, referenceRadius, mu, c20, c30, c40, c50, c60);
+        return new EcksteinHechlerPropagator(orb, provider);
     }
 
     /** {@inheritDoc} */

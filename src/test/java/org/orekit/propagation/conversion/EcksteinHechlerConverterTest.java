@@ -25,6 +25,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
@@ -37,16 +39,7 @@ import org.orekit.utils.PVCoordinates;
 public class EcksteinHechlerConverterTest {
 
     private Orbit orbit;
-
-    private final static Vector3D position = new Vector3D(3220103., 69623., 6449822.);
-    private final static Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
-    private final static double mu  = 3.9860047e14;
-    private final static double ae  = 6.378137e6;
-    private final static double c20 = -1.08263e-3;
-    private final static double c30 = 2.54e-6;
-    private final static double c40 = 1.62e-6;
-    private final static double c50 = 2.3e-7;
-    private final static double c60 = -5.5e-7;
+    private UnnormalizedSphericalHarmonicsProvider provider;
 
     @Test
     public void testConversionPositionVelocity() throws OrekitException {
@@ -66,15 +59,13 @@ public class EcksteinHechlerConverterTest {
                             final double expectedRMS)
         throws OrekitException {
 
-        Propagator p = new EcksteinHechlerPropagator(orbit,
-                                                     ae, mu, c20, c30, c40, c50, c60);
+        Propagator p = new EcksteinHechlerPropagator(orbit, provider);
         List<SpacecraftState> sample = new ArrayList<SpacecraftState>();
         for (double dt = 0; dt < duration; dt += stepSize) {
             sample.add(p.propagate(orbit.getDate().shiftedBy(dt)));
         }
 
-        PropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(p.getFrame(),
-                                                                         ae, mu, c20, c30, c40, c50, c60);
+        PropagatorBuilder builder = new EcksteinHechlerPropagatorBuilder(p.getFrame(), provider);
 
         FiniteDifferencePropagatorConverter fitter = new FiniteDifferencePropagatorConverter(builder,
                                                                                              threshold,
@@ -115,7 +106,19 @@ public class EcksteinHechlerConverterTest {
         Utils.setDataRoot("regular-data");
 
         AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
-        orbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
+
+         double mu  = 3.9860047e14;
+         double ae  = 6.378137e6;
+         double[][] cnm = new double[][] {
+             { 0 }, { 0 }, { -1.08263e-3 }, { 2.54e-6 }, { 1.62e-6 }, { 2.3e-7 }, { -5.5e-7 }
+            };
+         double[][] snm = new double[][] {
+             { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }
+            };
+         provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, cnm, snm);
+
+        orbit = new EquinoctialOrbit(new PVCoordinates(new Vector3D(3220103., 69623., 6449822.),
+                                                       new Vector3D(6414.7, -2006., -3180.)),
                                      FramesFactory.getEME2000(), initDate, mu);
     }
 

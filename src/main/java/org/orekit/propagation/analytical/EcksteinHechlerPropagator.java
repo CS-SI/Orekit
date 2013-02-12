@@ -22,6 +22,7 @@ import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -85,6 +86,24 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** Un-normalized zonal coefficient (about -5.41e-7 for Earth). */
     private double c60;
 
+    /** Build a propagator from orbit and potential provider.
+     * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
+     * @param initialOrbit initial orbit
+     * @param provider for un-normalized zonal coefficients
+     * @exception OrekitException if the zonal coefficients cannot be retrieved
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final UnnormalizedSphericalHarmonicsProvider provider)
+        throws PropagationException , OrekitException {
+        this(initialOrbit, provider.getAe(), provider.getMu(),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
+    }
+
     /** Build a propagator from orbit and potential.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
@@ -112,6 +131,25 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double c50, final double c60)
         throws PropagationException {
         this(initialOrbit, DEFAULT_LAW, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
+    }
+
+    /** Build a propagator from orbit, mass and potential provider.
+     * <p>Attitude law is set to an unspecified non-null arbitrary value.</p>
+     * @param initialOrbit initial orbit
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @exception OrekitException if the zonal coefficients cannot be retrieved
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit, final double mass,
+                                     final UnnormalizedSphericalHarmonicsProvider provider)
+        throws PropagationException , OrekitException {
+        this(initialOrbit, mass, provider.getAe(), provider.getMu(),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
     }
 
     /** Build a propagator from orbit, mass and potential.
@@ -143,6 +181,26 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         this(initialOrbit, DEFAULT_LAW, mass, referenceRadius, mu, c20, c30, c40, c50, c60);
     }
 
+    /** Build a propagator from orbit, attitude provider and potential provider.
+     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param provider for un-normalized zonal coefficients
+     * @exception OrekitException if the zonal coefficients cannot be retrieved
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitudeProv,
+                                     final UnnormalizedSphericalHarmonicsProvider provider)
+        throws PropagationException , OrekitException {
+        this(initialOrbit, attitudeProv, provider.getAe(), provider.getMu(),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
+    }
+
     /** Build a propagator from orbit, attitude provider and potential.
      * <p>Mass is set to an unspecified non-null arbitrary value.</p>
      * <p>The C<sub>n,0</sub> coefficients are the denormalized zonal coefficients, they
@@ -171,6 +229,27 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double c50, final double c60)
         throws PropagationException {
         this(initialOrbit, attitudeProv, DEFAULT_MASS, referenceRadius, mu, c20, c30, c40, c50, c60);
+    }
+
+    /** Build a propagator from orbit, attitude provider, mass and potential provider.
+     * @param initialOrbit initial orbit
+     * @param attitudeProv attitude provider
+     * @param mass spacecraft mass
+     * @param provider for un-normalized zonal coefficients
+     * @exception OrekitException if the zonal coefficients cannot be retrieved
+     * @exception PropagationException if the mean parameters cannot be computed
+     */
+    public EcksteinHechlerPropagator(final Orbit initialOrbit,
+                                     final AttitudeProvider attitudeProv,
+                                     final double mass,
+                                     final UnnormalizedSphericalHarmonicsProvider provider)
+        throws PropagationException , OrekitException {
+        this(initialOrbit, attitudeProv, mass, provider.getAe(), provider.getMu(),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 2, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 3, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 4, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 5, 0),
+             provider.getUnnormalizedCnm(provider.getOffset(initialOrbit.getDate()), 6, 0));
     }
 
     /** Build a propagator from orbit, attitude provider, mass and potential.
@@ -283,6 +362,22 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             sinI4 = sinI2 * sinI2;
             sinI6 = sinI2 * sinI4;
 
+            if (sinI2 < 1.0e-10) {
+                throw new PropagationException(OrekitMessages.ALMOST_EQUATORIAL_ORBIT,
+                                               FastMath.toDegrees(mean.getI()));
+            }
+
+            if (FastMath.abs(sinI2 - 4.0 / 5.0) < 1.0e-3) {
+                throw new PropagationException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
+                                               FastMath.toDegrees(mean.getI()));
+            }
+
+            if (mean.getE() > 0.1) {
+                // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
+                throw new PropagationException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL,
+                                               mean.getE());
+            }
+
             // recompute the osculating parameters from the current mean parameters
             final CircularOrbit rebuilt = (CircularOrbit) propagateOrbit(mean.getDate());
 
@@ -314,27 +409,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                 (FastMath.abs(deltaI)      < thresholdAngles) &&
                 (FastMath.abs(deltaRAAN)   < thresholdAngles) &&
                 (FastMath.abs(deltaAlphaM) < thresholdAngles)) {
-
-                // sanity checks
-                final double e = mean.getE();
-                if (e > 0.1) {
-                    // if 0.005 < e < 0.1 no error is triggered, but accuracy is poor
-                    throw new PropagationException(OrekitMessages.TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL, e);
-                }
-
-                final double meanI = mean.getI();
-                if ((meanI < 0.) || (meanI > FastMath.PI) || (FastMath.abs(FastMath.sin(meanI)) < 1.0e-10)) {
-                    throw new PropagationException(OrekitMessages.ALMOST_EQUATORIAL_ORBIT,
-                                                   FastMath.toDegrees(meanI));
-                }
-
-                if ((FastMath.abs(meanI - 1.1071487) < 1.0e-3) || (FastMath.abs(meanI - 2.0344439) < 1.0e-3)) {
-                    throw new PropagationException(OrekitMessages.ALMOST_CRITICALLY_INCLINED_ORBIT,
-                                                   FastMath.toDegrees(meanI));
-                }
-
                 return;
-
             }
 
         }
