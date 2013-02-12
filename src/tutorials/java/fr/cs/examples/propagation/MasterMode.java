@@ -129,9 +129,6 @@ public class MasterMode {
      */
     private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -8909135870522456848L;
-
         private TutorialStepHandler() {
             //private constructor
         }

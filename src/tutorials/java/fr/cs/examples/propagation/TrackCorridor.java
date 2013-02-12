@@ -230,9 +230,6 @@ public class TrackCorridor {
     /** Step handler storing corridor points. */
     private static class CorridorHandler implements OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 2568777592979463855L;
-
         /** Earth model. */
         private final BodyShape earth;
 

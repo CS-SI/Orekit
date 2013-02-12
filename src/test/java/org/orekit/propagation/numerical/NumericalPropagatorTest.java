@@ -260,7 +260,6 @@ public class NumericalPropagatorTest {
     @Test(expected=OrekitException.class)
     public void testException() throws OrekitException {
         propagator.setMasterMode(new OrekitStepHandler() {
-            private static final long serialVersionUID = -6857910416285189873L;
             private int countDown = 3;
             private AbsoluteDate previousCall = null;
             public void init(SpacecraftState s0, AbsoluteDate t) {

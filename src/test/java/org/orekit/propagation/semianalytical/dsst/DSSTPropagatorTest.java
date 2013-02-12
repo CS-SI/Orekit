@@ -486,9 +486,6 @@ public class DSSTPropagatorTest {
          */
         private final double[] tolerance;
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -8909135870522456848L;
-
         /** Constructor
          *
          *  @param propagatorRef Reference propagator

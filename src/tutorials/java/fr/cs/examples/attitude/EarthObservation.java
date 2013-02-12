@@ -120,7 +120,6 @@ public class EarthObservation {
             attitudesSequence.registerSwitchEvents(propagator);
 
             propagator.setMasterMode(180.0, new OrekitFixedStepHandler() {
-                private static final long serialVersionUID = -5740543464313002093L;
                 public void init(final SpacecraftState s0, final AbsoluteDate t) {
                 }
                 public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {

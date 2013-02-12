@@ -398,7 +398,6 @@ public class PartialDerivativesTest {
 
     private static class PickUpHandler implements OrekitStepHandler {
 
-        private static final long serialVersionUID = 8040284226089555027L;
         private final JacobiansMapper mapper;
         private final AbsoluteDate pickUpDate;
         private final double[][] dYdY0;

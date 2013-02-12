@@ -16,8 +16,6 @@
  */
 package org.orekit.propagation.sampling;
 
-import java.io.Serializable;
-
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -29,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
  * a space-dynamics interface to the methods.</p>
  * @author Luc Maisonobe
  */
-public interface OrekitFixedStepHandler extends Serializable {
+public interface OrekitFixedStepHandler {
 
     /** Initialize step handler at the start of a propagation.
      * <p>
@@ -39,8 +37,9 @@ public interface OrekitFixedStepHandler extends Serializable {
      * </p>
      * @param s0 initial state
      * @param t target time for the integration
+     * @exception PropagationException if step handler cannot be initialized
      */
-    void init(SpacecraftState s0, AbsoluteDate t);
+    void init(SpacecraftState s0, AbsoluteDate t) throws PropagationException;
 
     /** Handle the current step.
      * @param currentState current state at step time

@@ -321,9 +321,6 @@ public class HolmesFeatherstoneAttractionModelTest {
 
     private static class SpotStepHandler implements OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 6818305166004802991L;
-
         public SpotStepHandler(AbsoluteDate date, double mu) throws OrekitException {
             sun       = CelestialBodyFactory.getSun();
             previous  = Double.NaN;
@@ -395,9 +392,6 @@ public class HolmesFeatherstoneAttractionModelTest {
     }
 
     private static class EckStepHandler implements OrekitFixedStepHandler {
-
-        /**Serializable UID. */
-        private static final long serialVersionUID = 6132817809836153771L;
 
         /** Body mu */
         private static final double mu =  3.986004415e+14;
@@ -753,8 +747,6 @@ public class HolmesFeatherstoneAttractionModelTest {
         final double[][] dYdY0 = new double[6][6];
         propagator.setMasterMode(new OrekitStepHandler() {
             
-            private static final long serialVersionUID = 1L;
-
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             

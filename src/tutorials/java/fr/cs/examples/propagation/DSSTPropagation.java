@@ -582,9 +582,6 @@ public class DSSTPropagation {
     /** Specialized step handler catching the orbit at each step. */
     private static class OrbitHandler implements OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long   serialVersionUID = -8909135870522456848L;
-
         /** List of orbits. */
         private final List<Orbit> orbits;
 

@@ -33,9 +33,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OrekitStepNormalizer implements OrekitStepHandler {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 6335110162884693078L;
-
     /** Fixed time step. */
     private double h;
 
@@ -74,7 +71,8 @@ public class OrekitStepNormalizer implements OrekitStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t)
+        throws PropagationException {
         lastDate  = null;
         lastState = null;
         forward   = true;

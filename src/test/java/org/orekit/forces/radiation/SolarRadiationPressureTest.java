@@ -149,9 +149,6 @@ public class SolarRadiationPressureTest {
 
     private static class SolarStepHandler implements OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -2346826010279512941L;
-
         private SolarStepHandler() {
         }
 

@@ -341,7 +341,6 @@ public class KeplerianPropagatorTest {
         OrekitStepHandlerMultiplexer multiplexer = new OrekitStepHandlerMultiplexer();
         propagator.setMasterMode(multiplexer);
         multiplexer.add(new OrekitStepHandler() {
-            private static final long serialVersionUID = 8183822352839222377L;
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(OrekitStepInterpolator interpolator,
@@ -352,7 +351,6 @@ public class KeplerianPropagatorTest {
             }
         });
         propagator.setMasterMode(new OrekitStepHandler() {
-            private static final long serialVersionUID = 8183822352839222377L;
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
             public void handleStep(OrekitStepInterpolator interpolator,
@@ -481,7 +479,6 @@ public class KeplerianPropagatorTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = 100.0;
         propagator.setMasterMode(step, new OrekitFixedStepHandler() {
-            private static final long serialVersionUID = 5343978335581094125L;
             private AbsoluteDate previous;
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
@@ -505,7 +502,6 @@ public class KeplerianPropagatorTest {
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final double step = orbit.getKeplerianPeriod() / 100;
         propagator.setMasterMode(new OrekitStepHandler() {
-            private static final long serialVersionUID = -7257691813065811595L;
             private AbsoluteDate previous;
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }

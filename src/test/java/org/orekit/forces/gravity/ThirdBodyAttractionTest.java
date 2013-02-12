@@ -61,7 +61,6 @@ public class ThirdBodyAttractionTest {
 
         // set up step handler to perform checks
         calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
-            private static final long serialVersionUID = 6539780121834779598L;
             protected double hXRef(double t) {
                 return -1.06757e-3 + 0.221415e-11 * t + 18.9421e-5 *
                 FastMath.cos(3.9820426e-7*t) - 7.59983e-5 * FastMath.sin(3.9820426e-7*t);
@@ -98,7 +97,6 @@ public class ThirdBodyAttractionTest {
 
         // set up step handler to perform checks
         calc.setMasterMode(FastMath.floor(period), new ReferenceChecker(date) {
-            private static final long serialVersionUID = -4725658720642817168L;
             protected double hXRef(double t) {
                 return  -0.000906173 + 1.93933e-11 * t +
                          1.0856e-06  * FastMath.cos(5.30637e-05 * t) -
@@ -118,7 +116,6 @@ public class ThirdBodyAttractionTest {
 
     private static abstract class ReferenceChecker implements OrekitFixedStepHandler {
 
-        private static final long serialVersionUID = -2167849325324684095L;
         private final AbsoluteDate reference;
 
         protected ReferenceChecker(AbsoluteDate reference) {

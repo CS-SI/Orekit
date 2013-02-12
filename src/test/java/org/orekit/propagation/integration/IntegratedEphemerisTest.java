@@ -103,7 +103,6 @@ public class IntegratedEphemerisTest {
         BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
         ephemeris.setMasterMode(new OrekitStepHandler() {
 
-            private static final long serialVersionUID = -5825020344303732268L;
             private final Array2DRowRealMatrix dYdY0 = new Array2DRowRealMatrix(6, 6);
 
             public void init(SpacecraftState s0, AbsoluteDate t) {

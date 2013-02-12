@@ -204,9 +204,6 @@ public class PropagatorConversion {
      */
     private static class StatesHandler implements OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -8909135870522456848L;
-
         /** Points. */
         private final List<SpacecraftState> states;
 

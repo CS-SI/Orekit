@@ -29,9 +29,6 @@ import org.orekit.time.AbsoluteDate;
  */
 public class OrekitStepHandlerMultiplexer implements OrekitStepHandler {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -5957903354538173269L;
-
     /** Underlying step handlers. */
     private final List<OrekitStepHandler> handlers;
 
@@ -49,7 +46,8 @@ public class OrekitStepHandlerMultiplexer implements OrekitStepHandler {
     }
 
     /** {@inheritDoc} */
-    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    public void init(final SpacecraftState s0, final AbsoluteDate t)
+        throws PropagationException {
         for (final OrekitStepHandler handler : handlers) {
             handler.init(s0, t);
         }

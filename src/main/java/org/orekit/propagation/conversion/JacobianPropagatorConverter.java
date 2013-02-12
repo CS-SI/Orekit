@@ -137,9 +137,6 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
     /** Internal class for jacobians handling. */
     private static class JacobianHandler implements OrekitStepHandler {
 
-        /** Serial Version UID. */
-        private static final long serialVersionUID = 8040284226089555027L;
-
         /** Jacobians mapper. */
         private transient JacobiansMapper mapper;
 

@@ -94,9 +94,6 @@ public class DrozinerAttractionModelTest {
 
     private static class SpotStepHandler implements OrekitFixedStepHandler {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -3917769828973243346L;
-
         public SpotStepHandler() throws OrekitException {
             sun       = CelestialBodyFactory.getSun();
             previous  = Double.NaN;
@@ -166,9 +163,6 @@ public class DrozinerAttractionModelTest {
     }
 
     private static class EckStepHandler implements OrekitFixedStepHandler {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = -7974453505641400294L;
 
         private EckStepHandler(Orbit initialOrbit, double ae, double mu,
                                double c20, double c30, double c40, double c50, double c60)

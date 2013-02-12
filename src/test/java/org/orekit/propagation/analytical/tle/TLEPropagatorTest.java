@@ -133,8 +133,6 @@ public class TLEPropagatorTest {
 
     private static class DistanceChecker implements OrekitFixedStepHandler {
 
-        private static final long serialVersionUID = -7778088499864710110L;
-
         private final Frame itrf;
         private double minDistance;
         private double maxDistance;

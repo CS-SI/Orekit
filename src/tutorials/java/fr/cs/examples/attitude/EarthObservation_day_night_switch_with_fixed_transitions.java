@@ -282,7 +282,6 @@ public class EarthObservation_day_night_switch_with_fixed_transitions {
             attitudesSequence.registerSwitchEvents(propagator);
 
             propagator.setMasterMode(10.0, new OrekitFixedStepHandler() {
-                private static final long serialVersionUID = -5740543464313002093L;
                 private DecimalFormat f1 = new DecimalFormat("0.0000000000000000E00",
                                                              new DecimalFormatSymbols(Locale.US));
                 private Vector3DFormat f2 = new Vector3DFormat(" ", " ", " ", f1);
