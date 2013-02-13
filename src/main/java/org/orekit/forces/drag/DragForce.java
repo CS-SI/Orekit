@@ -16,13 +16,9 @@
  */
 package org.orekit.forces.drag;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.Parameterizable;
+import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
@@ -46,17 +42,10 @@ import org.orekit.time.AbsoluteDate;
  * @author Pascal Parraud
  */
 
-public class DragForce implements ForceModel, Parameterizable {
+public class DragForce extends AbstractParameterizable implements ForceModel {
 
     /** Parameter name for drag coefficient enabling jacobian processing. */
     public static final String DRAG_COEFFICIENT = "DRAG COEFFICIENT";
-
-    /** List of the parameters names. */
-    private static final ArrayList<String> PARAMETERS_NAMES;
-    static {
-        PARAMETERS_NAMES = new ArrayList<String>();
-        PARAMETERS_NAMES.add(DRAG_COEFFICIENT);
-    }
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
@@ -69,6 +58,7 @@ public class DragForce implements ForceModel, Parameterizable {
      * @param spacecraft the object physical and geometrical information
      */
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
+        super(DRAG_COEFFICIENT);
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }
@@ -102,32 +92,15 @@ public class DragForce implements ForceModel, Parameterizable {
         return new EventDetector[0];
     }
 
-    /** {@inheritDoc} */
-    public Collection<String> getParametersNames() {
-        return PARAMETERS_NAMES;
-    }
-
-    /** {@inheritDoc} */
-    public boolean isSupported(final String name) {
-        return name.equals(DRAG_COEFFICIENT);
-    }
-
-    /** {@inheritDoc} */
     public double getParameter(final String name) throws IllegalArgumentException {
-        if (name.matches(DRAG_COEFFICIENT)) {
-            return spacecraft.getDragCoefficient();
-        } else {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
-        }
+        complainIfNotSupported(name);
+        return spacecraft.getDragCoefficient();
     }
 
     /** {@inheritDoc} */
     public void setParameter(final String name, final double value) throws IllegalArgumentException {
-        if (name.matches(DRAG_COEFFICIENT)) {
-            spacecraft.setDragCoefficient(value);
-        } else {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, name);
-        }
+        complainIfNotSupported(name);
+        spacecraft.setDragCoefficient(value);
     }
 
 }
