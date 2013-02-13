@@ -163,6 +163,22 @@ public class GravityFieldFactory {
         return new WrappingNormalizedProvider(new ConstantSphericalHarmonics(ae, mu, normalizedC, normalizedS));
     }
 
+    /** Create a {@link NormalizedSphericalHarmonicsProvider} from an {@link UnnormalizedSphericalHarmonicsProvider}.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data.
+     * </p>
+     * @param unnormalized provider to normalize
+     * @return provider for normalized coefficients
+     * @exception OrekitException if degree and order are too large
+     * and the normalization coefficients underflow
+     * @since 6.0
+     */
+    public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final UnnormalizedSphericalHarmonicsProvider unnormalized)
+        throws OrekitException {
+        return new Normalizer(unnormalized);
+    }
+
     /** Get the constant gravity field coefficients provider from the first supported file.
      * <p>
      * If no {@link PotentialCoefficientsReader} has been added by calling {@link
@@ -229,6 +245,22 @@ public class GravityFieldFactory {
                                                                                  final double[][] unnormalizedC,
                                                                                  final double[][] unnormalizedS) {
         return new WrappingUnnormalizedProvider(new ConstantSphericalHarmonics(ae, mu, unnormalizedC, unnormalizedS));
+    }
+
+    /** Create an {@link UnnormalizedSphericalHarmonicsProvider} from a {@link NormalizedSphericalHarmonicsProvider}.
+     * <p>
+     * Note that contrary to the other factory method, this one does not read any data, it simply uses
+     * the provided data.
+     * </p>
+     * @param normalized provider to un-normalize
+     * @return provider for un-normalized coefficients
+     * @exception OrekitException if degree and order are too large
+     * and the un-normalization coefficients underflow
+     * @since 6.0
+     */
+    public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final NormalizedSphericalHarmonicsProvider normalized)
+        throws OrekitException {
+        return new Unnormalizer(normalized);
     }
 
     /** Get the gravity field coefficients provider from the first supported file.

@@ -29,6 +29,7 @@ import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 
 public class GravityFieldFactoryTest {
 
@@ -145,6 +146,64 @@ public class GravityFieldFactoryTest {
     @Test(expected=OrekitException.class)
     public void testNormalizationUnderflowLowOrde2() throws OrekitException {
         GravityFieldFactory.getUnnormalizationFactors(393, 64);
+    }
+
+    @Test
+    public void testUnnormalizer() throws OrekitException {
+        Utils.setDataRoot("potential/icgem-format");
+        UnnormalizedSphericalHarmonicsProvider ref =
+                GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        NormalizedSphericalHarmonicsProvider normalized =
+                GravityFieldFactory.getNormalizedProvider(5, 5);
+        UnnormalizedSphericalHarmonicsProvider unnormalized =
+                GravityFieldFactory.getUnnormalizedProvider(normalized);
+        Assert.assertEquals(ref.getMaxDegree(), unnormalized.getMaxDegree());
+        Assert.assertEquals(ref.getMaxOrder(), unnormalized.getMaxOrder());
+        Assert.assertEquals(ref.getReferenceDate(), unnormalized.getReferenceDate());
+        Assert.assertEquals(ref.getAe(), unnormalized.getAe(), FastMath.ulp(ref.getAe()));
+        Assert.assertEquals(ref.getMu(), unnormalized.getMu(), FastMath.ulp(ref.getMu()));
+        Assert.assertEquals(ref.getOffset(AbsoluteDate.GPS_EPOCH),
+                            unnormalized.getOffset(AbsoluteDate.GPS_EPOCH),
+                            FastMath.ulp(ref.getOffset(AbsoluteDate.GPS_EPOCH)));
+        for (int i = 0; i <= 5; ++i) {
+            for (int j = 0; j <= i; ++j) {
+                double cRef  = ref.getUnnormalizedCnm(1.23456e8, i, j);
+                double cTest = unnormalized.getUnnormalizedCnm(1.23456e8, i, j);
+                Assert.assertEquals(cRef, cTest, FastMath.ulp(cRef));
+                double sRef  = ref.getUnnormalizedSnm(1.23456e8, i, j);
+                double sTest = unnormalized.getUnnormalizedSnm(1.23456e8, i, j);
+                Assert.assertEquals(sRef, sTest, FastMath.ulp(sRef));
+            }
+        }
+    }
+
+    @Test
+    public void testNormalizer() throws OrekitException {
+        Utils.setDataRoot("potential/icgem-format");
+        NormalizedSphericalHarmonicsProvider ref =
+                GravityFieldFactory.getNormalizedProvider(5, 5);
+        UnnormalizedSphericalHarmonicsProvider unnormalized =
+                GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        NormalizedSphericalHarmonicsProvider normalized =
+                GravityFieldFactory.getNormalizedProvider(unnormalized);
+        Assert.assertEquals(ref.getMaxDegree(), normalized.getMaxDegree());
+        Assert.assertEquals(ref.getMaxOrder(), normalized.getMaxOrder());
+        Assert.assertEquals(ref.getReferenceDate(), normalized.getReferenceDate());
+        Assert.assertEquals(ref.getAe(), normalized.getAe(), FastMath.ulp(ref.getAe()));
+        Assert.assertEquals(ref.getMu(), normalized.getMu(), FastMath.ulp(ref.getMu()));
+        Assert.assertEquals(ref.getOffset(AbsoluteDate.GPS_EPOCH),
+                            normalized.getOffset(AbsoluteDate.GPS_EPOCH),
+                            FastMath.ulp(ref.getOffset(AbsoluteDate.GPS_EPOCH)));
+        for (int i = 0; i <= 5; ++i) {
+            for (int j = 0; j <= i; ++j) {
+                double cRef  = ref.getNormalizedCnm(1.23456e8, i, j);
+                double cTest = normalized.getNormalizedCnm(1.23456e8, i, j);
+                Assert.assertEquals(cRef, cTest, FastMath.ulp(cRef));
+                double sRef  = ref.getNormalizedSnm(1.23456e8, i, j);
+                double sTest = normalized.getNormalizedSnm(1.23456e8, i, j);
+                Assert.assertEquals(sRef, sTest, FastMath.ulp(sRef));
+            }
+        }
     }
 
 }
