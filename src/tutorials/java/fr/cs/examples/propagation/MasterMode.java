@@ -22,9 +22,9 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -94,17 +94,11 @@ public class MasterMode {
             propagator.setOrbitType(propagationType);
 
             // Force Model (reduced to perturbing gravity field)
-            // Earth equatorial radius in meter
-            final double ae =  6378137.;
-            // Potential coefficients arrays (only J2 is considered here)
-            final double[][] c = new double[3][1];
-            final double[][] s = new double[3][1];
-            c[2][0] = -1.08262631303e-3;
-            final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, c, s);
-            ForceModel cunningham = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
+            final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
+            ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
 
             // Add force model to the propagator
-            propagator.addForceModel(cunningham);
+            propagator.addForceModel(holmesFeatherstone);
 
             // Set up initial state in the propagator
             propagator.setInitialState(initialState);

@@ -39,7 +39,7 @@ import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.HarrisPriester;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
@@ -198,7 +198,8 @@ public class DSSTPropagatorTest {
         // Central Body Force Model 5x0
         // force expression :
         DSSTForceModel force = new DSSTCentralBody(FramesFactory.getITRF2005(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, provider);
-        ForceModel nForce = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
+        ForceModel nForce = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+                                                                  GravityFieldFactory.getNormalizedProvider(provider));
 
         // Reset propagators
         setNumProp(orbit);

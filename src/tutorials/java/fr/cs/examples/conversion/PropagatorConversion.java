@@ -29,9 +29,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -66,7 +66,7 @@ public class PropagatorConversion {
             Autoconfiguration.configureOrekit();
 
             // gravity field
-            UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
+            NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(2, 0);
             double mu =  provider.getMu();
 
             // inertial frame
@@ -106,7 +106,7 @@ public class PropagatorConversion {
 
             // Force Models:
             // 1 - Perturbing gravity field (only J2 is considered here)
-            ForceModel gravity = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
+            ForceModel gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
 
             // Add force models to the propagator
             numProp.addForceModel(gravity);

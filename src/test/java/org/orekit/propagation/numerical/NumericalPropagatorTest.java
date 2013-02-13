@@ -33,7 +33,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.SHMFormatReader;
 import org.orekit.frames.Frame;
@@ -139,8 +139,8 @@ public class NumericalPropagatorTest {
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                          GravityFieldFactory.getUnnormalizedProvider(5, 5));
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+                                                  GravityFieldFactory.getNormalizedProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt
@@ -201,8 +201,8 @@ public class NumericalPropagatorTest {
                                                    mu));
 
         ForceModel gravityField =
-            new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                          GravityFieldFactory.getUnnormalizedProvider(5, 5));
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+                                                  GravityFieldFactory.getNormalizedProvider(5, 5));
         propagator.addForceModel(gravityField);
 
         // Propagation of the initial at t + dt

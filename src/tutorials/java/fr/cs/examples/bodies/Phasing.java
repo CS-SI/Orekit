@@ -43,10 +43,10 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.GTODProvider;
@@ -76,7 +76,7 @@ public class Phasing {
     private final GTODProvider gtod;
 
     /** Gravity field. */
-    private UnnormalizedSphericalHarmonicsProvider gravityField;
+    private NormalizedSphericalHarmonicsProvider gravityField;
 
     /** Earth model. */
     private final BodyShape earth;
@@ -188,7 +188,7 @@ public class Phasing {
             parser.getBoolean(ParameterKey.GRID_ASCENDING_5)
         };
 
-        gravityField = GravityFieldFactory.getUnnormalizedProvider(degree, order);
+        gravityField = GravityFieldFactory.getNormalizedProvider(degree, order);
 
         // initial guess for orbit
         CircularOrbit orbit = guessOrbit(date, FramesFactory.getEME2000(), nbOrbits, nbDays,
@@ -205,7 +205,7 @@ public class Phasing {
                                                tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-2 * orbit.getKeplerianPeriod());
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addForceModel(new CunninghamAttractionModel(FramesFactory.getGTOD(false), gravityField));
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(false), gravityField));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
@@ -214,7 +214,7 @@ public class Phasing {
 
         int counter = 0;
         DecimalFormat f = new DecimalFormat("0.000E00", new DecimalFormatSymbols(Locale.US));
-        while (deltaP > 1.0e-4 || deltaV > 1.0e-7) {
+        while (deltaP > 3.0e-1 || deltaV > 3.0e-4) {
 
             CircularOrbit previous = orbit;
 
@@ -277,8 +277,9 @@ public class Phasing {
         double a0      = FastMath.cbrt(mu / (n0 * n0));
 
         // initial inclination guess based on ascending node drift due to J2
-        double j2       = -gravityField.getUnnormalizedCnm(dateOffset, 2, 0);
-        double j3       = -gravityField.getUnnormalizedCnm(dateOffset, 3, 0);
+        double[][] unnormalization = GravityFieldFactory.getUnnormalizationFactors(3, 0);
+        double j2       = -unnormalization[2][0] * gravityField.getNormalizedCnm(dateOffset, 2, 0);
+        double j3       = -unnormalization[3][0] * gravityField.getNormalizedCnm(dateOffset, 3, 0);
         double raanRate = 2 * FastMath.PI / Constants.JULIAN_YEAR;
         double ae       = gravityField.getAe();
         double i0       = FastMath.acos(-raanRate * a0 * a0 / (1.5 * ae * ae * j2 * n0));
@@ -455,13 +456,14 @@ public class Phasing {
         propagator.resetInitialState(new SpacecraftState(previous));
         AbsoluteDate start = previous.getDate();
 
+        double[][] unnormalization = GravityFieldFactory.getUnnormalizationFactors(2, 0);
         double a    = previous.getA();
         double sinI = FastMath.sin(previous.getI());
         double aeOa = gravityField.getAe() / a;
         double mu   = gravityField.getMu();
         double n    = FastMath.sqrt(mu / a) / a;
-        double j2   = -gravityField.getUnnormalizedCnm(gravityField.getOffset(previous.getDate()),
-                                                       2, 0);
+        double j2   = -unnormalization[2][0] * gravityField.getNormalizedCnm(gravityField.getOffset(previous.getDate()),
+                                                                             2, 0);
         double frozenPulsation = 3 * n * j2 * aeOa * aeOa * (1 - 1.25 * sinI * sinI);
 
         // fit the eccentricity to an harmonic model with short and medium periods

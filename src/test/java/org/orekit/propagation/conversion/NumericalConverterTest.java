@@ -32,7 +32,7 @@ import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.SimpleExponentialAtmosphere;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.FramesFactory;
@@ -140,8 +140,8 @@ public class NumericalConverterTest {
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
-        gravity = new CunninghamAttractionModel(FramesFactory.getITRF2005(),
-                                                GravityFieldFactory.getUnnormalizedProvider(2, 0));
+        gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+                                                        GravityFieldFactory.getNormalizedProvider(2, 0));
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,

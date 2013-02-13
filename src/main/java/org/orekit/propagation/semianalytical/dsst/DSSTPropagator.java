@@ -34,8 +34,9 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
-import org.orekit.forces.gravity.CunninghamAttractionModel;
+import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
+import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
@@ -367,8 +368,10 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 if (force instanceof DSSTCentralBody) {
                     // Central body
                     final UnnormalizedSphericalHarmonicsProvider provider = ((DSSTCentralBody) force).getProvider();
-                    final ForceModel cunningham = new CunninghamAttractionModel(FramesFactory.getITRF2005(), provider);
-                    propagator.addForceModel(cunningham);
+                    final ForceModel holmesFeatherstone =
+                            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+                                                                  GravityFieldFactory.getNormalizedProvider(provider));
+                    propagator.addForceModel(holmesFeatherstone);
                 } else if (force instanceof DSSTThirdBody) {
                     // Third body
                     final CelestialBody body = ((DSSTThirdBody) force).getBody();

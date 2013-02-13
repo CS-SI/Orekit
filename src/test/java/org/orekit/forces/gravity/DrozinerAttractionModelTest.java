@@ -35,7 +35,10 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -203,10 +206,18 @@ public class DrozinerAttractionModelTest {
 
     }
 
-    // test the difference with the Cunningham model
+    // test the difference with the Holmes-Featherstone model
     @Test
-    public void testTesserealWithCunninghamReference()
+    public void testTesserealWithHolmesFeaterstoneReference()
         throws OrekitException, IOException, ParseException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+        UnnormalizedSphericalHarmonicsProvider unnormalized =
+                GravityFieldFactory.getUnnormalizedProvider(10, 10);
+        NormalizedSphericalHarmonicsProvider normalized =
+                GravityFieldFactory.getNormalizedProvider(10, 10);
+
         //  initialization
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
@@ -217,18 +228,19 @@ public class DrozinerAttractionModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005, GravityFieldFactory.getUnnormalizedProvider(ae, mu, C, S)));
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005, normalized));
         propagator.setInitialState(new SpacecraftState(orbit));
-        SpacecraftState cunnOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
+        SpacecraftState hfOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         propagator.removeForceModels();
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, GravityFieldFactory.getUnnormalizedProvider(ae, mu, C, S)));
+        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, unnormalized));
+                                                             
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState drozOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
-        Vector3D dif = cunnOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
-        Assert.assertEquals(0, dif.getNorm(), 1.5e-6);
+        Vector3D dif = hfOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
+        Assert.assertEquals(0, dif.getNorm(), 2e-9);
         Assert.assertTrue(propagator.getCalls() < 3500);
 
     }
@@ -276,31 +288,6 @@ public class DrozinerAttractionModelTest {
     private double c40;
     private double c50;
     private double c60;
-
-    private double[][] C = new double[][] {
-            {  1.000000000000e+00 },
-            { -1.863039013786e-09, -5.934448524722e-10 },
-            { -1.082626313026e-03, -5.880684168557e-10,  5.454582196865e-06 },
-            {  2.532480179720e-06,  5.372084926301e-06,  2.393880978120e-06,  1.908327022943e-06 },
-            {  1.619945370141e-06, -1.608435522852e-06,  1.051465706331e-06,  2.972622682182e-06,
-                -5.654946679590e-07 },
-                {  2.278882644141e-07, -2.086346283172e-07,  2.162761961684e-06, -1.498655671702e-06,
-                    -9.794826452868e-07,  5.797035241535e-07 },
-                    { -5.406186013322e-07, -2.736882085330e-07,  1.754209863998e-07,  2.063640268613e-07,
-                        -3.101287736303e-07, -9.633248308263e-07,  3.414597413636e-08 }
-    };
-    private double[][] S  = new double[][] {
-            {  0.000000000000e+00 },
-            {  0.000000000000e+00,  1.953002572897e-10 },
-            {  0.000000000000e+00,  3.277637296181e-09, -3.131184828481e-06 },
-            {  0.000000000000e+00,  6.566367025901e-07, -1.637705321455e-06,  3.742073902553e-06 },
-            {  0.000000000000e+00, -1.420694191113e-06,  1.987395414651e-06, -6.029325532200e-07,
-                9.265045448070e-07 },
-                {  0.000000000000e+00, -3.130219048314e-07, -1.072392243018e-06, -7.130099408898e-07,
-                    1.651623310985e-07, -2.220047616004e-06 },
-                    {  0.000000000000e+00,  9.562397128532e-08, -1.347688934659e-06,  3.220292843428e-08,
-                        -1.699735804354e-06, -1.934323349167e-06, -8.559943406892e-07 }
-    };
 
     private Frame   ITRF2005;
     private NumericalPropagator propagator;

@@ -36,6 +36,18 @@ import org.orekit.time.AbsoluteDate;
  * Andrzej Droziner (Institute of Mathematical Machines, Warsaw) in
  * his 1976 paper: <em>An algorithm for recurrent calculation of gravitational
  * acceleration</em> (artificial satellites, Vol. 12, No 2, June 1977).</p>
+ * <p>
+ * Note that this class can often not be used for high degrees (say
+ * above 90) as most modern gravity fields are provided as normalized
+ * coefficients and the un-normalization process to convert these
+ * coefficients underflows at degree and order 89. This class also
+ * does not provide analytical partial derivatives and is much slower
+ * than {@link HolmesFeatherstoneAttractionModel}. For all these reasons,
+ * it is recommended to use the {@link HolmesFeatherstoneAttractionModel
+ * Holmes-Featherstone model} rather than this class.
+ * </p>
+ *
+ * @see HolmesFeatherstoneAttractionModel
  *
  * @author Fabien Maussion
  * @author Luc Maisonobe

@@ -39,7 +39,18 @@ import org.orekit.time.AbsoluteDate;
  * his 1969 paper: <em>On the computation of the spherical harmonic
  * terms needed during the numerical integration of the orbital motion
  * of an artificial satellite</em> (Celestial Mechanics 2, 1970).</p>
+ * <p>
+ * Note that this class can often not be used for high degrees (say
+ * above 90) as most modern gravity fields are provided as normalized
+ * coefficients and the un-normalization process to convert these
+ * coefficients underflows at degree and order 89. This class also
+ * does not provide analytical partial derivatives and is much slower
+ * than {@link HolmesFeatherstoneAttractionModel}. For all these reasons,
+ * it is recommended to use the {@link HolmesFeatherstoneAttractionModel
+ * Holmes-Featherstone model} rather than this class.
+ * </p>
  *
+ * @see HolmesFeatherstoneAttractionModel
  * @author Fabien Maussion
  * @author Luc Maisonobe
  * @author V&eacute;ronique Pommier-Maurussane
