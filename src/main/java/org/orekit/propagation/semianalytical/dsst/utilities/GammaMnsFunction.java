@@ -34,8 +34,8 @@ public class GammaMnsFunction {
     /** Factorial. */
     private final double[] fact;
 
-    /** &gamma;. */
-    private final double gamma;
+    /** 1 + I * &gamma;. */
+    private final double opIg;
 
     /** I = +1 for a prograde orbit, -1 otherwise. */
     private final int    I;
@@ -46,10 +46,10 @@ public class GammaMnsFunction {
      *  @param I retrograde factor
      */
     public GammaMnsFunction(final double[] fact, final double gamma, final int I) {
-        this.fact  = fact.clone();
-        this.gamma = gamma;
-        this.I     = I;
-        this.map   = new TreeMap<MNSKey, Double>();
+        this.fact = fact.clone();
+        this.opIg = 1. + I * gamma;
+        this.I    = I;
+        this.map  = new TreeMap<MNSKey, Double>();
     }
 
     /** Get &Gamma; function value.
@@ -64,11 +64,11 @@ public class GammaMnsFunction {
             res = map.get(new MNSKey(m, n, s));
         } else {
             if (s <= -m) {
-                res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow(1 + I * gamma, -I * m);
+                res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow(opIg, -I * m);
             } else if (s >= m) {
-                res = FastMath.pow(2, -s) * FastMath.pow(1 + I * gamma, I * m);
+                res = FastMath.pow(2, -s) * FastMath.pow(opIg, I * m);
             } else {
-                res = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * FastMath.pow(1 + I * gamma, I * s);
+                res = FastMath.pow(-1, m - s) * FastMath.pow(2, -m) * FastMath.pow(opIg, I * s);
                 res *= fact[n + m] * fact[n - m];
                 res /= fact[n + s] * fact[n - s];
             }
@@ -86,11 +86,11 @@ public class GammaMnsFunction {
     public double getDerivative(final int m, final int n, final int s) {
         double res = 0.;
         if (s <= -m) {
-            res = -m * getValue(m, n, s) / (1 + I * gamma);
+            res = -m * I * getValue(m, n, s) / opIg;
         } else if (s >= m) {
-            res =  m * getValue(m, n, s) / (1 + I * gamma);
+            res =  m * I * getValue(m, n, s) / opIg;
         } else {
-            res =  s * getValue(m, n, s) / (1 + I * gamma);
+            res =  s * I * getValue(m, n, s) / opIg;
         }
         return res;
     }

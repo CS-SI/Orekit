@@ -16,14 +16,11 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
-import java.util.Set;
-
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.propagation.semianalytical.dsst.utilities.ResonantCouple;
 import org.orekit.time.AbsoluteDate;
 
 /** Central body gravitational contribution to the
@@ -126,19 +123,6 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         return shortPeriodics;
-    }
-
-    /** Set the resonant harmonic couples.
-     *  <p>
-     *  If the set is null or empty, the resonant couples will be automatically computed.
-     *  If it is not null nor empty, only these resonant couples will be taken in account.
-     *  </p>
-     *  @param resonantTesseral Set of resonant terms
-     */
-    public void setResonantTesseral(final Set<ResonantCouple> resonantTesseral) {
-        if (tesseral != null) {
-            tesseral.setResonantCouples(resonantTesseral);
-        }
     }
 
     /** Get the spherical harmonics provider.

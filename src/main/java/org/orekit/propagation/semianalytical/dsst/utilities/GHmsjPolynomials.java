@@ -217,17 +217,17 @@ public class GHmsjPolynomials {
      */
     public double getdHmsdh(final int m,  final int s, final int j) {
         final int sMj = FastMath.abs(s - j);
-        double dHmsdk = 0d;
+        double dHmsdh = 0d;
         if (FastMath.abs(s) <= m) {
             final int mMis = m - I * s;
-            dHmsdk = I * cjsjKH.getDcjDh(sMj) * cjsjAB.getSj(mMis) +
+            dHmsdh = I * cjsjKH.getDcjDh(sMj) * cjsjAB.getSj(mMis) +
                     sgn(s - j) * cjsjKH.getDsjDh(sMj) * cjsjAB.getCj(mMis);
         } else {
             final int sMim = FastMath.abs(s - I * m);
-            dHmsdk = -sgn(s - m) * cjsjKH.getDcjDh(sMj) * cjsjAB.getSj(sMim) +
+            dHmsdh = -sgn(s - m) * cjsjKH.getDcjDh(sMj) * cjsjAB.getSj(sMim) +
                     sgn(s - j) * cjsjKH.getDsjDh(sMj) * cjsjAB.getCj(sMim);
         }
-        return dHmsdk;
+        return dHmsdh;
     }
 
     /** Get the dH<sub>ms</sub><sup>j</sup> / d<sub>&alpha;</sub> coefficient.

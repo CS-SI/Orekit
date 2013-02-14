@@ -18,7 +18,6 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
@@ -37,7 +36,6 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.
 import org.orekit.propagation.semianalytical.dsst.utilities.GHmsjPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.GammaMnsFunction;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
-import org.orekit.propagation.semianalytical.dsst.utilities.ResonantCouple;
 import org.orekit.time.AbsoluteDate;
 
 /** Tesseral contribution to the {@link DSSTCentralBody central body gravitational
@@ -76,14 +74,14 @@ class TesseralContribution implements DSSTForceModel {
     /** List of resonant orders. */
     private final List<Integer> resOrders;
 
-    /** Set of resonant tesseral harmonic couples. */
-    private final List<ResonantCouple> resCouple;
-
     /** Factorial. */
     private final double[] fact;
 
+    /** Maximum power of the eccentricity to use in summation over s. */
+    private int maxEccPow;
+
     /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
-    private int maxEc2Pow;
+    private int maxHansen;
 
     /** Keplerian period. */
     private double orbitPeriod;
@@ -164,8 +162,8 @@ class TesseralContribution implements DSSTForceModel {
 
         // Initialize default values
         this.resOrders = new ArrayList<Integer>();
-        this.resCouple = new ArrayList<ResonantCouple>();
-        this.maxEc2Pow = 0;
+        this.maxEccPow = 0;
+        this.maxHansen = 0;
 
         // Factorials computation
         final int maxFact = maxDegree + provider.getMaxOrder() + 1;
@@ -175,21 +173,6 @@ class TesseralContribution implements DSSTForceModel {
             fact[i] = i * fact[i - 1];
         }
 
-    }
-
-    /** Set the resonant couples (n, m).
-     *  <p>
-     *  If the set is null or empty, the resonant couples will be automatically computed.
-     *  If it is not null nor empty, only these resonant couples will be taken in account.
-     *  </p>
-     *  @param resonantTesseral Set of resonant couples
-     */
-    public void setResonantCouples(final Set<ResonantCouple> resonantTesseral) {
-        if (resonantTesseral != null && !resonantTesseral.isEmpty()) {
-            for (final ResonantCouple couple : resonantTesseral) {
-                resCouple.add(couple);
-            }
-        }
     }
 
     /** {@inheritDoc} */
@@ -209,7 +192,6 @@ class TesseralContribution implements DSSTForceModel {
         // series expansion for the averaged high order resonant central body
         // spherical harmonic perturbation
         final double e = aux.getEcc();
-        int maxEccPow = 0;
         if (e <= 0.005) {
             maxEccPow = 3;
         } else if (e <= 0.02) {
@@ -227,7 +209,7 @@ class TesseralContribution implements DSSTForceModel {
         }
 
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
-        maxEc2Pow = maxEccPow / 2;
+        maxHansen = maxEccPow / 2;
 
     }
 
@@ -332,33 +314,20 @@ class TesseralContribution implements DSSTForceModel {
      */
     private void getResonantTerms() {
 
-        if (resCouple.isEmpty()) {
-            // Compute natural resonant terms
-            final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
-                                                       MIN_PERIOD_IN_SECONDS / orbitPeriod);
+        // Compute natural resonant terms
+        final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
+                                                   MIN_PERIOD_IN_SECONDS / orbitPeriod);
 
-            // Search the resonant orders in the tesseral harmonic field
-            final int maxOrder = provider.getMaxOrder();
-            for (int m = 1; m <= maxOrder; m++) {
-                final double resonance = ratio * m;
-                final int j = (int) FastMath.round(resonance);
-                if (j > 0 && FastMath.abs(resonance - j) <= tolerance) {
-                    // Store each resonant index and order
-                    resOrders.add(m);
-                    // Store each resonant couple for a given order
-                    for (int n = m; n <= maxDegree; n++) {
-                        resCouple.add(new ResonantCouple(n, m));
-                    }
-                }
+        // Search the resonant orders in the tesseral harmonic field
+        final int maxOrder = provider.getMaxOrder();
+        for (int m = 1; m <= maxOrder; m++) {
+            final double resonance = ratio * m;
+            final int j = (int) FastMath.round(resonance);
+            if (j > 0 && FastMath.abs(resonance - j) <= tolerance) {
+                // Store each resonant index and order
+                resOrders.add(m);
             }
-        } else {
-            // Get user defined resonant terms
-            for (ResonantCouple couple : resCouple) {
-                resOrders.add(couple.getM());
-            }
-
         }
-
     }
 
     /** Computes the potential U derivatives.
@@ -387,7 +356,7 @@ class TesseralContribution implements DSSTForceModel {
         final GammaMnsFunction gammaMNS = new GammaMnsFunction(fact, gamma, I);
 
         // Hansen coefficients
-        final HansenTesseral hansen = new HansenTesseral(ecc, maxEc2Pow);
+        final HansenTesseral hansen = new HansenTesseral(ecc, maxHansen);
 
         // R / a up to power degree
         final double[] roaPow = new double[maxDegree + 1];
@@ -464,8 +433,10 @@ class TesseralContribution implements DSSTForceModel {
         // I^m
         final int Im = I > 0 ? 1 : (m % 2 == 0 ? 1 : -1);
 
-        // s-SUM from -N to N
-        for (int s = -maxDegree; s <= maxDegree; s++) {
+        // s-SUM from -sMin to sMax
+        final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+        final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+        for (int s = -sMin; s <= sMax; s++) {
 
             // jacobi v, w, indices from 2.7.1-(15)
             final int v = FastMath.abs(m - s);
@@ -584,16 +555,16 @@ class TesseralContribution implements DSSTForceModel {
         /** Maximum power of e<sup>2</sup> to use in series expansion for the Hansen coefficient when
          * using modified Newcomb operator.
          */
-        private final int    maxE2Power;
+        private final int    maxNewcomb;
 
         /** Simple constructor.
          *  @param ecc eccentricity
-         *  @param maxE2Power maximum power of e<sup>2</sup> to use in series expansion for the Hansen coefficient
+         *  @param maxHansen maximum power of e<sup>2</sup> to use in series expansion for the Hansen coefficient
          */
-        public HansenTesseral(final double ecc, final int maxE2Power) {
+        public HansenTesseral(final double ecc, final int maxHansen) {
             this.coefficients = new TreeMap<CoefficientsFactory.MNSKey, Double>();
             this.derivatives  = new TreeMap<CoefficientsFactory.MNSKey, Double>();
-            this.maxE2Power   = maxE2Power;
+            this.maxNewcomb   = maxHansen;
             this.e2   = ecc * ecc;
             this.ome2 = 1. - e2;
             this.chi  = 1. / FastMath.sqrt(ome2);
@@ -750,13 +721,13 @@ class TesseralContribution implements DSSTForceModel {
             // e^2*alpha
             double eP2a = 1.;
             double sum  = 0.;
-            for (int alpha = 0; alpha <= maxE2Power; alpha++) {
+            for (int alpha = 0; alpha <= maxNewcomb; alpha++) {
                 final double newcomb = NewcombOperators.getValue(alpha + a, alpha + b, mnm1, s);
                 sum += newcomb * eP2a;
                 eP2a *= e2;
             }
 
-            return FastMath.pow(ome2, mnm1 + 1.5) * sum;
+            return FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
         }
 
         /** Compute dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup> from equation 3.3-(5).
@@ -777,16 +748,16 @@ class TesseralContribution implements DSSTForceModel {
             // e^2(alpha-1)
             double e2Pam1 = 1.;
             double sum    = 0.;
-            for (int alpha = 1; alpha <= maxE2Power; alpha++) {
+            for (int alpha = 1; alpha <= maxNewcomb; alpha++) {
                 final double newcomb = NewcombOperators.getValue(alpha + a, alpha + b, mnm1, s);
                 sum += alpha * newcomb * e2Pam1;
                 e2Pam1 *= e2;
             }
 
-            final double coef = mnm1 + 1.5;
+            final double coef = -(mnm1 + 1.5);
             final double Kjns = getValue(j, mnm1, s);
 
-            return FastMath.pow(ome2, coef) * sum - coef * chi2 * Kjns;
+            return coef * chi2 * Kjns + FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
         }
     }
 }

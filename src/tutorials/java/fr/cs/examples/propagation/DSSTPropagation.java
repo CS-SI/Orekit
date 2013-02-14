@@ -477,8 +477,7 @@ public class DSSTPropagation {
         }
 
         // Central Body (normalized coefficients)
-        numProp.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
-                                                                    normalized));
+        numProp.addForceModel(new HolmesFeatherstoneAttractionModel(earthFrame, normalized));
 
         // 3rd body (SUN)
         if (parser.containsKey(ParameterKey.THIRD_BODY_SUN) && parser.getBoolean(ParameterKey.THIRD_BODY_SUN)) {

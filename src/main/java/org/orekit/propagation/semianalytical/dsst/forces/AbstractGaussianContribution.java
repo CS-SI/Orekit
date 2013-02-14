@@ -71,8 +71,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     protected double q;
     /** h<sub>y</sub>. */
     protected double p;
-    /** &lambda;<sub>M</sub>. */
-    protected double lm;
 
     /** Eccentricity. */
     protected double ecc;
@@ -135,7 +133,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         h  = aux.getH();
         q  = aux.getQ();
         p  = aux.getP();
-        lm = aux.getLM();
 
         // Retrograde factor
         I = aux.getRetrogradeFactor();
