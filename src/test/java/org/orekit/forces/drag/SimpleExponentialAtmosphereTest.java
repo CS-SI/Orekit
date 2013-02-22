@@ -30,7 +30,7 @@ import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 
 
-public class DragTest {
+public class SimpleExponentialAtmosphereTest {
 
     @Test
     public void testExpAtmosphere() throws OrekitException {
