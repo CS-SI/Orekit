@@ -17,6 +17,9 @@
 package org.orekit.forces.gravity;
 
 
+import java.io.Serializable;
+
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -29,9 +32,10 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.numerical.AccelerationJacobiansProvider;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>
@@ -62,7 +66,7 @@ import org.orekit.time.AbsoluteDate;
  */
 
 public class HolmesFeatherstoneAttractionModel
-    extends AbstractParameterizable implements ForceModel, AccelerationJacobiansProvider {
+    extends AbstractParameterizable implements ForceModel {
 
     /** Exponent scaling to avoid floating point overflow.
      * <p>The paper uses 10^280, we prefer a power of two to preserve accuracy thanks to
@@ -99,7 +103,7 @@ public class HolmesFeatherstoneAttractionModel
     public HolmesFeatherstoneAttractionModel(final Frame centralBodyFrame,
                                              final NormalizedSphericalHarmonicsProvider provider) {
 
-        super("central attraction coefficient");
+        super(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
 
         this.provider  = provider;
         this.mu        = provider.getMu();
@@ -344,14 +348,13 @@ public class HolmesFeatherstoneAttractionModel
 
     }
 
-    /** Compute the hessian of the non-central part of the gravity field.
+    /** Compute both the gradient and the hessian of the non-central part of the gravity field.
      * @param date current date
      * @param position position at which gravity field is desired in body frame
-     * @return hessian of the non-central part of the gravity field
-     * (as the hessian is symmetric, only the lower left part is allocated and computed)
+     * @return gradient and hessian of the non-central part of the gravity field
      * @exception OrekitException if position cannot be converted to central body frame
      */
-    public double[][] hessian(final AbsoluteDate date, final Vector3D position)
+    public GradientHessian gradientHessian(final AbsoluteDate date, final Vector3D position)
         throws OrekitException {
 
         final int degree = provider.getMaxDegree();
@@ -489,8 +492,51 @@ public class HolmesFeatherstoneAttractionModel
         hessian[2][1] *= muOr;
         hessian[2][2] *= muOr;
 
-        // convert spherical Hessian into Cartesian Hessian
-        return new SphericalCoordinates(position).toCartesianHessian(hessian, gradient);
+        // convert gradient and Hessian from spherical to Cartesian
+        SphericalCoordinates sc = new SphericalCoordinates(position);
+        return new GradientHessian(sc.toCartesianGradient(gradient),
+                                   sc.toCartesianHessian(hessian, gradient));
+
+
+    }
+
+    /** Container for gradient and Hessian. */
+    public static class GradientHessian implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20130219L;
+
+        /** Gradient. */
+        private final double[] gradient;
+
+        /** Hessian. */
+        private final double[][] hessian;
+
+        /** Simple constructor.
+         * <p>
+         * A reference to the arrays is stored, they are <strong>not</strong> cloned.
+         * </p>
+         * @param gradient gradient
+         * @param hessian hessian
+         */
+        public GradientHessian(final double[] gradient, final double[][] hessian) {
+            this.gradient = gradient;
+            this.hessian  = hessian;
+        }
+
+        /** Get a reference to the gradient.
+         * @return gradient (a reference to the internal array is returned)
+         */
+        public double[] getGradient() {
+            return gradient;
+        }
+
+        /** Get a reference to the Hessian.
+         * @return Hessian (a reference to the internal array is returned)
+         */
+        public double[][] getHessian() {
+            return hessian;
+        }
 
     }
 
@@ -687,32 +733,54 @@ public class HolmesFeatherstoneAttractionModel
     }
 
     /** {@inheritDoc} */
-    public void addDAccDState(final SpacecraftState s, final double[][] dAccdPos,
-                              final double[][] dAccdVel, final double[] dAccdM)
+    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                              final Vector3DDS position, final Vector3DDS velocity,
+                                              final RotationDS rotation, final DerivativeStructure mass)
         throws OrekitException {
 
         // get the position in body frame
-        final AbsoluteDate date       = s.getDate();
-        final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
+        final Transform fromBodyFrame = bodyFrame.getTransformTo(frame, date);
         final Transform toBodyFrame   = fromBodyFrame.getInverse();
-        final Vector3D position       = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
+        final Vector3D positionBody   = toBodyFrame.transformPosition(position.toVector3D());
+
+        // compute gradient and Hessian
+        final GradientHessian gh   = gradientHessian(date, positionBody);
+
+        // gradient of the non-central part of the gravity field
+        final double[] gInertial = fromBodyFrame.transformVector(new Vector3D(gh.getGradient())).toArray();
 
         // Hessian of the non-central part of the gravity field
-        final RealMatrix hBody     = new Array2DRowRealMatrix(hessian(date, position), false);
+        final RealMatrix hBody     = new Array2DRowRealMatrix(gh.getHessian(), false);
         final RealMatrix rot       = new Array2DRowRealMatrix(toBodyFrame.getRotation().getMatrix());
         final RealMatrix hInertial = rot.transpose().multiply(hBody).multiply(rot);
 
+        // distribute all partial derivatives in a compact acceleration vector
+        final int parameters       = mass.getFreeParameters();
+        final int order            = mass.getOrder();
+        final double[] derivatives = new double[1 + parameters];
+        final DerivativeStructure[] accDer = new DerivativeStructure[3];
         for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 3; ++j) {
-                dAccdPos[i][j] += hInertial.getEntry(i, j);
-            }
+
+            // first element is value of acceleration (i.e. gradient of field)
+            derivatives[0] = gInertial[i];
+
+            // next three elements are one row of the Jacobian of acceleration (i.e. Hessian of field)
+            derivatives[1] = hInertial.getEntry(i, 0);
+            derivatives[2] = hInertial.getEntry(i, 1);
+            derivatives[3] = hInertial.getEntry(i, 2);
+
+            // next elements (three or four depending on mass being used or not) are left as 0
+
+            accDer[i] = new DerivativeStructure(parameters, order, derivatives);
+
         }
+
+        return new Vector3DDS(accDer);
 
     }
 
     /** {@inheritDoc} */
-    public void addDAccDParam(final SpacecraftState s, final String paramName,
-                              final double[] dAccdParam)
+    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException, IllegalArgumentException {
 
         complainIfNotSupported(paramName);
@@ -726,9 +794,9 @@ public class HolmesFeatherstoneAttractionModel
         // gradient of the non-central part of the gravity field
         final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
 
-        dAccdParam[0] += gInertial.getX() / mu;
-        dAccdParam[1] += gInertial.getY() / mu;
-        dAccdParam[2] += gInertial.getZ() / mu;
+        return new Vector3DDS(new DerivativeStructure(1, 1, gInertial.getX(), gInertial.getX() / mu),
+                              new DerivativeStructure(1, 1, gInertial.getY(), gInertial.getY() / mu),
+                              new DerivativeStructure(1, 1, gInertial.getZ(), gInertial.getZ() / mu));
 
     }
 

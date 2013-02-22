@@ -64,6 +64,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.Vector3DDS;
 
 
 public class HolmesFeatherstoneAttractionModelTest {
@@ -146,7 +147,7 @@ public class HolmesFeatherstoneAttractionModelTest {
                                                  r * FastMath.sin(theta) * FastMath.sin(lambda),
                                                  r * FastMath.cos(theta));
                 double[][] refHessian = hessian(model, null, position, 1.0e-3);
-                double[][] hessian = model.hessian(null, position);
+                double[][] hessian = model.gradientHessian(null, position).getHessian();
                 double normH2 = 0;
                 double normE2 = 0;
                 for (int i = 0; i < 3; ++i) {
@@ -571,10 +572,11 @@ public class HolmesFeatherstoneAttractionModelTest {
                 new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2008(),
                                                       GravityFieldFactory.getNormalizedProvider(20, 20));
 
-        final String name = "central attraction coefficient";
-        double[] a = new double[3];
-        holmesFeatherstoneModel.addDAccDParam(state, name, a);
-        Vector3D derivative = new Vector3D(a);
+        final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
+        Vector3DDS accDer = holmesFeatherstoneModel.accelerationDerivatives(state, name);
+        Vector3D derivative = new Vector3D(accDer.getX().getPartialDerivative(1),
+                                           accDer.getY().getPartialDerivative(1),
+                                           accDer.getZ().getPartialDerivative(1));
 
         AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
         double mu0 = holmesFeatherstoneModel.getParameter(name);
