@@ -23,6 +23,9 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="add" >
+        Atmosphere models now provide their central body frame.
+      </action>
+      <action dev="luc" type="add" >
         Added versions of angular coordinates and position-velocity that use
         DerivativeStructure instead of double (classes AngularCoordinatesDS and
         PVCoordinatesDS). This allows to compute derivatives of these quantities

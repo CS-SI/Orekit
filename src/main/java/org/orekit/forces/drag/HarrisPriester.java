@@ -209,6 +209,11 @@ public class HarrisPriester implements Atmosphere {
         setN(n);
     }
 
+    /** {@inheritDoc} */
+    public Frame getFrame() {
+        return earth.getBodyFrame();
+    }
+
     /** Set parameter N, the cosine exponent.
      *  @param n the cosine exponent
      */
@@ -351,7 +356,7 @@ public class HarrisPriester implements Atmosphere {
         throws OrekitException {
         final Transform bodyToFrame = earth.getBodyFrame().getTransformTo(frame, date);
         final Vector3D posInBody    = bodyToFrame.getInverse().transformPosition(position);
-        final PVCoordinates pvBody  = new PVCoordinates(posInBody, new Vector3D(0, 0, 0));
+        final PVCoordinates pvBody  = new PVCoordinates(posInBody, Vector3D.ZERO);
         final PVCoordinates pvFrame = bodyToFrame.transformPVCoordinates(pvBody);
         return pvFrame.getVelocity();
     }

@@ -214,6 +214,11 @@ public class JB2006 implements Atmosphere {
         this.inputParams = parameters;
     }
 
+    /** {@inheritDoc} */
+    public Frame getFrame() {
+        return earth.getBodyFrame();
+    }
+
     /** Get the local density with initial entries.
      * @param dateMJD date and time, in modified julian days and fraction
      * @param sunRA Right Ascension of Sun (radians)

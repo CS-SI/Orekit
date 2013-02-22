@@ -309,6 +309,11 @@ public class DTM2000 implements Atmosphere {
         }
     }
 
+    /** {@inheritDoc} */
+    public Frame getFrame() {
+        return earth.getBodyFrame();
+    }
+
     /** Get the local density with initial entries.
      * @param day day of year
      * @param alti altitude in meters

@@ -65,6 +65,11 @@ public class SimpleExponentialAtmosphere implements Atmosphere {
     }
 
     /** {@inheritDoc} */
+    public Frame getFrame() {
+        return shape.getBodyFrame();
+    }
+
+    /** {@inheritDoc} */
     public double getDensity(final AbsoluteDate date, final Vector3D position, final Frame frame)
         throws OrekitException {
         final GeodeticPoint gp = shape.transform(position, frame, date);

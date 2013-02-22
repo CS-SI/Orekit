@@ -29,6 +29,12 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface Atmosphere extends Serializable {
 
+    /** Get the frame of the central body.
+     * @return frame of the central body.
+     * @since 6.0
+     */
+    Frame getFrame();
+
     /** Get the local density.
      * @param date current date
      * @param position current position in frame
