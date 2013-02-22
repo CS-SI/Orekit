@@ -16,6 +16,9 @@
  */
 package org.orekit.forces.gravity;
 
+import java.util.Collections;
+
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
@@ -28,8 +31,12 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.numerical.Jacobianizer;
+import org.orekit.propagation.numerical.ParameterConfiguration;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
@@ -65,6 +72,9 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
     /** Rotating body. */
     private final Frame centralBodyFrame;
 
+    /** Helper class computing acceleration derivatives. */
+    private Jacobianizer jacobianizer;
+
     /** Creates a new instance.
     * @param centralBodyFrame rotating body frame
     * @param equatorialRadius reference equatorial radius of the potential
@@ -86,12 +96,25 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
    */
     public DrozinerAttractionModel(final Frame centralBodyFrame,
                                    final UnnormalizedSphericalHarmonicsProvider provider) {
-        super("central attraction coefficient");
+        super(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
 
         this.provider         = provider;
         this.mu               = provider.getMu();
         this.centralBodyFrame = centralBodyFrame;
+        this.jacobianizer     = null;
 
+    }
+
+    /** Set the step for finite differences with respect to spacecraft position.
+     * @param hPosition step used for finite difference computation
+     * with respect to spacecraft position (m)
+     * @param hMu step used for finite difference computation
+     * with respect to central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     */
+    public void setSteps(final double hPosition, final double hMu) {
+        final ParameterConfiguration muConfig =
+                new ParameterConfiguration(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, hMu);
+        jacobianizer = new Jacobianizer(this, mu, Collections.singletonList(muConfig), hPosition);
     }
 
     /** {@inheritDoc} */
@@ -253,6 +276,22 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
             bodyToInertial.transformVector(new Vector3D(aX, aY, aZ));
         adder.addXYZAcceleration(accInInert.getX(), accInInert.getY(), accInInert.getZ());
 
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS accelerationDerivatives(final AbsoluteDate date,final  Frame frame,
+                                              final Vector3DDS position,
+                                              final Vector3DDS velocity,
+                                              final RotationDS rotation,
+                                              final DerivativeStructure mass)
+        throws OrekitException {
+        return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+        throws OrekitException {
+        return jacobianizer.accelerationDerivatives(s, paramName);
     }
 
     /** {@inheritDoc} */

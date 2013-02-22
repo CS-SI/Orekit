@@ -22,6 +22,20 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update" >
+        Converted Cunningham and Droziner force models to use the API of the new
+        partial derivatives framework, despite they STILL USE finite differences.
+        These two force models are now considered obsolete, they have been
+        largely superseded by the Holmes-Featherstone model, which can be used
+        for much larger degrees (Cunnigham and Droziner use un-normalized
+        equations and coefficients which underflow at about degree 90), which
+        already provides analytical derivatives, and which is twice faster. It
+        was therefore considered a waste of time to develop analytical derivatives
+        for them. As a consequence, they use finite differences to compute their
+        derivatives, which adds another huge slow down factor when derivatives are
+        requested. So users are strongly recommended to avoid these models when
+        partial derivatives are desired...
+      </action>
       <action dev="luc" type="add" >
         Added analytical computation of partial derivatives for third-body
         attraction.
