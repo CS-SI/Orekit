@@ -255,8 +255,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             if (useRotationRates) {
                 // populate sample with rotation and rotation rate data
                 for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
-                    final DerivativeStructure[] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
-                                                                                 date, offset, threshold);
+                    final double[] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
+                                                                    date, offset, threshold);
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -265,21 +265,21 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                     }
                     interpolator.addSamplePoint(datedAC.getKey().getDate().durationFrom(date),
                                                 new double[] {
-                                                    rodrigues[0].getValue(),
-                                                    rodrigues[1].getValue(),
-                                                    rodrigues[2].getValue()
+                                                    rodrigues[0],
+                                                    rodrigues[1],
+                                                    rodrigues[2]
                                                 },
                                                 new double[] {
-                                                    rodrigues[0].getPartialDerivative(1),
-                                                    rodrigues[1].getPartialDerivative(1),
-                                                    rodrigues[2].getPartialDerivative(1)
+                                                    rodrigues[3],
+                                                    rodrigues[4],
+                                                    rodrigues[5]
                                                 });
                 }
             } else {
                 // populate sample with rotation data only, ignoring rotation rate
                 for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
-                    final DerivativeStructure[] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
-                                                                                 date, offset, threshold);
+                    final double[] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
+                                                                    date, offset, threshold);
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -288,9 +288,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                     }
                     interpolator.addSamplePoint(datedAC.getKey().getDate().durationFrom(date),
                                                 new double[] {
-                                                    rodrigues[0].getValue(),
-                                                    rodrigues[1].getValue(),
-                                                    rodrigues[2].getValue()
+                                                    rodrigues[0],
+                                                    rodrigues[1],
+                                                    rodrigues[2]
                                                 });
                 }
             }
@@ -303,7 +303,11 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             } else {
                 // interpolation succeeded with the current offset
                 final DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
-                return createFromModifiedRodrigues(interpolator.value(zero), offset);
+                final DerivativeStructure[] p = interpolator.value(zero);
+                return createFromModifiedRodrigues(new double[] {
+                    p[0].getValue(), p[1].getValue(), p[2].getValue(),
+                    p[0].getPartialDerivative(1), p[1].getPartialDerivative(1), p[2].getPartialDerivative(1)
+                }, offset);
             }
 
         }
@@ -325,9 +329,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param threshold threshold for rotations too close to 2&pi;
      * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2&pi;
      */
-    private static DerivativeStructure[] getModifiedRodrigues(final AbsoluteDate date, final AngularCoordinates ac,
-                                                              final AbsoluteDate offsetDate, final AngularCoordinates offset,
-                                                              final double threshold) {
+    private static double[] getModifiedRodrigues(final AbsoluteDate date, final AngularCoordinates ac,
+                                                 final AbsoluteDate offsetDate, final AngularCoordinates offset,
+                                                 final double threshold) {
 
         // remove linear offset from the current coordinates
         final double dt = date.durationFrom(offsetDate);
@@ -363,10 +367,13 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         final double q3Dot =  0.5 * MathArrays.linearCombination(q0, z, q1, y, -q2, x);
 
         final double inv = 1.0 / (1.0 + q0);
-        return new DerivativeStructure[] {
-            new DerivativeStructure(1, 1, inv * q1, inv * (q1Dot - inv * q1 * q0Dot)),
-            new DerivativeStructure(1, 1, inv * q2, inv * (q2Dot - inv * q2 * q0Dot)),
-            new DerivativeStructure(1, 1, inv * q3, inv * (q3Dot - inv * q3 * q0Dot))
+        return new double[] {
+            inv * q1,
+            inv * q2,
+            inv * q3,
+            inv * (q1Dot - inv * q1 * q0Dot),
+            inv * (q2Dot - inv * q2 * q0Dot),
+            inv * (q3Dot - inv * q3 * q0Dot)
         };
 
     }
@@ -376,24 +383,19 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param offset linear offset model to add (its date must be consistent with the modified Rodrigues vector)
      * @return angular coordinates
      */
-    private static AngularCoordinates createFromModifiedRodrigues(final DerivativeStructure[] r,
+    private static AngularCoordinates createFromModifiedRodrigues(final double[] r,
                                                                   final AngularCoordinates offset) {
 
         // rotation
-        final double r0       = r[0].getValue();
-        final double r1       = r[1].getValue();
-        final double r2       = r[2].getValue();
-        final double rSquared = r0 * r0 + r1 * r1 + r2 * r2;
+        final double rSquared = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
         final double inv      = 1.0 / (1 + rSquared);
         final double ratio    = inv * (1 - rSquared);
         final Rotation rotation =
-                new Rotation(ratio, 2 * inv * r0, 2 * inv * r1, 2 * inv * r2, false);
+                new Rotation(ratio, 2 * inv * r[0], 2 * inv * r[1], 2 * inv * r[2], false);
 
         // rotation rate
-        final Vector3D p    = new Vector3D(r0, r1, r2);
-        final Vector3D pDot = new Vector3D(r[0].getPartialDerivative(1),
-                                           r[1].getPartialDerivative(1),
-                                           r[2].getPartialDerivative(1));
+        final Vector3D p    = new Vector3D(r[0], r[1], r[2]);
+        final Vector3D pDot = new Vector3D(r[3], r[4], r[5]);
         final Vector3D rate = new Vector3D( 4 * ratio * inv, pDot,
                                            -8 * inv * inv, p.crossProduct(pDot),
                                             8 * inv * inv * p.dotProduct(pDot), p);

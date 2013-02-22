@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -36,6 +35,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
 public class AngularCoordinatesTest {
+
+    @Test
+    public void testDefaultConstructor() throws OrekitException {
+        AngularCoordinates AngularCoordinates = new AngularCoordinates();
+        Assert.assertEquals(Vector3D.ZERO, AngularCoordinates.getRotationRate());
+        Assert.assertEquals(0, Rotation.distance(AngularCoordinates.getRotation(), Rotation.IDENTITY), 1.0e-10);
+    }
 
     @Test
     public void testZeroRate() throws OrekitException {
@@ -171,7 +177,7 @@ public class AngularCoordinatesTest {
         getter.setAccessible(true);
         Method factory = AngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
                                                                     new Class<?>[] {
-                                                                        DerivativeStructure[].class,
+                                                                        double[].class,
                                                                         AngularCoordinates.class
                                                                     });
         factory.setAccessible(true);
@@ -186,11 +192,11 @@ public class AngularCoordinatesTest {
             Vector3D rotationRate      = randomVector(random, 0.01);
             AngularCoordinates ac      = new AngularCoordinates(rotation, rotationRate);
             double dt                  = 10.0 * random.nextDouble();
-            DerivativeStructure[] rodrigues =
-                    (DerivativeStructure[]) getter.invoke(null,
-                                                          AbsoluteDate.J2000_EPOCH.shiftedBy(dt), ac,
-                                                          AbsoluteDate.J2000_EPOCH, offset,
-                                                          -0.9999);
+            double[] rodrigues =
+                    (double[]) getter.invoke(null,
+                                             AbsoluteDate.J2000_EPOCH.shiftedBy(dt), ac,
+                                             AbsoluteDate.J2000_EPOCH, offset,
+                                             -0.9999);
             AngularCoordinates rebuilt = (AngularCoordinates) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
             Assert.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
             Assert.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
@@ -212,21 +218,20 @@ public class AngularCoordinatesTest {
         getter.setAccessible(true);
         Method factory = AngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
                                                                     new Class<?>[] {
-                                                                        DerivativeStructure[].class,
+                                                                        double[].class,
                                                                         AngularCoordinates.class
                                                                     });
         factory.setAccessible(true);
 
         // identity
-        DerivativeStructure[] identity =
-                (DerivativeStructure[]) getter.invoke(null,
-                                                      AbsoluteDate.J2000_EPOCH, AngularCoordinates.IDENTITY,
-                                                      AbsoluteDate.J2000_EPOCH, AngularCoordinates.IDENTITY.revert(),
-                                                      -0.9999);
+        double[] identity =
+                (double[]) getter.invoke(null,
+                                         AbsoluteDate.J2000_EPOCH, AngularCoordinates.IDENTITY,
+                                         AbsoluteDate.J2000_EPOCH, AngularCoordinates.IDENTITY.revert(),
+                                         -0.9999);
         AngularCoordinates acId = (AngularCoordinates) factory.invoke(null, identity, AngularCoordinates.IDENTITY);
-        for (DerivativeStructure element : identity) {
-            Assert.assertEquals(0.0, element.getValue(), Precision.SAFE_MIN);
-            Assert.assertEquals(0.0, element.getPartialDerivative(1), Precision.SAFE_MIN);
+        for (double element : identity) {
+            Assert.assertEquals(0.0, element, Precision.SAFE_MIN);
         }
         Assert.assertEquals(0.0, acId.getRotation().getAngle(), Precision.SAFE_MIN);
         Assert.assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
@@ -235,14 +240,14 @@ public class AngularCoordinatesTest {
         Random random = new Random(0x2158523e6accb859l);
         for (int i = 0; i < 100; ++i) {
             Vector3D axis = randomVector(random, 1.0);
-            DerivativeStructure[] piRotation =
-                    (DerivativeStructure[]) getter.invoke(null,
-                                                          AbsoluteDate.J2000_EPOCH, 
-                                                          new AngularCoordinates(new Rotation(axis, FastMath.PI),
-                                                                                 Vector3D.ZERO),
-                                                          AbsoluteDate.J2000_EPOCH,
-                                                          AngularCoordinates.IDENTITY,
-                                                          -0.9999);
+            double[] piRotation =
+                    (double[]) getter.invoke(null,
+                                             AbsoluteDate.J2000_EPOCH, 
+                                             new AngularCoordinates(new Rotation(axis, FastMath.PI),
+                                                                    Vector3D.ZERO),
+                                                                    AbsoluteDate.J2000_EPOCH,
+                                                                    AngularCoordinates.IDENTITY,
+                                                                    -0.9999);
             AngularCoordinates acPi = (AngularCoordinates) factory.invoke(null, piRotation, AngularCoordinates.IDENTITY);
             Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle(), 1.0e-15);
             Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, acPi.getRotation().getAxis())), 1.0e-15);

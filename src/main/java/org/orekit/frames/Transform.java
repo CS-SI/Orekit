@@ -32,6 +32,9 @@ import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesDS;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 
 /** Transformation class in three dimensional space.
@@ -365,12 +368,28 @@ public class Transform
         return angular.getRotation().applyTo(cartesian.getPosition().add(position));
     }
 
+    /** Transform a position vector (including translation effects).
+     * @param position vector to transform
+     * @return transformed position
+     */
+    public Vector3DDS transformPosition(final Vector3DDS position) {
+        return RotationDS.applyTo(angular.getRotation(), position.add(cartesian.getPosition()));
+    }
+
     /** Transform a vector (ignoring translation effects).
      * @param vector vector to transform
      * @return transformed vector
      */
     public Vector3D transformVector(final Vector3D vector) {
         return angular.getRotation().applyTo(vector);
+    }
+
+    /** Transform a vector (ignoring translation effects).
+     * @param vector vector to transform
+     * @return transformed vector
+     */
+    public Vector3DDS transformVector(final Vector3DDS vector) {
+        return RotationDS.applyTo(angular.getRotation(), vector);
     }
 
     /** Transform a line.
@@ -394,6 +413,21 @@ public class Transform
         final Vector3D cross = Vector3D.crossProduct(angular.getRotationRate(), transformedP);
         return new PVCoordinates(transformedP,
                                  angular.getRotation().applyTo(v.add(cartesian.getVelocity())).subtract(cross));
+    }
+
+    /** Transform {@link PVCoordinatesDS} including kinematic effects.
+     * @param pv the couple position-velocity to transform.
+     * @return transformed position/velocity
+     */
+    public PVCoordinatesDS transformPVCoordinates(final PVCoordinatesDS pv) {
+        final Vector3DDS p = pv.getPosition();
+        final Vector3DDS v = pv.getVelocity();
+        final Vector3DDS transformedP = RotationDS.applyTo(angular.getRotation(),
+                                                           p.add(cartesian.getPosition()));
+        final Vector3DDS cross = Vector3DDS.crossProduct(angular.getRotationRate(), transformedP);
+        return new PVCoordinatesDS(transformedP,
+                                   RotationDS.applyTo(angular.getRotation(),
+                                                      v.add(cartesian.getVelocity())).subtract(cross));
     }
 
     /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}
