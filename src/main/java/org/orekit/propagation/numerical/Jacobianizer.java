@@ -27,6 +27,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -202,6 +203,9 @@ public class Jacobianizer {
     /** {@inheritDoc} */
     public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName) throws OrekitException {
 
+        if (!hParam.containsKey(paramName)) {
+            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+        }
         final double hP = hParam.get(paramName);
 
         final AccelerationRetriever nominal = new AccelerationRetriever();

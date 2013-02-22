@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
@@ -34,7 +35,9 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -42,9 +45,11 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
@@ -57,9 +62,11 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 
-public class DrozinerAttractionModelTest {
+public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
     // rough test to determine if J2 alone creates heliosynchronism
     @Test
@@ -242,6 +249,88 @@ public class DrozinerAttractionModelTest {
         Vector3D dif = hfOrb.getPVCoordinates().getPosition().subtract(drozOrb.getPVCoordinates().getPosition());
         Assert.assertEquals(0, dif.getNorm(), 2e-9);
         Assert.assertTrue(propagator.getCalls() < 3500);
+
+    }
+
+    @Test
+    public void testParameterDerivative() throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // pos-vel (from a ZOOM ephemeris reference)
+        final Vector3D pos = new Vector3D(6.46885878304673824e+06, -1.88050918456274318e+06, -1.32931592294715829e+04);
+        final Vector3D vel = new Vector3D(2.14718074509906819e+03, 7.38239351251748485e+03, -1.14097953925384523e+01);
+        final SpacecraftState state =
+                new SpacecraftState(new CartesianOrbit(new PVCoordinates(pos, vel),
+                                                       FramesFactory.getGCRF(),
+                                                       new AbsoluteDate(2005, 3, 5, 0, 24, 0.0, TimeScalesFactory.getTAI()),
+                                                       GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
+
+        final DrozinerAttractionModel drozinerModel =
+                new DrozinerAttractionModel(FramesFactory.getITRF2008(),
+                                              GravityFieldFactory.getUnnormalizedProvider(20, 20));
+
+        final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
+        try {
+            drozinerModel.accelerationDerivatives(state, name);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES,
+                                oe.getSpecifier());
+        }
+        drozinerModel.setSteps(1.0, 1.0e10);
+        checkParameterDerivative(state, drozinerModel, name, 1.0e-5, 8.0e-12);
+
+    }
+
+    @Test
+    public void testStateJacobian()
+        throws OrekitException {
+
+        Utils.setDataRoot("regular-data:potential/grgs-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim4s4_gr", true));
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(new DateComponents(2000, 07, 01),
+                                             new TimeComponents(13, 59, 27.816),
+                                             TimeScalesFactory.getUTC());
+        double i     = FastMath.toRadians(98.7);
+        double omega = FastMath.toRadians(93.0);
+        double OMEGA = FastMath.toRadians(15.0 * 22.5);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
+                                         0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
+        OrbitType integrationType = OrbitType.CARTESIAN;
+        double[][] tolerances = NumericalPropagator.tolerances(0.01, orbit, integrationType);
+
+        propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
+                                                                            tolerances[0], tolerances[1]));
+        propagator.setOrbitType(integrationType);
+        DrozinerAttractionModel drModel =
+                new DrozinerAttractionModel(ITRF2005, GravityFieldFactory.getUnnormalizedProvider(50, 50));
+        propagator.addForceModel(drModel);
+        SpacecraftState state0 = new SpacecraftState(orbit);
+        propagator.setInitialState(state0);
+        try {
+            DerivativeStructure one = new DerivativeStructure(7, 1, 1.0);
+            drModel.accelerationDerivatives(state0.getDate(), state0.getFrame(),
+                                            new Vector3DDS(one, state0.getPVCoordinates().getPosition()),
+                                            new Vector3DDS(one, state0.getPVCoordinates().getVelocity()),
+                                            new RotationDS(one.multiply(state0.getAttitude().getRotation().getQ0()),
+                                                           one.multiply(state0.getAttitude().getRotation().getQ1()),
+                                                           one.multiply(state0.getAttitude().getRotation().getQ2()),
+                                                           one.multiply(state0.getAttitude().getRotation().getQ3()),
+                                                           false),
+                                            one.multiply(state0.getMass()));
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES,
+                                oe.getSpecifier());
+        }
+        drModel.setSteps(1.0, 1.0e10);
+
+        checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
+                           4, 40000, tolerances[0], 2.0e-7);
 
     }
 

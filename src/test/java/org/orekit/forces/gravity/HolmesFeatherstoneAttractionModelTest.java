@@ -33,6 +33,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
+import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
@@ -50,13 +51,8 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
-import org.orekit.propagation.numerical.PartialDerivativesEquations;
-import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
-import org.orekit.propagation.sampling.OrekitStepHandler;
-import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -64,10 +60,9 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.Vector3DDS;
 
 
-public class HolmesFeatherstoneAttractionModelTest {
+public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTest {
 
     @Test
     public void testRelativeNumericPrecision() throws OrekitException {
@@ -573,26 +568,7 @@ public class HolmesFeatherstoneAttractionModelTest {
                                                       GravityFieldFactory.getNormalizedProvider(20, 20));
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
-        Vector3DDS accDer = holmesFeatherstoneModel.accelerationDerivatives(state, name);
-        Vector3D derivative = new Vector3D(accDer.getX().getPartialDerivative(1),
-                                           accDer.getY().getPartialDerivative(1),
-                                           accDer.getZ().getPartialDerivative(1));
-
-        AccelerationRetriever accelerationRetriever = new AccelerationRetriever();
-        double mu0 = holmesFeatherstoneModel.getParameter(name);
-        double h   = 1.0e-5 * mu0;
-        holmesFeatherstoneModel.setParameter(name, mu0 - 1 * h);
-        Assert.assertEquals(mu0 - 1 * h, holmesFeatherstoneModel.getParameter(name), 1.0e-10);
-        holmesFeatherstoneModel.addContribution(state, accelerationRetriever);
-        final Vector3D gammaM1h = accelerationRetriever.getAcceleration();
-        holmesFeatherstoneModel.setParameter(name, mu0 + 1 * h);
-        Assert.assertEquals(mu0 + 1 * h, holmesFeatherstoneModel.getParameter(name), 1.0e-10);
-        holmesFeatherstoneModel.addContribution(state, accelerationRetriever);
-        final Vector3D gammaP1h = accelerationRetriever.getAcceleration();
-
-        final Vector3D reference = new Vector3D(  1 / (2 * h), gammaP1h.subtract(gammaM1h));
-
-        Assert.assertEquals(0, derivative.subtract(reference).getNorm(), 5.0e-12 * reference.getNorm());
+        checkParameterDerivative(state, holmesFeatherstoneModel, name, 1.0e-5, 5.0e-12);
 
     }
 
@@ -608,29 +584,6 @@ public class HolmesFeatherstoneAttractionModelTest {
 
         return testAcceleration.subtract(referenceAcceleration).getNorm() /
                referenceAcceleration.getNorm();
-
-    }
-
-    private static class AccelerationRetriever implements TimeDerivativesEquations {
-
-        private Vector3D acceleration;
-
-        public void addKeplerContribution(double mu) {
-        }
-
-        public void addXYZAcceleration(double x, double y, double z) {
-            acceleration = new Vector3D(x, y, z);
-        }
-
-        public void addAcceleration(Vector3D gamma, Frame frame) {
-        }
-
-        public void addMassDerivative(double q) {
-        }
-
-        public Vector3D getAcceleration() {
-            return acceleration;
-        }
 
     }
 
@@ -723,133 +676,9 @@ public class HolmesFeatherstoneAttractionModelTest {
         propagator.addForceModel(hfModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);
-        AbsoluteDate targetDate = date.shiftedBy(3.5 * 3600.0);
-        double factor = 50000;
-        double[][] reference = new double[][] {
-            jacobianColumn(state0, targetDate, 0, factor * tolerances[0][0]),
-            jacobianColumn(state0, targetDate, 1, factor * tolerances[0][1]),
-            jacobianColumn(state0, targetDate, 2, factor * tolerances[0][2]),
-            jacobianColumn(state0, targetDate, 3, factor * tolerances[0][3]),
-            jacobianColumn(state0, targetDate, 4, factor * tolerances[0][4]),
-            jacobianColumn(state0, targetDate, 5, factor * tolerances[0][5])
-        };
-        for (int j = 0; j < 6; ++j) {
-            for (int k = j + 1; k < 6; ++k) {
-                double tmp = reference[j][k];
-                reference[j][k] = reference[k][j];
-                reference[k][j] = tmp;
-            }
-        }
 
-        propagator.setInitialState(state0);
-        final String name = "pde";
-        PartialDerivativesEquations pde = new PartialDerivativesEquations(name, propagator);
-        pde.setInitialJacobians(state0, 6, 0);
-        final JacobiansMapper mapper = pde.getMapper();
-        final double[][] dYdY0 = new double[6][6];
-        propagator.setMasterMode(new OrekitStepHandler() {
-            
-            public void init(SpacecraftState s0, AbsoluteDate t) {
-            }
-            
-            public void handleStep(OrekitStepInterpolator interpolator, boolean isLast)
-                throws PropagationException {
-                if (isLast) {
-                    try {
-                        // pick up final Jacobian
-                        interpolator.setInterpolatedDate(interpolator.getCurrentDate());
-                        mapper.getStateJacobian(interpolator.getInterpolatedState(),
-                                                interpolator.getInterpolatedAdditionalState(name),
-                                                dYdY0);
-                    } catch (OrekitException oe) {
-                        throw new PropagationException(oe);
-                    }
-                }
-            }
-
-        });
-        propagator.propagate(targetDate);
-
-        for (int j = 0; j < 6; ++j) {
-            for (int k = 0; k < 6; ++k) {
-                Assert.assertEquals(reference[j][k], dYdY0[j][k],
-                                    4.0e-10 * tolerances[0][j] / tolerances[0][k]);
-            }
-        }
-
-    }
-
-    private double[] jacobianColumn(final SpacecraftState state0, final AbsoluteDate targetDate,
-                                 final int index, final double h)
-        throws PropagationException {
-
-        return differential4(integrateShiftedState(state0, targetDate, index, -2 * h),
-                             integrateShiftedState(state0, targetDate, index, -1 * h),
-                             integrateShiftedState(state0, targetDate, index, +1 * h),
-                             integrateShiftedState(state0, targetDate, index, +2 * h),
-                             h);
-
-    }
-
-    private double[] integrateShiftedState(final SpacecraftState state0,
-                                           final AbsoluteDate targetDate,
-                                           final int index, final double h)
-        throws PropagationException {
-        OrbitType orbitType = propagator.getOrbitType();
-        PositionAngle angleType = propagator.getPositionAngleType();
-        double[] a = new double[6];
-        orbitType.mapOrbitToArray(state0.getOrbit(), angleType, a);
-        a[index] += h;
-        SpacecraftState shiftedState = new SpacecraftState(orbitType.mapArrayToOrbit(a, angleType, state0.getDate(),
-                                                                                     state0.getMu(), state0.getFrame()),
-                                                           state0.getAttitude(),
-                                                           state0.getMass());
-        propagator.setInitialState(shiftedState);
-        SpacecraftState integratedState = propagator.propagate(targetDate);
-        orbitType.mapOrbitToArray(integratedState.getOrbit(), angleType, a);
-        return a;
-    }
-
-    private double[] differential8(final double[] fM4h, final double[] fM3h, final double[] fM2h, final double[] fM1h,
-                                   final double[] fP1h, final double[] fP2h, final double[] fP3h, final double[] fP4h,
-                                   final double h) {
-
-        double[] a = new double[fM4h.length];
-        for (int i = 0; i < a.length; ++i) {
-            a[i] = differential8(fM4h[i], fM3h[i], fM2h[i], fM1h[i], fP1h[i], fP2h[i], fP3h[i], fP4h[i], h);
-        }
-        return a;
-    }
-
-    private double differential8(final double fM4h, final double fM3h, final double fM2h, final double fM1h,
-                                 final double fP1h, final double fP2h, final double fP3h, final double fP4h,
-                                 final double h) {
-
-        // eight-points finite differences
-        // the remaining error is -h^8/630 d^9f/dx^9 + O(h^10)
-        return (-3 * (fP4h - fM4h) + 32 * (fP3h - fM3h) - 168 * (fP2h - fM2h) + 672 * (fP1h - fM1h)) / (840 * h);
-
-    }
-
-    private double[] differential4(final double[] fM2h, final double[] fM1h,
-                                   final double[] fP1h, final double[] fP2h,
-                                   final double h) {
-
-        double[] a = new double[fM2h.length];
-        for (int i = 0; i < a.length; ++i) {
-            a[i] = differential4(fM2h[i], fM1h[i], fP1h[i], fP2h[i], h);
-        }
-        return a;
-    }
-
-    private double differential4(final double fM2h, final double fM1h,
-                                 final double fP1h, final double fP2h,
-                                 final double h) {
-
-        // four-points finite differences
-        // the remaining error is -2h^4/5 d^5f/dx^5 + O(h^6)
-        return (-1 * (fP2h - fM2h) + 8 * (fP1h - fM1h)) / (12 * h);
-
+        checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
+                           4, 50000, tolerances[0], 4.0e-10);
     }
 
     @Before
