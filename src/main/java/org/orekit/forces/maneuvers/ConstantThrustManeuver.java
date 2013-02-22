@@ -16,16 +16,21 @@
  */
 package org.orekit.forces.maneuvers;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 /** This class implements a simple maneuver with constant thrust.
  * <p>The maneuver is defined by a direction in satelliteframe.
@@ -127,6 +132,54 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
             // compute flow rate
             adder.addMassDerivative(flowRate);
 
+        }
+
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                              final Vector3DDS position, final Vector3DDS velocity,
+                                              final RotationDS rotation, DerivativeStructure mass)
+        throws OrekitException {
+        if (firing) {
+            return new Vector3DDS(mass.reciprocal().multiply(thrust),
+                                  rotation.applyInverseTo(direction));
+        } else {
+            // constant (and null) acceleration when not firing
+            final int parameters = mass.getFreeParameters();
+            final int order      = mass.getOrder();
+            return new Vector3DDS(new DerivativeStructure(parameters, order, 0.0),
+                                  new DerivativeStructure(parameters, order, 0.0),
+                                  new DerivativeStructure(parameters, order, 0.0));
+        }
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+        throws OrekitException {
+
+        complainIfNotSupported(paramName);
+
+        if (firing) {
+
+            if (THRUST.equals(paramName)) {
+                DerivativeStructure thrustDS   = new DerivativeStructure(1, 1, 0, thrust);
+                return new Vector3DDS(thrustDS.divide(s.getMass()),
+                                      s.getAttitude().getRotation().applyInverseTo(direction));
+            } else if (FLOW_RATE.equals(paramName)) {      
+                // acceleration does not depend on flow rate (only mass decrease does)
+                return new Vector3DDS(new DerivativeStructure(1,  1, 0.0),
+                                      new DerivativeStructure(1,  1, 0.0),
+                                      new DerivativeStructure(1,  1, 0.0));
+            } else {
+                throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+            }
+
+        } else {
+            // constant (and null) acceleration when not firing
+            return new Vector3DDS(new DerivativeStructure(1,  1, 0.0),
+                                  new DerivativeStructure(1,  1, 0.0),
+                                  new DerivativeStructure(1,  1, 0.0));
         }
 
     }
