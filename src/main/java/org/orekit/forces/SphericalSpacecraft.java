@@ -16,13 +16,17 @@
  */
 package org.orekit.forces;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
-import org.orekit.forces.radiation.SolarRadiationPressure;
-import org.orekit.propagation.SpacecraftState;
+import org.orekit.frames.Frame;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -49,12 +53,6 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     /** Specular reflection coefficient. */
     private double specularReflectionCoeff;
 
-    /** Composite drag coefficient (S.Cd/2). */
-    private double kD;
-
-    /** Composite radiation pressure coefficient. */
-    private double kP;
-
     /** Simple constructor.
      * @param crossSection Surface (m<sup>2</sup>)
      * @param dragCoeff drag coefficient (used only for drag)
@@ -63,35 +61,90 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
      * @param reflectionCoeff specular reflection coefficient between 0.0 an 1.0
      * (used only for radiation pressure)
      */
-    public SphericalSpacecraft(final double crossSection,
-                               final double dragCoeff,
-                               final double absorptionCoeff,
-                               final double reflectionCoeff) {
-
+    public SphericalSpacecraft(final double crossSection, final double dragCoeff,
+                               final double absorptionCoeff, final double reflectionCoeff) {
         this.crossSection            = crossSection;
         this.dragCoeff               = dragCoeff;
         this.absorptionCoeff         = absorptionCoeff;
         this.specularReflectionCoeff = reflectionCoeff;
-
-        this.setKD();
-        this.setKP();
     }
 
     /** {@inheritDoc} */
-    public Vector3D dragAcceleration(final SpacecraftState state, final double density,
-                                     final Vector3D relativeVelocity) {
-        return new Vector3D(density * relativeVelocity.getNorm() * kD / state.getMass(), relativeVelocity);
+    public Vector3D dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
+                                     final Rotation rotation, final double mass,
+                                     final double density, final Vector3D relativeVelocity) {
+        return new Vector3D(relativeVelocity.getNorm() * density * dragCoeff * crossSection / (2 * mass),
+                            relativeVelocity);
     }
 
     /** {@inheritDoc} */
-    public Vector3D radiationPressureAcceleration(final SpacecraftState state, final Vector3D flux) {
-        return new Vector3D(kP / state.getMass(), flux);
+    public Vector3DDS dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3DDS position,
+                                       final RotationDS rotation, final DerivativeStructure mass,
+                                       final double density, final Vector3DDS relativeVelocity) {
+        return new Vector3DDS(relativeVelocity.getNorm().multiply(density * dragCoeff * crossSection / 2).divide(mass),
+                              relativeVelocity);
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
+                                       final Rotation rotation, final double mass,
+                                       final  double density, final Vector3D relativeVelocity,
+                                       final String paramName)
+        throws OrekitException {
+
+        if (!DRAG_COEFFICIENT.equals(paramName)) {
+            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+        }
+
+        final DerivativeStructure dragCoeffDS = new DerivativeStructure(1, 1, 0, dragCoeff);
+
+        return new Vector3DDS(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
+                              relativeVelocity);
+
+    }
+
+    /** {@inheritDoc} */
+    public Vector3D radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
+                                                  final Rotation rotation, final double mass, final Vector3D flux) {
+        final double kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9.0);
+        return new Vector3D(kP / mass, flux);
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3DDS position,
+                                                    final RotationDS rotation, final DerivativeStructure mass,
+                                                    final Vector3DDS flux) {
+        final double kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9.0);
+        return new Vector3DDS(mass.reciprocal().multiply(kP), flux);
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
+                                                    final Rotation rotation, final double mass,
+                                                    final Vector3D flux, final String paramName)
+        throws OrekitException {
+
+        final DerivativeStructure absorptionCoeffDS;
+        final DerivativeStructure specularReflectionCoeffDS;
+        if (ABSORPTION_COEFFICIENT.equals(paramName)) {
+            absorptionCoeffDS         = new DerivativeStructure(1, 1, 0, absorptionCoeff);
+            specularReflectionCoeffDS = new DerivativeStructure(1, 1,    specularReflectionCoeff);
+        } else if (REFLECTION_COEFFICIENT.equals(paramName)) {      
+            absorptionCoeffDS         = new DerivativeStructure(1, 1,    absorptionCoeff);
+            specularReflectionCoeffDS = new DerivativeStructure(1, 1, 0, specularReflectionCoeff);
+        } else {
+            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+        }
+
+        final DerivativeStructure kP =
+                absorptionCoeffDS.subtract(1).multiply(specularReflectionCoeffDS.subtract(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
+        return new Vector3DDS(kP.divide(mass), flux);
+
     }
 
     /** {@inheritDoc} */
     public void setDragCoefficient(final double value) {
         dragCoeff = value;
-        this.setKD();
     }
 
     /** {@inheritDoc} */
@@ -102,7 +155,6 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     /** {@inheritDoc} */
     public void setAbsorptionCoefficient(final double value) {
         absorptionCoeff = value;
-        this.setKP();
     }
 
     /** {@inheritDoc} */
@@ -113,56 +165,11 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     /** {@inheritDoc} */
     public void setReflectionCoefficient(final double value) {
         specularReflectionCoeff = value;
-        this.setKP();
     }
 
     /** {@inheritDoc} */
     public double getReflectionCoefficient() {
         return specularReflectionCoeff;
-    }
-
-    /** Set kD value. */
-    private void setKD() {
-        kD = dragCoeff * crossSection / 2;
-    }
-
-    /** Set kP value. */
-    private void setKP() {
-        kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9.0);
-    }
-
-    /** Computes kP derivative with respect to absorption coefficient.
-     * @return kP derivative with respect to absorption coefficient*/
-    private double computeDKPDCa() {
-        return -4 * crossSection * (1.0 - specularReflectionCoeff) / 9;
-    }
-
-    /** Computes kP derivative with respect to reflection coefficient.
-     * @return kP derivative with respect to reflection coefficient*/
-    private double computeDKPDCr() {
-        return -4 * crossSection * (1.0 - absorptionCoeff) / 9;
-    }
-
-    /** {@inheritDoc} */
-    public void addDAccDParam(final Vector3D acceleration, final String paramName, final double[] dAccdParam)
-        throws OrekitException {
-
-        final double coefficient;
-        if (paramName.equals(SolarRadiationPressure.ABSORPTION_COEFFICIENT)) {
-            coefficient = computeDKPDCa() / kP;
-        } else if (paramName.equals(SolarRadiationPressure.REFLECTION_COEFFICIENT)) {
-            coefficient = computeDKPDCr() / kP;
-        } else {
-            throw OrekitException.createIllegalArgumentException(OrekitMessages.UNSUPPORTED_PARAMETER_1_2,
-                                                                 paramName,
-                                                                 SolarRadiationPressure.ABSORPTION_COEFFICIENT,
-                                                                 SolarRadiationPressure.REFLECTION_COEFFICIENT);
-        }
-
-        dAccdParam[0] += coefficient * acceleration.getX();
-        dAccdParam[1] += coefficient * acceleration.getY();
-        dAccdParam[2] += coefficient * acceleration.getZ();
-
     }
 
 }

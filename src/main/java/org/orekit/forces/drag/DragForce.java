@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.drag;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
@@ -25,15 +26,17 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 
 /** Atmospheric drag force model.
  *
  * The drag acceleration is computed as follows :
  *
- * &gamma; = (1/2 * Ro * V<sup>2</sup> * S / Mass) * DragCoefVector
+ * &gamma; = (1/2 * &rho; * V<sup>2</sup> * S / Mass) * DragCoefVector
  *
- * With DragCoefVector = {Cx, Cy, Cz} and S given by the user through the interface
+ * With DragCoefVector = {C<sub>x</sub>, C<sub>y</sub>, C<sub>z</sub>} and S given by the user through the interface
  * {@link DragSensitive}
  *
  * @author &Eacute;douard Delente
@@ -43,9 +46,6 @@ import org.orekit.time.AbsoluteDate;
  */
 
 public class DragForce extends AbstractParameterizable implements ForceModel {
-
-    /** Parameter name for drag coefficient enabling jacobian processing. */
-    public static final String DRAG_COEFFICIENT = "DRAG COEFFICIENT";
 
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
@@ -58,7 +58,7 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
      * @param spacecraft the object physical and geometrical information
      */
     public DragForce(final Atmosphere atmosphere, final DragSensitive spacecraft) {
-        super(DRAG_COEFFICIENT);
+        super(DragSensitive.DRAG_COEFFICIENT);
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
     }
@@ -81,7 +81,8 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
         final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
 
         // Addition of calculated acceleration to adder
-        adder.addAcceleration(spacecraft.dragAcceleration(s, rho, relativeVelocity), frame);
+        adder.addAcceleration(spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                          s.getMass(), rho, relativeVelocity), frame);
 
     }
 
@@ -101,6 +102,42 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
     public void setParameter(final String name, final double value) throws IllegalArgumentException {
         complainIfNotSupported(name);
         spacecraft.setDragCoefficient(value);
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                              final Vector3DDS position, final Vector3DDS velocity,
+                                              final RotationDS rotation, DerivativeStructure mass)
+        throws OrekitException {
+
+        final Vector3D   posDouble        = position.toVector3D();
+        final double     rho              = atmosphere.getDensity(date, posDouble, frame);
+        final Vector3D   vAtm             = atmosphere.getVelocity(date, posDouble, frame);
+        final Vector3DDS relativeVelocity = velocity.subtract(vAtm).negate();
+
+        // compute acceleration with all its partial derivatives
+        return spacecraft.dragAcceleration(date, frame, position, rotation, mass, rho, relativeVelocity);
+
+    }
+
+    /** {@inheritDoc} */
+    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+        throws OrekitException {
+
+        complainIfNotSupported(paramName);
+
+        final AbsoluteDate date     = s.getDate();
+        final Frame        frame    = s.getFrame();
+        final Vector3D     position = s.getPVCoordinates().getPosition();
+
+        final double rho    = atmosphere.getDensity(date, position, frame);
+        final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
+        final Vector3D relativeVelocity = vAtm.subtract(s.getPVCoordinates().getVelocity());
+
+        // compute acceleration with all its partial derivatives
+        return spacecraft.dragAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                           s.getMass(), rho, relativeVelocity, paramName);
+
     }
 
 }

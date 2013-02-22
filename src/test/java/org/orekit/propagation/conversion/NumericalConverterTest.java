@@ -31,6 +31,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.drag.SimpleExponentialAtmosphere;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.NewtonianAttraction;
@@ -65,7 +66,8 @@ public class NumericalConverterTest {
 
     @Test
     public void testConversionWithFreeParameter() throws OrekitException, IOException, ParseException {
-        checkFit(orbit, 9000, 300, 1.0e-3, 0., DragForce.DRAG_COEFFICIENT, NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
+        checkFit(orbit, 9000, 300, 1.0e-3, 0.,
+                 DragSensitive.DRAG_COEFFICIENT, NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
     protected void checkFit(final Orbit orbit, final double duration,

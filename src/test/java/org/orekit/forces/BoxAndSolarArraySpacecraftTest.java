@@ -58,7 +58,9 @@ public class BoxAndSolarArraySpacecraftTest {
             double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
             Assert.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
-            Vector3D n = s.getNormal(state);
+            Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
+                                     state.getPVCoordinates().getPosition(),
+                                     state.getAttitude().getRotation());
             Assert.assertEquals(0.0, n.getY(), 1.0e-10);
 
             // normal misalignment should be entirely due to sun being out of orbital plane
@@ -90,7 +92,9 @@ public class BoxAndSolarArraySpacecraftTest {
             double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
             Assert.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
-            Vector3D n = s.getNormal(state);
+            Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
+                                     state.getPVCoordinates().getPosition(),
+                                     state.getAttitude().getRotation());
             Assert.assertEquals(0.0, n.getY(), 1.0e-10);
 
             // normal misalignment should be entirely due to sun being out of orbital plane
@@ -123,7 +127,9 @@ public class BoxAndSolarArraySpacecraftTest {
                 double sunElevation = FastMath.PI / 2 - Vector3D.angle(sunInert, momentum);
                 Assert.assertEquals(15.1, FastMath.toDegrees(sunElevation), 0.1);
 
-                Vector3D n = s.getNormal(state);
+                Vector3D n = s.getNormal(state.getDate(), state.getFrame(),
+                                         state.getPVCoordinates().getPosition(),
+                                         state.getAttitude().getRotation());
                 Assert.assertEquals(0.0, n.getY(), 1.0e-10);
 
                 // normal misalignment should become very large as solar array rotation is plain wrong
@@ -156,12 +162,18 @@ public class BoxAndSolarArraySpacecraftTest {
             Vector3D vAtm = Vector3D.crossProduct(earthRot, p);
             Vector3D relativeVelocity = vAtm.subtract(v);
 
-            Vector3D drag = s.dragAcceleration(state, 0.001, relativeVelocity);
+            Vector3D drag = s.dragAcceleration(state.getDate(), state.getFrame(),
+                                               state.getPVCoordinates().getPosition(),
+                                               state.getAttitude().getRotation(),
+                                               state.getMass(), 0.001, relativeVelocity);
             Assert.assertEquals(0.0, Vector3D.angle(relativeVelocity, drag), 1.0e-10);
 
             Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
-            Vector3D radiation = s.radiationPressureAcceleration(state, flux);
+            Vector3D radiation = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                                                 state.getPVCoordinates().getPosition(),
+                                                                 state.getAttitude().getRotation(),
+                                                                 state.getMass(), flux);
             Assert.assertEquals(0.0, Vector3D.angle(flux, radiation), 1.0e-9);
 
         }
@@ -183,8 +195,13 @@ public class BoxAndSolarArraySpacecraftTest {
 
             Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
-            Vector3D acceleration = s.radiationPressureAcceleration(state, flux);
-            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state));
+            Vector3D acceleration = s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                                                    state.getPVCoordinates().getPosition(),
+                                                                    state.getAttitude().getRotation(),
+                                                                    state.getMass(), flux);
+            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
+                                                                                           state.getPVCoordinates().getPosition(),
+                                                                                           state.getAttitude().getRotation()));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
             Assert.assertEquals(15.1, FastMath.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);
@@ -211,8 +228,14 @@ public class BoxAndSolarArraySpacecraftTest {
 
             Vector3D sunDirection = sun.getPVCoordinates(date, state.getFrame()).getPosition().normalize();
             Vector3D flux = new Vector3D(-4.56e-6, sunDirection);
-            Vector3D acceleration = s.radiationPressureAcceleration(state, flux);
-            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state));
+            Vector3D acceleration =
+                    s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                                    state.getPVCoordinates().getPosition(),
+                                                    state.getAttitude().getRotation(),
+                                                    state.getMass(), flux);
+            Vector3D normal = state.getAttitude().getRotation().applyInverseTo(s.getNormal(state.getDate(), state.getFrame(),
+                                                                                           state.getPVCoordinates().getPosition(),
+                                                                                           state.getAttitude().getRotation()));
 
             // solar array normal is slightly misaligned with Sun direction due to Sun being out of orbital plane
             Assert.assertEquals(15.1, FastMath.toDegrees(Vector3D.angle(sunDirection, normal)), 0.11);

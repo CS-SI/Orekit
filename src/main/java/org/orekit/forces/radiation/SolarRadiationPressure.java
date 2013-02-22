@@ -16,6 +16,7 @@
  */
 package org.orekit.forces.radiation;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
@@ -26,11 +27,11 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.numerical.AccelerationJacobiansProvider;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 /** Solar radiation pressure force model.
  *
@@ -39,14 +40,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * @author V&eacute;ronique Pommier-Maurussane
  * @author Pascal Parraud
  */
-public class SolarRadiationPressure extends AbstractParameterizable
-                                    implements ForceModel, AccelerationJacobiansProvider {
-
-    /** Parameter name for absorption coefficient. */
-    public static final String ABSORPTION_COEFFICIENT = "absorption coefficient";
-
-    /** Parameter name for reflection coefficient. */
-    public static final String REFLECTION_COEFFICIENT = "reflection coefficient";
+public class SolarRadiationPressure extends AbstractParameterizable implements ForceModel {
 
      /** Sun radius (m). */
     private static final double SUN_RADIUS = 6.95e8;
@@ -94,49 +88,32 @@ public class SolarRadiationPressure extends AbstractParameterizable
                                   final PVCoordinatesProvider sun,
                                   final double equatorialRadius,
                                   final RadiationSensitive spacecraft) {
-        super(ABSORPTION_COEFFICIENT, REFLECTION_COEFFICIENT);
+        super(RadiationSensitive.ABSORPTION_COEFFICIENT, RadiationSensitive.REFLECTION_COEFFICIENT);
         this.kRef = pRef * dRef * dRef;
         this.sun  = sun;
         this.equatorialRadius = equatorialRadius;
         this.spacecraft = spacecraft;
     }
 
-    /** Compute radiation coefficient.
-     * @param s spacecraft state
-     * @return coefficient for acceleration computation
-     * @exception OrekitException if position cannot be computed
-     */
-    private double computeRawP (final SpacecraftState s) throws OrekitException {
-        final AbsoluteDate date     = s.getDate();
-        final Frame        frame    = s.getFrame();
-        final Vector3D     position = s.getPVCoordinates().getPosition();
-
-        final Vector3D satSunVector = getSatSunVector(s);
-        final double r2             = satSunVector.getNormSq();
-        return kRef * getLightningRatio(position, frame, date) / r2;
-    }
-
-    /** Compute radiation acceleration.
-     * @param s spacecraft state
-     * @return acceleration
-     * @exception OrekitException if position cannot be computed
-     */
-    private Vector3D computeAcceleration(final SpacecraftState s) throws OrekitException {
-
-        final Vector3D satSunVector = getSatSunVector(s);
-        final double r2             = satSunVector.getNormSq();
-
-        final double rawP = computeRawP(s);
-        // raw radiation pressure
-        return spacecraft.radiationPressureAcceleration(s, new Vector3D(-rawP / FastMath.sqrt(r2), satSunVector));
-    }
-
     /** {@inheritDoc} */
     public void addContribution(final SpacecraftState s, final TimeDerivativesEquations adder)
         throws OrekitException {
 
+        final AbsoluteDate date         = s.getDate();
+        final Frame        frame        = s.getFrame();
+        final Vector3D     position     = s.getPVCoordinates().getPosition();
+        final Vector3D     sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+        final double       r2           = sunSatVector.getNormSq();
+
+        // compute flux
+        final double   rawP = kRef * getLightningRatio(position, frame, date) / r2;
+        final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
+
+        final Vector3D acceleration = spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                                               s.getMass(), flux);
+
         // provide the perturbing acceleration to the derivatives adder
-        adder.addAcceleration(computeAcceleration(s), s.getFrame());
+        adder.addAcceleration(acceleration, s.getFrame());
 
     }
 
@@ -147,8 +124,7 @@ public class SolarRadiationPressure extends AbstractParameterizable
      * @return lightning ratio
      * @exception OrekitException if the trajectory is inside the Earth
      */
-    public double getLightningRatio(final Vector3D position, final Frame frame,
-                                    final AbsoluteDate date)
+    public double getLightningRatio(final Vector3D position, final Frame frame, final AbsoluteDate date)
         throws OrekitException {
 
         final Vector3D satSunVector =
@@ -202,18 +178,6 @@ public class SolarRadiationPressure extends AbstractParameterizable
         return result;
     }
 
-    /** Compute sat-Sun vector in spacecraft state frame.
-     * @param state current spacecraft state
-     * @return sat-Sun vector in spacecraft state frame
-     * @exception OrekitException if sun position cannot be computed
-     */
-    private Vector3D getSatSunVector(final SpacecraftState state)
-        throws OrekitException {
-        final PVCoordinates sunPV = sun.getPVCoordinates(state.getDate(), state.getFrame());
-        final PVCoordinates satPV = state.getPVCoordinates();
-        return sunPV.getPosition().subtract(satPV.getPosition());
-    }
-
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[] {
@@ -222,56 +186,49 @@ public class SolarRadiationPressure extends AbstractParameterizable
     }
 
     /** {@inheritDoc} */
-    public void addDAccDState(final SpacecraftState s,
-                              final double[][] dAccdPos, final double[][] dAccdVel, final double[] dAccdM)
+    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                              final Vector3DDS position, final Vector3DDS velocity,
+                                              final RotationDS rotation, final DerivativeStructure mass)
         throws OrekitException {
 
-        final Vector3D satSunVector = getSatSunVector(s);
-        final double r2             = satSunVector.getNormSq();
-        final double rawP           = computeRawP(s);
-        final Vector3D acceleration = spacecraft.radiationPressureAcceleration(s, new Vector3D(-rawP / FastMath.sqrt(r2), satSunVector));
+        final Vector3DDS sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+        final DerivativeStructure r2  = sunSatVector.getNormSq();
 
-        final double x2 = satSunVector.getX() * satSunVector.getX();
-        final double y2 = satSunVector.getY() * satSunVector.getY();
-        final double z2 = satSunVector.getZ() * satSunVector.getZ();
-        final double xy = satSunVector.getX() * satSunVector.getY();
-        final double yz = satSunVector.getY() * satSunVector.getZ();
-        final double zx = satSunVector.getZ() * satSunVector.getX();
-        final double prefix = Vector3D.dotProduct(acceleration, satSunVector) / (r2 * r2);
+        // compute flux
+        final double ratio = getLightningRatio(position.toVector3D(), frame, date);
+        final DerivativeStructure rawP = r2.reciprocal().multiply(kRef * ratio);
+        final Vector3DDS flux = new Vector3DDS(rawP.divide(r2.sqrt()), sunSatVector);
 
-        // jacobian with respect to position
-        dAccdPos[0][0] += prefix * (2 * x2 - y2 - z2);
-        dAccdPos[0][1] += prefix * 3 * xy;
-        dAccdPos[0][2] += prefix * 3 * zx;
-        dAccdPos[1][0] += prefix * 3 * xy;
-        dAccdPos[1][1] += prefix * (2 * y2 - z2 - x2);
-        dAccdPos[1][2] += prefix * 3 * yz;
-        dAccdPos[2][0] += prefix * 3 * zx;
-        dAccdPos[2][1] += prefix * 3 * yz;
-        dAccdPos[2][2] += prefix * (2 * z2 - x2 - y2);
-
-        // jacobian with respect to velocity is null
-
-        if (dAccdM != null) {
-            // jacobian with respect to mass
-            dAccdM[0] -= acceleration.getX() / s.getMass();
-            dAccdM[1] -= acceleration.getY() / s.getMass();
-            dAccdM[2] -= acceleration.getZ() / s.getMass();
-        }
+        // compute acceleration with all its partial derivatives
+        return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
 
     }
 
     /** {@inheritDoc} */
-    public void addDAccDParam(final SpacecraftState s, final String paramName, final double[] dAccdParam)
+    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
-        spacecraft.addDAccDParam(computeAcceleration(s), paramName, dAccdParam);
+
+        complainIfNotSupported(paramName);
+        final AbsoluteDate date         = s.getDate();
+        final Frame        frame        = s.getFrame();
+        final Vector3D     position     = s.getPVCoordinates().getPosition();
+        final Vector3D     sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+        final double       r2           = sunSatVector.getNormSq();
+
+        // compute flux
+        final double   rawP = kRef * getLightningRatio(position, frame, date) / r2;
+        final Vector3D flux = new Vector3D(rawP / FastMath.sqrt(r2), sunSatVector);
+
+        return spacecraft.radiationPressureAcceleration(date, frame, position, s.getAttitude().getRotation(),
+                                                        s.getMass(), flux, paramName);
+
     }
 
     /** {@inheritDoc} */
     public double getParameter(final String name)
         throws IllegalArgumentException {
         complainIfNotSupported(name);
-        if (name.equals(ABSORPTION_COEFFICIENT)) {
+        if (name.equals(RadiationSensitive.ABSORPTION_COEFFICIENT)) {
             return spacecraft.getAbsorptionCoefficient();
         }
         return spacecraft.getReflectionCoefficient();
@@ -281,7 +238,7 @@ public class SolarRadiationPressure extends AbstractParameterizable
     public void setParameter(final String name, final double value)
         throws IllegalArgumentException {
         complainIfNotSupported(name);
-        if (name.equals(ABSORPTION_COEFFICIENT)) {
+        if (name.equals(RadiationSensitive.ABSORPTION_COEFFICIENT)) {
             spacecraft.setAbsorptionCoefficient(value);
         } else {
             spacecraft.setReflectionCoefficient(value);
@@ -313,9 +270,12 @@ public class SolarRadiationPressure extends AbstractParameterizable
         public double g(final SpacecraftState s)
             throws OrekitException {
 
-            final Vector3D satPos = s.getPVCoordinates().getPosition();
-            final double sunEarthAngle = FastMath.PI - Vector3D.angle(getSatSunVector(s), satPos);
-            final double r = satPos.getNorm();
+            final AbsoluteDate date         = s.getDate();
+            final Frame        frame        = s.getFrame();
+            final Vector3D     position     = s.getPVCoordinates().getPosition();
+            final Vector3D     satSunVector = sun.getPVCoordinates(date, frame).getPosition().subtract(position);
+            final double sunEarthAngle = FastMath.PI - Vector3D.angle(satSunVector, position);
+            final double r = position.getNorm();
             if (r <= equatorialRadius) {
                 throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
             }
@@ -350,10 +310,12 @@ public class SolarRadiationPressure extends AbstractParameterizable
         public double g(final SpacecraftState s)
             throws OrekitException {
 
-            final Vector3D satPos       = s.getPVCoordinates().getPosition();
-            final Vector3D satSunVector = getSatSunVector(s);
-            final double sunEarthAngle  = FastMath.PI - Vector3D.angle(satSunVector, satPos);
-            final double r = satPos.getNorm();
+            final AbsoluteDate date         = s.getDate();
+            final Frame        frame        = s.getFrame();
+            final Vector3D     position     = s.getPVCoordinates().getPosition();
+            final Vector3D     satSunVector = sun.getPVCoordinates(date, frame).getPosition().subtract(position);
+            final double sunEarthAngle  = FastMath.PI - Vector3D.angle(satSunVector, position);
+            final double r = position.getNorm();
             if (r <= equatorialRadius) {
                 throw new OrekitException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
             }

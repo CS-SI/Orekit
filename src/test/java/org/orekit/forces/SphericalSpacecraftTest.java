@@ -55,7 +55,10 @@ public class SphericalSpacecraftTest {
         Vector3D relativeVelocity = new Vector3D(36.0, 48.0, 80.0);
 
         double rho = 0.001;
-        Vector3D computedAcceleration = s.dragAcceleration(state, rho, relativeVelocity);
+        Vector3D computedAcceleration = s.dragAcceleration(state.getDate(), state.getFrame(),
+                                                           state.getPVCoordinates().getPosition(),
+                                                           state.getAttitude().getRotation(),
+                                                           state.getMass(), rho, relativeVelocity);
         Vector3D d = relativeVelocity.normalize();
         double v2 = relativeVelocity.getNormSq();
         Vector3D expectedAcceleration = new Vector3D(rho * surface * cd * v2 / (2 * state.getMass()), d);
@@ -84,7 +87,11 @@ public class SphericalSpacecraftTest {
         SphericalSpacecraft s = new SphericalSpacecraft(surface, 0.0, kA, kR);
         Vector3D flux = new Vector3D(36.0, 48.0, 80.0);
 
-        Vector3D computedAcceleration = s.radiationPressureAcceleration(state, flux);
+        Vector3D computedAcceleration =
+                s.radiationPressureAcceleration(state.getDate(), state.getFrame(),
+                                                state.getPVCoordinates().getPosition(),
+                                                state.getAttitude().getRotation(),
+                                                state.getMass(), flux);
         Vector3D d = flux.normalize();
         double f = flux.getNorm();
         double p = (1 - kA) * (1 - kR);
