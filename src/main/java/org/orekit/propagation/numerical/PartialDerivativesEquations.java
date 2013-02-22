@@ -20,6 +20,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
@@ -27,6 +30,8 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -42,8 +47,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Selected parameters for Jacobian computation. */
     private NumericalPropagator propagator;
 
-    /** Jacobians providers. */
-    private final List<AccelerationJacobiansProvider> jacobiansProviders;
+    /** Derivatives providers. */
+    private final List<ForceModel> derivativesProviders;
 
     /** List of parameters selected for Jacobians computation. */
     private List<ParameterConfiguration> selectedParameters;
@@ -90,7 +95,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     public PartialDerivativesEquations(final String name, final NumericalPropagator propagator)
         throws OrekitException {
         this.name = name;
-        jacobiansProviders = new ArrayList<AccelerationJacobiansProvider>();
+        derivativesProviders = new ArrayList<ForceModel>();
         dirty = true;
         this.propagator = propagator;
         selectedParameters = new ArrayList<ParameterConfiguration>();
@@ -155,13 +160,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     public void selectParamAndStep(final String parameter, final double hP) {
         selectedParameters.add(new ParameterConfiguration(parameter, hP));
         dirty = true;
-    }
-
-    /** Set the step for finite differences with respect to spacecraft position.
-     * @param hPosition step used for finite difference computation with respect to spacecraft position (m)
-     */
-    public void setSteps(final double hPosition) {
-        this.hPos = hPosition;
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
@@ -257,28 +255,16 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                 hPos = FastMath.sqrt(Precision.EPSILON) * s.getPVCoordinates().getPosition().getNorm();
             }
 
-             // set up Jacobians providers
-            jacobiansProviders.clear();
-            for (final ForceModel model : propagator.getForceModels()) {
-                if (model instanceof AccelerationJacobiansProvider) {
-
-                    // the force model already provides the Jacobians by itself
-                    jacobiansProviders.add((AccelerationJacobiansProvider) model);
-
-                } else {
-
-                    // wrap the force model to compute the Jacobians by finite differences
-                    jacobiansProviders.add(new Jacobianizer(model, selectedParameters, hPos));
-
-                }
-            }
-            jacobiansProviders.add(propagator.getNewtonianAttractionForceModel());
+             // set up derivatives providers
+            derivativesProviders.clear();
+            derivativesProviders.addAll(propagator.getForceModels());
+            derivativesProviders.add(propagator.getNewtonianAttractionForceModel());
 
             // check all parameters are handled by at least one Jacobian provider
             for (final ParameterConfiguration param : selectedParameters) {
                 final String parameterName = param.getParameterName();
                 boolean found = false;
-                for (final AccelerationJacobiansProvider provider : jacobiansProviders) {
+                for (final ForceModel provider : derivativesProviders) {
                     if (provider.isSupported(parameterName)) {
                         param.setProvider(provider);
                         found = true;
@@ -304,7 +290,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         }
 
-        // compute forces gradients dAccDState
+        // initialize acceleration Jacobians to zero
         for (final double[] row : dAccdPos) {
             Arrays.fill(row, 0.0);
         }
@@ -314,8 +300,43 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         if (dAccdM != null) {
             Arrays.fill(dAccdM, 0.0);
         }
-        for (final AccelerationJacobiansProvider jacobProv : jacobiansProviders) {
-            jacobProv.addDAccDState(s, dAccdPos, dAccdVel, dAccdM);
+
+        // prepare derivation variables, 3 for position, 3 for velocity and optionally 1 for mass
+        final int nbVars = (dAccdM == null) ? 6 : 7;
+
+        // position corresponds three free parameters
+        final Vector3D position = s.getPVCoordinates().getPosition();
+        final Vector3DDS dsP = new Vector3DDS(new DerivativeStructure(nbVars, 1, 0, position.getX()),
+                                              new DerivativeStructure(nbVars, 1, 1, position.getY()),
+                                              new DerivativeStructure(nbVars, 1, 2, position.getZ()));
+
+        // velocity corresponds three free parameters
+        final Vector3D velocity = s.getPVCoordinates().getPosition();
+        final Vector3DDS dsV = new Vector3DDS(new DerivativeStructure(nbVars, 1, 3, velocity.getX()),
+                                              new DerivativeStructure(nbVars, 1, 4, velocity.getY()),
+                                              new DerivativeStructure(nbVars, 1, 5, velocity.getZ()));
+
+        // mass corresponds either to a constant or to one free parameter
+        final DerivativeStructure dsM = (dAccdM == null) ?
+                                        new DerivativeStructure(nbVars, 1,    s.getMass()) :
+                                        new DerivativeStructure(nbVars, 1, 6, s.getMass());
+
+        // TODO:  we should compute attitude partial derivatives with respect to position/velocity
+        final Rotation rotation = s.getAttitude().getRotation();
+        final RotationDS dsR =
+                new RotationDS(new DerivativeStructure(nbVars, 1, rotation.getQ0()),
+                               new DerivativeStructure(nbVars, 1, rotation.getQ1()),
+                               new DerivativeStructure(nbVars, 1, rotation.getQ2()),
+                               new DerivativeStructure(nbVars, 1, rotation.getQ3()),
+                               false);
+
+        // compute acceleration Jacobians
+        for (final ForceModel derivativesProvider : derivativesProviders) {
+            final Vector3DDS acceleration = derivativesProvider.accelerationDerivatives(s.getDate(), s.getFrame(),
+                                                                                        dsP, dsV, dsR, dsM);
+            addToRow(acceleration.getX(), 0);
+            addToRow(acceleration.getY(), 1);
+            addToRow(acceleration.getZ(), 2);
         }
 
         // the variational equations of the complete state Jacobian matrix have the
@@ -379,9 +400,11 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             // compute the acceleration gradient with respect to current parameter
             final ParameterConfiguration param = selectedParameters.get(k);
-            final AccelerationJacobiansProvider provider = param.getProvider();
-            Arrays.fill(dAccdParam, 0.0);
-            provider.addDAccDParam(s, param.getParameterName(), dAccdParam);
+            final ForceModel provider = param.getProvider();
+            final Vector3DDS accDer = provider.accelerationDerivatives(s, param.getParameterName());
+            dAccdParam[0] = accDer.getX().getPartialDerivative(1);
+            dAccdParam[1] = accDer.getY().getPartialDerivative(1);
+            dAccdParam[2] = accDer.getZ().getPartialDerivative(1);
 
             // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:
@@ -435,6 +458,46 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // these equations have no effect of the main state itself
         return null;
+
+    }
+
+    /** Fill Jacobians rows when mass is needed.
+     * @param accelerationComponent component of acceleration (along either x, y or z)
+     * @param index component index (0 for x, 1 for y, 2 for z)
+     * @param dAccdPos array where to <em>accumulate</em> acceleration derivatives with respect to position
+     * @param dAccdVel array where to <em>accumulate</em> acceleration derivatives with respect to velocity
+     * @param dAccdM array where to <em>accumulate</em> acceleration derivatives with respect to mass (may be null when
+     */
+    private void addToRow(final DerivativeStructure accelerationComponent, final int index) {
+
+        if (dAccdM == null) {
+
+            // free parameters 0, 1, 2 are for position
+            dAccdPos[index][0] += accelerationComponent.getPartialDerivative(1, 0, 0, 0, 0, 0);
+            dAccdPos[index][1] += accelerationComponent.getPartialDerivative(0, 1, 0, 0, 0, 0);
+            dAccdPos[index][2] += accelerationComponent.getPartialDerivative(0, 0, 1, 0, 0, 0);
+
+            // free parameters 3, 4, 5 are for velocity
+            dAccdVel[index][0] += accelerationComponent.getPartialDerivative(0, 0, 0, 1, 0, 0);
+            dAccdVel[index][1] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 1, 0);
+            dAccdVel[index][2] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 0, 1);
+
+        } else {
+
+            // free parameters 0, 1, 2 are for position
+            dAccdPos[index][0] += accelerationComponent.getPartialDerivative(1, 0, 0, 0, 0, 0, 0);
+            dAccdPos[index][1] += accelerationComponent.getPartialDerivative(0, 1, 0, 0, 0, 0, 0);
+            dAccdPos[index][2] += accelerationComponent.getPartialDerivative(0, 0, 1, 0, 0, 0, 0);
+
+            // free parameters 3, 4, 5 are for velocity
+            dAccdVel[index][0] += accelerationComponent.getPartialDerivative(0, 0, 0, 1, 0, 0, 0);
+            dAccdVel[index][1] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 1, 0, 0);
+            dAccdVel[index][2] += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 0, 1, 0);
+
+            // free parameter 6 is for mass
+            dAccdM[index]      += accelerationComponent.getPartialDerivative(0, 0, 0, 0, 0, 0, 1);
+
+        }
 
     }
 

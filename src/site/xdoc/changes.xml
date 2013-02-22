@@ -22,6 +22,12 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="update" >
+        Streamlined the force models partial derivatives computation for numerical
+        propagation. It is now far simpler to compute analytically the derivatives
+        with respect to state and with respect to force models specific parameters,
+        thanks to the new Apache Commons Math differentiation framework. 
+      </action>
       <action dev="luc" type="add" >
         Added a new force model for central body gravity field, based on Holmes and Featherstone
         algorithms. This model is a great improvement over Cunningham and Droziner models. It

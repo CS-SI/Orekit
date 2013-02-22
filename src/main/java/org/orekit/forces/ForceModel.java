@@ -16,11 +16,16 @@
  */
 package org.orekit.forces;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.ode.ParameterizedODE;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -60,6 +65,42 @@ public interface ForceModel extends ParameterizedODE {
      * @exception OrekitException if some specific error occurs
      */
     void addContribution(SpacecraftState s, TimeDerivativesEquations adder)
+        throws OrekitException;
+
+    /** Compute acceleration derivatives with respect to state parameters.
+     * <p>
+     * The derivatives should be computed with respect to position, velocity
+     * and optionnaly mass. The input parameters already take into account the
+     * free parameters (6 or 7 depending on derivation with respect to mass
+     * being considered or not) and order (always 1). Free parameters at indices
+     * 0, 1 and 2 correspond to derivatives with respect to position. Free
+     * parameters at indices 3, 4 and 5 correspond to derivatives with respect
+     * to velocity. Free parameter at index 6 (if present) corresponds to
+     * to derivatives with respect to mass.
+     * </p>
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in reference frame
+     * @param velocity velocity of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
+     * @param mass spacecraft mass
+     * @return acceleration with all derivatives specified by the input parameters own derivatives
+     * @exception OrekitException if derivatives cannot be computed
+     * @since 6.0
+     */
+    Vector3DDS accelerationDerivatives(AbsoluteDate date, Frame frame,
+                                       Vector3DDS position, Vector3DDS velocity,
+                                       RotationDS rotation, DerivativeStructure mass)
+        throws OrekitException;
+
+    /** Compute acceleration derivatives with respect to additional parameters.
+     * @param s spacecraft state
+     * @param paramName name of the parameter with respect to which derivatives are required
+     * @return acceleration with all derivatives specified by the input parameters own derivatives
+     * @exception OrekitException if derivatives cannot be computed
+     * @since 6.0
+     */
+    Vector3DDS accelerationDerivatives(SpacecraftState s, String paramName)
         throws OrekitException;
 
     /** Get the discrete events related to the model.

@@ -16,12 +16,14 @@
  */
 package org.orekit.propagation.numerical;
 
+import org.orekit.forces.ForceModel;
+
 
 /** Simple container associating a parameter name with a step to compute its jacobian
  * and the provider that manages it.
  * @author V&eacute;ronique Pommier-Maurussane
  */
-class ParameterConfiguration {
+public class ParameterConfiguration {
 
     /** Parameter name. */
     private String parameterName;
@@ -30,7 +32,7 @@ class ParameterConfiguration {
     private double hP;
 
     /** Provider handling this parameter. */
-    private AccelerationJacobiansProvider provider;
+    private ForceModel provider;
 
     /** Parameter name and step pair constructor.
      * @param parameterName parameter name
@@ -58,14 +60,14 @@ class ParameterConfiguration {
     /** Set the povider handling this parameter.
      * @param provider provider handling this parameter
      */
-    public void setProvider(final AccelerationJacobiansProvider provider) {
+    public void setProvider(final ForceModel provider) {
         this.provider = provider;
     }
 
     /** Get the povider handling this parameter.
      * @return provider handling this parameter
      */
-    public AccelerationJacobiansProvider getProvider() {
+    public ForceModel getProvider() {
         return provider;
     }
 

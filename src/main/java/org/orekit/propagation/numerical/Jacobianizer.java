@@ -20,9 +20,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
+import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
@@ -30,16 +33,27 @@ import org.orekit.frames.Transform;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.RotationDS;
+import org.orekit.utils.Vector3DDS;
 
-/** Class enabling basic {@link ForceModel} instances
- *  to be used when processing spacecraft state partial derivatives.
+/** Class helping implementation of partial derivatives in {@link ForceModel force models} implementations.
+ * <p>
+ * For better performances, {@link ForceModel force models} implementations should compute their
+ * partial derivatives analytically. However, in some cases, it may be difficult. This class
+ * allows to compute the derivatives by finite differences relying only on the basic acceleration.
+ * </p>
  * @author V&eacute;ronique Pommier-Maurussane
+ * @author Luc Maisonobe
  */
-class Jacobianizer implements AccelerationJacobiansProvider {
+public class Jacobianizer {
 
     /** Wrapped force model instance. */
     private final ForceModel forceModel;
+
+    /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+    private final double mu;
 
     /** Step used for finite difference computation with respect to spacecraft position. */
     private double hPos;
@@ -47,25 +61,19 @@ class Jacobianizer implements AccelerationJacobiansProvider {
     /** Step used for finite difference computation with respect to parameters value. */
     private final Map<String, Double> hParam;
 
-    /** Dedicated adder used to retrieve nominal acceleration. */
-    private final AccelerationRetriever nominal;
-
-    /** Dedicated adder used to retrieve shifted acceleration. */
-    private final AccelerationRetriever shifted;
-
     /** Simple constructor.
      * @param forceModel force model instance to wrap
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @param paramsAndSteps collection of parameters and their associated steps
      * @param hPos step used for finite difference computation with respect to spacecraft position (m)
      */
-    public Jacobianizer(final ForceModel forceModel, final Collection<ParameterConfiguration> paramsAndSteps,
-                        final double hPos) {
+    public Jacobianizer(final ForceModel forceModel, final double mu,
+                        final Collection<ParameterConfiguration> paramsAndSteps, final double hPos) {
 
         this.forceModel = forceModel;
+        this.mu         = mu;
         this.hParam     = new HashMap<String, Double>();
         this.hPos       = hPos;
-        this.nominal    = new AccelerationRetriever();
-        this.shifted    = new AccelerationRetriever();
 
         // set up parameters for jacobian computation
         for (final ParameterConfiguration param : paramsAndSteps) {
@@ -84,99 +92,140 @@ class Jacobianizer implements AccelerationJacobiansProvider {
 
     /** Compute acceleration.
      * @param retriever acceleration retriever to use for storing acceleration
-     * @param s original state
-     * @param p shifted position
-     * @param v shifted velocity
-     * @param m shifted mass
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in reference frame
+     * @param velocity velocity of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
+     * @param mass spacecraft mass
      * @exception OrekitException if the underlying force models cannot compute the acceleration
      */
-    private void computeShiftedAcceleration(final AccelerationRetriever retriever, final SpacecraftState s,
-                                            final Vector3D p, final Vector3D v, final double m)
+    private void computeShiftedAcceleration(final AccelerationRetriever retriever,
+                                            final AbsoluteDate date, final Frame frame,
+                                            final Vector3D position, final Vector3D velocity,
+                                            final Rotation rotation, final double mass)
         throws OrekitException {
-        final Orbit shiftedORbit = new CartesianOrbit(new PVCoordinates(p, v), s.getFrame(), s.getDate(), s.getMu());
+        final Orbit shiftedORbit = new CartesianOrbit(new PVCoordinates(position, velocity), frame, date, mu);
         retriever.setOrbit(shiftedORbit);
-        forceModel.addContribution(new SpacecraftState(shiftedORbit, s.getAttitude(), m), retriever);
+        forceModel.addContribution(new SpacecraftState(shiftedORbit,
+                                                       new Attitude(date, frame, rotation, Vector3D.ZERO),
+                                                       mass),
+                                   retriever);
     }
 
     /** {@inheritDoc} */
-    public void addDAccDState(final SpacecraftState s,
-                              final double[][] dAccdPos, final double[][] dAccdVel, final double[] dAccdM)
+    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                              final Vector3DDS position, final Vector3DDS velocity,
+                                              final RotationDS rotation, final DerivativeStructure mass)
         throws OrekitException {
+
+        final int parameters = mass.getFreeParameters();
+        final int order      = mass.getOrder();
 
         // estimate the scalar velocity step, assuming energy conservation
         // and hence differentiating equation V = sqrt(mu (2/r - 1/a))
-        final PVCoordinates pv    = s.getPVCoordinates();
-        final Vector3D      p0    = pv.getPosition();
-        final Vector3D      v0   = pv.getVelocity();
+        final Vector3D      p0    = position.toVector3D();
+        final Vector3D      v0    = velocity.toVector3D();
         final double        r2    = p0.getNormSq();
-        final double        hVel  = s.getMu() * hPos / (v0.getNorm() * r2);
+        final double        hVel  = mu * hPos / (v0.getNorm() * r2);
 
         // estimate mass step, applying the same relative value as position
-        final double m0 = s.getMass();
+        final double m0 = mass.getValue();
         final double hMass = m0 * hPos / FastMath.sqrt(r2);
 
-        // compute df/dy where f is the ODE and y is the CARTESIAN state array
-        computeShiftedAcceleration(nominal, s, p0, v0, m0);
+        // TODO: we should compute attitude partial derivatives with respect to position/velocity
+        final Rotation r0 = rotation.toRotation();
 
-        // jacobian with respect to position
-        computeShiftedAcceleration(shifted, s, new Vector3D(p0.getX() + hPos, p0.getY(), p0.getZ()), v0, m0);
-        dAccdPos[0][0] += (shifted.getX() - nominal.getX()) / hPos;
-        dAccdPos[1][0] += (shifted.getY() - nominal.getY()) / hPos;
-        dAccdPos[2][0] += (shifted.getZ() - nominal.getZ()) / hPos;
+        // compute nominal acceleration
+        final AccelerationRetriever nominal = new AccelerationRetriever();
+        computeShiftedAcceleration(nominal, date, frame, p0, v0, r0, m0);
+        final double[] a0 = nominal.getAcceleration().toArray();
 
-        computeShiftedAcceleration(shifted, s, new Vector3D(p0.getX(), p0.getY() + hPos, p0.getZ()), v0, m0);
-        dAccdPos[0][1] += (shifted.getX() - nominal.getX()) / hPos;
-        dAccdPos[1][1] += (shifted.getY() - nominal.getY()) / hPos;
-        dAccdPos[2][1] += (shifted.getZ() - nominal.getZ()) / hPos;
+        // compute accelerations with shifted states
+        final AccelerationRetriever shifted = new AccelerationRetriever();
 
-        computeShiftedAcceleration(shifted, s, new Vector3D(p0.getX(), p0.getY(), p0.getZ() + hPos), v0, m0);
-        dAccdPos[0][2] += (shifted.getX() - nominal.getX()) / hPos;
-        dAccdPos[1][2] += (shifted.getY() - nominal.getY()) / hPos;
-        dAccdPos[2][2] += (shifted.getZ() - nominal.getZ()) / hPos;
+        // shift position by hPos alon x, y and z
+        computeShiftedAcceleration(shifted, date, frame, new Vector3D(p0.getX() + hPos, p0.getY(), p0.getZ()), v0, r0, m0);
+        final double[] derPx = new Vector3D(1 / hPos, shifted.getAcceleration(), -1 / hPos, nominal.getAcceleration()).toArray();
+        computeShiftedAcceleration(shifted, date, frame, new Vector3D(p0.getX(), p0.getY() + hPos, p0.getZ()), v0, r0, m0);
+        final double[] derPy = new Vector3D(1 / hPos, shifted.getAcceleration(), -1 / hPos, nominal.getAcceleration()).toArray();
+        computeShiftedAcceleration(shifted, date, frame, new Vector3D(p0.getX(), p0.getY(), p0.getZ() + hPos), v0, r0, m0);
+        final double[] derPz = new Vector3D(1 / hPos, shifted.getAcceleration(), -1 / hPos, nominal.getAcceleration()).toArray();
 
-        // jacobian with respect to velocity
-        computeShiftedAcceleration(shifted, s, p0, new Vector3D(v0.getX() + hVel, v0.getY(), v0.getZ()), m0);
-        dAccdVel[0][0] += (shifted.getX() - nominal.getX()) / hPos;
-        dAccdVel[1][0] += (shifted.getY() - nominal.getY()) / hPos;
-        dAccdVel[2][0] += (shifted.getZ() - nominal.getZ()) / hPos;
+        // shift velocity by hVel alon x, y and z
+        computeShiftedAcceleration(shifted, date, frame, p0, new Vector3D(v0.getX() + hVel, v0.getY(), v0.getZ()), r0, m0);
+        final double[] derVx = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
+        computeShiftedAcceleration(shifted, date, frame, p0, new Vector3D(v0.getX(), v0.getY() + hVel, v0.getZ()), r0, m0);
+        final double[] derVy = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
+        computeShiftedAcceleration(shifted, date, frame, p0, new Vector3D(v0.getX(), v0.getY(), v0.getZ() + hVel), r0, m0);
+        final double[] derVz = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
 
-        computeShiftedAcceleration(shifted, s, p0, new Vector3D(v0.getX(), v0.getY() + hVel, v0.getZ()), m0);
-        dAccdVel[0][1] += (shifted.getX() - nominal.getX()) / hPos;
-        dAccdVel[1][1] += (shifted.getY() - nominal.getY()) / hPos;
-        dAccdVel[2][1] += (shifted.getZ() - nominal.getZ()) / hPos;
+        final double[] derM;
+        if (parameters < 7) {
+            derM = null;
+        } else {
+            // shift mass by hMass
+            computeShiftedAcceleration(shifted, date, frame, p0, v0, r0, m0 + hMass);
+            derM = new Vector3D(1 / hMass, shifted.getAcceleration(), -1 / hMass, nominal.getAcceleration()).toArray();
 
-        computeShiftedAcceleration(shifted, s, p0, new Vector3D(v0.getX(), v0.getY(), v0.getZ() + hVel), m0);
-        dAccdVel[0][2] += (shifted.getX() - nominal.getX()) / hPos;
-        dAccdVel[1][2] += (shifted.getY() - nominal.getY()) / hPos;
-        dAccdVel[2][2] += (shifted.getZ() - nominal.getZ()) / hPos;
-
-        if (dAccdM != null) {
-            // Jacobian with respect to mass
-            computeShiftedAcceleration(shifted, s, p0, v0, m0 + hMass);
-            dAccdM[0] += (shifted.getX() - nominal.getX()) / hMass;
-            dAccdM[1] += (shifted.getY() - nominal.getY()) / hMass;
-            dAccdM[2] += (shifted.getZ() - nominal.getZ()) / hMass;
         }
+        final double[] derivatives = new double[1 + parameters];
+        final DerivativeStructure[] accDer = new DerivativeStructure[3];
+        for (int i = 0; i < 3; ++i) {
+
+            // first element is value of acceleration
+            derivatives[0] = a0[i];
+
+            // next three elements are derivatives with respect to position
+            derivatives[1] = derPx[i];
+            derivatives[2] = derPy[i];
+            derivatives[3] = derPz[i];
+
+            // next three elements are derivatives with respect to velocity
+            derivatives[4] = derVx[i];
+            derivatives[5] = derVy[i];
+            derivatives[6] = derVz[i];
+
+            if (derM != null) {
+                derivatives[7] = derM[i];
+            }
+
+            accDer[i] = new DerivativeStructure(parameters, order, derivatives);
+
+        }
+
+        return new Vector3DDS(accDer);
 
 
     }
 
     /** {@inheritDoc} */
-    public void addDAccDParam(final SpacecraftState s, final String paramName,
-                              final double[] dAccdParam) throws OrekitException {
+    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName) throws OrekitException {
+
         final double hP = hParam.get(paramName);
+
+        final AccelerationRetriever nominal = new AccelerationRetriever();
         nominal.setOrbit(s.getOrbit());
         forceModel.addContribution(s, nominal);
+        final double nx = nominal.getAcceleration().getX();
+        final double ny = nominal.getAcceleration().getY();
+        final double nz = nominal.getAcceleration().getZ();
 
         final double paramValue = forceModel.getParameter(paramName);
         forceModel.setParameter(paramName,  paramValue + hP);
+        final AccelerationRetriever shifted = new AccelerationRetriever();
         shifted.setOrbit(s.getOrbit());
         forceModel.addContribution(s, shifted);
+        final double sx = shifted.getAcceleration().getX();
+        final double sy = shifted.getAcceleration().getY();
+        final double sz = shifted.getAcceleration().getZ();
+
         forceModel.setParameter(paramName,  paramValue);
 
-        dAccdParam[0] += (shifted.getX() - nominal.getX()) / hP;
-        dAccdParam[1] += (shifted.getY() - nominal.getY()) / hP;
-        dAccdParam[2] += (shifted.getZ() - nominal.getZ()) / hP;
+        return new Vector3DDS(new DerivativeStructure(1, 1, nx, (sx - nx) / hP),
+                              new DerivativeStructure(1, 1, ny, (sy - ny) / hP),
+                              new DerivativeStructure(1, 1, nz, (sz - nz) / hP));
+
     }
 
     /** {@inheritDoc} */
@@ -203,7 +252,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
     private static class AccelerationRetriever implements TimeDerivativesEquations {
 
         /** Stored acceleration. */
-        private final double[] acceleration;
+        private Vector3D acceleration;
 
         /** Current orbit. */
         private Orbit orbit;
@@ -211,56 +260,35 @@ class Jacobianizer implements AccelerationJacobiansProvider {
         /** Simple constructor.
          */
         protected AccelerationRetriever() {
-            acceleration = new double[3];
+            acceleration = Vector3D.ZERO;
             this.orbit   = null;
         }
 
-        /** Get X component of acceleration.
-         * @return X component of acceleration
+        /** Get acceleration.
+         * @return acceleration
          */
-        public double getX() {
-            return acceleration[0];
-        }
-
-        /** Get Y component of acceleration.
-         * @return Y component of acceleration
-         */
-        public double getY() {
-            return acceleration[1];
-        }
-
-        /** Get Z component of acceleration.
-         * @return Z component of acceleration
-         */
-        public double getZ() {
-            return acceleration[2];
+        public Vector3D getAcceleration() {
+            return acceleration;
         }
 
         /** Set the current orbit.
          * @param orbit current orbit
          */
         public void setOrbit(final Orbit orbit) {
-            acceleration[0] = 0;
-            acceleration[1] = 0;
-            acceleration[2] = 0;
-            this.orbit      = orbit;
+            acceleration = Vector3D.ZERO;
+            this.orbit   = orbit;
         }
 
         /** {@inheritDoc} */
         public void addKeplerContribution(final double mu) {
             final Vector3D position = orbit.getPVCoordinates().getPosition();
             final double r2         = position.getNormSq();
-            final double coeff      = -mu / (r2 * FastMath.sqrt(r2));
-            acceleration[0] += coeff * position.getX();
-            acceleration[1] += coeff * position.getY();
-            acceleration[2] += coeff * position.getZ();
+            acceleration = acceleration.subtract(mu / (r2 * FastMath.sqrt(r2)), position);
         }
 
         /** {@inheritDoc} */
         public void addXYZAcceleration(final double x, final double y, final double z) {
-            acceleration[0] += x;
-            acceleration[1] += y;
-            acceleration[2] += z;
+            acceleration = acceleration.add(new Vector3D(x, y, z));
         }
 
         /** {@inheritDoc} */
@@ -273,6 +301,7 @@ class Jacobianizer implements AccelerationJacobiansProvider {
 
         /** {@inheritDoc} */
         public void addMassDerivative(final double q) {
+            // TODO
             // we don't compute (yet) the mass part of the Jacobian, we just ignore this
         }
 
