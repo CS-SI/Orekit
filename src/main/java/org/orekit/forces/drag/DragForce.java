@@ -92,6 +92,7 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
         return new EventDetector[0];
     }
 
+    /** {@inheritDoc} */
     public double getParameter(final String name) throws IllegalArgumentException {
         complainIfNotSupported(name);
         return spacecraft.getDragCoefficient();
