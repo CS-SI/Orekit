@@ -23,6 +23,10 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="update" >
+        Converted Newtonian force model to use the new partial derivatives
+        framework.
+      </action>
+      <action dev="luc" type="update" >
         Converted Holmes-Featherstone force model to use the new partial derivatives
         framework.
       </action>
