@@ -23,10 +23,14 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="add" >
+        Added analytical computation of partial derivatives for third-body
+        attraction.
+      </action>
+      <action dev="luc" type="add" >
         Added analytical computation of partial derivatives for constant
         thrust maneuvers.
       </action>
-        <action dev="luc" type="update" >
+      <action dev="luc" type="update" >
         Converted Newtonian force model to use the new partial derivatives
         framework.
       </action>
