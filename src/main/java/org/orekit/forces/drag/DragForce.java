@@ -22,10 +22,12 @@ import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinatesDS;
 import org.orekit.utils.RotationDS;
 import org.orekit.utils.Vector3DDS;
 
@@ -110,10 +112,33 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
                                               final RotationDS rotation, DerivativeStructure mass)
         throws OrekitException {
 
-        final Vector3D   posDouble        = position.toVector3D();
-        final double     rho              = atmosphere.getDensity(date, posDouble, frame);
-        final Vector3D   vAtm             = atmosphere.getVelocity(date, posDouble, frame);
-        final Vector3DDS relativeVelocity = velocity.subtract(vAtm).negate();
+        // retrieve derivation properties
+        final int parameters = mass.getFreeParameters();
+        final int order      = mass.getOrder();
+
+        // get atmosphere properties in atmosphere own frame
+        final Frame      atmFrame  = atmosphere.getFrame();
+        final Transform  toBody    = frame.getTransformTo(atmFrame, date);
+        final Vector3DDS posBodyDS = toBody.transformPosition(position);
+        final Vector3D   posBody   = posBodyDS.toVector3D();
+        final double     rho       = atmosphere.getDensity(date, posBody, atmFrame);
+        final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
+
+        // we consider that at first order the velocity in atmosphere frame does not
+        // depend on local position; however velocity in inertial frame DOES depend
+        // on position since the transform between the frames depends on it, due to
+        // central body rotation rate and velocity composition.
+        // So we use the transform to get the correct partial derivatives on vAtm
+        final Vector3DDS vAtmBodyDS =
+                new Vector3DDS(new DerivativeStructure(parameters, order, vAtmBody.getX()),
+                               new DerivativeStructure(parameters, order, vAtmBody.getY()),
+                               new DerivativeStructure(parameters, order, vAtmBody.getZ()));
+        final PVCoordinatesDS pvAtmBody = new PVCoordinatesDS(posBodyDS, vAtmBodyDS);
+        final PVCoordinatesDS pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
+
+        // now we can compute relative velocity,
+        // it takes into account partial derivatives with respect
+        final Vector3DDS relativeVelocity = pvAtm.getVelocity().subtract(velocity);
 
         // compute acceleration with all its partial derivatives
         return spacecraft.dragAcceleration(date, frame, position, rotation, mass, rho, relativeVelocity);
