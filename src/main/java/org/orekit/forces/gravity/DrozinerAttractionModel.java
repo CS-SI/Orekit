@@ -48,10 +48,19 @@ import org.orekit.utils.Vector3DDS;
  * above 90) as most modern gravity fields are provided as normalized
  * coefficients and the un-normalization process to convert these
  * coefficients underflows at degree and order 89. This class also
- * does not provide analytical partial derivatives and is much slower
- * than {@link HolmesFeatherstoneAttractionModel}. For all these reasons,
+ * does not provide analytical partial derivatives (it uses finite differences
+ * to compute them) and is much slower than {@link HolmesFeatherstoneAttractionModel}
+ * (even when no derivatives are computed). For all these reasons,
  * it is recommended to use the {@link HolmesFeatherstoneAttractionModel
  * Holmes-Featherstone model} rather than this class.
+ * </p>
+ * <p>
+ * As this class uses finite differences to compute derivatives, the steps for
+ * finite differences <strong>must</strong> be initialized by calling {@link
+ * #setSteps(double, double)} prior to use derivatives, otherwise an exception
+ * will be thrown by {@link #accelerationDerivatives(AbsoluteDate, Frame,
+ * Vector3DDS, Vector3DDS, RotationDS, DerivativeStructure)} and by {@link
+ * #accelerationDerivatives(SpacecraftState, String)}.
  * </p>
  *
  * @see HolmesFeatherstoneAttractionModel
@@ -285,12 +294,18 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
                                               final RotationDS rotation,
                                               final DerivativeStructure mass)
         throws OrekitException {
+        if (jacobianizer == null) {
+            throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);
+        }
         return jacobianizer.accelerationDerivatives(date, frame, position, velocity, rotation, mass);
     }
 
     /** {@inheritDoc} */
     public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
+        if (jacobianizer == null) {
+            throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);
+        }
         return jacobianizer.accelerationDerivatives(s, paramName);
     }
 
