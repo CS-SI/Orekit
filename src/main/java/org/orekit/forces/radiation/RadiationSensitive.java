@@ -17,13 +17,13 @@
 package org.orekit.forces.radiation;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** Interface for spacecraft that are sensitive to radiation pressure forces.
  *
@@ -64,9 +64,9 @@ public interface RadiationSensitive {
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
      * @throws OrekitException if acceleration cannot be computed
      */
-    Vector3DDS radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3DDS position,
-                                             RotationDS rotation, DerivativeStructure mass,
-                                             Vector3DDS flux)
+    FieldVector3D<DerivativeStructure> radiationPressureAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
+                                                                     FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass,
+                                                                     FieldVector3D<DerivativeStructure> flux)
         throws OrekitException;
 
     /** Compute the acceleration due to radiation pressure, with parameters derivatives.
@@ -80,9 +80,9 @@ public interface RadiationSensitive {
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
      * @throws OrekitException if acceleration cannot be computed
      */
-    Vector3DDS radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
-                                             Rotation rotation, double mass, Vector3D flux,
-                                             String paramName)
+    FieldVector3D<DerivativeStructure> radiationPressureAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
+                                                                     Rotation rotation, double mass, Vector3D flux,
+                                                                     String paramName)
         throws OrekitException;
 
     /** Set the absorption coefficient.

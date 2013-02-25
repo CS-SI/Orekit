@@ -17,6 +17,8 @@
 package org.orekit.forces.gravity;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
@@ -28,8 +30,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** Third body attraction force model.
  *
@@ -76,26 +76,26 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                              final Vector3DDS position, final Vector3DDS velocity,
-                                              final RotationDS rotation, DerivativeStructure mass)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
         throws OrekitException {
 
         // compute bodies separation vectors and squared norm
         final Vector3D centralToBody    = body.getPVCoordinates(date, frame).getPosition();
         final double r2Central          = Vector3D.dotProduct(centralToBody, centralToBody);
-        final Vector3DDS satToBody      = position.subtract(centralToBody).negate();
-        final DerivativeStructure r2Sat = Vector3DDS.dotProduct(satToBody, satToBody);
+        final FieldVector3D<DerivativeStructure> satToBody = position.subtract(centralToBody).negate();
+        final DerivativeStructure r2Sat = satToBody.getNormSq();
 
         // compute relative acceleration
-        final Vector3DDS satAcc   = new Vector3DDS(r2Sat.pow(-1.5).multiply(gm), satToBody);
+        final FieldVector3D<DerivativeStructure> satAcc   = new FieldVector3D<DerivativeStructure>(r2Sat.pow(-1.5).multiply(gm), satToBody);
         final Vector3D centralAcc = new Vector3D(gm * FastMath.pow(r2Central, -1.5), centralToBody);
         return satAcc.subtract(centralAcc);
 
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
         complainIfNotSupported(paramName);
@@ -109,7 +109,7 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
         final DerivativeStructure gmds = new DerivativeStructure(1, 1, 0, gm);
 
         // compute relative acceleration
-        return new Vector3DDS(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody,
+        return new FieldVector3D<DerivativeStructure>(gmds.multiply(FastMath.pow(r2Sat, -1.5)), satToBody,
                               gmds.multiply(-FastMath.pow(r2Central, -1.5)), centralToBody);
 
     }

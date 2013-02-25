@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
@@ -65,8 +67,6 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 
 public class CunninghamAttractionModelTest extends AbstractForceModelTest {
@@ -431,9 +431,9 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         try {
             DerivativeStructure one = new DerivativeStructure(7, 1, 1.0);
             cuModel.accelerationDerivatives(state0.getDate(), state0.getFrame(),
-                                            new Vector3DDS(one, state0.getPVCoordinates().getPosition()),
-                                            new Vector3DDS(one, state0.getPVCoordinates().getVelocity()),
-                                            new RotationDS(one.multiply(state0.getAttitude().getRotation().getQ0()),
+                                            new FieldVector3D<DerivativeStructure>(one, state0.getPVCoordinates().getPosition()),
+                                            new FieldVector3D<DerivativeStructure>(one, state0.getPVCoordinates().getVelocity()),
+                                            new FieldRotation<DerivativeStructure>(one.multiply(state0.getAttitude().getRotation().getQ0()),
                                                            one.multiply(state0.getAttitude().getRotation().getQ1()),
                                                            one.multiply(state0.getAttitude().getRotation().getQ2()),
                                                            one.multiply(state0.getAttitude().getRotation().getQ3()),

@@ -17,6 +17,8 @@
 package org.orekit.forces.drag;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
@@ -27,9 +29,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinatesDS;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
+import org.orekit.utils.FieldPVCoordinates;
 
 
 /** Atmospheric drag force model.
@@ -107,9 +107,9 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                              final Vector3DDS position, final Vector3DDS velocity,
-                                              final RotationDS rotation, DerivativeStructure mass)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                              final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
+                                              final FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
         throws OrekitException {
 
         // retrieve derivation properties
@@ -119,7 +119,7 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
         // get atmosphere properties in atmosphere own frame
         final Frame      atmFrame  = atmosphere.getFrame();
         final Transform  toBody    = frame.getTransformTo(atmFrame, date);
-        final Vector3DDS posBodyDS = toBody.transformPosition(position);
+        final FieldVector3D<DerivativeStructure> posBodyDS = toBody.transformPosition(position);
         final Vector3D   posBody   = posBodyDS.toVector3D();
         final double     rho       = atmosphere.getDensity(date, posBody, atmFrame);
         final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
@@ -129,16 +129,16 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
         // on position since the transform between the frames depends on it, due to
         // central body rotation rate and velocity composition.
         // So we use the transform to get the correct partial derivatives on vAtm
-        final Vector3DDS vAtmBodyDS =
-                new Vector3DDS(new DerivativeStructure(parameters, order, vAtmBody.getX()),
+        final FieldVector3D<DerivativeStructure> vAtmBodyDS =
+                new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, vAtmBody.getX()),
                                new DerivativeStructure(parameters, order, vAtmBody.getY()),
                                new DerivativeStructure(parameters, order, vAtmBody.getZ()));
-        final PVCoordinatesDS pvAtmBody = new PVCoordinatesDS(posBodyDS, vAtmBodyDS);
-        final PVCoordinatesDS pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
+        final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<DerivativeStructure>(posBodyDS, vAtmBodyDS);
+        final FieldPVCoordinates<DerivativeStructure> pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
 
         // now we can compute relative velocity,
         // it takes into account partial derivatives with respect
-        final Vector3DDS relativeVelocity = pvAtm.getVelocity().subtract(velocity);
+        final FieldVector3D<DerivativeStructure> relativeVelocity = pvAtm.getVelocity().subtract(velocity);
 
         // compute acceleration with all its partial derivatives
         return spacecraft.dragAcceleration(date, frame, position, rotation, mass, rho, relativeVelocity);
@@ -146,7 +146,7 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
         complainIfNotSupported(paramName);

@@ -17,6 +17,8 @@
 package org.orekit.forces.radiation;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
@@ -30,8 +32,6 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** Solar radiation pressure force model.
  *
@@ -186,18 +186,18 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                              final Vector3DDS position, final Vector3DDS velocity,
-                                              final RotationDS rotation, final DerivativeStructure mass)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                              final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
+                                              final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
         throws OrekitException {
 
-        final Vector3DDS sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
+        final FieldVector3D<DerivativeStructure> sunSatVector = position.subtract(sun.getPVCoordinates(date, frame).getPosition());
         final DerivativeStructure r2  = sunSatVector.getNormSq();
 
         // compute flux
         final double ratio = getLightningRatio(position.toVector3D(), frame, date);
         final DerivativeStructure rawP = r2.reciprocal().multiply(kRef * ratio);
-        final Vector3DDS flux = new Vector3DDS(rawP.divide(r2.sqrt()), sunSatVector);
+        final FieldVector3D<DerivativeStructure> flux = new FieldVector3D<DerivativeStructure>(rawP.divide(r2.sqrt()), sunSatVector);
 
         // compute acceleration with all its partial derivatives
         return spacecraft.radiationPressureAcceleration(date, frame, position, rotation, mass, flux);
@@ -205,7 +205,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
         complainIfNotSupported(paramName);

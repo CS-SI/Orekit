@@ -17,6 +17,8 @@
 package org.orekit.forces.gravity;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
@@ -27,8 +29,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** Force model for Newtonian central body attraction.
  * @author Luc Maisonobe
@@ -50,18 +50,18 @@ public class NewtonianAttraction extends AbstractParameterizable implements Forc
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                              final Vector3DDS position, final Vector3DDS velocity,
-                                              final RotationDS rotation, final DerivativeStructure mass)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
         throws OrekitException {
 
         final DerivativeStructure r2 = position.getNormSq();
-        return new Vector3DDS(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), position);
+        return new FieldVector3D<DerivativeStructure>(r2.sqrt().multiply(r2).reciprocal().multiply(-mu), position);
 
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
 
         complainIfNotSupported(paramName);
@@ -69,7 +69,7 @@ public class NewtonianAttraction extends AbstractParameterizable implements Forc
         final Vector3D            position = s.getPVCoordinates().getPosition();
         final double              r2       = position.getNormSq();
         final DerivativeStructure muds     = new DerivativeStructure(1, 1, 0, mu);
-        return new Vector3DDS(muds.divide(-r2 * FastMath.sqrt(r2)), position);
+        return new FieldVector3D<DerivativeStructure>(muds.divide(-r2 * FastMath.sqrt(r2)), position);
 
     }
 

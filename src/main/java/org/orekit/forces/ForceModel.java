@@ -17,6 +17,8 @@
 package org.orekit.forces;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.ode.ParameterizedODE;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -24,8 +26,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** This interface represents a force modifying spacecraft motion.
  *
@@ -88,9 +88,9 @@ public interface ForceModel extends ParameterizedODE {
      * @exception OrekitException if derivatives cannot be computed
      * @since 6.0
      */
-    Vector3DDS accelerationDerivatives(AbsoluteDate date, Frame frame,
-                                       Vector3DDS position, Vector3DDS velocity,
-                                       RotationDS rotation, DerivativeStructure mass)
+    FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date, Frame frame,
+                                       FieldVector3D<DerivativeStructure> position, FieldVector3D<DerivativeStructure> velocity,
+                                       FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
         throws OrekitException;
 
     /** Compute acceleration derivatives with respect to additional parameters.
@@ -100,7 +100,7 @@ public interface ForceModel extends ParameterizedODE {
      * @exception OrekitException if derivatives cannot be computed
      * @since 6.0
      */
-    Vector3DDS accelerationDerivatives(SpacecraftState s, String paramName)
+    FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, String paramName)
         throws OrekitException;
 
     /** Get the discrete events related to the model.

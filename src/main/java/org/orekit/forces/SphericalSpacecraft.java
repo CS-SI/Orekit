@@ -17,6 +17,8 @@
 package org.orekit.forces;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -25,8 +27,6 @@ import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** This class represents the features of a simplified spacecraft.
  * <p>The model of this spacecraft is a simple spherical model, this
@@ -78,18 +78,18 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3DDS position,
-                                       final RotationDS rotation, final DerivativeStructure mass,
-                                       final double density, final Vector3DDS relativeVelocity) {
-        return new Vector3DDS(relativeVelocity.getNorm().multiply(density * dragCoeff * crossSection / 2).divide(mass),
+    public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
+                                                               final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
+                                                               final double density, final FieldVector3D<DerivativeStructure> relativeVelocity) {
+        return new FieldVector3D<DerivativeStructure>(relativeVelocity.getNorm().multiply(density * dragCoeff * crossSection / 2).divide(mass),
                               relativeVelocity);
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
-                                       final Rotation rotation, final double mass,
-                                       final  double density, final Vector3D relativeVelocity,
-                                       final String paramName)
+    public FieldVector3D<DerivativeStructure> dragAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
+                                                               final Rotation rotation, final double mass,
+                                                               final  double density, final Vector3D relativeVelocity,
+                                                               final String paramName)
         throws OrekitException {
 
         if (!DRAG_COEFFICIENT.equals(paramName)) {
@@ -98,7 +98,7 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
         final DerivativeStructure dragCoeffDS = new DerivativeStructure(1, 1, 0, dragCoeff);
 
-        return new Vector3DDS(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
+        return new FieldVector3D<DerivativeStructure>(dragCoeffDS.multiply(relativeVelocity.getNorm() * density * crossSection / (2 * mass)),
                               relativeVelocity);
 
     }
@@ -111,15 +111,15 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3DDS position,
-                                                    final RotationDS rotation, final DerivativeStructure mass,
-                                                    final Vector3DDS flux) {
+    public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final FieldVector3D<DerivativeStructure> position,
+                                                    final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass,
+                                                    final FieldVector3D<DerivativeStructure> flux) {
         final double kP = crossSection * (1 + 4 * (1.0 - absorptionCoeff) * (1.0 - specularReflectionCoeff) / 9.0);
-        return new Vector3DDS(mass.reciprocal().multiply(kP), flux);
+        return new FieldVector3D<DerivativeStructure>(mass.reciprocal().multiply(kP), flux);
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
+    public FieldVector3D<DerivativeStructure> radiationPressureAcceleration(final AbsoluteDate date, final Frame frame, final Vector3D position,
                                                     final Rotation rotation, final double mass,
                                                     final Vector3D flux, final String paramName)
         throws OrekitException {
@@ -138,7 +138,7 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
 
         final DerivativeStructure kP =
                 absorptionCoeffDS.subtract(1).multiply(specularReflectionCoeffDS.subtract(1)).multiply(4.0 / 9.0).add(1).multiply(crossSection);
-        return new Vector3DDS(kP.divide(mass), flux);
+        return new FieldVector3D<DerivativeStructure>(kP.divide(mass), flux);
 
     }
 

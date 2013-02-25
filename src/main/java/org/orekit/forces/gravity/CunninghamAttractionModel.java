@@ -20,6 +20,8 @@ package org.orekit.forces.gravity;
 import java.util.Collections;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.util.FastMath;
@@ -36,8 +38,6 @@ import org.orekit.propagation.numerical.Jacobianizer;
 import org.orekit.propagation.numerical.ParameterConfiguration;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>The algorithm implemented in this class has been designed by
@@ -62,7 +62,7 @@ import org.orekit.utils.Vector3DDS;
  * finite differences <strong>must</strong> be initialized by calling {@link
  * #setSteps(double, double)} prior to use derivatives, otherwise an exception
  * will be thrown by {@link #accelerationDerivatives(AbsoluteDate, Frame,
- * Vector3DDS, Vector3DDS, RotationDS, DerivativeStructure)} and by {@link
+ * FieldVector3D<DerivativeStructure>, FieldVector3D<DerivativeStructure>, FieldRotation<DerivativeStructure>, DerivativeStructure)} and by {@link
  * #accelerationDerivatives(SpacecraftState, String)}.
  * </p>
  *
@@ -372,11 +372,11 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final AbsoluteDate date,final  Frame frame,
-                                              final Vector3DDS position,
-                                              final Vector3DDS velocity,
-                                              final RotationDS rotation,
-                                              final DerivativeStructure mass)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date,final  Frame frame,
+                                                                      final FieldVector3D<DerivativeStructure> position,
+                                                                      final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation,
+                                                                      final DerivativeStructure mass)
         throws OrekitException {
         if (jacobianizer == null) {
             throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);
@@ -385,7 +385,7 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException {
         if (jacobianizer == null) {
             throw new OrekitException(OrekitMessages.STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES);

@@ -19,13 +19,14 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.apache.commons.math3.ExtendedFieldElement;
+import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
-/** Simple container for Position/Velocity pairs, using {@link DerivativeStructure}.
+/** Simple container for Position/Velocity pairs, using {@link T}.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
  * a simple linear model. It is <em>not</em> intended as a replacement for
@@ -33,29 +34,30 @@ import org.orekit.time.TimeShiftable;
  * for either small time shifts or coarse accuracy.
  * </p>
  * <p>
- * This class is the angular counterpart to {@link AngularCoordinatesDS}.
+ * This class is the angular counterpart to {@link FieldAngularCoordinates}.
  * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
  * @author Luc Maisonobe
  * @since 6.0
  * @see PVCoordinates
  */
-public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializable {
+public class FieldPVCoordinates<T extends ExtendedFieldElement<T>>
+    implements TimeShiftable<FieldPVCoordinates<T>>, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130222L;
 
     /** The position. */
-    private final Vector3DDS position;
+    private final FieldVector3D<T> position;
 
     /** The velocity. */
-    private final Vector3DDS velocity;
+    private final FieldVector3D<T> velocity;
 
     /** Builds a PVCoordinates pair.
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      */
-    public PVCoordinatesDS(final Vector3DDS position, final Vector3DDS velocity) {
+    public FieldPVCoordinates(final FieldVector3D<T> position, final FieldVector3D<T> velocity) {
         this.position = position;
         this.velocity = velocity;
     }
@@ -66,9 +68,9 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a scale factor
      * @param pv base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final double a, final PVCoordinatesDS pv) {
-        position = new Vector3DDS(a, pv.position);
-        velocity = new Vector3DDS(a, pv.velocity);
+    public FieldPVCoordinates(final double a, final FieldPVCoordinates<T> pv) {
+        position = new FieldVector3D<T>(a, pv.position);
+        velocity = new FieldVector3D<T>(a, pv.velocity);
     }
 
     /** Multiplicative constructor
@@ -77,9 +79,9 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a scale factor
      * @param pv base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a, final PVCoordinatesDS pv) {
-        position = new Vector3DDS(a, pv.position);
-        velocity = new Vector3DDS(a, pv.velocity);
+    public FieldPVCoordinates(final T a, final FieldPVCoordinates<T> pv) {
+        position = new FieldVector3D<T>(a, pv.position);
+        velocity = new FieldVector3D<T>(a, pv.velocity);
     }
 
     /** Multiplicative constructor
@@ -88,9 +90,9 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a scale factor
      * @param pv base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a, final PVCoordinates pv) {
-        position = new Vector3DDS(a, pv.getPosition());
-        velocity = new Vector3DDS(a, pv.getVelocity());
+    public FieldPVCoordinates(final T a, final PVCoordinates pv) {
+        position = new FieldVector3D<T>(a, pv.getPosition());
+        velocity = new FieldVector3D<T>(a, pv.getVelocity());
     }
 
     /** Subtractive constructor
@@ -99,7 +101,7 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param start Starting PVCoordinates
      * @param end ending PVCoordinates
      */
-    public PVCoordinatesDS(final PVCoordinatesDS start, final PVCoordinatesDS end) {
+    public FieldPVCoordinates(final FieldPVCoordinates<T> start, final FieldPVCoordinates<T> end) {
         this.position = end.position.subtract(start.position);
         this.velocity = end.velocity.subtract(start.velocity);
     }
@@ -112,10 +114,10 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a2 second scale factor
      * @param pv2 second base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final double a1, final PVCoordinatesDS pv1,
-                           final double a2, final PVCoordinatesDS pv2) {
-        position = new Vector3DDS(a1, pv1.position, a2, pv2.position);
-        velocity = new Vector3DDS(a1, pv1.velocity, a2, pv2.velocity);
+    public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
+                           final double a2, final FieldPVCoordinates<T> pv2) {
+        position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position);
+        velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity);
     }
 
     /** Linear constructor
@@ -126,10 +128,10 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a2 second scale factor
      * @param pv2 second base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a1, final PVCoordinatesDS pv1,
-                           final DerivativeStructure a2, final PVCoordinatesDS pv2) {
-        position = new Vector3DDS(a1, pv1.position, a2, pv2.position);
-        velocity = new Vector3DDS(a1, pv1.velocity, a2, pv2.velocity);
+    public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
+                           final T a2, final FieldPVCoordinates<T> pv2) {
+        position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position);
+        velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity);
     }
 
     /** Linear constructor
@@ -140,10 +142,10 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a2 second scale factor
      * @param pv2 second base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a1, final PVCoordinates pv1,
-                           final DerivativeStructure a2, final PVCoordinates pv2) {
-        position = new Vector3DDS(a1, pv1.getPosition(), a2, pv2.getPosition());
-        velocity = new Vector3DDS(a1, pv1.getVelocity(), a2, pv2.getVelocity());
+    public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
+                           final T a2, final PVCoordinates pv2) {
+        position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition());
+        velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity());
     }
 
     /** Linear constructor
@@ -156,11 +158,11 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a3 third scale factor
      * @param pv3 third base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final double a1, final PVCoordinatesDS pv1,
-                           final double a2, final PVCoordinatesDS pv2,
-                           final double a3, final PVCoordinatesDS pv3) {
-        position = new Vector3DDS(a1, pv1.position, a2, pv2.position, a3, pv3.position);
-        velocity = new Vector3DDS(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
+    public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
+                           final double a2, final FieldPVCoordinates<T> pv2,
+                           final double a3, final FieldPVCoordinates<T> pv3) {
+        position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position);
+        velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
 
     /** Linear constructor
@@ -173,11 +175,11 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a3 third scale factor
      * @param pv3 third base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a1, final PVCoordinatesDS pv1,
-                           final DerivativeStructure a2, final PVCoordinatesDS pv2,
-                           final DerivativeStructure a3, final PVCoordinatesDS pv3) {
-        position = new Vector3DDS(a1, pv1.position, a2, pv2.position, a3, pv3.position);
-        velocity = new Vector3DDS(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
+    public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
+                           final T a2, final FieldPVCoordinates<T> pv2,
+                           final T a3, final FieldPVCoordinates<T> pv3) {
+        position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position);
+        velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
 
     /** Linear constructor
@@ -190,11 +192,11 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a3 third scale factor
      * @param pv3 third base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a1, final PVCoordinates pv1,
-                           final DerivativeStructure a2, final PVCoordinates pv2,
-                           final DerivativeStructure a3, final PVCoordinates pv3) {
-        position = new Vector3DDS(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition());
-        velocity = new Vector3DDS(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity());
+    public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
+                           final T a2, final PVCoordinates pv2,
+                           final T a3, final PVCoordinates pv3) {
+        position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition());
+        velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity());
     }
 
     /** Linear constructor
@@ -209,12 +211,12 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a4 fourth scale factor
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final double a1, final PVCoordinatesDS pv1,
-                           final double a2, final PVCoordinatesDS pv2,
-                           final double a3, final PVCoordinatesDS pv3,
-                           final double a4, final PVCoordinatesDS pv4) {
-        position = new Vector3DDS(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
-        velocity = new Vector3DDS(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
+    public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
+                           final double a2, final FieldPVCoordinates<T> pv2,
+                           final double a3, final FieldPVCoordinates<T> pv3,
+                           final double a4, final FieldPVCoordinates<T> pv4) {
+        position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
+        velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
 
     /** Linear constructor
@@ -229,12 +231,12 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a4 fourth scale factor
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a1, final PVCoordinatesDS pv1,
-                           final DerivativeStructure a2, final PVCoordinatesDS pv2,
-                           final DerivativeStructure a3, final PVCoordinatesDS pv3,
-                           final DerivativeStructure a4, final PVCoordinatesDS pv4) {
-        position = new Vector3DDS(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
-        velocity = new Vector3DDS(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
+    public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
+                           final T a2, final FieldPVCoordinates<T> pv2,
+                           final T a3, final FieldPVCoordinates<T> pv3,
+                           final T a4, final FieldPVCoordinates<T> pv4) {
+        position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
+        velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
 
     /** Linear constructor
@@ -249,13 +251,13 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param a4 fourth scale factor
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
-    public PVCoordinatesDS(final DerivativeStructure a1, final PVCoordinates pv1,
-                           final DerivativeStructure a2, final PVCoordinates pv2,
-                           final DerivativeStructure a3, final PVCoordinates pv3,
-                           final DerivativeStructure a4, final PVCoordinates pv4) {
-        position = new Vector3DDS(a1, pv1.getPosition(), a2, pv2.getPosition(),
+    public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
+                           final T a2, final PVCoordinates pv2,
+                           final T a3, final PVCoordinates pv3,
+                           final T a4, final PVCoordinates pv4) {
+        position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(),
                                   a3, pv3.getPosition(), a4, pv4.getPosition());
-        velocity = new Vector3DDS(a1, pv1.getVelocity(), a2, pv2.getVelocity(),
+        velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(),
                                   a3, pv3.getVelocity(), a4, pv4.getVelocity());
     }
 
@@ -267,10 +269,11 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param dt time elapsed between the dates of the two positions
      * @return velocity allowing to go from start to end positions
      */
-    public static Vector3DDS estimateVelocity(final Vector3DDS start, final Vector3DDS end,
-                                              final double dt) {
+    public static <T extends ExtendedFieldElement<T>> FieldVector3D<T> estimateVelocity(final FieldVector3D<T> start,
+                                                                                        final FieldVector3D<T> end,
+                                                                                        final double dt) {
         final double scale = 1.0 / dt;
-        return new Vector3DDS(scale, end, -scale, start);
+        return new FieldVector3D<T>(scale, end, -scale, start);
     }
 
     /** Get a time-shifted state.
@@ -283,8 +286,8 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
-    public PVCoordinatesDS shiftedBy(final double dt) {
-        return new PVCoordinatesDS(new Vector3DDS(1, position, dt, velocity), velocity);
+    public FieldPVCoordinates<T> shiftedBy(final double dt) {
+        return new FieldPVCoordinates<T>(new FieldVector3D<T>(1, position, dt, velocity), velocity);
     }
 
     /** Interpolate position-velocity.
@@ -307,94 +310,54 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      */
-    public static PVCoordinatesDS interpolate(final AbsoluteDate date, final boolean useVelocities,
-                                              final Collection<Pair<AbsoluteDate, PVCoordinatesDS>> sample) {
+    @SuppressWarnings("unchecked")
+    public static <T extends ExtendedFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
+                                                                                        final boolean useVelocities,
+                                                                                        final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
 
-        // get derivative structure properties
-        final DerivativeStructure prototype = sample.iterator().next().getValue().getPosition().getX();
-        final int parameters = prototype.getFreeParameters();
-        final int order      = prototype.getOrder();
+        // get field properties
+        final T prototype = sample.iterator().next().getValue().getPosition().getX();
+        final T zero      = prototype.getField().getZero();
 
-        // set up an interpolator taking derivatives into account
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
+        // set up an interpolator
+        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
 
         // add sample points
         if (useVelocities) {
             // populate sample with position and velocity data
-            for (final Pair<AbsoluteDate, PVCoordinatesDS> datedPV : sample) {
-                interpolator.addSamplePoint(datedPV.getKey().getDate().durationFrom(date),
-                                            unfold(datedPV.getValue().getPosition()),
-                                            unfold(datedPV.getValue().getVelocity()));
+            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
+                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
+                                            datedPV.getValue().getPosition().toArray(),
+                                            datedPV.getValue().getVelocity().toArray());
             }
         } else {
             // populate sample with position data, ignoring velocity
-            for (final Pair<AbsoluteDate, PVCoordinatesDS> datedPV : sample) {
-                interpolator.addSamplePoint(datedPV.getKey().getDate().durationFrom(date),
-                                            unfold(datedPV.getValue().getPosition()));
+            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
+                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
+                                            datedPV.getValue().getPosition().toArray());
             }
         }
 
         // interpolate
-        final DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
-        final DerivativeStructure[] p  = interpolator.value(zero);
+        final T[][] p = interpolator.derivatives(zero, 1);
 
         // build a new interpolated instance
-        return new PVCoordinatesDS(fold(parameters, order, p, 0),
-                                   fold(parameters, order, p, 1));
+        return new FieldPVCoordinates<T>(new FieldVector3D<T>(p[0]),
+                                         new FieldVector3D<T>(p[1]));
 
-    }
-
-    /** Unfold coordinates derivatives arrays.
-     * @param v vector to unfold
-     * @return all derivatives for all coordinates
-     */
-    private static double[] unfold(final Vector3DDS v) {
-        final double[] vx = v.getX().getAllDerivatives();
-        final double[] vy = v.getY().getAllDerivatives();
-        final double[] vz = v.getZ().getAllDerivatives();
-        final int size = vx.length;
-        final double[] flat = new double[3 * size];
-        System.arraycopy(vx, 0, flat, 0, size);
-        System.arraycopy(vy, 0, flat, size, size);
-        System.arraycopy(vz, 0, flat, 2 * size, size);
-        return flat;
-    }
-
-    /** Fold coordinates derivatives arrays.
-     * @param parameters number of free parameters
-     * @param order derivation order
-     * @param a array to fold
-     * @param timeOrder time-derivation orders to fold
-     * @return vector for specified time-derivative
-     */
-    private static Vector3DDS fold(final int parameters, final int order,
-                                   final DerivativeStructure[] a,
-                                   final int timeOrder) {
-        final int size = a.length / 3;
-        final double[] vx = new double[size];
-        final double[] vy = new double[size];
-        final double[] vz = new double[size];
-        for (int i = 0; i < size; ++i) {
-            vx[i] = a[i].getPartialDerivative(timeOrder);
-            vy[i] = a[i + size].getPartialDerivative(timeOrder);
-            vz[i] = a[i + 2 * size].getPartialDerivative(timeOrder);
-        }
-        return new Vector3DDS(new DerivativeStructure(parameters, order, vx),
-                              new DerivativeStructure(parameters, order, vy),
-                              new DerivativeStructure(parameters, order, vz));
     }
 
     /** Gets the position.
      * @return the position vector (m).
      */
-    public Vector3DDS getPosition() {
+    public FieldVector3D<T> getPosition() {
         return position;
     }
 
     /** Gets the velocity.
      * @return the velocity vector (m/s).
      */
-    public Vector3DDS getVelocity() {
+    public FieldVector3D<T> getVelocity() {
         return velocity;
     }
 
@@ -406,15 +369,15 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
      * is not cached.</p>
      * @return a new instance of the momentum vector (m<sup>2</sup>/s).
      */
-    public Vector3DDS getMomentum() {
-        return Vector3DDS.crossProduct(position, velocity);
+    public FieldVector3D<T> getMomentum() {
+        return position.crossProduct(velocity);
     }
 
     /** Get the opposite of the instance.
      * @return a new position-velocity which is opposite to the instance
      */
-    public PVCoordinatesDS negate() {
-        return new PVCoordinatesDS(position.negate(), velocity.negate());
+    public FieldPVCoordinates<T> negate() {
+        return new FieldPVCoordinates<T>(position.negate(), velocity.negate());
     }
 
     /** Convert to a constant position-velocity without derivatives.
@@ -430,12 +393,12 @@ public class PVCoordinatesDS implements TimeShiftable<PVCoordinatesDS>, Serializ
     public String toString() {
         final String comma = ", ";
         return new StringBuffer().append('{').append("P(").
-                                  append(position.getX().getValue()).append(comma).
-                                  append(position.getY().getValue()).append(comma).
-                                  append(position.getZ().getValue()).append("), V(").
-                                  append(velocity.getX().getValue()).append(comma).
-                                  append(velocity.getY().getValue()).append(comma).
-                                  append(velocity.getZ().getValue()).append(")}").toString();
+                                  append(position.getX().getReal()).append(comma).
+                                  append(position.getY().getReal()).append(comma).
+                                  append(position.getZ().getReal()).append("), V(").
+                                  append(velocity.getX().getReal()).append(comma).
+                                  append(velocity.getY().getReal()).append(comma).
+                                  append(velocity.getZ().getReal()).append(")}").toString();
     }
 
 }

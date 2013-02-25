@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -30,8 +32,6 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.integration.AdditionalEquations;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** Set of {@link AdditionalEquations additional equations} computing the partial derivatives
  * of the state (orbit) with respect to initial state and force models parameters.
@@ -306,13 +306,13 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // position corresponds three free parameters
         final Vector3D position = s.getPVCoordinates().getPosition();
-        final Vector3DDS dsP = new Vector3DDS(new DerivativeStructure(nbVars, 1, 0, position.getX()),
+        final FieldVector3D<DerivativeStructure> dsP = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 0, position.getX()),
                                               new DerivativeStructure(nbVars, 1, 1, position.getY()),
                                               new DerivativeStructure(nbVars, 1, 2, position.getZ()));
 
         // velocity corresponds three free parameters
         final Vector3D velocity = s.getPVCoordinates().getPosition();
-        final Vector3DDS dsV = new Vector3DDS(new DerivativeStructure(nbVars, 1, 3, velocity.getX()),
+        final FieldVector3D<DerivativeStructure> dsV = new FieldVector3D<DerivativeStructure>(new DerivativeStructure(nbVars, 1, 3, velocity.getX()),
                                               new DerivativeStructure(nbVars, 1, 4, velocity.getY()),
                                               new DerivativeStructure(nbVars, 1, 5, velocity.getZ()));
 
@@ -323,8 +323,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // TODO:  we should compute attitude partial derivatives with respect to position/velocity
         final Rotation rotation = s.getAttitude().getRotation();
-        final RotationDS dsR =
-                new RotationDS(new DerivativeStructure(nbVars, 1, rotation.getQ0()),
+        final FieldRotation<DerivativeStructure> dsR =
+                new FieldRotation<DerivativeStructure>(new DerivativeStructure(nbVars, 1, rotation.getQ0()),
                                new DerivativeStructure(nbVars, 1, rotation.getQ1()),
                                new DerivativeStructure(nbVars, 1, rotation.getQ2()),
                                new DerivativeStructure(nbVars, 1, rotation.getQ3()),
@@ -332,8 +332,9 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
         // compute acceleration Jacobians
         for (final ForceModel derivativesProvider : derivativesProviders) {
-            final Vector3DDS acceleration = derivativesProvider.accelerationDerivatives(s.getDate(), s.getFrame(),
-                                                                                        dsP, dsV, dsR, dsM);
+            final FieldVector3D<DerivativeStructure> acceleration =
+                    derivativesProvider.accelerationDerivatives(s.getDate(), s.getFrame(),
+                                                                dsP, dsV, dsR, dsM);
             addToRow(acceleration.getX(), 0);
             addToRow(acceleration.getY(), 1);
             addToRow(acceleration.getZ(), 2);
@@ -401,7 +402,8 @@ public class PartialDerivativesEquations implements AdditionalEquations {
             // compute the acceleration gradient with respect to current parameter
             final ParameterConfiguration param = selectedParameters.get(k);
             final ForceModel provider = param.getProvider();
-            final Vector3DDS accDer = provider.accelerationDerivatives(s, param.getParameterName());
+            final FieldVector3D<DerivativeStructure> accDer =
+                    provider.accelerationDerivatives(s, param.getParameterName());
             dAccdParam[0] = accDer.getX().getPartialDerivative(1);
             dAccdParam[1] = accDer.getY().getPartialDerivative(1);
             dAccdParam[2] = accDer.getZ().getPartialDerivative(1);

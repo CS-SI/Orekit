@@ -27,16 +27,12 @@
       </action>
       <action dev="luc" type="add" >
         Added versions of angular coordinates and position-velocity that use
-        DerivativeStructure instead of double (classes AngularCoordinatesDS and
-        PVCoordinatesDS). This allows to compute derivatives of these quantities
-        with respect to any number of variables and to any order (up to some
-        reasonable threshold, of course). Regular transforms as produced by frames
+        any field instead of double (classes FieldAngularCoordinates and
+        FieldPVCoordinates). This allows to compute derivatives of these quantities
+        with respect to any number of variables and to any order (using DerivativeStructure
+        for the field elements), or to compute at arbitrary precision (using Dfp for
+        the field elements). Regular transforms as produced by frames
         handle these objects properly and compute partial derivatives for them.
-        Note that Vector3DDS and RotationDS are also present, however, as of Orekit
-        6.0 they have been imported from Apache Commons Math since the version that
-        provides them is not published yet. When an official version of Apache Commons
-        Math providing the Vector3DDS and RotationDS classes will be available, the
-        classes will be removed from Orekit and we will rely on the official Apache ones.
       </action>
       <action dev="luc" type="update" >
         Converted Cunningham and Droziner force models to use the API of the new

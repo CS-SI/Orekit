@@ -17,8 +17,11 @@
 package org.orekit.forces;
 
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.UnknownParameterException;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -34,7 +37,6 @@ import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Vector3DDS;
 
 
 public abstract class AbstractForceModelTest {
@@ -81,7 +83,7 @@ public abstract class AbstractForceModelTest {
             // expected
             Assert.assertEquals(OrekitMessages.UNKNOWN_PARAMETER, oe.getSpecifier());
         }
-        Vector3DDS accDer = forceModel.accelerationDerivatives(state, name);
+        FieldVector3D<DerivativeStructure> accDer = forceModel.accelerationDerivatives(state, name);
         Vector3D derivative = new Vector3D(accDer.getX().getPartialDerivative(1),
                                            accDer.getY().getPartialDerivative(1),
                                            accDer.getZ().getPartialDerivative(1));
@@ -101,13 +103,13 @@ public abstract class AbstractForceModelTest {
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
 
-//        System.out.println("derivative: " + derivative.getX() + " " +
-//                derivative.getY() + " " + derivative.getZ() + " -> norm = " + derivative.getNorm());
-//        System.out.println("reference: " + reference.getX() + " " +
-//                reference.getY() + " " + reference.getZ() + " -> norm = " + reference.getNorm());
-//        System.out.println("delta: " + delta.getX() + " " +
-//                delta.getY() + " " + delta.getZ() + " -> norm = " + delta.getNorm());
-//        System.out.println("relative error in norm: " + (delta.getNorm() / reference.getNorm()));
+        System.out.println("derivative: " + derivative.getX() + " " +
+                derivative.getY() + " " + derivative.getZ() + " -> norm = " + derivative.getNorm());
+        System.out.println("reference: " + reference.getX() + " " +
+                reference.getY() + " " + reference.getZ() + " -> norm = " + reference.getNorm());
+        System.out.println("delta: " + delta.getX() + " " +
+                delta.getY() + " " + delta.getZ() + " -> norm = " + delta.getNorm());
+        System.out.println("relative error in norm: " + (delta.getNorm() / reference.getNorm()));
         Assert.assertEquals(0, delta.getNorm(), tol * reference.getNorm());
 
     }
@@ -164,38 +166,38 @@ public abstract class AbstractForceModelTest {
         });
         propagator.propagate(targetDate);
 
-//        System.out.println("reference:");
-//        for (int j = 0; j < 6; ++j) {
-//            for (int k = 0; k < 6; ++k) {
-//                System.out.print(" " + reference[j][k]);
-//            }
-//            System.out.println();
-//        }
-//        System.out.println("dYdY0:");
-//        for (int j = 0; j < 6; ++j) {
-//            for (int k = 0; k < 6; ++k) {
-//                System.out.print(" " + dYdY0[j][k]);
-//            }
-//            System.out.println();
-//        }
-//        System.out.println("error:");
-//        for (int j = 0; j < 6; ++j) {
-//            for (int k = 0; k < 6; ++k) {
-//                System.out.print(" " + (dYdY0[j][k] - reference[j][k]));
-//            }
-//            System.out.println();
-//        }
-//        System.out.println("scaled error:");
-//        double max = 0;
-//        for (int j = 0; j < 6; ++j) {
-//            for (int k = 0; k < 6; ++k) {
-//                double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
-//                System.out.print(" " + ((dYdY0[j][k] - reference[j][k]) / scale));
-//                max = FastMath.max(max, (dYdY0[j][k] - reference[j][k]) / scale);
-//            }
-//            System.out.println();
-//        }
-//        System.out.println("max scaled error: " + max);
+        System.out.println("reference:");
+        for (int j = 0; j < 6; ++j) {
+            for (int k = 0; k < 6; ++k) {
+                System.out.print(" " + reference[j][k]);
+            }
+            System.out.println();
+        }
+        System.out.println("dYdY0:");
+        for (int j = 0; j < 6; ++j) {
+            for (int k = 0; k < 6; ++k) {
+                System.out.print(" " + dYdY0[j][k]);
+            }
+            System.out.println();
+        }
+        System.out.println("error:");
+        for (int j = 0; j < 6; ++j) {
+            for (int k = 0; k < 6; ++k) {
+                System.out.print(" " + (dYdY0[j][k] - reference[j][k]));
+            }
+            System.out.println();
+        }
+        System.out.println("scaled error:");
+        double max = 0;
+        for (int j = 0; j < 6; ++j) {
+            for (int k = 0; k < 6; ++k) {
+                double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
+                System.out.print(" " + ((dYdY0[j][k] - reference[j][k]) / scale));
+                max = FastMath.max(max, FastMath.abs(dYdY0[j][k] - reference[j][k]) / scale);
+            }
+            System.out.println();
+        }
+        System.out.println("max scaled error: " + max);
 
         for (int j = 0; j < 6; ++j) {
             for (int k = 0; k < 6; ++k) {

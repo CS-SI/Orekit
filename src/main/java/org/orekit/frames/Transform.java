@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.math3.ExtendedFieldElement;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -32,9 +35,7 @@ import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.PVCoordinatesDS;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
+import org.orekit.utils.FieldPVCoordinates;
 
 
 /** Transformation class in three dimensional space.
@@ -372,8 +373,8 @@ public class Transform
      * @param position vector to transform
      * @return transformed position
      */
-    public Vector3DDS transformPosition(final Vector3DDS position) {
-        return RotationDS.applyTo(angular.getRotation(), position.add(cartesian.getPosition()));
+    public <T extends ExtendedFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+        return FieldRotation.applyTo(angular.getRotation(), position.add(cartesian.getPosition()));
     }
 
     /** Transform a vector (ignoring translation effects).
@@ -388,8 +389,8 @@ public class Transform
      * @param vector vector to transform
      * @return transformed vector
      */
-    public Vector3DDS transformVector(final Vector3DDS vector) {
-        return RotationDS.applyTo(angular.getRotation(), vector);
+    public <T extends ExtendedFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+        return FieldRotation.applyTo(angular.getRotation(), vector);
     }
 
     /** Transform a line.
@@ -415,19 +416,19 @@ public class Transform
                                  angular.getRotation().applyTo(v.add(cartesian.getVelocity())).subtract(cross));
     }
 
-    /** Transform {@link PVCoordinatesDS} including kinematic effects.
+    /** Transform {@link FieldPVCoordinates} including kinematic effects.
      * @param pv the couple position-velocity to transform.
      * @return transformed position/velocity
      */
-    public PVCoordinatesDS transformPVCoordinates(final PVCoordinatesDS pv) {
-        final Vector3DDS p = pv.getPosition();
-        final Vector3DDS v = pv.getVelocity();
-        final Vector3DDS transformedP = RotationDS.applyTo(angular.getRotation(),
-                                                           p.add(cartesian.getPosition()));
-        final Vector3DDS cross = Vector3DDS.crossProduct(angular.getRotationRate(), transformedP);
-        return new PVCoordinatesDS(transformedP,
-                                   RotationDS.applyTo(angular.getRotation(),
-                                                      v.add(cartesian.getVelocity())).subtract(cross));
+    public <T extends ExtendedFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
+        final FieldVector3D<T> p = pv.getPosition();
+        final FieldVector3D<T> v = pv.getVelocity();
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(),
+                                                                    p.add(cartesian.getPosition()));
+        final FieldVector3D<T> cross = transformedP.crossProduct(angular.getRotationRate()).negate();
+        return new FieldPVCoordinates<T>(transformedP,
+                                         FieldRotation.applyTo(angular.getRotation(),
+                                                               v.add(cartesian.getVelocity())).subtract(cross));
     }
 
     /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}

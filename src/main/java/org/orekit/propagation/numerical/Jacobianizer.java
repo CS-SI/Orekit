@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -36,8 +38,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** Class helping implementation of partial derivatives in {@link ForceModel force models} implementations.
  * <p>
@@ -115,9 +115,9 @@ public class Jacobianizer {
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                              final Vector3DDS position, final Vector3DDS velocity,
-                                              final RotationDS rotation, final DerivativeStructure mass)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
         throws OrekitException {
 
         final int parameters = mass.getFreeParameters();
@@ -195,13 +195,13 @@ public class Jacobianizer {
 
         }
 
-        return new Vector3DDS(accDer);
+        return new FieldVector3D<DerivativeStructure>(accDer);
 
 
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName) throws OrekitException {
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName) throws OrekitException {
 
         if (!hParam.containsKey(paramName)) {
             throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
@@ -226,7 +226,7 @@ public class Jacobianizer {
 
         forceModel.setParameter(paramName,  paramValue);
 
-        return new Vector3DDS(new DerivativeStructure(1, 1, nx, (sx - nx) / hP),
+        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, nx, (sx - nx) / hP),
                               new DerivativeStructure(1, 1, ny, (sy - ny) / hP),
                               new DerivativeStructure(1, 1, nz, (sz - nz) / hP));
 

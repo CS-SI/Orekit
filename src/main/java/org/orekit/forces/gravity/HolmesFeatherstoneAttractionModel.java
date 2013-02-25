@@ -20,6 +20,8 @@ package org.orekit.forces.gravity;
 import java.io.Serializable;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -34,8 +36,6 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** This class represents the gravitational field of a celestial body.
  * <p>
@@ -733,9 +733,9 @@ public class HolmesFeatherstoneAttractionModel
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                              final Vector3DDS position, final Vector3DDS velocity,
-                                              final RotationDS rotation, final DerivativeStructure mass)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
+                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
         throws OrekitException {
 
         // get the position in body frame
@@ -775,12 +775,12 @@ public class HolmesFeatherstoneAttractionModel
 
         }
 
-        return new Vector3DDS(accDer);
+        return new FieldVector3D<DerivativeStructure>(accDer);
 
     }
 
     /** {@inheritDoc} */
-    public Vector3DDS accelerationDerivatives(final SpacecraftState s, final String paramName)
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName)
         throws OrekitException, IllegalArgumentException {
 
         complainIfNotSupported(paramName);
@@ -794,7 +794,7 @@ public class HolmesFeatherstoneAttractionModel
         // gradient of the non-central part of the gravity field
         final Vector3D gInertial = fromBodyFrame.transformVector(new Vector3D(gradient(date, position)));
 
-        return new Vector3DDS(new DerivativeStructure(1, 1, gInertial.getX(), gInertial.getX() / mu),
+        return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1, 1, gInertial.getX(), gInertial.getX() / mu),
                               new DerivativeStructure(1, 1, gInertial.getY(), gInertial.getY() / mu),
                               new DerivativeStructure(1, 1, gInertial.getZ(), gInertial.getZ() / mu));
 

@@ -17,13 +17,13 @@
 package org.orekit.forces.drag;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.RotationDS;
-import org.orekit.utils.Vector3DDS;
 
 /** Interface for spacecraft that are sensitive to atmospheric drag forces.
  *
@@ -73,9 +73,9 @@ public interface DragSensitive {
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
      * @throws OrekitException if acceleration cannot be computed
      */
-    Vector3DDS dragAcceleration(AbsoluteDate date, Frame frame, Vector3DDS position,
-                                RotationDS rotation, DerivativeStructure mass,
-                                double density, Vector3DDS relativeVelocity)
+    FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position,
+                                                        FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass,
+                                                        double density, FieldVector3D<DerivativeStructure> relativeVelocity)
         throws OrekitException;
 
     /** Compute acceleration due to drag, with parameters derivatives.
@@ -90,7 +90,7 @@ public interface DragSensitive {
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
      * @exception OrekitException if derivatives cannot be computed
      */
-    Vector3DDS dragAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
+    FieldVector3D<DerivativeStructure> dragAcceleration(AbsoluteDate date, Frame frame, Vector3D position,
                                 Rotation rotation, double mass,
                                 double density, Vector3D relativeVelocity, String paramName)
         throws OrekitException;
