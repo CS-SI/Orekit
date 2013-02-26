@@ -119,8 +119,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            new SphericalSpacecraft(2.5, 1.2, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0e-3, 3.0e-13);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0e-3, 5.0e-12);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 3.0e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 2.0e-15);
 
     }
 
@@ -152,7 +152,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           8, 1e3, tolerances[0], 2.0e-6);
+                           4, 1e3, tolerances[0], 2.0e-6);
 
     }
 
@@ -172,8 +172,8 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                                new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0e-3, 4.0e-13);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0e-3, 3.0e-12);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 4.0e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 5.0e-16);
 
     }
 
@@ -206,7 +206,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 1e2, tolerances[0], 2.0e-3);
+                           4, 1e3, tolerances[0], 2.0e-5);
 
     }
 
