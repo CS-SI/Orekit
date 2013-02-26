@@ -114,10 +114,21 @@ public class Jacobianizer {
                                    retriever);
     }
 
-    /** {@inheritDoc} */
+    /** Compute acceleration and derivatives with respect to state.
+     * @param date current date
+     * @param frame inertial reference frame for state (both orbit and attitude)
+     * @param position position of spacecraft in reference frame
+     * @param velocity velocity of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
+     * @param mass spacecraft mass
+     * @return acceleration with derivatives
+     * @exception OrekitException if the underlying force models cannot compute the acceleration
+     */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation, final DerivativeStructure mass)
+                                                                      final FieldVector3D<DerivativeStructure> position,
+                                                                      final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation,
+                                                                      final DerivativeStructure mass)
         throws OrekitException {
 
         final int parameters = mass.getFreeParameters();
@@ -200,7 +211,12 @@ public class Jacobianizer {
 
     }
 
-    /** {@inheritDoc} */
+    /** Compute acceleration and derivatives with respect to parameter.
+     * @param s current state
+     * @param paramName parameter with respect to which derivation is desired
+     * @return acceleration with derivatives
+     * @exception OrekitException if the underlying force models cannot compute the acceleration
+     */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName) throws OrekitException {
 
         if (!hParam.containsKey(paramName)) {
@@ -232,22 +248,38 @@ public class Jacobianizer {
 
     }
 
-    /** {@inheritDoc} */
+    /** Get parameter value from its name.
+     * @param name parameter name
+     * @return parameter value
+     * @exception IllegalArgumentException if parameter is not supported
+     */
     public double getParameter(final String name) throws IllegalArgumentException {
         return forceModel.getParameter(name);
     }
 
-    /** {@inheritDoc} */
+    /** Get the names of the supported parameters.
+     * @return parameters names
+     * @see #isSupported(String)
+     */
     public Collection<String> getParametersNames() {
         return forceModel.getParametersNames();
     }
 
-    /** {@inheritDoc} */
+    /** Check if a parameter is supported.
+     * <p>Supported parameters are those listed by {@link #getParametersNames()}.</p>
+     * @param name parameter name to check
+     * @return true if the parameter is supported
+     * @see #getParametersNames()
+     */
     public boolean isSupported(final String name) {
         return forceModel.isSupported(name);
     }
 
-    /** {@inheritDoc} */
+    /** Set the value for a given parameter.
+     * @param name parameter name
+     * @param value parameter value
+     * @exception IllegalArgumentException if parameter is not supported
+     */
     public void setParameter(final String name, final double value) throws IllegalArgumentException {
         forceModel.setParameter(name, value);
     }

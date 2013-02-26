@@ -129,7 +129,7 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
         if (ABSORPTION_COEFFICIENT.equals(paramName)) {
             absorptionCoeffDS         = new DerivativeStructure(1, 1, 0, absorptionCoeff);
             specularReflectionCoeffDS = new DerivativeStructure(1, 1,    specularReflectionCoeff);
-        } else if (REFLECTION_COEFFICIENT.equals(paramName)) {      
+        } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
             absorptionCoeffDS         = new DerivativeStructure(1, 1,    absorptionCoeff);
             specularReflectionCoeffDS = new DerivativeStructure(1, 1, 0, specularReflectionCoeff);
         } else {

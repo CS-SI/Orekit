@@ -95,6 +95,7 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
         return new EventDetector[0];
     }
 
+    /** {@inheritDoc} */
     public double getParameter(final String name) throws IllegalArgumentException {
         complainIfNotSupported(name);
         return spacecraft.getDragCoefficient();
@@ -108,8 +109,10 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                              final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
-                                              final FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
+                                                                      final FieldVector3D<DerivativeStructure> position,
+                                                                      final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation,
+                                                                      final DerivativeStructure mass)
         throws OrekitException {
 
         // retrieve derivation properties

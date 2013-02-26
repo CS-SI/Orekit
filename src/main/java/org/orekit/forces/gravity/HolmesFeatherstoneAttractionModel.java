@@ -493,7 +493,7 @@ public class HolmesFeatherstoneAttractionModel
         hessian[2][2] *= muOr;
 
         // convert gradient and Hessian from spherical to Cartesian
-        SphericalCoordinates sc = new SphericalCoordinates(position);
+        final SphericalCoordinates sc = new SphericalCoordinates(position);
         return new GradientHessian(sc.toCartesianGradient(gradient),
                                    sc.toCartesianHessian(hessian, gradient));
 

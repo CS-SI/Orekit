@@ -534,7 +534,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         if (ABSORPTION_COEFFICIENT.equals(paramName)) {
             absorptionCoeffDS         = new DerivativeStructure(1, 1, 0, absorptionCoeff);
             specularReflectionCoeffDS = new DerivativeStructure(1, 1,    specularReflectionCoeff);
-        } else if (REFLECTION_COEFFICIENT.equals(paramName)) {      
+        } else if (REFLECTION_COEFFICIENT.equals(paramName)) {
             absorptionCoeffDS         = new DerivativeStructure(1, 1,    absorptionCoeff);
             specularReflectionCoeffDS = new DerivativeStructure(1, 1, 0, specularReflectionCoeff);
         } else {
@@ -571,7 +571,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             }
         }
 
-        // convert to inertial 
+        // convert to inertial
         return FieldRotation.applyInverseTo(rotation, new FieldVector3D<DerivativeStructure>(1.0 / mass, force));
 
     }
@@ -586,7 +586,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param dot dot product of facet and fluxSat (must be negative)
      * @return contribution of the facet to force in spacecraft frame
      */
-    private Vector3D facetRadiationAcceleration(final Vector3D normal, double area, final Vector3D fluxSat,
+    private Vector3D facetRadiationAcceleration(final Vector3D normal, final double area, final Vector3D fluxSat,
                                                 final double dot) {
         final double psr  = fluxSat.getNorm();
 
@@ -610,7 +610,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param dot dot product of facet and fluxSat (must be negative)
      * @return contribution of the facet to force in spacecraft frame
      */
-    private FieldVector3D<DerivativeStructure> facetRadiationAcceleration(final FieldVector3D<DerivativeStructure> normal, double area,
+    private FieldVector3D<DerivativeStructure> facetRadiationAcceleration(final FieldVector3D<DerivativeStructure> normal,
+                                                                          final double area,
                                                                           final FieldVector3D<DerivativeStructure> fluxSat,
                                                                           final DerivativeStructure dot) {
         final DerivativeStructure psr  = fluxSat.getNorm();
@@ -637,8 +638,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
      * @param diffuseReflectionCoeffDS diffuse reflection coefficient
      * @return contribution of the facet to force in spacecraft frame
      */
-    private FieldVector3D<DerivativeStructure> facetRadiationAcceleration(final Vector3D normal, double area, final Vector3D fluxSat,
-                                                                          final double dot,
+    private FieldVector3D<DerivativeStructure> facetRadiationAcceleration(final Vector3D normal, final double area,
+                                                                          final Vector3D fluxSat, final double dot,
                                                                           final DerivativeStructure specularReflectionCoeffDS,
                                                                           final DerivativeStructure diffuseReflectionCoeffDS) {
         final double psr  = fluxSat.getNorm();

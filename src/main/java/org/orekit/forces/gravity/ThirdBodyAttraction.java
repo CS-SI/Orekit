@@ -80,8 +80,10 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
+                                                                      final FieldVector3D<DerivativeStructure> position,
+                                                                      final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation,
+                                                                      final DerivativeStructure mass)
         throws OrekitException {
 
         // compute bodies separation vectors and squared norm

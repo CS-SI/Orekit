@@ -34,10 +34,10 @@ import org.orekit.time.AbsoluteDate;
 public interface RadiationSensitive {
 
     /** Parameter name for absorption coefficient. */
-    public static final String ABSORPTION_COEFFICIENT = "absorption coefficient";
+    String ABSORPTION_COEFFICIENT = "absorption coefficient";
 
     /** Parameter name for reflection coefficient. */
-    public static final String REFLECTION_COEFFICIENT = "reflection coefficient";
+    String REFLECTION_COEFFICIENT = "reflection coefficient";
 
     /** Compute the acceleration due to radiation pressure.
      * @param date current date
@@ -60,7 +60,6 @@ public interface RadiationSensitive {
      * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @param mass spacecraft mass
      * @param flux radiation flux in the same inertial frame as spacecraft orbit
-     * @param paramName name of the parameter with respect to which derivatives are required
      * @return spacecraft acceleration in the same inertial frame as spacecraft orbit (m/s<sup>2</sup>)
      * @throws OrekitException if acceleration cannot be computed
      */

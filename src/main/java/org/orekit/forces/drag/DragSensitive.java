@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 public interface DragSensitive {
 
     /** Parameter name for drag coefficient enabling jacobian processing. */
-    public static final String DRAG_COEFFICIENT = "drag coefficient";
+    String DRAG_COEFFICIENT = "drag coefficient";
 
     /** Compute the acceleration due to drag.
      * <p>
@@ -82,6 +82,7 @@ public interface DragSensitive {
      * @param date current date
      * @param frame inertial reference frame for state (both orbit and attitude)
      * @param position position of spacecraft in reference frame
+     * @param rotation orientation (attitude) of the spacecraft with respect to reference frame
      * @param mass current mass
      * @param density atmospheric density at spacecraft position
      * @param relativeVelocity relative velocity of atmosphere with respect to spacecraft,

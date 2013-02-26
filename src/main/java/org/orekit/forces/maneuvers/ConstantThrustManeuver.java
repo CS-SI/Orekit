@@ -138,8 +138,10 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
 
     /** {@inheritDoc} */
     public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final Frame frame,
-                                                                      final FieldVector3D<DerivativeStructure> position, final FieldVector3D<DerivativeStructure> velocity,
-                                                                      final FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass)
+                                                                      final FieldVector3D<DerivativeStructure> position,
+                                                                      final FieldVector3D<DerivativeStructure> velocity,
+                                                                      final FieldRotation<DerivativeStructure> rotation,
+                                                                      final DerivativeStructure mass)
         throws OrekitException {
         if (firing) {
             return new FieldVector3D<DerivativeStructure>(mass.reciprocal().multiply(thrust),
@@ -163,23 +165,21 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         if (firing) {
 
             if (THRUST.equals(paramName)) {
-                DerivativeStructure thrustDS   = new DerivativeStructure(1, 1, 0, thrust);
+                final DerivativeStructure thrustDS = new DerivativeStructure(1, 1, 0, thrust);
                 return new FieldVector3D<DerivativeStructure>(thrustDS.divide(s.getMass()),
-                                      s.getAttitude().getRotation().applyInverseTo(direction));
-            } else if (FLOW_RATE.equals(paramName)) {      
+                                                              s.getAttitude().getRotation().applyInverseTo(direction));
+            } else if (FLOW_RATE.equals(paramName)) {
                 // acceleration does not depend on flow rate (only mass decrease does)
-                return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1,  1, 0.0),
-                                      new DerivativeStructure(1,  1, 0.0),
-                                      new DerivativeStructure(1,  1, 0.0));
+                final DerivativeStructure zero = new DerivativeStructure(1, 1, 0.0);
+                return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
             } else {
                 throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
             }
 
         } else {
             // constant (and null) acceleration when not firing
-            return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(1,  1, 0.0),
-                                  new DerivativeStructure(1,  1, 0.0),
-                                  new DerivativeStructure(1,  1, 0.0));
+            final DerivativeStructure zero = new DerivativeStructure(1, 1, 0.0);
+            return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
         }
 
     }

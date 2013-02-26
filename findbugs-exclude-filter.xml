@@ -114,7 +114,20 @@
     <Method name ="getAdditionalStateDot" params="" returns="double[]" />
     <Bug pattern="EI_EXPOSE_REP" />
   </Match>
-
+  <Match>
+    <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
+    <Or>  
+      <Method name="getGradient" params="" returns="double[]" />
+      <Method name="getHessian" params="" returns="double[][]" />
+      </Or>
+    <Bug pattern="EI_EXPOSE_REP" />
+  </Match>
+  <Match>
+    <Class name="org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel$GradientHessian"/>
+    <Method name="&lt;init>"  params="double[],double[][]" returns="void" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
+  
   <!-- the following is an intended switch fall-through in the SP3Parser -->
   <Match>
     <Class name="~.*\.SP3Parser$"/>

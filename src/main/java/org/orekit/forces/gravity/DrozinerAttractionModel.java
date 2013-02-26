@@ -58,8 +58,8 @@ import org.orekit.time.AbsoluteDate;
  * As this class uses finite differences to compute derivatives, the steps for
  * finite differences <strong>must</strong> be initialized by calling {@link
  * #setSteps(double, double)} prior to use derivatives, otherwise an exception
- * will be thrown by {@link #accelerationDerivatives(AbsoluteDate, Frame,
- * FieldVector3D<DerivativeStructure>, FieldVector3D<DerivativeStructure>, FieldRotation<DerivativeStructure>, DerivativeStructure)} and by {@link
+ * will be thrown by {@link #accelerationDerivatives(AbsoluteDate, Frame, FieldVector3D,
+ * FieldVector3D, FieldRotation, DerivativeStructure)} and by {@link
  * #accelerationDerivatives(SpacecraftState, String)}.
  * </p>
  *
@@ -288,7 +288,7 @@ public class DrozinerAttractionModel extends AbstractParameterizable implements 
     }
 
     /** {@inheritDoc} */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date,final  Frame frame,
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final AbsoluteDate date, final  Frame frame,
                                                                       final FieldVector3D<DerivativeStructure> position,
                                                                       final FieldVector3D<DerivativeStructure> velocity,
                                                                       final FieldRotation<DerivativeStructure> rotation,

@@ -371,6 +371,7 @@ public class Transform
 
     /** Transform a position vector (including translation effects).
      * @param position vector to transform
+     * @param <T> the type of the field elements
      * @return transformed position
      */
     public <T extends ExtendedFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
@@ -387,6 +388,7 @@ public class Transform
 
     /** Transform a vector (ignoring translation effects).
      * @param vector vector to transform
+     * @param <T> the type of the field elements
      * @return transformed vector
      */
     public <T extends ExtendedFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
@@ -418,6 +420,7 @@ public class Transform
 
     /** Transform {@link FieldPVCoordinates} including kinematic effects.
      * @param pv the couple position-velocity to transform.
+     * @param <T> the type of the field elements
      * @return transformed position/velocity
      */
     public <T extends ExtendedFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {

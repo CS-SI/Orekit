@@ -41,6 +41,7 @@ import org.orekit.time.TimeShiftable;
  * This class is the angular counterpart to {@link FieldPVCoordinates}.
  * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @since 6.0
  * @see AngularCoordinates
@@ -72,6 +73,7 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
      * @param start start orientation
      * @param end end orientation
      * @param dt time elapsed between the dates of the two orientations
+     * @param <T> the type of the field elements
      * @return FieldRotation<T> rate allowing to go from start to end orientations
      */
     public static <T extends ExtendedFieldElement<T>> FieldVector3D<T> estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
@@ -205,9 +207,10 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
      * then use interpolation to add derivatives consistent with the FieldRotation<T>s.
      * </p>
      * @param date interpolation date
-     * @param useFieldRotation<T>Rates if true, use sample points FieldRotation<T> rates,
+     * @param useRotationRates if true, use sample points FieldRotation<T> rates,
      * otherwise ignore them and use only FieldRotation<T>s
      * @param sample sample points on which interpolation should be done
+     * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
     @SuppressWarnings("unchecked")
@@ -316,6 +319,7 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
      * @param offsetDate date of the linear offset model to remove
      * @param offset linear offset model to remove
      * @param threshold threshold for rotations too close to 2&pi;
+     * @param <T> the type of the field elements
      * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2&pi;
      */
     private static <T extends ExtendedFieldElement<T>> T[][] getModifiedRodrigues(final AbsoluteDate date, final FieldAngularCoordinates<T> ac,
@@ -371,6 +375,7 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
     /** Convert a modified Rodrigues vector and derivative to angular coordinates.
      * @param r modified Rodrigues vector (with first derivatives)
      * @param offset linear offset model to add (its date must be consistent with the modified Rodrigues vector)
+     * @param <T> the type of the field elements
      * @return angular coordinates
      */
     private static <T extends ExtendedFieldElement<T>> FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r,

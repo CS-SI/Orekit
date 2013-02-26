@@ -466,9 +466,6 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     /** Fill Jacobians rows when mass is needed.
      * @param accelerationComponent component of acceleration (along either x, y or z)
      * @param index component index (0 for x, 1 for y, 2 for z)
-     * @param dAccdPos array where to <em>accumulate</em> acceleration derivatives with respect to position
-     * @param dAccdVel array where to <em>accumulate</em> acceleration derivatives with respect to velocity
-     * @param dAccdM array where to <em>accumulate</em> acceleration derivatives with respect to mass (may be null when
      */
     private void addToRow(final DerivativeStructure accelerationComponent, final int index) {
 

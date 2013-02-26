@@ -37,6 +37,7 @@ import org.orekit.time.TimeShiftable;
  * This class is the angular counterpart to {@link FieldAngularCoordinates}.
  * </p>
  * <p>Instances of this class are guaranteed to be immutable.</p>
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @since 6.0
  * @see PVCoordinates
@@ -267,6 +268,7 @@ public class FieldPVCoordinates<T extends ExtendedFieldElement<T>>
      * @param start start position
      * @param end end position
      * @param dt time elapsed between the dates of the two positions
+     * @param <T> the type of the field elements
      * @return velocity allowing to go from start to end positions
      */
     public static <T extends ExtendedFieldElement<T>> FieldVector3D<T> estimateVelocity(final FieldVector3D<T> start,
@@ -308,6 +310,7 @@ public class FieldPVCoordinates<T extends ExtendedFieldElement<T>>
      * @param useVelocities if true, use sample points velocities,
      * otherwise ignore them and use only positions
      * @param sample sample points on which interpolation should be done
+     * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
     @SuppressWarnings("unchecked")
