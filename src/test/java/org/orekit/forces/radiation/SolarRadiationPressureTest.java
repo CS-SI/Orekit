@@ -152,7 +152,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 1e3, tolerances[0], 2.0e-6);
+                           1e3, tolerances[0], 2.0e-6);
 
     }
 
@@ -206,7 +206,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 1e3, tolerances[0], 2.0e-5);
+                           1e3, tolerances[0], 2.0e-5);
 
     }
 

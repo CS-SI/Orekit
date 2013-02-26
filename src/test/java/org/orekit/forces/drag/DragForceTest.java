@@ -100,7 +100,7 @@ public class DragForceTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 1e3, tolerances[0], 3.0e-4);
+                           1e3, tolerances[0], 3.0e-4);
 
     }
 
@@ -159,7 +159,7 @@ public class DragForceTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 1e3, tolerances[0], 2.0e-3);
+                           1e3, tolerances[0], 2.0e-3);
 
     }
 

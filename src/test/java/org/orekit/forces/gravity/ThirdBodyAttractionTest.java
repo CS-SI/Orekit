@@ -191,7 +191,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         SpacecraftState state0 = new SpacecraftState(orbit);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 1e4, tolerances[0], 2.0e-9);
+                           1e4, tolerances[0], 2.0e-9);
 
     }
 

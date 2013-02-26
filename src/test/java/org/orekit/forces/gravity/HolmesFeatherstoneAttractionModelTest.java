@@ -701,7 +701,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         propagator.setInitialState(state0);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 50000, tolerances[0], 4.0e-10);
+                           50000, tolerances[0], 4.0e-10);
     }
 
     @Before

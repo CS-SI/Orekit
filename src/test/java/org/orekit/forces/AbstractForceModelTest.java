@@ -21,7 +21,6 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.UnknownParameterException;
-import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -102,32 +101,23 @@ public abstract class AbstractForceModelTest {
 
         final Vector3D reference = new Vector3D(  1 / (2 * hParam), gammaP1h.subtract(gammaM1h));
         final Vector3D delta = derivative.subtract(reference);
-
-        System.out.println("derivative: " + derivative.getX() + " " +
-                derivative.getY() + " " + derivative.getZ() + " -> norm = " + derivative.getNorm());
-        System.out.println("reference: " + reference.getX() + " " +
-                reference.getY() + " " + reference.getZ() + " -> norm = " + reference.getNorm());
-        System.out.println("delta: " + delta.getX() + " " +
-                delta.getY() + " " + delta.getZ() + " -> norm = " + delta.getNorm());
-        System.out.println("relative error in norm: " + (delta.getNorm() / reference.getNorm()));
         Assert.assertEquals(0, delta.getNorm(), tol * reference.getNorm());
 
     }
 
     protected void checkStateJacobian(NumericalPropagator propagator, SpacecraftState state0,
-                                      AbsoluteDate targetDate, int nbPoints,
-                                      double hFactor, double[] integratorAbsoluteTolerances,
-                                      double checkTolerance)
+                                      AbsoluteDate targetDate, double hFactor,
+                                      double[] integratorAbsoluteTolerances, double checkTolerance)
         throws OrekitException {
 
         propagator.setInitialState(state0);
         double[][] reference = new double[][] {
-            jacobianColumn(propagator, state0, nbPoints, targetDate, 0, hFactor * integratorAbsoluteTolerances[0]),
-            jacobianColumn(propagator, state0, nbPoints, targetDate, 1, hFactor * integratorAbsoluteTolerances[1]),
-            jacobianColumn(propagator, state0, nbPoints, targetDate, 2, hFactor * integratorAbsoluteTolerances[2]),
-            jacobianColumn(propagator, state0, nbPoints, targetDate, 3, hFactor * integratorAbsoluteTolerances[3]),
-            jacobianColumn(propagator, state0, nbPoints, targetDate, 4, hFactor * integratorAbsoluteTolerances[4]),
-            jacobianColumn(propagator, state0, nbPoints, targetDate, 5, hFactor * integratorAbsoluteTolerances[5])
+            jacobianColumn(propagator, state0, targetDate, 0, hFactor * integratorAbsoluteTolerances[0]),
+            jacobianColumn(propagator, state0, targetDate, 1, hFactor * integratorAbsoluteTolerances[1]),
+            jacobianColumn(propagator, state0, targetDate, 2, hFactor * integratorAbsoluteTolerances[2]),
+            jacobianColumn(propagator, state0, targetDate, 3, hFactor * integratorAbsoluteTolerances[3]),
+            jacobianColumn(propagator, state0, targetDate, 4, hFactor * integratorAbsoluteTolerances[4]),
+            jacobianColumn(propagator, state0, targetDate, 5, hFactor * integratorAbsoluteTolerances[5])
         };
         for (int j = 0; j < 6; ++j) {
             for (int k = j + 1; k < 6; ++k) {
@@ -166,39 +156,6 @@ public abstract class AbstractForceModelTest {
         });
         propagator.propagate(targetDate);
 
-        System.out.println("reference:");
-        for (int j = 0; j < 6; ++j) {
-            for (int k = 0; k < 6; ++k) {
-                System.out.print(" " + reference[j][k]);
-            }
-            System.out.println();
-        }
-        System.out.println("dYdY0:");
-        for (int j = 0; j < 6; ++j) {
-            for (int k = 0; k < 6; ++k) {
-                System.out.print(" " + dYdY0[j][k]);
-            }
-            System.out.println();
-        }
-        System.out.println("error:");
-        for (int j = 0; j < 6; ++j) {
-            for (int k = 0; k < 6; ++k) {
-                System.out.print(" " + (dYdY0[j][k] - reference[j][k]));
-            }
-            System.out.println();
-        }
-        System.out.println("scaled error:");
-        double max = 0;
-        for (int j = 0; j < 6; ++j) {
-            for (int k = 0; k < 6; ++k) {
-                double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
-                System.out.print(" " + ((dYdY0[j][k] - reference[j][k]) / scale));
-                max = FastMath.max(max, FastMath.abs(dYdY0[j][k] - reference[j][k]) / scale);
-            }
-            System.out.println();
-        }
-        System.out.println("max scaled error: " + max);
-
         for (int j = 0; j < 6; ++j) {
             for (int k = 0; k < 6; ++k) {
                 double scale = integratorAbsoluteTolerances[j] / integratorAbsoluteTolerances[k];
@@ -209,31 +166,14 @@ public abstract class AbstractForceModelTest {
     }
 
     private double[] jacobianColumn(final NumericalPropagator propagator, final SpacecraftState state0,
-                                    final int nbPoints, final AbsoluteDate targetDate,
-                                    final int index, final double h)
-        throws PropagationException {
-
-        if (nbPoints == 4) {
-            return differential4(integrateShiftedState(propagator, state0, targetDate, index, -2 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, -1 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, +1 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, +2 * h),
-                                 h);
-        } else if (nbPoints == 8) {
-            return differential8(integrateShiftedState(propagator, state0, targetDate, index, -4 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, -3 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, -2 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, -1 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, +1 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, +2 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, +3 * h),
-                                 integrateShiftedState(propagator, state0, targetDate, index, +4 * h),
-                                 h);
-        } else {
-            Assert.fail("only 4 points or 8 points supported");
-            return null;
-        }
-
+                                    final AbsoluteDate targetDate, final int index,
+                                    final double h)
+                                            throws PropagationException {
+        return differential4(integrateShiftedState(propagator, state0, targetDate, index, -2 * h),
+                             integrateShiftedState(propagator, state0, targetDate, index, -1 * h),
+                             integrateShiftedState(propagator, state0, targetDate, index, +1 * h),
+                             integrateShiftedState(propagator, state0, targetDate, index, +2 * h),
+                             h);
     }
 
     private double[] integrateShiftedState(final NumericalPropagator propagator,

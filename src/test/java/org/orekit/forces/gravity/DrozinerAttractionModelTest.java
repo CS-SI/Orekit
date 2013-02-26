@@ -330,7 +330,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         drModel.setSteps(1.0, 1.0e10);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           4, 40000, tolerances[0], 2.0e-7);
+                           40000, tolerances[0], 2.0e-7);
 
     }
 
