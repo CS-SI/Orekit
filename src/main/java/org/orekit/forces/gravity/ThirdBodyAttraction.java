@@ -38,6 +38,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public class ThirdBodyAttraction extends AbstractParameterizable implements ForceModel {
 
+    /** Suffix for parameter name for attraction coefficient enabling jacobian processing. */
+    public static final String ATTRACTION_COEFFICIENT_SUFFIX = " attraction coefficient";
+
     /** The body to consider. */
     private final CelestialBody body;
 
@@ -50,7 +53,7 @@ public class ThirdBodyAttraction extends AbstractParameterizable implements Forc
      * {@link org.orekit.bodies.CelestialBodyFactory#getMoon()})
      */
     public ThirdBodyAttraction(final CelestialBody body) {
-        super(body.getName() + " attraction coefficient");
+        super(body.getName() + ATTRACTION_COEFFICIENT_SUFFIX);
         this.body = body;
         this.gm   = body.getGM();
     }
