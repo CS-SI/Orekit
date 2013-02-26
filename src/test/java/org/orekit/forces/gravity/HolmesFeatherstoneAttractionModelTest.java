@@ -98,6 +98,29 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
     }
 
     @Test
+    public void testValue() throws OrekitException {
+
+        int max = 50;
+        NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
+        HolmesFeatherstoneAttractionModel model =
+                new HolmesFeatherstoneAttractionModel(ITRF2005, provider);
+
+        double r = 1.25;
+        for (double lambda = 0; lambda < 2 * FastMath.PI; lambda += 0.5) {
+            for (double theta = 0.05; theta < 3.11; theta += 0.03) {
+                Vector3D position = new Vector3D(r * FastMath.sin(theta) * FastMath.cos(lambda),
+                                                 r * FastMath.sin(theta) * FastMath.sin(lambda),
+                                                 r * FastMath.cos(theta));
+                double refValue = provider.getMu() / position.getNorm() +
+                                  model.nonCentralPart(AbsoluteDate.GPS_EPOCH, position);
+                double  value   = model.value(AbsoluteDate.GPS_EPOCH, position);
+                Assert.assertEquals(refValue, value, 1.0e-15 * FastMath.abs(refValue));
+            }
+        }
+
+    }
+
+    @Test
     public void testGradient() throws OrekitException {
 
         int max = 50;
