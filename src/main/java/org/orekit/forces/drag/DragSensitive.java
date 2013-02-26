@@ -34,7 +34,7 @@ import org.orekit.time.AbsoluteDate;
 public interface DragSensitive {
 
     /** Parameter name for drag coefficient enabling jacobian processing. */
-    public static final String DRAG_COEFFICIENT = "DRAG COEFFICIENT";
+    public static final String DRAG_COEFFICIENT = "drag coefficient";
 
     /** Compute the acceleration due to drag.
      * <p>
