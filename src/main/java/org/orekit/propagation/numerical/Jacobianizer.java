@@ -142,34 +142,30 @@ public class Jacobianizer {
         final double        hVel  = mu * hPos / (v0.getNorm() * r2);
 
         // estimate mass step, applying the same relative value as position
-        final double m0 = mass.getValue();
-        final double hMass = m0 * hPos / FastMath.sqrt(r2);
-
-        // TODO: we should compute attitude partial derivatives with respect to position/velocity
-        final Rotation r0 = rotation.toRotation();
+        final double hMass = mass.getValue() * hPos / FastMath.sqrt(r2);
 
         // compute nominal acceleration
         final AccelerationRetriever nominal = new AccelerationRetriever();
-        computeShiftedAcceleration(nominal, date, frame, p0, v0, r0, m0);
+        computeShiftedAcceleration(nominal, date, frame, p0, v0, rotation.toRotation(), mass.getValue());
         final double[] a0 = nominal.getAcceleration().toArray();
 
         // compute accelerations with shifted states
         final AccelerationRetriever shifted = new AccelerationRetriever();
 
         // shift position by hPos alon x, y and z
-        computeShiftedAcceleration(shifted, date, frame, new Vector3D(p0.getX() + hPos, p0.getY(), p0.getZ()), v0, r0, m0);
+        computeShiftedAcceleration(shifted, date, frame, shift(position, 0, hPos), v0, shift(rotation, 0, hPos), shift(mass, 0, hPos));
         final double[] derPx = new Vector3D(1 / hPos, shifted.getAcceleration(), -1 / hPos, nominal.getAcceleration()).toArray();
-        computeShiftedAcceleration(shifted, date, frame, new Vector3D(p0.getX(), p0.getY() + hPos, p0.getZ()), v0, r0, m0);
+        computeShiftedAcceleration(shifted, date, frame, shift(position, 1, hPos), v0, shift(rotation, 1, hPos), shift(mass, 1, hPos));
         final double[] derPy = new Vector3D(1 / hPos, shifted.getAcceleration(), -1 / hPos, nominal.getAcceleration()).toArray();
-        computeShiftedAcceleration(shifted, date, frame, new Vector3D(p0.getX(), p0.getY(), p0.getZ() + hPos), v0, r0, m0);
+        computeShiftedAcceleration(shifted, date, frame, shift(position, 2, hPos), v0, shift(rotation, 2, hPos), shift(mass, 2, hPos));
         final double[] derPz = new Vector3D(1 / hPos, shifted.getAcceleration(), -1 / hPos, nominal.getAcceleration()).toArray();
 
         // shift velocity by hVel alon x, y and z
-        computeShiftedAcceleration(shifted, date, frame, p0, new Vector3D(v0.getX() + hVel, v0.getY(), v0.getZ()), r0, m0);
+        computeShiftedAcceleration(shifted, date, frame, p0, shift(velocity, 3, hVel), shift(rotation, 3, hVel), shift(mass, 3, hVel));
         final double[] derVx = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
-        computeShiftedAcceleration(shifted, date, frame, p0, new Vector3D(v0.getX(), v0.getY() + hVel, v0.getZ()), r0, m0);
+        computeShiftedAcceleration(shifted, date, frame, p0, shift(velocity, 4, hVel), shift(rotation, 4, hVel), shift(mass, 4, hVel));
         final double[] derVy = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
-        computeShiftedAcceleration(shifted, date, frame, p0, new Vector3D(v0.getX(), v0.getY(), v0.getZ() + hVel), r0, m0);
+        computeShiftedAcceleration(shifted, date, frame, p0, shift(velocity, 5, hVel), shift(rotation, 5, hVel), shift(mass, 5, hVel));
         final double[] derVz = new Vector3D(1 / hVel, shifted.getAcceleration(), -1 / hVel, nominal.getAcceleration()).toArray();
 
         final double[] derM;
@@ -177,7 +173,7 @@ public class Jacobianizer {
             derM = null;
         } else {
             // shift mass by hMass
-            computeShiftedAcceleration(shifted, date, frame, p0, v0, r0, m0 + hMass);
+            computeShiftedAcceleration(shifted, date, frame, p0, v0, shift(rotation, 6, hMass), shift(mass, 6, hMass));
             derM = new Vector3D(1 / hMass, shifted.getAcceleration(), -1 / hMass, nominal.getAcceleration()).toArray();
 
         }
@@ -209,6 +205,48 @@ public class Jacobianizer {
         return new FieldVector3D<DerivativeStructure>(accDer);
 
 
+    }
+
+    /** Shift a vector.
+     * @param nominal nominal vector
+     * @param index index of the variable with respect to which we shift
+     * @param h shift step
+     * @return shifted vector
+     */
+    private Vector3D shift(final FieldVector3D<DerivativeStructure> nominal, final int index, final double h) {
+        final double[] delta = new double[nominal.getX().getFreeParameters()];
+        delta[index] = h;
+        return new Vector3D(nominal.getX().taylor(delta),
+                            nominal.getY().taylor(delta),
+                            nominal.getZ().taylor(delta));
+    }
+
+    /** Shift a rotation.
+     * @param nominal nominal rotation
+     * @param index index of the variable with respect to which we shift
+     * @param h shift step
+     * @return shifted rotation
+     */
+    private Rotation shift(final FieldRotation<DerivativeStructure> nominal, final int index, final double h) {
+        final double[] delta = new double[nominal.getQ0().getFreeParameters()];
+        delta[index] = h;
+        return new Rotation(nominal.getQ0().taylor(delta),
+                            nominal.getQ1().taylor(delta),
+                            nominal.getQ2().taylor(delta),
+                            nominal.getQ3().taylor(delta),
+                            true);
+    }
+
+    /** Shift a scalar.
+     * @param nominal nominal scalar
+     * @param index index of the variable with respect to which we shift
+     * @param h shift step
+     * @return shifted scalar
+     */
+    private double shift(final DerivativeStructure nominal, final int index, final double h) {
+        final double[] delta = new double[nominal.getFreeParameters()];
+        delta[index] = h;
+        return nominal.taylor(delta);
     }
 
     /** Compute acceleration and derivatives with respect to parameter.
@@ -246,42 +284,6 @@ public class Jacobianizer {
                               new DerivativeStructure(1, 1, ny, (sy - ny) / hP),
                               new DerivativeStructure(1, 1, nz, (sz - nz) / hP));
 
-    }
-
-    /** Get parameter value from its name.
-     * @param name parameter name
-     * @return parameter value
-     * @exception IllegalArgumentException if parameter is not supported
-     */
-    public double getParameter(final String name) throws IllegalArgumentException {
-        return forceModel.getParameter(name);
-    }
-
-    /** Get the names of the supported parameters.
-     * @return parameters names
-     * @see #isSupported(String)
-     */
-    public Collection<String> getParametersNames() {
-        return forceModel.getParametersNames();
-    }
-
-    /** Check if a parameter is supported.
-     * <p>Supported parameters are those listed by {@link #getParametersNames()}.</p>
-     * @param name parameter name to check
-     * @return true if the parameter is supported
-     * @see #getParametersNames()
-     */
-    public boolean isSupported(final String name) {
-        return forceModel.isSupported(name);
-    }
-
-    /** Set the value for a given parameter.
-     * @param name parameter name
-     * @param value parameter value
-     * @exception IllegalArgumentException if parameter is not supported
-     */
-    public void setParameter(final String name, final double value) throws IllegalArgumentException {
-        forceModel.setParameter(name, value);
     }
 
     /** Internal class for retrieving accelerations. */
@@ -337,8 +339,7 @@ public class Jacobianizer {
 
         /** {@inheritDoc} */
         public void addMassDerivative(final double q) {
-            // TODO
-            // we don't compute (yet) the mass part of the Jacobian, we just ignore this
+            // TODO: we don't compute (yet) the mass part of the Jacobian, we just ignore this
         }
 
     }
