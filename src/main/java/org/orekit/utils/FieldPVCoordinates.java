@@ -370,7 +370,7 @@ public class FieldPVCoordinates<T extends ExtendedFieldElement<T>>
      * @return a new instance of the momentum vector (m<sup>2</sup>/s).
      */
     public FieldVector3D<T> getMomentum() {
-        return position.crossProduct(velocity);
+        return FieldVector3D.crossProduct(position, velocity);
     }
 
     /** Get the opposite of the instance.

@@ -390,8 +390,8 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
         final FieldVector3D<T> p    = new FieldVector3D<T>(r[0]);
         final FieldVector3D<T> pDot = new FieldVector3D<T>(r[1]);
         final FieldVector3D<T> rate = new FieldVector3D<T>(inv.multiply(ratio).multiply(4), pDot,
-                                                           inv.multiply(inv).multiply(-8), p.crossProduct(pDot),
-                                                           inv.multiply(inv).multiply(8).multiply(p.dotProduct(pDot)), p);
+                                                           inv.multiply(inv).multiply(-8), FieldVector3D.crossProduct(p, pDot),
+                                                           inv.multiply(inv).multiply(8).multiply(FieldVector3D.dotProduct(p, pDot)), p);
 
         return new FieldAngularCoordinates<T>(rotation, rate).addOffset(offset);
 

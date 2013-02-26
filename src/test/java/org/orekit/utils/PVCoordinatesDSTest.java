@@ -98,14 +98,14 @@ public class PVCoordinatesDSTest {
         FieldVector3D<DerivativeStructure> p = createVector(1, 0.1, 10, 6);
         FieldVector3D<DerivativeStructure> v = createVector(-0.1, 1, 0, 6);
         FieldPVCoordinates<DerivativeStructure> pv = new FieldPVCoordinates<DerivativeStructure>(p, v);
-        Assert.assertEquals(0, p.distance(pv.getPosition()).getValue(), 1.0e-15);
-        Assert.assertEquals(0, v.distance(pv.getVelocity()).getValue(), 1.0e-15);
-        Assert.assertEquals(0, createVector(-10, -1, 1.01, 6).distance(pv.getMomentum()).getValue(), 1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(p, pv.getPosition()).getValue(), 1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(v, pv.getVelocity()).getValue(), 1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(createVector(-10, -1, 1.01, 6), pv.getMomentum()).getValue(), 1.0e-15);
 
         FieldPVCoordinates<DerivativeStructure> pvn = pv.negate();
-        Assert.assertEquals(0, createVector(-1, -0.1, -10, 6).distance(pvn.getPosition()).getValue(), 1.0e-15);
-        Assert.assertEquals(0, createVector(0.1, -1, 0, 6).distance(pvn.getVelocity()).getValue(), 1.0e-15);
-        Assert.assertEquals(0, createVector(-10, -1, 1.01, 6).distance(pvn.getMomentum()).getValue(), 1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(createVector(-1, -0.1, -10, 6), pvn.getPosition()).getValue(), 1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(createVector(0.1, -1, 0, 6), pvn.getVelocity()).getValue(), 1.0e-15);
+        Assert.assertEquals(0, FieldVector3D.distance(createVector(-10, -1, 1.01, 6), pvn.getMomentum()).getValue(), 1.0e-15);
     }
 
     @Test

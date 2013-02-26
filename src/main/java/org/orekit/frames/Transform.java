@@ -425,7 +425,7 @@ public class Transform
         final FieldVector3D<T> v = pv.getVelocity();
         final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(),
                                                                     p.add(cartesian.getPosition()));
-        final FieldVector3D<T> cross = transformedP.crossProduct(angular.getRotationRate()).negate();
+        final FieldVector3D<T> cross = FieldVector3D.crossProduct(angular.getRotationRate(), transformedP);
         return new FieldPVCoordinates<T>(transformedP,
                                          FieldRotation.applyTo(angular.getRotation(),
                                                                v.add(cartesian.getVelocity())).subtract(cross));

@@ -81,7 +81,7 @@ public class FieldAngularCoordinatesTest {
             FieldAngularCoordinates<DerivativeStructure> acds = new FieldAngularCoordinates<DerivativeStructure>(r, o);
             AngularCoordinates ac = acds.toAngularCoordinates();
             Assert.assertEquals(0, Rotation.distance(r.toRotation(), ac.getRotation()), 1.0e-15);
-            Assert.assertEquals(0, o.distance(ac.getRotationRate()).getReal(), 1.0e-15);
+            Assert.assertEquals(0, FieldVector3D.distance(o, ac.getRotationRate()).getReal(), 1.0e-15);
         }
     }
 
@@ -103,15 +103,15 @@ public class FieldAngularCoordinatesTest {
         FieldVector3D<DerivativeStructure> originalX = angularCoordinates.getRotation().applyInverseTo(createVector(1, 0, 0, 4));
         FieldVector3D<DerivativeStructure> originalY = angularCoordinates.getRotation().applyInverseTo(createVector(0, 1, 0, 4));
         FieldVector3D<DerivativeStructure> originalZ = angularCoordinates.getRotation().applyInverseTo(createVector(0, 0, 1, 4));
-        Assert.assertEquals( FastMath.cos(rate * dt), shiftedX.dotProduct(originalX).getReal(), 1.0e-10);
-        Assert.assertEquals( FastMath.sin(rate * dt), shiftedX.dotProduct(originalY).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 shiftedX.dotProduct(originalZ).getReal(), 1.0e-10);
-        Assert.assertEquals(-FastMath.sin(rate * dt), shiftedY.dotProduct(originalX).getReal(), 1.0e-10);
-        Assert.assertEquals( FastMath.cos(rate * dt), shiftedY.dotProduct(originalY).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 shiftedY.dotProduct(originalZ).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 shiftedZ.dotProduct(originalX).getReal(), 1.0e-10);
-        Assert.assertEquals( 0.0,                 shiftedZ.dotProduct(originalY).getReal(), 1.0e-10);
-        Assert.assertEquals( 1.0,                 shiftedZ.dotProduct(originalZ).getReal(), 1.0e-10);
+        Assert.assertEquals( FastMath.cos(rate * dt), FieldVector3D.dotProduct(shiftedX, originalX).getReal(), 1.0e-10);
+        Assert.assertEquals( FastMath.sin(rate * dt), FieldVector3D.dotProduct(shiftedX, originalY).getReal(), 1.0e-10);
+        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedX, originalZ).getReal(), 1.0e-10);
+        Assert.assertEquals(-FastMath.sin(rate * dt), FieldVector3D.dotProduct(shiftedY, originalX).getReal(), 1.0e-10);
+        Assert.assertEquals( FastMath.cos(rate * dt), FieldVector3D.dotProduct(shiftedY, originalY).getReal(), 1.0e-10);
+        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedY, originalZ).getReal(), 1.0e-10);
+        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedZ, originalX).getReal(), 1.0e-10);
+        Assert.assertEquals( 0.0,                 FieldVector3D.dotProduct(shiftedZ, originalY).getReal(), 1.0e-10);
+        Assert.assertEquals( 1.0,                 FieldVector3D.dotProduct(shiftedZ, originalZ).getReal(), 1.0e-10);
 
         FieldVector3D<DerivativeStructure> forward = FieldAngularCoordinates.estimateRate(angularCoordinates.getRotation(), shifted.getRotation(), dt);
         Assert.assertEquals(0.0, forward.subtract(angularCoordinates.getRotationRate()).getNorm().getReal(), 1.0e-10);
@@ -163,11 +163,11 @@ public class FieldAngularCoordinatesTest {
             FieldAngularCoordinates<DerivativeStructure> ac2 = new FieldAngularCoordinates<DerivativeStructure>(r2, o2);
             FieldAngularCoordinates<DerivativeStructure> roundTripSA = ac1.subtractOffset(ac2).addOffset(ac2);
             Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripSA.getRotation()).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, ac1.getRotationRate().distance(roundTripSA.getRotationRate()).getReal(), 1.0e-17);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()).getReal(), 1.0e-17);
 
             FieldAngularCoordinates<DerivativeStructure> roundTripAS = ac1.addOffset(ac2).subtractOffset(ac2);
             Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripAS.getRotation()).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, ac1.getRotationRate().distance(roundTripAS.getRotationRate()).getReal(), 1.0e-17);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()).getReal(), 1.0e-17);
 
         }
     }
@@ -210,7 +210,7 @@ public class FieldAngularCoordinatesTest {
             FieldAngularCoordinates<DerivativeStructure> rebuilt =
             (FieldAngularCoordinates<DerivativeStructure>) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
             Assert.assertEquals(0.0, FieldRotation.distance(rotation, rebuilt.getRotation()).getReal(), 1.0e-14);
-            Assert.assertEquals(0.0, rotationRate.distance(rebuilt.getRotationRate()).getReal(), 1.0e-15);
+            Assert.assertEquals(0.0, FieldVector3D.distance(rotationRate, rebuilt.getRotationRate()).getReal(), 1.0e-15);
         }
 
     }
@@ -268,7 +268,7 @@ public class FieldAngularCoordinatesTest {
             FieldAngularCoordinates<DerivativeStructure> acPi =
                     (FieldAngularCoordinates<DerivativeStructure>) factory.invoke(null, piRotation, identity());
             Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle().getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, axis.angle(acPi.getRotation().getAxis()).sin().getReal(), 1.0e-15);
+            Assert.assertEquals(0.0, FieldVector3D.angle(axis, acPi.getRotation().getAxis()).sin().getReal(), 1.0e-15);
             Assert.assertEquals(0.0, acPi.getRotationRate().getNorm().getReal(), 1.0e-16);
         }
 
@@ -307,7 +307,7 @@ public class FieldAngularCoordinatesTest {
             FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, reference.shiftedBy(dt).getRotationRate().distance(rate).getReal(), 5.0e-15);
+            Assert.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate).getReal(), 5.0e-15);
         }
 
     }
@@ -332,7 +332,7 @@ public class FieldAngularCoordinatesTest {
             FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 3.0e-4);
-            Assert.assertEquals(0.0, reference.shiftedBy(dt).getRotationRate().distance(rate).getReal(), 1.0e-2);
+            Assert.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate).getReal(), 1.0e-2);
         }
 
     }
@@ -360,7 +360,7 @@ public class FieldAngularCoordinatesTest {
                                 FieldRotation.distance(shifted.getRotation(), interpolated.getRotation()).getReal(),
                                 1.3e-7);
             Assert.assertEquals(0.0,
-                                shifted.getRotationRate().distance(interpolated.getRotationRate()).getReal(),
+                                FieldVector3D.distance(shifted.getRotationRate(), interpolated.getRotationRate()).getReal(),
                                 1.0e-11);
         }
 
