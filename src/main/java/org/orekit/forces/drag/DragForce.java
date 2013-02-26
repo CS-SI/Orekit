@@ -124,20 +124,19 @@ public class DragForce extends AbstractParameterizable implements ForceModel {
         final double     rho       = atmosphere.getDensity(date, posBody, atmFrame);
         final Vector3D   vAtmBody  = atmosphere.getVelocity(date, posBody, atmFrame);
 
-        // we consider that at first order the velocity in atmosphere frame does not
-        // depend on local position; however velocity in inertial frame DOES depend
-        // on position since the transform between the frames depends on it, due to
-        // central body rotation rate and velocity composition.
+        // we consider that at first order the atmosphere velocity in atmosphere frame
+        // does not depend on local position; however atmosphere velocity in inertial
+        // frame DOES depend on position since the transform between the frames depends
+        // on it, due to central body rotation rate and velocity composition.
         // So we use the transform to get the correct partial derivatives on vAtm
         final FieldVector3D<DerivativeStructure> vAtmBodyDS =
                 new FieldVector3D<DerivativeStructure>(new DerivativeStructure(parameters, order, vAtmBody.getX()),
-                               new DerivativeStructure(parameters, order, vAtmBody.getY()),
-                               new DerivativeStructure(parameters, order, vAtmBody.getZ()));
+                                                       new DerivativeStructure(parameters, order, vAtmBody.getY()),
+                                                       new DerivativeStructure(parameters, order, vAtmBody.getZ()));
         final FieldPVCoordinates<DerivativeStructure> pvAtmBody = new FieldPVCoordinates<DerivativeStructure>(posBodyDS, vAtmBodyDS);
         final FieldPVCoordinates<DerivativeStructure> pvAtm     = toBody.getInverse().transformPVCoordinates(pvAtmBody);
 
-        // now we can compute relative velocity,
-        // it takes into account partial derivatives with respect
+        // now we can compute relative velocity, it takes into account partial derivatives with respect to position
         final FieldVector3D<DerivativeStructure> relativeVelocity = pvAtm.getVelocity().subtract(velocity);
 
         // compute acceleration with all its partial derivatives
