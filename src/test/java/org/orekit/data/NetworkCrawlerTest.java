@@ -75,8 +75,8 @@ public class NetworkCrawlerTest {
     public void compressed() throws OrekitException {
         CountingLoader crawler = new CountingLoader();
         new NetworkCrawler(url("compressed-data/UTC-TAI.history.gz"),
-                           url("compressed-data/eopc04_IAU2000.00.gz"),
-                           url("compressed-data/eopc04_IAU2000.02.gz")).feed(Pattern.compile("^eopc04.*"), crawler);
+                           url("compressed-data/eopc04_08_IAU2000.00.gz"),
+                           url("compressed-data/eopc04_08_IAU2000.02.gz")).feed(Pattern.compile("^eopc04.*"), crawler);
         Assert.assertEquals(2, crawler.getCount());
     }
 

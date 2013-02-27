@@ -32,7 +32,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
 
 
-public class ITRF2005WithoutTidalEffectsProviderTest {
+public class ITRF2008WithoutTidalEffectsProviderTest {
 
     @Test
     public void testRoughRotation() throws OrekitException {
@@ -40,12 +40,12 @@ public class ITRF2005WithoutTidalEffectsProviderTest {
         AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2006, 02, 24),
                                               new TimeComponents(15, 38, 00),
                                               TimeScalesFactory.getUTC());
-        Frame ITRF2005 = FramesFactory.getITRF2005();
-        Transform t0 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date1);
+        Frame itrf2008 = FramesFactory.getITRF2008();
+        Transform t0 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date1);
 
         double dt = 10.0;
         AbsoluteDate date2 = date1.shiftedBy(dt);
-        Transform t1 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date2);
+        Transform t1 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date2);
         Transform evolution = new Transform(date2, t0.getInverse(), t1);
 
         Vector3D p = new Vector3D(6000,6000,0);
@@ -61,21 +61,21 @@ public class ITRF2005WithoutTidalEffectsProviderTest {
     public void testRoughOrientation() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
-        Frame ITRF2005 = FramesFactory.getITRF2005();
+        Frame itrf2008 = FramesFactory.getITRF2008();
 
-        Vector3D u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        Vector3D u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
-        u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_J) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
-        u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_I) < FastMath.toRadians(0.5));
 
         date = date.shiftedBy(6 * 3600);
-        u = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
+        u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.PLUS_J) < FastMath.toRadians(0.5));
 
     }
@@ -84,7 +84,7 @@ public class ITRF2005WithoutTidalEffectsProviderTest {
     public void testRoughERA() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
-        TIRF2000Provider TIRF2000 = (TIRF2000Provider) FramesFactory.getTIRF2000().getTransformProvider();
+        TIRF2000Provider TIRF2000 = (TIRF2000Provider) FramesFactory.getTIRF2000(IERSConventions.IERS_2010).getTransformProvider();
 
         Assert.assertEquals(180, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
@@ -105,7 +105,7 @@ public class ITRF2005WithoutTidalEffectsProviderTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                              new TimeComponents(02, 00, 00),
                                              TimeScalesFactory.getUTC());
-        Transform trans = FramesFactory.getEME2000().getTransformTo(FramesFactory.getTIRF2000(), date);
+        Transform trans = FramesFactory.getEME2000().getTransformTo(FramesFactory.getTIRF2000(IERSConventions.IERS_2010), date);
 
         // Positions
         Vector3D posTIRF =
@@ -122,7 +122,7 @@ public class ITRF2005WithoutTidalEffectsProviderTest {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                            new TimeComponents(02, 00, 00),
                                            TimeScalesFactory.getUTC());
-        Frame itrf = FramesFactory.getITRF2005();
+        Frame itrf = FramesFactory.getITRF2008();
         Transform trans = FramesFactory.getEME2000().getTransformTo(itrf, t0);
 
         // Coordinates in EME2000
@@ -170,13 +170,13 @@ public class ITRF2005WithoutTidalEffectsProviderTest {
     public void testMontenbruck() throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00,
                                            TimeScalesFactory.getGPS());
-        Transform trans = FramesFactory.getITRF2005().getTransformTo(FramesFactory.getGCRF(), t0);
+        Transform trans = FramesFactory.getITRF2008().getTransformTo(FramesFactory.getGCRF(), t0);
         PVCoordinates pvWGS =
             new PVCoordinates(new Vector3D(19440953.805,16881609.273,-6777115.092),
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));
         checkPV(new PVCoordinates(new Vector3D(-23830592.685,  -9747073.881,  -6779831.010),
                                   new Vector3D( 1561.9646362, -1754.3454485, -3068.8504996)),
-                                  trans.transformPVCoordinates(pvWGS), 0.12, 2.6e-5);
+                                  trans.transformPVCoordinates(pvWGS), 0.16, 2.4e-5);
 
     }
 

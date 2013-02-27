@@ -566,7 +566,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                     new CunninghamAttractionModel(FramesFactory.getITRF2008(),
                                                   GravityFieldFactory.getUnnormalizedProvider(i, i));
             double relativeError = accelerationRelativeError(holmesFeatherstoneModel, cunninghamModel, state);
-            Assert.assertEquals(0.0, relativeError, 2.0e-15);
+            Assert.assertEquals(0.0, relativeError, 8.0e-15);
         }
 
     }

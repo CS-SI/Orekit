@@ -42,8 +42,8 @@ import org.orekit.utils.OrekitConfiguration;
  * <p>
  * The user can retrieve those reference frames using various static methods
  * ({@link FramesFactory#getFrame(Predefined)},
- * {@link #getGCRF()}, {@link #getCIRF2000()},
- * {@link #getTIRF2000(boolean)}, {@link #getTIRF2000()},
+ * {@link #getGCRF()}, {@link #getCIRF2000(IERSConventions)}
+ * {@link #getTIRF2000(IERSConventions, boolean)}, {@link #getTIRF2000(IERSConventions)},
  * {@link #getITRF93(boolean)}, {@link #getITRF93()},
  * {@link #getITRF97(boolean)}, {@link #getITRF97()},
  * {@link #getITRF2000(boolean)}, {@link #getITRF2000()},
@@ -55,10 +55,10 @@ import org.orekit.utils.OrekitConfiguration;
  * </p>
  * <h5> International Terrestrial Reference Frame 2008 </h5>
  * <p>
- * This frame is the current (as of 2008) reference realization of
+ * This frame is the current (as of 2013) reference realization of
  * the International Terrestrial Reference System produced by IERS.
- * It is described in <a href="ftp://tai.bipm.org/iers/conv2003/tn32.pdf">
- * IERS conventions (2003)</a>. It replaces the Earth Centered Earth Fixed
+ * It is described in <a href="ftp://tai.bipm.org/iers/conv2010/tn36.pdf">
+ * IERS conventions (2010)</a>. It replaces the Earth Centered Earth Fixed
  * frame which is the reference frame for GPS satellites.
  * </p>
  * <p>
@@ -76,17 +76,24 @@ import org.orekit.utils.OrekitConfiguration;
  * ITRF2008. The three first ones are mandatory to support CCSDS Orbit Data Messages,
  * and the two last ones correspond to the more up to date ones used by recent IERS
  * conventions. Other realizations can be added by users if they build themselves the
- * Helmert transformations.
+ * {@link HelmertTransformation Helmert transformations}.
  * </p>
  * <p>
  * OREKIT proposes all the intermediate frames used to build this specific frame.
  * This implementation follows the new non-rotating origin paradigm
  * mandated by IAU 2000 resolution B1.8. It is therefore based on
- * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle.
+ * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle. I is based on the
+ * 2010 conventions.
+ * </p>
+ * <p>
+ * Orekit also provides frames corresponding to IERS 2003 conventions (from GCRF to
+ * TIRF 2000, but <em>not</em> ITRF (which are linked to 2010 conventions now). The
+ * reason for this is that IERS does not provide Earth Orientation Data anymore for
+ * these older conventions, they provide data only for the new conventions.
  * </p>
  * <h5> Classical paradigm: equinox-based transformations </h5>
  * <p>
- * The classical paradigm used prior to IERS conventions 2003 is equinox based and
+ * The classical paradigm used prior to IERS conventions 2010 (and 2003) is equinox based and
  * uses more intermediate frames. Only some of these frames are supported in Orekit.
  * </p>
  * <p>
@@ -136,7 +143,7 @@ public class FramesFactory implements Serializable {
     public static final String RAPID_DATA_PREDICITON_XML_1980_FILENAME = "^finals\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU1980 compatibles). */
-    public static final String EOPC04_1980_FILENAME = "^eopc04\\.(\\d\\d)$";
+    public static final String EOPC04_1980_FILENAME = "^eopc04_08\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU1980 compatibles). */
     public static final String BULLETINB_1980_FILENAME = "^bulletinb((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
@@ -148,7 +155,7 @@ public class FramesFactory implements Serializable {
     public static final String RAPID_DATA_PREDICITON_XML_2000_FILENAME = "^finals2000A\\..*\\.xml$";
 
     /** Default regular expression for the EOPC04 files (IAU2000 compatibles). */
-    public static final String EOPC04_2000_FILENAME = "^eopc04_IAU2000\\.(\\d\\d)$";
+    public static final String EOPC04_2000_FILENAME = "^eopc04_08_IAU2000\\.(\\d\\d)$";
 
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
     public static final String BULLETINB_2000_FILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
@@ -190,7 +197,7 @@ public class FramesFactory implements Serializable {
 
     /** Add the default loaders for EOP 1980 history.
      * <p>
-     * The default loaders look for IERS EOP 05 C04 and bulletins B files.
+     * The default loaders look for IERS EOP 08 C04 and bulletins B files.
      * </p>
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
@@ -198,12 +205,11 @@ public class FramesFactory implements Serializable {
      * @param rapidDataXMLSupportedNames regular expression for supported
      * rapid data XML EOP files names
      * (may be null if the default IERS file names are used)
-     * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
+     * @param eopC04SupportedNames regular expression for supported EOP 08 C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04_05/">IERS EOP 05 C04 files</a>
-     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
      * @see #addEOP1980HistoryLoader(EOP1980HistoryLoader)
      * @see #clearEOP1980HistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
@@ -220,7 +226,7 @@ public class FramesFactory implements Serializable {
         addEOP1980HistoryLoader(new RapidDataAndPredictionXMLLoader(rapidXmlNames));
         final String eopcNames =
                 (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
-        addEOP1980HistoryLoader(new EOP05C04FilesLoader(eopcNames));
+        addEOP1980HistoryLoader(new EOP08C04FilesLoader(eopcNames));
         final String bulBNames =
             (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
         addEOP1980HistoryLoader(new BulletinBFilesLoader(bulBNames));
@@ -275,7 +281,7 @@ public class FramesFactory implements Serializable {
 
     /** Add the default loaders for EOP 2000 history.
      * <p>
-     * The default loaders look for IERS EOP 05 C04 and bulletins B files.
+     * The default loaders look for IERS EOP 08 C04 and bulletins B files.
      * </p>
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
@@ -283,12 +289,11 @@ public class FramesFactory implements Serializable {
      * @param rapidDataXMLSupportedNames regular expression for supported
      * rapid data XML EOP files names
      * (may be null if the default IERS file names are used)
-     * @param eopC04SupportedNames regular expression for supported EOP05 C04 files names
+     * @param eopC04SupportedNames regular expression for supported EOP 08 C04 files names
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
-     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04_05/">IERS EOP 05 C04 files</a>
-     * @see <a href="http://hpiers.obspm.fr/eoppc/bul/bulb/">IERS bulletins B</a>
+     * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
      * @see #addEOP2000HistoryLoader(EOP2000HistoryLoader)
      * @see #clearEOP2000HistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
@@ -305,7 +310,7 @@ public class FramesFactory implements Serializable {
         addEOP2000HistoryLoader(new RapidDataAndPredictionXMLLoader(rapidXmlNames));
         final String eopcNames =
             (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
-        addEOP2000HistoryLoader(new EOP05C04FilesLoader(eopcNames));
+        addEOP2000HistoryLoader(new EOP08C04FilesLoader(eopcNames));
         final String bulBNames =
             (bulletinBSupportedNames == null) ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
         addEOP2000HistoryLoader(new BulletinBFilesLoader(bulBNames));
@@ -382,12 +387,18 @@ public class FramesFactory implements Serializable {
             return getITRF93(false);
         case ITRF_EQUINOX :
             return getITRFEquinox();
-        case TIRF_2000_WITHOUT_TIDAL_EFFECTS :
-            return getTIRF2000(true);
-        case TIRF_2000_WITH_TIDAL_EFFECTS :
-            return getTIRF2000(false);
-        case CIRF_2000 :
-            return getCIRF2000();
+        case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+            return getTIRF2000(IERSConventions.IERS_2010, true);
+        case TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS :
+            return getTIRF2000(IERSConventions.IERS_2010, false);
+        case TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+            return getTIRF2000(IERSConventions.IERS_2003, true);
+        case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
+            return getTIRF2000(IERSConventions.IERS_2003, false);
+        case CIRF_2000_CONV_2010 :
+            return getCIRF2000(IERSConventions.IERS_2010);
+        case CIRF_2000_CONV_2003 :
+            return getCIRF2000(IERSConventions.IERS_2003);
         case VEIS_1950 :
             return getVeis1950();
         case GTOD_WITHOUT_EOP_CORRECTIONS :
@@ -449,7 +460,7 @@ public class FramesFactory implements Serializable {
         }
     }
 
-    /** Get the ITRF2008 reference frame, ignoring tidal effects.
+    /** Get the ITRF2008 reference frame, using IERS 2010 conventions and ignoring tidal effects.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
@@ -458,17 +469,54 @@ public class FramesFactory implements Serializable {
         return getITRF2008(true);
     }
 
-    /** Get the ITRF2008 reference frame.
+    /** Get the ITRF2008 reference frame, using IERS 2010 conventions.
      * @param ignoreTidalEffects if true, tidal effects are ignored
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
      */
     public static FactoryManagedFrame getITRF2008(final boolean ignoreTidalEffects) throws OrekitException {
+        synchronized (FramesFactory.class) {
+
+            // try to find an already built frame
+            final Predefined factoryKey = ignoreTidalEffects ?
+                                          Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS :
+                                          Predefined.ITRF_2008_WITH_TIDAL_EFFECTS;
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                final Frame tirfFrame = getTIRF2000(IERSConventions.IERS_2010, ignoreTidalEffects);
+                final TIRF2000Provider tirfProvider = (TIRF2000Provider) tirfFrame.getTransformProvider();
+                frame = new FactoryManagedFrame(tirfFrame, new ITRFProvider(tirfProvider), false, factoryKey);
+                FRAMES.put(factoryKey, frame);
+            }
+
+            return frame;
+
+        }
+    }
+
+    /** Get the ITRF2005 reference frame, using IERS 2010 conventions and ignoring tidal effects.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static FactoryManagedFrame getITRF2005() throws OrekitException {
+        return getITRF2005(true);
+    }
+
+    /** Get the ITRF2005 reference frame, using IERS 2010 conventions.
+     * @param ignoreTidalEffects if true, tidal effects are ignored
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static FactoryManagedFrame getITRF2005(final boolean ignoreTidalEffects) throws OrekitException {
 
         final Predefined factoryKey = ignoreTidalEffects ?
-                                      Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS :
-                                      Predefined.ITRF_2008_WITH_TIDAL_EFFECTS;
+                                      Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS :
+                                      Predefined.ITRF_2005_WITH_TIDAL_EFFECTS;
 
         // Helmert transformation between ITRF2005 and ITRF 2008
         // see http://itrf.ign.fr/ITRF_solutions/2008/tp_08-05.php
@@ -481,47 +529,10 @@ public class FramesFactory implements Serializable {
         //    +/-     0.2     0.2     0.2    0.03    0.008   0.008   0.008
         //    Table 1: Transformation parameters at epoch 2005.0 and their rates from ITRF2008 to ITRF2005
         //                         (ITRF2005 minus ITRF2008)
-        return getITRSRealization(factoryKey, getITRF2005(ignoreTidalEffects), 2005,
-                                  0.5, 0.9, 4.7, 0.000, 0.000, 0.000,
-                                 -0.3, 0.0, 0.0, 0.000, 0.000, 0.000);
+        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects), 2005,
+                                  -0.5, -0.9, -4.7, 0.000, 0.000, 0.000,
+                                   0.3,  0.0,  0.0, 0.000, 0.000, 0.000);
 
-    }
-
-    /** Get the ITRF2005 reference frame, ignoring tidal effects.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static FactoryManagedFrame getITRF2005() throws OrekitException {
-        return getITRF2005(true);
-    }
-
-    /** Get the ITRF2005 reference frame.
-     * @param ignoreTidalEffects if true, tidal effects are ignored
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static FactoryManagedFrame getITRF2005(final boolean ignoreTidalEffects) throws OrekitException {
-        synchronized (FramesFactory.class) {
-
-            // try to find an already built frame
-            final Predefined factoryKey = ignoreTidalEffects ?
-                                          Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS :
-                                          Predefined.ITRF_2005_WITH_TIDAL_EFFECTS;
-            FactoryManagedFrame frame = FRAMES.get(factoryKey);
-
-            if (frame == null) {
-                // it's the first time we need this frame, build it and store it
-                final Frame tirfFrame = getTIRF2000(ignoreTidalEffects);
-                final TIRF2000Provider tirfProvider = (TIRF2000Provider) tirfFrame.getTransformProvider();
-                frame = new FactoryManagedFrame(tirfFrame, new ITRFProvider(tirfProvider), false, factoryKey);
-                FRAMES.put(factoryKey, frame);
-            }
-
-            return frame;
-
-        }
     }
 
     /** Get the ITRF2000 reference frame, ignoring tidal effects.
@@ -720,32 +731,46 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get the TIRF2000 reference frame, ignoring tidal effects.
+     * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
      */
-    public static FactoryManagedFrame getTIRF2000() throws OrekitException {
-        return getTIRF2000(true);
+    public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions) throws OrekitException {
+        return getTIRF2000(conventions, true);
     }
 
     /** Get the TIRF2000 reference frame.
+     * @param conventions IERS conventions to apply
      * @param ignoreTidalEffects if true, tidal effects are ignored
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
      */
-    public static FactoryManagedFrame getTIRF2000(final boolean ignoreTidalEffects) throws OrekitException {
+    public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions,
+                                                  final boolean ignoreTidalEffects) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Predefined factoryKey = ignoreTidalEffects ?
-                                          Predefined.TIRF_2000_WITHOUT_TIDAL_EFFECTS :
-                                          Predefined.TIRF_2000_WITH_TIDAL_EFFECTS;
+            final Predefined factoryKey;
+            switch (conventions) {
+            case IERS_2010 : factoryKey = ignoreTidalEffects ?
+                                                              Predefined.TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+                                                              Predefined.TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS;
+            break;
+            case IERS_2003 : factoryKey = ignoreTidalEffects ?
+                                                              Predefined.TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+                                                              Predefined.TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS;
+            break;
+            default :
+            // this should never happen
+            throw OrekitException.createInternalError(null);
+            }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getCIRF2000(), new TIRF2000Provider(ignoreTidalEffects), false, factoryKey);
+                frame = new FactoryManagedFrame(getCIRF2000(conventions), new TIRF2000Provider(ignoreTidalEffects), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -755,21 +780,31 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get the CIRF2000 reference frame.
+     * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
      */
-    public static FactoryManagedFrame getCIRF2000() throws OrekitException {
+    public static FactoryManagedFrame getCIRF2000(final IERSConventions conventions) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Predefined factoryKey = Predefined.CIRF_2000;
+            final Predefined factoryKey;
+            switch (conventions) {
+            case IERS_2010 : factoryKey = Predefined.CIRF_2000_CONV_2010;
+            break;
+            case IERS_2003 : factoryKey = Predefined.CIRF_2000_CONV_2003;
+            break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
+            }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final TransformProvider interpolating =
-                        new InterpolatingTransformProvider(new CIRF2000Provider(), true, false,
+                        new InterpolatingTransformProvider(new CIRF2000Provider(conventions), true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            8, Constants.JULIAN_DAY / 6,
                                                            OrekitConfiguration.getCacheSlotsNumber(),

@@ -147,20 +147,31 @@ public class PoissonSeriesTest {
     }
 
     @Test
-    public void testTrueFiles() throws OrekitException {
-        String directory = "/assets/org/orekit/iers-conventions-2003/";
+    public void testTrue2003Files() throws OrekitException {
+        String directory = "/assets/org/orekit/IERS-conventions/";
         InputStream xStream =
-            getClass().getResourceAsStream(directory + "tab5.2a.txt");
-        Assert.assertNotNull(new PoissonSeries(xStream, 1.0, "tab5.2a.txt"));
+            getClass().getResourceAsStream(directory + "2003/tab5.2a.txt");
+        Assert.assertNotNull(new PoissonSeries(xStream, 1.0, "2003/tab5.2a.txt"));
         InputStream yStream =
-            getClass().getResourceAsStream(directory + "tab5.2b.txt");
-        Assert.assertNotNull(new PoissonSeries(yStream, 1.0, "tab5.2b.txt"));
+            getClass().getResourceAsStream(directory + "2003/tab5.2b.txt");
+        Assert.assertNotNull(new PoissonSeries(yStream, 1.0, "2003/tab5.2b.txt"));
         InputStream zStream =
-            getClass().getResourceAsStream(directory + "tab5.2c.txt");
-        Assert.assertNotNull(new PoissonSeries(zStream, 1.0, "tab5.2c.txt"));
-        InputStream gstStream =
-            getClass().getResourceAsStream(directory + "tab5.4.txt");
-        Assert.assertNotNull(new PoissonSeries(gstStream, 1.0, "tab5.4.txt"));
+            getClass().getResourceAsStream(directory + "2003/tab5.2c.txt");
+        Assert.assertNotNull(new PoissonSeries(zStream, 1.0, "2003/tab5.2c.txt"));
+    }
+
+    @Test
+    public void testTrue2010Files() throws OrekitException {
+        String directory = "/assets/org/orekit/IERS-conventions/";
+        InputStream xStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
+        Assert.assertNotNull(new PoissonSeries(xStream, 1.0, "2010/tab5.2a.txt"));
+        InputStream yStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
+        Assert.assertNotNull(new PoissonSeries(yStream, 1.0, "2010/tab5.2b.txt"));
+        InputStream zStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
+        Assert.assertNotNull(new PoissonSeries(zStream, 1.0, "2010/tab5.2d.txt"));
     }
 
 }

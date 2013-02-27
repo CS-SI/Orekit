@@ -80,7 +80,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
+        Transform itrfToEME2000 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
@@ -95,7 +95,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         c[0][0] = 0.0;
         c[2][0] = c20;
         double[][] s = new double[3][1];
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2008,
                                                                GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu, c, s)));
 
         // let the step handler perform the test
@@ -148,7 +148,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
+        Transform itrfToEME2000 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
@@ -157,7 +157,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2008,
                                                                GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
@@ -234,7 +234,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
 
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+        propagator.addForceModel(new CunninghamAttractionModel(itrf2008,
                                                                GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
@@ -250,7 +250,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
         propagator.removeForceModels();
 
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2008,
                                                              GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                              new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
@@ -397,7 +397,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                 oe.getSpecifier());
         }
         cunninghamModel.setSteps(1.0, 1.0e10);
-        checkParameterDerivative(state, cunninghamModel, name, 1.0e-4, 3.0e-12);
+        checkParameterDerivative(state, cunninghamModel, name, 1.0e-4, 5.0e-12);
 
     }
 
@@ -424,7 +424,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                                                             tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         CunninghamAttractionModel cuModel =
-                new CunninghamAttractionModel(ITRF2005, GravityFieldFactory.getUnnormalizedProvider(50, 50));
+                new CunninghamAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50));
         propagator.addForceModel(cuModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);
@@ -452,7 +452,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
     @Before
     public void setUp() {
-        ITRF2005   = null;
+        itrf2008   = null;
         propagator = null;
         Utils.setDataRoot("regular-data");
         try {
@@ -465,7 +465,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
 
-            ITRF2005 = FramesFactory.getITRF2005();
+            itrf2008 = FramesFactory.getITRF2008();
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
             };
@@ -483,7 +483,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
     @After
     public void tearDown() {
-        ITRF2005   = null;
+        itrf2008   = null;
         propagator = null;
     }
 
@@ -495,7 +495,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
     private double mu;
     private double ae;
 
-    private Frame   ITRF2005;
+    private Frame   itrf2008;
     private NumericalPropagator propagator;
 
 }

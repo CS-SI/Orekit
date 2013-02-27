@@ -201,7 +201,7 @@ public class SpacecraftStateTest {
                                                  TimeScalesFactory.getUTC());
         orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
-        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2005());
+        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2008());
         propagator =
             new EcksteinHechlerPropagator(orbit, attitudeLaw, mass,
                                           ae, mu, c20, c30, c40, c50, c60);

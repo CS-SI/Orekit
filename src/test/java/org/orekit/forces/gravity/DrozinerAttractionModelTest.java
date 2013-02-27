@@ -77,7 +77,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
+        Transform itrfToEME2000 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
@@ -89,7 +89,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, poleAligned, date, mu);
 
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2008,
                                                              GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } })));
@@ -143,7 +143,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
+        Transform itrfToEME2000 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
@@ -152,7 +152,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005,
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2008,
                                                              GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                              new double[][] {
                 { 1.0 }, { 0.0 }, { c20 }, { c30 },
@@ -235,12 +235,12 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, i , omega, OMEGA,
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(100));
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005, normalized));
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf2008, normalized));
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState hfOrb = propagator.propagate(date.shiftedBy(Constants.JULIAN_DAY));
 
         propagator.removeForceModels();
-        propagator.addForceModel(new DrozinerAttractionModel(ITRF2005, unnormalized));
+        propagator.addForceModel(new DrozinerAttractionModel(itrf2008, unnormalized));
                                                              
 
         propagator.setInitialState(new SpacecraftState(orbit));
@@ -269,7 +269,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
         final DrozinerAttractionModel drozinerModel =
                 new DrozinerAttractionModel(FramesFactory.getITRF2008(),
-                                              GravityFieldFactory.getUnnormalizedProvider(20, 20));
+                                            GravityFieldFactory.getUnnormalizedProvider(20, 20));
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
         try {
@@ -280,7 +280,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
                                 oe.getSpecifier());
         }
         drozinerModel.setSteps(1.0, 1.0e10);
-        checkParameterDerivative(state, drozinerModel, name, 1.0e-5, 8.0e-12);
+        checkParameterDerivative(state, drozinerModel, name, 1.0e-5, 2.0e-11);
 
     }
 
@@ -307,7 +307,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
                                                                             tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         DrozinerAttractionModel drModel =
-                new DrozinerAttractionModel(ITRF2005, GravityFieldFactory.getUnnormalizedProvider(50, 50));
+                new DrozinerAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50));
         propagator.addForceModel(drModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);
@@ -336,7 +336,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
     @Before
     public void setUp() {
-        ITRF2005   = null;
+        itrf2008   = null;
         propagator = null;
         Utils.setDataRoot("regular-data");
         try {
@@ -347,7 +347,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
             c40 =  1.61994537014e-6;
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
-            ITRF2005 = FramesFactory.getITRF2005();
+            itrf2008 = FramesFactory.getITRF2008();
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
             };
@@ -366,7 +366,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
     @After
     public void tearDown() {
-        ITRF2005   = null;
+        itrf2008   = null;
         propagator = null;
     }
 
@@ -378,7 +378,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
     private double c50;
     private double c60;
 
-    private Frame   ITRF2005;
+    private Frame   itrf2008;
     private NumericalPropagator propagator;
 
 }

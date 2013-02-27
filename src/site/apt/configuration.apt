@@ -233,27 +233,30 @@ Configuration
   download on orekit forge: {{https://www.orekit.org/forge/projects/orekit/files}}. Setting the
   <orekit.data.path> property to the location of this file on a local computer is enough to
   use Orekit efficiently. This zip archive contains Earth Orientation Parameters from 1962
-  to 2010 (both IAU-1980 and IAU-2000), JPL DE 406 ephemerides from 1962 to 2029 and UTC
-  TAI history from 1972-01-01 to 2009-12-31 and the Eigen 05C gravity field.
+  to 2012 (both IAU-1980 and IAU-2006/2000A), JPL DE 406 ephemerides from 1962 to 2029 and UTC
+  TAI history from 1972-01-01 to mid 2012 and the Eigen 05C gravity field.
 
 * Supported data types
 
   The data types supported by Orekit are described in the following table, where the <#>
   character represents any digit, <(m/p)> represents either the m character or the p
-  character and <*> represents any character sequence. The <[.gz]> part at the end of all
+  character and <*> represents any character sequence. The [_08] part in some EOP files
+  is due to the fact files retrieved fromhpiers.obspm.fr do not have _08 in their names whereas
+  files retrieved from data.iers.org do have _08 in their names. Despite this naming difference,
+  the files content is strictly identical. The <[.gz]> part at the end of all
   naming patterns means that an optional <.gz> suffix can be appended, in which case the
   data are considered to be compressed with gzip.
   
   Earth Orientation Parameters are provided by observatories in many different formats
-  (Bulletin A, several different formats of Bulletin B, EOPC 04, finals file combining
+  (Bulletin A, several different formats of Bulletin B, EOP 08 C04, finals file combining
   both Bulletin a and Bulletin B information ...). They are also provided for different
-  precession-nutation models (IAU-1980 and IAU-2000). Orekit supports all of these formats
+  precession-nutation models (IAU-1980 and IAU-2006/2000A). Orekit supports all of these formats
   except Bulletin A and supports both precession-nutation models. Note that as of early
   2010, IERS as ceased publishing the original Bulletin B files. The IAU-1980 version are
   however still published by Paris-Meudon observatory site using a new format. Two different
   naming patterns for Bulletin B are supported by default. Both the old Bulletin B format
   used up to 2009 and the new format used since 2010 are supported. The supported format
-  for <finals2000A> files for IAU-2000 and the finals files for IAU-1980 is the XML format.
+  for <finals2000A> files for IAU-2006/2000A and the finals files for IAU-1980 is the XML format.
 
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |      default naming pattern     |       format      |                   data type                  |                                     source                                  |
@@ -268,14 +271,14 @@ Configuration
 |             <or>                |                   |                model IAU 1980                |           {{http://hpiers.obspm.fr/eoppc/bul/bulb_new/}}                    |
 |      bulletinb-###.txt[.gz]     |                   |                                              | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID15.html}} |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|      eopc04_IAU2000.##[.gz]     |  IERS EOP 05 C04  |     yearly Earth Orientation Parameters      |             {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}                 |
-|                                 |                   |                model IAU 2000                | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID179.html}} |
+|    eopc04[_08]_IAU2000.##[.gz]  |  IERS EOP 08 C04  |     yearly Earth Orientation Parameters      |             {{http://hpiers.obspm.fr/eoppc/eop/eopc04/}}                 |
+|                                 |                   |                model IAU 2006/2000A          | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID211.html}} |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|          eopc04.##[.gz]         |  IERS EOP 05 C04  |     yearly Earth Orientation Parameters      |             {{http://hpiers.obspm.fr/eoppc/eop/eopc04_05/}}                 |
-|                                 |                   |                model IAU 1980                | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID178.html}} |
+|        eopc04[_08].##[.gz]      |  IERS EOP 08 C04  |     yearly Earth Orientation Parameters      |             {{http://hpiers.obspm.fr/eoppc/eop/eopc04/}}                 |
+|                                 |                   |                model IAU 1980                | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID212.html}} |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |      finals2000A.*.xml[.gz]     | IERS standard and |         Earth Orientation Parameters         | {{http://data.iers.org/products/13/1388/output/54461/finals2000A.daily.xml}}|
-|                                 |     daily EOP     |     (daily and final data) model IAU 2000    |   {{http://data.iers.org/products/9/1379/output/54354/finals2000A.all.xml}} |
+|                                 |     daily EOP     | (daily and final data) model IAU 2006/2000A  |   {{http://data.iers.org/products/9/1379/output/54354/finals2000A.all.xml}} |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |         finals.*.xml[.gz]       | IERS standard and |         Earth Orientation Parameters         |   {{http://data.iers.org/products/12/1386/output/54458/finals.daily.xml}}   |
 |                                 |     daily EOP     |     (daily and final data) model IAU 1980    |     {{http://data.iers.org/products/7/1378/output/54351/finals.all.xml}}    |

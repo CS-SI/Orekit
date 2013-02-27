@@ -27,7 +27,7 @@ Frames
 
   Each Frame is defined by a single <transform> linking it to one specific frame:
   its <parent frame>. This defining transform may be fixed or time-dependent, for
-  example the Earth related frame ITRF2005 depends on time due to precession/nutation,
+  example the Earth related frame ITRF2008 depends on time due to precession/nutation,
   Earth rotation and pole motion). The predefined root frame is the only one with no
   parent frames.
 
@@ -78,7 +78,7 @@ Frames
   The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
   <<<getICRF()>>>, <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF93()>>>, <<<getITRF97()>>>,
   <<<getITRF2000()>>>, <<<getITRF2005()>>>, <<<getITRF2008()>>>, <<<getMOD()>>>, <<<getTOD()>>>,
-  <<<getGTOD()>>>, <<<getITRFEquinox()>>>, <<<getTEME()>>> and <<<getVeis1950()>>>.
+  <<<getGTOD()>>>, <<<getITRFEquinox()>>>, <<<getTEME()>>>, <<<getTIRF2000()>>> and <<<getVeis1950()>>>.
   One of these reference frames has been arbitrarily chosen as the root of the frames tree:
   the <Geocentric Celestial Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
@@ -88,33 +88,39 @@ Frames
 
   There are also a number of planetary frames associated with the predefined celestial bodies.
 
-** IERS 2003 Conventions
+** IERS 2010 Conventions
 
   One predefined set corresponds to the frames from the
-  {{{ftp://tai.bipm.org/iers/conv2003/tn32.pdf}IERS conventions (2003)}}. 
+  {{{ftp://tai.bipm.org/iers/conv2010/tn36.pdf}IERS conventions (2010)}}. 
   This set defines the GCRF reference frame on the celestial (i.e. inertial) side,
   the ITRF (International Terrestrial Reference Frame) on the terrestrial side and several
   intermediate frames between them. Several versions of ITRF have been defined. Orekit
-  supports the last available version at time of writing (2010), which is ITRF 2008.
+  supports the last available version at time of writing (2012), which is ITRF 2008.
 
 *** New paradigm: CIO-based transformations
 
   There are several different ways to compute transforms between GCRF and ITRF. Orekit uses
-  the new paradigm promoted by IERS, i.e. it uses a single transform for both bias, precession
-  and nutation, computed by the IAU-2000 precession-nutation model and the Earth Orientation
-  Parameters (EOP) data published online by IERS. This single transform links the GCRF to a
-  Celestial Intermediate Reference Frame (CIRF). The X axis of this frame is the Celestial
-  Intermediate Origin (CIO) and its Z axis is the Celestial Intermediate Pole (CIP). The CIO is
-  <<<not linked to equinox any more>>>. From CIRF, the Earth Rotation Angle (including tidal
-  effects) is applied to define a Terrestrial Intermediate Reference Frame (TIRF) which is a
-  pseudo Earth fixed frame. A last transform adds the pole motion (both observed and published
-  in IERS frames and modeled effects including tidal effects) with respect to Earth crust to
-  reach the real Earth fixed frame: the International Terrestrial Reference Frame. There are
-  several realizations of the ITRS, each one being a different ITRF. These realizations are
-  linked together using Helmert transformations which are very small slightly time-dependent
-  transformations.
+  the new paradigm promoted by IERS and defined by IERS conventions 2010, i.e. it uses a
+  single transform for both bias, precession and nutation, computed by the IAU-2006 precession
+  and IAU-200A nutation model and the Earth Orientation Parameters (EOP) data published online
+  by IERS. This single transform links the GCRF to a Celestial Intermediate Reference Frame (CIRF).
+  The X axis of this frame is the Celestial Intermediate Origin (CIO) and its Z axis is the
+  Celestial Intermediate Pole (CIP). The CIO is <<<not linked to equinox any more>>>. From CIRF,
+  the Earth Rotation Angle (including tidal effects) is applied to define a Terrestrial
+  Intermediate Reference Frame (TIRF) which is a pseudo Earth fixed frame. A last transform adds
+  the pole motion (both observed and published in IERS frames and modeled effects including tidal
+  effects) with respect to Earth crust to reach the real Earth fixed frame: the International
+  Terrestrial Reference Frame. There are several realizations of the ITRS, each one being a
+  different ITRF. These realizations are linked together using Helmert transformations which are
+  very small slightly time-dependent transformations.
 
-  In summary, four frames are involved along this path: GCRF, CIRF, TIRF and ITRF.
+  Orekit also provides some frames from IERS conventions 2003 (CIRF and TIRF), but as IERS
+  does not provide anymore Earth Orientation Data to link these frames with Earth frames,
+  the ITRF frames for new paradigm are only linked to the 2010 conventions version of CIRF
+  and TIRF, not to the 2003 version.
+
+  In summary, four frames are involved along this path, with various models: GCRF, CIRF
+  (2003 and 2010), TIRF (2003 and 2010)and ITRF (93, 97, 2000, 2005 and 2008).
 
 *** Classical paradigm: equinox-based transformations
 
@@ -154,12 +160,13 @@ Frames
 
   In summary, Orekit implements the following frames:
 
-  * those related to the IERS 2003 convention: GCRF, CIRF 2000, TIRF 2000 with and without
+  * those related to the IERS 2010 convention: GCRF, CIRF 2000, TIRF 2000 with and without
     tidal effects, various ITRF with and without tidal effects,
 
   * those related to the older IERS conventions: MOD with and without EOP correction,
     TOD with and without EOP correction, GTOD with and without EOP correction,
-    equinox-based ITRF and Veis 1950.
+    equinox-based ITRF, Veis 1950, CIRF and TIRF using IERS conventions 2003 precession
+    nutation model.
 
 **** CIO-based transformations
 
@@ -168,10 +175,10 @@ Frames
     
 [../images/iers-tree.png]
 
-  Since Orekit uses the new paradigm for IERS frames, the IAU-2000 precession-nutation model
-  implemented is the complete model with thousands of luni-solar and planetary terms (1600
-  terms for the x components, 1275 components for the y component and 66 components for the s
-  correction). Recomputing all these terms each time the CIRF frame is used would be really
+  Since Orekit uses the new paradigm for IERS frames, the IAU-2006 precession and IAU-2000A
+  nutation model implemented are the complete model with thousands of luni-solar and planetary
+  terms (1600 terms for the x components, 1275 components for the y component and 66 components
+  for the s correction). Recomputing all these terms each time the CIRF frame is used would be really
   slow. Orekit therefore implements a caching/interpolation feature to improve efficiency. The shortest
   period for all the terms is about 5.5 days (it is related to one fifth of the moon revolution
   period). The pole motion is therefore quite smooth at the day or week scale. This implies that
@@ -204,8 +211,8 @@ Frames
   compatibility with the IERS 2003 convention. The gap between the two branches can reach a few
   meters, a rather crude accuracy for many space systems.
 
-  The same kind of optimization used for the IAU-2000 precession-nutation model are also applied for
-  the older IAU-1980 precession-nutation model, despite it is much simpler.
+  The same kind of optimization used for the IAU-2006 precession and IAU-2000A nutation model are
+  also applied for the older IAU-1980 precession-nutation model, despite it is much simpler.
 
 ** Solar system frames
 
@@ -226,7 +233,7 @@ Frames
   
   This frame model allows to define the frame associated to any position at 
   the surface of a body shape, which itself is referenced to a frame, typically
-  ITRF 2005 for Earth. The frame is defined with the following
+  ITRF 2008 for Earth. The frame is defined with the following
   canonical axes:
   
     ** zenith direction (Z) is defined as the normal to local horizontal plane;
@@ -251,12 +258,6 @@ Frames
   the central body. The (q, s, w) frame has its X axis along position (radial), its Z axis
   along orbital momentum and its Y axis completes the right-handed trihedra (it is roughly
   along velocity).
-
-** Spacecraft Frame
-  
-  A frame can also be bound to a spacecraft simply using the propagator which
-  computes at any time the spacecraft state, including its orbit and attitude.
-  The frame orientation depends on the underlying attitude law.
 
 * User defined frames
 

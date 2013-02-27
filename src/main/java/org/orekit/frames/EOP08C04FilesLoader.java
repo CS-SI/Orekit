@@ -28,27 +28,31 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
 
-/** Loader for EOP 05 C04 files.
- * <p>EOP 05 C04 files contain {@link TimeStampedEntry
- * Earth Orientation Parameters} consistent with ITRF2005 for one year periods.</p>
- * <p>The EOP 05 C04 files are recognized thanks to their base names, which
+/** Loader for EOP 08 C04 files.
+ * <p>EOP 08 C04 files contain {@link TimeStampedEntry
+ * Earth Orientation Parameters} consistent with ITRF2008 for one year periods.</p>
+ * <p>The EOP 08 C04 files are recognized thanks to their base names, which
  * must match one of the the patterns <code>eopc04_IAU2000.##</code> or
  * <code>eopc04.##</code> (or the same ending with <code>.gz</code> for
  * gzip-compressed files) where # stands for a digit character.</p>
  * <p>Between 2002 and 2007, another series of Earth Orientation Parameters was
- * in use: EOPC04 (without the 05). These parameters were consistent with the
- * previous ITRS realization: ITRF2000. These files are no longer provided by IERS
- * and only 6 files covering the range 2002 to 2007 were generated. The content of
- * these files is not the same as the content of the new files supported by this class,
- * however IERS uses the same file naming convention for both. If a file from the older
+ * in use: EOPC04 (without the 08). These parameters were consistent with the
+ * previous ITRS realization: ITRF2000.</p>
+ * <p>Between 2008 and 20011, another series of Earth Orientation Parameters was
+ * in use: EOP 05 C04 (instead of 08). These parameters were consistent with the
+ * previous ITRS realization: ITRF2005.</p>
+ * <p>These files are no longer provided by IERS and only the new files consistent
+ * with ITRF 2008 are available now (as of early 2013). The content of the older
+ * pre-2005 files is not the same as the content of the new files supported by this class,
+ * however IERS uses the same file naming convention for all of them. If a file from the older
  * series is found by this class, a parse error will be triggered. Users must remove
  * such files to avoid being lured in believing they do have EOP data.</p>
  * <p>Files containing old data (back to 1962) have been regenerated in the new file
  * format and are available at IERS web site: <a
- * href="http://hpiers.obspm.fr/iers/eop/eopc04_05/">Index of /iers/eop/eopc04_05</a>.</p>
+ * href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">Index of /eoppc/eop/eopc04</a>.</p>
  * @author Luc Maisonobe
  */
-class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
+class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
     /** Year field. */
     private static final int YEAR_FIELD = 0;
@@ -92,20 +96,20 @@ class EOP05C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
     /** History entries for IAU2000. */
     private EOP2000History history2000;
 
-    /** Build a loader for IERS EOP 05 C04 files.
+    /** Build a loader for IERS EOP 08 C04 files.
      * @param supportedNames regular expression for supported files names
      */
-    public EOP05C04FilesLoader(final String supportedNames) {
+    public EOP08C04FilesLoader(final String supportedNames) {
 
         this.supportedNames = supportedNames;
 
-        // The data lines in the EOP 05 C04 yearly data files have the following fixed form:
+        // The data lines in the EOP 08 C04 yearly data files have the following fixed form:
         // year month day MJD ...12 floating values fields in decimal format...
-        // 2000   1   1  51544   0.043157   0.377872   0.3555456   ...
-        // 2000   1   2  51545   0.043475   0.377738   0.3547352   ...
-        // 2000   1   3  51546   0.043627   0.377507   0.3538988   ...
+        // 2000   1   1  51544   0.043242   0.377915   0.3554777   ...
+        // 2000   1   2  51545   0.043515   0.377753   0.3546065   ...
+        // 2000   1   3  51546   0.043623   0.377452   0.3538444   ...
         // the corresponding fortran format is:
-        // 3(I4),I7,2(F11.6),2(F12.7),2(F12.6),2(F11.6),2(F12.7),2F12.6</p>
+        // 3(I4),I7,2(F11.6),2(F12.7),2(F12.6),2(F11.6),2(F12.7),2F12.6
         linePattern = Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
 
     }

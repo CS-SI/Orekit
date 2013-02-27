@@ -28,13 +28,13 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
 
-public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
+public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
 
     @Test
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
         EOP2000History history = new EOP2000History();
-        new EOP05C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
         Assert.assertTrue(getMaxGap(history) > 5);
     }
 
@@ -42,7 +42,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         EOP2000History history = new EOP2000History();
-        new EOP05C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
                             history.getStartDate());
     }
@@ -51,7 +51,7 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
         EOP2000History history = new EOP2000History();
-        new EOP05C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
         Assert.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
                             history.getEndDate());
     }
@@ -60,12 +60,12 @@ public class EOPC04FilesLoaderTest extends AbstractFilesLoaderTest {
     public void testContent() throws OrekitException, ParseException {
         setRoot("regular-data");
         EOP2000History history = new EOP2000History();
-        new EOP05C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
         AbsoluteDate date = new AbsoluteDate(2003, 1, 7, 12, 0, 0, TimeScalesFactory.getUTC());
-        Assert.assertEquals(        (-3 *  0.0006026 + 27 *  0.0007776 + 27 *  0.0008613 - 3 *  0.0008817) / 48,  history.getLOD(date), 1.0e-10);
-        Assert.assertEquals(        (-3 * -0.2913617 + 27 * -0.2920235 + 27 * -0.2928453 - 3 * -0.2937273) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
-        Assert.assertEquals(asToRad((-3 * -0.103535  + 27 * -0.106053  + 27 * -0.108629  - 3 * -0.111086)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
-        Assert.assertEquals(asToRad((-3 *  0.199584  + 27 *  0.201512  + 27 *  0.203603  - 3 *  0.205778)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
+        Assert.assertEquals(        (9 * ( 0.0007777 +  0.0008565) - ( 0.0005883 +  0.0008758)) / 16,  history.getLOD(date), 1.0e-10);
+        Assert.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);
+        Assert.assertEquals(asToRad((9 * (-0.105933  + -0.108553)  - (-0.103513  + -0.111054))  / 16), history.getPoleCorrection(date).getXp(), 1.0e-10);
+        Assert.assertEquals(asToRad((9 * ( 0.201451  +  0.203596)  - ( 0.199545  +  0.205660))  / 16), history.getPoleCorrection(date).getYp(), 1.0e-10);
     }
 
     private double asToRad(double mas) {

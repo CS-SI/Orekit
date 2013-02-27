@@ -371,10 +371,10 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()));
+        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2008()));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
+        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2008());
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         Assert.assertEquals(0, pv.getPosition().getZ(), 2.0e-6);
@@ -387,7 +387,7 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()) {
+        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2008()) {
             private static final long serialVersionUID = -1486037976198573520L;
             public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
                 return Action.CONTINUE;
@@ -407,7 +407,7 @@ public class KeplerianPropagatorTest {
         propagator.addEventDetector(new ApsideDetector(orbit));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
+        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2008());
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
         Assert.assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 1.0e-6);
@@ -420,7 +420,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         BodyShape bodyShape =
-            new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, FramesFactory.getITRF2005());
+            new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, FramesFactory.getITRF2008());
         AltitudeDetector detector =
             new AltitudeDetector(0.05 * orbit.getKeplerianPeriod(),
                                  1500000, bodyShape);
@@ -455,7 +455,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final OneAxisEllipsoid earthShape =
-            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF2005());
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF2008());
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         propagator.addEventDetector(new ElevationDetector(60, 0.09, topo));

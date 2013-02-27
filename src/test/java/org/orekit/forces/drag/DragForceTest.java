@@ -65,7 +65,7 @@ public class DragForceTest extends AbstractForceModelTest {
                                                                       FramesFactory.getITRF2008())),
                               new SphericalSpacecraft(2.5, 1.2, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 4.0e-13);
+        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
 
     }
 
@@ -123,7 +123,7 @@ public class DragForceTest extends AbstractForceModelTest {
                               new BoxAndSolarArraySpacecraft(1.5, 2.0, 1.8, CelestialBodyFactory.getSun(), 20.0,
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 5.0e-13);
+        checkParameterDerivative(state, forceModel, DragSensitive.DRAG_COEFFICIENT, 1.0e-4, 2.0e-12);
 
     }
 

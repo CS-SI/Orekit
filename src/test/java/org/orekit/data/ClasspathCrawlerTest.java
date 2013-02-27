@@ -50,9 +50,9 @@ public class ClasspathCrawlerTest {
     public void testCompressed() throws OrekitException {
         CountingLoader crawler = new CountingLoader();
         new ClasspathCrawler("compressed-data/UTC-TAI.history.gz",
-                             "compressed-data/eopc04_IAU2000.00.gz",
-                             "compressed-data/eopc04_IAU2000.02.gz").feed(Pattern.compile(".*/eopc04.*"),
-                                                                          crawler);
+                             "compressed-data/eopc04_08_IAU2000.00.gz",
+                             "compressed-data/eopc04_08_IAU2000.02.gz").feed(Pattern.compile(".*/eopc04.*"),
+                                                                             crawler);
         Assert.assertEquals(2, crawler.getCount());
     }
 

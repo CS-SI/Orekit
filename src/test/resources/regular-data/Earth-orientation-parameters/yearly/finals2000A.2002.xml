@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Finals xmlns="http://www.iers.org/2003/schema/eop" type="IAU2000A">
+<Finals xmlns="http://www.iers.org/2003/schema/iers" type="IAU2000A">
 <data>
     <EOPSet lineID="3654">
       <date>2002-01-01</date>
       <MJD>52275</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.177035</X>
+          <X>-0.177007</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.294147</Y>
+          <Y>0.294102</Y>
           <sigmaY>0.000069</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1158068</UT1_UTC>
+          <UT1_UTC>-0.1158059</UT1_UTC>
           <sigmaUT1_UTC>0.0000175</sigmaUT1_UTC>
           <LOD>0.8108</LOD>
           <sigmaLOD>0.0060</sigmaLOD>
@@ -41,13 +41,13 @@
       <MJD>52276</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.177514</X>
+          <X>-0.177486</X>
           <sigmaX>0.000033</sigmaX>
-          <Y>0.297838</Y>
+          <Y>0.297793</Y>
           <sigmaY>0.000080</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1166724</UT1_UTC>
+          <UT1_UTC>-0.1166715</UT1_UTC>
           <sigmaUT1_UTC>0.0000098</sigmaUT1_UTC>
           <LOD>0.9385</LOD>
           <sigmaLOD>0.0103</sigmaLOD>
@@ -76,13 +76,13 @@
       <MJD>52277</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.178355</X>
+          <X>-0.178327</X>
           <sigmaX>0.000037</sigmaX>
-          <Y>0.301036</Y>
+          <Y>0.300991</Y>
           <sigmaY>0.000073</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1177016</UT1_UTC>
+          <UT1_UTC>-0.1177007</UT1_UTC>
           <sigmaUT1_UTC>0.0000108</sigmaUT1_UTC>
           <LOD>1.1198</LOD>
           <sigmaLOD>0.0070</sigmaLOD>
@@ -111,13 +111,13 @@
       <MJD>52278</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.179120</X>
+          <X>-0.179092</X>
           <sigmaX>0.000042</sigmaX>
-          <Y>0.303811</Y>
+          <Y>0.303766</Y>
           <sigmaY>0.000061</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1189017</UT1_UTC>
+          <UT1_UTC>-0.1189008</UT1_UTC>
           <sigmaUT1_UTC>0.0000099</sigmaUT1_UTC>
           <LOD>1.2704</LOD>
           <sigmaLOD>0.0072</sigmaLOD>
@@ -146,13 +146,13 @@
       <MJD>52279</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.179551</X>
+          <X>-0.179523</X>
           <sigmaX>0.000046</sigmaX>
-          <Y>0.306687</Y>
+          <Y>0.306642</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1202144</UT1_UTC>
+          <UT1_UTC>-0.1202135</UT1_UTC>
           <sigmaUT1_UTC>0.0000094</sigmaUT1_UTC>
           <LOD>1.3372</LOD>
           <sigmaLOD>0.0062</sigmaLOD>
@@ -181,13 +181,13 @@
       <MJD>52280</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.180039</X>
+          <X>-0.180011</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.309737</Y>
+          <Y>0.309692</Y>
           <sigmaY>0.000089</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1215504</UT1_UTC>
+          <UT1_UTC>-0.1215495</UT1_UTC>
           <sigmaUT1_UTC>0.0000074</sigmaUT1_UTC>
           <LOD>1.3270</LOD>
           <sigmaLOD>0.0061</sigmaLOD>
@@ -216,13 +216,13 @@
       <MJD>52281</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.180694</X>
+          <X>-0.180666</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.312933</Y>
+          <Y>0.312888</Y>
           <sigmaY>0.000088</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1228396</UT1_UTC>
+          <UT1_UTC>-0.1228387</UT1_UTC>
           <sigmaUT1_UTC>0.0000077</sigmaUT1_UTC>
           <LOD>1.2304</LOD>
           <sigmaLOD>0.0057</sigmaLOD>
@@ -251,13 +251,13 @@
       <MJD>52282</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.181838</X>
+          <X>-0.181810</X>
           <sigmaX>0.000065</sigmaX>
-          <Y>0.315539</Y>
+          <Y>0.315494</Y>
           <sigmaY>0.000071</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1239641</UT1_UTC>
+          <UT1_UTC>-0.1239632</UT1_UTC>
           <sigmaUT1_UTC>0.0000088</sigmaUT1_UTC>
           <LOD>0.9923</LOD>
           <sigmaLOD>0.0057</sigmaLOD>
@@ -286,13 +286,13 @@
       <MJD>52283</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.182680</X>
+          <X>-0.182652</X>
           <sigmaX>0.000094</sigmaX>
-          <Y>0.318395</Y>
+          <Y>0.318350</Y>
           <sigmaY>0.000076</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1248098</UT1_UTC>
+          <UT1_UTC>-0.1248089</UT1_UTC>
           <sigmaUT1_UTC>0.0000085</sigmaUT1_UTC>
           <LOD>0.7108</LOD>
           <sigmaLOD>0.0061</sigmaLOD>
@@ -321,13 +321,13 @@
       <MJD>52284</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.183053</X>
+          <X>-0.183025</X>
           <sigmaX>0.000088</sigmaX>
-          <Y>0.321378</Y>
+          <Y>0.321333</Y>
           <sigmaY>0.000076</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1254043</UT1_UTC>
+          <UT1_UTC>-0.1254034</UT1_UTC>
           <sigmaUT1_UTC>0.0000084</sigmaUT1_UTC>
           <LOD>0.4850</LOD>
           <sigmaLOD>0.0062</sigmaLOD>
@@ -356,13 +356,13 @@
       <MJD>52285</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.183143</X>
+          <X>-0.183115</X>
           <sigmaX>0.000081</sigmaX>
-          <Y>0.324428</Y>
+          <Y>0.324383</Y>
           <sigmaY>0.000082</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1257919</UT1_UTC>
+          <UT1_UTC>-0.1257910</UT1_UTC>
           <sigmaUT1_UTC>0.0000089</sigmaUT1_UTC>
           <LOD>0.2955</LOD>
           <sigmaLOD>0.0071</sigmaLOD>
@@ -391,13 +391,13 @@
       <MJD>52286</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.182625</X>
+          <X>-0.182597</X>
           <sigmaX>0.000079</sigmaX>
-          <Y>0.327596</Y>
+          <Y>0.327551</Y>
           <sigmaY>0.000036</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1260020</UT1_UTC>
+          <UT1_UTC>-0.1260011</UT1_UTC>
           <sigmaUT1_UTC>0.0000114</sigmaUT1_UTC>
           <LOD>0.1261</LOD>
           <sigmaLOD>0.0060</sigmaLOD>
@@ -426,13 +426,13 @@
       <MJD>52287</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.182309</X>
+          <X>-0.182281</X>
           <sigmaX>0.000085</sigmaX>
-          <Y>0.330692</Y>
+          <Y>0.330647</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1260621</UT1_UTC>
+          <UT1_UTC>-0.1260612</UT1_UTC>
           <sigmaUT1_UTC>0.0000081</sigmaUT1_UTC>
           <LOD>0.0106</LOD>
           <sigmaLOD>0.0071</sigmaLOD>
@@ -461,13 +461,13 @@
       <MJD>52288</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.181754</X>
+          <X>-0.181726</X>
           <sigmaX>0.000084</sigmaX>
-          <Y>0.333794</Y>
+          <Y>0.333749</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1260522</UT1_UTC>
+          <UT1_UTC>-0.1260513</UT1_UTC>
           <sigmaUT1_UTC>0.0000084</sigmaUT1_UTC>
           <LOD>-0.0178</LOD>
           <sigmaLOD>0.0052</sigmaLOD>
@@ -496,13 +496,13 @@
       <MJD>52289</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.181324</X>
+          <X>-0.181296</X>
           <sigmaX>0.000047</sigmaX>
-          <Y>0.337094</Y>
+          <Y>0.337049</Y>
           <sigmaY>0.000079</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1260561</UT1_UTC>
+          <UT1_UTC>-0.1260552</UT1_UTC>
           <sigmaUT1_UTC>0.0000066</sigmaUT1_UTC>
           <LOD>0.0426</LOD>
           <sigmaLOD>0.0047</sigmaLOD>
@@ -531,13 +531,13 @@
       <MJD>52290</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.180685</X>
+          <X>-0.180657</X>
           <sigmaX>0.000048</sigmaX>
-          <Y>0.340042</Y>
+          <Y>0.339997</Y>
           <sigmaY>0.000072</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1261458</UT1_UTC>
+          <UT1_UTC>-0.1261449</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>0.1280</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -566,13 +566,13 @@
       <MJD>52291</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.179818</X>
+          <X>-0.179790</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.343171</Y>
+          <Y>0.343126</Y>
           <sigmaY>0.000074</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1263098</UT1_UTC>
+          <UT1_UTC>-0.1263089</UT1_UTC>
           <sigmaUT1_UTC>0.0000041</sigmaUT1_UTC>
           <LOD>0.2064</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -601,13 +601,13 @@
       <MJD>52292</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.179254</X>
+          <X>-0.179226</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.346306</Y>
+          <Y>0.346261</Y>
           <sigmaY>0.000082</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1265818</UT1_UTC>
+          <UT1_UTC>-0.1265809</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>0.3543</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -636,13 +636,13 @@
       <MJD>52293</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.178775</X>
+          <X>-0.178747</X>
           <sigmaX>0.000032</sigmaX>
-          <Y>0.349402</Y>
+          <Y>0.349357</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1270147</UT1_UTC>
+          <UT1_UTC>-0.1270138</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>0.4911</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -671,13 +671,13 @@
       <MJD>52294</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.178439</X>
+          <X>-0.178411</X>
           <sigmaX>0.000029</sigmaX>
-          <Y>0.352432</Y>
+          <Y>0.352387</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1275382</UT1_UTC>
+          <UT1_UTC>-0.1275373</UT1_UTC>
           <sigmaUT1_UTC>0.0000037</sigmaUT1_UTC>
           <LOD>0.5505</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -706,13 +706,13 @@
       <MJD>52295</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.178194</X>
+          <X>-0.178166</X>
           <sigmaX>0.000098</sigmaX>
-          <Y>0.355480</Y>
+          <Y>0.355435</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1281077</UT1_UTC>
+          <UT1_UTC>-0.1281068</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>0.5861</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -741,13 +741,13 @@
       <MJD>52296</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.177736</X>
+          <X>-0.177708</X>
           <sigmaX>0.000100</sigmaX>
-          <Y>0.358671</Y>
+          <Y>0.358626</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1287045</UT1_UTC>
+          <UT1_UTC>-0.1287036</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.6041</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -776,13 +776,13 @@
       <MJD>52297</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.177139</X>
+          <X>-0.177111</X>
           <sigmaX>0.000106</sigmaX>
-          <Y>0.362094</Y>
+          <Y>0.362049</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1293045</UT1_UTC>
+          <UT1_UTC>-0.1293036</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.5879</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -811,13 +811,13 @@
       <MJD>52298</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.176598</X>
+          <X>-0.176570</X>
           <sigmaX>0.000107</sigmaX>
-          <Y>0.365514</Y>
+          <Y>0.365469</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1298583</UT1_UTC>
+          <UT1_UTC>-0.1298574</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.5058</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -846,13 +846,13 @@
       <MJD>52299</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.175487</X>
+          <X>-0.175459</X>
           <sigmaX>0.000109</sigmaX>
-          <Y>0.368924</Y>
+          <Y>0.368879</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1303020</UT1_UTC>
+          <UT1_UTC>-0.1303011</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.3813</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -881,13 +881,13 @@
       <MJD>52300</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.175017</X>
+          <X>-0.174989</X>
           <sigmaX>0.000119</sigmaX>
-          <Y>0.372341</Y>
+          <Y>0.372296</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1306364</UT1_UTC>
+          <UT1_UTC>-0.1306355</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.3033</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -916,13 +916,13 @@
       <MJD>52301</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.174335</X>
+          <X>-0.174307</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.375637</Y>
+          <Y>0.375592</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1309428</UT1_UTC>
+          <UT1_UTC>-0.1309419</UT1_UTC>
           <sigmaUT1_UTC>0.0000051</sigmaUT1_UTC>
           <LOD>0.3277</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -951,13 +951,13 @@
       <MJD>52302</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.173617</X>
+          <X>-0.173589</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.378956</Y>
+          <Y>0.378911</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1313300</UT1_UTC>
+          <UT1_UTC>-0.1313291</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>0.4665</LOD>
           <sigmaLOD>0.0044</sigmaLOD>
@@ -986,13 +986,13 @@
       <MJD>52303</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.172626</X>
+          <X>-0.172598</X>
           <sigmaX>0.000062</sigmaX>
-          <Y>0.382282</Y>
+          <Y>0.382237</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1319053</UT1_UTC>
+          <UT1_UTC>-0.1319044</UT1_UTC>
           <sigmaUT1_UTC>0.0000071</sigmaUT1_UTC>
           <LOD>0.6939</LOD>
           <sigmaLOD>0.0046</sigmaLOD>
@@ -1021,13 +1021,13 @@
       <MJD>52304</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.172408</X>
+          <X>-0.172380</X>
           <sigmaX>0.000111</sigmaX>
-          <Y>0.385292</Y>
+          <Y>0.385247</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1327409</UT1_UTC>
+          <UT1_UTC>-0.1327400</UT1_UTC>
           <sigmaUT1_UTC>0.0000073</sigmaUT1_UTC>
           <LOD>0.9908</LOD>
           <sigmaLOD>0.0051</sigmaLOD>
@@ -1056,13 +1056,13 @@
       <MJD>52305</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.170738</X>
+          <X>-0.170710</X>
           <sigmaX>0.000113</sigmaX>
-          <Y>0.388536</Y>
+          <Y>0.388491</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1338707</UT1_UTC>
+          <UT1_UTC>-0.1338698</UT1_UTC>
           <sigmaUT1_UTC>0.0000074</sigmaUT1_UTC>
           <LOD>1.2392</LOD>
           <sigmaLOD>0.0052</sigmaLOD>
@@ -1091,13 +1091,13 @@
       <MJD>52306</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.168894</X>
+          <X>-0.168866</X>
           <sigmaX>0.000103</sigmaX>
-          <Y>0.391772</Y>
+          <Y>0.391727</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1351889</UT1_UTC>
+          <UT1_UTC>-0.1351880</UT1_UTC>
           <sigmaUT1_UTC>0.0000073</sigmaUT1_UTC>
           <LOD>1.3964</LOD>
           <sigmaLOD>0.0047</sigmaLOD>
@@ -1126,13 +1126,13 @@
       <MJD>52307</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.167496</X>
+          <X>-0.167468</X>
           <sigmaX>0.000110</sigmaX>
-          <Y>0.394965</Y>
+          <Y>0.394920</Y>
           <sigmaY>0.000066</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1366472</UT1_UTC>
+          <UT1_UTC>-0.1366463</UT1_UTC>
           <sigmaUT1_UTC>0.0000057</sigmaUT1_UTC>
           <LOD>1.5046</LOD>
           <sigmaLOD>0.0044</sigmaLOD>
@@ -1161,13 +1161,13 @@
       <MJD>52308</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.166444</X>
+          <X>-0.166416</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.398123</Y>
+          <Y>0.398078</Y>
           <sigmaY>0.000101</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1381470</UT1_UTC>
+          <UT1_UTC>-0.1381461</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>1.4595</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -1196,13 +1196,13 @@
       <MJD>52309</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.165587</X>
+          <X>-0.165559</X>
           <sigmaX>0.000064</sigmaX>
-          <Y>0.401119</Y>
+          <Y>0.401074</Y>
           <sigmaY>0.000101</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1395244</UT1_UTC>
+          <UT1_UTC>-0.1395235</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>1.2891</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -1231,13 +1231,13 @@
       <MJD>52310</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.164237</X>
+          <X>-0.164209</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.403375</Y>
+          <Y>0.403330</Y>
           <sigmaY>0.000104</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1407200</UT1_UTC>
+          <UT1_UTC>-0.1407191</UT1_UTC>
           <sigmaUT1_UTC>0.0000048</sigmaUT1_UTC>
           <LOD>1.1032</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -1266,13 +1266,13 @@
       <MJD>52311</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.163295</X>
+          <X>-0.163267</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.406672</Y>
+          <Y>0.406627</Y>
           <sigmaY>0.000100</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1417122</UT1_UTC>
+          <UT1_UTC>-0.1417113</UT1_UTC>
           <sigmaUT1_UTC>0.0000046</sigmaUT1_UTC>
           <LOD>0.8617</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -1301,13 +1301,13 @@
       <MJD>52312</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.162303</X>
+          <X>-0.162275</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.409590</Y>
+          <Y>0.409545</Y>
           <sigmaY>0.000101</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1424507</UT1_UTC>
+          <UT1_UTC>-0.1424498</UT1_UTC>
           <sigmaUT1_UTC>0.0000045</sigmaUT1_UTC>
           <LOD>0.6423</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -1336,13 +1336,13 @@
       <MJD>52313</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.161041</X>
+          <X>-0.161013</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.412717</Y>
+          <Y>0.412672</Y>
           <sigmaY>0.000100</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1430187</UT1_UTC>
+          <UT1_UTC>-0.1430178</UT1_UTC>
           <sigmaUT1_UTC>0.0000043</sigmaUT1_UTC>
           <LOD>0.4886</LOD>
           <sigmaLOD>0.0044</sigmaLOD>
@@ -1371,13 +1371,13 @@
       <MJD>52314</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.159861</X>
+          <X>-0.159833</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.415620</Y>
+          <Y>0.415575</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1434429</UT1_UTC>
+          <UT1_UTC>-0.1434420</UT1_UTC>
           <sigmaUT1_UTC>0.0000075</sigmaUT1_UTC>
           <LOD>0.3800</LOD>
           <sigmaLOD>0.0047</sigmaLOD>
@@ -1406,13 +1406,13 @@
       <MJD>52315</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.157962</X>
+          <X>-0.157934</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.419007</Y>
+          <Y>0.418962</Y>
           <sigmaY>0.000106</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1438180</UT1_UTC>
+          <UT1_UTC>-0.1438171</UT1_UTC>
           <sigmaUT1_UTC>0.0000084</sigmaUT1_UTC>
           <LOD>0.3895</LOD>
           <sigmaLOD>0.0054</sigmaLOD>
@@ -1441,13 +1441,13 @@
       <MJD>52316</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.156089</X>
+          <X>-0.156061</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.422638</Y>
+          <Y>0.422593</Y>
           <sigmaY>0.000119</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1442522</UT1_UTC>
+          <UT1_UTC>-0.1442513</UT1_UTC>
           <sigmaUT1_UTC>0.0000077</sigmaUT1_UTC>
           <LOD>0.4900</LOD>
           <sigmaLOD>0.0058</sigmaLOD>
@@ -1476,13 +1476,13 @@
       <MJD>52317</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.154350</X>
+          <X>-0.154322</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.425859</Y>
+          <Y>0.425814</Y>
           <sigmaY>0.000119</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1447960</UT1_UTC>
+          <UT1_UTC>-0.1447951</UT1_UTC>
           <sigmaUT1_UTC>0.0000079</sigmaUT1_UTC>
           <LOD>0.5844</LOD>
           <sigmaLOD>0.0052</sigmaLOD>
@@ -1511,13 +1511,13 @@
       <MJD>52318</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.153367</X>
+          <X>-0.153339</X>
           <sigmaX>0.000073</sigmaX>
-          <Y>0.428932</Y>
+          <Y>0.428887</Y>
           <sigmaY>0.000121</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1454194</UT1_UTC>
+          <UT1_UTC>-0.1454185</UT1_UTC>
           <sigmaUT1_UTC>0.0000071</sigmaUT1_UTC>
           <LOD>0.6738</LOD>
           <sigmaLOD>0.0052</sigmaLOD>
@@ -1546,13 +1546,13 @@
       <MJD>52319</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.152490</X>
+          <X>-0.152462</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.431939</Y>
+          <Y>0.431894</Y>
           <sigmaY>0.000120</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1461508</UT1_UTC>
+          <UT1_UTC>-0.1461499</UT1_UTC>
           <sigmaUT1_UTC>0.0000069</sigmaUT1_UTC>
           <LOD>0.7846</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -1581,13 +1581,13 @@
       <MJD>52320</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.151450</X>
+          <X>-0.151422</X>
           <sigmaX>0.000074</sigmaX>
-          <Y>0.434659</Y>
+          <Y>0.434614</Y>
           <sigmaY>0.000119</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1469834</UT1_UTC>
+          <UT1_UTC>-0.1469825</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>0.8798</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -1616,13 +1616,13 @@
       <MJD>52321</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.150108</X>
+          <X>-0.150079</X>
           <sigmaX>0.000069</sigmaX>
-          <Y>0.437304</Y>
+          <Y>0.437259</Y>
           <sigmaY>0.000077</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1479140</UT1_UTC>
+          <UT1_UTC>-0.1479131</UT1_UTC>
           <sigmaUT1_UTC>0.0000033</sigmaUT1_UTC>
           <LOD>0.9858</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -1651,13 +1651,13 @@
       <MJD>52322</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.148504</X>
+          <X>-0.148475</X>
           <sigmaX>0.000065</sigmaX>
-          <Y>0.439956</Y>
+          <Y>0.439911</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1489451</UT1_UTC>
+          <UT1_UTC>-0.1489442</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>1.0621</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -1686,13 +1686,13 @@
       <MJD>52323</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.146837</X>
+          <X>-0.146808</X>
           <sigmaX>0.000112</sigmaX>
-          <Y>0.442667</Y>
+          <Y>0.442622</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1500119</UT1_UTC>
+          <UT1_UTC>-0.1500110</UT1_UTC>
           <sigmaUT1_UTC>0.0000054</sigmaUT1_UTC>
           <LOD>1.0593</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -1721,13 +1721,13 @@
       <MJD>52324</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.145267</X>
+          <X>-0.145238</X>
           <sigmaX>0.000100</sigmaX>
-          <Y>0.445482</Y>
+          <Y>0.445437</Y>
           <sigmaY>0.000077</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1510444</UT1_UTC>
+          <UT1_UTC>-0.1510435</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>0.9984</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -1756,13 +1756,13 @@
       <MJD>52325</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.143927</X>
+          <X>-0.143898</X>
           <sigmaX>0.000104</sigmaX>
-          <Y>0.448030</Y>
+          <Y>0.447985</Y>
           <sigmaY>0.000077</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1520031</UT1_UTC>
+          <UT1_UTC>-0.1520022</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>0.9206</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -1791,13 +1791,13 @@
       <MJD>52326</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.142036</X>
+          <X>-0.142007</X>
           <sigmaX>0.000105</sigmaX>
-          <Y>0.451070</Y>
+          <Y>0.451025</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1528790</UT1_UTC>
+          <UT1_UTC>-0.1528781</UT1_UTC>
           <sigmaUT1_UTC>0.0000061</sigmaUT1_UTC>
           <LOD>0.8229</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -1826,13 +1826,13 @@
       <MJD>52327</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.140255</X>
+          <X>-0.140226</X>
           <sigmaX>0.000105</sigmaX>
-          <Y>0.454129</Y>
+          <Y>0.454084</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1536498</UT1_UTC>
+          <UT1_UTC>-0.1536489</UT1_UTC>
           <sigmaUT1_UTC>0.0000061</sigmaUT1_UTC>
           <LOD>0.7279</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -1861,13 +1861,13 @@
       <MJD>52328</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.138489</X>
+          <X>-0.138460</X>
           <sigmaX>0.000104</sigmaX>
-          <Y>0.457440</Y>
+          <Y>0.457395</Y>
           <sigmaY>0.000070</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1543445</UT1_UTC>
+          <UT1_UTC>-0.1543436</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>0.6621</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -1896,13 +1896,13 @@
       <MJD>52329</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.136584</X>
+          <X>-0.136555</X>
           <sigmaX>0.000139</sigmaX>
-          <Y>0.460822</Y>
+          <Y>0.460777</Y>
           <sigmaY>0.000023</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1550031</UT1_UTC>
+          <UT1_UTC>-0.1550022</UT1_UTC>
           <sigmaUT1_UTC>0.0000047</sigmaUT1_UTC>
           <LOD>0.6835</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -1931,13 +1931,13 @@
       <MJD>52330</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.134114</X>
+          <X>-0.134085</X>
           <sigmaX>0.000156</sigmaX>
-          <Y>0.463989</Y>
+          <Y>0.463944</Y>
           <sigmaY>0.000021</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1557576</UT1_UTC>
+          <UT1_UTC>-0.1557567</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>0.8433</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -1966,13 +1966,13 @@
       <MJD>52331</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.131095</X>
+          <X>-0.131066</X>
           <sigmaX>0.000147</sigmaX>
-          <Y>0.467126</Y>
+          <Y>0.467081</Y>
           <sigmaY>0.000032</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1567185</UT1_UTC>
+          <UT1_UTC>-0.1567176</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>1.0894</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -2001,13 +2001,13 @@
       <MJD>52332</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.128431</X>
+          <X>-0.128402</X>
           <sigmaX>0.000142</sigmaX>
-          <Y>0.470423</Y>
+          <Y>0.470378</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1579459</UT1_UTC>
+          <UT1_UTC>-0.1579450</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>1.3639</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -2036,13 +2036,13 @@
       <MJD>52333</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.125996</X>
+          <X>-0.125967</X>
           <sigmaX>0.000133</sigmaX>
-          <Y>0.473681</Y>
+          <Y>0.473636</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1594171</UT1_UTC>
+          <UT1_UTC>-0.1594162</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>1.5508</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -2071,13 +2071,13 @@
       <MJD>52334</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.123493</X>
+          <X>-0.123464</X>
           <sigmaX>0.000133</sigmaX>
-          <Y>0.476647</Y>
+          <Y>0.476602</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1610162</UT1_UTC>
+          <UT1_UTC>-0.1610153</UT1_UTC>
           <sigmaUT1_UTC>0.0000039</sigmaUT1_UTC>
           <LOD>1.6439</LOD>
           <sigmaLOD>0.0026</sigmaLOD>
@@ -2106,13 +2106,13 @@
       <MJD>52335</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.120793</X>
+          <X>-0.120764</X>
           <sigmaX>0.000034</sigmaX>
-          <Y>0.479977</Y>
+          <Y>0.479932</Y>
           <sigmaY>0.000055</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1626794</UT1_UTC>
+          <UT1_UTC>-0.1626785</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>1.6606</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -2141,13 +2141,13 @@
       <MJD>52336</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.118557</X>
+          <X>-0.118528</X>
           <sigmaX>0.000073</sigmaX>
-          <Y>0.483131</Y>
+          <Y>0.483086</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1642842</UT1_UTC>
+          <UT1_UTC>-0.1642833</UT1_UTC>
           <sigmaUT1_UTC>0.0000028</sigmaUT1_UTC>
           <LOD>1.5177</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -2176,13 +2176,13 @@
       <MJD>52337</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.116682</X>
+          <X>-0.116653</X>
           <sigmaX>0.000087</sigmaX>
-          <Y>0.486128</Y>
+          <Y>0.486083</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1656745</UT1_UTC>
+          <UT1_UTC>-0.1656736</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>1.2538</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -2211,13 +2211,13 @@
       <MJD>52338</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.114422</X>
+          <X>-0.114393</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.489122</Y>
+          <Y>0.489077</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1667954</UT1_UTC>
+          <UT1_UTC>-0.1667945</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>1.0006</LOD>
           <sigmaLOD>0.0018</sigmaLOD>
@@ -2246,13 +2246,13 @@
       <MJD>52339</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.111621</X>
+          <X>-0.111592</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.491901</Y>
+          <Y>0.491856</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1676955</UT1_UTC>
+          <UT1_UTC>-0.1676946</UT1_UTC>
           <sigmaUT1_UTC>0.0000027</sigmaUT1_UTC>
           <LOD>0.8068</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -2281,13 +2281,13 @@
       <MJD>52340</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.108741</X>
+          <X>-0.108712</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.494616</Y>
+          <Y>0.494571</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1684235</UT1_UTC>
+          <UT1_UTC>-0.1684226</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>0.6566</LOD>
           <sigmaLOD>0.0018</sigmaLOD>
@@ -2316,13 +2316,13 @@
       <MJD>52341</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.105559</X>
+          <X>-0.105530</X>
           <sigmaX>0.000074</sigmaX>
-          <Y>0.497270</Y>
+          <Y>0.497225</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1690302</UT1_UTC>
+          <UT1_UTC>-0.1690293</UT1_UTC>
           <sigmaUT1_UTC>0.0000023</sigmaUT1_UTC>
           <LOD>0.5710</LOD>
           <sigmaLOD>0.0018</sigmaLOD>
@@ -2351,13 +2351,13 @@
       <MJD>52342</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.102317</X>
+          <X>-0.102288</X>
           <sigmaX>0.000069</sigmaX>
-          <Y>0.499929</Y>
+          <Y>0.499884</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1695814</UT1_UTC>
+          <UT1_UTC>-0.1695805</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>0.5331</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -2386,13 +2386,13 @@
       <MJD>52343</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.099260</X>
+          <X>-0.099231</X>
           <sigmaX>0.000088</sigmaX>
-          <Y>0.502654</Y>
+          <Y>0.502609</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1701178</UT1_UTC>
+          <UT1_UTC>-0.1701169</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.5596</LOD>
           <sigmaLOD>0.0020</sigmaLOD>
@@ -2421,13 +2421,13 @@
       <MJD>52344</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.096927</X>
+          <X>-0.096898</X>
           <sigmaX>0.000097</sigmaX>
-          <Y>0.505361</Y>
+          <Y>0.505316</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1707296</UT1_UTC>
+          <UT1_UTC>-0.1707287</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.6733</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -2456,13 +2456,13 @@
       <MJD>52345</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.095030</X>
+          <X>-0.095001</X>
           <sigmaX>0.000103</sigmaX>
-          <Y>0.507764</Y>
+          <Y>0.507719</Y>
           <sigmaY>0.000040</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1714773</UT1_UTC>
+          <UT1_UTC>-0.1714764</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>0.8257</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -2491,13 +2491,13 @@
       <MJD>52346</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.092723</X>
+          <X>-0.092694</X>
           <sigmaX>0.000098</sigmaX>
-          <Y>0.510071</Y>
+          <Y>0.510026</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1723734</UT1_UTC>
+          <UT1_UTC>-0.1723725</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.9554</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -2526,13 +2526,13 @@
       <MJD>52347</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.090300</X>
+          <X>-0.090271</X>
           <sigmaX>0.000108</sigmaX>
-          <Y>0.512360</Y>
+          <Y>0.512315</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1733618</UT1_UTC>
+          <UT1_UTC>-0.1733609</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>1.0061</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -2561,13 +2561,13 @@
       <MJD>52348</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.087667</X>
+          <X>-0.087638</X>
           <sigmaX>0.000109</sigmaX>
-          <Y>0.514548</Y>
+          <Y>0.514503</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1743565</UT1_UTC>
+          <UT1_UTC>-0.1743556</UT1_UTC>
           <sigmaUT1_UTC>0.0000037</sigmaUT1_UTC>
           <LOD>0.9693</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -2596,13 +2596,13 @@
       <MJD>52349</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.084907</X>
+          <X>-0.084878</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.516685</Y>
+          <Y>0.516640</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1752929</UT1_UTC>
+          <UT1_UTC>-0.1752920</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>0.9098</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -2631,13 +2631,13 @@
       <MJD>52350</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.081892</X>
+          <X>-0.081863</X>
           <sigmaX>0.000095</sigmaX>
-          <Y>0.518656</Y>
+          <Y>0.518611</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1761820</UT1_UTC>
+          <UT1_UTC>-0.1761811</UT1_UTC>
           <sigmaUT1_UTC>0.0000047</sigmaUT1_UTC>
           <LOD>0.8680</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -2666,13 +2666,13 @@
       <MJD>52351</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.078770</X>
+          <X>-0.078741</X>
           <sigmaX>0.000095</sigmaX>
-          <Y>0.520534</Y>
+          <Y>0.520489</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1770222</UT1_UTC>
+          <UT1_UTC>-0.1770213</UT1_UTC>
           <sigmaUT1_UTC>0.0000047</sigmaUT1_UTC>
           <LOD>0.8060</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -2701,13 +2701,13 @@
       <MJD>52352</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.075600</X>
+          <X>-0.075571</X>
           <sigmaX>0.000088</sigmaX>
-          <Y>0.522456</Y>
+          <Y>0.522411</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1777723</UT1_UTC>
+          <UT1_UTC>-0.1777714</UT1_UTC>
           <sigmaUT1_UTC>0.0000048</sigmaUT1_UTC>
           <LOD>0.6788</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -2736,13 +2736,13 @@
       <MJD>52353</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.072584</X>
+          <X>-0.072555</X>
           <sigmaX>0.000086</sigmaX>
-          <Y>0.524209</Y>
+          <Y>0.524164</Y>
           <sigmaY>0.000061</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1783708</UT1_UTC>
+          <UT1_UTC>-0.1783699</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>0.5245</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -2771,13 +2771,13 @@
       <MJD>52354</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.069275</X>
+          <X>-0.069246</X>
           <sigmaX>0.000081</sigmaX>
-          <Y>0.525908</Y>
+          <Y>0.525863</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1788366</UT1_UTC>
+          <UT1_UTC>-0.1788357</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>0.4162</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -2806,13 +2806,13 @@
       <MJD>52355</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.065819</X>
+          <X>-0.065790</X>
           <sigmaX>0.000084</sigmaX>
-          <Y>0.527750</Y>
+          <Y>0.527705</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1792250</UT1_UTC>
+          <UT1_UTC>-0.1792241</UT1_UTC>
           <sigmaUT1_UTC>0.0000039</sigmaUT1_UTC>
           <LOD>0.3735</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -2841,13 +2841,13 @@
       <MJD>52356</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.062349</X>
+          <X>-0.062320</X>
           <sigmaX>0.000036</sigmaX>
-          <Y>0.529371</Y>
+          <Y>0.529326</Y>
           <sigmaY>0.000062</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1796063</UT1_UTC>
+          <UT1_UTC>-0.1796054</UT1_UTC>
           <sigmaUT1_UTC>0.0000026</sigmaUT1_UTC>
           <LOD>0.3991</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -2876,13 +2876,13 @@
       <MJD>52357</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.058857</X>
+          <X>-0.058828</X>
           <sigmaX>0.000046</sigmaX>
-          <Y>0.530877</Y>
+          <Y>0.530832</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1800518</UT1_UTC>
+          <UT1_UTC>-0.1800509</UT1_UTC>
           <sigmaUT1_UTC>0.0000024</sigmaUT1_UTC>
           <LOD>0.5107</LOD>
           <sigmaLOD>0.0018</sigmaLOD>
@@ -2911,13 +2911,13 @@
       <MJD>52358</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.055266</X>
+          <X>-0.055237</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.532518</Y>
+          <Y>0.532473</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1806609</UT1_UTC>
+          <UT1_UTC>-0.1806600</UT1_UTC>
           <sigmaUT1_UTC>0.0000026</sigmaUT1_UTC>
           <LOD>0.7219</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -2946,13 +2946,13 @@
       <MJD>52359</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.051332</X>
+          <X>-0.051303</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.534302</Y>
+          <Y>0.534257</Y>
           <sigmaY>0.000049</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1815170</UT1_UTC>
+          <UT1_UTC>-0.1815161</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>0.9975</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -2981,13 +2981,13 @@
       <MJD>52360</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.048030</X>
+          <X>-0.048001</X>
           <sigmaX>0.000062</sigmaX>
-          <Y>0.536019</Y>
+          <Y>0.535974</Y>
           <sigmaY>0.000049</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1826656</UT1_UTC>
+          <UT1_UTC>-0.1826647</UT1_UTC>
           <sigmaUT1_UTC>0.0000033</sigmaUT1_UTC>
           <LOD>1.3024</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -3016,13 +3016,13 @@
       <MJD>52361</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.045051</X>
+          <X>-0.045022</X>
           <sigmaX>0.000063</sigmaX>
-          <Y>0.537508</Y>
+          <Y>0.537463</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1840966</UT1_UTC>
+          <UT1_UTC>-0.1840957</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>1.5317</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -3051,15 +3051,15 @@
       <MJD>52362</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.041738</X>
+          <X>-0.041709</X>
           <sigmaX>0.000069</sigmaX>
-          <Y>0.538772</Y>
+          <Y>0.538727</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1856577</UT1_UTC>
+          <UT1_UTC>-0.1856567</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
-          <LOD>1.5469</LOD>
+          <LOD>1.5468</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
         </UT1>
         <nutation type="iers">
@@ -3086,13 +3086,13 @@
       <MJD>52363</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.038256</X>
+          <X>-0.038227</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.539773</Y>
+          <Y>0.539728</Y>
           <sigmaY>0.000037</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1871322</UT1_UTC>
+          <UT1_UTC>-0.1871312</UT1_UTC>
           <sigmaUT1_UTC>0.0000044</sigmaUT1_UTC>
           <LOD>1.3874</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -3121,13 +3121,13 @@
       <MJD>52364</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.034532</X>
+          <X>-0.034503</X>
           <sigmaX>0.000028</sigmaX>
-          <Y>0.540483</Y>
+          <Y>0.540438</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1884129</UT1_UTC>
+          <UT1_UTC>-0.1884119</UT1_UTC>
           <sigmaUT1_UTC>0.0000047</sigmaUT1_UTC>
           <LOD>1.1690</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -3156,13 +3156,13 @@
       <MJD>52365</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.030804</X>
+          <X>-0.030775</X>
           <sigmaX>0.000064</sigmaX>
-          <Y>0.540968</Y>
+          <Y>0.540923</Y>
           <sigmaY>0.000079</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1894616</UT1_UTC>
+          <UT1_UTC>-0.1894606</UT1_UTC>
           <sigmaUT1_UTC>0.0000074</sigmaUT1_UTC>
           <LOD>0.9247</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -3191,13 +3191,13 @@
       <MJD>52366</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.027026</X>
+          <X>-0.026997</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.541351</Y>
+          <Y>0.541306</Y>
           <sigmaY>0.000079</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1902664</UT1_UTC>
+          <UT1_UTC>-0.1902654</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>0.6928</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -3226,13 +3226,13 @@
       <MJD>52367</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.022783</X>
+          <X>-0.022754</X>
           <sigmaX>0.000073</sigmaX>
-          <Y>0.541853</Y>
+          <Y>0.541808</Y>
           <sigmaY>0.000083</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1908608</UT1_UTC>
+          <UT1_UTC>-0.1908598</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>0.5017</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -3261,13 +3261,13 @@
       <MJD>52368</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.018636</X>
+          <X>-0.018607</X>
           <sigmaX>0.000073</sigmaX>
-          <Y>0.543082</Y>
+          <Y>0.543037</Y>
           <sigmaY>0.000085</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1912970</UT1_UTC>
+          <UT1_UTC>-0.1912960</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>0.3922</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -3296,13 +3296,13 @@
       <MJD>52369</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.014956</X>
+          <X>-0.014927</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.544457</Y>
+          <Y>0.544412</Y>
           <sigmaY>0.000079</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1916765</UT1_UTC>
+          <UT1_UTC>-0.1916755</UT1_UTC>
           <sigmaUT1_UTC>0.0000053</sigmaUT1_UTC>
           <LOD>0.3767</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -3331,13 +3331,13 @@
       <MJD>52370</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.011604</X>
+          <X>-0.011575</X>
           <sigmaX>0.000083</sigmaX>
-          <Y>0.545910</Y>
+          <Y>0.545865</Y>
           <sigmaY>0.000068</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1920764</UT1_UTC>
+          <UT1_UTC>-0.1920754</UT1_UTC>
           <sigmaUT1_UTC>0.0000044</sigmaUT1_UTC>
           <LOD>0.4393</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -3366,13 +3366,13 @@
       <MJD>52371</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.008838</X>
+          <X>-0.008809</X>
           <sigmaX>0.000102</sigmaX>
-          <Y>0.547139</Y>
+          <Y>0.547094</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1925673</UT1_UTC>
+          <UT1_UTC>-0.1925663</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.5385</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -3401,13 +3401,13 @@
       <MJD>52372</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.006197</X>
+          <X>-0.006168</X>
           <sigmaX>0.000099</sigmaX>
-          <Y>0.548064</Y>
+          <Y>0.548019</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1931523</UT1_UTC>
+          <UT1_UTC>-0.1931513</UT1_UTC>
           <sigmaUT1_UTC>0.0000033</sigmaUT1_UTC>
           <LOD>0.6344</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -3436,13 +3436,13 @@
       <MJD>52373</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.003491</X>
+          <X>-0.003462</X>
           <sigmaX>0.000102</sigmaX>
-          <Y>0.548878</Y>
+          <Y>0.548833</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1938408</UT1_UTC>
+          <UT1_UTC>-0.1938398</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>0.7444</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -3471,13 +3471,13 @@
       <MJD>52374</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.001659</X>
+          <X>-0.001630</X>
           <sigmaX>0.000100</sigmaX>
-          <Y>0.549546</Y>
+          <Y>0.549501</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1946418</UT1_UTC>
+          <UT1_UTC>-0.1946408</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.8567</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -3506,13 +3506,13 @@
       <MJD>52375</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.000731</X>
+          <X>0.000760</X>
           <sigmaX>0.000093</sigmaX>
-          <Y>0.549962</Y>
+          <Y>0.549917</Y>
           <sigmaY>0.000065</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1955466</UT1_UTC>
+          <UT1_UTC>-0.1955456</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>0.9464</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -3541,13 +3541,13 @@
       <MJD>52376</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.003766</X>
+          <X>0.003795</X>
           <sigmaX>0.000091</sigmaX>
-          <Y>0.550617</Y>
+          <Y>0.550572</Y>
           <sigmaY>0.000071</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1965106</UT1_UTC>
+          <UT1_UTC>-0.1965096</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>0.9642</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -3576,13 +3576,13 @@
       <MJD>52377</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.006839</X>
+          <X>0.006868</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.551448</Y>
+          <Y>0.551403</Y>
           <sigmaY>0.000072</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1974475</UT1_UTC>
+          <UT1_UTC>-0.1974465</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>0.8995</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -3611,13 +3611,13 @@
       <MJD>52378</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.009894</X>
+          <X>0.009923</X>
           <sigmaX>0.000065</sigmaX>
-          <Y>0.552146</Y>
+          <Y>0.552101</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1982933</UT1_UTC>
+          <UT1_UTC>-0.1982923</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.7859</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -3646,13 +3646,13 @@
       <MJD>52379</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.012871</X>
+          <X>0.012900</X>
           <sigmaX>0.000066</sigmaX>
-          <Y>0.552783</Y>
+          <Y>0.552738</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1990108</UT1_UTC>
+          <UT1_UTC>-0.1990098</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.6467</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -3681,13 +3681,13 @@
       <MJD>52380</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.015646</X>
+          <X>0.015675</X>
           <sigmaX>0.000067</sigmaX>
-          <Y>0.553361</Y>
+          <Y>0.553316</Y>
           <sigmaY>0.000041</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1995661</UT1_UTC>
+          <UT1_UTC>-0.1995651</UT1_UTC>
           <sigmaUT1_UTC>0.0000053</sigmaUT1_UTC>
           <LOD>0.4458</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -3716,13 +3716,13 @@
       <MJD>52381</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.018778</X>
+          <X>0.018807</X>
           <sigmaX>0.000070</sigmaX>
-          <Y>0.553860</Y>
+          <Y>0.553815</Y>
           <sigmaY>0.000042</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.1999187</UT1_UTC>
+          <UT1_UTC>-0.1999177</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.2940</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -3751,13 +3751,13 @@
       <MJD>52382</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.022115</X>
+          <X>0.022144</X>
           <sigmaX>0.000072</sigmaX>
-          <Y>0.554349</Y>
+          <Y>0.554304</Y>
           <sigmaY>0.000041</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2001974</UT1_UTC>
+          <UT1_UTC>-0.2001964</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.2722</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -3786,13 +3786,13 @@
       <MJD>52383</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.025445</X>
+          <X>0.025474</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.554781</Y>
+          <Y>0.554736</Y>
           <sigmaY>0.000042</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2004576</UT1_UTC>
+          <UT1_UTC>-0.2004566</UT1_UTC>
           <sigmaUT1_UTC>0.0000045</sigmaUT1_UTC>
           <LOD>0.2341</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -3821,13 +3821,13 @@
       <MJD>52384</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.028873</X>
+          <X>0.028902</X>
           <sigmaX>0.000034</sigmaX>
-          <Y>0.555046</Y>
+          <Y>0.555001</Y>
           <sigmaY>0.000040</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2006775</UT1_UTC>
+          <UT1_UTC>-0.2006765</UT1_UTC>
           <sigmaUT1_UTC>0.0000039</sigmaUT1_UTC>
           <LOD>0.2318</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -3856,13 +3856,13 @@
       <MJD>52385</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.031986</X>
+          <X>0.032015</X>
           <sigmaX>0.000078</sigmaX>
-          <Y>0.555175</Y>
+          <Y>0.555130</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2009691</UT1_UTC>
+          <UT1_UTC>-0.2009681</UT1_UTC>
           <sigmaUT1_UTC>0.0000033</sigmaUT1_UTC>
           <LOD>0.3734</LOD>
           <sigmaLOD>0.0026</sigmaLOD>
@@ -3891,13 +3891,13 @@
       <MJD>52386</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.034817</X>
+          <X>0.034846</X>
           <sigmaX>0.000078</sigmaX>
-          <Y>0.555150</Y>
+          <Y>0.555105</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2014656</UT1_UTC>
+          <UT1_UTC>-0.2014646</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>0.6391</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -3926,13 +3926,13 @@
       <MJD>52387</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.037838</X>
+          <X>0.037867</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.555010</Y>
+          <Y>0.554965</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2022571</UT1_UTC>
+          <UT1_UTC>-0.2022561</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.9341</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -3961,13 +3961,13 @@
       <MJD>52388</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.041196</X>
+          <X>0.041225</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.554847</Y>
+          <Y>0.554802</Y>
           <sigmaY>0.000066</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2033160</UT1_UTC>
+          <UT1_UTC>-0.2033150</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>1.1756</LOD>
           <sigmaLOD>0.0026</sigmaLOD>
@@ -3996,13 +3996,13 @@
       <MJD>52389</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.044855</X>
+          <X>0.044884</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.554698</Y>
+          <Y>0.554653</Y>
           <sigmaY>0.000066</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2045898</UT1_UTC>
+          <UT1_UTC>-0.2045888</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>1.3617</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -4031,13 +4031,13 @@
       <MJD>52390</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.048606</X>
+          <X>0.048635</X>
           <sigmaX>0.000078</sigmaX>
-          <Y>0.554520</Y>
+          <Y>0.554475</Y>
           <sigmaY>0.000069</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2059970</UT1_UTC>
+          <UT1_UTC>-0.2059960</UT1_UTC>
           <sigmaUT1_UTC>0.0000037</sigmaUT1_UTC>
           <LOD>1.4204</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -4066,13 +4066,13 @@
       <MJD>52391</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.052494</X>
+          <X>0.052523</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.554130</Y>
+          <Y>0.554085</Y>
           <sigmaY>0.000073</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2073686</UT1_UTC>
+          <UT1_UTC>-0.2073676</UT1_UTC>
           <sigmaUT1_UTC>0.0000063</sigmaUT1_UTC>
           <LOD>1.2929</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -4101,13 +4101,13 @@
       <MJD>52392</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.056187</X>
+          <X>0.056216</X>
           <sigmaX>0.000067</sigmaX>
-          <Y>0.553571</Y>
+          <Y>0.553526</Y>
           <sigmaY>0.000098</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2085363</UT1_UTC>
+          <UT1_UTC>-0.2085353</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>1.0260</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -4136,13 +4136,13 @@
       <MJD>52393</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.059875</X>
+          <X>0.059904</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.553069</Y>
+          <Y>0.553024</Y>
           <sigmaY>0.000098</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2094106</UT1_UTC>
+          <UT1_UTC>-0.2094096</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>0.7292</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -4171,13 +4171,13 @@
       <MJD>52394</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.063437</X>
+          <X>0.063466</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.552660</Y>
+          <Y>0.552615</Y>
           <sigmaY>0.000099</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2099989</UT1_UTC>
+          <UT1_UTC>-0.2099979</UT1_UTC>
           <sigmaUT1_UTC>0.0000061</sigmaUT1_UTC>
           <LOD>0.4450</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -4206,13 +4206,13 @@
       <MJD>52395</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.066743</X>
+          <X>0.066772</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.552613</Y>
+          <Y>0.552568</Y>
           <sigmaY>0.000099</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2103323</UT1_UTC>
+          <UT1_UTC>-0.2103313</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>0.2560</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -4241,13 +4241,13 @@
       <MJD>52396</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.069948</X>
+          <X>0.069977</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.552461</Y>
+          <Y>0.552416</Y>
           <sigmaY>0.000095</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2105563</UT1_UTC>
+          <UT1_UTC>-0.2105553</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>0.2032</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -4276,13 +4276,13 @@
       <MJD>52397</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.073268</X>
+          <X>0.073297</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.552148</Y>
+          <Y>0.552103</Y>
           <sigmaY>0.000090</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2107571</UT1_UTC>
+          <UT1_UTC>-0.2107561</UT1_UTC>
           <sigmaUT1_UTC>0.0000041</sigmaUT1_UTC>
           <LOD>0.2057</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -4311,13 +4311,13 @@
       <MJD>52398</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.076855</X>
+          <X>0.076884</X>
           <sigmaX>0.000043</sigmaX>
-          <Y>0.552023</Y>
+          <Y>0.551978</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2109952</UT1_UTC>
+          <UT1_UTC>-0.2109942</UT1_UTC>
           <sigmaUT1_UTC>0.0000037</sigmaUT1_UTC>
           <LOD>0.2908</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -4346,13 +4346,13 @@
       <MJD>52399</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.080628</X>
+          <X>0.080657</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.551962</Y>
+          <Y>0.551917</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2113662</UT1_UTC>
+          <UT1_UTC>-0.2113652</UT1_UTC>
           <sigmaUT1_UTC>0.0000044</sigmaUT1_UTC>
           <LOD>0.4585</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -4381,13 +4381,13 @@
       <MJD>52400</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.084601</X>
+          <X>0.084630</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.551806</Y>
+          <Y>0.551761</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2119140</UT1_UTC>
+          <UT1_UTC>-0.2119130</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>0.6317</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -4416,13 +4416,13 @@
       <MJD>52401</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.088519</X>
+          <X>0.088548</X>
           <sigmaX>0.000060</sigmaX>
-          <Y>0.551421</Y>
+          <Y>0.551376</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2126193</UT1_UTC>
+          <UT1_UTC>-0.2126183</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>0.7740</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -4451,13 +4451,13 @@
       <MJD>52402</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.091542</X>
+          <X>0.091571</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.550909</Y>
+          <Y>0.550864</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2134493</UT1_UTC>
+          <UT1_UTC>-0.2134483</UT1_UTC>
           <sigmaUT1_UTC>0.0000053</sigmaUT1_UTC>
           <LOD>0.8781</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -4486,13 +4486,13 @@
       <MJD>52403</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.094223</X>
+          <X>0.094252</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.550108</Y>
+          <Y>0.550063</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2143637</UT1_UTC>
+          <UT1_UTC>-0.2143627</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>0.9469</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -4521,13 +4521,13 @@
       <MJD>52404</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.097619</X>
+          <X>0.097648</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.549346</Y>
+          <Y>0.549301</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2153304</UT1_UTC>
+          <UT1_UTC>-0.2153294</UT1_UTC>
           <sigmaUT1_UTC>0.0000051</sigmaUT1_UTC>
           <LOD>0.9776</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -4556,13 +4556,13 @@
       <MJD>52405</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.101049</X>
+          <X>0.101078</X>
           <sigmaX>0.000061</sigmaX>
-          <Y>0.549042</Y>
+          <Y>0.548997</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2162969</UT1_UTC>
+          <UT1_UTC>-0.2162959</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>0.9424</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -4591,13 +4591,13 @@
       <MJD>52406</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.103897</X>
+          <X>0.103926</X>
           <sigmaX>0.000071</sigmaX>
-          <Y>0.548577</Y>
+          <Y>0.548532</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2171993</UT1_UTC>
+          <UT1_UTC>-0.2171983</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>0.8597</LOD>
           <sigmaLOD>0.0052</sigmaLOD>
@@ -4626,13 +4626,13 @@
       <MJD>52407</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.106746</X>
+          <X>0.106775</X>
           <sigmaX>0.000072</sigmaX>
-          <Y>0.547859</Y>
+          <Y>0.547814</Y>
           <sigmaY>0.000063</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2180149</UT1_UTC>
+          <UT1_UTC>-0.2180139</UT1_UTC>
           <sigmaUT1_UTC>0.0000086</sigmaUT1_UTC>
           <LOD>0.7730</LOD>
           <sigmaLOD>0.0050</sigmaLOD>
@@ -4661,13 +4661,13 @@
       <MJD>52408</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.109801</X>
+          <X>0.109830</X>
           <sigmaX>0.000105</sigmaX>
-          <Y>0.547008</Y>
+          <Y>0.546963</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2187321</UT1_UTC>
+          <UT1_UTC>-0.2187311</UT1_UTC>
           <sigmaUT1_UTC>0.0000081</sigmaUT1_UTC>
           <LOD>0.6468</LOD>
           <sigmaLOD>0.0055</sigmaLOD>
@@ -4696,13 +4696,13 @@
       <MJD>52409</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.111985</X>
+          <X>0.112014</X>
           <sigmaX>0.000103</sigmaX>
-          <Y>0.545800</Y>
+          <Y>0.545755</Y>
           <sigmaY>0.000055</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2193198</UT1_UTC>
+          <UT1_UTC>-0.2193188</UT1_UTC>
           <sigmaUT1_UTC>0.0000069</sigmaUT1_UTC>
           <LOD>0.5543</LOD>
           <sigmaLOD>0.0053</sigmaLOD>
@@ -4731,13 +4731,13 @@
       <MJD>52410</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.114354</X>
+          <X>0.114383</X>
           <sigmaX>0.000097</sigmaX>
-          <Y>0.544241</Y>
+          <Y>0.544196</Y>
           <sigmaY>0.000055</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2198591</UT1_UTC>
+          <UT1_UTC>-0.2198581</UT1_UTC>
           <sigmaUT1_UTC>0.0000069</sigmaUT1_UTC>
           <LOD>0.5168</LOD>
           <sigmaLOD>0.0046</sigmaLOD>
@@ -4766,13 +4766,13 @@
       <MJD>52411</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.116517</X>
+          <X>0.116546</X>
           <sigmaX>0.000092</sigmaX>
-          <Y>0.542643</Y>
+          <Y>0.542598</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2203546</UT1_UTC>
+          <UT1_UTC>-0.2203536</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>0.4829</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -4801,13 +4801,13 @@
       <MJD>52412</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.119060</X>
+          <X>0.119089</X>
           <sigmaX>0.000062</sigmaX>
-          <Y>0.541457</Y>
+          <Y>0.541412</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2208666</UT1_UTC>
+          <UT1_UTC>-0.2208656</UT1_UTC>
           <sigmaUT1_UTC>0.0000041</sigmaUT1_UTC>
           <LOD>0.5741</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -4836,13 +4836,13 @@
       <MJD>52413</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.121959</X>
+          <X>0.121988</X>
           <sigmaX>0.000062</sigmaX>
-          <Y>0.540705</Y>
+          <Y>0.540660</Y>
           <sigmaY>0.000044</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2215428</UT1_UTC>
+          <UT1_UTC>-0.2215418</UT1_UTC>
           <sigmaUT1_UTC>0.0000028</sigmaUT1_UTC>
           <LOD>0.7854</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -4871,13 +4871,13 @@
       <MJD>52414</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.125182</X>
+          <X>0.125211</X>
           <sigmaX>0.000040</sigmaX>
-          <Y>0.540186</Y>
+          <Y>0.540141</Y>
           <sigmaY>0.000035</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2224522</UT1_UTC>
+          <UT1_UTC>-0.2224512</UT1_UTC>
           <sigmaUT1_UTC>0.0000023</sigmaUT1_UTC>
           <LOD>1.0412</LOD>
           <sigmaLOD>0.0017</sigmaLOD>
@@ -4906,13 +4906,13 @@
       <MJD>52415</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.128351</X>
+          <X>0.128380</X>
           <sigmaX>0.000037</sigmaX>
-          <Y>0.539689</Y>
+          <Y>0.539644</Y>
           <sigmaY>0.000033</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2236225</UT1_UTC>
+          <UT1_UTC>-0.2236215</UT1_UTC>
           <sigmaUT1_UTC>0.0000019</sigmaUT1_UTC>
           <LOD>1.2889</LOD>
           <sigmaLOD>0.0015</sigmaLOD>
@@ -4941,13 +4941,13 @@
       <MJD>52416</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.131128</X>
+          <X>0.131157</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.539025</Y>
+          <Y>0.538980</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2249912</UT1_UTC>
+          <UT1_UTC>-0.2249902</UT1_UTC>
           <sigmaUT1_UTC>0.0000020</sigmaUT1_UTC>
           <LOD>1.4200</LOD>
           <sigmaLOD>0.0014</sigmaLOD>
@@ -4976,13 +4976,13 @@
       <MJD>52417</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.133589</X>
+          <X>0.133618</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.538175</Y>
+          <Y>0.538130</Y>
           <sigmaY>0.000049</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2264200</UT1_UTC>
+          <UT1_UTC>-0.2264190</UT1_UTC>
           <sigmaUT1_UTC>0.0000020</sigmaUT1_UTC>
           <LOD>1.4234</LOD>
           <sigmaLOD>0.0014</sigmaLOD>
@@ -5011,13 +5011,13 @@
       <MJD>52418</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.135799</X>
+          <X>0.135828</X>
           <sigmaX>0.000043</sigmaX>
-          <Y>0.537281</Y>
+          <Y>0.537236</Y>
           <sigmaY>0.000049</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2278010</UT1_UTC>
+          <UT1_UTC>-0.2278000</UT1_UTC>
           <sigmaUT1_UTC>0.0000020</sigmaUT1_UTC>
           <LOD>1.3158</LOD>
           <sigmaLOD>0.0016</sigmaLOD>
@@ -5046,13 +5046,13 @@
       <MJD>52419</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.138152</X>
+          <X>0.138181</X>
           <sigmaX>0.000036</sigmaX>
-          <Y>0.536248</Y>
+          <Y>0.536203</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2290070</UT1_UTC>
+          <UT1_UTC>-0.2290060</UT1_UTC>
           <sigmaUT1_UTC>0.0000026</sigmaUT1_UTC>
           <LOD>1.0744</LOD>
           <sigmaLOD>0.0016</sigmaLOD>
@@ -5081,13 +5081,13 @@
       <MJD>52420</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.140436</X>
+          <X>0.140465</X>
           <sigmaX>0.000034</sigmaX>
-          <Y>0.535168</Y>
+          <Y>0.535123</Y>
           <sigmaY>0.000055</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2299248</UT1_UTC>
+          <UT1_UTC>-0.2299238</UT1_UTC>
           <sigmaUT1_UTC>0.0000024</sigmaUT1_UTC>
           <LOD>0.7581</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -5116,13 +5116,13 @@
       <MJD>52421</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.143084</X>
+          <X>0.143113</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.534009</Y>
+          <Y>0.533964</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2305270</UT1_UTC>
+          <UT1_UTC>-0.2305260</UT1_UTC>
           <sigmaUT1_UTC>0.0000027</sigmaUT1_UTC>
           <LOD>0.4533</LOD>
           <sigmaLOD>0.0020</sigmaLOD>
@@ -5151,13 +5151,13 @@
       <MJD>52422</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.146174</X>
+          <X>0.146203</X>
           <sigmaX>0.000046</sigmaX>
-          <Y>0.532879</Y>
+          <Y>0.532834</Y>
           <sigmaY>0.000049</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2308530</UT1_UTC>
+          <UT1_UTC>-0.2308520</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.2133</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -5186,13 +5186,13 @@
       <MJD>52423</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.148899</X>
+          <X>0.148928</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.531568</Y>
+          <Y>0.531523</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2309854</UT1_UTC>
+          <UT1_UTC>-0.2309844</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.0685</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -5221,13 +5221,13 @@
       <MJD>52424</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.151840</X>
+          <X>0.151869</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.530226</Y>
+          <Y>0.530181</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2310260</UT1_UTC>
+          <UT1_UTC>-0.2310250</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.0315</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -5256,13 +5256,13 @@
       <MJD>52425</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.154639</X>
+          <X>0.154668</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.528751</Y>
+          <Y>0.528706</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2310646</UT1_UTC>
+          <UT1_UTC>-0.2310636</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.0429</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -5291,13 +5291,13 @@
       <MJD>52426</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.157233</X>
+          <X>0.157262</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.527219</Y>
+          <Y>0.527174</Y>
           <sigmaY>0.000049</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2311188</UT1_UTC>
+          <UT1_UTC>-0.2311178</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.0753</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -5326,13 +5326,13 @@
       <MJD>52427</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.159733</X>
+          <X>0.159762</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.525494</Y>
+          <Y>0.525449</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2312242</UT1_UTC>
+          <UT1_UTC>-0.2312232</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.1348</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -5361,13 +5361,13 @@
       <MJD>52428</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.162393</X>
+          <X>0.162422</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.523607</Y>
+          <Y>0.523562</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2313882</UT1_UTC>
+          <UT1_UTC>-0.2313872</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>0.1936</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -5396,13 +5396,13 @@
       <MJD>52429</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.165110</X>
+          <X>0.165139</X>
           <sigmaX>0.000048</sigmaX>
-          <Y>0.522022</Y>
+          <Y>0.521977</Y>
           <sigmaY>0.000055</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2316043</UT1_UTC>
+          <UT1_UTC>-0.2316033</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>0.2312</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -5431,13 +5431,13 @@
       <MJD>52430</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.168209</X>
+          <X>0.168238</X>
           <sigmaX>0.000074</sigmaX>
-          <Y>0.520341</Y>
+          <Y>0.520296</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2318200</UT1_UTC>
+          <UT1_UTC>-0.2318190</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>0.1769</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -5466,13 +5466,13 @@
       <MJD>52431</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.171393</X>
+          <X>0.171422</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.518669</Y>
+          <Y>0.518624</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2319390</UT1_UTC>
+          <UT1_UTC>-0.2319380</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>0.0654</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -5501,13 +5501,13 @@
       <MJD>52432</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.174093</X>
+          <X>0.174122</X>
           <sigmaX>0.000081</sigmaX>
-          <Y>0.516953</Y>
+          <Y>0.516908</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2319559</UT1_UTC>
+          <UT1_UTC>-0.2319549</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>-0.0309</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -5536,13 +5536,13 @@
       <MJD>52433</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.177613</X>
+          <X>0.177642</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.515299</Y>
+          <Y>0.515254</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2318688</UT1_UTC>
+          <UT1_UTC>-0.2318678</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>-0.1525</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -5571,13 +5571,13 @@
       <MJD>52434</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.180620</X>
+          <X>0.180649</X>
           <sigmaX>0.000078</sigmaX>
-          <Y>0.513684</Y>
+          <Y>0.513639</Y>
           <sigmaY>0.000062</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2316405</UT1_UTC>
+          <UT1_UTC>-0.2316395</UT1_UTC>
           <sigmaUT1_UTC>0.0000046</sigmaUT1_UTC>
           <LOD>-0.3053</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -5606,13 +5606,13 @@
       <MJD>52435</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.183509</X>
+          <X>0.183538</X>
           <sigmaX>0.000090</sigmaX>
-          <Y>0.512015</Y>
+          <Y>0.511970</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2312590</UT1_UTC>
+          <UT1_UTC>-0.2312580</UT1_UTC>
           <sigmaUT1_UTC>0.0000068</sigmaUT1_UTC>
           <LOD>-0.4556</LOD>
           <sigmaLOD>0.0048</sigmaLOD>
@@ -5641,13 +5641,13 @@
       <MJD>52436</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.186056</X>
+          <X>0.186085</X>
           <sigmaX>0.000081</sigmaX>
-          <Y>0.510118</Y>
+          <Y>0.510073</Y>
           <sigmaY>0.000077</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2307288</UT1_UTC>
+          <UT1_UTC>-0.2307278</UT1_UTC>
           <sigmaUT1_UTC>0.0000085</sigmaUT1_UTC>
           <LOD>-0.6072</LOD>
           <sigmaLOD>0.0054</sigmaLOD>
@@ -5676,13 +5676,13 @@
       <MJD>52437</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.188403</X>
+          <X>0.188432</X>
           <sigmaX>0.000085</sigmaX>
-          <Y>0.508033</Y>
+          <Y>0.507988</Y>
           <sigmaY>0.000080</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2300725</UT1_UTC>
+          <UT1_UTC>-0.2300715</UT1_UTC>
           <sigmaUT1_UTC>0.0000083</sigmaUT1_UTC>
           <LOD>-0.6750</LOD>
           <sigmaLOD>0.0059</sigmaLOD>
@@ -5711,13 +5711,13 @@
       <MJD>52438</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.190939</X>
+          <X>0.190968</X>
           <sigmaX>0.000083</sigmaX>
-          <Y>0.505922</Y>
+          <Y>0.505877</Y>
           <sigmaY>0.000065</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2293928</UT1_UTC>
+          <UT1_UTC>-0.2293918</UT1_UTC>
           <sigmaUT1_UTC>0.0000082</sigmaUT1_UTC>
           <LOD>-0.7007</LOD>
           <sigmaLOD>0.0058</sigmaLOD>
@@ -5746,13 +5746,13 @@
       <MJD>52439</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.193054</X>
+          <X>0.193083</X>
           <sigmaX>0.000086</sigmaX>
-          <Y>0.504220</Y>
+          <Y>0.504175</Y>
           <sigmaY>0.000071</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2287039</UT1_UTC>
+          <UT1_UTC>-0.2287029</UT1_UTC>
           <sigmaUT1_UTC>0.0000081</sigmaUT1_UTC>
           <LOD>-0.6280</LOD>
           <sigmaLOD>0.0067</sigmaLOD>
@@ -5781,13 +5781,13 @@
       <MJD>52440</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.195866</X>
+          <X>0.195895</X>
           <sigmaX>0.000082</sigmaX>
-          <Y>0.502408</Y>
+          <Y>0.502363</Y>
           <sigmaY>0.000071</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2281881</UT1_UTC>
+          <UT1_UTC>-0.2281871</UT1_UTC>
           <sigmaUT1_UTC>0.0000105</sigmaUT1_UTC>
           <LOD>-0.4015</LOD>
           <sigmaLOD>0.0054</sigmaLOD>
@@ -5816,13 +5816,13 @@
       <MJD>52441</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.199029</X>
+          <X>0.199058</X>
           <sigmaX>0.000072</sigmaX>
-          <Y>0.500329</Y>
+          <Y>0.500284</Y>
           <sigmaY>0.000063</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2279111</UT1_UTC>
+          <UT1_UTC>-0.2279101</UT1_UTC>
           <sigmaUT1_UTC>0.0000072</sigmaUT1_UTC>
           <LOD>-0.1445</LOD>
           <sigmaLOD>0.0065</sigmaLOD>
@@ -5851,13 +5851,13 @@
       <MJD>52442</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.202195</X>
+          <X>0.202224</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.497994</Y>
+          <Y>0.497949</Y>
           <sigmaY>0.000062</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2278962</UT1_UTC>
+          <UT1_UTC>-0.2278952</UT1_UTC>
           <sigmaUT1_UTC>0.0000078</sigmaUT1_UTC>
           <LOD>0.1038</LOD>
           <sigmaLOD>0.0055</sigmaLOD>
@@ -5886,13 +5886,13 @@
       <MJD>52443</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.204804</X>
+          <X>0.204833</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.495574</Y>
+          <Y>0.495529</Y>
           <sigmaY>0.000055</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2280833</UT1_UTC>
+          <UT1_UTC>-0.2280823</UT1_UTC>
           <sigmaUT1_UTC>0.0000082</sigmaUT1_UTC>
           <LOD>0.2461</LOD>
           <sigmaLOD>0.0056</sigmaLOD>
@@ -5921,13 +5921,13 @@
       <MJD>52444</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.207374</X>
+          <X>0.207403</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.493050</Y>
+          <Y>0.493005</Y>
           <sigmaY>0.000068</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2283621</UT1_UTC>
+          <UT1_UTC>-0.2283611</UT1_UTC>
           <sigmaUT1_UTC>0.0000080</sigmaUT1_UTC>
           <LOD>0.3097</LOD>
           <sigmaLOD>0.0057</sigmaLOD>
@@ -5956,13 +5956,13 @@
       <MJD>52445</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.210108</X>
+          <X>0.210137</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.490792</Y>
+          <Y>0.490747</Y>
           <sigmaY>0.000066</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2286862</UT1_UTC>
+          <UT1_UTC>-0.2286852</UT1_UTC>
           <sigmaUT1_UTC>0.0000079</sigmaUT1_UTC>
           <LOD>0.3240</LOD>
           <sigmaLOD>0.0054</sigmaLOD>
@@ -5991,13 +5991,13 @@
       <MJD>52446</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.212454</X>
+          <X>0.212483</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.489008</Y>
+          <Y>0.488963</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2289904</UT1_UTC>
+          <UT1_UTC>-0.2289894</UT1_UTC>
           <sigmaUT1_UTC>0.0000072</sigmaUT1_UTC>
           <LOD>0.2792</LOD>
           <sigmaLOD>0.0059</sigmaLOD>
@@ -6026,13 +6026,13 @@
       <MJD>52447</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.214544</X>
+          <X>0.214573</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.486946</Y>
+          <Y>0.486901</Y>
           <sigmaY>0.000080</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2292214</UT1_UTC>
+          <UT1_UTC>-0.2292204</UT1_UTC>
           <sigmaUT1_UTC>0.0000088</sigmaUT1_UTC>
           <LOD>0.1649</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -6061,13 +6061,13 @@
       <MJD>52448</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.216517</X>
+          <X>0.216546</X>
           <sigmaX>0.000061</sigmaX>
-          <Y>0.484605</Y>
+          <Y>0.484560</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2293052</UT1_UTC>
+          <UT1_UTC>-0.2293042</UT1_UTC>
           <sigmaUT1_UTC>0.0000054</sigmaUT1_UTC>
           <LOD>0.0058</LOD>
           <sigmaLOD>0.0049</sigmaLOD>
@@ -6096,13 +6096,13 @@
       <MJD>52449</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.218194</X>
+          <X>0.218223</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.482077</Y>
+          <Y>0.482032</Y>
           <sigmaY>0.000074</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2292478</UT1_UTC>
+          <UT1_UTC>-0.2292468</UT1_UTC>
           <sigmaUT1_UTC>0.0000044</sigmaUT1_UTC>
           <LOD>-0.1088</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -6131,13 +6131,13 @@
       <MJD>52450</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.219467</X>
+          <X>0.219496</X>
           <sigmaX>0.000047</sigmaX>
-          <Y>0.479334</Y>
+          <Y>0.479289</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2291130</UT1_UTC>
+          <UT1_UTC>-0.2291120</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>-0.1472</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -6166,13 +6166,13 @@
       <MJD>52451</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.220834</X>
+          <X>0.220863</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.476502</Y>
+          <Y>0.476457</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2289657</UT1_UTC>
+          <UT1_UTC>-0.2289647</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>-0.1487</LOD>
           <sigmaLOD>0.0026</sigmaLOD>
@@ -6201,13 +6201,13 @@
       <MJD>52452</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.222474</X>
+          <X>0.222503</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.473461</Y>
+          <Y>0.473416</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2288310</UT1_UTC>
+          <UT1_UTC>-0.2288300</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>-0.1040</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -6236,13 +6236,13 @@
       <MJD>52453</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.224454</X>
+          <X>0.224483</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.470404</Y>
+          <Y>0.470359</Y>
           <sigmaY>0.000041</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2287799</UT1_UTC>
+          <UT1_UTC>-0.2287789</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.0072</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -6271,13 +6271,13 @@
       <MJD>52454</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.225953</X>
+          <X>0.225982</X>
           <sigmaX>0.000042</sigmaX>
-          <Y>0.467473</Y>
+          <Y>0.467428</Y>
           <sigmaY>0.000030</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2288384</UT1_UTC>
+          <UT1_UTC>-0.2288374</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.0974</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -6306,13 +6306,13 @@
       <MJD>52455</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.227124</X>
+          <X>0.227153</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.464724</Y>
+          <Y>0.464679</Y>
           <sigmaY>0.000035</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2289721</UT1_UTC>
+          <UT1_UTC>-0.2289711</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>0.1799</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -6341,13 +6341,13 @@
       <MJD>52456</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.228064</X>
+          <X>0.228093</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.461799</Y>
+          <Y>0.461754</Y>
           <sigmaY>0.000040</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2292096</UT1_UTC>
+          <UT1_UTC>-0.2292086</UT1_UTC>
           <sigmaUT1_UTC>0.0000027</sigmaUT1_UTC>
           <LOD>0.2966</LOD>
           <sigmaLOD>0.0017</sigmaLOD>
@@ -6376,13 +6376,13 @@
       <MJD>52457</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.228649</X>
+          <X>0.228678</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.458648</Y>
+          <Y>0.458602</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2295668</UT1_UTC>
+          <UT1_UTC>-0.2295658</UT1_UTC>
           <sigmaUT1_UTC>0.0000024</sigmaUT1_UTC>
           <LOD>0.4177</LOD>
           <sigmaLOD>0.0018</sigmaLOD>
@@ -6411,13 +6411,13 @@
       <MJD>52458</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.229456</X>
+          <X>0.229486</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.455885</Y>
+          <Y>0.455839</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2300143</UT1_UTC>
+          <UT1_UTC>-0.2300133</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>0.4468</LOD>
           <sigmaLOD>0.0017</sigmaLOD>
@@ -6446,13 +6446,13 @@
       <MJD>52459</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.229908</X>
+          <X>0.229938</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.452933</Y>
+          <Y>0.452887</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2304326</UT1_UTC>
+          <UT1_UTC>-0.2304316</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>0.3926</LOD>
           <sigmaLOD>0.0018</sigmaLOD>
@@ -6481,13 +6481,13 @@
       <MJD>52460</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.230304</X>
+          <X>0.230334</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.449857</Y>
+          <Y>0.449811</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2307892</UT1_UTC>
+          <UT1_UTC>-0.2307882</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>0.3073</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -6516,13 +6516,13 @@
       <MJD>52461</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.230792</X>
+          <X>0.230822</X>
           <sigmaX>0.000042</sigmaX>
-          <Y>0.446563</Y>
+          <Y>0.446517</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2310298</UT1_UTC>
+          <UT1_UTC>-0.2310288</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>0.1696</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -6551,13 +6551,13 @@
       <MJD>52462</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.231517</X>
+          <X>0.231547</X>
           <sigmaX>0.000033</sigmaX>
-          <Y>0.443096</Y>
+          <Y>0.443050</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2311259</UT1_UTC>
+          <UT1_UTC>-0.2311249</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.0245</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -6586,13 +6586,13 @@
       <MJD>52463</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.232336</X>
+          <X>0.232366</X>
           <sigmaX>0.000037</sigmaX>
-          <Y>0.439794</Y>
+          <Y>0.439748</Y>
           <sigmaY>0.000096</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2310826</UT1_UTC>
+          <UT1_UTC>-0.2310816</UT1_UTC>
           <sigmaUT1_UTC>0.0000062</sigmaUT1_UTC>
           <LOD>-0.1093</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -6621,13 +6621,13 @@
       <MJD>52464</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.233080</X>
+          <X>0.233110</X>
           <sigmaX>0.000043</sigmaX>
-          <Y>0.436527</Y>
+          <Y>0.436481</Y>
           <sigmaY>0.000090</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2309171</UT1_UTC>
+          <UT1_UTC>-0.2309161</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>-0.2139</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -6656,13 +6656,13 @@
       <MJD>52465</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.234015</X>
+          <X>0.234045</X>
           <sigmaX>0.000040</sigmaX>
-          <Y>0.433355</Y>
+          <Y>0.433309</Y>
           <sigmaY>0.000093</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2306710</UT1_UTC>
+          <UT1_UTC>-0.2306700</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>-0.2699</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -6691,13 +6691,13 @@
       <MJD>52466</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.235456</X>
+          <X>0.235486</X>
           <sigmaX>0.000040</sigmaX>
-          <Y>0.430491</Y>
+          <Y>0.430445</Y>
           <sigmaY>0.000093</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2303936</UT1_UTC>
+          <UT1_UTC>-0.2303926</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>-0.2769</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -6726,13 +6726,13 @@
       <MJD>52467</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.236714</X>
+          <X>0.236744</X>
           <sigmaX>0.000037</sigmaX>
-          <Y>0.427627</Y>
+          <Y>0.427581</Y>
           <sigmaY>0.000091</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2301718</UT1_UTC>
+          <UT1_UTC>-0.2301708</UT1_UTC>
           <sigmaUT1_UTC>0.0000056</sigmaUT1_UTC>
           <LOD>-0.1201</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -6761,13 +6761,13 @@
       <MJD>52468</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.238100</X>
+          <X>0.238130</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.424658</Y>
+          <Y>0.424612</Y>
           <sigmaY>0.000081</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2301873</UT1_UTC>
+          <UT1_UTC>-0.2301863</UT1_UTC>
           <sigmaUT1_UTC>0.0000068</sigmaUT1_UTC>
           <LOD>0.1383</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -6796,13 +6796,13 @@
       <MJD>52469</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.239146</X>
+          <X>0.239176</X>
           <sigmaX>0.000063</sigmaX>
-          <Y>0.421593</Y>
+          <Y>0.421547</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2304372</UT1_UTC>
+          <UT1_UTC>-0.2304362</UT1_UTC>
           <sigmaUT1_UTC>0.0000051</sigmaUT1_UTC>
           <LOD>0.3633</LOD>
           <sigmaLOD>0.0047</sigmaLOD>
@@ -6831,13 +6831,13 @@
       <MJD>52470</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.240173</X>
+          <X>0.240203</X>
           <sigmaX>0.000061</sigmaX>
-          <Y>0.418536</Y>
+          <Y>0.418490</Y>
           <sigmaY>0.000040</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2308975</UT1_UTC>
+          <UT1_UTC>-0.2308965</UT1_UTC>
           <sigmaUT1_UTC>0.0000064</sigmaUT1_UTC>
           <LOD>0.5393</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -6866,13 +6866,13 @@
       <MJD>52471</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.241165</X>
+          <X>0.241195</X>
           <sigmaX>0.000066</sigmaX>
-          <Y>0.415733</Y>
+          <Y>0.415687</Y>
           <sigmaY>0.000037</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2314760</UT1_UTC>
+          <UT1_UTC>-0.2314750</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>0.5958</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -6901,13 +6901,13 @@
       <MJD>52472</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.241859</X>
+          <X>0.241889</X>
           <sigmaX>0.000062</sigmaX>
-          <Y>0.413012</Y>
+          <Y>0.412966</Y>
           <sigmaY>0.000043</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2320498</UT1_UTC>
+          <UT1_UTC>-0.2320488</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.5343</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -6936,13 +6936,13 @@
       <MJD>52473</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.242859</X>
+          <X>0.242889</X>
           <sigmaX>0.000069</sigmaX>
-          <Y>0.410572</Y>
+          <Y>0.410526</Y>
           <sigmaY>0.000044</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2325185</UT1_UTC>
+          <UT1_UTC>-0.2325175</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.3944</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -6971,13 +6971,13 @@
       <MJD>52474</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.243995</X>
+          <X>0.244025</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.408387</Y>
+          <Y>0.408341</Y>
           <sigmaY>0.000041</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2328096</UT1_UTC>
+          <UT1_UTC>-0.2328086</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>0.1674</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -7006,13 +7006,13 @@
       <MJD>52475</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.244275</X>
+          <X>0.244305</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.405843</Y>
+          <Y>0.405797</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2328288</UT1_UTC>
+          <UT1_UTC>-0.2328278</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>-0.1331</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -7041,13 +7041,13 @@
       <MJD>52476</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.244721</X>
+          <X>0.244751</X>
           <sigmaX>0.000064</sigmaX>
-          <Y>0.402953</Y>
+          <Y>0.402907</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2325526</UT1_UTC>
+          <UT1_UTC>-0.2325516</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>-0.4061</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -7076,13 +7076,13 @@
       <MJD>52477</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.245474</X>
+          <X>0.245504</X>
           <sigmaX>0.000067</sigmaX>
-          <Y>0.399977</Y>
+          <Y>0.399931</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2320464</UT1_UTC>
+          <UT1_UTC>-0.2320454</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>-0.5896</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -7111,13 +7111,13 @@
       <MJD>52478</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.246096</X>
+          <X>0.246126</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.397083</Y>
+          <Y>0.397037</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2314028</UT1_UTC>
+          <UT1_UTC>-0.2314018</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>-0.6850</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -7146,13 +7146,13 @@
       <MJD>52479</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.246645</X>
+          <X>0.246675</X>
           <sigmaX>0.000063</sigmaX>
-          <Y>0.394323</Y>
+          <Y>0.394277</Y>
           <sigmaY>0.000071</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2306954</UT1_UTC>
+          <UT1_UTC>-0.2306944</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>-0.7235</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -7181,13 +7181,13 @@
       <MJD>52480</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.246879</X>
+          <X>0.246909</X>
           <sigmaX>0.000063</sigmaX>
-          <Y>0.391417</Y>
+          <Y>0.391371</Y>
           <sigmaY>0.000074</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2299911</UT1_UTC>
+          <UT1_UTC>-0.2299901</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>-0.6562</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -7216,13 +7216,13 @@
       <MJD>52481</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.246723</X>
+          <X>0.246753</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.388105</Y>
+          <Y>0.388059</Y>
           <sigmaY>0.000069</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2294092</UT1_UTC>
+          <UT1_UTC>-0.2294082</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>-0.5102</LOD>
           <sigmaLOD>0.0020</sigmaLOD>
@@ -7251,13 +7251,13 @@
       <MJD>52482</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.246799</X>
+          <X>0.246829</X>
           <sigmaX>0.000061</sigmaX>
-          <Y>0.384574</Y>
+          <Y>0.384528</Y>
           <sigmaY>0.000072</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2289674</UT1_UTC>
+          <UT1_UTC>-0.2289664</UT1_UTC>
           <sigmaUT1_UTC>0.0000027</sigmaUT1_UTC>
           <LOD>-0.3739</LOD>
           <sigmaLOD>0.0020</sigmaLOD>
@@ -7286,13 +7286,13 @@
       <MJD>52483</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.247075</X>
+          <X>0.247105</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.380820</Y>
+          <Y>0.380774</Y>
           <sigmaY>0.000076</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2286586</UT1_UTC>
+          <UT1_UTC>-0.2286576</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>-0.2460</LOD>
           <sigmaLOD>0.0020</sigmaLOD>
@@ -7321,13 +7321,13 @@
       <MJD>52484</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.247598</X>
+          <X>0.247628</X>
           <sigmaX>0.000080</sigmaX>
-          <Y>0.377038</Y>
+          <Y>0.376992</Y>
           <sigmaY>0.000076</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2284602</UT1_UTC>
+          <UT1_UTC>-0.2284592</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>-0.1638</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -7356,13 +7356,13 @@
       <MJD>52485</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.248438</X>
+          <X>0.248468</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.373347</Y>
+          <Y>0.373301</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2283027</UT1_UTC>
+          <UT1_UTC>-0.2283017</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>-0.1664</LOD>
           <sigmaLOD>0.0020</sigmaLOD>
@@ -7391,13 +7391,13 @@
       <MJD>52486</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.249745</X>
+          <X>0.249775</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.370070</Y>
+          <Y>0.370024</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2281091</UT1_UTC>
+          <UT1_UTC>-0.2281081</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>-0.2239</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -7426,13 +7426,13 @@
       <MJD>52487</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.251173</X>
+          <X>0.251203</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.367076</Y>
+          <Y>0.367030</Y>
           <sigmaY>0.000072</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2278496</UT1_UTC>
+          <UT1_UTC>-0.2278486</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>-0.2971</LOD>
           <sigmaLOD>0.0018</sigmaLOD>
@@ -7461,13 +7461,13 @@
       <MJD>52488</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.252187</X>
+          <X>0.252217</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.364338</Y>
+          <Y>0.364292</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2275151</UT1_UTC>
+          <UT1_UTC>-0.2275141</UT1_UTC>
           <sigmaUT1_UTC>0.0000025</sigmaUT1_UTC>
           <LOD>-0.3695</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -7496,13 +7496,13 @@
       <MJD>52489</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.252929</X>
+          <X>0.252959</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.361776</Y>
+          <Y>0.361730</Y>
           <sigmaY>0.000041</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2271005</UT1_UTC>
+          <UT1_UTC>-0.2270995</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>-0.4721</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -7531,15 +7531,15 @@
       <MJD>52490</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.253899</X>
+          <X>0.253929</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.359208</Y>
+          <Y>0.359162</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2265596</UT1_UTC>
+          <UT1_UTC>-0.2265586</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
-          <LOD>-0.6085</LOD>
+          <LOD>-0.6086</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
         </UT1>
         <nutation type="iers">
@@ -7566,15 +7566,15 @@
       <MJD>52491</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.254903</X>
+          <X>0.254933</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.356553</Y>
+          <Y>0.356507</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2258951</UT1_UTC>
+          <UT1_UTC>-0.2258940</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
-          <LOD>-0.7099</LOD>
+          <LOD>-0.7100</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
         </UT1>
         <nutation type="iers">
@@ -7601,13 +7601,13 @@
       <MJD>52492</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.255611</X>
+          <X>0.255641</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.353647</Y>
+          <Y>0.353601</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2251636</UT1_UTC>
+          <UT1_UTC>-0.2251625</UT1_UTC>
           <sigmaUT1_UTC>0.0000040</sigmaUT1_UTC>
           <LOD>-0.7398</LOD>
           <sigmaLOD>0.0026</sigmaLOD>
@@ -7636,13 +7636,13 @@
       <MJD>52493</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.256704</X>
+          <X>0.256734</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.350458</Y>
+          <Y>0.350412</Y>
           <sigmaY>0.000068</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2244479</UT1_UTC>
+          <UT1_UTC>-0.2244468</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>-0.6723</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -7671,13 +7671,13 @@
       <MJD>52494</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.257836</X>
+          <X>0.257866</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.347638</Y>
+          <Y>0.347592</Y>
           <sigmaY>0.000068</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2238593</UT1_UTC>
+          <UT1_UTC>-0.2238582</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>-0.4837</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -7706,13 +7706,13 @@
       <MJD>52495</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.258991</X>
+          <X>0.259021</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.345131</Y>
+          <Y>0.345085</Y>
           <sigmaY>0.000071</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2235144</UT1_UTC>
+          <UT1_UTC>-0.2235133</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>-0.1934</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -7741,13 +7741,13 @@
       <MJD>52496</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.259859</X>
+          <X>0.259889</X>
           <sigmaX>0.000040</sigmaX>
-          <Y>0.342481</Y>
+          <Y>0.342435</Y>
           <sigmaY>0.000065</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2234807</UT1_UTC>
+          <UT1_UTC>-0.2234796</UT1_UTC>
           <sigmaUT1_UTC>0.0000053</sigmaUT1_UTC>
           <LOD>0.1214</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -7776,13 +7776,13 @@
       <MJD>52497</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.260365</X>
+          <X>0.260395</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.339920</Y>
+          <Y>0.339874</Y>
           <sigmaY>0.000080</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2237406</UT1_UTC>
+          <UT1_UTC>-0.2237395</UT1_UTC>
           <sigmaUT1_UTC>0.0000057</sigmaUT1_UTC>
           <LOD>0.3863</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -7811,13 +7811,13 @@
       <MJD>52498</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.260471</X>
+          <X>0.260501</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.337072</Y>
+          <Y>0.337026</Y>
           <sigmaY>0.000081</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2242214</UT1_UTC>
+          <UT1_UTC>-0.2242203</UT1_UTC>
           <sigmaUT1_UTC>0.0000056</sigmaUT1_UTC>
           <LOD>0.5554</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -7846,13 +7846,13 @@
       <MJD>52499</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.260665</X>
+          <X>0.260695</X>
           <sigmaX>0.000060</sigmaX>
-          <Y>0.333874</Y>
+          <Y>0.333828</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2248006</UT1_UTC>
+          <UT1_UTC>-0.2247995</UT1_UTC>
           <sigmaUT1_UTC>0.0000065</sigmaUT1_UTC>
           <LOD>0.5720</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -7881,13 +7881,13 @@
       <MJD>52500</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.260806</X>
+          <X>0.260836</X>
           <sigmaX>0.000066</sigmaX>
-          <Y>0.331087</Y>
+          <Y>0.331041</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2253245</UT1_UTC>
+          <UT1_UTC>-0.2253234</UT1_UTC>
           <sigmaUT1_UTC>0.0000062</sigmaUT1_UTC>
           <LOD>0.4658</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -7916,13 +7916,13 @@
       <MJD>52501</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.260752</X>
+          <X>0.260782</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.328395</Y>
+          <Y>0.328349</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2257052</UT1_UTC>
+          <UT1_UTC>-0.2257041</UT1_UTC>
           <sigmaUT1_UTC>0.0000063</sigmaUT1_UTC>
           <LOD>0.2786</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -7951,13 +7951,13 @@
       <MJD>52502</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.260518</X>
+          <X>0.260548</X>
           <sigmaX>0.000071</sigmaX>
-          <Y>0.325825</Y>
+          <Y>0.325779</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2258626</UT1_UTC>
+          <UT1_UTC>-0.2258615</UT1_UTC>
           <sigmaUT1_UTC>0.0000048</sigmaUT1_UTC>
           <LOD>0.0340</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -7986,13 +7986,13 @@
       <MJD>52503</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.260207</X>
+          <X>0.260237</X>
           <sigmaX>0.000064</sigmaX>
-          <Y>0.323203</Y>
+          <Y>0.323157</Y>
           <sigmaY>0.000040</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2257834</UT1_UTC>
+          <UT1_UTC>-0.2257823</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>-0.1799</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -8021,13 +8021,13 @@
       <MJD>52504</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.259706</X>
+          <X>0.259736</X>
           <sigmaX>0.000064</sigmaX>
-          <Y>0.320514</Y>
+          <Y>0.320468</Y>
           <sigmaY>0.000048</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2255272</UT1_UTC>
+          <UT1_UTC>-0.2255261</UT1_UTC>
           <sigmaUT1_UTC>0.0000039</sigmaUT1_UTC>
           <LOD>-0.3204</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -8056,13 +8056,13 @@
       <MJD>52505</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.259084</X>
+          <X>0.259114</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.317774</Y>
+          <Y>0.317728</Y>
           <sigmaY>0.000044</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2251672</UT1_UTC>
+          <UT1_UTC>-0.2251661</UT1_UTC>
           <sigmaUT1_UTC>0.0000046</sigmaUT1_UTC>
           <LOD>-0.3871</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -8091,13 +8091,13 @@
       <MJD>52506</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.258481</X>
+          <X>0.258511</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.314948</Y>
+          <Y>0.314902</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2247777</UT1_UTC>
+          <UT1_UTC>-0.2247766</UT1_UTC>
           <sigmaUT1_UTC>0.0000041</sigmaUT1_UTC>
           <LOD>-0.3797</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -8126,13 +8126,13 @@
       <MJD>52507</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.257772</X>
+          <X>0.257802</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.311948</Y>
+          <Y>0.311902</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2244431</UT1_UTC>
+          <UT1_UTC>-0.2244420</UT1_UTC>
           <sigmaUT1_UTC>0.0000039</sigmaUT1_UTC>
           <LOD>-0.2664</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -8161,13 +8161,13 @@
       <MJD>52508</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.257179</X>
+          <X>0.257209</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.308862</Y>
+          <Y>0.308816</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2242709</UT1_UTC>
+          <UT1_UTC>-0.2242698</UT1_UTC>
           <sigmaUT1_UTC>0.0000039</sigmaUT1_UTC>
           <LOD>-0.0752</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -8196,13 +8196,13 @@
       <MJD>52509</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.256770</X>
+          <X>0.256800</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.305614</Y>
+          <Y>0.305568</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2242700</UT1_UTC>
+          <UT1_UTC>-0.2242689</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>0.0478</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -8231,13 +8231,13 @@
       <MJD>52510</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.256200</X>
+          <X>0.256230</X>
           <sigmaX>0.000040</sigmaX>
-          <Y>0.302303</Y>
+          <Y>0.302257</Y>
           <sigmaY>0.000030</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2243570</UT1_UTC>
+          <UT1_UTC>-0.2243559</UT1_UTC>
           <sigmaUT1_UTC>0.0000045</sigmaUT1_UTC>
           <LOD>0.1422</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -8266,13 +8266,13 @@
       <MJD>52511</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.255501</X>
+          <X>0.255531</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.298903</Y>
+          <Y>0.298857</Y>
           <sigmaY>0.000044</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2245600</UT1_UTC>
+          <UT1_UTC>-0.2245589</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>0.2534</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -8301,13 +8301,13 @@
       <MJD>52512</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.254836</X>
+          <X>0.254866</X>
           <sigmaX>0.000039</sigmaX>
-          <Y>0.295398</Y>
+          <Y>0.295352</Y>
           <sigmaY>0.000043</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2248457</UT1_UTC>
+          <UT1_UTC>-0.2248446</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>0.3102</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -8336,13 +8336,13 @@
       <MJD>52513</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.254441</X>
+          <X>0.254471</X>
           <sigmaX>0.000040</sigmaX>
-          <Y>0.291942</Y>
+          <Y>0.291896</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2251654</UT1_UTC>
+          <UT1_UTC>-0.2251643</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.3218</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -8371,13 +8371,13 @@
       <MJD>52514</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.254507</X>
+          <X>0.254537</X>
           <sigmaX>0.000033</sigmaX>
-          <Y>0.288681</Y>
+          <Y>0.288635</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2254719</UT1_UTC>
+          <UT1_UTC>-0.2254708</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.2811</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -8406,13 +8406,13 @@
       <MJD>52515</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.254497</X>
+          <X>0.254527</X>
           <sigmaX>0.000036</sigmaX>
-          <Y>0.285624</Y>
+          <Y>0.285578</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2257069</UT1_UTC>
+          <UT1_UTC>-0.2257058</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.1784</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -8441,13 +8441,13 @@
       <MJD>52516</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.254069</X>
+          <X>0.254099</X>
           <sigmaX>0.000033</sigmaX>
-          <Y>0.282537</Y>
+          <Y>0.282491</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2258174</UT1_UTC>
+          <UT1_UTC>-0.2258163</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>0.0419</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -8476,13 +8476,13 @@
       <MJD>52517</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.253523</X>
+          <X>0.253553</X>
           <sigmaX>0.000028</sigmaX>
-          <Y>0.279420</Y>
+          <Y>0.279374</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2257942</UT1_UTC>
+          <UT1_UTC>-0.2257931</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>-0.0841</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -8511,13 +8511,13 @@
       <MJD>52518</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.252734</X>
+          <X>0.252764</X>
           <sigmaX>0.000028</sigmaX>
-          <Y>0.276284</Y>
+          <Y>0.276238</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2256569</UT1_UTC>
+          <UT1_UTC>-0.2256558</UT1_UTC>
           <sigmaUT1_UTC>0.0000047</sigmaUT1_UTC>
           <LOD>-0.1871</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -8546,13 +8546,13 @@
       <MJD>52519</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.251556</X>
+          <X>0.251586</X>
           <sigmaX>0.000042</sigmaX>
-          <Y>0.273083</Y>
+          <Y>0.273037</Y>
           <sigmaY>0.000063</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2254314</UT1_UTC>
+          <UT1_UTC>-0.2254303</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>-0.2560</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -8581,13 +8581,13 @@
       <MJD>52520</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.250107</X>
+          <X>0.250137</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.269917</Y>
+          <Y>0.269871</Y>
           <sigmaY>0.000070</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2251709</UT1_UTC>
+          <UT1_UTC>-0.2251698</UT1_UTC>
           <sigmaUT1_UTC>0.0000067</sigmaUT1_UTC>
           <LOD>-0.2468</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -8616,13 +8616,13 @@
       <MJD>52521</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.248931</X>
+          <X>0.248961</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.266904</Y>
+          <Y>0.266858</Y>
           <sigmaY>0.000066</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2249772</UT1_UTC>
+          <UT1_UTC>-0.2249761</UT1_UTC>
           <sigmaUT1_UTC>0.0000064</sigmaUT1_UTC>
           <LOD>-0.1192</LOD>
           <sigmaLOD>0.0046</sigmaLOD>
@@ -8651,13 +8651,13 @@
       <MJD>52522</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.248281</X>
+          <X>0.248311</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.263888</Y>
+          <Y>0.263842</Y>
           <sigmaY>0.000068</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2249561</UT1_UTC>
+          <UT1_UTC>-0.2249550</UT1_UTC>
           <sigmaUT1_UTC>0.0000064</sigmaUT1_UTC>
           <LOD>0.0792</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -8686,13 +8686,13 @@
       <MJD>52523</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.247336</X>
+          <X>0.247366</X>
           <sigmaX>0.000064</sigmaX>
-          <Y>0.260921</Y>
+          <Y>0.260875</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2251620</UT1_UTC>
+          <UT1_UTC>-0.2251609</UT1_UTC>
           <sigmaUT1_UTC>0.0000062</sigmaUT1_UTC>
           <LOD>0.3568</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -8721,13 +8721,13 @@
       <MJD>52524</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.246180</X>
+          <X>0.246210</X>
           <sigmaX>0.000078</sigmaX>
-          <Y>0.258256</Y>
+          <Y>0.258210</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2256930</UT1_UTC>
+          <UT1_UTC>-0.2256919</UT1_UTC>
           <sigmaUT1_UTC>0.0000057</sigmaUT1_UTC>
           <LOD>0.7042</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -8756,13 +8756,13 @@
       <MJD>52525</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.244601</X>
+          <X>0.244631</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.255886</Y>
+          <Y>0.255840</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2265423</UT1_UTC>
+          <UT1_UTC>-0.2265412</UT1_UTC>
           <sigmaUT1_UTC>0.0000056</sigmaUT1_UTC>
           <LOD>0.9673</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -8791,13 +8791,13 @@
       <MJD>52526</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.242741</X>
+          <X>0.242771</X>
           <sigmaX>0.000070</sigmaX>
-          <Y>0.253429</Y>
+          <Y>0.253383</Y>
           <sigmaY>0.000041</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2275682</UT1_UTC>
+          <UT1_UTC>-0.2275671</UT1_UTC>
           <sigmaUT1_UTC>0.0000056</sigmaUT1_UTC>
           <LOD>1.0521</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -8826,13 +8826,13 @@
       <MJD>52527</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.241014</X>
+          <X>0.241044</X>
           <sigmaX>0.000074</sigmaX>
-          <Y>0.250804</Y>
+          <Y>0.250758</Y>
           <sigmaY>0.000074</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2285833</UT1_UTC>
+          <UT1_UTC>-0.2285822</UT1_UTC>
           <sigmaUT1_UTC>0.0000062</sigmaUT1_UTC>
           <LOD>0.9474</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -8861,13 +8861,13 @@
       <MJD>52528</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.239250</X>
+          <X>0.239280</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.248255</Y>
+          <Y>0.248209</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2294118</UT1_UTC>
+          <UT1_UTC>-0.2294107</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>0.6893</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -8896,13 +8896,13 @@
       <MJD>52529</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.237420</X>
+          <X>0.237450</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.245671</Y>
+          <Y>0.245625</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2299616</UT1_UTC>
+          <UT1_UTC>-0.2299605</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>0.4304</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -8931,13 +8931,13 @@
       <MJD>52530</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.235705</X>
+          <X>0.235735</X>
           <sigmaX>0.000062</sigmaX>
-          <Y>0.243009</Y>
+          <Y>0.242963</Y>
           <sigmaY>0.000069</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2302917</UT1_UTC>
+          <UT1_UTC>-0.2302906</UT1_UTC>
           <sigmaUT1_UTC>0.0000051</sigmaUT1_UTC>
           <LOD>0.2288</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -8966,13 +8966,13 @@
       <MJD>52531</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.234173</X>
+          <X>0.234203</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.239925</Y>
+          <Y>0.239879</Y>
           <sigmaY>0.000073</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2304296</UT1_UTC>
+          <UT1_UTC>-0.2304285</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>0.0584</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -9001,13 +9001,13 @@
       <MJD>52532</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.232850</X>
+          <X>0.232880</X>
           <sigmaX>0.000048</sigmaX>
-          <Y>0.237037</Y>
+          <Y>0.236991</Y>
           <sigmaY>0.000070</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2304359</UT1_UTC>
+          <UT1_UTC>-0.2304348</UT1_UTC>
           <sigmaUT1_UTC>0.0000028</sigmaUT1_UTC>
           <LOD>-0.0298</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -9036,13 +9036,13 @@
       <MJD>52533</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.231644</X>
+          <X>0.231674</X>
           <sigmaX>0.000046</sigmaX>
-          <Y>0.234762</Y>
+          <Y>0.234716</Y>
           <sigmaY>0.000049</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2303965</UT1_UTC>
+          <UT1_UTC>-0.2303954</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>-0.0383</LOD>
           <sigmaLOD>0.0022</sigmaLOD>
@@ -9071,13 +9071,13 @@
       <MJD>52534</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.230112</X>
+          <X>0.230142</X>
           <sigmaX>0.000044</sigmaX>
-          <Y>0.232834</Y>
+          <Y>0.232788</Y>
           <sigmaY>0.000039</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2303733</UT1_UTC>
+          <UT1_UTC>-0.2303722</UT1_UTC>
           <sigmaUT1_UTC>0.0000033</sigmaUT1_UTC>
           <LOD>-0.0046</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -9106,13 +9106,13 @@
       <MJD>52535</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.227970</X>
+          <X>0.228000</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.231075</Y>
+          <Y>0.231029</Y>
           <sigmaY>0.000039</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2304003</UT1_UTC>
+          <UT1_UTC>-0.2303992</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>0.0681</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -9141,13 +9141,13 @@
       <MJD>52536</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.225270</X>
+          <X>0.225300</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.229380</Y>
+          <Y>0.229334</Y>
           <sigmaY>0.000036</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2305209</UT1_UTC>
+          <UT1_UTC>-0.2305198</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>0.1751</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -9176,13 +9176,13 @@
       <MJD>52537</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.222294</X>
+          <X>0.222324</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.227407</Y>
+          <Y>0.227361</Y>
           <sigmaY>0.000037</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2307509</UT1_UTC>
+          <UT1_UTC>-0.2307498</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.2835</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -9211,13 +9211,13 @@
       <MJD>52538</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.219413</X>
+          <X>0.219443</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.225193</Y>
+          <Y>0.225147</Y>
           <sigmaY>0.000036</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2310827</UT1_UTC>
+          <UT1_UTC>-0.2310816</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>0.3763</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -9246,13 +9246,13 @@
       <MJD>52539</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.216723</X>
+          <X>0.216753</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.222931</Y>
+          <Y>0.222885</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2314930</UT1_UTC>
+          <UT1_UTC>-0.2314919</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>0.4375</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -9281,13 +9281,13 @@
       <MJD>52540</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.214346</X>
+          <X>0.214376</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.220591</Y>
+          <Y>0.220545</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2319440</UT1_UTC>
+          <UT1_UTC>-0.2319429</UT1_UTC>
           <sigmaUT1_UTC>0.0000054</sigmaUT1_UTC>
           <LOD>0.4577</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -9316,13 +9316,13 @@
       <MJD>52541</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.212078</X>
+          <X>0.212108</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.217976</Y>
+          <Y>0.217930</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2323879</UT1_UTC>
+          <UT1_UTC>-0.2323868</UT1_UTC>
           <sigmaUT1_UTC>0.0000045</sigmaUT1_UTC>
           <LOD>0.4166</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -9351,13 +9351,13 @@
       <MJD>52542</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.210430</X>
+          <X>0.210460</X>
           <sigmaX>0.000047</sigmaX>
-          <Y>0.215675</Y>
+          <Y>0.215629</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2327584</UT1_UTC>
+          <UT1_UTC>-0.2327573</UT1_UTC>
           <sigmaUT1_UTC>0.0000048</sigmaUT1_UTC>
           <LOD>0.3192</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -9386,13 +9386,13 @@
       <MJD>52543</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.208745</X>
+          <X>0.208775</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.213329</Y>
+          <Y>0.213283</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2330071</UT1_UTC>
+          <UT1_UTC>-0.2330060</UT1_UTC>
           <sigmaUT1_UTC>0.0000048</sigmaUT1_UTC>
           <LOD>0.1643</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -9421,13 +9421,13 @@
       <MJD>52544</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.206753</X>
+          <X>0.206783</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.211071</Y>
+          <Y>0.211025</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2331064</UT1_UTC>
+          <UT1_UTC>-0.2331053</UT1_UTC>
           <sigmaUT1_UTC>0.0000045</sigmaUT1_UTC>
           <LOD>0.0676</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -9456,13 +9456,13 @@
       <MJD>52545</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.204723</X>
+          <X>0.204753</X>
           <sigmaX>0.000034</sigmaX>
-          <Y>0.208700</Y>
+          <Y>0.208654</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2331479</UT1_UTC>
+          <UT1_UTC>-0.2331468</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>-0.0121</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -9491,13 +9491,13 @@
       <MJD>52546</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.202655</X>
+          <X>0.202685</X>
           <sigmaX>0.000043</sigmaX>
-          <Y>0.206117</Y>
+          <Y>0.206071</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2330693</UT1_UTC>
+          <UT1_UTC>-0.2330682</UT1_UTC>
           <sigmaUT1_UTC>0.0000041</sigmaUT1_UTC>
           <LOD>-0.1304</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -9526,13 +9526,13 @@
       <MJD>52547</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.200570</X>
+          <X>0.200600</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.203416</Y>
+          <Y>0.203370</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2329159</UT1_UTC>
+          <UT1_UTC>-0.2329148</UT1_UTC>
           <sigmaUT1_UTC>0.0000068</sigmaUT1_UTC>
           <LOD>-0.1624</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -9561,13 +9561,13 @@
       <MJD>52548</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.198408</X>
+          <X>0.198438</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.200674</Y>
+          <Y>0.200628</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2327865</UT1_UTC>
+          <UT1_UTC>-0.2327854</UT1_UTC>
           <sigmaUT1_UTC>0.0000052</sigmaUT1_UTC>
           <LOD>-0.0683</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -9596,13 +9596,13 @@
       <MJD>52549</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.196542</X>
+          <X>0.196572</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.198328</Y>
+          <Y>0.198282</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2328054</UT1_UTC>
+          <UT1_UTC>-0.2328043</UT1_UTC>
           <sigmaUT1_UTC>0.0000045</sigmaUT1_UTC>
           <LOD>0.1040</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -9631,13 +9631,13 @@
       <MJD>52550</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.194637</X>
+          <X>0.194667</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.195924</Y>
+          <Y>0.195878</Y>
           <sigmaY>0.000059</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2330046</UT1_UTC>
+          <UT1_UTC>-0.2330035</UT1_UTC>
           <sigmaUT1_UTC>0.0000045</sigmaUT1_UTC>
           <LOD>0.3065</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -9666,13 +9666,13 @@
       <MJD>52551</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.192430</X>
+          <X>0.192460</X>
           <sigmaX>0.000050</sigmaX>
-          <Y>0.193696</Y>
+          <Y>0.193650</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2334575</UT1_UTC>
+          <UT1_UTC>-0.2334564</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>0.6264</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -9701,13 +9701,13 @@
       <MJD>52552</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.189832</X>
+          <X>0.189862</X>
           <sigmaX>0.000047</sigmaX>
-          <Y>0.191603</Y>
+          <Y>0.191557</Y>
           <sigmaY>0.000046</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2342588</UT1_UTC>
+          <UT1_UTC>-0.2342577</UT1_UTC>
           <sigmaUT1_UTC>0.0000051</sigmaUT1_UTC>
           <LOD>0.9507</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -9736,13 +9736,13 @@
       <MJD>52553</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.187291</X>
+          <X>0.187321</X>
           <sigmaX>0.000042</sigmaX>
-          <Y>0.189533</Y>
+          <Y>0.189487</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2353100</UT1_UTC>
+          <UT1_UTC>-0.2353089</UT1_UTC>
           <sigmaUT1_UTC>0.0000037</sigmaUT1_UTC>
           <LOD>1.1285</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -9771,13 +9771,13 @@
       <MJD>52554</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.184929</X>
+          <X>0.184959</X>
           <sigmaX>0.000051</sigmaX>
-          <Y>0.187426</Y>
+          <Y>0.187380</Y>
           <sigmaY>0.000066</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2364604</UT1_UTC>
+          <UT1_UTC>-0.2364593</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>1.1403</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -9806,13 +9806,13 @@
       <MJD>52555</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.182500</X>
+          <X>0.182530</X>
           <sigmaX>0.000046</sigmaX>
-          <Y>0.185240</Y>
+          <Y>0.185194</Y>
           <sigmaY>0.000070</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2375363</UT1_UTC>
+          <UT1_UTC>-0.2375352</UT1_UTC>
           <sigmaUT1_UTC>0.0000053</sigmaUT1_UTC>
           <LOD>0.9893</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -9841,13 +9841,13 @@
       <MJD>52556</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.180014</X>
+          <X>0.180044</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.182905</Y>
+          <Y>0.182859</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2384066</UT1_UTC>
+          <UT1_UTC>-0.2384055</UT1_UTC>
           <sigmaUT1_UTC>0.0000048</sigmaUT1_UTC>
           <LOD>0.7411</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -9876,13 +9876,13 @@
       <MJD>52557</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.177914</X>
+          <X>0.177944</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.180906</Y>
+          <Y>0.180860</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2390116</UT1_UTC>
+          <UT1_UTC>-0.2390105</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>0.4723</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -9911,13 +9911,13 @@
       <MJD>52558</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.175502</X>
+          <X>0.175532</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.178972</Y>
+          <Y>0.178926</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2393664</UT1_UTC>
+          <UT1_UTC>-0.2393653</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.2493</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -9946,13 +9946,13 @@
       <MJD>52559</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.173104</X>
+          <X>0.173134</X>
           <sigmaX>0.000067</sigmaX>
-          <Y>0.177121</Y>
+          <Y>0.177075</Y>
           <sigmaY>0.000062</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2395435</UT1_UTC>
+          <UT1_UTC>-0.2395424</UT1_UTC>
           <sigmaUT1_UTC>0.0000057</sigmaUT1_UTC>
           <LOD>0.1262</LOD>
           <sigmaLOD>0.0031</sigmaLOD>
@@ -9981,13 +9981,13 @@
       <MJD>52560</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.170891</X>
+          <X>0.170921</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.175297</Y>
+          <Y>0.175251</Y>
           <sigmaY>0.000054</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2396600</UT1_UTC>
+          <UT1_UTC>-0.2396589</UT1_UTC>
           <sigmaUT1_UTC>0.0000038</sigmaUT1_UTC>
           <LOD>0.1265</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -10016,13 +10016,13 @@
       <MJD>52561</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.168459</X>
+          <X>0.168489</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.173640</Y>
+          <Y>0.173594</Y>
           <sigmaY>0.000070</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2398250</UT1_UTC>
+          <UT1_UTC>-0.2398239</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>0.2121</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -10051,13 +10051,13 @@
       <MJD>52562</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.165830</X>
+          <X>0.165860</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.171762</Y>
+          <Y>0.171716</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2400945</UT1_UTC>
+          <UT1_UTC>-0.2400934</UT1_UTC>
           <sigmaUT1_UTC>0.0000053</sigmaUT1_UTC>
           <LOD>0.3284</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -10086,13 +10086,13 @@
       <MJD>52563</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.163362</X>
+          <X>0.163392</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.170361</Y>
+          <Y>0.170315</Y>
           <sigmaY>0.000062</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2404862</UT1_UTC>
+          <UT1_UTC>-0.2404851</UT1_UTC>
           <sigmaUT1_UTC>0.0000043</sigmaUT1_UTC>
           <LOD>0.4578</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -10121,13 +10121,13 @@
       <MJD>52564</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.161161</X>
+          <X>0.161191</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.169098</Y>
+          <Y>0.169052</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2410196</UT1_UTC>
+          <UT1_UTC>-0.2410185</UT1_UTC>
           <sigmaUT1_UTC>0.0000037</sigmaUT1_UTC>
           <LOD>0.6158</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -10156,13 +10156,13 @@
       <MJD>52565</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.158373</X>
+          <X>0.158403</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.168042</Y>
+          <Y>0.167996</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2416995</UT1_UTC>
+          <UT1_UTC>-0.2416984</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.7188</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -10191,13 +10191,13 @@
       <MJD>52566</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.154501</X>
+          <X>0.154531</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.166926</Y>
+          <Y>0.166880</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2424331</UT1_UTC>
+          <UT1_UTC>-0.2424320</UT1_UTC>
           <sigmaUT1_UTC>0.0000039</sigmaUT1_UTC>
           <LOD>0.7493</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -10226,13 +10226,13 @@
       <MJD>52567</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.150222</X>
+          <X>0.150252</X>
           <sigmaX>0.000047</sigmaX>
-          <Y>0.165633</Y>
+          <Y>0.165587</Y>
           <sigmaY>0.000045</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2431924</UT1_UTC>
+          <UT1_UTC>-0.2431913</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>0.7626</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -10261,13 +10261,13 @@
       <MJD>52568</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.146588</X>
+          <X>0.146618</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.164097</Y>
+          <Y>0.164051</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2439489</UT1_UTC>
+          <UT1_UTC>-0.2439478</UT1_UTC>
           <sigmaUT1_UTC>0.0000032</sigmaUT1_UTC>
           <LOD>0.7479</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -10296,13 +10296,13 @@
       <MJD>52569</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.143125</X>
+          <X>0.143155</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.162817</Y>
+          <Y>0.162771</Y>
           <sigmaY>0.000052</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2446800</UT1_UTC>
+          <UT1_UTC>-0.2446789</UT1_UTC>
           <sigmaUT1_UTC>0.0000034</sigmaUT1_UTC>
           <LOD>0.7088</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -10331,13 +10331,13 @@
       <MJD>52570</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.139865</X>
+          <X>0.139895</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.161535</Y>
+          <Y>0.161489</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2453508</UT1_UTC>
+          <UT1_UTC>-0.2453497</UT1_UTC>
           <sigmaUT1_UTC>0.0000035</sigmaUT1_UTC>
           <LOD>0.6228</LOD>
           <sigmaLOD>0.0025</sigmaLOD>
@@ -10366,13 +10366,13 @@
       <MJD>52571</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.136532</X>
+          <X>0.136562</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.160272</Y>
+          <Y>0.160226</Y>
           <sigmaY>0.000065</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2459123</UT1_UTC>
+          <UT1_UTC>-0.2459112</UT1_UTC>
           <sigmaUT1_UTC>0.0000036</sigmaUT1_UTC>
           <LOD>0.4971</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -10401,13 +10401,13 @@
       <MJD>52572</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.132936</X>
+          <X>0.132966</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.158594</Y>
+          <Y>0.158548</Y>
           <sigmaY>0.000065</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2463393</UT1_UTC>
+          <UT1_UTC>-0.2463382</UT1_UTC>
           <sigmaUT1_UTC>0.0000031</sigmaUT1_UTC>
           <LOD>0.3545</LOD>
           <sigmaLOD>0.0023</sigmaLOD>
@@ -10436,13 +10436,13 @@
       <MJD>52573</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.129456</X>
+          <X>0.129486</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.156913</Y>
+          <Y>0.156867</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2466321</UT1_UTC>
+          <UT1_UTC>-0.2466310</UT1_UTC>
           <sigmaUT1_UTC>0.0000030</sigmaUT1_UTC>
           <LOD>0.2445</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -10471,13 +10471,13 @@
       <MJD>52574</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.125803</X>
+          <X>0.125833</X>
           <sigmaX>0.000049</sigmaX>
-          <Y>0.155422</Y>
+          <Y>0.155376</Y>
           <sigmaY>0.000067</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2468495</UT1_UTC>
+          <UT1_UTC>-0.2468484</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>0.1982</LOD>
           <sigmaLOD>0.0021</sigmaLOD>
@@ -10506,13 +10506,13 @@
       <MJD>52575</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.122254</X>
+          <X>0.122284</X>
           <sigmaX>0.000045</sigmaX>
-          <Y>0.154246</Y>
+          <Y>0.154200</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2470326</UT1_UTC>
+          <UT1_UTC>-0.2470315</UT1_UTC>
           <sigmaUT1_UTC>0.0000029</sigmaUT1_UTC>
           <LOD>0.1641</LOD>
           <sigmaLOD>0.0020</sigmaLOD>
@@ -10541,13 +10541,13 @@
       <MJD>52576</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.118706</X>
+          <X>0.118736</X>
           <sigmaX>0.000043</sigmaX>
-          <Y>0.153106</Y>
+          <Y>0.153060</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2472067</UT1_UTC>
+          <UT1_UTC>-0.2472056</UT1_UTC>
           <sigmaUT1_UTC>0.0000027</sigmaUT1_UTC>
           <LOD>0.2170</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -10576,13 +10576,13 @@
       <MJD>52577</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.115355</X>
+          <X>0.115385</X>
           <sigmaX>0.000042</sigmaX>
-          <Y>0.152376</Y>
+          <Y>0.152330</Y>
           <sigmaY>0.000042</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2475197</UT1_UTC>
+          <UT1_UTC>-0.2475186</UT1_UTC>
           <sigmaUT1_UTC>0.0000026</sigmaUT1_UTC>
           <LOD>0.4292</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -10611,13 +10611,13 @@
       <MJD>52578</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.111531</X>
+          <X>0.111561</X>
           <sigmaX>0.000040</sigmaX>
-          <Y>0.151681</Y>
+          <Y>0.151635</Y>
           <sigmaY>0.000041</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2480847</UT1_UTC>
+          <UT1_UTC>-0.2480836</UT1_UTC>
           <sigmaUT1_UTC>0.0000026</sigmaUT1_UTC>
           <LOD>0.7003</LOD>
           <sigmaLOD>0.0019</sigmaLOD>
@@ -10646,13 +10646,13 @@
       <MJD>52579</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.107433</X>
+          <X>0.107463</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.150953</Y>
+          <Y>0.150907</Y>
           <sigmaY>0.000037</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2489233</UT1_UTC>
+          <UT1_UTC>-0.2489222</UT1_UTC>
           <sigmaUT1_UTC>0.0000027</sigmaUT1_UTC>
           <LOD>0.9806</LOD>
           <sigmaLOD>0.0026</sigmaLOD>
@@ -10681,13 +10681,13 @@
       <MJD>52580</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.103528</X>
+          <X>0.103558</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.150220</Y>
+          <Y>0.150174</Y>
           <sigmaY>0.000053</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2500250</UT1_UTC>
+          <UT1_UTC>-0.2500239</UT1_UTC>
           <sigmaUT1_UTC>0.0000046</sigmaUT1_UTC>
           <LOD>1.1983</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -10716,13 +10716,13 @@
       <MJD>52581</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.099840</X>
+          <X>0.099870</X>
           <sigmaX>0.000070</sigmaX>
-          <Y>0.149613</Y>
+          <Y>0.149567</Y>
           <sigmaY>0.000076</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2512663</UT1_UTC>
+          <UT1_UTC>-0.2512652</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>1.2554</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -10751,13 +10751,13 @@
       <MJD>52582</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.096340</X>
+          <X>0.096370</X>
           <sigmaX>0.000098</sigmaX>
-          <Y>0.149155</Y>
+          <Y>0.149109</Y>
           <sigmaY>0.000092</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2524943</UT1_UTC>
+          <UT1_UTC>-0.2524932</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>1.1882</LOD>
           <sigmaLOD>0.0047</sigmaLOD>
@@ -10786,13 +10786,13 @@
       <MJD>52583</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.092431</X>
+          <X>0.092461</X>
           <sigmaX>0.000103</sigmaX>
-          <Y>0.148312</Y>
+          <Y>0.148266</Y>
           <sigmaY>0.000102</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2535899</UT1_UTC>
+          <UT1_UTC>-0.2535888</UT1_UTC>
           <sigmaUT1_UTC>0.0000080</sigmaUT1_UTC>
           <LOD>0.9627</LOD>
           <sigmaLOD>0.0046</sigmaLOD>
@@ -10821,13 +10821,13 @@
       <MJD>52584</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.088966</X>
+          <X>0.088996</X>
           <sigmaX>0.000093</sigmaX>
-          <Y>0.147796</Y>
+          <Y>0.147750</Y>
           <sigmaY>0.000097</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2544034</UT1_UTC>
+          <UT1_UTC>-0.2544023</UT1_UTC>
           <sigmaUT1_UTC>0.0000072</sigmaUT1_UTC>
           <LOD>0.6882</LOD>
           <sigmaLOD>0.0053</sigmaLOD>
@@ -10856,13 +10856,13 @@
       <MJD>52585</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.084710</X>
+          <X>0.084740</X>
           <sigmaX>0.000092</sigmaX>
-          <Y>0.147071</Y>
+          <Y>0.147025</Y>
           <sigmaY>0.000097</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2549806</UT1_UTC>
+          <UT1_UTC>-0.2549795</UT1_UTC>
           <sigmaUT1_UTC>0.0000071</sigmaUT1_UTC>
           <LOD>0.4567</LOD>
           <sigmaLOD>0.0048</sigmaLOD>
@@ -10891,13 +10891,13 @@
       <MJD>52586</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.080582</X>
+          <X>0.080612</X>
           <sigmaX>0.000091</sigmaX>
-          <Y>0.146398</Y>
+          <Y>0.146352</Y>
           <sigmaY>0.000104</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2553295</UT1_UTC>
+          <UT1_UTC>-0.2553284</UT1_UTC>
           <sigmaUT1_UTC>0.0000064</sigmaUT1_UTC>
           <LOD>0.2633</LOD>
           <sigmaLOD>0.0046</sigmaLOD>
@@ -10926,13 +10926,13 @@
       <MJD>52587</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.076630</X>
+          <X>0.076660</X>
           <sigmaX>0.000088</sigmaX>
-          <Y>0.145629</Y>
+          <Y>0.145583</Y>
           <sigmaY>0.000075</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2555296</UT1_UTC>
+          <UT1_UTC>-0.2555285</UT1_UTC>
           <sigmaUT1_UTC>0.0000059</sigmaUT1_UTC>
           <LOD>0.1369</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -10961,13 +10961,13 @@
       <MJD>52588</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.072769</X>
+          <X>0.072799</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.145101</Y>
+          <Y>0.145055</Y>
           <sigmaY>0.000074</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2556286</UT1_UTC>
+          <UT1_UTC>-0.2556275</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.0863</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -10996,13 +10996,13 @@
       <MJD>52589</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.069181</X>
+          <X>0.069211</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.144741</Y>
+          <Y>0.144695</Y>
           <sigmaY>0.000072</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2557366</UT1_UTC>
+          <UT1_UTC>-0.2557355</UT1_UTC>
           <sigmaUT1_UTC>0.0000056</sigmaUT1_UTC>
           <LOD>0.1388</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -11031,13 +11031,13 @@
       <MJD>52590</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.065842</X>
+          <X>0.065872</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.144469</Y>
+          <Y>0.144423</Y>
           <sigmaY>0.000077</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2559263</UT1_UTC>
+          <UT1_UTC>-0.2559252</UT1_UTC>
           <sigmaUT1_UTC>0.0000056</sigmaUT1_UTC>
           <LOD>0.2514</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -11066,13 +11066,13 @@
       <MJD>52591</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.062908</X>
+          <X>0.062938</X>
           <sigmaX>0.000074</sigmaX>
-          <Y>0.144079</Y>
+          <Y>0.144033</Y>
           <sigmaY>0.000080</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2562564</UT1_UTC>
+          <UT1_UTC>-0.2562553</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.4149</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -11101,13 +11101,13 @@
       <MJD>52592</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.059939</X>
+          <X>0.059969</X>
           <sigmaX>0.000071</sigmaX>
-          <Y>0.143936</Y>
+          <Y>0.143890</Y>
           <sigmaY>0.000079</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2567479</UT1_UTC>
+          <UT1_UTC>-0.2567468</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.5539</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
@@ -11136,13 +11136,13 @@
       <MJD>52593</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.056282</X>
+          <X>0.056312</X>
           <sigmaX>0.000067</sigmaX>
-          <Y>0.143903</Y>
+          <Y>0.143857</Y>
           <sigmaY>0.000082</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2573412</UT1_UTC>
+          <UT1_UTC>-0.2573401</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
           <LOD>0.6238</LOD>
           <sigmaLOD>0.0044</sigmaLOD>
@@ -11171,13 +11171,13 @@
       <MJD>52594</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.052960</X>
+          <X>0.052991</X>
           <sigmaX>0.000072</sigmaX>
-          <Y>0.143883</Y>
+          <Y>0.143837</Y>
           <sigmaY>0.000094</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2579816</UT1_UTC>
+          <UT1_UTC>-0.2579805</UT1_UTC>
           <sigmaUT1_UTC>0.0000073</sigmaUT1_UTC>
           <LOD>0.6522</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -11206,13 +11206,13 @@
       <MJD>52595</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.049708</X>
+          <X>0.049739</X>
           <sigmaX>0.000071</sigmaX>
-          <Y>0.143834</Y>
+          <Y>0.143788</Y>
           <sigmaY>0.000106</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2586314</UT1_UTC>
+          <UT1_UTC>-0.2586303</UT1_UTC>
           <sigmaUT1_UTC>0.0000057</sigmaUT1_UTC>
           <LOD>0.6382</LOD>
           <sigmaLOD>0.0048</sigmaLOD>
@@ -11241,13 +11241,13 @@
       <MJD>52596</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.046243</X>
+          <X>0.046274</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.143393</Y>
+          <Y>0.143347</Y>
           <sigmaY>0.000109</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2592435</UT1_UTC>
+          <UT1_UTC>-0.2592424</UT1_UTC>
           <sigmaUT1_UTC>0.0000063</sigmaUT1_UTC>
           <LOD>0.5806</LOD>
           <sigmaLOD>0.0046</sigmaLOD>
@@ -11276,13 +11276,13 @@
       <MJD>52597</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.042645</X>
+          <X>0.042676</X>
           <sigmaX>0.000066</sigmaX>
-          <Y>0.142733</Y>
+          <Y>0.142687</Y>
           <sigmaY>0.000111</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2597701</UT1_UTC>
+          <UT1_UTC>-0.2597690</UT1_UTC>
           <sigmaUT1_UTC>0.0000072</sigmaUT1_UTC>
           <LOD>0.4556</LOD>
           <sigmaLOD>0.0046</sigmaLOD>
@@ -11311,13 +11311,13 @@
       <MJD>52598</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.039000</X>
+          <X>0.039031</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.142309</Y>
+          <Y>0.142263</Y>
           <sigmaY>0.000100</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2601427</UT1_UTC>
+          <UT1_UTC>-0.2601416</UT1_UTC>
           <sigmaUT1_UTC>0.0000066</sigmaUT1_UTC>
           <LOD>0.2946</LOD>
           <sigmaLOD>0.0049</sigmaLOD>
@@ -11346,13 +11346,13 @@
       <MJD>52599</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.035620</X>
+          <X>0.035651</X>
           <sigmaX>0.000069</sigmaX>
-          <Y>0.141874</Y>
+          <Y>0.141828</Y>
           <sigmaY>0.000099</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2603838</UT1_UTC>
+          <UT1_UTC>-0.2603827</UT1_UTC>
           <sigmaUT1_UTC>0.0000066</sigmaUT1_UTC>
           <LOD>0.2072</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -11381,13 +11381,13 @@
       <MJD>52600</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.032359</X>
+          <X>0.032390</X>
           <sigmaX>0.000070</sigmaX>
-          <Y>0.141668</Y>
+          <Y>0.141622</Y>
           <sigmaY>0.000086</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2605755</UT1_UTC>
+          <UT1_UTC>-0.2605744</UT1_UTC>
           <sigmaUT1_UTC>0.0000062</sigmaUT1_UTC>
           <LOD>0.1752</LOD>
           <sigmaLOD>0.0047</sigmaLOD>
@@ -11416,13 +11416,13 @@
       <MJD>52601</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.029432</X>
+          <X>0.029463</X>
           <sigmaX>0.000060</sigmaX>
-          <Y>0.141934</Y>
+          <Y>0.141888</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2607362</UT1_UTC>
+          <UT1_UTC>-0.2607351</UT1_UTC>
           <sigmaUT1_UTC>0.0000067</sigmaUT1_UTC>
           <LOD>0.1493</LOD>
           <sigmaLOD>0.0039</sigmaLOD>
@@ -11451,13 +11451,13 @@
       <MJD>52602</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.026255</X>
+          <X>0.026286</X>
           <sigmaX>0.000057</sigmaX>
-          <Y>0.142148</Y>
+          <Y>0.142102</Y>
           <sigmaY>0.000061</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2608961</UT1_UTC>
+          <UT1_UTC>-0.2608950</UT1_UTC>
           <sigmaUT1_UTC>0.0000047</sigmaUT1_UTC>
           <LOD>0.1894</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -11486,13 +11486,13 @@
       <MJD>52603</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.023123</X>
+          <X>0.023154</X>
           <sigmaX>0.000053</sigmaX>
-          <Y>0.142301</Y>
+          <Y>0.142255</Y>
           <sigmaY>0.000060</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2611472</UT1_UTC>
+          <UT1_UTC>-0.2611461</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>0.3263</LOD>
           <sigmaLOD>0.0032</sigmaLOD>
@@ -11521,13 +11521,13 @@
       <MJD>52604</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.020396</X>
+          <X>0.020427</X>
           <sigmaX>0.000036</sigmaX>
-          <Y>0.142340</Y>
+          <Y>0.142294</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2615688</UT1_UTC>
+          <UT1_UTC>-0.2615677</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>0.5237</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -11556,13 +11556,13 @@
       <MJD>52605</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.017679</X>
+          <X>0.017710</X>
           <sigmaX>0.000038</sigmaX>
-          <Y>0.142201</Y>
+          <Y>0.142155</Y>
           <sigmaY>0.000056</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2622147</UT1_UTC>
+          <UT1_UTC>-0.2622136</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>0.7814</LOD>
           <sigmaLOD>0.0030</sigmaLOD>
@@ -11591,13 +11591,13 @@
       <MJD>52606</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.014575</X>
+          <X>0.014606</X>
           <sigmaX>0.000038</sigmaX>
-          <Y>0.141897</Y>
+          <Y>0.141851</Y>
           <sigmaY>0.000055</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2631330</UT1_UTC>
+          <UT1_UTC>-0.2631319</UT1_UTC>
           <sigmaUT1_UTC>0.0000042</sigmaUT1_UTC>
           <LOD>1.0434</LOD>
           <sigmaLOD>0.0029</sigmaLOD>
@@ -11626,13 +11626,13 @@
       <MJD>52607</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.011080</X>
+          <X>0.011111</X>
           <sigmaX>0.000038</sigmaX>
-          <Y>0.141735</Y>
+          <Y>0.141689</Y>
           <sigmaY>0.000058</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2642869</UT1_UTC>
+          <UT1_UTC>-0.2642858</UT1_UTC>
           <sigmaUT1_UTC>0.0000041</sigmaUT1_UTC>
           <LOD>1.2617</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -11661,13 +11661,13 @@
       <MJD>52608</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.007556</X>
+          <X>0.007587</X>
           <sigmaX>0.000035</sigmaX>
-          <Y>0.141613</Y>
+          <Y>0.141567</Y>
           <sigmaY>0.000061</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2656325</UT1_UTC>
+          <UT1_UTC>-0.2656314</UT1_UTC>
           <sigmaUT1_UTC>0.0000067</sigmaUT1_UTC>
           <LOD>1.4082</LOD>
           <sigmaLOD>0.0024</sigmaLOD>
@@ -11696,13 +11696,13 @@
       <MJD>52609</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.004167</X>
+          <X>0.004198</X>
           <sigmaX>0.000043</sigmaX>
-          <Y>0.141410</Y>
+          <Y>0.141364</Y>
           <sigmaY>0.000057</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2670561</UT1_UTC>
+          <UT1_UTC>-0.2670550</UT1_UTC>
           <sigmaUT1_UTC>0.0000023</sigmaUT1_UTC>
           <LOD>1.4130</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -11731,13 +11731,13 @@
       <MJD>52610</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>0.000953</X>
+          <X>0.000984</X>
           <sigmaX>0.000043</sigmaX>
-          <Y>0.141404</Y>
+          <Y>0.141358</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2684110</UT1_UTC>
+          <UT1_UTC>-0.2684099</UT1_UTC>
           <sigmaUT1_UTC>0.0000028</sigmaUT1_UTC>
           <LOD>1.2753</LOD>
           <sigmaLOD>0.0028</sigmaLOD>
@@ -11766,13 +11766,13 @@
       <MJD>52611</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.002211</X>
+          <X>-0.002180</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.141595</Y>
+          <Y>0.141549</Y>
           <sigmaY>0.000082</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2695692</UT1_UTC>
+          <UT1_UTC>-0.2695681</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>1.0250</LOD>
           <sigmaLOD>0.0027</sigmaLOD>
@@ -11801,13 +11801,13 @@
       <MJD>52612</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.005213</X>
+          <X>-0.005182</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.142411</Y>
+          <Y>0.142365</Y>
           <sigmaY>0.000082</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2704510</UT1_UTC>
+          <UT1_UTC>-0.2704499</UT1_UTC>
           <sigmaUT1_UTC>0.0000046</sigmaUT1_UTC>
           <LOD>0.7448</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
@@ -11836,13 +11836,13 @@
       <MJD>52613</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.008433</X>
+          <X>-0.008402</X>
           <sigmaX>0.000060</sigmaX>
-          <Y>0.143297</Y>
+          <Y>0.143251</Y>
           <sigmaY>0.000080</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2710598</UT1_UTC>
+          <UT1_UTC>-0.2710587</UT1_UTC>
           <sigmaUT1_UTC>0.0000046</sigmaUT1_UTC>
           <LOD>0.4678</LOD>
           <sigmaLOD>0.0033</sigmaLOD>
@@ -11871,13 +11871,13 @@
       <MJD>52614</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.012383</X>
+          <X>-0.012352</X>
           <sigmaX>0.000066</sigmaX>
-          <Y>0.144436</Y>
+          <Y>0.144390</Y>
           <sigmaY>0.000078</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2714268</UT1_UTC>
+          <UT1_UTC>-0.2714257</UT1_UTC>
           <sigmaUT1_UTC>0.0000046</sigmaUT1_UTC>
           <LOD>0.3116</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -11906,13 +11906,13 @@
       <MJD>52615</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.016743</X>
+          <X>-0.016712</X>
           <sigmaX>0.000076</sigmaX>
-          <Y>0.145767</Y>
+          <Y>0.145721</Y>
           <sigmaY>0.000076</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2717428</UT1_UTC>
+          <UT1_UTC>-0.2717417</UT1_UTC>
           <sigmaUT1_UTC>0.0000068</sigmaUT1_UTC>
           <LOD>0.3349</LOD>
           <sigmaLOD>0.0036</sigmaLOD>
@@ -11941,13 +11941,13 @@
       <MJD>52616</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.020911</X>
+          <X>-0.020880</X>
           <sigmaX>0.000062</sigmaX>
-          <Y>0.146938</Y>
+          <Y>0.146892</Y>
           <sigmaY>0.000092</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2721241</UT1_UTC>
+          <UT1_UTC>-0.2721230</UT1_UTC>
           <sigmaUT1_UTC>0.0000056</sigmaUT1_UTC>
           <LOD>0.4407</LOD>
           <sigmaLOD>0.0047</sigmaLOD>
@@ -11976,13 +11976,13 @@
       <MJD>52617</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.024292</X>
+          <X>-0.024261</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.147966</Y>
+          <Y>0.147920</Y>
           <sigmaY>0.000096</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2726445</UT1_UTC>
+          <UT1_UTC>-0.2726434</UT1_UTC>
           <sigmaUT1_UTC>0.0000065</sigmaUT1_UTC>
           <LOD>0.6072</LOD>
           <sigmaLOD>0.0038</sigmaLOD>
@@ -12011,13 +12011,13 @@
       <MJD>52618</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.027122</X>
+          <X>-0.027091</X>
           <sigmaX>0.000052</sigmaX>
-          <Y>0.149257</Y>
+          <Y>0.149211</Y>
           <sigmaY>0.000066</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2733390</UT1_UTC>
+          <UT1_UTC>-0.2733379</UT1_UTC>
           <sigmaUT1_UTC>0.0000050</sigmaUT1_UTC>
           <LOD>0.7750</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -12046,15 +12046,15 @@
       <MJD>52619</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.030120</X>
+          <X>-0.030089</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.150853</Y>
+          <Y>0.150807</Y>
           <sigmaY>0.000068</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2741940</UT1_UTC>
+          <UT1_UTC>-0.2741929</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
-          <LOD>0.9413</LOD>
+          <LOD>0.9412</LOD>
           <sigmaLOD>0.0035</sigmaLOD>
         </UT1>
         <nutation type="iers">
@@ -12081,15 +12081,15 @@
       <MJD>52620</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.032933</X>
+          <X>-0.032902</X>
           <sigmaX>0.000054</sigmaX>
-          <Y>0.152482</Y>
+          <Y>0.152436</Y>
           <sigmaY>0.000070</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2751890</UT1_UTC>
+          <UT1_UTC>-0.2751878</UT1_UTC>
           <sigmaUT1_UTC>0.0000049</sigmaUT1_UTC>
-          <LOD>1.0100</LOD>
+          <LOD>1.0099</LOD>
           <sigmaLOD>0.0034</sigmaLOD>
         </UT1>
         <nutation type="iers">
@@ -12116,13 +12116,13 @@
       <MJD>52621</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.036544</X>
+          <X>-0.036513</X>
           <sigmaX>0.000056</sigmaX>
-          <Y>0.153872</Y>
+          <Y>0.153826</Y>
           <sigmaY>0.000074</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2762007</UT1_UTC>
+          <UT1_UTC>-0.2761995</UT1_UTC>
           <sigmaUT1_UTC>0.0000048</sigmaUT1_UTC>
           <LOD>1.0389</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -12151,13 +12151,13 @@
       <MJD>52622</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.040158</X>
+          <X>-0.040127</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.155130</Y>
+          <Y>0.155084</Y>
           <sigmaY>0.000064</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2772606</UT1_UTC>
+          <UT1_UTC>-0.2772594</UT1_UTC>
           <sigmaUT1_UTC>0.0000063</sigmaUT1_UTC>
           <LOD>1.0493</LOD>
           <sigmaLOD>0.0037</sigmaLOD>
@@ -12186,13 +12186,13 @@
       <MJD>52623</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.044193</X>
+          <X>-0.044162</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.156134</Y>
+          <Y>0.156088</Y>
           <sigmaY>0.000084</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2782629</UT1_UTC>
+          <UT1_UTC>-0.2782617</UT1_UTC>
           <sigmaUT1_UTC>0.0000057</sigmaUT1_UTC>
           <LOD>0.9506</LOD>
           <sigmaLOD>0.0045</sigmaLOD>
@@ -12221,13 +12221,13 @@
       <MJD>52624</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.048108</X>
+          <X>-0.048077</X>
           <sigmaX>0.000063</sigmaX>
-          <Y>0.156898</Y>
+          <Y>0.156852</Y>
           <sigmaY>0.000091</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2791463</UT1_UTC>
+          <UT1_UTC>-0.2791451</UT1_UTC>
           <sigmaUT1_UTC>0.0000064</sigmaUT1_UTC>
           <LOD>0.8055</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -12256,13 +12256,13 @@
       <MJD>52625</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.051646</X>
+          <X>-0.051615</X>
           <sigmaX>0.000048</sigmaX>
-          <Y>0.157503</Y>
+          <Y>0.157457</Y>
           <sigmaY>0.000096</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2798696</UT1_UTC>
+          <UT1_UTC>-0.2798684</UT1_UTC>
           <sigmaUT1_UTC>0.0000063</sigmaUT1_UTC>
           <LOD>0.6475</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -12291,13 +12291,13 @@
       <MJD>52626</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.054580</X>
+          <X>-0.054549</X>
           <sigmaX>0.000068</sigmaX>
-          <Y>0.158726</Y>
+          <Y>0.158680</Y>
           <sigmaY>0.000091</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2804358</UT1_UTC>
+          <UT1_UTC>-0.2804346</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>0.4730</LOD>
           <sigmaLOD>0.0043</sigmaLOD>
@@ -12326,13 +12326,13 @@
       <MJD>52627</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.056973</X>
+          <X>-0.056942</X>
           <sigmaX>0.000064</sigmaX>
-          <Y>0.160112</Y>
+          <Y>0.160066</Y>
           <sigmaY>0.000092</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2808102</UT1_UTC>
+          <UT1_UTC>-0.2808090</UT1_UTC>
           <sigmaUT1_UTC>0.0000060</sigmaUT1_UTC>
           <LOD>0.2824</LOD>
           <sigmaLOD>0.0040</sigmaLOD>
@@ -12361,13 +12361,13 @@
       <MJD>52628</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.059170</X>
+          <X>-0.059139</X>
           <sigmaX>0.000061</sigmaX>
-          <Y>0.162003</Y>
+          <Y>0.161957</Y>
           <sigmaY>0.000082</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2810329</UT1_UTC>
+          <UT1_UTC>-0.2810317</UT1_UTC>
           <sigmaUT1_UTC>0.0000055</sigmaUT1_UTC>
           <LOD>0.1889</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -12396,13 +12396,13 @@
       <MJD>52629</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.061607</X>
+          <X>-0.061576</X>
           <sigmaX>0.000055</sigmaX>
-          <Y>0.164313</Y>
+          <Y>0.164267</Y>
           <sigmaY>0.000047</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2812134</UT1_UTC>
+          <UT1_UTC>-0.2812122</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>0.1718</LOD>
           <sigmaLOD>0.0041</sigmaLOD>
@@ -12431,13 +12431,13 @@
       <MJD>52630</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.064282</X>
+          <X>-0.064251</X>
           <sigmaX>0.000063</sigmaX>
-          <Y>0.166670</Y>
+          <Y>0.166624</Y>
           <sigmaY>0.000043</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2813904</UT1_UTC>
+          <UT1_UTC>-0.2813892</UT1_UTC>
           <sigmaUT1_UTC>0.0000062</sigmaUT1_UTC>
           <LOD>0.1965</LOD>
           <sigmaLOD>0.0042</sigmaLOD>
@@ -12466,13 +12466,13 @@
       <MJD>52631</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.066781</X>
+          <X>-0.066750</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.168875</Y>
+          <Y>0.168829</Y>
           <sigmaY>0.000046</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2816418</UT1_UTC>
+          <UT1_UTC>-0.2816406</UT1_UTC>
           <sigmaUT1_UTC>0.0000061</sigmaUT1_UTC>
           <LOD>0.3274</LOD>
           <sigmaLOD>0.0110</sigmaLOD>
@@ -12501,13 +12501,13 @@
       <MJD>52632</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.069127</X>
+          <X>-0.069096</X>
           <sigmaX>0.000042</sigmaX>
-          <Y>0.171103</Y>
+          <Y>0.171057</Y>
           <sigmaY>0.000042</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2820845</UT1_UTC>
+          <UT1_UTC>-0.2820833</UT1_UTC>
           <sigmaUT1_UTC>0.0000212</sigmaUT1_UTC>
           <LOD>0.5763</LOD>
           <sigmaLOD>0.0095</sigmaLOD>
@@ -12536,13 +12536,13 @@
       <MJD>52633</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.071671</X>
+          <X>-0.071640</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.173382</Y>
+          <Y>0.173336</Y>
           <sigmaY>0.000039</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2828035</UT1_UTC>
+          <UT1_UTC>-0.2828023</UT1_UTC>
           <sigmaUT1_UTC>0.0000180</sigmaUT1_UTC>
           <LOD>0.8527</LOD>
           <sigmaLOD>0.0135</sigmaLOD>
@@ -12571,13 +12571,13 @@
       <MJD>52634</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.074226</X>
+          <X>-0.074195</X>
           <sigmaX>0.000041</sigmaX>
-          <Y>0.175362</Y>
+          <Y>0.175316</Y>
           <sigmaY>0.000034</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2837682</UT1_UTC>
+          <UT1_UTC>-0.2837670</UT1_UTC>
           <sigmaUT1_UTC>0.0000166</sigmaUT1_UTC>
           <LOD>1.0642</LOD>
           <sigmaLOD>0.0097</sigmaLOD>
@@ -12606,13 +12606,13 @@
       <MJD>52635</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.076515</X>
+          <X>-0.076484</X>
           <sigmaX>0.000044</sigmaX>
-          <Y>0.177089</Y>
+          <Y>0.177043</Y>
           <sigmaY>0.000026</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2848994</UT1_UTC>
+          <UT1_UTC>-0.2848982</UT1_UTC>
           <sigmaUT1_UTC>0.0000072</sigmaUT1_UTC>
           <LOD>1.1783</LOD>
           <sigmaLOD>0.0095</sigmaLOD>
@@ -12641,13 +12641,13 @@
       <MJD>52636</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.078772</X>
+          <X>-0.078741</X>
           <sigmaX>0.000059</sigmaX>
-          <Y>0.179089</Y>
+          <Y>0.179043</Y>
           <sigmaY>0.000039</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2860857</UT1_UTC>
+          <UT1_UTC>-0.2860845</UT1_UTC>
           <sigmaUT1_UTC>0.0000092</sigmaUT1_UTC>
           <LOD>1.1751</LOD>
           <sigmaLOD>0.0049</sigmaLOD>
@@ -12676,13 +12676,13 @@
       <MJD>52637</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.081163</X>
+          <X>-0.081132</X>
           <sigmaX>0.000060</sigmaX>
-          <Y>0.181346</Y>
+          <Y>0.181300</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2872109</UT1_UTC>
+          <UT1_UTC>-0.2872097</UT1_UTC>
           <sigmaUT1_UTC>0.0000067</sigmaUT1_UTC>
           <LOD>1.0558</LOD>
           <sigmaLOD>0.0057</sigmaLOD>
@@ -12711,13 +12711,13 @@
       <MJD>52638</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.083448</X>
+          <X>-0.083417</X>
           <sigmaX>0.000058</sigmaX>
-          <Y>0.183484</Y>
+          <Y>0.183438</Y>
           <sigmaY>0.000051</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2881683</UT1_UTC>
+          <UT1_UTC>-0.2881671</UT1_UTC>
           <sigmaUT1_UTC>0.0000068</sigmaUT1_UTC>
           <LOD>0.8494</LOD>
           <sigmaLOD>0.0044</sigmaLOD>
@@ -12746,13 +12746,13 @@
       <MJD>52639</MJD>
       <bulletinA>
         <pole type="iers">
-          <X>-0.085610</X>
+          <X>-0.085579</X>
           <sigmaX>0.000075</sigmaX>
-          <Y>0.185842</Y>
+          <Y>0.185796</Y>
           <sigmaY>0.000050</sigmaY>
         </pole>
         <UT1 type="iers">
-          <UT1_UTC>-0.2889046</UT1_UTC>
+          <UT1_UTC>-0.2889034</UT1_UTC>
           <sigmaUT1_UTC>0.0000058</sigmaUT1_UTC>
           <LOD>0.6277</LOD>
           <sigmaLOD>0.0042</sigmaLOD>

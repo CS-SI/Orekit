@@ -52,10 +52,10 @@ public class BodyCenterPointingTest {
     // Orbit
     private CircularOrbit circ;
 
-    // Reference frame = ITRF 2005
+    // Reference frame = ITRF 2008
     private Frame itrf;
 
-    // Transform from EME2000 to ITRF2005
+    // Transform from EME2000 to ITRF2008
     private Transform eme2000ToItrf;
 
     // Earth center pointing attitude provider
@@ -70,8 +70,7 @@ public class BodyCenterPointingTest {
         Vector3D target = earthCenterAttitudeLaw.getTargetPoint(circ, date, circ.getFrame());
 
         // Check that target is body center
-        double normPos = target.getNorm();
-        Assert.assertTrue((normPos < Utils.epsilonTest));
+        Assert.assertEquals(0.0, target.getNorm(), Utils.epsilonTest);
 
     }
 
@@ -91,16 +90,16 @@ public class BodyCenterPointingTest {
         // Transform Z axis from satellite frame to EME2000
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
 
-        // Transform Z axis from EME2000 to ITRF2005
-        Vector3D zSatITRF2005C = eme2000ToItrf.transformVector(zSatEME2000);
+        // Transform Z axis from EME2000 to ITRF2008
+        Vector3D zSatITRF2008C = eme2000ToItrf.transformVector(zSatEME2000);
 
-        // Transform satellite position/velocity from EME2000 to ITRF2005
-        PVCoordinates pvSatITRF2005C = eme2000ToItrf.transformPVCoordinates(pvSatEME2000);
+        // Transform satellite position/velocity from EME2000 to ITRF2008
+        PVCoordinates pvSatITRF2008C = eme2000ToItrf.transformPVCoordinates(pvSatEME2000);
 
        // Line containing satellite point and following pointing direction
-        Line pointingLine = new Line(pvSatITRF2005C.getPosition(),
-                                     pvSatITRF2005C.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                      zSatITRF2005C));
+        Line pointingLine = new Line(pvSatITRF2008C.getPosition(),
+                                     pvSatITRF2008C.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                                      zSatITRF2008C));
 
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.ZERO);
@@ -159,10 +158,10 @@ public class BodyCenterPointingTest {
                                        FramesFactory.getEME2000(), date, mu);
 
 
-            // Reference frame = ITRF 2005
-            itrf = FramesFactory.getITRF2005(true);
+            // Reference frame = ITRF 2008
+            itrf = FramesFactory.getITRF2008(true);
 
-            // Transform from EME2000 to ITRF2005
+            // Transform from EME2000 to ITRF2008
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
 
             // Create earth center pointing attitude provider */

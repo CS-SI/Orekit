@@ -43,8 +43,8 @@ Overview
     * user extensible (used operationally in real time with a set of about 60 frames on
       several spacecraft)
 
-    * transparent handling of IERS Earth Orientation Parameters (for both new
-      CIO-based frames and old equinox-based frames)
+    * transparent handling of IERS Earth Orientation Parameters (for both new CIO-based frames
+      following IERS 2010 conventions and old equinox-based frames)
 
     * transparent handling of JPL DE 4xx (405, 406 and more recent) and INPOP ephemerides
 
@@ -95,7 +95,8 @@ Overview
           (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
           EGM and GRGS gravity field files formats, even compressed)
 
-        * atmospheric drag (DTM2000, Jacchia-Bowman 2006 and simple exponential models)
+        * atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
+          and Marshall solar Activity Future Estimation
 
         * third body attraction (with data for Sun, Moon and all solar systems planets)
 
@@ -152,11 +153,11 @@ Overview
       * raising/setting with respect to a ground location
         (with customizable triggering elevation)
 
+      * date
+
       * altitude crossing
 
       * target detection in sensor field of view (circular or dihedral)
-
-      * date
 
       * impulse maneuvers occurrence
 
@@ -206,19 +207,19 @@ Overview
 
   ** Localized in several languages
 
-    * english
+    * English
 
-    * french
+    * French
 
-    * galician
+    * Galician
 
-    * german
+    * German
 
-    * italian
+    * Italian
 
-    * norse
+    * Norse
 
-    * spanish
+    * Spanish
 
   ** The top level packages provided by Orekit are the following one:
 

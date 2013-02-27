@@ -64,14 +64,23 @@ public enum Predefined {
     /** Equinox-based ITRF. */
     ITRF_EQUINOX("Equinox-based ITRF"),
 
-    /** TIRF2000 without tidal effects. */
-    TIRF_2000_WITHOUT_TIDAL_EFFECTS("TIRF2000 without tides"),
+    /** TIRF2000, IERS 2010 conventions, without tidal effects. */
+    TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS("TIRF2000/2010 without tides"),
 
-    /** TIRF2000 with tidal effects. */
-    TIRF_2000_WITH_TIDAL_EFFECTS("TIRF2000 with tides"),
+    /** TIRF2000, IERS 2010 conventions, with tidal effects. */
+    TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS("TIRF2000/2010 with tides"),
 
-    /** CIRF2000 frame. */
-    CIRF_2000("CIRF2000"),
+    /** TIRF2000, IERS 2003 conventions, without tidal effects. */
+    TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS("TIRF2000/2003 without tides"),
+
+    /** TIRF2000, IERS 2003 conventions, with tidal effects. */
+    TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS("TIRF2000/2003 with tides"),
+
+    /** CIRF2000 frame, IERS 2010 conventions. */
+    CIRF_2000_CONV_2010("CIRF2000/2010"),
+
+    /** CIRF2000 frame, IERS 2003 conventions. */
+    CIRF_2000_CONV_2003("CIRF2000/2003"),
 
     /** Veis 1950 with tidal effects. */
     VEIS_1950("VEIS1950"),

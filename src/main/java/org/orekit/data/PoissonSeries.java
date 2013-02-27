@@ -69,12 +69,12 @@ public class PoissonSeries implements Serializable {
 
         try {
             // the polynomial part should read something like:
-            // -16616.99 + 2004191742.88 t - 427219.05 t^2 - 198620.54 t^3 - 46.05 t^4 + 5.98 t^5
+            // - 16617. + 2004191898. t - 429782.9 t^2 - 198618.34 t^3 + 7.578 t^4 + 5.9285 t^5
             // or something like:
             // 0''.014506 + 4612''.15739966t + 1''.39667721t^2 - 0''.00009344t^3 + 0''.00001882t^4
             final Pattern termPattern =
                 Pattern.compile("\\p{Space}*([-+]?)" +
-                                "\\p{Space}*(\\p{Digit}+)(?:'')?(\\.\\p{Digit}+)" +
+                                "\\p{Space}*(\\p{Digit}+)(?:'')?(\\.\\p{Digit}*)" +
                                 "(?:\\p{Space}*t(?:\\^\\p{Digit}+)?)?");
 
             // the series parts should read something like:

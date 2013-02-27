@@ -31,7 +31,7 @@ public class EOP2000HistoryTest {
     public void testRegular() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
         double dt = FramesFactory.getEOP2000History().getUT1MinusUTC(date);
-        Assert.assertEquals(-0.3906591, dt, 1.0e-10);
+        Assert.assertEquals(-0.3906070, dt, 1.0e-10);
     }
 
     @Test

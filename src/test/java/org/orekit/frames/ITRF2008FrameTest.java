@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2012 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -27,13 +27,13 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 
-public class ITRF2005FrameTest {
+public class ITRF2008FrameTest {
 
     @Test
     public void testTidalEffects() throws OrekitException {
 
-        final Frame itrfWith    = FramesFactory.getITRF2005(false);
-        final Frame itrfWithout = FramesFactory.getITRF2005(true);
+        final Frame itrfWith    = FramesFactory.getITRF2008(false);
+        final Frame itrfWithout = FramesFactory.getITRF2008(true);
         final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, TimeScalesFactory.getUTC());
 
         double minCorrection = Double.POSITIVE_INFINITY;
@@ -50,27 +50,6 @@ public class ITRF2005FrameTest {
         Assert.assertEquals(0.064, minCorrection, 0.001);
         Assert.assertEquals(0.613, maxCorrection, 0.001);
 
-    }
-
-    @Test
-    public void testShift() throws OrekitException {
-        final Frame gcrf = FramesFactory.getGCRF();
-        final Frame itrf = FramesFactory.getITRF2005(false);
-        final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, TimeScalesFactory.getUTC());
-
-        for (double t = 0; t < Constants.JULIAN_DAY; t += 3600) {
-            final AbsoluteDate date = date0.shiftedBy(t);
-            final Transform transform = gcrf.getTransformTo(itrf, date);
-            for (double dt = -10; dt < 10; dt += 0.125) {
-                final Transform shifted  = transform.shiftedBy(dt);
-                final Transform computed = gcrf.getTransformTo(itrf, transform.getDate().shiftedBy(dt));
-                final Transform error    = new Transform(computed.getDate(), computed, shifted.getInverse());
-                Assert.assertEquals(0.0, error.getTranslation().getNorm(),  1.0e-10);
-                Assert.assertEquals(0.0, error.getVelocity().getNorm(),     1.0e-10);
-                Assert.assertEquals(0.0, error.getRotation().getAngle(),    1.0e-10);
-                Assert.assertEquals(0.0, error.getRotationRate().getNorm(), 5.0e-15);
-            }
-        }
     }
 
     @Before

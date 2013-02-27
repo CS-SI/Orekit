@@ -47,18 +47,18 @@ discrete events. Here is a short list of the features offered by the library:</p
           intermediate frames, TOD, MOD, GTOD and TEME frames, Veis, topocentric, tnw and qsw local orbital
           frames, spacecraft body, Moon, Sun, planets, solar system barycenter, Earth-Moon barycenter)</li>
       <li>user extensible (used operationally in real time with a set of about 60 frames on several spacecrafts)</li>
-      <li>transparent handling of IERS Earth Orientation Parameters (for both new CIO-based frames and
-          old equinox-based frames)</li>
+      <li>transparent handling of IERS Earth Orientation Parameters (for both new CIO-based frames following
+          IERS 2010 conventions and old equinox-based frames)</li>
       <li>transparent handling of JPL DE 4xx (405, 406 and more recent) and INPOP ephemerides</li>
       <li>transforms including kinematic combination effects</li>
       <li>composite transforms reduction and caching for efficiency</li>
       <li>extensible central body shapes models (with predefined spherical and ellipsoidic shapes)</li>
-      <li>cartesian and geodesic coordinates, kinematics</li>
+      <li>Cartesian and geodesic coordinates, kinematics</li>
     </ul>
   </li>
   <li>Spacecraft state
     <ul>
-      <li>cartesian, elliptical keplerian, circular and equinoctial parameters</li>
+      <li>Cartesian, elliptical Keplerian, circular and equinoctial parameters</li>
       <li>Two-Lines Elements</li>
       <li>transparent conversion between all parameters</li>
       <li>automatic binding with frames</li>
@@ -84,7 +84,8 @@ discrete events. Here is a short list of the features offered by the library:</p
               <li>central attraction</li>
               <li>gravity models including time-dependent like trends and pulsations (automatic reading of ICGEM (new Eigen models), SHM (old Eigen models),
               EGM and GRGS gravity field files formats, even compressed)</li>
-              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2006 and simple exponential models)</li>
+              <li>atmospheric drag (DTM2000, Jacchia-Bowman 2006, Harris-Priester and simple exponential models),
+              and Marshall solar Activity Future Estimation</li>
               <li>third body attraction (with data for Sun, Moon and all solar systems planets)</li>
               <li>radiation pressure with eclipses</li>
               <li>multiple maneuvers</li>
@@ -92,11 +93,6 @@ discrete events. Here is a short list of the features offered by the library:</p
           </li>
           <li>state of the art ODE integrators (adaptive stepsize with error control,
               continuous output, switching functions, G-stop, step normalization ...)</li>
-          <li>can be used in master mode (propagator drives application callback functions),
-              slave mode (propagator is driven by calling application) or ephemeris generation
-              mode (all intermediate results solved and navigation feature enabled, to use the
-              generated ephemeris later as if it was an analytical model, ideal for search and
-              iterative algorithms)</li>
           <li>computation of jacobians with respect to orbital parameters and selected force models parameters</li>
           <li>serialization mechanism to store complete results on persistent storage for later use</li>
         </ul>
@@ -128,12 +124,13 @@ discrete events. Here is a short list of the features offered by the library:</p
           <li>eclipse (both umbra and penumbra)</li>
           <li>ascending and descending node crossing</li>
           <li>apogee and perigee crossing</li>
+          <li>alignment with some body in the orbital plane (with customizable threshold angle)</li>
           <li>raising/setting with respect to a ground location
               (with customizable triggering elevation and ground mask)</li>
           <li>date</li>
           <li>altitude crossing</li>
+          <li>target detection in sensor field of view (circular or dihedral)</li>
           <li>impulse maneuvers occurrence</li>
-          <li>eclipse (either umbra or penumbra</li>
         </ul>
       </li>
       <li>possibility to slightly shift events in time (for example to switch from
@@ -186,16 +183,20 @@ polynomial equations, differential equations, and more... It is distributed unde
 business-friendly Apache Software License version 2.0.
 </p>
 <p>
-OREKIT is based on two commons-math packages:
+OREKIT is based on several Apache Commons Math packages:
 </p>
 <ul>
  <li>geometry, which provides very useful objects as vectors
    and rotations (internally represented by quaternions)</li>
  <li>ode, which provides numerical solutions to solve 
-   Ordinary Differential Equations (ODE).</li>
+   Ordinary Differential Equations (ODE)</li>
+ <li>optim, which provides multi-dimensional optimization</li>
+ <li>solvers, which provides root-finding algorithms</li>
+ <li>differentiation, which provides analytical computation of partial derivatives
+ to arbitrary order and arbitrary number of free parameters</li>
 </ul>
 <p>
-The use of commons-math is hidden in OREKIT as much as possible so users don't 
+The use of Apache Commons Math is hidden in OREKIT as much as possible so users don't 
 need to fully master this library. If they wish, they can limit themselves to understanding
 the simple classes Vector3D and Rotation from the geometry package, and the interface
 FirstOrderIntegrator from the ode package. 

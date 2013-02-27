@@ -28,18 +28,20 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** Celestial Intermediate Reference Frame 2000.
- * <p>This frame includes both precession and nutation effects according to
- * the new IAU-2000 model. The single model replaces the two separate models
- * used before: IAU-76 precession (Lieske) and IAU-80 theory of nutation (Wahr).
+ * <p>This provider includes precession effects according to either the IAU 2006 precession
+ * (also known as Nicole Capitaines's P03 precession theory) and IAU 2000A_R06 nutation
+ * for IERS 2010 conventions or the IAU 2000A precession-nutation model for IERS 2003
+ * conventions. These models replaced the older IAU-76 precession (Lieske) and IAU-80
+ * theory of nutation (Wahr) which were used in the classical equinox-based paradigm.
  * It <strong>must</strong> be used with the Earth Rotation Angle (REA) defined by
- * Capitaine's model and <strong>not</strong> IAU-82 sidereal time which is
- * consistent with the previous models only.</p>
+ * Capitaine's model and <strong>not</strong> IAU-82 sidereal
+ * time which is consistent with the older models only.</p>
  * <p>Its parent frame is the GCRF frame.<p>
  */
 class CIRF2000Provider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8378289692425977657L;
+    private static final long serialVersionUID = 4523296691845023983L;
 
     // CHECKSTYLE: stop JavadocVariable check
 
@@ -104,18 +106,6 @@ class CIRF2000Provider implements TransformProvider {
 
     // CHECKSTYLE: resume JavadocVariable check
 
-    /** IERS conventions (2003) resources base directory. */
-    private static final String IERS_2003_BASE = "/assets/org/orekit/iers-conventions-2003/";
-
-    /** Resources for IERS table 5.2a from IERS conventions (2003). */
-    private static final String X_MODEL     = IERS_2003_BASE + "tab5.2a.txt";
-
-    /** Resources for IERS table 5.2b from IERS conventions (2003). */
-    private static final String Y_MODEL     = IERS_2003_BASE + "tab5.2b.txt";
-
-    /** Resources for IERS table 5.2c from IERS conventions (2003). */
-    private static final String S_XY2_MODEL = IERS_2003_BASE + "tab5.2c.txt";
-
     /** Pole position (X). */
     private final PoissonSeries xDevelopment;
 
@@ -126,17 +116,18 @@ class CIRF2000Provider implements TransformProvider {
     private final PoissonSeries sxy2Development;
 
     /** Simple constructor.
+     * @param conventions IERS conventions to apply
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      * @see Frame
      */
-    public CIRF2000Provider()
+    public CIRF2000Provider(final IERSConventions conventions)
         throws OrekitException {
 
         // load the nutation model
-        xDevelopment    = loadModel(X_MODEL);
-        yDevelopment    = loadModel(Y_MODEL);
-        sxy2Development = loadModel(S_XY2_MODEL);
+        xDevelopment    = loadModel(conventions.getXModel());
+        yDevelopment    = loadModel(conventions.getYModel());
+        sxy2Development = loadModel(conventions.geSXY2XModel());
 
     }
 
