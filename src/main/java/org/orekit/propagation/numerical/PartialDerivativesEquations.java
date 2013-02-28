@@ -19,6 +19,8 @@ package org.orekit.propagation.numerical;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
@@ -271,7 +273,25 @@ public class PartialDerivativesEquations implements AdditionalEquations {
                     }
                 }
                 if (!found) {
-                    throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, parameterName);
+
+                    // build the list of supported parameters, avoiding duplication
+                    final SortedSet<String> set = new TreeSet<String>();
+                    for (final ForceModel provider : derivativesProviders) {
+                        for (final String forceModelParameter : provider.getParametersNames()) {
+                            set.add(forceModelParameter);
+                        }
+                    }
+                    final StringBuilder builder = new StringBuilder();
+                    for (final String forceModelParameter : set) {
+                        if (builder.length() > 0) {
+                            builder.append(", ");
+                        }
+                        builder.append(forceModelParameter);
+                    }
+
+                    throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                              parameterName, builder.toString());
+
                 }
             }
 

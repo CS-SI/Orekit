@@ -52,7 +52,7 @@ public class KeplerianConverterTest {
         checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = OrekitException.class)
     public void testConversionWithFreeParameter() throws OrekitException {
         checkFit(orbit, 86400, 300, 1.0e-3, true, 2.65e-8, "toto");
     }

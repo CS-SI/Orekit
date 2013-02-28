@@ -93,7 +93,7 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
         throws OrekitException {
 
         if (!DRAG_COEFFICIENT.equals(paramName)) {
-            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName, DRAG_COEFFICIENT);
         }
 
         final DerivativeStructure dragCoeffDS = new DerivativeStructure(1, 1, 0, dragCoeff);
@@ -133,7 +133,8 @@ public class SphericalSpacecraft implements RadiationSensitive, DragSensitive {
             absorptionCoeffDS         = new DerivativeStructure(1, 1,    absorptionCoeff);
             specularReflectionCoeffDS = new DerivativeStructure(1, 1, 0, specularReflectionCoeff);
         } else {
-            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
+                                      ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
         }
 
         final DerivativeStructure kP =

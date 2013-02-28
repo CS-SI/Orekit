@@ -173,7 +173,8 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
                 final DerivativeStructure zero = new DerivativeStructure(1, 1, 0.0);
                 return new FieldVector3D<DerivativeStructure>(zero, zero, zero);
             } else {
-                throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+                throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
+                                          THRUST + ", " + FLOW_RATE);
             }
 
         } else {

@@ -317,30 +317,44 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
 
     /** Check if parameters can be free.
      * @param freeParameters names of the free parameters
-     * @exception IllegalArgumentException if one of the parameters cannot be free
+     * @exception OrekitException if one of the parameters cannot be free
      */
-    private void checkParameters(final Collection<String> freeParameters)
-        throws IllegalArgumentException {
-
+    private void checkParameters(final Collection<String> freeParameters) throws OrekitException {
         for (String parameter : freeParameters) {
-            if ( !availableParameters.contains(parameter) ) {
-                throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, parameter);
-            }
+            checkParameter(parameter);
         }
-
     }
 
     /** Check if parameters can be free.
      * @param freeParameters names of the free parameters
-     * @exception IllegalArgumentException if one of the parameters cannot be free
+     * @exception OrekitException if one of the parameters cannot be free
      */
-    private void checkParameters(final String ... freeParameters)
-        throws IllegalArgumentException {
-
+    private void checkParameters(final String ... freeParameters) throws OrekitException {
         for (String parameter : freeParameters) {
-            if ( !availableParameters.contains(parameter) ) {
-                throw OrekitException.createIllegalArgumentException(OrekitMessages.UNKNOWN_PARAMETER, parameter);
+            checkParameter(parameter);
+        }
+    }
+
+    /** Check if parameter can be free.
+     * @param parameter name of the free parameter
+     * @exception OrekitException if the parameter cannot be free
+     */
+    private void checkParameter(final String parameter) throws OrekitException {
+
+        if ( !availableParameters.contains(parameter) ) {
+
+            // build the list of supported parameters
+            final StringBuilder builder = new StringBuilder();
+            for (final String available : availableParameters) {
+                if (builder.length() > 0) {
+                    builder.append(", ");
+                }
+                builder.append(available);
             }
+
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                      parameter, builder.toString());
+
         }
 
     }

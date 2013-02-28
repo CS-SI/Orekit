@@ -254,11 +254,26 @@ public class Jacobianizer {
      * @param paramName parameter with respect to which derivation is desired
      * @return acceleration with derivatives
      * @exception OrekitException if the underlying force models cannot compute the acceleration
+     * or the parameter is not supported
      */
-    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s, final String paramName) throws OrekitException {
+    public FieldVector3D<DerivativeStructure> accelerationDerivatives(final SpacecraftState s,
+                                                                      final String paramName)
+        throws OrekitException {
 
         if (!hParam.containsKey(paramName)) {
-            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+
+            // build the list of supported parameters
+            final StringBuilder builder = new StringBuilder();
+            for (final String available : hParam.keySet()) {
+                if (builder.length() > 0) {
+                    builder.append(", ");
+                }
+                builder.append(available);
+            }
+
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
+                                      paramName, builder.toString());
+
         }
         final double hP = hParam.get(paramName);
 

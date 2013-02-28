@@ -80,7 +80,7 @@ public abstract class AbstractForceModelTest {
             // expected
         } catch (OrekitException oe) {
             // expected
-            Assert.assertEquals(OrekitMessages.UNKNOWN_PARAMETER, oe.getSpecifier());
+            Assert.assertEquals(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, oe.getSpecifier());
         }
         FieldVector3D<DerivativeStructure> accDer = forceModel.accelerationDerivatives(state, name);
         Vector3D derivative = new Vector3D(accDer.getX().getPartialDerivative(1),

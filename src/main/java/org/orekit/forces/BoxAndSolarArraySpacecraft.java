@@ -409,7 +409,7 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
         throws OrekitException {
 
         if (!DRAG_COEFFICIENT.equals(paramName)) {
-            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName, DRAG_COEFFICIENT);
         }
 
         final DerivativeStructure dragCoeffDS = new DerivativeStructure(1, 1, 0, dragCoeff);
@@ -538,7 +538,8 @@ public class BoxAndSolarArraySpacecraft implements RadiationSensitive, DragSensi
             absorptionCoeffDS         = new DerivativeStructure(1, 1,    absorptionCoeff);
             specularReflectionCoeffDS = new DerivativeStructure(1, 1, 0, specularReflectionCoeff);
         } else {
-            throw new OrekitException(OrekitMessages.UNKNOWN_PARAMETER, paramName);
+            throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME, paramName,
+                                      ABSORPTION_COEFFICIENT + ", " + REFLECTION_COEFFICIENT);
         }
         final DerivativeStructure diffuseReflectionCoeffDS =
                 absorptionCoeffDS.add(specularReflectionCoeffDS).subtract(1).negate();
