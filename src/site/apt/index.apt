@@ -242,9 +242,13 @@ Overview
   Orekit has been in development since 2002 inside {{{http://uk.c-s.fr/}CS Syst\u00e8mes
   d'Information}} and is still used and maintained by its space dynamics experts.
 
-  It has already been successfully used during the real time monitoring of the rendez-vous
-  phase between the Automated Transfer Vehicle (ATV) and the International Space Station
-  (ISS) by the Centre National d'\u00c9tudes Spatiales (CNES, the French space agency) and
-  European Space Agency (ESA). It has been selected as the basis of CNES next generation
-  space flight dynamics systems. It has been used in numerous studies and for operational
-  systems among the world.
+  Orekit has already been successfully used during the real time monitoring of the rendez-vous
+  phase between the Automated Transfer Vehicle (ATV) and the International Space Station (ISS)
+  by the Centre National d'Études Spatiales (CNES, the French space agency) and European Space
+  Agency (ESA).
+
+  Orekit has been selected in early 2011 by CNES to be the basis of its next generation space
+  flight dynamics systems, including operational systems, study systems and mission analysis
+  systems.
+
+  It has been used in numerous studies and for operational systems among the world.

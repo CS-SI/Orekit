@@ -20,7 +20,7 @@ Frames
 
 ** Frames tree
 
-  The <<<Frame>>> class represent a single frame. All frames are organized as a
+  The <<<Frame>>> class represents a single frame. All frames are organized as a
   tree with a single root.
 
 [../images/frametree.png]
@@ -28,7 +28,7 @@ Frames
   Each Frame is defined by a single <transform> linking it to one specific frame:
   its <parent frame>. This defining transform may be fixed or time-dependent, for
   example the Earth related frame ITRF2008 depends on time due to precession/nutation,
-  Earth rotation and pole motion). The predefined root frame is the only one with no
+  Earth rotation and pole motion. The predefined root frame is the only one with no
   parent frames.
 
   For each pair of frames, there is one single shortest path from one frame to
@@ -41,13 +41,13 @@ Frames
   Transforms can convert position, directions and velocities from one frame to another
   one, including velocity composition effects.
 
-  Transforms are used both:
+  Transforms are used to both:
 
-  * to define the relationship from a parent to a child frames. 
-    This transform (<<tdef>> on the following scheme), is stored in the child frame.
+  * define the relationship from a parent to a child frames. 
+    This transform (<<tdef>> on the following scheme) is stored in the child frame.
 
-  * to merge all individual transforms encountered while walking the tree from one
-    frame to any other one, whatever far away they are from each other (<<trel>> on the
+  * merge all individual transforms encountered while walking the tree from one
+    frame to any other one, however far away they are from each other (<<trel>> on the
     following scheme).
 
   []
@@ -58,13 +58,13 @@ Frames
   while walking the shortest past between them. The walking/merging operations are
   handled transparently by the library. Users only need to select the frames, provide
   the date and ask for the transform, without knowing how the frames are related to
-  each-other.
+  each other.
 
-  Transformations are defined as operators which when applied to the coordinates of a
-  vector expressed in the old frame provide the coordinates of the same vector expressed
+  Transformations are defined as operators which, when applied to the coordinates of a
+  vector expressed in the old frame, provide the coordinates of the same vector expressed
   in the new frame. When we say a transform t is from frame A to frame B, we mean
-  that if the coordinates of some absolute vector (say the direction of a distant star for 
-  example) are u<A> in frame A and u<B> in frame B, then u<B>=t.transformVector(u<A>).
+  that if the coordinates of some absolute vector (say, the direction of a distant star)
+  are u<A> in frame A and u<B> in frame B, then u<B>=t.transformVector(u<A>).
   Transforms provide specific methods for vectorial conversions, affine conversions, either
   with or without first derivatives (i.e. angular and linear velocities composition).
 
@@ -82,7 +82,7 @@ Frames
   One of these reference frames has been arbitrarily chosen as the root of the frames tree:
   the <Geocentric Celestial Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
-  For most purposes, the recommended frames to use are ITRF 20xx for terrestrial frame and
+  For most purposes, the recommended frames are ITRF 20xx for terrestrial frame and
   GCRF for celestial frame. EME2000, TOD, Veis1950 could also be used for compatibility
   with legacy systems. TEME should be used only for TLE.
 
@@ -100,8 +100,8 @@ Frames
 *** New paradigm: CIO-based transformations
 
   There are several different ways to compute transforms between GCRF and ITRF. Orekit uses
-  the new paradigm promoted by IERS and defined by IERS conventions 2010, i.e. it uses a
-  single transform for both bias, precession and nutation, computed by the IAU-2006 precession
+  the new paradigm promoted by IERS and defined by IERS conventions 2010, i.e., it uses a
+  single transform for bias, precession and nutation, computed by the IAU-2006 precession
   and IAU-200A nutation model and the Earth Orientation Parameters (EOP) data published online
   by IERS. This single transform links the GCRF to a Celestial Intermediate Reference Frame (CIRF).
   The X axis of this frame is the Celestial Intermediate Origin (CIO) and its Z axis is the
@@ -109,10 +109,10 @@ Frames
   the Earth Rotation Angle (including tidal effects) is applied to define a Terrestrial
   Intermediate Reference Frame (TIRF) which is a pseudo Earth fixed frame. A last transform adds
   the pole motion (both observed and published in IERS frames and modeled effects including tidal
-  effects) with respect to Earth crust to reach the real Earth fixed frame: the International
+  effects) with respect to the Earth crust to reach the real Earth fixed frame: the International
   Terrestrial Reference Frame. There are several realizations of the ITRS, each one being a
   different ITRF. These realizations are linked together using Helmert transformations which are
-  very small slightly time-dependent transformations.
+  very small, slightly time-dependent transformations.
 
   Orekit also provides some frames from IERS conventions 2003 (CIRF and TIRF), but as IERS
   does not provide anymore Earth Orientation Data to link these frames with Earth frames,
@@ -124,7 +124,7 @@ Frames
 
 *** Classical paradigm: equinox-based transformations
 
-  The classical paradigm used prior to IERS conventions 2003 is equinox based and uses
+  The classical paradigm used prior to IERS conventions 2003 is equinox-based and uses
   more intermediate frames.
 
   Starting from GCRF, the first transform is a bias to convert to EME2000, which was the
@@ -140,7 +140,7 @@ Frames
   In summary, six frames are involved along this path: GCRF, EME2000, MOD, TOD, GTOD
   and equinox-based ITRF.
   
-  The so called Veis 1950 belongs also to this path, it is defined from the GTOD by the
+  The so-called Veis 1950 belongs also to this path, it is defined from the GTOD by the
   application of a modified sidereal time.
   
   This whole paradigm is deprecated by IERS. It involves additional complexity, first because
@@ -192,9 +192,9 @@ Frames
   mostly of the range of a few tens of seconds). Note that starting with Orekit 6.0, this caching feature
   is thread-safe.
 
-  Tidal effects are also taken into account on Earth Rotation angle and on pole motion. The 71
-  terms model from IERS is used. Since this model is also computing intensive, a caching/interpolation
-  algorithm is also used to avoid a massive effect on performances. The trade-off selected for
+  Tidal effects are also taken into account on Earth Rotation angle and on pole motion. The 71-terms
+  model from IERS is used. Since this model is also computing intensive, a caching/interpolation
+  algorithm is also used to avoid a massive effect on performance. The trade-off selected for
   Orekit implementation is to use 8 points separated by 3/32 day (135 minutes) each. The resulting
   maximal interpolation error is about 3 microarcseconds. The penalty to use tidal effects is therefore
   limited to slightly more than 20%, to be compared with the 550% penalty without this mechanism.
@@ -206,7 +206,7 @@ Frames
     
 [../images/pre-iers-tree.png]
 
-  The path from EME2000 to Veis1950, involving the MOD, TOD and GTOD without EOP correction is
+  The path from EME2000 to Veis1950, involving the MOD, TOD and GTOD without EOP correction, is
   devoted to some legacy systems, whereas the MOD, TOD and GTOD with EOP correction are for
   compatibility with the IERS 2003 convention. The gap between the two branches can reach a few
   meters, a rather crude accuracy for many space systems.
@@ -217,7 +217,7 @@ Frames
 ** Solar system frames
 
   All celestial bodies are linked to their own body-centered inertial frame, just
-  like the Earth is linked to EME2000 and GCRF. Since Orekit provides implementations
+  as the Earth is linked to EME2000 and GCRF. Since Orekit provides implementations
   of the main solar system celestial bodies, it also provides body-centered frames
   for these bodies, one inertially oriented and one body oriented. The orientations
   of these frames are compliant with IAU poles and prime meridians definitions. The
@@ -231,7 +231,7 @@ Frames
 
 ** Topocentric Frame
   
-  This frame model allows to define the frame associated to any position at 
+  This frame model allows defining the frame associated with any position at 
   the surface of a body shape, which itself is referenced to a frame, typically
   ITRF 2008 for Earth. The frame is defined with the following
   canonical axes:
@@ -255,14 +255,14 @@ Frames
 
   The (t, n, w) frame has its X axis along velocity (tangential), its Z axis along orbital
   momentum and its Y axis completes the right-handed trihedra (it is roughly pointing towards
-  the central body. The (q, s, w) frame has its X axis along position (radial), its Z axis
+  the central body). The (q, s, w) frame has its X axis along position (radial), its Z axis
   along orbital momentum and its Y axis completes the right-handed trihedra (it is roughly
   along velocity).
 
-* User defined frames
+* User-defined frames
 
-  The frames tree can be extended by user who can add as many frames as he
-  wants for specific needs. This is done by adding frames one at a time, attaching
+  The frames tree can be extended by users who can add as many frames as they
+  want for specific needs. This is done by adding frames one at a time, attaching
   each frame to an already built one by specifying the transform from parent to child.
 
   Transforms may be constant or varying. For simple fixed transforms, using directly the
@@ -277,7 +277,7 @@ Frames
   from orbit and attitude data.
 
   Frames are updated by resetting the transform from their parent frame to them. When such a
-  transform is changed, it basically move not only the child frame but all the sub-tree starting
+  transform is changed, it basically moves not only the child frame but all the sub-trees starting
   at this frame with respect to the rest of the tree. This property can be used to update easily
   complex trees without bothering about combining transforms oneself. The following example
   explains a practical case.

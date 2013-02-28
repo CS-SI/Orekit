@@ -13,7 +13,7 @@
 
 Forces
 
-  The "Forces" package provides the interface for force models that will be used by the 
+  The "Forces" package provides the interface for the force models to be used by a 
   <NumericalPropagator>.
   
 * Forces presentation
@@ -23,14 +23,14 @@ Forces
   
   The propagator will call at each step the force model contribution computation
   method, to be added to its time derivative equations. The force model instance 
-  will extract all the state data it needs (date,position, velocity, frame, attitude, 
+  will extract all the state data it needs (date, position, velocity, frame, attitude, 
   mass) from the first parameter. 
   From these state data, it will compute the perturbing acceleration. It
-  will then add this acceleration to the second parameter which will take thins
+  will then add this acceleration to the second parameter which will take this
   contribution into account and will use the Gauss equations to evaluate its impact
   on the global state derivative.
 
-  Force models which create discontinuous acceleration patterns (typically for maneuvers
+  Force models that create discontinuous acceleration patterns (typically for maneuvers
   start/stop or solar eclipses entry/exit) must provide one or more events detectors to 
   the propagator thanks to their <getEventsDetectors()> method. This method
   is called once just before propagation starts. The events states will be checked by
@@ -39,12 +39,12 @@ Forces
 
 * Available force models
 
-  The force models implemented are the following ones:
+  The force models implemented are as follows:
 
   * atmospheric drag forces,
   
   * central gravity forces, including time-dependent parts (linear trends and
-    pulasation at several different periods). Several attraction model are
+    pulsation at several different periods). Several attraction models are
     available for representing the gravitational field of a celestial body
     (the recommended model is Holmes and Featherstone): 
   

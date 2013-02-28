@@ -34,7 +34,7 @@ Propagation
   different modes:
  
    * slave mode: This mode is used when the user needs only the final orbit at the target 
-  time. The (slave) propagator is passive: it computes this result and return it to the 
+  time. The (slave) propagator is passive: it computes this result and returns it to the 
   calling (master) application, without any intermediate feedback. In that case the events 
   detection is made but the <step handler> does nothing, actions are managed directly by the
   calling application.
@@ -51,9 +51,9 @@ Propagation
   sequential order. A typical example is the implementation of search and iterative 
   algorithms that may navigate forward and backward inside the propagation range before 
   finding their result.
-  Beware that this mode cannot support events that modify spacecraft initial state. 
-  Beware that since this mode stores <<all>> intermediate results, it may be memory 
-  intensive for long integration ranges and high precision/short time steps.
+  CAVEATS: Be aware that this mode cannot support events that modify spacecraft initial state. 
+  Be aware that since this mode stores <<all>> intermediate results, it may be memory-intensive
+  for long integration ranges and high precision/short time steps.
 
   The recommended mode is master mode. It is very simple to use and allow user to get
   rid of concerns about synchronizing force models, file output, discrete events. All
@@ -82,18 +82,18 @@ Propagation
   At each propagation step, the propagator checks the registered events detectors for
   the occurrence of some event, as shown in the following squence diagram. If an event
   occurs, then the corresponding action is triggered, which can ask the propagator to
-  resume propagation, possibly with an updated state or to stop propagation.
+  resume propagation (possibly with an updated state) or to stop propagation.
 
 [../images/design/events-sequence-diagram.png]
 
   Resuming propagation with changed state is used for example in the <ImpulseManeuver>
   class. When the maneuver is triggered, the orbit is changed according to the velocity increment
   associated with the maneuver and the mass is reduced according to the consumption. This
-  allows to handle simple maneuvers transparently even inside basic propagators like
+  allows the handling simple maneuvers transparently even inside basic propagators like
   Kepler or Eckstein-Heschler.
 
   Stopping propagation is useful when some specific state is desired but its real occurrence
-  time is unknown in advance. A typical example would be to find the next ascending node
+  time is not known in advance. A typical example would be to find the next ascending node
   or the next apogee. In this case, we can register a <NodeDetector> or an <ApsideDetector>
   object and launch a propagation with a target time far away in the future. When the
   event is triggered, it asks the propagator to stop and the returned value is the state
@@ -120,7 +120,7 @@ Propagation
     when some target enters or exits a satellite sensor field of view, 
 
   * an <EclipseDetector>, which is triggered when some body enters or exits the umbra or the
-    penumbra of an other occulting body,
+    penumbra of another occulting body,
 
   * an <ApsideDetector>, which is triggered at apogee and perigee,
 
@@ -150,20 +150,20 @@ Propagation
 
  The <KeplerianPropagator> implements the <Propagator> interface, which ensures 
  that we can obtain a propagated SpacecraftState at any time once the instance 
- is initialized with an initial state. This model is based on Keplerian only
+ is initialized with an initial state. This model is based on Keplerian-only
  motion. It depends on \u00b5.
 
 
 *** Eckstein-Hechler propagation	
 
-  This analytical model is suited for near circular orbits and inclination neither 
+  This analytical model is suited for near-circular orbits and inclination neither 
   equatorial nor critical. It considers J2 to J6 potential zonal coefficients, 
-  and uses mean parameters to compute the new position. As the keplerian propagator, 
+  and uses mean parameters to compute the new position. As the Keplerian propagator, 
   it implements the <Propagator> interface.
 
 *** SGP4/SDP4 propagation
 
-  This analytical model is dedicated to Two-Lines Elements (TLE) propagation.
+  This analytical model is dedicated to Two-Line Elements (TLE) propagation.
 
 *** Differential effects adapter
 
@@ -185,7 +185,7 @@ Propagation
 
 *** Simple propagation of equations of motion
 
-  The mathematical problem to integrate is a dimension seven time derivative equations
+  The mathematical problem to integrate is a dimension-seven time-derivative equations
   system. The six first elements of the state vector are the orbital parameters, which
   may be any orbit type (<KeplerianOrbit>, <CircularOrbit>, <EquinoctialOrbit> or
   <CartesianOrbit>) in meters and radians, and the last element is the mass in
@@ -194,13 +194,13 @@ Propagation
   <AdditionalEquations> devoted to integration of Jacobian matrices). The time derivatives are
   computed automatically by the Orekit using the Gauss equations for the first parameters
   corresponding to the selected orbit type and the flow rate for mass evolution
-  during maneuvers. The users only needs to register the various force models needed for
+  during maneuvers. The user only needs to register the various force models needed for
   the simulation. Various force models are already available in the library and specialized
   ones can be added by users easily for specific needs.
  
   The integrators (<first order integrators>) provided by commons-math need 
   the state vector at t0, the state vector first time derivative at t0,
-  and then calculates the next step state vector, and ask for the next first 
+  and then calculates the next step state vector, and asks for the next first 
   time derivative, etc. until it reaches the final asked date. These underlying numerical
   integrators can also be configured. Typical tuning parameters for adaptive stepsize
   integrators are the min, max and perhaps start step size as well as the absolute and/or

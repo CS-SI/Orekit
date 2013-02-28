@@ -20,13 +20,13 @@ Propagation
 * Propagation modes
 
   Three different operational modes are available for all propagators.
-  They are exclusive from each over.
+  They are mutually exclusive.
 
 ** Slave mode
 
-  It is the default mode, it doesn't need to be explicitly set, but it can be to recover from any other mode.
+  This is the default mode. It doesn't need to be explicitly set, but it can be to recover from any other mode.
   
-  This tutorial simply shows how to propagate from an initial state to a target date.
+  This tutorial shows how to propagate from an initial state to a target date.
 
   In this case, the calling application coordinates all the tasks, the propagator just propagates.
   
@@ -61,7 +61,7 @@ double lM = 0;                       // mean anomaly
 +---------------------
 
   The initial orbit is defined as a <KeplerianOrbit>.\
-  More precisions on the orbit representation can be found
+  More details on the orbit representation can be found
   in the {{{../architecture/orbits.html}orbits section}}
   of the library architecture documentation.
 
@@ -71,7 +71,7 @@ Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.
 +---------------------
 
   We choose to use a very simple <KeplerianPropagator> to compute basic keplerian motion.\
-  It could be any of all the available propagators.
+  It could be any of the available propagators.
 
 +---------------------
 KeplerianPropagator kepler = new KeplerianPropagator(initialOrbit);
@@ -84,7 +84,7 @@ KeplerianPropagator kepler = new KeplerianPropagator(initialOrbit);
 kepler.setSlaveMode();
 +---------------------
 
-  Finally, the propagation features, duration and step size, are defined and
+  Finally, the propagation features of duration and step size are defined and
   a propagation loop is performed in order to print the results at each step:
 
 +---------------------
@@ -181,10 +181,10 @@ step 11
 
 ** Master mode
 
-  In this mode, the propagator, as a master, calls some callback methods,
-  provided by the application, throughout its internal integration loop.
+  In this mode, the propagator, as a master, calls some callback methods
+  provided by the application throughout its internal integration loop.
 
-  Like in the slave mode tutorial above, let's define some initial state with:
+  As in the slave mode tutorial above, let's define some initial state with:
 
   ** an inertial frame
 
@@ -217,9 +217,9 @@ Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.
 SpacecraftState initialState = new SpacecraftState(initialOrbit);
 +---------------------
 
-  Here we use a more sophisticated <NumericalPropagator> based on an some adaptive
-  step integrator provided by the underlying <<<commons-math>>> library, but no matter
-  which integrator is used.
+  Here we use a more sophisticated <NumericalPropagator> based on an adaptive
+  step integrator provided by the underlying <<<Apache Commons Math>>> library,
+  but it doesn't matter which integrator is used.
 
 +---------------------
 // Adaptive step integrator
@@ -242,7 +242,7 @@ propagator.setOrbitType(propagationType);
 +---------------------
 
   A force model, reduced here to a single perturbing gravity field, is taken into account.\
-  More precisions on force models can be found
+  More details on force models can be found
   in the {{{../architecture/forces.html}forces section}}
   of the library architecture documentation.
 
@@ -283,7 +283,7 @@ SpacecraftState finalState =
   Clearly, with a few lines of code, the main application delegates to the propagator
   the care of handling regular outputs through a variable step integration loop.
 
-  The only need is to derived some class from the interface <OrekitFixedStepHandler>
+  All that is needed is to derive some class from the interface <OrekitFixedStepHandler>
   to realize a <handleStep> method, as follows:
 
 +---------------------
@@ -300,7 +300,7 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
 }
 +---------------------
   
-  For the same result, with the slave mode, it would have required much more programming.
+  The same result, with the slave mode, would have required much more programming.
 
   The printed results are shown below:
 
@@ -342,7 +342,7 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
   This third mode may be used when the user needs random access to the orbit state
   at any time between some initial and final dates.
 
-  Like in the two tutorials above, let's first define some initial state with:
+  As in the two tutorials above, let's first define some initial state with:
 
   ** an inertial frame
 
@@ -404,7 +404,7 @@ SpacecraftState finalState =
     propagator.propagate(new AbsoluteDate(initialDate, 6000));
 +---------------------
 
-  This <finalState> can be used for anything, to be printed for example just like below:
+  This <finalState> can be used for anything, to be printed, for example as shown below:
 
 +---------------------
  Numerical propagation :
@@ -416,7 +416,7 @@ SpacecraftState finalState =
 +---------------------
 
   Throughout the propagation, intermediate states are stored
-  within an ephemeris which can be recovered now just with one instruction:
+  within an ephemeris which can now be recovered with a single call:
   
 +---------------------
 BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
@@ -433,13 +433,13 @@ System.out.println(" Ephemeris defined from " + ephemeris.getMinDate() +
 +---------------------
 
   Between these dates, the ephemeris can be used as any propagator to propagate
-  the orbital state towards any intermediate date just with one instruction:
+  the orbital state towards any intermediate date with a single call:
   
 +---------------------
 SpacecraftState intermediateState = ephemeris.propagate(intermediateDate);
 +---------------------
 
-  Here are results obtained with intermediate dates set to 3000 second after
+  Here are results obtained with intermediate dates set to 3000 seconds after
   start date and to exactly the final date:
 
 +---------------------
@@ -471,7 +471,7 @@ out of range date for ephemerides: 2004-01-01T23:13:20.000
 
 * Events management
 
-  This tutorial aims to show the power and simplicity of the event handling mechanism.
+  This tutorial aims to demonstrate the power and simplicity of the event-handling mechanism.
   
   One needs to check the visibility between a satellite and a ground station during some
   time range.
@@ -499,7 +499,7 @@ Orbit initialOrbit =
     new KeplerianOrbit(pvCoordinates, inertialFrame, initialDate, mu);
 +---------------------
 
-  More precisions on the orbit representation can be found
+  More details on the orbit representation can be found
   in the {{{../architecture/orbits.html}orbits section}}
   of the library architecture documentation.
 
@@ -529,10 +529,10 @@ BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 +---------------------
 
-  More precisions on <BodyShape> and <GeodeticPoint> can be found
+  More details on <BodyShape> and <GeodeticPoint> can be found
   in the {{{../architecture/bodies.html}bodies section}}
   of the library architecture documentation.\
-  More precisions on <TopocentricFrame> can be found
+  More details on <TopocentricFrame> can be found
   in the {{{../architecture/frames.html}frames section}}
   of the library architecture documentation.
 

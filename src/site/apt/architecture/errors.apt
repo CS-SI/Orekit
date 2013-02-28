@@ -13,9 +13,9 @@
 
 Errors
 
-  The "Errors" package provides classes to generate and handle errors, which are based on
-  the classical mechanism of exceptions. Errors messages generated are automatically 
-  translated, the languages available are English, French, Galician, German, Italian,
+  The "Errors" package provides classes to generate and handle errors, based on
+  the classical mechanism of exceptions. The error messages generated are automatically 
+  translated, with the available languages being English, French, Galician, German, Italian,
   Norse and Spanish.
 
 * Authors

@@ -19,13 +19,13 @@ Training
   organized by CS Systèmes d'Information. The instructors are
   the experts who design, develop, maintain and use Orekit.
 
-  The available training programs have been prepared for an audience of
-  people willing to use object-oriented technology in their projects and
-  who have a space flight dynamics background rather than information
-  technology background. These programs differ from classical object-oriented
-  training sessions due to this strong orientation towards numerical computation
-  and its focus on practical problems encountered in this field, such as reliability,
-  numerical robustness and performance.
+  The available training programs are geared toward those who are willing to
+  use object-oriented technology in their projects and who have a space
+  flight dynamics background rather than information technology background.
+  These programs differ from classical object-oriented training sessions due
+  to this strong orientation towards numerical computation and its focus on
+  practical problems encountered in this field, such as reliability, numerical
+  robustness and performance.
 
 * Training programs
 
@@ -36,15 +36,15 @@ Training
    This session is oriented towards trainees who are not computer science
    experts. The following concepts are taught:
 
-   * programming languages evolution history
+   * the history and evolution of programming languages
 
-   * programming paradigms introduced at each programming language generation
+   * the programming paradigms introduced in each programming language generation
 
-   * influence of these paradigms on development methods and on daily work 
+   * influence of these paradigms on development methods and on daily work
 
-   * limiting factors at each programming language generation
+   * limiting factors with each generation of programming languages
 
-   * why and how new paradigms have been added along time
+   * why and how new paradigms have been added over time
 
 *----------*-----------------------------------------------*----------*
 |   type   |              prerequisites                    | duration |
@@ -61,8 +61,8 @@ session 1
 
 ** Object oriented concepts and the Java language
 
-  This session is a classical training session for the Java programming language. It is not
-  directly oriented towards numerical computation.  The following concepts
+  This session is a more general training session for the Java programming language.
+  It is not directly oriented towards numerical computation. The following concepts
   are taught:
 
    * Java language principles
@@ -75,7 +75,7 @@ session 1
 
    * Maven build tool
 
-   * Testing tools (Junit, Cobertura)
+   * Testing tools (Junit, Jacoco)
 
    * Auditing tools (Checkstyle, Findbugs, PMD ...)
 
@@ -87,23 +87,23 @@ session 1
 *--------------------*-----------------------------------------*-----------*
 session 2
 
-  At the end of this session, trainees will know the syntax of the Java language and have gained
-  an initial development experience that equips them to read and understand existing Java source
-  and to develop small standalone Java applications.
+  At the end of this session, trainees will know the syntax of the Java language and have
+  gained an initial development experience that equips them to read and understand existing
+  Java source and to develop small standalone Java applications.
 
-** Developing numerical applications in the Java language - using Apache commons-math and Orekit
+** Developing numerical applications in the Java language - using Apache Commons Math and Orekit
 
-  This session is also oriented towards trainees who are not computer science
-  experts but rather space flight dynamics engineers and numerical analysts. It adds the
-  necessary do's and don'ts that apply to high performance and robust numerical applications
-  development, especially in mathematics and space flight dynamics fields. The following topics
-  are covered:
+  This session is also oriented towards trainees who are not computer science experts
+  but rather space flight dynamics engineers and numerical analysts. It adds the necessary
+  do's and don'ts that apply to high performance and robust numerical applications
+  development, especially in mathematics and space flight dynamics fields. The following
+  topics are covered:
 
    * Setting up the Eclipse integrated development environment
 
-   * Setting up the free software libraries Apache commons-math and Orekit
+   * Setting up the free software libraries Apache Commons Math and Orekit
 
-   * Tour of all high level packages of Apache commons-math and Orekit
+   * Tour of all high level packages of Apache Commons Math and Orekit
 
    * Design patterns for development of robust and high performance numerical computation applications
 
@@ -123,16 +123,16 @@ session 3
 
   At the end of this session, trainees will have a pragmatic knowledge of the benefits of
   object-oriented paradigm for the development of scientific algorithms. They will understand
-  some common pitfalls and know how to avoid them and develop robust and high performance code.
-  They will know the available concepts and algorithms in the Apache commons-math and Orekit
+  some common pitfalls and know how to avoid them in developing robust and high performance code.
+  They will know the available concepts and algorithms in the Apache Commons Math and Orekit
   libraries. They have their first development experience of space flight dynamics applications
   in an integrated development environment with these libraries.
 
 * Training sessions organization
 
-  The training sessions can be organized both at your premises anywhere in the world or
-  at CS premises in Toulouse (France). All sessions are limited to 8 students. Prices
-  for the training sessions at CS premises are shown in the following table:
+  The training sessions can be organized both at your premises anywhere in the world or at CS
+  premises in Toulouse (France). All sessions are limited to 8 students. Prices for the training
+  sessions at CS premises are shown in the following table:
 
 *---------------------------------------------------------*----------------------*-----------------------*------------*
 |                       session                           |       industry       |      academics        |  students  |

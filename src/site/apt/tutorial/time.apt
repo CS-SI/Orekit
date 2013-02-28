@@ -63,7 +63,7 @@ System.out.println("        UTC date                  TAI date");
   Now comes the real processing: the loop. Since AbsoluteDate instances
   are immutable, we use a new instance at each iteration. For the first
   iteration, we simply reuse the start date, and for other iterations
-  we create an instance relatively to the previous one.
+  we create an instance relative to the previous one.
   
 +---------------------
 double step = 0.5;
@@ -84,7 +84,7 @@ System.out.println(date.toString(utc) + "   " + date.toString(tai));
 +---------------------
 
   Since the loop brackets a leap second introduction, we see two different things
-  in the output of this program. First, the middle iterations shows the last minute
+  in the output of this program. First, the middle iterations show the last minute
   of the day in UTC time scale has more than 60 seconds: we see dates 2005-12-31T23:59:60.000
   and 2005-12-31T23:59:60.500. Second, we see the offset between the two time scales
   grow from 32 seconds at the start of the loop to 33 seconds at the end of the loop:

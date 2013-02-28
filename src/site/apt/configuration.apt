@@ -71,7 +71,7 @@ Configuration
     In this case, data may be stored in the main operational database, relying on the
     existing administration procedures (updates, backup, redundancy ...).
 
-  * Simulation tool on a desktop computer for everyday studies
+  * Simulation tool on a desk computer for everyday studies
 
     For everyday local use of a tool, data will mainly be stored in the user environment.
     A traditional architecture will involve two main data stores, one on a network shared
@@ -96,7 +96,7 @@ Configuration
 
   * Computation service in an application server
 
-    A service installed on an application server may be simpler to configure if rather
+    A service installed on an application server may be simpler to configure if, rather
     than using explicit files locations on the server, one stores the data in the
     application classpath where it will be managed by the application server together
     with the application code itself.
@@ -173,7 +173,7 @@ Configuration
   disk.
 
   Data files may also be compressed using gzip to save some disk space. Compressed files
-  are also uncompressed directly in memory. Compressing text-based files like bulletinB or EOPC04
+  are also uncompressed directly in memory. Compressing text-based files like Bulletin B or EOPC04
   saves a lot of disk space, but compressing the JPL binary files saves very little space.
   Using compressed files inside a zip archive is also irrelevant as zip/jar files are themselves
   compressed and stacking compression algorithms only slows down reading speed without saving any disk

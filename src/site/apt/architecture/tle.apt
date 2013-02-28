@@ -13,32 +13,34 @@
 
 TLE
 
-  This package provides classes to read and extrapolate Two-Line orbits format.
+  This package provides classes to read, and extrapolate from, orbital elements in
+  Two-Line Elements (TLE) format.
 
 * TLE Presentation
 
-  TLE orbits are represented by two lines string representation, then data are converted 
-  internally for easier retrieval and future extrapolation.
-  All the values provided by a TLE only have sense when translated by the correspondent
+  TLE orbits are supplied in two-line element format, then converted 
+  into an internal format for easier retrieval and future extrapolation.
+  All the values provided by a TLE only make sense when translated by the corresponding
   propagator. Even when no extrapolation in time is needed, state information 
-  (position and velocity coordinates) can only be computed threw the propagator. 
+  (position and velocity coordinates) can only be computed through the propagator. 
   Untreated values like inclination, RAAN, mean Motion, etc. can't be used by 
-  themselves without loosing precision.
+  themselves without loss of precision.
 
 
-  Implemented TLE model is conform to new 2006 corrected model.
+  The implemented TLE model conforms to new 2006 corrected model.
   More information on the TLE format can be found on the
   {{{http://www.celestrak.com/}CelesTrak website.}}
 
 
 * Evolution
 
-  At present, TLE orbit representation is decorelated from other orbit representations 
+  The TLE orbit representation is de-corelated from other orbit representations 
   provided by <Orbits> package. It is due to the fact that TLE representation depends on 
   a very specific dynamic model, which is not compatible with <Orbits> models in present 
   architecture.
-  This is a miss and it is due to change, so that representations conversions can be made
-  automatically and transparently for the user.
+
+  It is considered to be closer to a propagation model than to an orbit representation and
+  has been moved withing the propagation package since 6.0.
 
 * Authors
 

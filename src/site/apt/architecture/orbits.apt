@@ -16,7 +16,7 @@ Orbits
 
   The "Orbits" package provides classes to represent orbits.
 
-  It builds the base of all the other space mechanics tools. 
+  This package is the basis for all of the other space mechanics tools. 
   It provides an abstract class, Orbit, extended in four different ways 
   corresponding to the different possible representations of orbital parameters.
   Since version 3.0, keplerian, circular, equinoctial and cartesian representations 
@@ -26,7 +26,7 @@ Orbits
 
   Early designs for the orbit package were much more complex than the current design.
   Looking back at these designs, they tried to do far too much in a single class and
-  resulted in huge systems which were both difficult to understand, difficult to
+  resulted in huge systems which were difficult to understand, difficult to
   use, difficult to maintain and difficult to reuse. They mixed several different notions:
 
     ** representation (keplerian, cartesian ...)
@@ -37,7 +37,7 @@ Orbits
 
     ** filtering (osculating and centered or mean parameters, related to some models)
 
-  They also often forgot all frames issues.
+  They also often neglected all frames issues.
 
   The current design has been reached by progressively removing spurious layers and
   setting them apart in dedicated packages. All these notions are now still handled,
@@ -55,7 +55,7 @@ Orbits
 
   From the early design, the various orbit classes retained only the kinematical
   notions at a single time. They basically represent the current state, and
-  serve as data holder. Most of methods provided by these orbits classes are
+  serve as data holders. Most of the methods provided by these orbits classes are
   getters. Some of them (the non-ambiguous ones that must be always available) are
   defined in the top Orbit abstract class (<Orbit.getA()>, <Orbit.getDate()>, 
   <Orbit.getPVCoordinates()>). The more specific ones depending on the type of 
@@ -68,7 +68,7 @@ Orbits
   non-cartesian representation. This choice is a pragmatic one. These parameters
   are really used in many places in algorithms, for computation related to
   period (setting a convergence threshold or a search interval) or geometry
-  (computing swath or lightning). A side-effect of this choice is that all orbits
+  (computing swath or lighting). A side-effect of this choice is that all orbits
   do include a value for \u00b5, the acceleration coefficient of the central body.
   This value is only used for the representation of the parameters and for conversion
   purposes, it is <not> always the same as the value used for propagation (but
@@ -76,7 +76,7 @@ Orbits
 
   Orbits also include a reference to a date and a defining frame. Only pseudo-inertial
   frames can be used to define orbits, as Newtonian mechanics should apply within the
-  context of the frame. Including frames allow transparent conversions to any other
+  context of the frame. Including frames allows transparent conversions to any other
   frames at given date, without having to  externally preserve a mapping between orbits
   and their frame: it is already done. As an example, getting the position and velocity
   of a satellite given by a circular orbit in a ground station frame is simply a matter
@@ -88,8 +88,8 @@ Orbits
   guaranteed to be immutable. They are small objects and they are shared by
   many parts. This change was done in 2006 and tremendously simplified the
   library and the users applications that were previously forced to copy orbits
-  as an application of defensive programming, and that were plagued by difficult
-  to find bugs when they forgot to copy.
+  as an application of defensive programming, and that were plagued by
+  difficult-to-find bugs when they forgot to copy.
 
   For orbit evolution computation, this package is not sufficient. There is a
   need to include notions of dynamics, forces models, propagation algorithms ...
@@ -105,7 +105,7 @@ Orbits
    
      ** a : semi-major axis (m)
      
-     ** e : eccentricity (currently only e smaller than 1.0, i.e elliptical orbits, are supported)
+     ** e : eccentricity (any value of e is supported, i.e. both elliptical and hyperbolic orbits can be used)
      
      ** i : inclination (rad)
      
@@ -149,7 +149,7 @@ Orbits
      mean longitude argument (\u03c9 + \u03a9 + M) or eccentric longitude argument (\u03c9 + \u03a9 + E).
      
   \
-  * Cartesian orbit, associated to its frame definition, which parameters are:
+  * Cartesian orbit, associated to its frame definition, the parameters for which are:
    
      ** (X, Y, Z) (m) : position vector of the point in given frame
 
@@ -178,15 +178,15 @@ Orbits
   and when converted back to the original non-ambiguous representation it does give
   the right result.
 
-  We therefore consider it is the responsibility of the user to be aware of the correct
+  We therefore consider it the responsibility of the user to be aware of the correct
   definition of the different representations and of the singularities relative to each
   one of them. If the user really needs to do some conversion (for example to provide
-  an orbit as Two-Lines Elements later on, remembering than TLE do use keplerian-like
+  an orbit as Two-Line Elements later on, remembering that TLEs do use keplerian-like
   parameters), then he can do so.
 
-  The way conversion is handled in OREKIT is very simple and allows easy and transparent
-  processing. All four parameters type extend the abstract class Orbit, 
-  and every propagation algorithm, be it analytical or numerical, use this abstract class as a
+  The way conversion is handled in Orekit is very simple and allows easy and transparent
+  processing. All four parameters type-extend the abstract class Orbit, 
+  and every propagation algorithm, be it analytical or numerical, uses this abstract class as a
   parameter, even if internally it relies on a specific representation. As an example, the
   Eckstein-Hechler propagator is defined in terms of circular orbit only. So
   there is an implicit conversion done at propagator initialization time.

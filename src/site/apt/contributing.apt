@@ -13,12 +13,12 @@
 
 Contributing to Orekit
 
-  Orekit is free software, it means you can use it as you want in your
-  applications, but also that you can improve it and have your code
-  included in the next mainstream release.
+  Orekit is free software, which means you can use the source code as you wish,
+  without charges, in your applications, and that you can improve it and have
+  your improvements included in the next mainstream release.
 
   If you are interested in participating in the development effort,
-  subscribe to the mailing lists and step up to discuss about it. The
-  largest the community will be, the better Orekit will be. The main
+  subscribe to the mailing lists and step up to discuss it. The
+  larger the community is, the better Orekit will be. The main
   rule is that everything intended to be included in Orekit core must
   be distributed under the Apache License Version 2.0.

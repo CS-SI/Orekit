@@ -26,14 +26,15 @@
           Yes, it has been used in successful operational missions.
         </p>
         <p>The first operational use of Orekit was for the Automated Transfer
-          Vehicle (ATV) mission to International Space station (ISS). Orekit
-          was used operationally during the real-time monitoring of the rendez-vous
+          Vehicle (ATV) mission to the International Space station (ISS). Orekit
+          was used operationally during the real-time monitoring of the rendezvous
           phase up to the docking. It continuously recomputed the relative geometry
-          of the two spacecrafts using different sensors output to check their
+          of the two spacecraft using different sensors output to check its
           consistency.
         </p>
-        <p>Orekit has also been selected by CNES for its next generation flight
-        dynamics systems (project Sirius) in early 2011.
+        <p>Orekit has also been selected by CNES for its next-generation flight
+        dynamics systems (project Sirius) in early 2011, including operational
+        systems, study systems and mission analysis systems .
         </p>
       </answer>
     </faq>
@@ -43,22 +44,22 @@
       </question>
       <answer>
         <p>
-          Some parts are strongly validated, others are validated to a less extent.
+          Some parts are strongly validated, others are validated to a lesser extent.
         </p>
         <p>
           The frames package is one of the best validated ones. The overall mechanism
           (transforms, navigation between frames, kinematics ...) has really been challenged
           a lot, both in theoretical tests and during real life operations. This part was
-          extensively used for Automated Transfer Vehicle (ATV) rendez-vous with International
-          Space Station (ISS). It was part of an operational ground program performing real
-          time monitoring of the rendez-vous and docking phase. This part has been checked to
-          below millimeter level for relative configuration. The reference frames part (ITRF
+          extensively used for Automated Transfer Vehicle (ATV) rendezvous with International
+          Space Station (ISS). It was part of an operational ground program performing real-time
+          monitoring of the rendezvous and docking phase. This part has been checked to
+          below millimeter-level precision for relative configuration. The reference frames part (ITRF
           and the like) has been validated using public data down to meter-level precision for
-          version 3.1, and to centimeter level for the version 4.0.
+          version 3.1, and to centimeter-level precision for the version 4.0.
         </p>
         <p>
-          A new round of validation has been done after Orekit 3.1 has been published. Two
-          defects have been identified and fixed: the J2000 frame was misaligned with real J2000
+          A new round of validation was done after Orekit 3.1 was published. Two
+          defects were identified and fixed: the J2000 frame was misaligned with real J2000
           by a constant rotation bias of about 18 milliarcsceonds (it was really GCRF, not J2000)
           and the ITRF2000B implementation was wrong by a time-dependent rotation leading to about
           0.6 meters error for orbits with a semi-minor axis of about 10000km. These errors have
@@ -66,9 +67,9 @@
           cases to about 10mm for LEO and 60mm for GEO.
         </p>
         <p>
-          The TLE package is also quite well validated, it has been checked against some reference
+          The TLE package is also quite well validated; it has been checked against some reference
           data published by Vallado along with his revision of the original spacetrack report, where
-          he fixed some errors in the original fortran implementation from Norad.
+          he fixed some errors in the original Fortran implementation from NORAD.
         </p>
         <p>
           The atmosphere models have also been validated the same way, using published data.
@@ -79,9 +80,9 @@
           (for example behavior during the introduction of a leap second).
         </p>
         <p>
-          The Sun and Moon class for version 3.1 are very low precision and are defined in a
+          The Sun and Moon classes for version 3.1 are very low precision and are defined in a
           pseudo-inertial frame with loose definition. They can be compared only with very specific
-          software. There accuracy is probably limited to about 10 arcseconds. They have been replaced
+          software. Their accuracy is probably limited to about 10 arcseconds. They have been replaced
           by accurate reference models in the version 4.0.
         </p>
         <p>
@@ -93,7 +94,7 @@
         <p>
           Validation is a continuous task for us, we are always working on improving it. We would be
           happy to also have other teams perform independent validation runs. We have already received
-          some feedback and new tests cases after the first version has been published.
+          some feedback and new test cases after the first version was published.
         </p>
       </answer>
       <question>
@@ -108,8 +109,7 @@
         <p>
           As thread-safety was an important need for many people, this problem has been addressed and
           starting with version 6.0 many Orekit classes are thread-safe. Note however that some parts
-          for which sequential access is natural (like numerical propagators) are <em>not</em> thread
-          safe.
+          for which sequential access is natural (like numerical propagators) are <em>not</em> thread-safe.
         </p>
       </answer>
     </faq>
@@ -119,22 +119,93 @@
     <title>Installation</title>
     <faq id="commons-math-unavailable">
       <question>
-        When I try to compile orekit, maven cannot find commons-math 2.0-SNAPSHOT, where is it ?
+        When I try to compile orekit, maven cannot find commons-math 2.0-SNAPSHOT, where is it?
       </question>
       <answer>
         <p>
-          Up to version 4.0, Orekit depended on features of commons-math which were not released
+          Up to version 4.0, Orekit depended on features of Apache Commons Math which were not released
           as of mid 2008, so the dependency was set to 2.0-SNAPSHOT development version.
           This development version was available from Apache subversion repository. Starting
-          with version 4.1, Orekit depends only on released versions of Apache commons-math
+          with version 4.1, Orekit depends only on officialy released versions of Apache Commons Math
         </p>
         <p>
-          Orekit 4.1 depends on version 2.0 of Apache commons-math.
-          Orekit 5.0 depends on version 2.1 of Apache commons-math.
-          Orekit 5.1 depends on version 2.2 of Apache commons-math.
+          Orekit 4.1 depends on version 2.0 of Apache Commons Math.
+          Orekit 5.0 depends on version 2.1 of Apache Commons Math.
+          Orekit 5.0.3 depends on version 2.2 of Apache Commons Math.
+          Orekit 6.0 depends on version 2.2 of Apache Commons Math.
+        </p>
+      </answer>
+    </faq>
+    <faq id="orekit-data-zip-not-up-to-date">
+      <question>
+        The orekit-data.zip file you provide is not up to date. Can you update it?
+      </question>
+      <answer>
+        <p>
+          There is no regular update for this file. Data are provided only as an example, to allow quick
+          start for new users. For long-term use, data handling remains their own responsibility. The
+          configuration page points out the data sources that can be taken into account by Orekit, so you
+          can go visit that link to look for what you need.
+        </p>
+        <p>
+          Some difficulties may yet occur for very recent data. Indeed, the IERS once again changed its
+          file formats and stopped publishing the B Bulletins (see Earth Orientation Data page). As an
+          example, the last IAU 2000 B Bulletin published is number 263. IERS also stopped publishing
+          data for the IERS convention 2003, they have switched to IERS conventions 2010. The annual data
+          (EOP 05 C08 file) are still published. We advise then that you update these files regularly as
+          the IERS publish them.
+        </p>
+        <p>
+          Concerning UTC leap seconds, as of early 2013, the last one was introduced at the end of June 2012.
         </p>
       </answer>
     </faq>
   </part>
 
+  <part id="runtime">
+    <title>Runtime errors</title>
+    <faq id="orekit-data-zip-not-up-to-date">
+      <question>
+        I get an error "no utc-tai history data loaded" (or something similar in a another language). What does it mean?
+      </question>
+      <answer>
+        <p>
+          This error is probably the most frequent one, or at least it's the first one new users encounter.
+        </p>
+        <p>
+          Orekit needs some external data to be loaded in order to run. This includes UTC-TAI history for leap
+          seconds handling, Earth Orientation Parameters for transforms to and from Earth fixed frames, or planetar
+          ephemerides for Sun direction, for example.
+        </p>
+        <p>
+          The error message "no utc-tai history data loaded" means the UTC-TAI history file which is used for leap
+          seconds management was not found. As leap seconds are used each time a UTC date is used, this message is
+          often seen very early and is the first one unsuspecting users experience. It often means the user forgot
+          to configure Orekit to load data.
+        </p>
+        <p>
+          Configuring data loading is explained in the configuration page For a first start, the simplest configuration
+          is to download the orekit-data.zip file from the download page and to either set the "orekit.data.path" Java
+          property to this file or to manually configure the DataProvidersManager to use it. This example archive file
+          contains the required UTC-TAI history file among others. Configuring Orekit to use this archive file can be done
+          by keeping the file as a zip archive and pointing to this archive, or by unzipping it and pointing to the unzipped folder.
+        </p>
+        <p>
+          Here is an example using the file in zip format:
+        </p>
+        <p>
+          DataProvidersManager.addProvider(new ZipJarCrawler(new File("/path/to/the/zip/file/orekit-data.zip")));
+        </p>
+        <p>
+          Here is an example using the folder resulting from expanding the archive:
+        </p>
+        <p>
+          DataProvidersManager.addProvider(new DirectoryCrawler(new File("/path/to/the/folder/orekit-data")));
+        </p>
+        <p>
+          Using a folder allows one to change the data in it, e.g., adding new EOP files as they are published by IERS.
+        </p>
+      </answer>
+    </faq>
+  </part>
 </faqs>

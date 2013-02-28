@@ -19,8 +19,8 @@ Attitude
 
 * Attitudes Sequence
 
-  <AttitudesSequence> enables to easily switch between attitude laws on
-  events occurrences when propagating some <SpacecraftState>.
+  <AttitudesSequence> enables easy switching between attitude laws on
+  event occurrences when propagating some <SpacecraftState>.
   
   Let's set up an initial state as:
 
@@ -43,7 +43,7 @@ Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
                                         Constants.EIGEN5C_EARTH_MU);
 +---------------------
 
-  More precisions on the orbit representation can be found
+  More details on the orbit representation can be found
   in the {{{../architecture/orbits.html}orbits section}}
   of the library architecture documentation.
 
@@ -54,7 +54,7 @@ AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, Math.toRadians(
 AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
 +---------------------
 
-  Let's also define some <EventDetector>. For this tutorial need,
+  Let's also define some <EventDetector>. For this tutorial's requirements,
   two specialized event detectors are built upon an <EclipseDetector>:
 
   ** one, <dayNightEvent>, to detect the day to night transition,
@@ -87,7 +87,7 @@ EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Consta
 };
 +---------------------
 
-  More precisions on events detectors can be found in the
+  More details on event detectors can be found in the
   {{{../architecture/propagation.html}propagation section}}
   of the library architecture documentation.
 
@@ -174,7 +174,7 @@ propagator.setMasterMode(180., new OrekitFixedStepHandler() {
 });
 +---------------------
 
-  More precisions on propagation modes can be found in the
+  More details on propagation modes can be found in the
   {{{../architecture/propagation.html}propagation section}}
   of the library architecture documentation.
 

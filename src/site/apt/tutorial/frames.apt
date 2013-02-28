@@ -37,7 +37,7 @@ Frames
   []
 
   The initial orbit is just set as a <CartesianOrbit>. 
-  More precisions on the orbit representation can be found
+  More details on the orbit representation can be found
   in the {{{../architecture/orbits.html}orbits section}}
   of the library architecture documentation.
 
@@ -82,16 +82,16 @@ BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 TopocentricFrame staF = new TopocentricFrame(earth, station, "station");
 +---------------------
 
-  More precisions on <BodyShape> and <GeodeticPoint> can be found
+  More details on <BodyShape> and <GeodeticPoint> can be found
   in the {{{../architecture/bodies.html}bodies section}}
   of the library architecture documentation.\
-  More precisions on <TopocentricFrame> can be found
+  More details on <TopocentricFrame> can be found
   in the {{{../architecture/frames.html}frames section}}
   of the library architecture documentation.
 
   Now, we can simply get the position and velocity of the station,
-  which are zero with respect to its frame, in LOF frame at any time
-  in one single instruction:
+  which are both zero with respect to its frame, in the LOF frame,
+  at any time, in one single instruction:
 
 +---------------------
 PVCoordinates origin = PVCoordinates.ZERO;
@@ -99,7 +99,7 @@ PVCoordinates pv =
     staF.getTransformTo(lof, anyTime).transformPVCoordinates(origin);
 +---------------------
 
-  All the details of the intermediate frames composite motions are hidden to the user.
+  All the details of the intermediate frames composite motions are hidden from the user.
 
   Finally, we can get the doppler measurement:
 
@@ -138,7 +138,7 @@ double doppler =
   The problem is related to the one exposed in the <User defined frames> subsection of the
   {{{../architecture/frames.html}frames section}} of the library architecture documentation.
   
-  It can be summarized by the following scheme.
+  It can be summarized by the following schema.
 
 [../images/frames2-tutorial.png]
 
@@ -295,7 +295,7 @@ Orbit orbit = new CircularOrbit(7178000.0, 0.5e-4, -0.5e-4,
                                 eme2000, initialDate, mu);
 +---------------------
 
-  More precisions on the orbit representation can be found in the
+  More details on the orbit representation can be found in the
   {{{../architecture/orbits.html}orbits section}} of the library architecture
   documentation.
 
@@ -321,7 +321,7 @@ final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 YawSteering yawSteeringLaw = new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 +---------------------
     
-  More precisions on the attitude representation can be found in the
+  More details on the attitude representation can be found in the
   {{{../architecture/attitudes.html}attitudes section}} of the library architecture
   documentation.
 
@@ -333,7 +333,7 @@ Propagator propagator =
                                          -1.08263e-3, 2.54e-6, 1.62e-6, 2.3e-7, -5.5e-7);
 +---------------------
 
-  More precisions on <Propagator> can be found in the
+  More details on <Propagator> can be found in the
   {{{../architecture/propagation.html}propagation section}} of the library
   architecture documentation.
 
