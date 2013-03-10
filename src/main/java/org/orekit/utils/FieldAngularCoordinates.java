@@ -19,7 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.apache.commons.math3.ExtendedFieldElement;
+import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -46,7 +46,7 @@ import org.orekit.time.TimeShiftable;
  * @since 6.0
  * @see AngularCoordinates
  */
-public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
+public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      implements TimeShiftable<FieldAngularCoordinates<T>>, Serializable {
 
     /** Serializable UID. */
@@ -76,7 +76,7 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
      * @param <T> the type of the field elements
      * @return FieldRotation<T> rate allowing to go from start to end orientations
      */
-    public static <T extends ExtendedFieldElement<T>> FieldVector3D<T> estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
+    public static <T extends RealFieldElement<T>> FieldVector3D<T> estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
         final FieldRotation<T> evolution = start.applyTo(end.revert());
         return new FieldVector3D<T>(evolution.getAngle().divide(dt), evolution.getAxis());
     }
@@ -214,8 +214,8 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
      * @return a new position-velocity, interpolated at specified date
      */
     @SuppressWarnings("unchecked")
-    public static <T extends ExtendedFieldElement<T>> FieldAngularCoordinates<T> interpolate(final AbsoluteDate date, final boolean useRotationRates,
-                                                                                             final Collection<Pair<AbsoluteDate, FieldAngularCoordinates<T>>> sample) {
+    public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T> interpolate(final AbsoluteDate date, final boolean useRotationRates,
+                                                                                         final Collection<Pair<AbsoluteDate, FieldAngularCoordinates<T>>> sample) {
 
         // get field properties
         final T prototype = sample.iterator().next().getValue().getRotation().getQ0();
@@ -322,9 +322,9 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
      * @param <T> the type of the field elements
      * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2&pi;
      */
-    private static <T extends ExtendedFieldElement<T>> T[][] getModifiedRodrigues(final AbsoluteDate date, final FieldAngularCoordinates<T> ac,
-                                                                                  final AbsoluteDate offsetDate, final FieldAngularCoordinates<T> offset,
-                                                                                  final double threshold) {
+    private static <T extends RealFieldElement<T>> T[][] getModifiedRodrigues(final AbsoluteDate date, final FieldAngularCoordinates<T> ac,
+                                                                              final AbsoluteDate offsetDate, final FieldAngularCoordinates<T> offset,
+                                                                              final double threshold) {
 
         // remove linear offset from the current coordinates
         final double dt = date.durationFrom(offsetDate);
@@ -378,8 +378,8 @@ public class FieldAngularCoordinates<T extends ExtendedFieldElement<T>>
      * @param <T> the type of the field elements
      * @return angular coordinates
      */
-    private static <T extends ExtendedFieldElement<T>> FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r,
-                                                                                                              final FieldAngularCoordinates<T> offset) {
+    private static <T extends RealFieldElement<T>> FieldAngularCoordinates<T> createFromModifiedRodrigues(final T[][] r,
+                                                                                                          final FieldAngularCoordinates<T> offset) {
 
         // rotation
         final T rSquared = r[0][0].multiply(r[0][0]).add(r[0][1].multiply(r[0][1])).add(r[0][2].multiply(r[0][2]));

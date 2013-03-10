@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.math3.ExtendedFieldElement;
+import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
@@ -186,7 +186,7 @@ public class FieldAngularCoordinatesTest {
         getter.setAccessible(true);
         Method factory = FieldAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
                                                                     new Class<?>[] {
-                                                                        ExtendedFieldElement[][].class,
+                                                                        RealFieldElement[][].class,
                                                                         FieldAngularCoordinates.class
                                                                     });
         factory.setAccessible(true);
@@ -229,7 +229,7 @@ public class FieldAngularCoordinatesTest {
         getter.setAccessible(true);
         Method factory = FieldAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
                                                                     new Class<?>[] {
-                                                                        ExtendedFieldElement[][].class,
+                                                                        RealFieldElement[][].class,
                                                                         FieldAngularCoordinates.class
                                                                     });
         factory.setAccessible(true);

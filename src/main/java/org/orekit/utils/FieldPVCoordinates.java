@@ -19,7 +19,7 @@ package org.orekit.utils;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.apache.commons.math3.ExtendedFieldElement;
+import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.Pair;
@@ -42,7 +42,7 @@ import org.orekit.time.TimeShiftable;
  * @since 6.0
  * @see PVCoordinates
  */
-public class FieldPVCoordinates<T extends ExtendedFieldElement<T>>
+public class FieldPVCoordinates<T extends RealFieldElement<T>>
     implements TimeShiftable<FieldPVCoordinates<T>>, Serializable {
 
     /** Serializable UID. */
@@ -271,9 +271,9 @@ public class FieldPVCoordinates<T extends ExtendedFieldElement<T>>
      * @param <T> the type of the field elements
      * @return velocity allowing to go from start to end positions
      */
-    public static <T extends ExtendedFieldElement<T>> FieldVector3D<T> estimateVelocity(final FieldVector3D<T> start,
-                                                                                        final FieldVector3D<T> end,
-                                                                                        final double dt) {
+    public static <T extends RealFieldElement<T>> FieldVector3D<T> estimateVelocity(final FieldVector3D<T> start,
+                                                                                    final FieldVector3D<T> end,
+                                                                                    final double dt) {
         final double scale = 1.0 / dt;
         return new FieldVector3D<T>(scale, end, -scale, start);
     }
@@ -314,9 +314,9 @@ public class FieldPVCoordinates<T extends ExtendedFieldElement<T>>
      * @return a new position-velocity, interpolated at specified date
      */
     @SuppressWarnings("unchecked")
-    public static <T extends ExtendedFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
-                                                                                        final boolean useVelocities,
-                                                                                        final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
+    public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
+                                                                                    final boolean useVelocities,
+                                                                                    final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
 
         // get field properties
         final T prototype = sample.iterator().next().getValue().getPosition().getX();

@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.math3.ExtendedFieldElement;
+import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
@@ -374,7 +374,7 @@ public class Transform
      * @param <T> the type of the field elements
      * @return transformed position
      */
-    public <T extends ExtendedFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> transformPosition(final FieldVector3D<T> position) {
         return FieldRotation.applyTo(angular.getRotation(), position.add(cartesian.getPosition()));
     }
 
@@ -391,7 +391,7 @@ public class Transform
      * @param <T> the type of the field elements
      * @return transformed vector
      */
-    public <T extends ExtendedFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
+    public <T extends RealFieldElement<T>> FieldVector3D<T> transformVector(final FieldVector3D<T> vector) {
         return FieldRotation.applyTo(angular.getRotation(), vector);
     }
 
@@ -423,7 +423,7 @@ public class Transform
      * @param <T> the type of the field elements
      * @return transformed position/velocity
      */
-    public <T extends ExtendedFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
+    public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
         final FieldVector3D<T> p = pv.getPosition();
         final FieldVector3D<T> v = pv.getVelocity();
         final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(),
