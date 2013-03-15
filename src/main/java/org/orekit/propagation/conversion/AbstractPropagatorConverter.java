@@ -344,16 +344,16 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         if ( !availableParameters.contains(parameter) ) {
 
             // build the list of supported parameters
-            final StringBuilder builder = new StringBuilder();
+            final StringBuilder sBuilder = new StringBuilder();
             for (final String available : availableParameters) {
-                if (builder.length() > 0) {
-                    builder.append(", ");
+                if (sBuilder.length() > 0) {
+                    sBuilder.append(", ");
                 }
-                builder.append(available);
+                sBuilder.append(available);
             }
 
             throw new OrekitException(OrekitMessages.UNSUPPORTED_PARAMETER_NAME,
-                                      parameter, builder.toString());
+                                      parameter, sBuilder.toString());
 
         }
 

@@ -754,17 +754,19 @@ public class FramesFactory implements Serializable {
             // try to find an already built frame
             final Predefined factoryKey;
             switch (conventions) {
-            case IERS_2010 : factoryKey = ignoreTidalEffects ?
-                                                              Predefined.TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
-                                                              Predefined.TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS;
-            break;
-            case IERS_2003 : factoryKey = ignoreTidalEffects ?
-                                                              Predefined.TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
-                                                              Predefined.TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS;
-            break;
+            case IERS_2010 :
+                factoryKey = ignoreTidalEffects ?
+                                                 Predefined.TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+                                                 Predefined.TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS;
+                break;
+            case IERS_2003 :
+                factoryKey = ignoreTidalEffects ?
+                                                 Predefined.TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+                                                 Predefined.TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS;
+                break;
             default :
-            // this should never happen
-            throw OrekitException.createInternalError(null);
+                // this should never happen
+                throw OrekitException.createInternalError(null);
             }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
@@ -791,10 +793,12 @@ public class FramesFactory implements Serializable {
             // try to find an already built frame
             final Predefined factoryKey;
             switch (conventions) {
-            case IERS_2010 : factoryKey = Predefined.CIRF_2000_CONV_2010;
-            break;
-            case IERS_2003 : factoryKey = Predefined.CIRF_2000_CONV_2003;
-            break;
+            case IERS_2010 :
+                factoryKey = Predefined.CIRF_2000_CONV_2010;
+                break;
+            case IERS_2003 :
+                factoryKey = Predefined.CIRF_2000_CONV_2003;
+                break;
             default :
                 // this should never happen
                 throw OrekitException.createInternalError(null);
