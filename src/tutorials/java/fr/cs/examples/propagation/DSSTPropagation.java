@@ -158,6 +158,7 @@ public class DSSTPropagation {
         CENTRAL_BODY_DEGREE,
         THIRD_BODY_MOON,
         THIRD_BODY_SUN,
+        MASS,
         DRAG,
         DRAG_CD,
         DRAG_SF,
@@ -203,6 +204,10 @@ public class DSSTPropagation {
         final Orbit orbit = createOrbit(parser, FramesFactory.getEME2000(), utc, mu);
 
         // DSST propagator definition
+        double mass = 1000.0;
+        if (parser.containsKey(ParameterKey.MASS)) {
+            mass = parser.getDouble(ParameterKey.MASS);
+        }
         Boolean isOsculating = false;
         if (parser.containsKey(ParameterKey.ORBIT_IS_OSCULATING)) {
             isOsculating = parser.getBoolean(ParameterKey.ORBIT_IS_OSCULATING);
@@ -211,7 +216,7 @@ public class DSSTPropagation {
         if (parser.containsKey(ParameterKey.FIXED_INTEGRATION_STEP)) {
             fixedStepSize = parser.getDouble(ParameterKey.FIXED_INTEGRATION_STEP);
         }
-        final DSSTPropagator dsstProp = createDSSTProp(orbit, isOsculating, fixedStepSize);
+        final DSSTPropagator dsstProp = createDSSTProp(orbit, mass, isOsculating, fixedStepSize);
 
         // Set Force models
         setForceModel(parser, unnormalized, earthFrame, dsstProp);
@@ -260,7 +265,7 @@ public class DSSTPropagation {
             File output_num = new File(input.getParentFile(), "numerical-propagation.out");
 
             // Numerical propagator definition
-            final NumericalPropagator numProp = createNumProp(orbit);
+            final NumericalPropagator numProp = createNumProp(orbit, mass);
             
             // Set Force models
             setForceModel(parser, normalized, earthFrame, numProp);
@@ -357,14 +362,16 @@ public class DSSTPropagation {
     }
     /** Set up the DSST Propagator
      *
-     *  @param orbit
+     *  @param orbit initial orbit
+     *  @param mass S/C mass (kg)
      *  @param isOsculating if orbital elements are osculating
      *  @param fixedStepSize step size for fixed step integrator (s)
      *  @throws OrekitException
      */
-    private DSSTPropagator createDSSTProp(final Orbit orbit, final boolean isOsculating,
+    private DSSTPropagator createDSSTProp(final Orbit orbit,
+                                          final double mass,
+                                          final boolean isOsculating,
                                           final double fixedStepSize) throws OrekitException {
-
         FirstOrderIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
@@ -377,7 +384,7 @@ public class DSSTPropagation {
         }
 
         DSSTPropagator dsstProp = new DSSTPropagator(integrator);
-        dsstProp.setInitialState(new SpacecraftState(orbit), isOsculating);
+        dsstProp.setInitialState(new SpacecraftState(orbit, mass), isOsculating);
 
         return dsstProp;
     }
@@ -385,9 +392,10 @@ public class DSSTPropagation {
     /** Create the numerical propagator
      *
      *  @param orbit initial orbit
+     *  @param mass S/C mass (kg)
      *  @throws OrekitException 
      */
-    private NumericalPropagator createNumProp(final Orbit orbit) throws OrekitException {
+    private NumericalPropagator createNumProp(final Orbit orbit, final double mass) throws OrekitException {
         final double[][] tol = NumericalPropagator.tolerances(1.0, orbit, orbit.getType());
         final double minStep = 1.e-3;
         final double maxStep = 1.e+3;
@@ -395,7 +403,7 @@ public class DSSTPropagation {
         integrator.setInitialStepSize(100.);
 
         NumericalPropagator numProp = new NumericalPropagator(integrator);
-        numProp.setInitialState(new SpacecraftState(orbit));
+        numProp.setInitialState(new SpacecraftState(orbit, mass));
 
         return numProp;
     }

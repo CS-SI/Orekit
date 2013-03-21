@@ -289,10 +289,9 @@ public class HarrisPriester implements Atmosphere {
 
         // Diurnal bulge apex direction
         final Vector3D sunDir = sunInEarth.normalize();
-        final double[] bulXYZ = {sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
-                                 sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
-                                 sunDir.getZ()};
-        final Vector3D bulDir = new Vector3D(bulXYZ);
+        final Vector3D bulDir = new Vector3D(sunDir.getX() * COSLAG - sunDir.getY() * SINLAG,
+                                             sunDir.getX() * SINLAG + sunDir.getY() * COSLAG,
+                                             sunDir.getZ());
 
         // Cosine of angle Psi between the diurnal bulge apex and the satellite
         final double cosPsi = bulDir.normalize().dotProduct(posInEarth.normalize());
@@ -307,15 +306,17 @@ public class HarrisPriester implements Atmosphere {
             ia++;
         }
 
-        // Exponential density interpolation
-        final double altMin = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][1] / tabAltRho[ia][1]);
-        final double rhoMin = tabAltRho[ia][1] * FastMath.exp((tabAltRho[ia][0] - posAlt) / altMin);
+        // Fractional satellite height
+        final double dH = (tabAltRho[ia][0] - posAlt) / (tabAltRho[ia][0] - tabAltRho[ia + 1][0]);
+
+        // Min exponential density interpolation
+        final double rhoMin = tabAltRho[ia][1] * FastMath.pow(tabAltRho[ia + 1][1] / tabAltRho[ia][1], dH);
 
         if (Precision.equals(cosPow, 0.)) {
             return rhoMin;
         } else {
-            final double altMax = (tabAltRho[ia][0] - tabAltRho[ia + 1][0]) / FastMath.log(tabAltRho[ia + 1][2] / tabAltRho[ia][2]);
-            final double rhoMax = tabAltRho[ia][2] * FastMath.exp((tabAltRho[ia][0] - posAlt) / altMax);
+            // Max exponential density interpolation
+            final double rhoMax = tabAltRho[ia][2] * FastMath.pow(tabAltRho[ia + 1][2] / tabAltRho[ia][2], dH);
             return rhoMin + (rhoMax - rhoMin) * cosPow;
         }
 

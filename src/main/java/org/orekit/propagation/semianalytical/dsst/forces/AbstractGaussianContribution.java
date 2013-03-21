@@ -21,11 +21,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
-import org.orekit.orbits.OrbitType;
-import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.propagation.semianalytical.dsst.utilities.GaussQuadrature;
 
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
  * <p>
@@ -50,11 +47,11 @@ import org.orekit.propagation.semianalytical.dsst.utilities.GaussQuadrature;
  */
 public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
-    /** Propagation orbit type. */
-    protected static final OrbitType ORBIT_TYPE = OrbitType.EQUINOCTIAL;
+    /** Available orders for Gauss quadrature. */
+    private static final int[] GAUSS_ORDER = {12, 16, 20, 24, 32, 40, 48};
 
-    /** Position angle type. */
-    protected static final PositionAngle ANGLE_TYPE = PositionAngle.MEAN;
+    /** Max rank in Gauss quadrature orders array. */
+    private static final int MAX_ORDER_RANK = GAUSS_ORDER.length - 1;
 
     // CHECKSTYLE: stop VisibilityModifierCheck
 
@@ -108,13 +105,22 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Gauss integrator. */
-    private final GaussQuadrature integrator;
+    private final double threshold;
+
+    /** Gauss integrator. */
+    private GaussQuadrature integrator;
+
+    /** Flag for Gauss order computation. */
+    private boolean isDirty;
 
     /** Build a new instance.
-     *  @param quadrature_order order for Gauss quadrature
+     *
+     *  @param threshold tolerance for the choice of the Gauss quadrature order
      */
-    protected AbstractGaussianContribution(final int quadrature_order) {
-        this.integrator = new GaussQuadrature(quadrature_order);
+    protected AbstractGaussianContribution(final double threshold) {
+        this.threshold  = threshold;
+        this.integrator = new GaussQuadrature(GAUSS_ORDER[MAX_ORDER_RANK]);
+        this.isDirty    = true;
     }
 
     /** {@inheritDoc} */
@@ -175,12 +181,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final double[] ll = getLLimits(state);
         // Computes integrated mean element rates if Llow < Lhigh
         if (ll[0] < ll[1]) {
-            meanElementRate = integrator.integrate(new IntegrableFunction(state), ll[0], ll[1]);
-            // Constant multiplier for integral
-            final double coef = 1. / (2. * FastMath.PI * B);
-            // Corrects mean element rates
-            for (int i = 0; i < 6; i++) {
-                meanElementRate[i] *= coef;
+            meanElementRate = getMeanElementRate(state, integrator, ll[0], ll[1]);
+            if (isDirty) {
+                boolean next = true;
+                for (int i = 0; i < MAX_ORDER_RANK && next; i++) {
+                    final double[] meanRates = getMeanElementRate(state, new GaussQuadrature(GAUSS_ORDER[i]), ll[0], ll[1]);
+                    if (getRatesDiff(meanElementRate, meanRates) < threshold) {
+                        integrator = new GaussQuadrature(GAUSS_ORDER[i]);
+                        next = false;
+                    }
+                }
+                isDirty = false;
             }
         }
         return meanElementRate;
@@ -205,6 +216,45 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  @exception OrekitException if some specific error occurs
      */
     protected abstract double[] getLLimits(final SpacecraftState state) throws OrekitException;
+
+    /** Computes the mean equinoctial elements rates da<sub>i</sub> / dt.
+     *
+     *  @param state current state
+     *  @param gauss Gauss quadrature
+     *  @param low lower bound of the integral interval
+     *  @param high upper bound of the integral interval
+     *  @return the mean element rates
+     *  @throws OrekitException if some specific error occurs
+     */
+    private double[] getMeanElementRate(final SpacecraftState state,
+                                        final GaussQuadrature gauss,
+                                        final double low,
+                                        final double high) throws OrekitException {
+        final double[] meanElementRate = gauss.integrate(new IntegrableFunction(state), low, high);
+        // Constant multiplier for integral
+        final double coef = 1. / (2. * FastMath.PI * B);
+        // Corrects mean element rates
+        for (int i = 0; i < 6; i++) {
+            meanElementRate[i] *= coef;
+        }
+        return meanElementRate;
+    }
+
+    /** Estimates the weighted magnitude of the difference between 2 sets of equinoctial elements rates.
+     *
+     *  @param meanRef reference rates
+     *  @param meanCur current rates
+     *  @return estimated magnitude of weighted differences
+     */
+    private double getRatesDiff(final double[] meanRef, final double[] meanCur) {
+        double maxDiff = FastMath.abs(meanRef[0] - meanCur[0]) / a;
+        // Corrects mean element rates
+        for (int i = 1; i < meanRef.length; i++) {
+            final double diff = FastMath.abs(meanRef[i] - meanCur[i]);
+            if (maxDiff < diff) maxDiff = diff;
+        }
+        return maxDiff;
+    }
 
     /** Internal class for numerical quadrature. */
     private class IntegrableFunction implements UnivariateVectorFunction {
@@ -321,6 +371,579 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final Vector3D pos = new Vector3D(X, f, Y, g);
             final Vector3D v2  = new Vector3D(k, getHoV(X, Y, Xdot, Ydot), -h, getKoV(X, Y, Xdot, Ydot));
             return new Vector3D(-2. * ooA, pos, ooBpo, v2, (I * q * Y - p * X) * ooA, w);
+        }
+
+    }
+
+    /** Class used to {@link #integrate(UnivariateVectorFunction, double, double) integrate}
+     *  a {@link org.apache.commons.math3.analysis.UnivariateVectorFunction function}
+     *  of the orbital elements using the Gaussian quadrature rule to get the acceleration.
+     */
+    private static class GaussQuadrature {
+
+        // CHECKSTYLE: stop NoWhitespaceAfter
+
+        // Points and weights for the available quadrature orders
+
+        /** Points for quadrature of order 12. */
+        private static final double[] P_12 = {
+            -0.98156063424671910000,
+            -0.90411725637047490000,
+            -0.76990267419430470000,
+            -0.58731795428661740000,
+            -0.36783149899818024000,
+            -0.12523340851146890000,
+            0.12523340851146890000,
+            0.36783149899818024000,
+            0.58731795428661740000,
+            0.76990267419430470000,
+            0.90411725637047490000,
+            0.98156063424671910000
+        };
+
+        /** Weights for quadrature of order 12. */
+        private static final double[] W_12 = {
+            0.04717533638651220000,
+            0.10693932599531830000,
+            0.16007832854334633000,
+            0.20316742672306584000,
+            0.23349253653835478000,
+            0.24914704581340286000,
+            0.24914704581340286000,
+            0.23349253653835478000,
+            0.20316742672306584000,
+            0.16007832854334633000,
+            0.10693932599531830000,
+            0.04717533638651220000
+        };
+
+        /** Points for quadrature of order 16. */
+        private static final double[] P_16 = {
+            -0.98940093499164990000,
+            -0.94457502307323260000,
+            -0.86563120238783160000,
+            -0.75540440835500310000,
+            -0.61787624440264380000,
+            -0.45801677765722737000,
+            -0.28160355077925890000,
+            -0.09501250983763745000,
+            0.09501250983763745000,
+            0.28160355077925890000,
+            0.45801677765722737000,
+            0.61787624440264380000,
+            0.75540440835500310000,
+            0.86563120238783160000,
+            0.94457502307323260000,
+            0.98940093499164990000
+        };
+
+        /** Weights for quadrature of order 16. */
+        private static final double[] W_16 = {
+            0.02715245941175405800,
+            0.06225352393864777000,
+            0.09515851168249283000,
+            0.12462897125553388000,
+            0.14959598881657685000,
+            0.16915651939500256000,
+            0.18260341504492360000,
+            0.18945061045506847000,
+            0.18945061045506847000,
+            0.18260341504492360000,
+            0.16915651939500256000,
+            0.14959598881657685000,
+            0.12462897125553388000,
+            0.09515851168249283000,
+            0.06225352393864777000,
+            0.02715245941175405800
+        };
+
+        /** Points for quadrature of order 20. */
+        private static final double[] P_20 = {
+            -0.99312859918509490000,
+            -0.96397192727791390000,
+            -0.91223442825132600000,
+            -0.83911697182221890000,
+            -0.74633190646015080000,
+            -0.63605368072651510000,
+            -0.51086700195082700000,
+            -0.37370608871541955000,
+            -0.22778585114164507000,
+            -0.07652652113349734000,
+            0.07652652113349734000,
+            0.22778585114164507000,
+            0.37370608871541955000,
+            0.51086700195082700000,
+            0.63605368072651510000,
+            0.74633190646015080000,
+            0.83911697182221890000,
+            0.91223442825132600000,
+            0.96397192727791390000,
+            0.99312859918509490000
+        };
+
+        /** Weights for quadrature of order 20. */
+        private static final double[] W_20 = {
+            0.01761400713915226400,
+            0.04060142980038684000,
+            0.06267204833410904000,
+            0.08327674157670477000,
+            0.10193011981724048000,
+            0.11819453196151844000,
+            0.13168863844917678000,
+            0.14209610931838212000,
+            0.14917298647260380000,
+            0.15275338713072600000,
+            0.15275338713072600000,
+            0.14917298647260380000,
+            0.14209610931838212000,
+            0.13168863844917678000,
+            0.11819453196151844000,
+            0.10193011981724048000,
+            0.08327674157670477000,
+            0.06267204833410904000,
+            0.04060142980038684000,
+            0.01761400713915226400
+        };
+
+        /** Points for quadrature of order 24. */
+        private static final double[] P_24 = {
+            -0.99518721999702130000,
+            -0.97472855597130950000,
+            -0.93827455200273270000,
+            -0.88641552700440100000,
+            -0.82000198597390300000,
+            -0.74012419157855440000,
+            -0.64809365193697550000,
+            -0.54542147138883950000,
+            -0.43379350762604520000,
+            -0.31504267969616340000,
+            -0.19111886747361634000,
+            -0.06405689286260563000,
+            0.06405689286260563000,
+            0.19111886747361634000,
+            0.31504267969616340000,
+            0.43379350762604520000,
+            0.54542147138883950000,
+            0.64809365193697550000,
+            0.74012419157855440000,
+            0.82000198597390300000,
+            0.88641552700440100000,
+            0.93827455200273270000,
+            0.97472855597130950000,
+            0.99518721999702130000
+        };
+
+        /** Weights for quadrature of order 24. */
+        private static final double[] W_24 = {
+            0.01234122979998733500,
+            0.02853138862893380600,
+            0.04427743881741981000,
+            0.05929858491543691500,
+            0.07334648141108027000,
+            0.08619016153195320000,
+            0.09761865210411391000,
+            0.10744427011596558000,
+            0.11550566805372553000,
+            0.12167047292780335000,
+            0.12583745634682825000,
+            0.12793819534675221000,
+            0.12793819534675221000,
+            0.12583745634682825000,
+            0.12167047292780335000,
+            0.11550566805372553000,
+            0.10744427011596558000,
+            0.09761865210411391000,
+            0.08619016153195320000,
+            0.07334648141108027000,
+            0.05929858491543691500,
+            0.04427743881741981000,
+            0.02853138862893380600,
+            0.01234122979998733500
+        };
+
+        /** Points for quadrature of order 32. */
+        private static final double[] P_32 = {
+            -0.99726386184948160000,
+            -0.98561151154526840000,
+            -0.96476225558750640000,
+            -0.93490607593773970000,
+            -0.89632115576605220000,
+            -0.84936761373256990000,
+            -0.79448379596794250000,
+            -0.73218211874028970000,
+            -0.66304426693021520000,
+            -0.58771575724076230000,
+            -0.50689990893222950000,
+            -0.42135127613063540000,
+            -0.33186860228212767000,
+            -0.23928736225213710000,
+            -0.14447196158279646000,
+            -0.04830766568773831000,
+            0.04830766568773831000,
+            0.14447196158279646000,
+            0.23928736225213710000,
+            0.33186860228212767000,
+            0.42135127613063540000,
+            0.50689990893222950000,
+            0.58771575724076230000,
+            0.66304426693021520000,
+            0.73218211874028970000,
+            0.79448379596794250000,
+            0.84936761373256990000,
+            0.89632115576605220000,
+            0.93490607593773970000,
+            0.96476225558750640000,
+            0.98561151154526840000,
+            0.99726386184948160000
+        };
+
+        /** Weights for quadrature of order 32. */
+        private static final double[] W_32 = {
+            0.00701861000947013600,
+            0.01627439473090571200,
+            0.02539206530926214200,
+            0.03427386291302141000,
+            0.04283589802222658600,
+            0.05099805926237621600,
+            0.05868409347853559000,
+            0.06582222277636193000,
+            0.07234579410884862000,
+            0.07819389578707042000,
+            0.08331192422694673000,
+            0.08765209300440380000,
+            0.09117387869576390000,
+            0.09384439908080441000,
+            0.09563872007927487000,
+            0.09654008851472784000,
+            0.09654008851472784000,
+            0.09563872007927487000,
+            0.09384439908080441000,
+            0.09117387869576390000,
+            0.08765209300440380000,
+            0.08331192422694673000,
+            0.07819389578707042000,
+            0.07234579410884862000,
+            0.06582222277636193000,
+            0.05868409347853559000,
+            0.05099805926237621600,
+            0.04283589802222658600,
+            0.03427386291302141000,
+            0.02539206530926214200,
+            0.01627439473090571200,
+            0.00701861000947013600
+        };
+
+        /** Points for quadrature of order 40. */
+        private static final double[] P_40 = {
+            -0.99823770971055930000,
+            -0.99072623869945710000,
+            -0.97725994998377420000,
+            -0.95791681921379170000,
+            -0.93281280827867660000,
+            -0.90209880696887420000,
+            -0.86595950321225960000,
+            -0.82461223083331170000,
+            -0.77830565142651940000,
+            -0.72731825518992710000,
+            -0.67195668461417960000,
+            -0.61255388966798030000,
+            -0.54946712509512820000,
+            -0.48307580168617870000,
+            -0.41377920437160500000,
+            -0.34199409082575850000,
+            -0.26815218500725370000,
+            -0.19269758070137110000,
+            -0.11608407067525522000,
+            -0.03877241750605081600,
+            0.03877241750605081600,
+            0.11608407067525522000,
+            0.19269758070137110000,
+            0.26815218500725370000,
+            0.34199409082575850000,
+            0.41377920437160500000,
+            0.48307580168617870000,
+            0.54946712509512820000,
+            0.61255388966798030000,
+            0.67195668461417960000,
+            0.72731825518992710000,
+            0.77830565142651940000,
+            0.82461223083331170000,
+            0.86595950321225960000,
+            0.90209880696887420000,
+            0.93281280827867660000,
+            0.95791681921379170000,
+            0.97725994998377420000,
+            0.99072623869945710000,
+            0.99823770971055930000
+        };
+
+        /** Weights for quadrature of order 40. */
+        private static final double[] W_40 = {
+            0.00452127709853309800,
+            0.01049828453115270400,
+            0.01642105838190797300,
+            0.02224584919416689000,
+            0.02793700698002338000,
+            0.03346019528254786500,
+            0.03878216797447199000,
+            0.04387090818567333000,
+            0.04869580763507221000,
+            0.05322784698393679000,
+            0.05743976909939157000,
+            0.06130624249292891000,
+            0.06480401345660108000,
+            0.06791204581523394000,
+            0.07061164739128681000,
+            0.07288658239580408000,
+            0.07472316905796833000,
+            0.07611036190062619000,
+            0.07703981816424793000,
+            0.07750594797842482000,
+            0.07750594797842482000,
+            0.07703981816424793000,
+            0.07611036190062619000,
+            0.07472316905796833000,
+            0.07288658239580408000,
+            0.07061164739128681000,
+            0.06791204581523394000,
+            0.06480401345660108000,
+            0.06130624249292891000,
+            0.05743976909939157000,
+            0.05322784698393679000,
+            0.04869580763507221000,
+            0.04387090818567333000,
+            0.03878216797447199000,
+            0.03346019528254786500,
+            0.02793700698002338000,
+            0.02224584919416689000,
+            0.01642105838190797300,
+            0.01049828453115270400,
+            0.00452127709853309800
+        };
+
+        /** Points for quadrature of order 48. */
+        private static final double[] P_48 = {
+            -0.99877100725242610000,
+            -0.99353017226635080000,
+            -0.98412458372282700000,
+            -0.97059159254624720000,
+            -0.95298770316043080000,
+            -0.93138669070655440000,
+            -0.90587913671556960000,
+            -0.87657202027424800000,
+            -0.84358826162439350000,
+            -0.80706620402944250000,
+            -0.76715903251574020000,
+            -0.72403413092381470000,
+            -0.67787237963266400000,
+            -0.62886739677651370000,
+            -0.57722472608397270000,
+            -0.52316097472223300000,
+            -0.46690290475095840000,
+            -0.40868648199071680000,
+            -0.34875588629216070000,
+            -0.28736248735545555000,
+            -0.22476379039468908000,
+            -0.16122235606889174000,
+            -0.09700469920946270000,
+            -0.03238017096286937000,
+            0.03238017096286937000,
+            0.09700469920946270000,
+            0.16122235606889174000,
+            0.22476379039468908000,
+            0.28736248735545555000,
+            0.34875588629216070000,
+            0.40868648199071680000,
+            0.46690290475095840000,
+            0.52316097472223300000,
+            0.57722472608397270000,
+            0.62886739677651370000,
+            0.67787237963266400000,
+            0.72403413092381470000,
+            0.76715903251574020000,
+            0.80706620402944250000,
+            0.84358826162439350000,
+            0.87657202027424800000,
+            0.90587913671556960000,
+            0.93138669070655440000,
+            0.95298770316043080000,
+            0.97059159254624720000,
+            0.98412458372282700000,
+            0.99353017226635080000,
+            0.99877100725242610000
+        };
+
+        /** Weights for quadrature of order 48. */
+        private static final double[] W_48 = {
+            0.00315334605230596250,
+            0.00732755390127620800,
+            0.01147723457923446900,
+            0.01557931572294386600,
+            0.01961616045735556700,
+            0.02357076083932435600,
+            0.02742650970835688000,
+            0.03116722783279807000,
+            0.03477722256477045000,
+            0.03824135106583080600,
+            0.04154508294346483000,
+            0.04467456085669424000,
+            0.04761665849249054000,
+            0.05035903555385448000,
+            0.05289018948519365000,
+            0.05519950369998416500,
+            0.05727729210040315000,
+            0.05911483969839566000,
+            0.06070443916589384000,
+            0.06203942315989268000,
+            0.06311419228625403000,
+            0.06392423858464817000,
+            0.06446616443595010000,
+            0.06473769681268386000,
+            0.06473769681268386000,
+            0.06446616443595010000,
+            0.06392423858464817000,
+            0.06311419228625403000,
+            0.06203942315989268000,
+            0.06070443916589384000,
+            0.05911483969839566000,
+            0.05727729210040315000,
+            0.05519950369998416500,
+            0.05289018948519365000,
+            0.05035903555385448000,
+            0.04761665849249054000,
+            0.04467456085669424000,
+            0.04154508294346483000,
+            0.03824135106583080600,
+            0.03477722256477045000,
+            0.03116722783279807000,
+            0.02742650970835688000,
+            0.02357076083932435600,
+            0.01961616045735556700,
+            0.01557931572294386600,
+            0.01147723457923446900,
+            0.00732755390127620800,
+            0.00315334605230596250
+        };
+        // CHECKSTYLE: resume NoWhitespaceAfter
+
+        /** Node points. */
+        private final double[] nodePoints;
+
+        /** Node weights. */
+        private final double[] nodeWeights;
+
+        /** Creates a Gauss integrator of the given order.
+         *
+         *  @param numberOfPoints Order of the integration rule.
+         */
+        public GaussQuadrature(final int numberOfPoints) {
+
+            switch(numberOfPoints) {
+            case 12 :
+                this.nodePoints  = P_12.clone();
+                this.nodeWeights = W_12.clone();
+                break;
+            case 16 :
+                this.nodePoints  = P_16.clone();
+                this.nodeWeights = W_16.clone();
+                break;
+            case 20 :
+                this.nodePoints  = P_20.clone();
+                this.nodeWeights = W_20.clone();
+                break;
+            case 24 :
+                this.nodePoints  = P_24.clone();
+                this.nodeWeights = W_24.clone();
+                break;
+            case 32 :
+                this.nodePoints  = P_32.clone();
+                this.nodeWeights = W_32.clone();
+                break;
+            case 40 :
+                this.nodePoints  = P_40.clone();
+                this.nodeWeights = W_40.clone();
+                break;
+            case 48 :
+            default :
+                this.nodePoints  = P_48.clone();
+                this.nodeWeights = W_48.clone();
+                break;
+            }
+
+        }
+
+        /** Integrates a given function on the given interval.
+         *
+         *  @param f Function to integrate.
+         *  @param lowerBound Lower bound of the integration interval.
+         *  @param upperBound Upper bound of the integration interval.
+         *  @return the integral of the weighted function.
+         */
+        public double[] integrate(final UnivariateVectorFunction f,
+                                  final double lowerBound, final double upperBound) {
+
+            final double[] adaptedPoints  = nodePoints.clone();
+            final double[] adaptedWeights = nodeWeights.clone();
+            transform(adaptedPoints, adaptedWeights, lowerBound, upperBound);
+            return basicIntegrate(f, adaptedPoints, adaptedWeights);
+        }
+
+        /** Performs a change of variable so that the integration
+         *  can be performed on an arbitrary interval {@code [a, b]}.
+         *  <p>
+         *  It is assumed that the natural interval is {@code [-1, 1]}.
+         *  </p>
+         *
+         * @param points  Points to adapt to the new interval.
+         * @param weights Weights to adapt to the new interval.
+         * @param a Lower bound of the integration interval.
+         * @param b Lower bound of the integration interval.
+         */
+        private void transform(final double[] points, final double[] weights,
+                               final double a, final double b) {
+            // Scaling
+            final double scale = (b - a) / 2;
+            final double shift = a + scale;
+            for (int i = 0; i < points.length; i++) {
+                points[i]   = points[i] * scale + shift;
+                weights[i] *= scale;
+            }
+        }
+
+        /** Returns an estimate of the integral of {@code f(x) * w(x)},
+         *  where {@code w} is a weight function that depends on the actual
+         *  flavor of the Gauss integration scheme.
+         *
+         * @param f Function to integrate.
+         * @param points  Nodes.
+         * @param weights Nodes weights.
+         * @return the integral of the weighted function.
+         */
+        private double[] basicIntegrate(final UnivariateVectorFunction f,
+                                        final double[] points,
+                                        final double[] weights) {
+            double x = points[0];
+            double w = weights[0];
+            double[] v = f.value(x);
+            final double[] y = new double[v.length];
+            for (int j = 0; j < v.length; j++) {
+                y[j] = w * v[j];
+            }
+            final double[] t = y.clone();
+            final double[] c = new double[v.length];
+            final double[] s = t.clone();
+            for (int i = 1; i < points.length; i++) {
+                x = points[i];
+                w = weights[i];
+                v = f.value(x);
+                for (int j = 0; j < v.length; j++) {
+                    y[j] = w * v[j] - c[j];
+                    t[j] =  s[j] + y[j];
+                    c[j] = (t[j] - s[j]) - y[j];
+                    s[j] = t[j];
+                }
+            }
+            return s;
         }
 
     }

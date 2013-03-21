@@ -86,6 +86,9 @@ orbit.is.osculating = false
 
 ### Force models
 
+## Spacecraft mass (kg) [1000.]
+# mass = 1000.
+
 ## Central body gravity potential degree
 central.body.degree = 36
 ## Central body gravity potential order
@@ -106,9 +109,9 @@ drag = false
 ## Solar Radiation Pressure (true/false) [false]
 solar.radiation.pressure = false
 ## SRP coefficient
-# solar.radiation.pressure.cr =  2.0
+# solar.radiation.pressure.cr =  1.2
 ## SRP area (m^2)
-# solar.radiation.pressure.sf = 10.0
+# solar.radiation.pressure.sf = 25.0
 
 ### Simulation parameters
 ## Start date (UTC) [orbit.date]

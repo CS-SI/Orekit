@@ -37,8 +37,8 @@ import org.orekit.utils.Constants;
  */
 public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
-    /** Number of points for quadrature (from 2 to 96). */
-    private static final int NB_POINTS = 48;
+    /** Threshold for the choice of the Gauss quadrature order. */
+    private static final double GAUSS_THRESHOLD = 6.0e-10;
 
     /** Upper limit for atmospheric drag (m) . */
     private static final double ATMOSPHERE_ALTITUDE_MAX = 1000000.;
@@ -61,7 +61,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
      * @param area cross sectionnal area of satellite
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final double cd, final double area) {
-        super(NB_POINTS);
+        super(GAUSS_THRESHOLD);
         this.atmosphere = atmosphere;
         this.area = area;
         this.kRef = 0.5 * cd * area;
