@@ -21,6 +21,7 @@ import java.text.ParseException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,6 +71,42 @@ public class NumericalConverterTest {
                  DragSensitive.DRAG_COEFFICIENT, NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT);
     }
 
+    @Test
+    public void testIntegrators() throws OrekitException {
+
+        final double stepSize = 100.;
+
+//        FirstOrderIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
+//        checkFit(abBuilder);
+
+//        FirstOrderIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
+//        checkFit(amBuilder);
+
+        FirstOrderIntegratorBuilder crkBuilder = new ClassicalRungeKuttaIntegratorBuilder(stepSize);
+        checkFit(crkBuilder);
+
+        FirstOrderIntegratorBuilder dp54Builder = new DormandPrince54IntegratorBuilder(minStep, maxStep, dP);
+        checkFit(dp54Builder);
+
+        FirstOrderIntegratorBuilder eBuilder = new EulerIntegratorBuilder(stepSize);
+        checkFit(eBuilder);
+
+        FirstOrderIntegratorBuilder gBuilder = new GillIntegratorBuilder(stepSize);
+        checkFit(gBuilder);
+
+        FirstOrderIntegratorBuilder gbsBuilder = new GraggBulirschStoerIntegratorBuilder(minStep, maxStep, dP);
+        checkFit(gbsBuilder);
+
+        FirstOrderIntegratorBuilder hh54Builder = new HighamHall54IntegratorBuilder(minStep, maxStep, dP);
+        checkFit(hh54Builder);
+
+        FirstOrderIntegratorBuilder mBuilder = new MidpointIntegratorBuilder(stepSize);
+        checkFit(mBuilder);
+
+        FirstOrderIntegratorBuilder teBuilder = new ThreeEighthesIntegratorBuilder(stepSize);
+        checkFit(teBuilder);
+    }
+
     protected void checkFit(final Orbit orbit, final double duration,
                             final double stepSize, final double threshold,
                             final double expectedRMS,
@@ -106,26 +143,65 @@ public class NumericalConverterTest {
 
         Assert.assertEquals(expectedRMS, fitter.getRMS(), 0.01 * expectedRMS);
 
-        double eps = 1.e-12;
+        final double eps = 1.e-12;
         Assert.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
                             fitted.getPVCoordinates().getPosition().getX(),
-                            eps * orbit.getPVCoordinates().getPosition().getX());
+                            eps * FastMath.abs(orbit.getPVCoordinates().getPosition().getX()));
         Assert.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
                             fitted.getPVCoordinates().getPosition().getY(),
-                            eps * orbit.getPVCoordinates().getPosition().getY());
+                            eps * FastMath.abs(orbit.getPVCoordinates().getPosition().getY()));
         Assert.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
                             fitted.getPVCoordinates().getPosition().getZ(),
-                            eps * orbit.getPVCoordinates().getPosition().getZ());
+                            eps * FastMath.abs(orbit.getPVCoordinates().getPosition().getZ()));
 
         Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
                             fitted.getPVCoordinates().getVelocity().getX(),
-                            -eps * orbit.getPVCoordinates().getVelocity().getX());
+                            eps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getX()));
         Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
                             fitted.getPVCoordinates().getVelocity().getY(),
-                            eps * orbit.getPVCoordinates().getVelocity().getY());
+                            eps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getY()));
         Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
                             fitted.getPVCoordinates().getVelocity().getZ(),
-                            eps * orbit.getPVCoordinates().getVelocity().getZ());
+                            eps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getZ()));
+    }
+
+    protected void checkFit(final FirstOrderIntegratorBuilder foiBuilder) throws OrekitException {
+
+        NumericalPropagatorBuilder builder = new NumericalPropagatorBuilder(mu,
+                                                                            propagator.getFrame(),
+                                                                            foiBuilder);
+
+        builder.addForceModel(drag);
+        builder.addForceModel(gravity);
+
+        JacobianPropagatorConverter fitter = new JacobianPropagatorConverter(builder, 1.0, 500);
+
+        fitter.convert(propagator, 1000., 11);
+
+        NumericalPropagator prop = (NumericalPropagator)fitter.getAdaptedPropagator();
+        Orbit fitted = prop.getInitialState().getOrbit();
+
+        final double peps = 1.e-1;
+        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getX(),
+                            fitted.getPVCoordinates().getPosition().getX(),
+                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getX()));
+        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getY(),
+                            fitted.getPVCoordinates().getPosition().getY(),
+                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getY()));
+        Assert.assertEquals(orbit.getPVCoordinates().getPosition().getZ(),
+                            fitted.getPVCoordinates().getPosition().getZ(),
+                            peps * FastMath.abs(orbit.getPVCoordinates().getPosition().getZ()));
+
+        final double veps = 5.e-1;
+        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getX(),
+                            fitted.getPVCoordinates().getVelocity().getX(),
+                            veps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getX()));
+        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getY(),
+                            fitted.getPVCoordinates().getVelocity().getY(),
+                            veps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getY()));
+        Assert.assertEquals(orbit.getPVCoordinates().getVelocity().getZ(),
+                            fitted.getPVCoordinates().getVelocity().getZ(),
+                            veps * FastMath.abs(orbit.getPVCoordinates().getVelocity().getZ()));
     }
 
     @Before
