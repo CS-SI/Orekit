@@ -70,7 +70,7 @@
         <module name="FileContentsHolder"/>
     </module>
     <module name="RegexpHeader">
-      <property name="headerFile" value="license-header.txt" />
+      <property name="headerFile" value="${checkstyle.header.file}" />
     </module>
     <module name="FileTabCharacter"/>
     <module name="NewlineAtEndOfFile"/>
