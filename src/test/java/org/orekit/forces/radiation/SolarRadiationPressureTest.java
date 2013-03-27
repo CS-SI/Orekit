@@ -119,7 +119,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                 new SolarRadiationPressure(CelestialBodyFactory.getSun(), Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                            new SphericalSpacecraft(2.5, 1.2, 0.7, 0.2));
 
-        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 3.0e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 5.0e-16);
         checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 2.0e-15);
 
     }
@@ -173,7 +173,7 @@ public class SolarRadiationPressureTest extends AbstractForceModelTest {
                                                              Vector3D.PLUS_J, 1.2, 0.7, 0.2));
 
         checkParameterDerivative(state, forceModel, RadiationSensitive.ABSORPTION_COEFFICIENT, 1.0, 4.0e-16);
-        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 5.0e-16);
+        checkParameterDerivative(state, forceModel, RadiationSensitive.REFLECTION_COEFFICIENT, 1.0, 3.0e-15);
 
     }
 

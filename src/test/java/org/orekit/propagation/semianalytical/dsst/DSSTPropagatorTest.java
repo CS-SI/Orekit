@@ -345,7 +345,7 @@ public class DSSTPropagatorTest {
                                                FastMath.toRadians(130.7562),
                                                FastMath.toRadians(44.2377),
                                                PositionAngle.MEAN,
-                                               FramesFactory.getEME2000(),
+                                               FramesFactory.getGCRF(),
                                                initDate,
                                                provider.getMu());
         

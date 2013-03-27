@@ -44,7 +44,7 @@ class IAUPoleFactory {
 
     /** Get an IAU pole.
      * @param body body for which the pole is requested
-     * @return IAU pole for the body, or dummy EME2000 aligned pole
+     * @return IAU pole for the body, or dummy GCRF aligned pole
      * for barycenters
      */
     public static IAUPole getIAUPole(final JPLEphemeridesLoader.EphemerisType body) {
@@ -333,7 +333,7 @@ class IAUPoleFactory {
 
             };
         default:
-            return new EME2000Aligned();
+            return new GCRFAligned();
         }
     }
 
@@ -356,14 +356,14 @@ class IAUPoleFactory {
     /** Default IAUPole implementation for barycenters.
      * <p>
      * This implementation defines directions such that the inertially oriented and body
-     * oriented frames are identical and aligned with EME2000. It is used for example
+     * oriented frames are identical and aligned with GCRF. It is used for example
      * to define the ICRF.
      * </p>
      */
-    private static class EME2000Aligned implements IAUPole {
+    private static class GCRFAligned implements IAUPole {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 4148478144525077641L;
+        private static final long serialVersionUID = 20130327L;
 
         /** {@inheritDoc} */
         public Vector3D getPole(final AbsoluteDate date) {

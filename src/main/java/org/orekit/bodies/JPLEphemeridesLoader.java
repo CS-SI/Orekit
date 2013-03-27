@@ -268,7 +268,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
         final double gm       = getLoadedGravitationalCoefficient(generateType);
         final IAUPole iauPole = IAUPoleFactory.getIAUPole(generateType);
         final double scale;
-        final Frame definingFrame;
+        final Frame definingFrameAlingedWithICRF;
         final RawPVProvider rawPVProvider;
         switch (generateType) {
         case SOLAR_SYSTEM_BARYCENTER : {
@@ -277,23 +277,23 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                     new JPLEphemeridesLoader(supportedNames, EphemerisType.EARTH_MOON);
             final CelestialBody parentBody =
                     parentLoader.loadCelestialBody(CelestialBodyFactory.EARTH_MOON);
-            definingFrame = parentBody.getInertiallyOrientedFrame();
+            definingFrameAlingedWithICRF = parentBody.getInertiallyOrientedFrame();
             rawPVProvider = new EphemerisRawPVProvider();
             break;
         }
         case EARTH_MOON :
             scale         = 1.0 / (1.0 + getLoadedEarthMoonMassRatio());
-            definingFrame =  FramesFactory.getEME2000();
+            definingFrameAlingedWithICRF =  FramesFactory.getGCRF();
             rawPVProvider = new EphemerisRawPVProvider();
             break;
         case EARTH :
             scale         = 1.0;
-            definingFrame = FramesFactory.getEME2000();
+            definingFrameAlingedWithICRF = FramesFactory.getGCRF();
             rawPVProvider = new ZeroRawPVProvider();
             break;
         case MOON :
             scale         =  1.0;
-            definingFrame =  FramesFactory.getEME2000();
+            definingFrameAlingedWithICRF =  FramesFactory.getGCRF();
             rawPVProvider = new EphemerisRawPVProvider();
             break;
         default : {
@@ -302,14 +302,14 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
                     new JPLEphemeridesLoader(supportedNames, EphemerisType.SOLAR_SYSTEM_BARYCENTER);
             final CelestialBody parentBody =
                     parentLoader.loadCelestialBody(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER);
-            definingFrame = parentBody.getInertiallyOrientedFrame();
+            definingFrameAlingedWithICRF = parentBody.getInertiallyOrientedFrame();
             rawPVProvider = new EphemerisRawPVProvider();
         }
         }
 
         // build the celestial body
         return new JPLCelestialBody(name, supportedNames, generateType, rawPVProvider,
-                                    gm, scale, iauPole, definingFrame);
+                                    gm, scale, iauPole, definingFrameAlingedWithICRF);
 
     }
 

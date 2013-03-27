@@ -22,6 +22,12 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="fix" >
+        Fixed wrong orientation for ICRF and all IAU pole and prime meridians
+        (a few tens milli-arcseconds). This error mainly induced an error in
+        celestial bodies directions, including the Sun which is used in many
+        places in Orekit (fixes bug #130).
+      </action>
       <action dev="luc" type="add" >
         Added support for IERS conventions 2010. Note that Orekit still also
         support conventions 2003 in addition to conventions 2010. However, as

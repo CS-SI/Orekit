@@ -41,9 +41,9 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface IAUPole extends Serializable {
 
-    /** Get the body North pole direction in EME2000 frame.
+    /** Get the body North pole direction in ICRF frame.
      * @param date current date
-     * @return body North pole direction in EME2000 frame
+     * @return body North pole direction in ICRF frame
      */
     Vector3D getPole(AbsoluteDate date);
 

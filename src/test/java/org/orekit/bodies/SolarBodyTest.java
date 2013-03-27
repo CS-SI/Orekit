@@ -44,7 +44,7 @@ public class SolarBodyTest {
     public void geocentricPV() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
-        Frame geocentricFrame = FramesFactory.getEME2000();
+        Frame geocentricFrame = FramesFactory.getGCRF();
         checkPV(CelestialBodyFactory.getMoon(), date, geocentricFrame,
                 new Vector3D(-0.0022350411591597575, -0.0010106334699928434, -5.658291803646671E-4),
                 new Vector3D(3.1279236468844985E-4, -4.526815459166321E-4, -2.428841016970333E-4));
@@ -55,14 +55,14 @@ public class SolarBodyTest {
     public void heliocentricPV() throws OrekitException, ParseException {
         Utils.setDataRoot("regular-data");
         AbsoluteDate date = new AbsoluteDate(1969, 06, 25, TimeScalesFactory.getTDB());
-        final Frame eme2000 = FramesFactory.getEME2000();
-        Frame heliocentricFrame = new Frame(eme2000, new TransformProvider() {
+        final Frame gcrf = FramesFactory.getGCRF();
+        Frame heliocentricFrame = new Frame(gcrf, new TransformProvider() {
             private static final long serialVersionUID = 1L;
             public Transform getTransform(AbsoluteDate date)
                 throws OrekitException {
-                return new Transform(date, CelestialBodyFactory.getSun().getPVCoordinates(date, eme2000).negate());
+                return new Transform(date, CelestialBodyFactory.getSun().getPVCoordinates(date, gcrf).negate());
             }
-        }, "heliocentric/aligned EME2000", true);
+        }, "heliocentric/aligned GCRF", true);
         checkPV(CelestialBodyFactory.getSun(), date, heliocentricFrame, Vector3D.ZERO, Vector3D.ZERO);
         checkPV(CelestialBodyFactory.getMercury(), date, heliocentricFrame,
                 new Vector3D(0.3388866970713254, -0.16350851403469605, -0.12250815624343761),

@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
 
 public class FramesFactoryTest {
 
@@ -39,8 +41,11 @@ public class FramesFactoryTest {
     @Test
     public void testTreeICRF() throws OrekitException {
         Frame icrf = FramesFactory.getFrame(Predefined.ICRF);
+        Transform t = icrf.getTransformTo(FramesFactory.getGCRF(),
+                                          new AbsoluteDate(1969, 6, 25, TimeScalesFactory.getTT()));
+        Assert.assertEquals(0.0, t.getRotation().getAngle(), 1.0e-15);
         Assert.assertEquals(CelestialBodyFactory.EARTH_MOON + "/inertial", icrf.getParent().getName());
-        Assert.assertEquals(Predefined.EME2000.getName(), icrf.getParent().getParent().getName());
+        Assert.assertEquals(Predefined.GCRF.getName(), icrf.getParent().getParent().getName());
     }
 
     @Test

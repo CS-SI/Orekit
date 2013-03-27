@@ -43,7 +43,7 @@ public class CelestialBodyPointingTest {
     public void testSunPointing() throws OrekitException {
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 
-        final Frame frame = FramesFactory.getEME2000();
+        final Frame frame = FramesFactory.getGCRF();
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 01, 01),
                                              new TimeComponents(3, 25, 45.6789),
                                              TimeScalesFactory.getTAI());

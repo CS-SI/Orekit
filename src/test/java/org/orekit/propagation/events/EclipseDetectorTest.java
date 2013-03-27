@@ -82,7 +82,7 @@ public class EclipseDetectorTest {
             final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
             iniDate = new AbsoluteDate(1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
             final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
-                                                     FramesFactory.getEME2000(), iniDate, mu);
+                                                     FramesFactory.getGCRF(), iniDate, mu);
             initialState = new SpacecraftState(orbit);
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001

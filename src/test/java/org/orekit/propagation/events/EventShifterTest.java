@@ -221,7 +221,7 @@ public class EventShifterTest {
             final Vector3D velocity  = new Vector3D(505.8479685, 942.7809215, 7435.922231);
             iniDate = new AbsoluteDate(1969, 7, 28, 4, 0, 0.0, TimeScalesFactory.getTT());
             final Orbit orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
-                                                     FramesFactory.getEME2000(), iniDate, mu);
+                                                     FramesFactory.getGCRF(), iniDate, mu);
             propagator =
                 new EcksteinHechlerPropagator(orbit, ae, mu, c20, c30, c40, c50, c60);
             log = new ArrayList<EventEntry>();

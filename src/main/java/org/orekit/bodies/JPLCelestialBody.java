@@ -24,7 +24,6 @@ import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.JPLEphemeridesLoader.EphemerisType;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
-import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
@@ -37,9 +36,6 @@ class JPLCelestialBody implements CelestialBody {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 3809787672779740923L;
-
-    /** J2000 frame, cached. */
-    private static final Frame EME2000 = FramesFactory.getEME2000();
 
     /** Name of the body. */
     private final String name;
@@ -76,13 +72,14 @@ class JPLCelestialBody implements CelestialBody {
      * @param gm attraction coefficient (in m<sup>3</sup>/s<sup>2</sup>)
      * @param scale scaling factor for position-velocity
      * @param iauPole IAU pole implementation
-     * @param definingFrame frame in which celestial body coordinates are defined
+     * @param definingFrameAlignedWithICRF frame in which celestial body coordinates are defined,
+     * this frame <strong>must</strong> be aligned with ICRF
      */
     public JPLCelestialBody(final String name, final String supportedNames,
                             final JPLEphemeridesLoader.EphemerisType generateType,
                             final JPLEphemeridesLoader.RawPVProvider rawPVProvider,
                             final double gm, final double scale,
-                            final IAUPole iauPole, final Frame definingFrame) {
+                            final IAUPole iauPole, final Frame definingFrameAlignedWithICRF) {
         this.name           = name;
         this.gm             = gm;
         this.scale          = scale;
@@ -90,7 +87,7 @@ class JPLCelestialBody implements CelestialBody {
         this.generateType   = generateType;
         this.rawPVProvider  = rawPVProvider;
         this.iauPole        = iauPole;
-        this.inertialFrame  = new InertiallyOriented(definingFrame);
+        this.inertialFrame  = new InertiallyOriented(definingFrameAlignedWithICRF);
         this.bodyFrame      = new BodyOriented();
     }
 
@@ -171,7 +168,7 @@ class JPLCelestialBody implements CelestialBody {
                     final PVCoordinates pv = getPVCoordinates(date, definingFrame);
                     final Transform translation = new Transform(date, pv.negate());
 
-                    // compute rotation from EME2000 frame to self,
+                    // compute rotation from ICRF frame to self,
                     // as per the "Report of the IAU/IAG Working Group on Cartographic
                     // Coordinates and Rotational Elements of the Planets and Satellites"
                     // These definitions are common for all recent versions of this report
@@ -185,11 +182,8 @@ class JPLCelestialBody implements CelestialBody {
                     if (qNode.getNormSq() < Precision.SAFE_MIN) {
                         qNode = Vector3D.PLUS_I;
                     }
-                    final Rotation r2000 = new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I);
-
-                    // compute rotation from parent frame to self
-                    final Transform t  = definingFrame.getTransformTo(EME2000, date);
-                    final Transform rotation = new Transform(date, r2000.applyTo(t.getRotation()));
+                    final Transform rotation =
+                            new Transform(date, new Rotation(pole, qNode, Vector3D.PLUS_K, Vector3D.PLUS_I));
 
                     // update transform from parent to self
                     return new Transform(date, translation, rotation);
