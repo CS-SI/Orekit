@@ -51,7 +51,9 @@
         </module>
         <module name="RedundantModifier"/>
         <module name="StringLiteralEquality"/>
-        <module name="TodoComment"/>
+        <module name="TodoComment">
+            <property name="severity" value="warning"/>
+        </module>
         <module name="UnnecessaryParentheses"/>
         <module name="UnusedImports"/>
         <module name="VisibilityModifier"/>
