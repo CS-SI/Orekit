@@ -49,6 +49,8 @@
     end package
     package utils #DDEBD8
     end package
+    package models #DDEBD8
+    end package
 
     propagation -->      attitude
     propagation -->      forces
@@ -61,6 +63,8 @@
     frames      -->      time
     bodies      -->      time
     bodies      -->      data
+    models      -->      bodies
+    models      -->      data
     frames      -->      data
     time        -right-> data
     frames      -->      utils
