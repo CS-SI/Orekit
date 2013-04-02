@@ -129,6 +129,21 @@ public class IntegratedEphemerisTest {
         ephemeris.propagate(initialOrbit.getDate().shiftedBy(1800.0));
 
     }
+    
+    @Test
+    public void testGetFrame() throws PropagationException, OrekitException {
+        // setup
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
+        numericalPropagator.setEphemerisMode();
+        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+        numericalPropagator.propagate(finalDate);
+        Assert.assertTrue(numericalPropagator.getCalls() < 3200);
+        BoundedPropagator ephemeris = numericalPropagator.getGeneratedEphemeris();
+        
+        //action
+        Assert.assertNotNull(ephemeris.getFrame());
+        Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+    }
 
     @Before
     public void setUp() {

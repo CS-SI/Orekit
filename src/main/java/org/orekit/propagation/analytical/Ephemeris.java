@@ -53,6 +53,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** Last date in range. */
     private final AbsoluteDate maxDate;
 
+    /** reference frame. */
+    private final Frame frame;
+
     /** Thread-safe cache. */
     private final transient TimeStampedCache<SpacecraftState> cache;
 
@@ -74,6 +77,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
         minDate = states.get(0).getDate();
         maxDate = states.get(states.size() - 1).getDate();
+        frame = states.get(0).getFrame();
 
         // set up cache
         final TimeStampedGenerator<SpacecraftState> generator =
@@ -102,6 +106,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      */
     public AbsoluteDate getMaxDate() {
         return maxDate;
+    }
+
+    @Override
+    public Frame getFrame() {
+        return this.frame;
     }
 
     @Override

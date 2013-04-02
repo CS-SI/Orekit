@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
@@ -40,8 +41,6 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -158,6 +157,20 @@ public class TabulatedEphemerisTest {
 
     }
 
+
+    @Test
+    public void testGetFrame() throws MathIllegalArgumentException, IllegalArgumentException, OrekitException {
+        // setup
+        Frame frame = FramesFactory.getICRF();
+        AbsoluteDate date = AbsoluteDate.JULIAN_EPOCH;
+        // create ephemeris with 2 arbitrary points
+        SpacecraftState state = new SpacecraftState(
+                new KeplerianOrbit(1e9, 0.01, 1, 1, 1, 1, PositionAngle.TRUE, frame, date, mu));
+        Ephemeris ephem = new Ephemeris(Arrays.asList(state, state.shiftedBy(1)), 2);
+
+        // action + verify
+        Assert.assertSame(ephem.getFrame(), frame);
+    }
 
     private void checkEphemerides(Propagator eph1, Propagator eph2, AbsoluteDate date,
                                   double threshold, boolean expectedBelow)

@@ -190,6 +190,11 @@ public class IntegratedEphemeris
         return maxDate;
     }
 
+    @Override
+    public Frame getFrame() {
+        return this.mapper.getFrame();
+    }
+
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state)
         throws PropagationException {
