@@ -17,8 +17,10 @@
 package org.orekit.bodies;
 
 import java.io.Serializable;
+import java.text.NumberFormat;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.CompositeFormat;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 
@@ -59,27 +61,41 @@ public class GeodeticPoint implements Serializable {
     /** West direction. */
     private transient Vector3D west;
 
-    /** Build a new instance.
-     * @param latitude of the point
-     * @param longitude longitude of the point
-     * @param altitude altitude of the point
+    /**
+     * Build a new instance. The angular coordinates will be normalized so that
+     * the latitude is between &pm;&pi;/2 and the longitude is between &pm;&pi;.
+     *
+     * @param latitude
+     *            of the point
+     * @param longitude
+     *            longitude of the point
+     * @param altitude
+     *            altitude of the point
      */
     public GeodeticPoint(final double latitude, final double longitude,
                          final double altitude) {
-        this.latitude  = MathUtils.normalizeAngle(latitude,  0);
-        this.longitude = MathUtils.normalizeAngle(longitude, 0);
+        double lat = MathUtils.normalizeAngle(latitude, FastMath.PI / 2);
+        double lon = MathUtils.normalizeAngle(longitude, 0);
+        if (lat > FastMath.PI / 2.0) {
+            // latitude is beyond the pole -> add 180 to longitude
+            lat = FastMath.PI - lat;
+            lon = MathUtils.normalizeAngle(longitude + FastMath.PI, 0);
+
+        }
+        this.latitude = lat;
+        this.longitude = lon;
         this.altitude  = altitude;
     }
 
     /** Get the latitude.
-     * @return latitude
+     * @return latitude, an angular value in the range [-&pi;/2, &pi;/2]
      */
     public double getLatitude() {
         return latitude;
     }
 
     /** Get the longitude.
-     * @return longitude
+     * @return longitude, an angular value in the range [-&pi;, &pi;]
      */
     public double getLongitude() {
         return longitude;
@@ -174,4 +190,33 @@ public class GeodeticPoint implements Serializable {
         return west;
     }
 
+    @Override
+    public boolean equals(final Object object) {
+        if (object instanceof GeodeticPoint) {
+            final GeodeticPoint other = (GeodeticPoint) object;
+            return this.getLatitude() == other.getLatitude() &&
+                   this.getLongitude() == other.getLongitude() &&
+                   this.getAltitude() == other.getAltitude();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return new Double(this.getLatitude()).hashCode() ^
+               new Double(this.getLongitude()).hashCode() ^
+               new Double(this.getAltitude()).hashCode();
+    }
+
+    @Override
+    public String toString() {
+        final NumberFormat format = CompositeFormat.getDefaultNumberFormat();
+        return "{lat: " +
+               format.format(FastMath.toDegrees(this.getLatitude())) +
+               " deg, lon: " +
+               format.format(FastMath.toDegrees(this.getLongitude())) +
+               " deg, alt: " +
+               format.format(this.getAltitude()) +
+               "}";
+    }
 }
