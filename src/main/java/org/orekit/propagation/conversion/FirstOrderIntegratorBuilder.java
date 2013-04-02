@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.orekit.orbits.Orbit;
 
 /** This interface is the top-level abstraction to build first order integrators for propagators conversion.
@@ -29,6 +29,6 @@ public interface FirstOrderIntegratorBuilder {
      * @param orbit reference orbit
      * @return a first order integrator ready to use
      */
-    FirstOrderIntegrator buildIntegrator(final Orbit orbit);
+    AbstractIntegrator buildIntegrator(final Orbit orbit);
 
 }

@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.GraggBulirschStoerIntegrator;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -51,7 +51,7 @@ public class GraggBulirschStoerIntegratorBuilder implements FirstOrderIntegrator
     }
 
     /** {@inheritDoc} */
-    public FirstOrderIntegrator buildIntegrator(final Orbit orbit) {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit) {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
         return new GraggBulirschStoerIntegrator(minStep, maxStep, tol[0], tol[1]);
     }

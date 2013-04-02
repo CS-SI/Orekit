@@ -26,7 +26,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
@@ -358,7 +358,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                               UnnormalizedSphericalHarmonicsProvider provider)
         throws OrekitException {
         double[][] tol = NumericalPropagator.tolerances(dP, initialState.getOrbit(), OrbitType.CARTESIAN);
-        FirstOrderIntegrator integrator =
+        AbstractIntegrator integrator =
                 new DormandPrince853Integrator(0.001, 120.0, tol[0], tol[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setEphemerisMode();

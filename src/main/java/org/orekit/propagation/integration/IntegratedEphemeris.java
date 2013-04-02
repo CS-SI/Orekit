@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.orekit.errors.OrekitException;
@@ -88,14 +88,14 @@ public class IntegratedEphemeris
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between raw double components and spacecraft state
-     * @param stateData list of additional state data providers
+     * @param map map of additional equations indices
      * @param model underlying raw mathematical model
      * @exception OrekitException if several providers have the same name
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper,
-                               final List<AdditionalStateData> stateData,
+                               final Map<String, Integer> map,
                                final ContinuousOutputModel model)
         throws OrekitException {
 
@@ -108,11 +108,8 @@ public class IntegratedEphemeris
         this.model     = model;
 
         // set up providers to map the final elements of the model array to additional states
-        int index = 7;
-        for (final AdditionalStateData data : stateData) {
-            final int length = data.getAdditionalState().length;
-            addAdditionalStateProvider(new LocalProvider(data.getName(), index, length));
-            index += length;
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            addAdditionalStateProvider(new LocalProvider(entry.getKey(), entry.getValue()));
         }
 
     }
@@ -210,21 +207,16 @@ public class IntegratedEphemeris
         /** Name of the additional state. */
         private final String name;
 
-        /** Index of the first element in the global integrated array. */
-        private final int startIndex;
-
-        /** Length of the additional state array. */
-        private final int length;
+        /** Index of the additional state. */
+        private final int index;
 
         /** Simple constructor.
          * @param name name of the additional state
-         * @param startIndex index of the first element in the global integrated array
-         * @param length length of the additional state array
+         * @param index index of the additional state
          */
-        public LocalProvider(final String name, final int startIndex, final int length) {
-            this.name       = name;
-            this.startIndex = startIndex;
-            this.length     = length;
+        public LocalProvider(final String name, final int index) {
+            this.name  = name;
+            this.index = index;
         }
 
         /** {@inheritDoc} */
@@ -235,30 +227,13 @@ public class IntegratedEphemeris
         /** {@inheritDoc} */
         public double[] getAdditionalState(final SpacecraftState state)
             throws PropagationException {
-            try {
 
-                // set the model date
-                setInterpolationDate(state.getDate());
+            // set the model date
+            setInterpolationDate(state.getDate());
 
-                // extract the part of the interpolated array corresponding to the additional state
-                final double[] additionalState = new double[length];
-                System.arraycopy(model.getInterpolatedState(), startIndex, additionalState, 0, length);
+            // extract the part of the interpolated array corresponding to the additional state
+            return model.getInterpolatedSecondaryState(index);
 
-                return additionalState;
-
-            } catch (OrekitExceptionWrapper oew) {
-                if (oew.getException() instanceof PropagationException) {
-                    throw (PropagationException) oew.getException();
-                } else {
-                    throw new PropagationException(oew.getException());
-                }
-            } catch (OrekitException oe) {
-                if (oe instanceof PropagationException) {
-                    throw (PropagationException) oe;
-                } else {
-                    throw new PropagationException(oe);
-                }
-            }
         }
 
     }

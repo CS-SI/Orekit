@@ -23,7 +23,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -96,8 +96,8 @@ public class PropagatorConversion {
             final double dP         = 1.e-2;
             final OrbitType orbType = OrbitType.CARTESIAN;
             final double[][] tol = NumericalPropagator.tolerances(dP, initialOrbit, orbType);
-            final FirstOrderIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep,
-                                                                                   tol[0], tol[1]);
+            final AbstractIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep,
+                                                                                 tol[0], tol[1]);
 
             // Propagator
             NumericalPropagator numProp = new NumericalPropagator(integrator);

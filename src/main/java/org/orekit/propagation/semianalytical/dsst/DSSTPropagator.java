@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.orekit.attitudes.Attitude;
@@ -154,7 +154,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  </p>
      *  @param integrator numerical integrator to use for propagation.
      */
-    public DSSTPropagator(final FirstOrderIntegrator integrator) {
+    public DSSTPropagator(final AbstractIntegrator integrator) {
         super(integrator);
         this.forceModels = new ArrayList<DSSTForceModel>();
         this.isOsculating = true;

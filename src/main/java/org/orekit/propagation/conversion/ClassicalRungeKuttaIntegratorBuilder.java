@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.orekit.orbits.Orbit;
 
@@ -38,7 +38,7 @@ public class ClassicalRungeKuttaIntegratorBuilder implements FirstOrderIntegrato
     }
 
     /** {@inheritDoc} */
-    public FirstOrderIntegrator buildIntegrator(final Orbit orbit) {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit) {
         return new ClassicalRungeKuttaIntegrator(step);
     }
 
