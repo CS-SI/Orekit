@@ -17,7 +17,7 @@
 
 package fr.cs.examples.propagation;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -78,7 +78,7 @@ public class EphemerisMode {
             // Numerical propagation with no perturbation (only keplerian movement)
             // Using a very simple integrator with a fixed step: classical Runge-Kutta
             double stepSize = 10;  // the step is ten seconds
-            FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
+            AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(stepSize);
             NumericalPropagator propagator = new NumericalPropagator(integrator);
 
             // Set the propagator to ephemeris mode

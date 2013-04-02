@@ -76,11 +76,11 @@ public class NumericalConverterTest {
 
         final double stepSize = 100.;
 
-//        FirstOrderIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
-//        checkFit(abBuilder);
+        FirstOrderIntegratorBuilder abBuilder = new AdamsBashforthIntegratorBuilder(2, minStep, maxStep, dP);
+        checkFit(abBuilder);
 
-//        FirstOrderIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
-//        checkFit(amBuilder);
+        FirstOrderIntegratorBuilder amBuilder = new AdamsMoultonIntegratorBuilder(2, minStep, maxStep, dP);
+        checkFit(amBuilder);
 
         FirstOrderIntegratorBuilder crkBuilder = new ClassicalRungeKuttaIntegratorBuilder(stepSize);
         checkFit(crkBuilder);

@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.conversion;
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.GillIntegrator;
 import org.orekit.orbits.Orbit;
 
@@ -38,7 +38,7 @@ public class GillIntegratorBuilder implements FirstOrderIntegratorBuilder {
     }
 
     /** {@inheritDoc} */
-    public FirstOrderIntegrator buildIntegrator(final Orbit orbit) {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit) {
         return new GillIntegrator(step);
     }
 

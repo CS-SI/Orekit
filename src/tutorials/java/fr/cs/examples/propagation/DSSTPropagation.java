@@ -29,7 +29,7 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
@@ -372,7 +372,7 @@ public class DSSTPropagation {
                                           final double mass,
                                           final boolean isOsculating,
                                           final double fixedStepSize) throws OrekitException {
-        FirstOrderIntegrator integrator;
+        AbstractIntegrator integrator;
         if (fixedStepSize > 0.) {
             integrator = new ClassicalRungeKuttaIntegrator(fixedStepSize);
         } else {

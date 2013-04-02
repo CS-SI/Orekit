@@ -365,20 +365,20 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // (when mass is not considered, only the A, B, D and E matrices are used along
         // with their derivatives):
 
-        // [      ] [      ] [      ]   [                ] [                ] [              ]   [   ] [   ] [   ]
-        // [ Adot ] [ Bdot ] [ Cdot ]   [  dVel/dPos = 0 ] [ dVel/dVel = Id ] [  dVel/dm = 0 ]   [ A ] [ B ] [ C ]
-        // [      ] [      ] [      ]   [                ] [                ] [              ]   [   ] [   ] [   ]
+        // [       |        |       ]   [                 |                  |               ]   [    |     |    ]
+        // [ Adot  |  Bdot  |  Cdot ]   [  dVel/dPos = 0  |  dVel/dVel = Id  |   dVel/dm = 0 ]   [ A  |  B  |  C ]
+        // [       |        |       ]   [                 |                  |               ]   [    |     |    ]
         // --------+--------+--- ----   ------------------+------------------+----------------   -----+-----+-----
-        // [      ] [      ] [      ]   [                ] [                ] [              ]   [   ] [   ] [   ]
-        // [ Ddot ] [ Edot ] [ Fdot ] = [    dAcc/dPos   ] [    dAcc/dVel   ] [   dAcc/dm    ] * [ D ] [ E ] [ F ]
-        // [      ] [      ] [      ]   [                ] [                ] [              ]   [   ] [   ] [   ]
+        // [       |        |       ]   [                 |                  |               ]   [    |     |    ]
+        // [ Ddot  |  Edot  |  Fdot ] = [    dAcc/dPos    |     dAcc/dVel    |    dAcc/dm    ] * [ D  |  E  |  F ]
+        // [       |        |       ]   [                 |                  |               ]   [    |     |    ]
         // --------+--------+--- ----   ------------------+------------------+----------------   -----+-----+-----
-        // [ Gdot ] [ Hdot ] [ Idot ]   [ dmDot/dPos = 0 ] [ dmDot/dVel = 0 ] [ dmDot/dm = 0 ]   [ G ] [ H ] [ I ]
+        // [ Gdot  |  Hdot  |  Idot ]   [ dmDot/dPos = 0  |  dmDot/dVel = 0  |  dmDot/dm = 0 ]   [ G  |  H  |  I ]
 
         // The A, B, D and E sub-matrices and their derivatives (Adot ...) are 3x3 matrices,
         // the C and F sub-matrices and their derivatives (Cdot ...) are 3x1 matrices,
         // the G and H sub-matrices and their derivatives (Gdot ...) are 1x3 matrices,
-        // the I sub-matrix and its derivative (Idot) are 1x1 matrices.
+        // the I sub-matrix and its derivative (Idot) is a 1x1 matrix.
 
         // The expanded multiplication above can be rewritten to take into account
         // the fixed values found in the sub-matrices in the left factor. This leads to:
@@ -430,15 +430,15 @@ public class PartialDerivativesEquations implements AdditionalEquations {
 
             // the variational equations of the parameters Jacobian matrix are computed
             // one column at a time, they have the following form:
-            // [      ]   [                ] [                ] [              ]   [   ]   [                  ]
-            // [ Jdot ]   [  dVel/dPos = 0 ] [ dVel/dVel = Id ] [  dVel/dm = 0 ]   [ J ]   [  dVel/dParam = 0 ]
-            // [      ]   [                ] [                ] [              ]   [   ]   [                  ]
+            // [      ]   [                 |                  |               ]   [   ]   [                  ]
+            // [ Jdot ]   [  dVel/dPos = 0  |  dVel/dVel = Id  |   dVel/dm = 0 ]   [ J ]   [  dVel/dParam = 0 ]
+            // [      ]   [                 |                  |               ]   [   ]   [                  ]
             // --------   ------------------+------------------+----------------   -----   --------------------
-            // [      ]   [                ] [                ] [              ]   [   ]   [                  ]
-            // [ Kdot ] = [    dAcc/dPos   ] [    dAcc/dVel   ] [   dAcc/dm    ] * [ K ] + [    dAcc/dParam   ]
-            // [      ]   [                ] [                ] [              ]   [   ]   [                  ]
+            // [      ]   [                 |                  |               ]   [   ]   [                  ]
+            // [ Kdot ] = [    dAcc/dPos    |     dAcc/dVel    |    dAcc/dm    ] * [ K ] + [    dAcc/dParam   ]
+            // [      ]   [                 |                  |               ]   [   ]   [                  ]
             // --------   ------------------+------------------+----------------   -----   --------------------
-            // [ Ldot ]   [ dmDot/dPos = 0 ] [ dmDot/dVel = 0 ] [ dmDot/dm = 0 ]   [ L ]   [ dmDot/dParam = 0 ]
+            // [ Ldot ]   [ dmDot/dPos = 0  |  dmDot/dVel = 0  |  dmDot/dm = 0 ]   [ L ]   [ dmDot/dParam = 0 ]
 
             // The J and K sub-columns and their derivatives (Jdot ...) are 3 elements columns,
             // the L sub-colums and its derivative (Ldot) are 1 elements columns.

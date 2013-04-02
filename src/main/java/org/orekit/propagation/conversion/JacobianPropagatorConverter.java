@@ -127,6 +127,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 return jacob;
 
             } catch (OrekitException ex) {
+                ex.printStackTrace(System.err);
                 throw new OrekitExceptionWrapper(ex);
             }
         }

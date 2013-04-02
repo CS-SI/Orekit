@@ -16,8 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.List;
-
+import java.util.Map;
 
 /** Common interface for all propagator mode handlers initialization.
  * @author Luc Maisonobe
@@ -25,10 +24,9 @@ import java.util.List;
 public interface ModeHandler {
 
     /** Initialize the mode handler.
-     * @param additionalStateData list of additional state data
+     * @param map map of additional equations indices
      * @param activateHandlers if handlers shall be active
      */
-    void initialize(List <AdditionalStateData> additionalStateData,
-                    boolean activateHandlers);
+    void initialize(Map<String, Integer> map, boolean activateHandlers);
 
 }

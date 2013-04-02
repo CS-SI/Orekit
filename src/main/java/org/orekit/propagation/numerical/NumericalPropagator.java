@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
@@ -151,7 +151,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * #setPositionAngleType(PositionAngle) position angle type}.
      * @param integrator numerical integrator to use for propagation.
      */
-    public NumericalPropagator(final FirstOrderIntegrator integrator) {
+    public NumericalPropagator(final AbstractIntegrator integrator) {
         super(integrator);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
