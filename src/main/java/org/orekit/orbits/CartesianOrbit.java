@@ -393,31 +393,32 @@ public class CartesianOrbit extends Orbit {
 
     }
 
-    /** {@inheritDoc} */
-    protected double[][] computeJacobianMeanWrtCartesian() {
-        return build6x6Identity();
-    }
-
-    /** {@inheritDoc} */
-    protected double[][] computeJacobianEccentricWrtCartesian() {
-        return build6x6Identity();
-    }
-
-    /** {@inheritDoc} */
-    protected double[][] computeJacobianTrueWrtCartesian() {
-        return build6x6Identity();
-    }
-
-    /** Build a 6x6 identity matrix.
-     * @return 6x6 identity matrix
-     */
-    private double[][] build6x6Identity() {
-        // build the identity matrix
-        final double[][] jacobian = new double[6][6];
-        for (int i = 0; i < jacobian.length; ++i) {
+    @Override
+    public void getJacobianWrtCartesian(final PositionAngle type, final double[][] jacobian) {
+        // this is the fastest way to set the 6x6 identity matrix
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                jacobian[i][j] = 0;
+            }
             jacobian[i][i] = 1;
         }
-        return jacobian;
+    }
+
+    @Override
+    protected double[][] computeJacobianMeanWrtCartesian() {
+        // not used
+        return null;
+    }
+    @Override
+    protected double[][] computeJacobianEccentricWrtCartesian() {
+        // not used
+        return null;
+    }
+
+    @Override
+    protected double[][] computeJacobianTrueWrtCartesian() {
+        // not used
+        return null;
     }
 
     /** {@inheritDoc} */
