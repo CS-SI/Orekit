@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.sampling;
 
+import java.util.Map;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.Propagator;
@@ -84,8 +86,13 @@ public class BasicStepInterpolator implements OrekitStepInterpolator {
     }
 
     /** {@inheritDoc} */
-    public double[] getInterpolatedAdditionalState(final String name)
-        throws OrekitException {
+    public double[] getInterpolatedAdditionalState(final String name) {
+        // This should never happen
+        throw OrekitException.createInternalError(null);
+    }
+
+    /** {@inheritDoc} */
+    public Map<String, double[]> getInterpolatedAdditionalStates() {
         // This should never happen
         throw OrekitException.createInternalError(null);
     }

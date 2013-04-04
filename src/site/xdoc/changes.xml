@@ -22,6 +22,9 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added a way to retrieve all additional states at once from a step interpolator.
+      </action>
       <action dev="luc" type="fix" >
         Fixed wrong orientation for ICRF and all IAU pole and prime meridians
         (a few tens milli-arcseconds). This error mainly induced an error in

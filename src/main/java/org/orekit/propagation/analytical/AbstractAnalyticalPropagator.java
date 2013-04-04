@@ -561,6 +561,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
+        public Map<String, double[]> getInterpolatedAdditionalStates() {
+            return Collections.unmodifiableMap(additionalStates);
+        }
+
+        /** {@inheritDoc} */
         public AbsoluteDate getPreviousDate() {
             return softPreviousDate;
         }

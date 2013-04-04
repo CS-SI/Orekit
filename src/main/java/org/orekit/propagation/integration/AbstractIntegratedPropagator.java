@@ -780,11 +780,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 return stateMapper.mapArrayToState(rawInterpolator.getInterpolatedTime(),
                                                    rawInterpolator.getInterpolatedState());
             } catch (OrekitExceptionWrapper oew) {
-                if (oew.getException() instanceof PropagationException) {
-                    throw (PropagationException) oew.getException();
-                } else {
-                    throw new PropagationException(oew.getException());
-                }
+                throw oew.getException();
             }
         }
 
@@ -802,11 +798,26 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION, name);
 
             } catch (OrekitExceptionWrapper oew) {
-                if (oew.getException() instanceof PropagationException) {
-                    throw (PropagationException) oew.getException();
-                } else {
-                    throw new PropagationException(oew.getException());
+                throw oew.getException();
+            }
+
+        }
+
+        /** {@inheritDoc} */
+        public Map<String, double[]> getInterpolatedAdditionalStates() throws OrekitException {
+
+            try {
+
+                final Map<String, double[]> interpolatedMap =
+                        new HashMap<String, double[]>(map.size());
+                for (final String name : map.keySet()) {
+                    interpolatedMap.put(name,
+                                        rawInterpolator.getInterpolatedSecondaryState(map.get(name)));
                 }
+                return interpolatedMap;
+
+            } catch (OrekitExceptionWrapper oew) {
+                throw oew.getException();
             }
 
         }

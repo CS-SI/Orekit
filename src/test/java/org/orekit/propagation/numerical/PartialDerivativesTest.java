@@ -437,6 +437,8 @@ public class PartialDerivativesTest {
                     }
                 }
 
+                Assert.assertEquals(1, interpolator.getInterpolatedAdditionalStates().size());
+                Assert.assertTrue(interpolator.getInterpolatedAdditionalStates().containsKey(mapper.getName()));
                 SpacecraftState state = interpolator.getInterpolatedState();
                 double[] p = interpolator.getInterpolatedAdditionalState(mapper.getName());
                 mapper.getStateJacobian(state, p, dYdY0);

@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.sampling;
 
+import java.util.Map;
+
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.propagation.SpacecraftState;
@@ -78,6 +80,15 @@ public interface OrekitStepInterpolator {
      * @see #setInterpolatedDate(AbsoluteDate)
      */
     double[] getInterpolatedAdditionalState(String name) throws OrekitException;
+
+    /** Get the interpolated additional states corresponding to all additional equations.
+     * @return unmodifiable interpolated map of additional states at the current interpolation date,
+     * using the names as the map keys
+     * @exception OrekitException if state cannot be interpolated or converted
+     * @see #getInterpolatedDate()
+     * @see #setInterpolatedDate(AbsoluteDate)
+     */
+    Map<String, double[]> getInterpolatedAdditionalStates() throws OrekitException;
 
     /** Check is integration direction is forward in date.
      * @return true if integration is forward in date
