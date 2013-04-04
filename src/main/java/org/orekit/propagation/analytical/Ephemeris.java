@@ -135,9 +135,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
         throws OrekitException {
-        return propagate(date).getPVCoordinates(frame);
+        return propagate(date).getPVCoordinates(f);
     }
 
     /** Try (and fail) to reset the initial state.
