@@ -78,6 +78,8 @@ public interface OrekitStepInterpolator {
      * @exception OrekitException if state cannot be interpolated or converted
      * @see #getInterpolatedDate()
      * @see #setInterpolatedDate(AbsoluteDate)
+     * @see #getInterpolatedState()
+     * @see #getInterpolatedAdditionalStates()
      */
     double[] getInterpolatedAdditionalState(String name) throws OrekitException;
 
@@ -87,6 +89,8 @@ public interface OrekitStepInterpolator {
      * @exception OrekitException if state cannot be interpolated or converted
      * @see #getInterpolatedDate()
      * @see #setInterpolatedDate(AbsoluteDate)
+     * @see #getInterpolatedState()
+     * @see #getInterpolatedAdditionalState(String)
      */
     Map<String, double[]> getInterpolatedAdditionalStates() throws OrekitException;
 
