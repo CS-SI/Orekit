@@ -5,6 +5,7 @@
 <module name="Checker">
     <module name="TreeWalker">
         <module name="AvoidStarImport"/>
+        <module name="AvoidStaticImport"/>
         <module name="ConstantName"/>
         <module name="DeclarationOrder"/>
         <module name="EqualsHashCode"/>
