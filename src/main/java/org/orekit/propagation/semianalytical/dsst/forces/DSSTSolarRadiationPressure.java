@@ -363,7 +363,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         if (disc < 0.) {
             // One real root
             final double alpha  = q + FastMath.copySign(FastMath.sqrt(-disc), q);
-            final double cbrtAl = FastMath.copySign(FastMath.pow(FastMath.abs(alpha), 1. / 3.), alpha);
+            final double cbrtAl = FastMath.copySign(FastMath.cbrt(FastMath.abs(alpha)), alpha);
             final double cbrtBe = p / cbrtAl;
 
             if (p < 0.) {
@@ -389,7 +389,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
         } else {
             // One distinct and two equals real roots
-            final double cbrtQ = FastMath.copySign(FastMath.pow(FastMath.abs(q), 1. / 3.), q);
+            final double cbrtQ = FastMath.copySign(FastMath.cbrt(FastMath.abs(q)), q);
             if (q < 0.) {
                 y[0] = b - cbrtQ;
                 y[1] = b - cbrtQ;
