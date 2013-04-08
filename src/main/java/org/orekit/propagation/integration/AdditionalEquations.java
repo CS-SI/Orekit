@@ -50,12 +50,12 @@ import org.orekit.propagation.SpacecraftState;
  * </p>
  * <p>
  * This interface is the numerical (read not already integrated) counterpart of
- * the {@link org.orekit.propagation.analytical.AdditionalStateProvider} interface.
+ * the {@link org.orekit.propagation.AdditionalStateProvider} interface.
  * It allows to append various additional state parameters to any {@link
  * org.orekit.propagation.numerical.NumericalPropagator numerical propagator}.
  * </p>
- * @see org.orekit.propagation.numerical.NumericalPropagator
- * @see org.orekit.propagation.analytical.AdditionalStateProvider
+ * @see AbstractIntegratedPropagator
+ * @see org.orekit.propagation.AdditionalStateProvider
  * @author Luc Maisonobe
  */
 public interface AdditionalEquations {
@@ -66,15 +66,23 @@ public interface AdditionalEquations {
     String getName();
 
     /** Compute the derivatives related to the additional state parameters.
-     * @param s current state information: date, kinematics, attitude
-     * @param p current value of the additional parameters
+     * <p>
+     * When this method is called, the spacecraft state contains the main
+     * state (orbit, attitude and mass), all the states provided through
+     * the {@link org.orekit.propagation.AdditionalStateProvider additional
+     * state providers} registered to the propagator, and the additional state
+     * integrated using this equation. It does <em>not</em> contains any other
+     * states to be integrated alongside during the same propagation.
+     * </p>
+     * @param s current state information: date, kinematics, attitude, and
+     * additional state
      * @param pDot placeholder where the derivatives of the additional parameters
      * should be put
      * @return cumulative effect of the equations on the main state (may be null if
      * equations do not change main state at all)
      * @exception OrekitException if some specific error occurs
      */
-    double[] computeDerivatives(SpacecraftState s,  double[] p, double[] pDot)
+    double[] computeDerivatives(SpacecraftState s,  double[] pDot)
         throws OrekitException;
 
 }

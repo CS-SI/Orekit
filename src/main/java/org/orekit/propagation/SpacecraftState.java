@@ -19,9 +19,13 @@ package org.orekit.propagation;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -43,7 +47,9 @@ import org.orekit.utils.PVCoordinates;
  * <p>It contains an {@link Orbit orbital state} at a current
  * {@link AbsoluteDate} both handled by an {@link Orbit}, plus the current
  * mass and attitude. Orbit and state are guaranteed to be consistent in terms
- * of date and reference frame.
+ * of date and reference frame. The spacecraft state may also contain additional
+ * states, which are simply named double arrays which can hold any user-defined
+ * data.
  * </p>
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
@@ -64,7 +70,7 @@ public class SpacecraftState
     implements TimeStamped, TimeShiftable<SpacecraftState>, TimeInterpolable<SpacecraftState>, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3141803003950085500L;
+    private static final long serialVersionUID = 20130407L;
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
@@ -78,6 +84,9 @@ public class SpacecraftState
     /** Current mass (kg). */
     private final double mass;
 
+    /** Additional states. */
+    private final Map<String, double[]> additional;
+
     /** Build a spacecraft state from orbit only.
      * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
      * @param orbit the orbit
@@ -85,9 +94,9 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit)
         throws OrekitException {
-        this.orbit    = orbit;
-        this.attitude = new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        this.mass     = DEFAULT_MASS;
+        this(orbit,
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             DEFAULT_MASS, null);
     }
 
     /** Build a spacecraft state from orbit and attitude provider.
@@ -99,10 +108,7 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        checkConsistency(orbit, attitude);
-        this.orbit    = orbit;
-        this.attitude = attitude;
-        this.mass     = DEFAULT_MASS;
+        this(orbit, attitude, DEFAULT_MASS, null);
     }
 
     /** Create a new instance from orbit and mass.
@@ -113,9 +119,9 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final double mass)
         throws OrekitException {
-        this.orbit    = orbit;
-        this.attitude = new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame());
-        this.mass     = mass;
+        this(orbit,
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             mass, null);
     }
 
     /** Build a spacecraft state from orbit, attitude provider and mass.
@@ -127,10 +133,97 @@ public class SpacecraftState
      */
     public SpacecraftState(final Orbit orbit, final Attitude attitude, final double mass)
         throws IllegalArgumentException {
+        this(orbit, attitude, mass, null);
+    }
+
+    /** Build a spacecraft state from orbit only.
+     * <p>Attitude and mass are set to unspecified non-null arbitrary values.</p>
+     * @param orbit the orbit
+     * @param additional additional states
+     * @exception OrekitException if default attitude cannot be computed
+     */
+    public SpacecraftState(final Orbit orbit, final Map<String, double[]> additional)
+        throws OrekitException {
+        this(orbit,
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             DEFAULT_MASS, additional);
+    }
+
+    /** Build a spacecraft state from orbit and attitude provider.
+     * <p>Mass is set to an unspecified non-null arbitrary value.</p>
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @param additional additional states
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     */
+    public SpacecraftState(final Orbit orbit, final Attitude attitude, final Map<String, double[]> additional)
+        throws IllegalArgumentException {
+        this(orbit, attitude, DEFAULT_MASS, additional);
+    }
+
+    /** Create a new instance from orbit and mass.
+     * <p>Attitude law is set to an unspecified default attitude.</p>
+     * @param orbit the orbit
+     * @param mass the mass (kg)
+     * @param additional additional states
+     * @exception OrekitException if default attitude cannot be computed
+     */
+    public SpacecraftState(final Orbit orbit, final double mass, final Map<String, double[]> additional)
+        throws OrekitException {
+        this(orbit,
+             new LofOffset(orbit.getFrame(), LOFType.VVLH).getAttitude(orbit, orbit.getDate(), orbit.getFrame()),
+             mass, additional);
+    }
+
+    /** Build a spacecraft state from orbit, attitude provider and mass.
+     * @param orbit the orbit
+     * @param attitude attitude
+     * @param mass the mass (kg)
+     * @param additional additional states (may be null if no additional states are available)
+     * @exception IllegalArgumentException if orbit and attitude dates
+     * or frames are not equal
+     */
+    public SpacecraftState(final Orbit orbit, final Attitude attitude,
+                           final double mass, final Map<String, double[]> additional)
+        throws IllegalArgumentException {
         checkConsistency(orbit, attitude);
-        this.orbit    = orbit;
-        this.attitude = attitude;
-        this.mass     = mass;
+        this.orbit      = orbit;
+        this.attitude   = attitude;
+        this.mass       = mass;
+        if (additional == null) {
+            this.additional = Collections.emptyMap();
+        } else {
+            this.additional = new HashMap<String, double[]>(additional.size());
+            for (final Map.Entry<String, double[]> entry : additional.entrySet()) {
+                this.additional.put(entry.getKey(), entry.getValue().clone());
+            }
+        }
+    }
+
+    /** Add an additional state.
+     * <p>
+     * {@link SpacecraftState SpacecraftState} instances are immutable,
+     * so this method does <em>not</em> change the instance, but rather
+     * creates a new instance, which has the same orbit, attitude, mass
+     * and additional states as the original instance, except it also
+     * has the specified state. If the original instance already had an
+     * additional state with the same name, it will be overriden. If it
+     * did not have any additional state with that name, the new instance
+     * will have one more additional state than the original instance.
+     * </p>
+     * @param name name of the additional state
+     * @param value value of the additional state
+     * @return a new instance, with the additional state added
+     * @see #hasAdditionalState(String)
+     * @see #getAdditionalState(String)
+     * @see #getAdditionalStates()
+     */
+    public SpacecraftState addAdditionalState(final String name, final double ... value) {
+        final Map<String, double[]> newMap = new HashMap<String, double[]>(additional.size() + 1);
+        newMap.putAll(additional);
+        newMap.put(name, value.clone());
+        return new SpacecraftState(orbit, attitude, mass, newMap);
     }
 
     /** Check orbit and attitude dates are equal.
@@ -157,9 +250,10 @@ public class SpacecraftState
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
      * a simple keplerian model for orbit, a linear extrapolation for attitude
-     * taking the spin rate into account and no mass change. It is <em>not</em>
-     * intended as a replacement for proper orbit and attitude propagation but
-     * should be sufficient for small time shifts or coarse accuracy.
+     * taking the spin rate into account and neither mass nor additional states
+     * changes. It is <em>not</em> intended as a replacement for proper orbit
+     * and attitude propagation but should be sufficient for small time shifts
+     * or coarse accuracy.
      * </p>
      * <p>
      * As a rough order of magnitude, the following table shows the interpolation
@@ -184,10 +278,17 @@ public class SpacecraftState
      * except for the mass which stay unchanged
      */
     public SpacecraftState shiftedBy(final double dt) {
-        return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt), mass);
+        return new SpacecraftState(orbit.shiftedBy(dt), attitude.shiftedBy(dt),
+                                   mass, additional);
     }
 
     /** {@inheritDoc}
+     * <p>
+     * The additional states that are interpolated are the ones already present
+     * in the instance. The sample instances must therefore have at least the same
+     * additional states has the instance. They may have more additional states,
+     * but the extra ones will be ignored.
+     * </p>
      * <p>
      * As this implementation of interpolation is polynomial, it should be used only
      * with small samples (about 10-20 points) in order to avoid <a
@@ -196,21 +297,51 @@ public class SpacecraftState
      * </p>
      */
     public SpacecraftState interpolate(final AbsoluteDate date,
-                                       final Collection<SpacecraftState> sample) {
+                                       final Collection<SpacecraftState> sample)
+        throws OrekitException {
+
+        // prepare interpolators
         final List<Orbit> orbits = new ArrayList<Orbit>(sample.size());
         final List<Attitude> attitudes = new ArrayList<Attitude>(sample.size());
         final HermiteInterpolator massInterpolator = new HermiteInterpolator();
+        final Map<String, HermiteInterpolator> additionalInterpolators =
+                new HashMap<String, HermiteInterpolator>(additional.size());
+        for (final String name : additional.keySet()) {
+            additionalInterpolators.put(name, new HermiteInterpolator());
+        }
+
+        // extract sample data
         for (final SpacecraftState state : sample) {
+            final double deltaT = state.getDate().durationFrom(date);
             orbits.add(state.getOrbit());
             attitudes.add(state.getAttitude());
-            massInterpolator.addSamplePoint(state.getDate().durationFrom(date),
+            massInterpolator.addSamplePoint(deltaT,
                                             new double[] {
                                                 state.getMass()
                                             });
+            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
+                entry.getValue().addSamplePoint(deltaT, state.getAdditionalState(entry.getKey()));
+            }
         }
-        return new SpacecraftState(orbit.interpolate(date, orbits),
-                                   attitude.interpolate(date, attitudes),
-                                   massInterpolator.value(0)[0]);
+
+        // perform interpolations
+        final Orbit interpolatedOrbit       = orbit.interpolate(date, orbits);
+        final Attitude interpolatedAttitude = attitude.interpolate(date, attitudes);
+        final double interpolatedMass       = massInterpolator.value(0)[0];
+        final Map<String, double[]> interpolatedAdditional;
+        if (additional.isEmpty()) {
+            interpolatedAdditional = null;
+        } else {
+            interpolatedAdditional = new HashMap<String, double[]>(additional.size());
+            for (final Map.Entry<String, HermiteInterpolator> entry : additionalInterpolators.entrySet()) {
+                interpolatedAdditional.put(entry.getKey(), entry.getValue().value(0));
+            }
+        }
+
+        // create the complete interpolated state
+        return new SpacecraftState(interpolatedOrbit, interpolatedAttitude,
+                                   interpolatedMass, interpolatedAdditional);
+
     }
 
     /** Gets the current orbit.
@@ -232,6 +363,80 @@ public class SpacecraftState
      */
     public Frame getFrame() {
         return orbit.getFrame();
+    }
+
+    /** Check if an additional state is available.
+     * @param name name of the additional state
+     * @return true if the additional state is available
+     * @see #addAdditionalState(String, double[])
+     * @see #getAdditionalState(String)
+     * @see #getAdditionalStates()
+     */
+    public boolean hasAdditionalState(final String name) {
+        return additional.containsKey(name);
+    }
+
+    /** Check if two instances have the same set of additional states available.
+     * <p>
+     * Only the names and dimensions of the additional states are compared,
+     * not their values.
+     * </p>
+     * @param state state to compare to instance
+     * @exception OrekitException if either instance or state supports an additional
+     * state not supported by the other one
+     * @exception DimensionMismatchException if an additional state does not have
+     * the same dimension in both states
+     */
+    public void ensureCompatibleAdditionalStates(final SpacecraftState state)
+        throws OrekitException, DimensionMismatchException {
+
+        // check instance additional states is a subset of the other one
+        for (final Map.Entry<String, double[]> entry : additional.entrySet()) {
+            final double[] other = state.additional.get(entry.getKey());
+            if (other == null) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                          entry.getKey());
+            }
+            if (other.length != entry.getValue().length) {
+                throw new DimensionMismatchException(other.length, entry.getValue().length);
+            }
+        }
+
+        if (state.additional.size() > additional.size()) {
+            // the other state has more additional states
+            for (final String name : state.additional.keySet()) {
+                if (!additional.containsKey(name)) {
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                              name);
+                }
+            }
+        }
+
+    }
+
+    /** Get an additional state.
+     * @param name name of the additional state
+     * @return value of the additional state
+     * @exception OrekitException if no additional state with that name exists
+     * @see #addAdditionalState(String, double[])
+     * @see #hasAdditionalState(String)
+     * @see #getAdditionalStates()
+     */
+    public double[] getAdditionalState(final String name) throws OrekitException {
+        if (!additional.containsKey(name)) {
+            throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE, name);
+        }
+        return additional.get(name).clone();
+    }
+
+    /** Get an unmodifiable map of additional states.
+     * @return unmodifiable map of additional states
+     * @see #addAdditionalState(String, double[])
+     * @see #hasAdditionalState(String)
+     * @see #getAdditionalState(String)
+     */
+    public Map<String, double[]> getAdditionalStates() {
+        return Collections.unmodifiableMap(additional);
     }
 
     /** Compute the transform from orbite/attitude reference frame to spacecraft frame.

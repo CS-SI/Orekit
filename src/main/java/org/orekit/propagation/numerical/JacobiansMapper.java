@@ -20,6 +20,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.QRDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -173,17 +174,18 @@ public class JacobiansMapper {
      * {@code dYdY0} array.
      * </p>
      * @param state spacecraft state
-     * @param p one-dimensional additional state (generally retrieved from {link
-     * org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
-     * OrekitStepInterpolator.getInterpolatedAdditionalState(getName())}
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
+     * @exception OrekitException if state does not contain the Jacobian additional state
      * @see #getParametersJacobian(SpacecraftState, double[], double[][])
-     * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
      */
-    public void getStateJacobian(final SpacecraftState state, final double[] p, final double[][] dYdY0) {
+    public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
+        throws OrekitException {
 
         // get the conversion Jacobian between state parameters and cartesian parameters
         final double[][] dYdC = getdYdC(state);
+
+        // extract the additional state
+        final double[] p = state.getAdditionalState(name);
 
         // compute dYdY0 = dYdC * dCdY0, without allocating new arrays
         for (int i = 0; i < stateDimension; i++) {
@@ -212,18 +214,20 @@ public class JacobiansMapper {
      * does not reference {@code dYdP} which can safely be null in this case.
      * </p>
      * @param state spacecraft state
-     * @param p one-dimensional additional state (generally retrieved from {link
-     * org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
-     * OrekitStepInterpolator.getInterpolatedAdditionalState(getName())}
      * @param dYdP placeholder where to put the Jacobian with respect to parameters
+     * @exception OrekitException if state does not contain the Jacobian additional state
      * @see #getStateJacobian(SpacecraftState, double[], double[][])
      */
-    public void getParametersJacobian(final SpacecraftState state, final double[] p, final double[][] dYdP) {
+    public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
+        throws OrekitException {
 
         if (parameters > 0) {
 
             // get the conversion Jacobian between state parameters and cartesian parameters
             final double[][] dYdC = getdYdC(state);
+
+            // extract the additional state
+            final double[] p = state.getAdditionalState(name);
 
             // compute dYdP = dYdC * dCdP, without allocating new arrays
             for (int i = 0; i < stateDimension; i++) {

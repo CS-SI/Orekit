@@ -16,10 +16,14 @@
  */
 package org.orekit.propagation;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
@@ -54,15 +58,19 @@ public abstract class AbstractPropagator implements Propagator {
     /** Attitude provider. */
     private AttitudeProvider attitudeProvider;
 
+    /** Additional state providers. */
+    private final List<AdditionalStateProvider> additionalStateProviders;
+
     /** Initial state. */
     private SpacecraftState initialState;
 
     /** Build a new instance.
      */
     protected AbstractPropagator() {
-        mode          = SLAVE_MODE;
-        stepHandler   = null;
-        fixedStepSize = Double.NaN;
+        mode                     = SLAVE_MODE;
+        stepHandler              = null;
+        fixedStepSize            = Double.NaN;
+        additionalStateProviders = new ArrayList<AdditionalStateProvider>();
     }
 
     /** Set a start date.
@@ -135,6 +143,62 @@ public abstract class AbstractPropagator implements Propagator {
         mode          = EPHEMERIS_GENERATION_MODE;
         stepHandler   = null;
         fixedStepSize = Double.NaN;
+    }
+
+    /** {@inheritDoc} */
+    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
+        throws OrekitException {
+
+        // check if the name is already used
+        if (isAdditionalStateManaged(additionalStateProvider.getName())) {
+            // this additional state is already registered, complain
+            throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
+                                      additionalStateProvider.getName());
+        }
+
+        // this is really a new name, add it
+        additionalStateProviders.add(additionalStateProvider);
+
+    }
+
+    /** {@inheritDoc} */
+    public List<AdditionalStateProvider> getAdditionalStateProviders() {
+        return Collections.unmodifiableList(additionalStateProviders);
+    }
+
+    /** Update state by adding all additional states.
+     * @param original original state
+     * @return updated state, with all additional states included
+     * @exception PropagationException if one of the providers throws one
+     * @see #addAdditionalStateProvider(AdditionalStateProvider)
+     */
+    protected SpacecraftState updateAdditionalStates(final SpacecraftState original)
+        throws PropagationException {
+        SpacecraftState updated = original;
+        for (final AdditionalStateProvider provider : additionalStateProviders) {
+            updated = updated.addAdditionalState(provider.getName(),
+                                                 provider.getAdditionalState(updated));
+        }
+        return updated;
+    }
+
+    /** {@inheritDoc} */
+    public boolean isAdditionalStateManaged(final String name) {
+        for (final AdditionalStateProvider provider : additionalStateProviders) {
+            if (provider.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    public String[] getManagedStates() {
+        final String[] managed = new String[additionalStateProviders.size()];
+        for (int i = 0; i < managed.length; ++i) {
+            managed[i] = additionalStateProviders.get(i).getName();
+        }
+        return managed;
     }
 
     /** Get the fixed step size.

@@ -332,8 +332,8 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    protected MainStateEquations getMainStateEquations() {
-        return new Main();
+    protected MainStateEquations getMainStateEquations(final AbstractIntegrator integrator) {
+        return new Main(integrator);
     }
 
     /** Internal class for osculating parameters integration. */
@@ -349,8 +349,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         private double[][] jacobian;
 
         /** Simple constructor.
+         * @param integrator numerical integrator to use for propagation.
          */
-        public Main() {
+        public Main(final AbstractIntegrator integrator) {
 
             this.yDot     = new double[7];
             this.jacobian = new double[6][6];
@@ -359,7 +360,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                 final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
                 if (modelDetectors != null) {
                     for (final EventDetector detector : modelDetectors) {
-                        setUpEventDetector(detector);
+                        setUpEventDetector(integrator, detector);
                     }
                 }
             }

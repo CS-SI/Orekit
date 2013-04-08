@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
@@ -44,11 +45,14 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
+import org.orekit.propagation.integration.AdditionalEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -90,10 +94,17 @@ public class NumericalPropagatorTest {
     }
 
     @Test(expected=OrekitException.class)
-    public void testNotInitialised() throws OrekitException {
+    public void testNotInitialised1() throws OrekitException {
         final AbstractIntegratedPropagator notInitialised =
             new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
         notInitialised.propagate(AbsoluteDate.J2000_EPOCH);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testNotInitialised2() throws OrekitException {
+        final AbstractIntegratedPropagator notInitialised =
+            new NumericalPropagator(new ClassicalRungeKuttaIntegrator(10.0));
+        notInitialised.propagate(AbsoluteDate.J2000_EPOCH, AbsoluteDate.J2000_EPOCH.shiftedBy(3600));
     }
 
     @Test
@@ -102,7 +113,7 @@ public class NumericalPropagatorTest {
         // Propagation of the initial at t + dt
         final double dt = 3200;
         final SpacecraftState finalState =
-            propagator.propagate(initDate.shiftedBy(dt));
+            propagator.propagate(initDate.shiftedBy(-60), initDate.shiftedBy(dt));
 
         // Check results
         final double n = FastMath.sqrt(initialState.getMu() / initialState.getA()) / initialState.getA();
@@ -133,6 +144,12 @@ public class NumericalPropagatorTest {
         Assert.assertEquals(0, pRef.subtract(pFin).getNorm(), 2e-4);
         Assert.assertEquals(0, vRef.subtract(vFin).getNorm(), 7e-8);
 
+        try {
+            propagator.getGeneratedEphemeris();
+            Assert.fail("an exception should have been thrown");
+        } catch (IllegalStateException ise) {
+            // expected
+        }
     }
 
     @Test
@@ -290,10 +307,14 @@ public class NumericalPropagatorTest {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
             }
         });
+        Assert.assertEquals(1, propagator.getEventsDetectors().size());
         Assert.assertFalse(gotHere);
         final SpacecraftState finalState = propagator.propagate(initDate.shiftedBy(3200));
         Assert.assertTrue(gotHere);
         Assert.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
+        propagator.clearEventsDetectors();
+        Assert.assertEquals(0, propagator.getEventsDetectors().size());
+
     }
 
     @Test
@@ -361,6 +382,134 @@ public class NumericalPropagatorTest {
         Assert.assertEquals(initialState.getHx(),    finalState.getHx(),    1.0e-10);
         Assert.assertEquals(initialState.getHy(),    finalState.getHy(),    1.0e-10);
         Assert.assertEquals(initialState.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+    }
+
+    @Test
+    public void testAdditionalStateEvent() throws OrekitException {
+        propagator.addAdditionalEquations(new AdditionalEquations() {
+            
+            public String getName() {
+                return "linear";
+            }
+            
+            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+                pDot[0] = 1.0;
+                return new double[7];
+            }
+        });
+        try {
+            propagator.addAdditionalEquations(new AdditionalEquations() {
+                
+                public String getName() {
+                    return "linear";
+                }
+                
+                public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+                    pDot[0] = 1.0;
+                    return new double[7];
+                }
+            });
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
+        try {
+            propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+               public String getName() {
+                    return "linear";
+                }
+                
+                public double[] getAdditionalState(SpacecraftState state) {
+                    return null;
+                }
+            });
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE);
+        }
+        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() {
+                return "constant";
+            }
+
+            public double[] getAdditionalState(SpacecraftState state) {
+                return new double[] { 1.0 };
+            }
+        });
+        Assert.assertTrue(propagator.isAdditionalStateManaged("linear"));
+        Assert.assertTrue(propagator.isAdditionalStateManaged("constant"));
+        Assert.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
+        Assert.assertEquals(2, propagator.getManagedStates().length);
+        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
+
+        propagator.addEventDetector(new AbstractDetector(10.0, 1.0e-8) {
+            
+            private static final long serialVersionUID = 1L;
+
+            public double g(SpacecraftState s) throws OrekitException {
+                return s.getAdditionalState("linear")[0] - 3.0;
+            }
+            
+            public Action eventOccurred(SpacecraftState s, boolean increasing) {
+                setGotHere(true);
+                return Action.STOP;
+            }
+        });
+
+        final double dt = 3200;
+        Assert.assertFalse(gotHere);
+        final SpacecraftState finalState =
+            propagator.propagate(initDate.shiftedBy(dt));
+        Assert.assertTrue(gotHere);
+        Assert.assertEquals(3.0, finalState.getAdditionalState("linear")[0], 1.0e-8);
+        Assert.assertEquals(1.5, finalState.getDate().durationFrom(initDate), 1.0e-8);
+
+    }
+
+    @Test
+    public void testResetAdditionalStateEvent() throws OrekitException {
+        propagator.addAdditionalEquations(new AdditionalEquations() {
+            
+            public String getName() {
+                return "linear";
+            }
+            
+            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+                pDot[0] = 1.0;
+                return null;
+            }
+        });
+        propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
+
+        propagator.addEventDetector(new AbstractDetector(10.0, 1.0e-8) {
+            
+            private static final long serialVersionUID = 1L;
+
+            public double g(SpacecraftState s) throws OrekitException {
+                return s.getAdditionalState("linear")[0] - 3.0;
+            }
+            
+            public Action eventOccurred(SpacecraftState s, boolean increasing) {
+                setGotHere(true);
+                return Action.RESET_STATE;
+            }
+
+            public SpacecraftState resetState(final SpacecraftState oldState)
+                throws OrekitException {
+                return oldState.addAdditionalState("linear",
+                                                   oldState.getAdditionalState("linear")[0] * 2);
+            }
+
+        });
+
+        final double dt = 3200;
+        Assert.assertFalse(gotHere);
+        final SpacecraftState finalState =
+            propagator.propagate(initDate.shiftedBy(dt));
+        Assert.assertTrue(gotHere);
+        Assert.assertEquals(dt + 4.5, finalState.getAdditionalState("linear")[0], 1.0e-8);
+        Assert.assertEquals(dt, finalState.getDate().durationFrom(initDate), 1.0e-8);
+
     }
 
     private void setGotHere(boolean gotHere) {
@@ -455,6 +604,68 @@ public class NumericalPropagatorTest {
         // generating ephemeris2 should not have changed ephemeris1
         Assert.assertEquals(initDate, ephemeris1.getMinDate());
         Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMaxDate());
+
+    }
+
+    @Test
+    public void testEphemerisAdditionalState() throws OrekitException, IOException {
+
+        // Propagation of the initial at t + dt
+        final double dt = -3200;
+        final double rate = 2.0;
+
+        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() {
+                return "squaredA";
+            }
+            public double[] getAdditionalState(SpacecraftState state) {
+                return new double[] { state.getA() * state.getA() };
+            }
+        });
+        propagator.addAdditionalEquations(new AdditionalEquations() {
+            public String getName() {
+                return "extra";
+            }
+            public double[] computeDerivatives(SpacecraftState s, double[] pDot) {
+                pDot[0] = rate;
+                return null;
+            }
+        });
+        propagator.setInitialState(propagator.getInitialState().addAdditionalState("extra", 1.5));
+
+        propagator.setOrbitType(OrbitType.CARTESIAN);
+        propagator.setEphemerisMode();
+        propagator.propagate(initDate.shiftedBy(dt));
+        final BoundedPropagator ephemeris1 = propagator.getGeneratedEphemeris();
+        Assert.assertEquals(initDate.shiftedBy(dt), ephemeris1.getMinDate());
+        Assert.assertEquals(initDate, ephemeris1.getMaxDate());
+        try {
+            ephemeris1.propagate(ephemeris1.getMinDate().shiftedBy(-10.0));
+            Assert.fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
+        }
+        try {
+            ephemeris1.propagate(ephemeris1.getMaxDate().shiftedBy(+10.0));
+            Assert.fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_EPHEMERIDES_DATE, pe.getSpecifier());
+        }
+
+        double shift = -60;
+        SpacecraftState s = ephemeris1.propagate(initDate.shiftedBy(shift));
+        Assert.assertEquals(2, s.getAdditionalStates().size());
+        Assert.assertTrue(s.hasAdditionalState("squaredA"));
+        Assert.assertTrue(s.hasAdditionalState("extra"));
+        Assert.assertEquals(s.getA() * s.getA(), s.getAdditionalState("squaredA")[0], 1.0e-10);
+        Assert.assertEquals(1.5 + shift * rate, s.getAdditionalState("extra")[0], 1.0e-10);
+
+        try {
+            ephemeris1.resetInitialState(s);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
+        }
 
     }
 

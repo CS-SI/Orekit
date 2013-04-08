@@ -117,7 +117,7 @@ public enum OrekitMessages implements Localizable {
     OUT_OF_RANGE_EPHEMERIDES_DATE("out of range date for ephemerides: {0}, [{1}, {2}]"),
     UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH("unexpected two elevation values: {0} and {1}, for one azimuth: {2}"),
     UNSUPPORTED_PARAMETER_NAME("unsupported parameter name {0}, supported names: {1}"),
-    UNKNOWN_ADDITIONAL_EQUATION("unknown additional equation \"{0}\""),
+    UNKNOWN_ADDITIONAL_STATE("unknown additional state \"{0}\""),
     UNKNOWN_MONTH("unknown month \"{0}\""),
     STATE_JACOBIAN_NOT_INITIALIZED("state Jacobian has not been initialized yet"),
     STATE_JACOBIAN_NEITHER_6X6_NOR_7X7("state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix"),

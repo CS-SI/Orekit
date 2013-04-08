@@ -78,7 +78,8 @@ public abstract class AbstractDetector implements EventDetector {
     }
 
     /** {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState oldState) {
+    public SpacecraftState resetState(final SpacecraftState oldState)
+        throws OrekitException {
         return oldState;
     }
 

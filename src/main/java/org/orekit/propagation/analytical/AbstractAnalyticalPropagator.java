@@ -20,10 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -33,7 +31,6 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
@@ -66,9 +63,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Provider for attitude computation. */
     private PVCoordinatesProvider pvProvider;
 
-    /** Additional state providers. */
-    private final List<AdditionalStateProvider> additionalStateProviders;
-
     /** Start date of last propagation. */
     private AbsoluteDate lastPropagationStart;
 
@@ -91,32 +85,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         setAttitudeProvider(attitudeProvider);
         interpolator             = new BasicStepInterpolator();
         pvProvider               = new LocalPVProvider();
-        additionalStateProviders = new ArrayList<AdditionalStateProvider>();
         lastPropagationStart     = AbsoluteDate.PAST_INFINITY;
         lastPropagationEnd       = AbsoluteDate.FUTURE_INFINITY;
         statesInitialized        = false;
         eventsStates             = new ArrayList<EventState>();
-    }
-
-    /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
-     * @param additionalStateProvider provider for additional state
-     * @exception OrekitException if an additional state with the same name is already present
-     */
-    public void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
-        throws OrekitException {
-
-        // check if the name is already used
-        for (final AdditionalStateProvider provider : additionalStateProviders) {
-            if (provider.getName().equals(additionalStateProvider.getName())) {
-                // this additional state is already registered, complain
-                throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
-                                          additionalStateProvider.getName());
-            }
-        }
-
-        // this is really a new name, add it
-        additionalStateProviders.add(additionalStateProvider);
-
     }
 
     /** {@inheritDoc} */
@@ -362,8 +334,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
-     * propagation, nor any discrete events. It always stop exactly at
-     * the specified date.</p>
+     * propagation, nor any discrete events, not additional states. It always
+     * stop exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
      * @exception PropagationException if propagation cannot reach specified date
@@ -378,6 +350,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             final Attitude attitude =
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
+            // build raw state
             return new SpacecraftState(orbit, attitude, getMass(date));
 
         } catch (OrekitException oe) {
@@ -477,9 +450,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** Interpolated state. */
         private SpacecraftState interpolatedState;
 
-        /** Additional states. */
-        private Map<String, double[]> additionalStates;
-
         /** Forward propagation indicator. */
         private boolean forward;
 
@@ -490,7 +460,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             globalCurrentDate  = AbsoluteDate.PAST_INFINITY;
             softPreviousDate   = AbsoluteDate.PAST_INFINITY;
             softCurrentDate    = AbsoluteDate.PAST_INFINITY;
-            additionalStates   = new HashMap<String, double[]>();
         }
 
         /** Restrict step range to a limited part of the global step.
@@ -551,16 +520,6 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public double[] getInterpolatedAdditionalState(final String name)
-            throws OrekitException {
-            final double[] state = additionalStates.get(name);
-            if (state == null) {
-                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION, name);
-            }
-            return state;
-        }
-
-        /** {@inheritDoc} */
         public AbsoluteDate getPreviousDate() {
             return softPreviousDate;
         }
@@ -573,14 +532,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void setInterpolatedDate(final AbsoluteDate date) throws PropagationException {
 
-            // compute the raw spacecraft state
-            interpolatedState = basicPropagate(date);
+            // compute the basic spacecraft state
+            final SpacecraftState basicState = basicPropagate(date);
 
-            // compute additional states
-            additionalStates.clear();
-            for (final AdditionalStateProvider provider : additionalStateProviders) {
-                additionalStates.put(provider.getName(), provider.getAdditionalState(interpolatedState));
-            }
+            // add the additional states
+            interpolatedState = updateAdditionalStates(basicState);
 
         }
 
@@ -602,7 +558,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             throws PropagationException {
             globalCurrentDate = date;
             softCurrentDate   = globalCurrentDate;
-            forward     = globalCurrentDate.compareTo(globalPreviousDate) >= 0;
+            forward           = globalCurrentDate.compareTo(globalPreviousDate) >= 0;
             setInterpolatedDate(globalCurrentDate);
         }
 

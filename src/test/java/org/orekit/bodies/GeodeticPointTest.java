@@ -1,7 +1,6 @@
 package org.orekit.bodies;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import org.junit.Assert;
 
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Test;
@@ -25,8 +24,8 @@ public class GeodeticPointTest {
                 FastMath.toRadians(90 - 360), 0);
 
         // verify
-        assertEquals(FastMath.toRadians(45), point.getLatitude(), 0);
-        assertEquals(FastMath.toRadians(-90), point.getLongitude(), 0);
+        Assert.assertEquals(FastMath.toRadians(45), point.getLatitude(), 0);
+        Assert.assertEquals(FastMath.toRadians(-90), point.getLongitude(), 0);
     }
 
     /**
@@ -56,9 +55,8 @@ public class GeodeticPointTest {
             GeodeticPoint gp = new GeodeticPoint(point[0], point[1], 0);
 
             // verify to within 5 ulps
-            assertEquals(point[2], gp.getLatitude(), 5 * FastMath.ulp(point[2]));
-            assertEquals(point[3], gp.getLongitude(),
-                    5 * FastMath.ulp(point[3]));
+            Assert.assertEquals(point[2], gp.getLatitude(), 5 * FastMath.ulp(point[2]));
+            Assert.assertEquals(point[3], gp.getLongitude(), 5 * FastMath.ulp(point[3]));
         }
     }
 
@@ -71,11 +69,11 @@ public class GeodeticPointTest {
         GeodeticPoint point = new GeodeticPoint(1, 2, 3);
 
         // actions + verify
-        assertEquals(point, new GeodeticPoint(1, 2, 3));
-        assertNotEquals(point, new GeodeticPoint(0, 2, 3));
-        assertNotEquals(point, new GeodeticPoint(1, 0, 3));
-        assertNotEquals(point, new GeodeticPoint(1, 2, 0));
-        assertNotEquals(point, new Object());
+        Assert.assertEquals(point, new GeodeticPoint(1, 2, 3));
+        Assert.assertFalse(point.equals(new GeodeticPoint(0, 2, 3)));
+        Assert.assertFalse(point.equals(new GeodeticPoint(1, 0, 3)));
+        Assert.assertFalse(point.equals(new GeodeticPoint(1, 2, 0)));
+        Assert.assertFalse(point.equals(new Object()));
     }
 
     /**
@@ -91,6 +89,6 @@ public class GeodeticPointTest {
         String actual = point.toString();
 
         // verify
-        assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
+        Assert.assertEquals("{lat: 30 deg, lon: 60 deg, alt: 90}", actual);
     }
 }

@@ -37,17 +37,17 @@ import org.orekit.utils.PVCoordinatesProvider;
  */
 public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
-    /** Threshold for the choice of the Gauss quadrature order. */
-    private static final double GAUSS_THRESHOLD = 1.0e-15;
-
-    /** Threshold for shadow equation. */
-    private static final double S_ZERO = 1.0e-6;
-
     /** Reference distance for the solar radiation pressure (m). */
     private static final double D_REF = 149597870000.0;
 
     /** Reference solar radiation pressure at D_REF (N/m<sup>2</sup>). */
     private static final double P_REF = 4.56e-6;
+
+    /** Threshold for the choice of the Gauss quadrature order. */
+    private static final double GAUSS_THRESHOLD = 1.0e-15;
+
+    /** Threshold for shadow equation. */
+    private static final double S_ZERO = 1.0e-6;
 
     /** Sun model. */
     private final PVCoordinatesProvider sun;
@@ -363,7 +363,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         if (disc < 0.) {
             // One real root
             final double alpha  = q + FastMath.copySign(FastMath.sqrt(-disc), q);
-            final double cbrtAl = FastMath.copySign(FastMath.pow(FastMath.abs(alpha), 1. / 3.), alpha);
+            final double cbrtAl = FastMath.cbrt(alpha);
             final double cbrtBe = p / cbrtAl;
 
             if (p < 0.) {
@@ -389,15 +389,17 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
 
         } else {
             // One distinct and two equals real roots
-            final double cbrtQ = FastMath.copySign(FastMath.pow(FastMath.abs(q), 1. / 3.), q);
+            final double cbrtQ = FastMath.cbrt(q);
+            final double root1 = b + 2. * cbrtQ;
+            final double root2 = b - cbrtQ;
             if (q < 0.) {
-                y[0] = b - cbrtQ;
-                y[1] = b - cbrtQ;
-                y[2] = b + 2. * cbrtQ;
+                y[0] = root2;
+                y[1] = root2;
+                y[2] = root1;
             } else {
-                y[0] = b + 2. * cbrtQ;
-                y[1] = b - cbrtQ;
-                y[2] = b - cbrtQ;
+                y[0] = root1;
+                y[1] = root2;
+                y[2] = root2;
             }
 
             return 3;

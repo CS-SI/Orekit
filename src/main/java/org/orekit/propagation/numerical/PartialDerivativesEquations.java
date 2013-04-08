@@ -170,38 +170,48 @@ public class PartialDerivativesEquations implements AdditionalEquations {
      * double[][], double[][])} with dYdY0 set to the identity matrix and dYdP set
      * to a zero matrix.
      * </p>
+     * <p>
+     * The returned state must be added to the propagator (it is not done
+     * automatically, as the user may need to add more states to it).
+     * </p>
      * @param s0 initial state
      * @param stateDimension state dimension, must be either 6 for orbit only or 7 for orbit and mass
      * @param paramDimension parameters dimension
+     * @return state with initial Jacobians added
      * @exception OrekitException if the partial equation has not been registered in
      * the propagator or if matrices dimensions are incorrect
      * @see #selectedParameters
      * @see #selectParamAndStep(String, double)
      */
-    public void setInitialJacobians(final SpacecraftState s0, final int stateDimension, final int paramDimension)
+    public SpacecraftState setInitialJacobians(final SpacecraftState s0, final int stateDimension, final int paramDimension)
         throws OrekitException {
         final double[][] dYdY0 = new double[stateDimension][stateDimension];
         final double[][] dYdP  = new double[stateDimension][paramDimension];
         for (int i = 0; i < stateDimension; ++i) {
             dYdY0[i][i] = 1.0;
         }
-        setInitialJacobians(s0, dYdY0, dYdP);
+        return setInitialJacobians(s0, dYdY0, dYdP);
     }
 
     /** Set the initial value of the Jacobian with respect to state and parameter.
+     * <p>
+     * The returned state must be added to the propagator (it is not done
+     * automatically, as the user may need to add more states to it).
+     * </p>
      * @param s1 current state
      * @param dY1dY0 Jacobian of current state at time t<sub>1</sub> with respect
      * to state at some previous time t<sub>0</sub> (may be either 6x6 for orbit
      * only or 7x7 for orbit and mass)
      * @param dY1dP Jacobian of current state at time t<sub>1</sub> with respect
      * to parameters (may be null if no parameters are selected)
+     * @return state with initial Jacobians added
      * @exception OrekitException if the partial equation has not been registered in
      * the propagator or if matrices dimensions are incorrect
      * @see #selectedParameters
      * @see #selectParamAndStep(String, double)
      */
-    public void setInitialJacobians(final SpacecraftState s1,
-                                    final double[][] dY1dY0, final double[][] dY1dP)
+    public SpacecraftState setInitialJacobians(final SpacecraftState s1,
+                                               final double[][] dY1dY0, final double[][] dY1dP)
         throws OrekitException {
 
         // Check dimensions
@@ -223,7 +233,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         mapper.setInitialJacobians(s1, dY1dY0, dY1dP, p);
 
         // set value in propagator
-        propagator.setInitialAdditionalState(name, p);
+        return s1.addAdditionalState(name, p);
 
     }
 
@@ -244,7 +254,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
     }
 
     /** {@inheritDoc} */
-    public double[] computeDerivatives(final SpacecraftState s, final double[] p, final double[] pDot)
+    public double[] computeDerivatives(final SpacecraftState s, final double[] pDot)
         throws OrekitException {
 
         final int dim = 3;
@@ -398,6 +408,7 @@ public class PartialDerivativesEquations implements AdditionalEquations {
         // (Adot, Bdot, ... Idot) matrices into the single dimension array pDot.
 
         // copy D, E and F into Adot, Bdot and Cdot
+        final double[] p = s.getAdditionalState(getName());
         System.arraycopy(p, dim * stateDim, pDot, 0, dim * stateDim);
 
         // compute Ddot, Edot and Fdot

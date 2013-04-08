@@ -19,20 +19,21 @@ package org.orekit.propagation.integration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.math3.ode.EquationsMapper;
 import org.apache.commons.math3.ode.ExpandableStatefulODE;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.SecondaryEquations;
 import org.apache.commons.math3.ode.events.EventHandler;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -66,11 +67,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Mode handler. */
     private ModeHandler modeHandler;
 
-    /** Additional equations and associated data. */
-    private List<AdditionalEquationsAndData> addEquationsAndData;
-
-    /** State vector. */
-    private double[] stateVector;
+    /** Additional equations. */
+    private List<AdditionalEquations> additionalEquations;
 
     /** Counter for differential equations calls. */
     private int calls;
@@ -78,13 +76,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Mapper between raw double components and space flight dynamics objects. */
     private StateMapper stateMapper;
 
+    /** Complete equation to be integrated. */
+    private ExpandableStatefulODE mathODE;
+
+    /** Underlying raw rawInterpolator. */
+    private StepInterpolator mathInterpolator;
+
     /** Build a new instance.
      * @param integrator numerical integrator to use for propagation.
      */
     protected AbstractIntegratedPropagator(final AbstractIntegrator integrator) {
         detectors           = new ArrayList<EventDetector>();
-        addEquationsAndData = new ArrayList<AdditionalEquationsAndData>();
-        stateVector         = new double[7];
+        additionalEquations = new ArrayList<AdditionalEquations>();
         this.integrator     = integrator;
     }
 
@@ -165,42 +168,55 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return calls;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isAdditionalStateManaged(final String name) {
+
+        // first look at already integrated states
+        if (super.isAdditionalStateManaged(name)) {
+            return true;
+        }
+
+        // then look at states we integrate ourselves
+        for (final AdditionalEquations equation : additionalEquations) {
+            if (equation.getName().equals(name)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String[] getManagedStates() {
+        final String[] alreadyIntegrated = super.getManagedStates();
+        final String[] managed = new String[alreadyIntegrated.length + additionalEquations.size()];
+        System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
+        for (int i = 0; i < additionalEquations.size(); ++i) {
+            managed[i + alreadyIntegrated.length] = additionalEquations.get(i).getName();
+        }
+        return managed;
+    }
+
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
-     * @param addEqu additional equations
+     * @param additional additional equations
      * @see #setInitialAdditionalState(String, double[])
      * @exception OrekitException if a set of equations with the same name is already present
      */
-    public void addAdditionalEquations(final AdditionalEquations addEqu)
+    public void addAdditionalEquations(final AdditionalEquations additional)
         throws OrekitException {
 
         // check if the name is already used
-        for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-            if (stateAndEqu.getEquations().getName().equals(addEqu.getName())) {
-                // this set of equations is already registered, complain
-                throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE, addEqu.getName());
-            }
+        if (isAdditionalStateManaged(additional.getName())) {
+            // this set of equations is already registered, complain
+            throw new OrekitException(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
+                                      additional.getName());
         }
 
         // this is really a new set of equations, add it
-        addEquationsAndData.add(new AdditionalEquationsAndData(addEqu));
+        additionalEquations.add(additional);
 
-    }
-
-    /** Set initial additional state.
-     * @param name name of the additional equations whose initial state is set
-     * @param addState additional state
-     * @throws OrekitException if additional equation is unknown
-     * @see #addAdditionalEquations(AdditionalEquations)
-     */
-    public void setInitialAdditionalState(final String name, final double[] addState)
-        throws OrekitException {
-        for (AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-            if (stateAndEqu.getEquations().getName().equals(name)) {
-                stateAndEqu.getData().setAdditionalState(addState);
-                return;
-            }
-        }
-        throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION, name);
     }
 
     /** {@inheritDoc} */
@@ -222,24 +238,26 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     protected void setUpUserEventDetectors() {
         for (final EventDetector detector : detectors) {
-            setUpEventDetector(detector);
+            setUpEventDetector(integrator, detector);
         }
     }
 
     /** Wrap an Orekit event detector and register it to the integrator.
-     *  @param detector event detector to wrap
+     * @param integ integrator into which event detector should be registered
+     * @param detector event detector to wrap
      */
-    protected void setUpEventDetector(final EventDetector detector) {
-        integrator.addEventHandler(new AdaptedEventDetector(detector),
-                                   detector.getMaxCheckInterval(),
-                                   detector.getThreshold(),
-                                   detector.getMaxIterationCount());
+    protected void setUpEventDetector(final AbstractIntegrator integ,
+                                      final EventDetector detector) {
+        integ.addEventHandler(new AdaptedEventDetector(detector),
+                              detector.getMaxCheckInterval(),
+                              detector.getThreshold(),
+                              detector.getMaxIterationCount());
     }
 
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(FirstOrderIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -253,7 +271,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(FirstOrderIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -267,7 +285,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(FirstOrderIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
@@ -308,9 +326,10 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                                                 final AttitudeProvider attitudeProvider, final Frame frame);
 
     /** Get the differential equations to integrate (for main state only).
+     * @param integ numerical integrator to use for propagation.
      * @return differential equations for main state
      */
-    protected abstract MainStateEquations getMainStateEquations();
+    protected abstract MainStateEquations getMainStateEquations(final AbstractIntegrator integ);
 
     /** {@inheritDoc} */
     public SpacecraftState propagate(final AbsoluteDate target) throws PropagationException {
@@ -393,9 +412,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                 setMu(initialOrbit.getMu());
             }
 
-            // creating state vector
-            this.stateVector  = new double[getBasicDimension()];
-
             if (getInitialState().getMass() <= 0.0) {
                 throw new PropagationException(OrekitMessages.SPACECRAFT_MASS_BECOMES_NEGATIVE,
                                                getInitialState().getMass());
@@ -406,53 +422,35 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             // set up events added by user
             setUpUserEventDetectors();
 
-            // Map state to array
-            stateMapper.mapStateToArray(getInitialState(), stateVector);
-
             // convert space flight dynamics API to math API
-            final double t0 = 0;
-            final double t1 = tEnd.durationFrom(getInitialState().getDate());
-            final ExpandableStatefulODE mathODE =
-                    new ExpandableStatefulODE(new ConvertedMainStateEquations(getMainStateEquations()));
-            mathODE.setTime(t0);
-            mathODE.setPrimaryState(stateVector);
-            final Map<String, Integer> map = new HashMap<String, Integer>();
-            for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-                final SecondaryEquations secondary =
-                        new ConvertedSecondaryStateEquations(stateAndEqu.getEquations(),
-                                                             stateAndEqu.getData().getAdditionalState().length);
-                final int index = mathODE.addSecondaryEquations(secondary);
-                map.put(stateAndEqu.getEquations().getName(), index);
-                mathODE.setSecondaryState(index, stateAndEqu.getData().getAdditionalState());
-                stateAndEqu.setIndex(index);
-            }
+            mathODE = createODE(integrator);
+            mathInterpolator = null;
 
             // initialize mode handler
             if (modeHandler != null) {
-                modeHandler.initialize(map, activateHandlers);
+                modeHandler.initialize(activateHandlers);
             }
 
             // mathematical integration
             try {
                 beforeIntegration(getInitialState(), tEnd);
-                integrator.integrate(mathODE, t1);
+                integrator.integrate(mathODE, tEnd.durationFrom(getInitialState().getDate()));
                 afterIntegration();
             } catch (OrekitExceptionWrapper oew) {
                 throw oew.getException();
             }
 
             // get final state
-            final SpacecraftState finalState = stateMapper.mapArrayToState(mathODE.getTime(),
-                                                                           mathODE.getPrimaryState());
+            SpacecraftState finalState =
+                    stateMapper.mapArrayToState(mathODE.getTime(), mathODE.getPrimaryState());
+            finalState = updateAdditionalStates(finalState);
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final double[] secondary = mathODE.getSecondaryState(i);
+                finalState = finalState.addAdditionalState(additionalEquations.get(i).getName(),
+                                                           secondary);
+            }
             resetInitialState(finalState);
             setStartDate(finalState.getDate());
-
-            // get final additional state
-            for (final AdditionalEquationsAndData stateAndEqu : addEquationsAndData) {
-                final double[] addState = stateAndEqu.getData().getAdditionalState();
-                System.arraycopy(mathODE.getSecondaryState(stateAndEqu.getIndex()), 0,
-                                 addState, 0, addState.length);
-            }
 
             return finalState;
 
@@ -465,6 +463,38 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         } catch (MathIllegalStateException mise) {
             throw PropagationException.unwrap(mise);
         }
+    }
+
+    /** Create an ODE with all equations.
+     * @param integ numerical integrator to use for propagation.
+     * @return a new ode
+     * @exception OrekitException if initial state cannot be mapped
+     */
+    private ExpandableStatefulODE createODE(final AbstractIntegrator integ)
+        throws OrekitException {
+
+        // retrieve initial state
+        final double[] initialStateVector  = new double[getBasicDimension()];
+        stateMapper.mapStateToArray(getInitialState(), initialStateVector);
+
+        // main part of the ODE
+        final ExpandableStatefulODE ode =
+                new ExpandableStatefulODE(new ConvertedMainStateEquations(getMainStateEquations(integ)));
+        ode.setTime(0.0);
+        ode.setPrimaryState(initialStateVector);
+
+        // secondary part of the ODE
+        for (int i = 0; i < additionalEquations.size(); ++i) {
+            final AdditionalEquations additional = additionalEquations.get(i);
+            final double[] data = getInitialState().getAdditionalState(additional.getName());
+            final SecondaryEquations secondary =
+                    new ConvertedSecondaryStateEquations(additional, data.length);
+            ode.addSecondaryEquations(secondary);
+            ode.setSecondaryState(i, data);
+        }
+
+        return ode;
+
     }
 
     /** Method called just before integration.
@@ -497,6 +527,81 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
      */
     public int getBasicDimension() {
         return 7;
+
+    }
+
+    /** Get a complete state with all additional equations.
+     * @param t current value of the independent <I>time</I> variable
+     * @param y array containing the current value of the state vector
+     * @return complete state
+     * @exception OrekitException if state cannot be mapped
+     */
+    private SpacecraftState getCompleteState(final double t, final double[] y)
+        throws OrekitException {
+
+        // main state
+        SpacecraftState state = stateMapper.mapArrayToState(t, y);
+
+        // pre-integrated additional states
+        state = updateAdditionalStates(state);
+
+        // additional states integrated here
+        if (!additionalEquations.isEmpty()) {
+
+            if (mathODE.getTotalDimension() <= y.length) {
+                // the provided y vector already contains everything needed
+                final EquationsMapper[] em = mathODE.getSecondaryMappers();
+                for (int i = 0; i < additionalEquations.size(); ++i) {
+                    final double[] secondary = new double[em[i].getDimension()];
+                    System.arraycopy(y, em[i].getFirstIndex(), secondary, 0, secondary.length);
+                    state = state.addAdditionalState(additionalEquations.get(i).getName(),
+                                                     secondary);
+                }
+            } else {
+                // the y array doesn't contain the additional equations data
+
+                // TODO: remove this case when MATH-965 fix is officially published
+                // (i.e for the next Apache Commons Math version after 3.2)
+                // The fix for MATH-965 ensures that y always contains all
+                // needed data, including additional states, so the workaround
+                // below will not be needed anymore
+
+                if (mathInterpolator == null) {
+                    // we are still in the first step, before the step handler call
+                    // we build a temporary interpolator just for this step
+                    final double step = FastMath.abs(integrator.getCurrentSignedStepsize());
+                    final ClassicalRungeKuttaIntegrator firstStepIntegrator =
+                            new ClassicalRungeKuttaIntegrator(step);
+                    firstStepIntegrator.addStepHandler(new StepHandler() {
+
+                        /** {@inheritDoc} */
+                        public void init(final double t0, final double[] y0, final double t) {
+                        }
+
+                        /** {@inheritDoc} */
+                        public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
+                            mathInterpolator = interpolator;
+                        }
+
+                    });
+                    final ExpandableStatefulODE localODE = createODE(firstStepIntegrator);
+                    firstStepIntegrator.clearEventHandlers();
+                    firstStepIntegrator.integrate(localODE, step);
+                }
+
+                // extract the additional data from the spied interpolator
+                mathInterpolator.setInterpolatedTime(t);
+                for (int i = 0; i < additionalEquations.size(); ++i) {
+                    final double[] secondary = mathInterpolator.getInterpolatedSecondaryState(i);
+                    state = state.addAdditionalState(additionalEquations.get(i).getName(),
+                                                     secondary);
+                }
+
+            }
+
+        }
+
+        return state;
 
     }
 
@@ -538,7 +643,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                final SpacecraftState currentState = stateMapper.mapArrayToState(t, y);
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, y);
+                currentState = updateAdditionalStates(currentState);
 
                 // compute main state differentials
                 final double[] mainDot = main.computeDerivatives(currentState);
@@ -589,11 +695,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                final SpacecraftState currentState = stateMapper.mapArrayToState(t, primary);
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary);
+                currentState = updateAdditionalStates(currentState);
+                currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
                 // compute additional derivatives
                 final double[] additionalMainDot =
-                        equations.computeDerivatives(currentState, secondary, secondaryDot);
+                        equations.computeDerivatives(currentState, secondaryDot);
                 if (additionalMainDot != null) {
                     // the additional equations have an effect on main equations
                     for (int i = 0; i < additionalMainDot.length; ++i) {
@@ -628,7 +736,9 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void init(final double t0, final double[] y0, final double t) {
             try {
-                detector.init(stateMapper.mapArrayToState(t0, y0), stateMapper.mapDoubleToDate(t));
+
+                detector.init(getCompleteState(t0, y0), stateMapper.mapDoubleToDate(t));
+
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -637,7 +747,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public double g(final double t, final double[] y) {
             try {
-                return detector.g(stateMapper.mapArrayToState(t, y));
+                return detector.g(getCompleteState(t, y));
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -647,7 +757,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public Action eventOccurred(final double t, final double[] y, final boolean increasing) {
             try {
 
-                final SpacecraftState state = stateMapper.mapArrayToState(t, y);
+                final SpacecraftState state = getCompleteState(t, y);
                 final EventDetector.Action whatNext = detector.eventOccurred(state, increasing);
 
                 switch (whatNext) {
@@ -668,9 +778,20 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void resetState(final double t, final double[] y) {
             try {
-                final SpacecraftState oldState = stateMapper.mapArrayToState(t, y);
+                final SpacecraftState oldState = getCompleteState(t, y);
                 final SpacecraftState newState = detector.resetState(oldState);
+
+                // main part
                 stateMapper.mapStateToArray(newState, y);
+
+                // secondary part
+                final EquationsMapper[] em = mathODE.getSecondaryMappers();
+                for (int i = 0; i < additionalEquations.size(); ++i) {
+                    final double[] secondary =
+                            newState.getAdditionalState(additionalEquations.get(i).getName());
+                    System.arraycopy(secondary, 0, y, em[i].getFirstIndex(), secondary.length);
+                }
+
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -688,14 +809,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Underlying handler. */
         private final OrekitStepHandler handler;
 
-        /** Map of additional equations indices. */
-        private Map<String, Integer> map;
-
         /** Flag for handler . */
         private boolean activate;
-
-        /** Underlying raw rawInterpolator. */
-        private StepInterpolator rawInterpolator;
 
         /** Build an instance.
          * @param handler underlying handler to wrap
@@ -705,16 +820,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void initialize(final Map<String, Integer> additionalEquationsMap,
-                               final boolean activateHandlers) {
-            this.map      = additionalEquationsMap;
+        public void initialize(final boolean activateHandlers) {
             this.activate = activateHandlers;
         }
 
         /** {@inheritDoc} */
         public void init(final double t0, final double[] y0, final double t) {
             try {
-                handler.init(stateMapper.mapArrayToState(t0, y0), stateMapper.mapDoubleToDate(t));
+                handler.init(getCompleteState(t0, y0), stateMapper.mapDoubleToDate(t));
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -723,7 +836,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
             try {
-                this.rawInterpolator = interpolator;
+                mathInterpolator = interpolator;
                 if (activate) {
                     handler.handleStep(this, isLast);
                 }
@@ -736,14 +849,14 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @return current grid date
          */
         public AbsoluteDate getCurrentDate() {
-            return stateMapper.mapDoubleToDate(rawInterpolator.getCurrentTime());
+            return stateMapper.mapDoubleToDate(mathInterpolator.getCurrentTime());
         }
 
         /** Get the previous grid date.
          * @return previous grid date
          */
         public AbsoluteDate getPreviousDate() {
-            return stateMapper.mapDoubleToDate(rawInterpolator.getPreviousTime());
+            return stateMapper.mapDoubleToDate(mathInterpolator.getPreviousTime());
         }
 
         /** Get the interpolated date.
@@ -755,7 +868,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @see #getInterpolatedState()
          */
         public AbsoluteDate getInterpolatedDate() {
-            return stateMapper.mapDoubleToDate(rawInterpolator.getInterpolatedTime());
+            return stateMapper.mapDoubleToDate(mathInterpolator.getInterpolatedTime());
         }
 
         /** Set the interpolated date.
@@ -766,7 +879,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          * @see #getInterpolatedState()
          */
         public void setInterpolatedDate(final AbsoluteDate date) {
-            rawInterpolator.setInterpolatedTime(stateMapper.mapDateToDouble(date));
+            mathInterpolator.setInterpolatedTime(stateMapper.mapDateToDouble(date));
         }
 
         /** Get the interpolated state.
@@ -777,53 +890,33 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
          */
         public SpacecraftState getInterpolatedState() throws OrekitException {
             try {
-                return stateMapper.mapArrayToState(rawInterpolator.getInterpolatedTime(),
-                                                   rawInterpolator.getInterpolatedState());
-            } catch (OrekitExceptionWrapper oew) {
-                if (oew.getException() instanceof PropagationException) {
-                    throw (PropagationException) oew.getException();
-                } else {
-                    throw new PropagationException(oew.getException());
-                }
-            }
-        }
 
-        /** {@inheritDoc} */
-        public double[] getInterpolatedAdditionalState(final String name)
-            throws OrekitException {
-
-            try {
-
-                // get portion of additional state to update
-                if (map.containsKey(name)) {
-                    return rawInterpolator.getInterpolatedSecondaryState(map.get(name));
+                SpacecraftState s =
+                        stateMapper.mapArrayToState(mathInterpolator.getInterpolatedTime(),
+                                                    mathInterpolator.getInterpolatedState());
+                s = updateAdditionalStates(s);
+                for (int i = 0; i < additionalEquations.size(); ++i) {
+                    final double[] secondary = mathInterpolator.getInterpolatedSecondaryState(i);
+                    s = s.addAdditionalState(additionalEquations.get(i).getName(), secondary);
                 }
 
-                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_EQUATION, name);
+                return s;
 
             } catch (OrekitExceptionWrapper oew) {
-                if (oew.getException() instanceof PropagationException) {
-                    throw (PropagationException) oew.getException();
-                } else {
-                    throw new PropagationException(oew.getException());
-                }
+                throw oew.getException();
             }
-
         }
 
         /** Check is integration direction is forward in date.
          * @return true if integration is forward in date
          */
         public boolean isForward() {
-            return rawInterpolator.isForward();
+            return mathInterpolator.isForward();
         }
 
     }
 
     private class EphemerisModeHandler implements ModeHandler, StepHandler {
-
-        /** Map of additional equations indices. */
-        private Map<String, Integer> map;
 
         /** Underlying raw mathematical model. */
         private ContinuousOutputModel model;
@@ -841,9 +934,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public void initialize(final Map<String, Integer> additionalEquationsMap,
-                               final boolean activateHandlers) {
-            this.map      = additionalEquationsMap;
+        public void initialize(final boolean activateHandlers) {
             this.activate = activateHandlers;
             this.model    = new ContinuousOutputModel();
 
@@ -881,9 +972,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                             maxDate = stateMapper.mapDoubleToDate(tF);
                         }
 
+                        // store the names of additional states
+                        final String[] names = new String[additionalEquations.size()];
+                        for (int i = 0; i < names.length; ++i) {
+                            names[i] = additionalEquations.get(i).getName();
+                        }
                         // create the ephemeris
+                        // TODO: add the providers for already integrated additional states
                         ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                            stateMapper, map, model);
+                                                            stateMapper, model,
+                                                            getAdditionalStateProviders(), names);
 
                     }
                 }
@@ -895,61 +993,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void init(final double t0, final double[] y0, final double t) {
             model.init(t0, y0, t);
-        }
-
-    }
-
-    /** Container associating an {@link AdditionalEquations} and an {@link AdditionalStateData}. */
-    private static class AdditionalEquationsAndData {
-
-        /** Additional equations. */
-        private final AdditionalEquations equations;
-
-        /** Additional state and derivatives data. */
-        private final AdditionalStateData data;
-
-        /** Index of the additional equations in the expandable set. */
-        private int index;
-
-        /** Simple constructor.
-         * @param equations additional equations
-         */
-        public AdditionalEquationsAndData(final AdditionalEquations equations) {
-            this.equations = equations;
-            data = new AdditionalStateData(equations.getName());
-            index = -1;
-        }
-
-        /** Get the additional equations.
-         * @return additional equations
-         */
-        public AdditionalEquations getEquations() {
-            return equations;
-        }
-
-        /** Get the additional state.
-         * @return additional state
-         */
-        public AdditionalStateData getData() {
-            return data;
-        }
-
-        /** Set the index of the additional equations in the {@link
-         * org.apache.commons.math3.ode.ExpandableStatefulODE expandable set}.
-         * @param index index of the additional equations in the {@link
-         * org.apache.commons.math3.ode.ExpandableStatefulODE expandable set}
-         */
-        public void setIndex(final int index) {
-            this.index = index;
-        }
-
-        /** Get the index of the additional equations in the {@link
-         * org.apache.commons.math3.ode.ExpandableStatefulODE expandable set}.
-         * @return index of the additional equations in the {@link
-         * org.apache.commons.math3.ode.ExpandableStatefulODE expandable set}
-         */
-        public int getIndex() {
-            return index;
         }
 
     }

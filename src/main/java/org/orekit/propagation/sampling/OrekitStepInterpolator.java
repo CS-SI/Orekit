@@ -70,15 +70,6 @@ public interface OrekitStepInterpolator {
      */
     SpacecraftState getInterpolatedState() throws OrekitException;
 
-    /** Get the interpolated additional state corresponding to the additional equations.
-     * @param name name of the additional equations whose interpolated state is requested
-     * @return interpolated additional state at the current interpolation date
-     * @exception OrekitException if state cannot be interpolated or converted
-     * @see #getInterpolatedDate()
-     * @see #setInterpolatedDate(AbsoluteDate)
-     */
-    double[] getInterpolatedAdditionalState(String name) throws OrekitException;
-
     /** Check is integration direction is forward in date.
      * @return true if integration is forward in date
      */

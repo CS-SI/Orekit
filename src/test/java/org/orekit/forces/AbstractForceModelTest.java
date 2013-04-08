@@ -127,10 +127,9 @@ public abstract class AbstractForceModelTest {
             }
         }
 
-        propagator.setInitialState(state0);
         final String name = "pde";
         PartialDerivativesEquations pde = new PartialDerivativesEquations(name, propagator);
-        pde.setInitialJacobians(state0, 6, 0);
+        propagator.setInitialState(pde.setInitialJacobians(state0, 6, 0));
         final JacobiansMapper mapper = pde.getMapper();
         final double[][] dYdY0 = new double[6][6];
         propagator.setMasterMode(new OrekitStepHandler() {
@@ -144,9 +143,7 @@ public abstract class AbstractForceModelTest {
                     try {
                         // pick up final Jacobian
                         interpolator.setInterpolatedDate(interpolator.getCurrentDate());
-                        mapper.getStateJacobian(interpolator.getInterpolatedState(),
-                                                interpolator.getInterpolatedAdditionalState(name),
-                                                dYdY0);
+                        mapper.getStateJacobian(interpolator.getInterpolatedState(), dYdY0);
                     } catch (OrekitException oe) {
                         throw new PropagationException(oe);
                     }

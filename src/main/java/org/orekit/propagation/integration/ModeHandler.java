@@ -16,17 +16,14 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.Map;
-
 /** Common interface for all propagator mode handlers initialization.
  * @author Luc Maisonobe
  */
 public interface ModeHandler {
 
     /** Initialize the mode handler.
-     * @param map map of additional equations indices
      * @param activateHandlers if handlers shall be active
      */
-    void initialize(Map<String, Integer> map, boolean activateHandlers);
+    void initialize(boolean activateHandlers);
 
 }
