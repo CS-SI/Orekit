@@ -19,7 +19,9 @@ package org.orekit.propagation;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
@@ -204,6 +206,19 @@ public class SpacecraftStateTest {
         Assert.assertEquals( 1.0, extended.getAdditionalState("test-1")[0], 1.0e-15);
         Assert.assertEquals( 2.0, extended.getAdditionalState("test-1")[1], 1.0e-15);
         Assert.assertEquals(42.0, extended.getAdditionalState("test-2")[0], 1.0e-15);
+
+        // test various constructors
+        Map<String, double[]> map = new HashMap<String, double[]>();
+        map.put("test-3", new double[] { -6.0 });
+        SpacecraftState sO = new SpacecraftState(state.getOrbit(), map);
+        Assert.assertEquals(-6.0, sO.getAdditionalState("test-3")[0], 1.0e-15);
+        SpacecraftState sOA = new SpacecraftState(state.getOrbit(), state.getAttitude(), map);
+        Assert.assertEquals(-6.0, sOA.getAdditionalState("test-3")[0], 1.0e-15);
+        SpacecraftState sOM = new SpacecraftState(state.getOrbit(), state.getMass(), map);
+        Assert.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0], 1.0e-15);
+        SpacecraftState sOAM = new SpacecraftState(state.getOrbit(), state.getAttitude(), state.getMass(), map);
+        Assert.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0], 1.0e-15);
+
     }
 
     @Before
