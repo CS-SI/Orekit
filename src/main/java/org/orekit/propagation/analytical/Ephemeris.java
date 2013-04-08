@@ -119,7 +119,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         try {
             final SpacecraftState[] neighbors = cache.getNeighbors(date);
             return neighbors[0].interpolate(date, Arrays.asList(neighbors));
-        } catch (TimeStampedCacheException tce) {
+        } catch (OrekitException tce) {
             throw new PropagationException(tce);
         }
     }

@@ -17,9 +17,11 @@
 package org.orekit.propagation;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.attitudes.InertialProvider;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.events.EventDetector;
@@ -147,6 +149,29 @@ public interface Propagator extends PVCoordinatesProvider {
      */
     void resetInitialState(final SpacecraftState state)
         throws PropagationException;
+
+    /** Add a set of user-specified state parameters to be computed along with the orbit propagation.
+     * @param additionalStateProvider provider for additional state
+     * @exception OrekitException if an additional state with the same name is already present
+     */
+    void addAdditionalStateProvider(final AdditionalStateProvider additionalStateProvider)
+        throws OrekitException;
+
+    /** Get an unmodifiable list of providers for additional state.
+     * @return providers for the additional states
+     */
+    List<AdditionalStateProvider> getAdditionalStateProviders();
+
+    /** Check if an additional state is managed.
+     * @param name name of the additional state
+     * @return true if the additional state is managed
+     */
+    boolean isAdditionalStateManaged(final String name);
+
+    /** Get all the names of all managed states.
+     * @return names of all managed states
+     */
+    String[] getManagedStates();
 
     /** Add an event detector.
      * @param detector event detector to add

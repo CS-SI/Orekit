@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.orekit.propagation.analytical;
+package org.orekit.propagation;
 
 import org.orekit.errors.PropagationException;
-import org.orekit.propagation.SpacecraftState;
 
 /** This interface represents providers for additional state data beyond {@link SpacecraftState}.
  * <p>
