@@ -18,6 +18,8 @@ package org.orekit.time;
 
 import java.util.Collection;
 
+import org.orekit.errors.OrekitException;
+
 /** This interface represents objects that can be interpolated in time.
  * @param <T> Type of the object.
  * @author Luc Maisonobe
@@ -45,7 +47,9 @@ public interface TimeInterpolable<T extends TimeInterpolable<T>> {
      * @param date interpolation date
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
+     * @exception OrekitException if interpolation cannot be performed
      */
-    T interpolate(AbsoluteDate date, Collection<T> sample);
+    T interpolate(AbsoluteDate date, Collection<T> sample)
+        throws OrekitException;
 
 }
