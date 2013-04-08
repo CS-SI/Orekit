@@ -334,8 +334,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     /** Propagate an orbit without any fancy features.
      * <p>This method is similar in spirit to the {@link #propagate} method,
      * except that it does <strong>not</strong> call any handler during
-     * propagation, nor any discrete events. It always stop exactly at
-     * the specified date.</p>
+     * propagation, nor any discrete events, not additional states. It always
+     * stop exactly at the specified date.</p>
      * @param date target date for propagation
      * @return state at specified date
      * @exception PropagationException if propagation cannot reach specified date
@@ -351,10 +351,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
                 getAttitudeProvider().getAttitude(pvProvider, date, orbit.getFrame());
 
             // build raw state
-            final SpacecraftState rawState = new SpacecraftState(orbit, attitude, getMass(date));
-
-            // take additional states into account
-            return updateAdditionalStates(rawState);
+            return new SpacecraftState(orbit, attitude, getMass(date));
 
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
@@ -535,8 +532,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public void setInterpolatedDate(final AbsoluteDate date) throws PropagationException {
 
-            // compute the raw spacecraft state
-            interpolatedState = basicPropagate(date);
+            // compute the basic spacecraft state
+            final SpacecraftState basicState = basicPropagate(date);
+
+            // add the additional states
+            interpolatedState = updateAdditionalStates(basicState);
 
         }
 
@@ -558,7 +558,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             throws PropagationException {
             globalCurrentDate = date;
             softCurrentDate   = globalCurrentDate;
-            forward     = globalCurrentDate.compareTo(globalPreviousDate) >= 0;
+            forward           = globalCurrentDate.compareTo(globalPreviousDate) >= 0;
             setInterpolatedDate(globalCurrentDate);
         }
 

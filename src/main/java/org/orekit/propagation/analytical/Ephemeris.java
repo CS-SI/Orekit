@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
@@ -53,8 +54,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** Last date in range. */
     private final AbsoluteDate maxDate;
 
-    /** reference frame. */
+    /** Reference frame. */
     private final Frame frame;
+
+    /** Names of the additional states. */
+    private final String[] additional;
 
     /** Thread-safe cache. */
     private final transient TimeStampedCache<SpacecraftState> cache;
@@ -62,11 +66,12 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** Constructor with tabulated states.
      * @param states tabulates states
      * @param interpolationPoints number of points to use in interpolation
+     * @exception OrekitException if some states have incompatible additional states
      * @exception MathIllegalArgumentException if the number of states is smaller than
      * the number of points to use in interpolation
      */
     public Ephemeris(final List<SpacecraftState> states, final int interpolationPoints)
-        throws MathIllegalArgumentException {
+        throws OrekitException, MathIllegalArgumentException {
 
         super(DEFAULT_LAW);
 
@@ -75,9 +80,18 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
                                                    states.size(), interpolationPoints);
         }
 
-        minDate = states.get(0).getDate();
+        final SpacecraftState s0 = states.get(0);
+        minDate = s0.getDate();
         maxDate = states.get(states.size() - 1).getDate();
-        frame = states.get(0).getFrame();
+        frame = s0.getFrame();
+
+        final Set<String> names0 = s0.getAdditionalStates().keySet();
+        additional = names0.toArray(new String[names0.size()]);
+
+        // check all states handle the same additional states
+        for (final SpacecraftState state : states) {
+            s0.ensureCompatibleAdditionalStates(state);
+        }
 
         // set up cache
         final TimeStampedGenerator<SpacecraftState> generator =
@@ -157,6 +171,36 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         return basicPropagate(getMinDate());
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public boolean isAdditionalStateManaged(final String name) {
+
+        // the additional state may be managed by a specific provider in the base class
+        if (super.isAdditionalStateManaged(name)) {
+            return true;
+        }
+
+        // the additional state may be managed in the states sample
+        for (final String a : additional) {
+            if (a.equals(name)) {
+                return true;
+            }
+        }
+
+        return false;
+
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String[] getManagedStates() {
+        final String[] upperManaged = super.getManagedStates();
+        final String[] managed = new String[upperManaged.length + additional.length];
+        System.arraycopy(upperManaged, 0, managed, 0, upperManaged.length);
+        System.arraycopy(additional, 0, managed, upperManaged.length, additional.length);
+        return managed;
+    }
+
     /** Replace the instance with a data transfer object for serialization.
      * <p>
      * This intermediate class serializes only the data needed for generation,
@@ -200,8 +244,13 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
          * @return replacement {@link Ephemeris}
          */
         private Object readResolve() {
-            // build a new provider, with an empty cache
-            return new Ephemeris(states, interpolationPoints);
+            try {
+                // build a new provider, with an empty cache
+                return new Ephemeris(states, interpolationPoints);
+            } catch (OrekitException oe) {
+                // this should never happen
+                throw OrekitException.createInternalError(oe);
+            }
         }
 
     }

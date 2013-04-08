@@ -32,13 +32,14 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.PropagationException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
@@ -62,12 +63,12 @@ public class TabulatedEphemerisTest {
         double OMEGA = FastMath.toRadians(261);
         double lv = 0;
 
-        AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
-                                                 TimeComponents.H00,
-                                                 TimeScalesFactory.getUTC());
-        AbsoluteDate finalDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
-                                                  TimeComponents.H00,
-                                                  TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2004, 01, 01),
+                                                       TimeComponents.H00,
+                                                       TimeScalesFactory.getUTC());
+        final AbsoluteDate finalDate = new AbsoluteDate(new DateComponents(2004, 01, 02),
+                                                        TimeComponents.H00,
+                                                        TimeScalesFactory.getUTC());
         double deltaT = finalDate.durationFrom(initDate);
 
         Orbit transPar = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
@@ -77,12 +78,36 @@ public class TabulatedEphemerisTest {
         EcksteinHechlerPropagator eck =
             new EcksteinHechlerPropagator(transPar, mass,
                                           ae, mu, c20, c30, c40, c50, c60);
+        AdditionalStateProvider provider = new AdditionalStateProvider() {
+            
+            public String getName() {
+                return "dt";
+            }
+            
+           public double[] getAdditionalState(SpacecraftState state) {
+                return new double[] { state.getDate().durationFrom(initDate) };
+            }
+        };
+        eck.addAdditionalStateProvider(provider);
+        try {
+            eck.addAdditionalStateProvider(provider);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.ADDITIONAL_STATE_NAME_ALREADY_IN_USE,
+                                oe.getSpecifier());
+        }
         List<SpacecraftState> tab = new ArrayList<SpacecraftState>(nbIntervals + 1);
         for (int j = 0; j<= nbIntervals; j++) {
             AbsoluteDate current = initDate.shiftedBy((j * deltaT) / nbIntervals);
             tab.add(eck.propagate(current));
         }
 
+        try {
+            new Ephemeris(tab, nbIntervals + 2);
+            Assert.fail("an exception should have been thrown");
+        } catch (MathIllegalArgumentException miae) {
+            // expected
+        }
         Ephemeris te = new Ephemeris(tab, 2);
 
         Assert.assertEquals(0.0, te.getMaxDate().durationFrom(finalDate), 1.0e-9);
@@ -174,7 +199,12 @@ public class TabulatedEphemerisTest {
 
     private void checkEphemerides(Propagator eph1, Propagator eph2, AbsoluteDate date,
                                   double threshold, boolean expectedBelow)
-        throws PropagationException {
+        throws OrekitException {
+
+        Assert.assertEquals(eph1.getManagedStates().length, eph2.getManagedStates().length);
+        for (String name : eph1.getManagedStates()) {
+            Assert.assertTrue(eph2.isAdditionalStateManaged(name));
+        }
         SpacecraftState state1 = eph1.propagate(date);
         SpacecraftState state2 = eph2.propagate(date);
         double maxError = FastMath.abs(state1.getA() - state2.getA());
@@ -183,6 +213,15 @@ public class TabulatedEphemerisTest {
         maxError = FastMath.max(maxError, FastMath.abs(state1.getHx() - state2.getHx()));
         maxError = FastMath.max(maxError, FastMath.abs(state1.getHy() - state2.getHy()));
         maxError = FastMath.max(maxError, FastMath.abs(state1.getLv() - state2.getLv()));
+        for (String name : eph1.getManagedStates()) {
+            double[] add1 = state1.getAdditionalState(name);
+            double[] add2 = state2.getAdditionalState(name);
+            Assert.assertEquals(add1.length, add2.length);
+            for (int i = 0; i < add1.length; ++i) {
+                maxError = FastMath.max(maxError, FastMath.abs(add1[i] - add2[i]));
+            }
+            Assert.assertTrue(eph2.isAdditionalStateManaged(name));
+        }
         if (expectedBelow) {
             Assert.assertTrue(maxError <= threshold);
         } else {

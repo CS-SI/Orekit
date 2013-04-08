@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -373,6 +374,44 @@ public class SpacecraftState
      */
     public boolean hasAdditionalState(final String name) {
         return additional.containsKey(name);
+    }
+
+    /** Check if two instances have the same set of additional states available.
+     * <p>
+     * Only the names and dimensions of the additional states are compared,
+     * not their values.
+     * </p>
+     * @param state state to compare to instance
+     * @exception OrekitException if either instance or state supports an additional
+     * state not supported by the other one
+     * @exception DimensionMismatchException if an additional state does not have
+     * the same dimension in both states
+     */
+    public void ensureCompatibleAdditionalStates(final SpacecraftState state)
+        throws OrekitException, DimensionMismatchException {
+
+        // check instance additional states is a subset of the other one
+        for (final Map.Entry<String, double[]> entry : additional.entrySet()) {
+            final double[] other = state.additional.get(entry.getKey());
+            if (other == null) {
+                throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                          entry.getKey());
+            }
+            if (other.length != entry.getValue().length) {
+                throw new DimensionMismatchException(other.length, entry.getValue().length);
+            }
+        }
+
+        if (state.additional.size() > additional.size()) {
+            // the other state has more additional states
+            for (final String name : state.additional.keySet()) {
+                if (!additional.containsKey(name)) {
+                    throw new OrekitException(OrekitMessages.UNKNOWN_ADDITIONAL_STATE,
+                                              name);
+                }
+            }
+        }
+
     }
 
     /** Get an additional state.

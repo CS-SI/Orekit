@@ -403,8 +403,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    protected MainStateEquations getMainStateEquations() {
-        return new Main();
+    protected MainStateEquations getMainStateEquations(final AbstractIntegrator integrator) {
+        return new Main(integrator);
     }
 
     /** Internal class for mean parameters integration. */
@@ -414,9 +414,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         private final double[] yDot;
 
         /** Simple constructor.
+         * @param integrator numerical integrator to use for propagation.
          */
-        public Main() {
+        public Main(final AbstractIntegrator integrator) {
             yDot = new double[7];
+            // TODO: add force models event detectors by calling
+            // setUpEventDetector(integrator, detector) from the parent class
         }
 
         /** {@inheritDoc} */

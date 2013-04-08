@@ -95,8 +95,8 @@ public class IntegratedEphemerisTest {
         numericalPropagator.setOrbitType(OrbitType.CARTESIAN);
         final PartialDerivativesEquations derivatives =
             new PartialDerivativesEquations(eqName, numericalPropagator);
-        final SpacecraftState initialState = new SpacecraftState(initialOrbit);
-        derivatives.setInitialJacobians(initialState, 6, 0);
+        final SpacecraftState initialState =
+                derivatives.setInitialJacobians(new SpacecraftState(initialOrbit), 6, 0);
         final JacobiansMapper mapper = derivatives.getMapper();
         numericalPropagator.setInitialState(initialState);
         numericalPropagator.propagate(initialOrbit.getDate().shiftedBy(3600.0));
@@ -112,10 +112,10 @@ public class IntegratedEphemerisTest {
             throws PropagationException {
                 try {
                     SpacecraftState state = interpolator.getInterpolatedState();
-                    double[] p = interpolator.getInterpolatedAdditionalState(eqName);
-                    Assert.assertEquals(mapper.getAdditionalStateDimension(), p.length);
-                    mapper.getStateJacobian(state, p, dYdY0.getDataRef());
-                    mapper.getParametersJacobian(state, p, null); // no parameters, this is a no-op and should work
+                    Assert.assertEquals(mapper.getAdditionalStateDimension(),
+                                        state.getAdditionalState(eqName).length);
+                    mapper.getStateJacobian(state, dYdY0.getDataRef());
+                    mapper.getParametersJacobian(state, null); // no parameters, this is a no-op and should work
                     RealMatrix deltaId = dYdY0.subtract(MatrixUtils.createRealIdentityMatrix(6));
                     Assert.assertTrue(deltaId.getNorm() >  100);
                     Assert.assertTrue(deltaId.getNorm() < 3100);

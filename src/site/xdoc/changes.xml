@@ -23,6 +23,18 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="add" >
+        Additional states can now be used in events. Note that waiting for the
+        fix for issue MATH-965 in Apache Commons Math to be been officially
+        published, a workaround has been used in Orekit. This workaround
+        implies that events that should be triggered based on additional equations
+        for integration-based propagator will be less accurate on the first step
+        (full accuracy is recovered once the first step is accepted).
+        So in these corner cases, users are advised to start propagation at least
+        one step before the first event (or to use a version of Apache Commons Math
+        that includes the fix, which has been added to the development version as
+        of r1465654). This change fixes feature request #134.
+      </action>
+      <action dev="luc" type="add" >
         AdditionalStateProviders can now be used for all propagators, not
         only analytical ones. Note that when both state providers and
         additional differential equations are used in an integration-based

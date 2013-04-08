@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -199,6 +200,26 @@ public class SpacecraftStateTest {
         } catch (OrekitException oe) {
             Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
             Assert.assertEquals(oe.getParts()[0], "test-1");
+        }
+        try {
+            state.ensureCompatibleAdditionalStates(extended);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assert.assertEquals(oe.getParts()[0], "test-1");
+        }
+        try {
+            extended.ensureCompatibleAdditionalStates(state);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(oe.getSpecifier(), OrekitMessages.UNKNOWN_ADDITIONAL_STATE);
+            Assert.assertEquals(oe.getParts()[0], "test-1");
+        }
+        try {
+            extended.ensureCompatibleAdditionalStates(extended.addAdditionalState("test-2", new double[7]));
+            Assert.fail("an exception should have been thrown");
+        } catch (DimensionMismatchException dme) {
+            Assert.assertEquals(dme.getArgument(), 7);
         }
         Assert.assertEquals(2, extended.getAdditionalStates().size());
         Assert.assertTrue(extended.hasAdditionalState("test-1"));

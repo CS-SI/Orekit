@@ -16,7 +16,7 @@
  */
 package org.orekit.propagation.integration;
 
-import java.util.Map;
+import java.util.List;
 
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.orekit.errors.OrekitException;
@@ -25,10 +25,10 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
-import org.orekit.propagation.analytical.AdditionalStateProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 
@@ -88,15 +88,16 @@ public class IntegratedEphemeris
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between raw double components and spacecraft state
-     * @param map map of additional equations indices
      * @param model underlying raw mathematical model
+     * @param providers providers for pre-integrated states
+     * @param equations names of additional equations
      * @exception OrekitException if several providers have the same name
      */
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
-                               final StateMapper mapper,
-                               final Map<String, Integer> map,
-                               final ContinuousOutputModel model)
+                               final StateMapper mapper, final ContinuousOutputModel model,
+                               final List<AdditionalStateProvider> providers,
+                               final String[] equations)
         throws OrekitException {
 
         super(mapper.getAttitudeProvider());
@@ -107,9 +108,14 @@ public class IntegratedEphemeris
         this.mapper    = mapper;
         this.model     = model;
 
+        // set up the pre-integrated providers
+        for (final AdditionalStateProvider provider : providers) {
+            addAdditionalStateProvider(provider);
+        }
+
         // set up providers to map the final elements of the model array to additional states
-        for (Map.Entry<String, Integer> entry : map.entrySet()) {
-            addAdditionalStateProvider(new LocalProvider(entry.getKey(), entry.getValue()));
+        for (int i = 0; i < equations.length; ++i) {
+            addAdditionalStateProvider(new LocalProvider(equations[i], i));
         }
 
     }
@@ -139,11 +145,13 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
+    @Override
     protected SpacecraftState basicPropagate(final AbsoluteDate date)
         throws PropagationException {
         try {
             setInterpolationDate(date);
-            return mapper.mapArrayToState(model.getInterpolatedTime(), model.getInterpolatedState());
+            return mapper.mapArrayToState(model.getInterpolatedTime(),
+                                          model.getInterpolatedState());
         } catch (OrekitExceptionWrapper oew) {
             if (oew.getException() instanceof PropagationException) {
                 throw (PropagationException) oew.getException();

@@ -108,7 +108,7 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 final int paramSize = getFreeParameters().size();
                 final PartialDerivativesEquations pde = new PartialDerivativesEquations("pde", prop);
                 pde.selectParameters(getFreeParameters().toArray(new String[0]));
-                pde.setInitialJacobians(prop.getInitialState(), stateSize, paramSize);
+                prop.setInitialState(pde.setInitialJacobians(prop.getInitialState(), stateSize, paramSize));
                 final JacobiansMapper mapper  = pde.getMapper();
                 final JacobianHandler handler = new JacobianHandler(mapper);
                 prop.setMasterMode(handler);
@@ -182,9 +182,8 @@ public class JacobianPropagatorConverter extends AbstractPropagatorConverter {
                 if (isLast) {
                     interpolator.setInterpolatedDate(interpolator.getCurrentDate());
                     final SpacecraftState state = interpolator.getInterpolatedState();
-                    final double[] p = interpolator.getInterpolatedAdditionalState(mapper.getName());
-                    mapper.getStateJacobian(state, p, dYdY0);
-                    mapper.getParametersJacobian(state, p, dYdP);
+                    mapper.getStateJacobian(state, dYdY0);
+                    mapper.getParametersJacobian(state, dYdP);
                 }
             } catch (PropagationException pe) {
                 throw pe;
