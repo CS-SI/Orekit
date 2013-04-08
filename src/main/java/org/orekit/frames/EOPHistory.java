@@ -18,17 +18,11 @@ package org.orekit.frames;
 
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeStamped;
 
 /** Interface for retrieving Earth Orientation Parameters history throughout a large time range.
  * @author Luc Maisonobe
  */
-public interface EOPHistory extends Iterable<TimeStamped> {
-
-    /** Get the number of entries in the history.
-     * @return number of entries in the history
-     */
-    int size();
+public interface EOPHistory {
 
     /** Get the date of the first available Earth Orientation Parameters.
      * @return the start date of the available data

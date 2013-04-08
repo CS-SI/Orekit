@@ -35,11 +35,11 @@ import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 
 
-public class TimeStampedCacheTest {
+public class GenericTimeStampedCacheTest {
 
     @Test
     public void testSingleCall() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(10, 3600.0, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(10, 3600.0, 13);
         List<AbsoluteDate> list = new ArrayList<AbsoluteDate>();
         list.add(AbsoluteDate.GALILEO_EPOCH);
         Assert.assertEquals(1, checkDatesSingleThread(list, cache));
@@ -52,8 +52,8 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testPastInfinityRange() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache =
-                new TimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.PAST_INFINITY,
                                                                  AbsoluteDate.J2000_EPOCH,
                                                                  10.0), AbsoluteDate.class);
@@ -74,8 +74,8 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testFutureInfinityRange() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache =
-                new TimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.MODIFIED_JULIAN_EPOCH,
                                                                  AbsoluteDate.FUTURE_INFINITY, 10.0),
                                                    AbsoluteDate.class);
@@ -95,8 +95,8 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testInfinityRange() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache =
-                new TimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    new Generator(AbsoluteDate.PAST_INFINITY,
                                                                  AbsoluteDate.FUTURE_INFINITY,
                                                                  10.0), AbsoluteDate.class);
@@ -111,7 +111,7 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testRegularCalls() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
         Assert.assertEquals(2000, testMultipleSingleThread(cache, new SequentialMode(), 2));
         Assert.assertEquals(56, cache.getGenerateCalls());
         Assert.assertEquals(0, cache.getSlotsEvictions());
@@ -119,7 +119,7 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testAlternateCallsGoodConfiguration() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(2, 3600, 13);
         Assert.assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
         Assert.assertEquals(56, cache.getGenerateCalls());
         Assert.assertEquals(0, cache.getSlotsEvictions());
@@ -127,7 +127,7 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testAlternateCallsBadConfiguration() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(1, 3600, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(1, 3600, 13);
         Assert.assertEquals(2000, testMultipleSingleThread(cache, new AlternateMode(), 2));
         Assert.assertEquals(8000, cache.getGenerateCalls());
         Assert.assertEquals(1999, cache.getSlotsEvictions());
@@ -135,7 +135,7 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testRandomCallsGoodConfiguration() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(30, 3600, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(30, 3600, 13);
         Assert.assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
         Assert.assertTrue(cache.getGenerateCalls() < 250);
         Assert.assertEquals(0, cache.getSlotsEvictions());
@@ -143,7 +143,7 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testRandomCallsBadConfiguration() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
         Assert.assertEquals(5000, testMultipleSingleThread(cache, new RandomMode(64394632125212l), 5));
         Assert.assertTrue(cache.getGenerateCalls()  > 400);
         Assert.assertTrue(cache.getSlotsEvictions() > 300);
@@ -151,7 +151,7 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testMultithreadedGoodConfiguration() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(50, 3600, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(50, 3600, 13);
         int n = testMultipleMultiThread(cache, new AlternateMode(), 50, 30);
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
                           " (n = " + n + ", calls = " + cache.getGenerateCalls() +
@@ -165,7 +165,7 @@ public class TimeStampedCacheTest {
 
     @Test
     public void testMultithreadedBadConfiguration() throws TimeStampedCacheException {
-        TimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(3, 3600, 13);
         int n = testMultipleMultiThread(cache, new AlternateMode(), 50, 100);
         Assert.assertTrue("this test may fail randomly due to multi-threading non-determinism" +
                           " (n = " + n + ", calls = " + cache.getGenerateCalls() +
@@ -180,7 +180,7 @@ public class TimeStampedCacheTest {
     @Test
     public void testSmallShift() throws TimeStampedCacheException {
         double hour = 3600;
-        TimeStampedCache<AbsoluteDate> cache = createCache(10, hour, 13);
+        GenericTimeStampedCache<AbsoluteDate> cache = createCache(10, hour, 13);
         Assert.assertEquals(0, cache.getSlots());
         Assert.assertEquals(0, cache.getEntries());
         final AbsoluteDate start = AbsoluteDate.GALILEO_EPOCH;
@@ -233,7 +233,7 @@ public class TimeStampedCacheTest {
                 return new ArrayList<AbsoluteDate>();
             }
         };
-        new TimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                            nullGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH);
     }
 
@@ -246,7 +246,7 @@ public class TimeStampedCacheTest {
                 return Arrays.asList(AbsoluteDate.J2000_EPOCH);
             }
         };
-        new TimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                            nullGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(-10));
     }
 
@@ -259,7 +259,7 @@ public class TimeStampedCacheTest {
                 return Arrays.asList(AbsoluteDate.J2000_EPOCH);
             }
         };
-        new TimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        new GenericTimeStampedCache<AbsoluteDate>(2, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                            nullGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH.shiftedBy(+10));
     }
 
@@ -276,7 +276,7 @@ public class TimeStampedCacheTest {
             }
         };
 
-        new TimeStampedCache<AbsoluteDate>(3, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        new GenericTimeStampedCache<AbsoluteDate>(3, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                            reversedGenerator, AbsoluteDate.class).getNeighbors(AbsoluteDate.J2000_EPOCH);
 
     }
@@ -314,12 +314,12 @@ public class TimeStampedCacheTest {
 
         };
  
-        final TimeStampedCache<AbsoluteDate> cache =
-                new TimeStampedCache<AbsoluteDate>(5, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
+        final GenericTimeStampedCache<AbsoluteDate> cache =
+                new GenericTimeStampedCache<AbsoluteDate>(5, 10, Constants.JULIAN_YEAR, Constants.JULIAN_DAY,
                                                    duplicatingGenerator, AbsoluteDate.class);
 
         final AbsoluteDate start = AbsoluteDate.GALILEO_EPOCH;
-        final AbsoluteDate[] firstSet = cache.getNeighbors(start);
+        final AbsoluteDate[] firstSet = cache.getNeighbors(start).toArray(new AbsoluteDate[0]);
         Assert.assertEquals(5, firstSet.length);
         Assert.assertEquals(4, cache.getGenerateCalls());
         Assert.assertEquals(8, cache.getEntries());
@@ -327,7 +327,7 @@ public class TimeStampedCacheTest {
             Assert.assertEquals(step, firstSet[i].durationFrom(firstSet[i - 1]), 1.0e-10);
         }
 
-        final AbsoluteDate[] secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step));
+        final AbsoluteDate[] secondSet = cache.getNeighbors(cache.getLatest().shiftedBy(10 * step)).toArray(new AbsoluteDate[0]);
         Assert.assertEquals(5, secondSet.length);
         Assert.assertEquals(7, cache.getGenerateCalls());
         Assert.assertEquals(20, cache.getEntries());
@@ -337,7 +337,7 @@ public class TimeStampedCacheTest {
 
     }
 
-    private int testMultipleSingleThread(TimeStampedCache<AbsoluteDate> cache, Mode mode, int slots)
+    private int testMultipleSingleThread(GenericTimeStampedCache<AbsoluteDate> cache, Mode mode, int slots)
         throws TimeStampedCacheException {
         double step = ((Generator) cache.getGenerator()).getStep();
         AbsoluteDate[] base = new AbsoluteDate[slots];
@@ -348,7 +348,7 @@ public class TimeStampedCacheTest {
         return checkDatesSingleThread(mode.generateDates(base, 25 * step, 0.025 * step), cache);
     }
 
-    private int testMultipleMultiThread(TimeStampedCache<AbsoluteDate> cache, Mode mode,
+    private int testMultipleMultiThread(GenericTimeStampedCache<AbsoluteDate> cache, Mode mode,
                                         int slots, int threadPoolSize)
         throws TimeStampedCacheException {
         double step = ((Generator) cache.getGenerator()).getStep();
@@ -360,25 +360,25 @@ public class TimeStampedCacheTest {
         return checkDatesMultiThread(mode.generateDates(base, 25 * step, 0.025 * step), cache, threadPoolSize);
     }
 
-    private TimeStampedCache<AbsoluteDate> createCache(int maxSlots, double step, int neighborsSize) {
+    private GenericTimeStampedCache<AbsoluteDate> createCache(int maxSlots, double step, int neighborsSize) {
         Generator generator =
                 new Generator(AbsoluteDate.J2000_EPOCH.shiftedBy(-Constants.JULIAN_CENTURY),
                               AbsoluteDate.J2000_EPOCH.shiftedBy(+Constants.JULIAN_CENTURY),
                               step);
-        return new TimeStampedCache<AbsoluteDate>(neighborsSize, maxSlots, Constants.JULIAN_YEAR,
+        return new GenericTimeStampedCache<AbsoluteDate>(neighborsSize, maxSlots, Constants.JULIAN_YEAR,
                                                   Constants.JULIAN_DAY, generator, AbsoluteDate.class);
     }
 
     private int checkDatesSingleThread(final List<AbsoluteDate> centralDates,
-                                       final TimeStampedCache<AbsoluteDate> cache)
+                                       final GenericTimeStampedCache<AbsoluteDate> cache)
         throws TimeStampedCacheException {
 
         final int n = cache.getNeighborsSize();
         final double step = ((Generator) cache.getGenerator()).getStep();
 
         for (final AbsoluteDate central : centralDates) {
-            final AbsoluteDate[] neighbors = cache.getNeighbors(central);
-            Assert.assertEquals(n, neighbors.length);
+            final List<AbsoluteDate> neighbors = cache.getNeighbors(central);
+            Assert.assertEquals(n, neighbors.size());
             for (final AbsoluteDate date : neighbors) {
                 Assert.assertTrue(date.durationFrom(central) >= -(n + 1) * step);
                 Assert.assertTrue(date.durationFrom(central) <= n * step);
@@ -390,7 +390,7 @@ public class TimeStampedCacheTest {
     }
 
     private int checkDatesMultiThread(final List<AbsoluteDate> centralDates,
-                                      final TimeStampedCache<AbsoluteDate> cache,
+                                      final GenericTimeStampedCache<AbsoluteDate> cache,
                                       final int threadPoolSize)
         throws TimeStampedCacheException {
 
@@ -404,8 +404,8 @@ public class TimeStampedCacheTest {
             executorService.execute(new Runnable() {
                 public void run() {
                     try {
-                        final AbsoluteDate[] neighbors = cache.getNeighbors(central);
-                        Assert.assertEquals(n, neighbors.length);
+                        final List<AbsoluteDate> neighbors = cache.getNeighbors(central);
+                        Assert.assertEquals(n, neighbors.size());
                         for (final AbsoluteDate date : neighbors) {
                             if (date.durationFrom(central) < -(n + 1) * step ||
                                 date.durationFrom(central) > n * step) {

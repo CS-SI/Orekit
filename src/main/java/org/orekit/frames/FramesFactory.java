@@ -18,13 +18,16 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.OrekitConfiguration;
@@ -96,6 +99,21 @@ import org.orekit.utils.OrekitConfiguration;
  * The classical paradigm used prior to IERS conventions 2010 (and 2003) is equinox based and
  * uses more intermediate frames. Only some of these frames are supported in Orekit.
  * </p>
+ * <h5> Earth Orientation Parameters </h5>
+ * <p>
+ * The Earth Orientation Parameters (EOP) needed for accurate transformations
+ * between inertial and Earth fixed frames are loaded from the
+ * {@link org.orekit.data.DataProvidersManager}. When EOP should be applied,
+ * but EOP data are not available, then an null (0.0) correction is used. This
+ * can occur when no EOP data is loaded, or when the requested date is beyond
+ * the time span of the loaded EOP data. Using a null correction can result in
+ * coarse accuracy. To check the time span covered by EOP data use
+ * {@link #getEOP2000History()}, {@link EOPHistory#getStartDate()}, and
+ * {@link EOPHistory#getEndDate()}.
+ * <p>
+ * For more on configuring the EOP data Orekit uses see
+ * <a href="https://www.orekit.org/forge/projects/orekit/wiki/Configuration">
+ * https://www.orekit.org/forge/projects/orekit/wiki/Configuration</a>.
  * <p>
  * Here is a schematic representation of the predefined reference frames tree:
  * </p>
@@ -256,13 +274,15 @@ public class FramesFactory implements Serializable {
      * @exception OrekitException if the data cannot be loaded
      */
     public static EOP1980History getEOP1980History() throws OrekitException {
-        final EOP1980History history = new EOP1980History();
+        //TimeStamped based set needed to remove duplicates
+        final Collection<EOP1980Entry> data = new TreeSet<EOP1980Entry>(new ChronologicalComparator());
         if (EOP_1980_LOADERS.isEmpty()) {
             addDefaultEOP1980HistoryLoaders(null, null, null, null);
         }
         for (final EOP1980HistoryLoader loader : EOP_1980_LOADERS) {
-            loader.fillHistory(history);
+            loader.fillHistory1980(data);
         }
+        final EOP1980History history = new EOP1980History(data);
         history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
         return history;
     }
@@ -340,13 +360,15 @@ public class FramesFactory implements Serializable {
      * @exception OrekitException if the data cannot be loaded
      */
     public static EOP2000History getEOP2000History() throws OrekitException {
-        final EOP2000History history = new EOP2000History();
+        //TimeStamped based set needed to remove duplicates
+        final Collection<EOP2000Entry> data = new TreeSet<EOP2000Entry>(new ChronologicalComparator());
         if (EOP_2000_LOADERS.isEmpty()) {
             addDefaultEOP2000HistoryLoaders(null, null, null, null);
         }
         for (final EOP2000HistoryLoader loader : EOP_2000_LOADERS) {
-            loader.fillHistory(history);
+            loader.fillHistory2000(data);
         }
+        final EOP2000History history = new EOP2000History(data);
         history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
         return history;
     }

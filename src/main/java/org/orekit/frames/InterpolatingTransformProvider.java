@@ -19,13 +19,12 @@ package org.orekit.frames;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.TimeStampedCache;
+import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
 
 /** Transform provider using thread-safe interpolation on transforms sample.
@@ -36,7 +35,7 @@ import org.orekit.utils.TimeStampedGenerator;
  * derivatives can be used, the derivatives will be added appropriately
  * by the interpolation process.
  * </p>
- * @see TimeStampedCache
+ * @see GenericTimeStampedCache
  * @author Luc Maisonobe
  */
 public class InterpolatingTransformProvider implements TransformProvider {
@@ -63,7 +62,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     private final double step;
 
     /** Cache for sample points. */
-    private final transient TimeStampedCache<Transform> cache;
+    private final transient GenericTimeStampedCache<Transform> cache;
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
@@ -76,11 +75,11 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * @param gridPoints number of interpolation grid points
      * @param step grid points time step
      * @param maxSlots maximum number of independent cached time slots
-     * in the {@link TimeStampedCache time-stamped cache}
+     * in the {@link GenericTimeStampedCache time-stamped cache}
      * @param maxSpan maximum duration span in seconds of one slot
-     * in the {@link TimeStampedCache time-stamped cache}
+     * in the {@link GenericTimeStampedCache time-stamped cache}
      * @param newSlotInterval time interval above which a new slot is created
-     * in the {@link TimeStampedCache time-stamped cache}
+     * in the {@link GenericTimeStampedCache time-stamped cache}
      */
     public InterpolatingTransformProvider(final TransformProvider rawProvider,
                                           final boolean useVelocities, final boolean useRotationRates,
@@ -93,7 +92,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         this.earliest         = earliest;
         this.latest           = latest;
         this.step             = step;
-        this.cache            = new TimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
+        this.cache            = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
                                                                 new Generator(), Transform.class);
     }
 
@@ -109,10 +108,10 @@ public class InterpolatingTransformProvider implements TransformProvider {
         try {
 
             // retrieve a sample from the thread-safe cache
-            final Transform[] sample = cache.getNeighbors(date);
+            final List<Transform> sample = cache.getNeighbors(date);
 
             // interpolate to specified date
-            return Transform.interpolate(date, useVelocities, useRotationRates, Arrays.asList(sample));
+            return Transform.interpolate(date, useVelocities, useRotationRates, sample);
 
         } catch (OrekitExceptionWrapper oew) {
             // something went wrong while generating the sample,
@@ -182,11 +181,11 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * @param gridPoints number of interpolation grid points
          * @param step grid points time step
          * @param maxSlots maximum number of independent cached time slots
-         * in the {@link TimeStampedCache time-stamped cache}
+         * in the {@link GenericTimeStampedCache time-stamped cache}
          * @param maxSpan maximum duration span in seconds of one slot
-         * in the {@link TimeStampedCache time-stamped cache}
+         * in the {@link GenericTimeStampedCache time-stamped cache}
          * @param newSlotInterval time interval above which a new slot is created
-         * in the {@link TimeStampedCache time-stamped cache}
+         * in the {@link GenericTimeStampedCache time-stamped cache}
          */
         private DataTransferObject(final TransformProvider rawProvider,
                                    final boolean useVelocities, final boolean useRotationRates,

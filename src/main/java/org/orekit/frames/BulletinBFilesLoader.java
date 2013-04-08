@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -34,7 +35,7 @@ import org.orekit.time.Month;
 import org.orekit.utils.Constants;
 
 /** Loader for bulletin B files.
- * <p>Bulletin B files contain {@link TimeStampedEntry
+ * <p>Bulletin B files contain {@link EOPEntry
  * Earth Orientation Parameters} for a few months periods.</p>
  * <p>The bulletin B files are recognized thanks to their base names,
  * which must match one of the the patterns <code>bulletinb_IAU2000-###.txt</code>,
@@ -216,10 +217,10 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     private int mjdMax;
 
     /** History entries for IAU1980. */
-    private EOP1980History history1980;
+    private Collection<? super EOP1980Entry> history1980;
 
     /** History entries for IAU2000. */
-    private EOP2000History history2000;
+    private Collection<? super EOP2000Entry> history2000;
 
     /** Build a loader for IERS bulletins B files.
     * @param supportedNames regular expression for supported files names
@@ -293,7 +294,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                         Double.isNaN(array[4]) || Double.isNaN(array[5])) {
                         notifyUnexpectedErrorEncountered(name);
                     }
-                    history1980.addEntry(new EOP1980Entry(mjd, array[0], array[1], array[2], array[3], array[4], array[5]));
+                    history1980.add(new EOP1980Entry(mjd, array[0], array[1], array[2], array[3], array[4], array[5]));
                 }
 
             }
@@ -389,10 +390,10 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                     if (history1980 != null) {
                         final double dpsi = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
                         final double deps = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        history1980.addEntry(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
+                        history1980.add(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
                     }
                     if (history2000 != null) {
-                        history2000.addEntry(new EOP2000Entry(date, dtu1, lod, x, y));
+                        history2000.add(new EOP2000Entry(date, dtu1, lod, x, y));
                     }
                     if (date >= mjdMax) {
                         // don't bother reading the rest of the file
@@ -518,7 +519,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP1980History history)
+    public void fillHistory1980(final Collection<? super EOP1980Entry> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = history;
@@ -528,7 +529,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP2000History history)
+    public void fillHistory2000(final Collection<? super EOP2000Entry> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = null;

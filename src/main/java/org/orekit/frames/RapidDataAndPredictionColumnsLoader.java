@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,7 +30,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 
 /** Loader for IERS rapid data and prediction files in columns format (finals file).
- * <p>Rapid data and prediction files contain {@link TimeStampedEntry
+ * <p>Rapid data and prediction files contain {@link EOPEntry
  * Earth Orientation Parameters} for several years periods, in one file
  * only that is updated regularly.</p>
  * <p>
@@ -117,10 +118,10 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
     private static final Pattern NUTATION_PATTERN = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
 
     /** History entries for IAU1980. */
-    private EOP1980History       history1980;
+    private Collection<? super EOP1980Entry> history1980;
 
     /** History entries for IAU2000. */
-    private EOP2000History       history2000;
+    private Collection<? super EOP2000Entry> history2000;
 
     /** File supported name. */
     private String               supportedNames;
@@ -238,11 +239,11 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
 
             synchronized (this) {
                 if (history1980 != null) {
-                    history1980.addEntry(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
+                    history1980.add(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
                 }
 
                 if (history2000 != null) {
-                    history2000.addEntry(new EOP2000Entry(date, dtu1, lod, x, y));
+                    history2000.add(new EOP2000Entry(date, dtu1, lod, x, y));
                 }
             }
 
@@ -250,7 +251,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP1980History history) throws OrekitException {
+    public void fillHistory1980(final Collection<? super EOP1980Entry> history) throws OrekitException {
         synchronized (this) {
             history1980 = history;
             history2000 = null;
@@ -259,7 +260,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP2000History history) throws OrekitException {
+    public void fillHistory2000(final Collection<? super EOP2000Entry> history) throws OrekitException {
         synchronized (this) {
             history1980 = null;
             history2000 = history;

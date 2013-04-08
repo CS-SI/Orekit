@@ -17,7 +17,6 @@
 package org.orekit.propagation.analytical;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
@@ -31,11 +30,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
-import org.orekit.utils.OrekitConfiguration;
+import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedCache;
-import org.orekit.utils.TimeStampedGenerator;
 
 /** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
@@ -57,7 +53,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     private final Frame frame;
 
     /** Thread-safe cache. */
-    private final transient TimeStampedCache<SpacecraftState> cache;
+    private final transient ImmutableTimeStampedCache<SpacecraftState> cache;
 
     /** Constructor with tabulated states.
      * @param states tabulates states
@@ -80,18 +76,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         frame = states.get(0).getFrame();
 
         // set up cache
-        final TimeStampedGenerator<SpacecraftState> generator =
-                new TimeStampedGenerator<SpacecraftState>() {
-                    /** {@inheritDoc} */
-                    public List<SpacecraftState> generate(final SpacecraftState existing, final AbsoluteDate date) {
-                        return states;
-                    }
-                };
-        cache = new TimeStampedCache<SpacecraftState>(interpolationPoints,
-                                                      OrekitConfiguration.getCacheSlotsNumber(),
-                                                      Double.POSITIVE_INFINITY, Constants.JULIAN_DAY,
-                                                      generator, SpacecraftState.class);
-
+        cache = new ImmutableTimeStampedCache<SpacecraftState>(interpolationPoints, states);
     }
 
     /** Get the first date of the range.
@@ -117,8 +102,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     /** {@inheritDoc} */
     public SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
         try {
-            final SpacecraftState[] neighbors = cache.getNeighbors(date);
-            return neighbors[0].interpolate(date, Arrays.asList(neighbors));
+            final List<SpacecraftState> neighbors = cache.getNeighbors(date);
+            return neighbors.get(0).interpolate(date, neighbors);
         } catch (TimeStampedCacheException tce) {
             throw new PropagationException(tce);
         }
@@ -166,13 +151,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        try {
-            return new DataTransferObject(cache.getGenerator().generate(null, null),
-                                          cache.getNeighborsSize());
-        } catch (TimeStampedCacheException tce) {
-            // this should never happen
-            throw OrekitException.createInternalError(tce);
-        }
+        return new DataTransferObject(cache.getAll(), cache.getNeighborsSize());
     }
 
     /** Internal class used only for serialization. */

@@ -26,6 +26,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 import org.orekit.utils.OrekitConfiguration;
+import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.TimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
 
@@ -191,7 +192,7 @@ public class TidalCorrection {
     public TidalCorrection() {
 
         // create cache
-        cache = new TimeStampedCache<CorrectionData>(INTERPOLATION_POINTS,
+        cache = new GenericTimeStampedCache<CorrectionData>(INTERPOLATION_POINTS,
                                                      OrekitConfiguration.getCacheSlotsNumber(),
                                                      Constants.JULIAN_YEAR, 7 * Constants.JULIAN_DAY,
                                                      new Generator(), CorrectionData.class);
@@ -211,12 +212,12 @@ public class TidalCorrection {
             final int n    = INTERPOLATION_POINTS;
             final int nM12 = (n - 1) / 2;
 
-            final CorrectionData[] corrections = cache.getNeighbors(date);
+            final List<CorrectionData> corrections = cache.getNeighbors(date);
 
             // copy points to a temporary array
             final double[] dtNeville = new double[n];
             for (int i = 0; i < n; i++) {
-                dtNeville[i] = corrections[i].dt;
+                dtNeville[i] = corrections.get(i).dt;
             }
 
             // interpolate corrections using Neville's algorithm
@@ -250,14 +251,15 @@ public class TidalCorrection {
             final int n    = INTERPOLATION_POINTS;
             final int nM12 = (n - 1) / 2;
 
-            final CorrectionData[] corrections = this.cache.getNeighbors(date);
+            final List<CorrectionData> corrections = this.cache.getNeighbors(date);
 
             // copy points to a temporary array
             final double[] dxNeville = new double[n];
             final double[] dyNeville = new double[n];
             for (int i = 0; i < n; i++) {
-                dxNeville[i] = corrections[i].dx;
-                dyNeville[i] = corrections[i].dy;
+                final CorrectionData correction = corrections.get(i);
+                dxNeville[i] = correction.dx;
+                dyNeville[i] = correction.dy;
             }
 
             // interpolate corrections using Neville's algorithm
@@ -446,7 +448,7 @@ public class TidalCorrection {
         }
     }
 
-    /** Generates {@link Correction}s for a {@link TimeStampedCache}.
+    /** Generates {@link CorrectionData} for a {@link GenericTimeStampedCache}.
      */
     private static class Generator implements TimeStampedGenerator<CorrectionData> {
 

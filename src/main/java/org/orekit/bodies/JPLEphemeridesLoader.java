@@ -45,7 +45,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.TimeStampedCache;
+import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.TimeStampedGenerator;
 
 /** Loader for JPL ephemerides binary files (DE 4xx) and similar formats (INPOP 06/08/10).
@@ -186,7 +186,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
     private final String supportedNames;
 
     /** Ephemeris for selected body. */
-    private final TimeStampedCache<PosVelChebyshev> ephemerides;
+    private final GenericTimeStampedCache<PosVelChebyshev> ephemerides;
 
     /** Constants defined in the file. */
     private final AtomicReference<Map<String, Double>> constants;
@@ -250,7 +250,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             loadType = generateType;
         }
 
-        ephemerides = new TimeStampedCache<PosVelChebyshev>(2, OrekitConfiguration.getCacheSlotsNumber(),
+        ephemerides = new GenericTimeStampedCache<PosVelChebyshev>(2, OrekitConfiguration.getCacheSlotsNumber(),
                 Double.POSITIVE_INFINITY, FIFTY_DAYS,
                 new EphemerisParser(), PosVelChebyshev.class);
         maxChunksDuration = Double.NaN;
@@ -1013,7 +1013,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             // get raw PV from Chebyshev polynomials
             PosVelChebyshev chebyshev;
             try {
-                chebyshev = ephemerides.getNeighbors(date)[0];
+                chebyshev = ephemerides.getNeighbors(date).get(0);
             } catch (TimeStampedCacheException tce) {
                 // we cannot bracket the date, check if the last available chunk covers the specified date
                 chebyshev = ephemerides.getLatest();

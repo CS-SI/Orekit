@@ -18,6 +18,8 @@ package org.orekit.frames;
 
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,35 +35,36 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        EOP2000History history = new EOP2000History();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory2000(history);
         Assert.assertTrue(getMaxGap(history) > 5);
     }
 
     @Test
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        EOP2000History history = new EOP2000History();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory2000(history);
         Assert.assertEquals(new AbsoluteDate(2005, 12, 5, TimeScalesFactory.getUTC()),
-                            history.getStartDate());
+                            new EOP2000History(history).getStartDate());
     }
 
     @Test
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        EOP2000History history = new EOP2000History();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory2000(history);
         Assert.assertTrue(getMaxGap(history) < 5);
         Assert.assertEquals(new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC()),
-                            history.getEndDate());
+                            new EOP2000History(history).getEndDate());
     }
 
     @Test
     public void testNewFormatNominal() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        EOP1980History history = new EOP1980History();
-        new BulletinBFilesLoader("bulletinb.270").fillHistory(history);
+        List<EOP1980Entry> data = new ArrayList<EOP1980Entry>();
+        new BulletinBFilesLoader("bulletinb.270").fillHistory1980(data);
+        EOP1980History history = new EOP1980History(data);
         Assert.assertEquals(new AbsoluteDate(2010, 6, 2, TimeScalesFactory.getUTC()),
                             history.getStartDate());
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
@@ -71,8 +74,9 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testOldFormatContent() throws OrekitException, ParseException {
         setRoot("regular-data");
-        EOP2000History history = new EOP2000History();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> data = new ArrayList<EOP2000Entry>();
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory2000(data);
+        EOP2000History history = new EOP2000History(data);
         AbsoluteDate date = new AbsoluteDate(2006, 1, 11, 12, 0, 0, TimeScalesFactory.getUTC());
         Assert.assertEquals(msToS(  (-3 * 0.073    + 27 * -0.130   + 27 * -0.244   - 3 * -0.264)   / 48), history.getLOD(date), 1.0e-10);
         Assert.assertEquals(        (-3 * 0.333275 + 27 * 0.333310 + 27 * 0.333506 - 3 * 0.333768) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
@@ -83,8 +87,9 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testNewFormatContent() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        EOP1980History history = new EOP1980History();
-        new BulletinBFilesLoader("bulletinb.270").fillHistory(history);
+        List<EOP1980Entry> data = new ArrayList<EOP1980Entry>();
+        new BulletinBFilesLoader("bulletinb.270").fillHistory1980(data);
+        EOP1980History history = new EOP1980History(data);
         AbsoluteDate date = new AbsoluteDate(2010, 6, 12, 12, 0, 0, TimeScalesFactory.getUTC());
         Assert.assertEquals(msToS((   -3 *   0.1202 + 27 *   0.0294 + 27 *   0.0682 - 3 *   0.1531) / 48), history.getLOD(date), 1.0e-10);
         Assert.assertEquals(msToS((   -3 * -57.1711 + 27 * -57.2523 + 27 * -57.3103 - 3 * -57.4101) / 48), history.getUT1MinusUTC(date), 1.0e-10);
@@ -109,15 +114,15 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test(expected=OrekitException.class)
     public void testNewFormatTruncated() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        EOP1980History history = new EOP1980History();
-        new BulletinBFilesLoader("bulletinb-truncated.270").fillHistory(history);
+        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
+        new BulletinBFilesLoader("bulletinb-truncated.270").fillHistory1980(history);
     }
 
     @Test(expected=OrekitException.class)
     public void testNewFormatInconsistent() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        EOP1980History history = new EOP1980History();
-        new BulletinBFilesLoader("bulletinb-inconsistent.270").fillHistory(history);
+        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
+        new BulletinBFilesLoader("bulletinb-inconsistent.270").fillHistory1980(history);
     }
 
 }

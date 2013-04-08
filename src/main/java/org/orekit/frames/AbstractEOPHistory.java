@@ -17,23 +17,16 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.Constants;
-import org.orekit.utils.OrekitConfiguration;
-import org.orekit.utils.TimeStampedCache;
-import org.orekit.utils.TimeStampedGenerator;
+import org.orekit.utils.ImmutableTimeStampedCache;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
  * @author Pascal Parraud
@@ -46,55 +39,55 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     /** Number of points to use in interpolation. */
     private static final int INTERPOLATION_POINTS = 4;
 
-    /** Earth Orientation Parameter entries. */
-    private final SortedSet<TimeStamped> entries;
+    /**
+     * If this history has any EOP data.
+     *
+     * @see #hasDataFor(AbsoluteDate)
+     */
+    private final boolean hasData;
 
     /** EOP history entries. */
-    private final TimeStampedCache<EOPEntry> cache;
+    private final ImmutableTimeStampedCache<EOPEntry> cache;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param data the EOP data to use
      */
-    protected AbstractEOPHistory() {
-        entries = new TreeSet<TimeStamped>(new ChronologicalComparator());
-        cache   = new TimeStampedCache<EOPEntry>(INTERPOLATION_POINTS,
-                                                 OrekitConfiguration.getCacheSlotsNumber(), Constants.JULIAN_YEAR,
-                                                 30 * Constants.JULIAN_DAY,
-                                                 new Generator(), EOPEntry.class);
-    }
-
-    /** Add an Earth Orientation Parameters entry.
-     * @param entry entry to add
-     */
-    public void addEntry(final EOPEntry entry) {
-        entries.add(entry);
-    }
-
-    /** {@inheritDoc} */
-    public Iterator<TimeStamped> iterator() {
-        return entries.iterator();
-    }
-
-    /** {@inheritDoc} */
-    public int size() {
-        return cache.getEntries();
+    protected AbstractEOPHistory(final Collection<? extends EOPEntry> data) {
+        if (data.size() >= INTERPOLATION_POINTS) {
+            // enough data to interpolate
+            cache = new ImmutableTimeStampedCache<EOPEntry>(INTERPOLATION_POINTS, data);
+            hasData = true;
+        } else {
+            // not enough data to interpolate -> always use null correction
+            cache = ImmutableTimeStampedCache.emptyCache();
+            hasData = false;
+        }
     }
 
     /** {@inheritDoc} */
     public AbsoluteDate getStartDate() {
-        return entries.first().getDate();
+        return this.cache.getEarliest().getDate();
     }
 
     /** {@inheritDoc} */
     public AbsoluteDate getEndDate() {
-        return entries.last().getDate();
+        return this.cache.getLatest().getDate();
     }
 
     /** {@inheritDoc} */
     public double getUT1MinusUTC(final AbsoluteDate date) {
+        //check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default 0.0 offset
+            return 0.0;
+        }
+        //we have EOP data -> interpolate offset
         try {
-            final EOPEntry[] neighbors = getNeighbors(date);
+            final List<EOPEntry> neighbors = getNeighbors(date);
             final HermiteInterpolator interpolator = new HermiteInterpolator();
-            final double firstDUT = neighbors[0].getUT1MinusUTC();
+            final double firstDUT = neighbors.get(0).getUT1MinusUTC();
             boolean beforeLeap = true;
             for (final EOPEntry neighbor : neighbors) {
                 final double dut;
@@ -115,22 +108,33 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             final double interpolated = interpolator.value(0)[0];
             return beforeLeap ? interpolated : interpolated + 1.0;
         } catch (TimeStampedCacheException tce) {
-            // no EOP data available for this date, we use a default 0.0 offset
-            return 0.0;
+            //this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
         }
     }
 
-    /** Get the entries surrounding a central date.
+    /**
+     * Get the entries surrounding a central date.
+     * <p>
+     * See {@link #hasDataFor(AbsoluteDate)} to determine if the cache has data
+     * for {@code central} without throwing an exception.
+     *
      * @param central central date
      * @return array of cached entries surrounding specified date
      * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
-    protected EOPEntry[] getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
+    protected List<EOPEntry> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
         return cache.getNeighbors(central);
     }
 
     /** {@inheritDoc} */
     public double getLOD(final AbsoluteDate date) {
+        //check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return 0.0;
+        }
+        //we have EOP data for date -> interpolate correction
         try {
             final HermiteInterpolator interpolator = new HermiteInterpolator();
             for (final EOPEntry entry : getNeighbors(date)) {
@@ -141,8 +145,8 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             }
             return interpolator.value(0)[0];
         } catch (TimeStampedCacheException tce) {
-            // no EOP data available for this date, we use a default null correction
-            return 0.0;
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
         }
     }
 
@@ -153,6 +157,12 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return PoleCorrection.NULL_CORRECTION;
+        }
+        //we have EOP data for date -> interpolate correction
         try {
             final HermiteInterpolator interpolator = new HermiteInterpolator();
             for (final EOPEntry entry : getNeighbors(date)) {
@@ -164,8 +174,8 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             final double[] interpolated = interpolator.value(0);
             return new PoleCorrection(interpolated[0], interpolated[1]);
         } catch (TimeStampedCacheException tce) {
-            // no EOP data available for this date, we use a default null correction
-            return PoleCorrection.NULL_CORRECTION;
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
         }
     }
 
@@ -175,13 +185,12 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
      */
     public void checkEOPContinuity(final double maxGap) throws OrekitException {
         TimeStamped preceding = null;
-        for (final TimeStamped current : entries) {
+        for (final TimeStamped current : this.cache.getAll()) {
 
             // compare the dates of preceding and current entries
             if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
                 throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
                                           preceding.getDate(), current.getDate());
-
             }
 
             // prepare next iteration
@@ -190,52 +199,21 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
         }
     }
 
-    /** Local generator for entries. */
-    private class Generator implements TimeStampedGenerator<EOPEntry> {
-
-        /** {@inheritDoc} */
-        public List<EOPEntry> generate(final EOPEntry existing, final AbsoluteDate date)
-            throws TimeStampedCacheException {
-
-            final List<EOPEntry> generated = new ArrayList<EOPEntry>();
-
-            // depending on the user provided EOP file, entry points are expected to
-            // be every day or every 5 days, using 5 days is a safe margin
-            final double timeMargin = 5 * Constants.JULIAN_DAY;
-            final AbsoluteDate start;
-            final AbsoluteDate end;
-            if (existing == null) {
-                start = date.shiftedBy(-INTERPOLATION_POINTS * timeMargin);
-                end   = date.shiftedBy(INTERPOLATION_POINTS * timeMargin);
-            } else if (existing.getDate().compareTo(date) <= 0) {
-                start = existing.getDate();
-                end   = date.shiftedBy(INTERPOLATION_POINTS * timeMargin);
-            } else {
-                start = date.shiftedBy(-INTERPOLATION_POINTS * timeMargin);
-                end   = existing.getDate();
-            }
-
-            // gather entries in the interval from existing to date (with some margins)
-            for (TimeStamped ts : entries.tailSet(start).headSet(end)) {
-                generated.add((EOPEntry) ts);
-            }
-
-            if (generated.isEmpty()) {
-                if (entries.isEmpty()) {
-                    throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER, date);
-                } else if (entries.last().getDate().compareTo(date) < 0) {
-                    throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_AFTER,
-                                                        entries.last().getDate());
-                } else {
-                    throw new TimeStampedCacheException(OrekitMessages.UNABLE_TO_GENERATE_NEW_DATA_BEFORE,
-                                                        entries.first().getDate());
-                }
-            }
-
-            return generated;
-
-        }
-
+    /**
+     * Check if the cache has data for the given date using
+     * {@link #getStartDate()} and {@link #getEndDate()}.
+     *
+     * @param date the requested date
+     * @return true if the {@link #cache} has data for the requested date, false
+     *         otherwise.
+     */
+    protected boolean hasDataFor(final AbsoluteDate date) {
+        /*
+         * when there is no EOP data, short circuit getStartDate, which will
+         * throw an exception
+         */
+        return this.hasData && this.getStartDate().compareTo(date) <= 0 &&
+               date.compareTo(this.getEndDate()) <= 0;
     }
 
 }

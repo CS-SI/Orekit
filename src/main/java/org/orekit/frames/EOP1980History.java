@@ -16,7 +16,10 @@
  */
 package org.orekit.frames;
 
+import java.util.Collection;
+
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.orekit.errors.OrekitException;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 
@@ -28,9 +31,14 @@ public class EOP1980History extends AbstractEOPHistory {
     /** Serializable UID. */
     private static final long serialVersionUID = 3003752420705950441L;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param data the {@link EOP1980Entry} data to include in this history.
+     * @see AbstractEOPHistory#AbstractEOPHistory(Collection)
      */
-    public EOP1980History() {
+    public EOP1980History(final Collection<? extends EOP1980Entry> data) {
+        super(data);
     }
 
     /** Get the correction to the nutation parameters.
@@ -40,6 +48,12 @@ public class EOP1980History extends AbstractEOPHistory {
      * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
      */
     public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return NutationCorrection.NULL_CORRECTION;
+        }
+        //we have EOP data for date -> interpolate correction
         try {
             final HermiteInterpolator interpolator = new HermiteInterpolator();
             for (final EOPEntry entry : getNeighbors(date)) {
@@ -52,8 +66,8 @@ public class EOP1980History extends AbstractEOPHistory {
             final double[] interpolated = interpolator.value(0);
             return new NutationCorrection(interpolated[0], interpolated[1]);
         } catch (TimeStampedCacheException tce) {
-            // no EOP data available for this date, we use a default null correction
-            return NutationCorrection.NULL_CORRECTION;
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
         }
     }
 

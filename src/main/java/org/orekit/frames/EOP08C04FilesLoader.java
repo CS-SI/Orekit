@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataProvidersManager;
@@ -29,7 +30,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
 
 /** Loader for EOP 08 C04 files.
- * <p>EOP 08 C04 files contain {@link TimeStampedEntry
+ * <p>EOP 08 C04 files contain {@link EOPEntry
  * Earth Orientation Parameters} consistent with ITRF2008 for one year periods.</p>
  * <p>The EOP 08 C04 files are recognized thanks to their base names, which
  * must match one of the the patterns <code>eopc04_IAU2000.##</code> or
@@ -91,10 +92,10 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
     private final Pattern linePattern;
 
     /** History entries for IAU1980. */
-    private EOP1980History history1980;
+    private Collection<? super EOP1980Entry> history1980;
 
     /** History entries for IAU2000. */
-    private EOP2000History history2000;
+    private Collection<? super EOP2000Entry> history2000;
 
     /** Build a loader for IERS EOP 08 C04 files.
      * @param supportedNames regular expression for supported files names
@@ -156,10 +157,10 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                     final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
                     if (history1980 != null) {
-                        history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                        history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                     }
                     if (history2000 != null) {
-                        history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                        history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
                     }
                     parsed = true;
 
@@ -180,7 +181,7 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP1980History history)
+    public void fillHistory1980(final Collection<? super EOP1980Entry> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = history;
@@ -190,7 +191,7 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP2000History history)
+    public void fillHistory2000(final Collection<? super EOP2000Entry> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = null;

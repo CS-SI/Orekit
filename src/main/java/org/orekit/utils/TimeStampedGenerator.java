@@ -22,16 +22,16 @@ import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
-/** Generator to use for creating entries in {@link TimeStampedCache time stamped caches}.
+/** Generator to use for creating entries in {@link GenericTimeStampedCache time stamped caches}.
  * <p>
- * As long as a generator is referenced by one {@link TimeStampedCache cache} only, it is
+ * As long as a generator is referenced by one {@link GenericTimeStampedCache cache} only, it is
  * guaranteed to be called in a thread-safe way, even if the cache is used in a multi-threaded
  * environment. The cache takes care of scheduling the calls to all the methods defined in
  * this interface so only one thread uses them at any time. There is no need for the
  * implementing classes to handle synchronization or locks by themselves.
  * </p>
  * <p>
- * The generator is provided by the user of the {@link TimeStampedCache cache} and should
+ * The generator is provided by the user of the {@link GenericTimeStampedCache cache} and should
  * be consistent with the way he will use the cached data.
  * </p>
  * <p>
@@ -71,7 +71,7 @@ public interface TimeStampedGenerator<T extends TimeStamped> {
      * </p>
      * <p>
      * Non-coverage of the minimum range may lead to a loss of data, as the gap will
-     * not be filled by the {@link TimeStampedCache} in subsequent calls.
+     * not be filled by the {@link GenericTimeStampedCache} in subsequent calls.
      * </p>
      * <p>
      * The generated entries <em>must</em> be chronologically sorted.

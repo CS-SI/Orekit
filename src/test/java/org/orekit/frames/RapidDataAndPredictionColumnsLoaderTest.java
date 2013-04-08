@@ -18,6 +18,8 @@ package org.orekit.frames;
 
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -34,35 +36,36 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     @Test
     public void testStartDateDaily1980() throws OrekitException, ParseException {
         setRoot("rapid-data-columns");
-        EOP1980History history = new EOP1980History();
-        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory(history);
+        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
+        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory1980(history);
         Assert.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
-                            history.getStartDate());
+                            new EOP1980History(history).getStartDate());
     }
 
     @Test
     public void testEndDateDaily1980() throws OrekitException, ParseException {
         setRoot("rapid-data-columns");
-        EOP1980History history = new EOP1980History();
-        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory(history);
+        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
+        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory1980(history);
         Assert.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
-                            history.getEndDate());
+                            new EOP1980History(history).getEndDate());
     }
 
     @Test
     public void testStartDateDaily2000() throws OrekitException, ParseException {
         setRoot("rapid-data-columns");
-        EOP1980History history = new EOP1980History();
-        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory(history);
-        Assert.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
-                            history.getEndDate());
+        List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory2000(history);
+        Assert.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
+                            new EOP2000History(history).getStartDate());
     }
 
     @Test
     public void testMissingColumnsPadding1980() throws OrekitException, ParseException {
         setRoot("rapid-data-columns");
-        EOP1980History history = new EOP1980History();
-        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory(history);
+        List<EOP1980Entry> data = new ArrayList<EOP1980Entry>();
+        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistory1980(data);
+        EOP1980History history = new EOP1980History(data);
 
         // after 2011-06-01, the example daily file has no columns for Bulletin B data
         // we don't see anything since we ignore the columns from Bulletin B
@@ -106,8 +109,9 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     @Test
     public void testMissingColumnsPadding2000() throws OrekitException, ParseException {
         setRoot("rapid-data-columns");
-        EOP2000History history = new EOP2000History();
-        new RapidDataAndPredictionColumnsLoader("^finals2000A\\.daily$").fillHistory(history);
+        final List<EOP2000Entry> data = new ArrayList<EOP2000Entry>();
+        new RapidDataAndPredictionColumnsLoader("^finals2000A\\.daily$").fillHistory2000(data);
+        EOP2000History history = new EOP2000History(data);
 
         // after 2011-06-01, the example daily file has no columns for Bulletin B data
         // we don't see anything since we ignore the columns from Bulletin B
@@ -139,10 +143,9 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
     @Test
     public void testEndDateDaily2000() throws OrekitException, ParseException {
         setRoot("rapid-data-columns");
-        EOP2000History history = new EOP2000History();
-        new RapidDataAndPredictionColumnsLoader("^finals2000A\\.daily$").fillHistory(history);
+        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new RapidDataAndPredictionColumnsLoader("^finals2000A\\.daily$").fillHistory2000(history);
         Assert.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
-                            history.getEndDate());
+                            new EOP2000History(history).getEndDate());
     }
-
 }

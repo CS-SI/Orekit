@@ -19,6 +19,7 @@ package org.orekit.frames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collection;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -36,7 +37,7 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /** Loader for IERS rapid data and prediction file in XML format (finals file).
- * <p>Rapid data and prediction file contain {@link TimeStampedEntry
+ * <p>Rapid data and prediction file contain {@link EOPEntry
  * Earth Orientation Parameters} for several years periods, in one file
  * only that is updated regularly.</p>
  * <p>The XML EOP files are recognized thanks to their base names, which
@@ -60,10 +61,10 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     private final String supportedNames;
 
     /** History entries for IAU1980. */
-    private EOP1980History history1980;
+    private Collection<? super EOP1980Entry> history1980;
 
     /** History entries for IAU2000. */
-    private EOP2000History history2000;
+    private Collection<? super EOP2000Entry> history2000;
 
     /** Build a loader for IERS XML EOP files.
      * @param supportedNames regular expression for supported files names
@@ -101,7 +102,7 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP1980History history)
+    public void fillHistory1980(final Collection<? super EOP1980Entry> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = history;
@@ -111,7 +112,7 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     }
 
     /** {@inheritDoc} */
-    public void fillHistory(final EOP2000History history)
+    public void fillHistory2000(final Collection<? super EOP2000Entry> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = null;
@@ -316,12 +317,12 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
                     (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
                 }
             }
         }
@@ -360,12 +361,12 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
                     (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.addEntry(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.addEntry(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
                 }
             }
         }

@@ -20,7 +20,7 @@ import org.apache.commons.math3.exception.util.ExceptionContextProvider;
 import org.apache.commons.math3.exception.util.Localizable;
 
 /** This class is the base class for all specific exceptions thrown by
- * during the {@link org.orekit.utils.TimeStampedCache}.
+ * during the {@link org.orekit.utils.GenericTimeStampedCache}.
  *
  * @author Luc Maisonobe
  */

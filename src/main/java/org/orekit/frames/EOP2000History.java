@@ -16,18 +16,27 @@
  */
 package org.orekit.frames;
 
+import java.util.Collection;
 
-/** This class holds Earth Orientation Parameters (IAU2000) data throughout a large time range.
+/**
+ * This class holds Earth Orientation Parameters (IAU2000) data throughout a
+ * large time range.
+ *
  * @author Pascal Parraud
  */
-public class EOP2000History extends AbstractEOPHistory {
+public class EOP2000History
+    extends AbstractEOPHistory {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 7042823586838112732L;
 
-    /** Simple constructor.
+    /**
+     * Simple constructor.
+     *
+     * @param data the EOP data to use.
      */
-    public EOP2000History() {
+    public EOP2000History(final Collection<? extends EOP2000Entry> data) {
+        super(data);
     }
 
 }

@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.util.Collection;
+
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 
@@ -28,6 +30,7 @@ public interface EOP1980HistoryLoader extends DataLoader {
      * @param history history to fill up
      * @throws OrekitException if the history cannot be loaded
      */
-    void fillHistory(EOP1980History history) throws OrekitException;
+    void fillHistory1980(Collection<? super EOP1980Entry> history)
+        throws OrekitException;
 
 }

@@ -18,6 +18,8 @@ package org.orekit.frames;
 
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,34 +35,35 @@ public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        EOP2000History history = new EOP2000History();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory2000(history);
         Assert.assertTrue(getMaxGap(history) > 5);
     }
 
     @Test
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        EOP2000History history = new EOP2000History();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory2000(history);
         Assert.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
-                            history.getStartDate());
+                            new EOP2000History(history).getStartDate());
     }
 
     @Test
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        EOP2000History history = new EOP2000History();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory2000(history);
         Assert.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
-                            history.getEndDate());
+                            new EOP2000History(history).getEndDate());
     }
 
     @Test
     public void testContent() throws OrekitException, ParseException {
         setRoot("regular-data");
-        EOP2000History history = new EOP2000History();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(history);
+        List<EOP2000Entry> data = new ArrayList<EOP2000Entry>();
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory2000(data);
+        EOP2000History history = new EOP2000History(data);
         AbsoluteDate date = new AbsoluteDate(2003, 1, 7, 12, 0, 0, TimeScalesFactory.getUTC());
         Assert.assertEquals(        (9 * ( 0.0007777 +  0.0008565) - ( 0.0005883 +  0.0008758)) / 16,  history.getLOD(date), 1.0e-10);
         Assert.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);
