@@ -251,7 +251,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
     private double[] getEclipseAngles(final Vector3D position,
                                       final Frame frame,
                                       final AbsoluteDate date)
-            throws OrekitException {
+        throws OrekitException {
         final double[] angle = new double[3];
 
         final Vector3D satSunVector = sun.getPVCoordinates(date, frame).getPosition().subtract(position);
