@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 
@@ -92,4 +93,11 @@ public interface DSSTForceModel {
      */
     double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
         throws OrekitException;
+
+    /** Get the discrete events related to the model.
+     * @return array of events detectors or null if the model is not
+     * related to any discrete events
+     */
+    EventDetector[] getEventsDetectors();
+
 }

@@ -23,6 +23,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
@@ -303,6 +304,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
                                                final double[] meanElements) throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
+    }
+
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        return null;
     }
 
     /** Compute potential derivatives.

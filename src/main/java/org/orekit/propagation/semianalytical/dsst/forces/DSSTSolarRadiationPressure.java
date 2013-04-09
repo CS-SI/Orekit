@@ -21,6 +21,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -121,6 +122,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
+    }
+
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        // TODO: add eclipses handling
+        return null;
     }
 
     /** {@inheritDoc} */

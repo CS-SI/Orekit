@@ -30,6 +30,7 @@ import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvide
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
@@ -308,6 +309,11 @@ class TesseralContribution implements DSSTForceModel {
         throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
+    }
+
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        return null;
     }
 
     /** Get the resonant tesseral terms in the central body spherical harmonic field.

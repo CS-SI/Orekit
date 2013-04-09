@@ -48,6 +48,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.conversion.OsculatingToMeanElementsConverter;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -418,8 +419,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          */
         public Main(final AbstractIntegrator integrator) {
             yDot = new double[7];
-            // TODO: add force models event detectors by calling
-            // setUpEventDetector(integrator, detector) from the parent class
+
+            for (final DSSTForceModel forceModel : forceModels) {
+                final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
+                if (modelDetectors != null) {
+                    for (final EventDetector detector : modelDetectors) {
+                        setUpEventDetector(integrator, detector);
+                    }
+                }
+            }
+
         }
 
         /** {@inheritDoc} */

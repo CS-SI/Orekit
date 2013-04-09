@@ -22,6 +22,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
@@ -318,6 +319,11 @@ class ZonalContribution implements DSSTForceModel {
         throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
+    }
+
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        return null;
     }
 
     /** Compute the derivatives of the gravitational potential U [Eq. 3.1-(6)].

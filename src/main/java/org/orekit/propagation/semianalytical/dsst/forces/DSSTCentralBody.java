@@ -20,6 +20,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 
@@ -123,6 +124,11 @@ public class DSSTCentralBody implements DSSTForceModel {
         }
 
         return shortPeriodics;
+    }
+
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        return null;
     }
 
     /** Get the spherical harmonics provider.

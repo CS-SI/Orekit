@@ -22,6 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -105,6 +106,11 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
+    }
+
+    /** {@inheritDoc} */
+    public EventDetector[] getEventsDetectors() {
+        return null;
     }
 
     /** {@inheritDoc} */
