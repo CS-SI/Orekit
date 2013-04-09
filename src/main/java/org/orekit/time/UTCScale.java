@@ -116,9 +116,8 @@ public class UTCScale implements TimeScale {
 
         }
 
-        /**
-         * Retrieve the generated offsets
-         * 
+        /** Retrieve the generated offsets.
+         *
          * @return the {@link UTCTAIOffset}s.
          */
         public List<UTCTAIOffset> getOffsets() {

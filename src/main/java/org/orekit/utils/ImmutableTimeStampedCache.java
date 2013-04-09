@@ -1,3 +1,19 @@
+/* Contributed in the public domain.
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.orekit.utils;
 
 import java.util.ArrayList;
@@ -19,9 +35,9 @@ import org.orekit.time.TimeStamped;
  * immutability. This strategy is suitable when all of the cached data is stored
  * in memory. (For example, {@link org.orekit.time.UTCScale UTCScale}) This
  * class then provides convenient methods for accessing the data.
- * 
+ *
  * @author Evan Ward
- * @param <T>
+ * @param <T>  the type of data
  */
 public class ImmutableTimeStampedCache<T extends TimeStamped>
     implements TimeStampedCache<T> {
@@ -30,6 +46,14 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
      * A single chronological comparator since instances are thread safe.
      */
     private static final ChronologicalComparator CMP = new ChronologicalComparator();
+
+    /**
+     * An empty immutable cache that always throws an exception on attempted
+     * access.
+     */
+    @SuppressWarnings("rawtypes")
+    private static final ImmutableTimeStampedCache EMPTY_CACHE =
+        new EmptyTimeStampedCache<TimeStamped>();
 
     /**
      * the cached data. Be careful not to modify it after the constructor, or
@@ -44,7 +68,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
     /**
      * Create a new cache with the given neighbors size and data.
-     * 
+     *
      * @param neighborsSize the size of the list returned from
      *        {@link #getNeighbors(AbsoluteDate)}. Must be less than or equal to
      *        {@code data.size()}.
@@ -75,8 +99,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         this.data = new ArrayList<T>(data);
         Collections.sort(this.data, CMP);
     }
-    
-    
+
     /**
      * private constructor for {@link #EMPTY_CACHE}.
      */
@@ -85,6 +108,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
         this.neighborsSize = 0;
     }
 
+    /** {@inheritDoc} */
     public List<T> getNeighbors(final AbsoluteDate central)
         throws TimeStampedCacheException {
 
@@ -115,7 +139,7 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
     /**
      * Find the index, i, to {@link #data} such that {@code data[i] <= t} and
      * {@code data[i+1] > t} if {@code data[i+1]} exists.
-     * 
+     *
      * @param t the time
      * @return the index of the data at or just before {@code t}, {@code -1} if
      *         {@code t} is before the first entry, or {@code data.size()} if
@@ -148,63 +172,76 @@ public class ImmutableTimeStampedCache<T extends TimeStamped>
 
     /**
      * Get all of the data in this cache.
-     * 
+     *
      * @return a sorted collection of all data passed in the
      *         {@link #ImmutableTimeStampedCache(int, Collection) constructor}.
      */
     public List<T> getAll() {
         return Collections.unmodifiableList(this.data);
     }
-    
+
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return "Immutable cache with " + this.data.size() + " entries";
     }
-    
+
     /**
      * An empty immutable cache that always throws an exception on attempted
      * access.
      */
-    @SuppressWarnings("rawtypes")
-    private static final ImmutableTimeStampedCache EMPTY_CACHE = new ImmutableTimeStampedCache() {
+    private static class EmptyTimeStampedCache<T extends TimeStamped> extends ImmutableTimeStampedCache<T> {
 
-        public List<?> getNeighbors(AbsoluteDate central)
+        /** {@inheritDoc} */
+        @Override
+        public List<T> getNeighbors(final AbsoluteDate central)
             throws TimeStampedCacheException {
             throw new TimeStampedCacheException(
                                                 OrekitMessages.NO_CACHED_ENTRIES);
         };
 
+        /** {@inheritDoc} */
+        @Override
         public int getNeighborsSize() {
             return 0;
         }
 
-        public TimeStamped getEarliest() {
+        /** {@inheritDoc} */
+        @Override
+        public T getEarliest() {
             throw OrekitException
                 .createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
         };
 
-        public TimeStamped getLatest() {
+        /** {@inheritDoc} */
+        @Override
+        public T getLatest() {
             throw OrekitException
                 .createIllegalStateException(OrekitMessages.NO_CACHED_ENTRIES);
         }
 
-        public List getAll() {
-            return Collections.EMPTY_LIST;
+        /** {@inheritDoc} */
+        @Override
+        public List<T> getAll() {
+            return Collections.emptyList();
         }
 
+        /** {@inheritDoc} */
         @Override
         public String toString() {
             return "Empty immutable cache";
         }
+
     };
 
     /**
      * Get an empty immutable cache, cast to the correct type.
-     * 
+     * @param <TS>  the type of data
      * @return an empty {@link ImmutableTimeStampedCache}.
      */
     @SuppressWarnings("unchecked")
     public static final <TS extends TimeStamped> ImmutableTimeStampedCache<TS> emptyCache() {
         return (ImmutableTimeStampedCache<TS>) EMPTY_CACHE;
     }
+
 }
