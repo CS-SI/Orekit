@@ -72,6 +72,8 @@ Overview
 
     * mass management
 
+    * user-defined associated state
+
   ** Maneuvers
 
     * analytical models for small maneuvers without propagation
@@ -112,6 +114,8 @@ Overview
 
       * serialization mechanism to store complete results on persistent storage for
         later use
+
+    * semi-analytical propagation model (DSST) with customizable force models
 
     * tabulated ephemerides
 

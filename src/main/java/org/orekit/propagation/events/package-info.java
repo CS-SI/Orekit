@@ -73,6 +73,15 @@
  * </ul>
  *
  * <p>
+ * In addition to raw events, the class also provides {@link org.orekit.propagation.events.EventsLogger
+ * EventsLogger} to gather all events that occurred during a propagation, {@link
+ * org.orekit.propagation.events.EventShifter EventShifter} which allows to slightly shift an
+ * event in time  (for example to trigger something say 5 minutes before eclipse entry), and {@link
+ * org.orekit.propagation.events.EventFilter EventFilter} to trigger only specific types of events,
+ * without losing computation time by locating events user is not interested in.
+ * </p>
+ *
+ * <p>
  * The low level interfaces and classes are heavily based on similar classes
  * from the ode.events package from the <a
  * href="http://commons.apache.org/math/">commons math</a> library. The changes are mainly
