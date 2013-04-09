@@ -35,7 +35,7 @@ import org.orekit.time.AbsoluteDate;
  * event detector} during integration steps.
  *
  * <p>This class is heavily based on the class with the same name from the
- * Apache commons-math library. The changes performed consist in replacing
+ * Apache Commons Math library. The changes performed consist in replacing
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  * <p>Each time the propagator proposes a step, the event detector

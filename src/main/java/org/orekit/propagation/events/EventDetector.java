@@ -26,7 +26,8 @@ import org.orekit.time.AbsoluteDate;
  *
  * <p>It mirrors the {@link org.apache.commons.math3.ode.events.EventHandler
  * EventHandler} interface from <a href="http://commons.apache.org/math/">
- * commons-math</a> but provides a space-dynamics interface to the methods.</p>
+ * Apache Commons Math</a> but provides a space-dynamics interface to the
+ * methods.</p>
  *
  * <p>Events detectors are a useful solution to meet the requirements
  * of propagators concerning discrete conditions. The state of each
