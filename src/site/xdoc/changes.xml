@@ -23,6 +23,11 @@
     <release version="6.0" date="TBD"
              description="TBD.">
       <action dev="luc" type="add" >
+        Added orphan frame, i.e. trees that are not yet connected to the main
+        frame tree but attached later on. This allows building frame trees
+        from leaf to root. This change fixes feature request #98.
+      </action>
+      <action dev="luc" type="add" >
         Added a way to filter only increasing or decreasing events. The filtering
         occurs a priori, i.e. the filtered out events do not trigger a search.
         Only the interesting events are searched for and contribute to computation

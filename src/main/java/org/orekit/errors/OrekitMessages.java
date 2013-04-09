@@ -48,6 +48,8 @@ public enum OrekitMessages implements Localizable {
     ALMOST_CRITICALLY_INCLINED_ORBIT("almost critically inclined orbit (i = {0} degrees)"),
     UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS("unable to compute Eckstein-Hechler mean parameters after {0} iterations"),
     NULL_PARENT_FOR_FRAME("null parent for frame {0}"),
+    FRAME_ALREADY_ATTACHED("frame {0} is already attached to frame {1}"),
+    FRAME_NOT_ATTACHED("frame {0} is not attached to the main frames tree"),
     FRAME_ANCESTOR_OF_BOTH_FRAMES("frame {0} is an ancestor of both frames {1} and {2}"),
     FRAME_ANCESTOR_OF_NEITHER_FRAME("frame {0} is an ancestor of neither frame {1} nor {2}"),
     FRAME_NO_NTH_ANCESTOR("frame {0} has depth {1}, it cannot have an ancestor {2} levels above"),
