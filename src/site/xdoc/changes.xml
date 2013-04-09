@@ -22,6 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="evan" type="update" >
+        Greatly improved performance of time-stamped caches for data that is
+        read only once (like UTC leap seconds history or EOP).
+      </action>
       <action dev="luc" type="add" >
         Additional states can now be used in events. Note that waiting for the
         fix for issue MATH-965 in Apache Commons Math to be been officially
