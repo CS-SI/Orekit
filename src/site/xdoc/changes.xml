@@ -22,6 +22,12 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Added a way to filter only increasing or decreasing events. The filtering
+        occurs a priori, i.e. the filtered out events do not trigger a search.
+        Only the interesting events are searched for and contribute to computation
+        time. This change fixes feature request #104.
+      </action>
       <action dev="evan" type="update" >
         Greatly improved performance of time-stamped caches for data that is
         read only once (like UTC leap seconds history or EOP).
