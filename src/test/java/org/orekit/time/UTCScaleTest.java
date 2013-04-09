@@ -20,7 +20,6 @@ package org.orekit.time;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
@@ -38,8 +37,6 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
-import org.orekit.utils.GenericTimeStampedCache;
-import org.orekit.utils.TimeStampedCache;
 
 public class UTCScaleTest {
 
