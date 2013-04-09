@@ -22,6 +22,13 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="pascal" type="add" >
+        Added a semianalytical propagator based on the Draper Semianalytic
+        Satellite Theory. The DSST accounts for all significant perturbations
+        (central body including tesseral harmonics, third-body, drag, solar
+        radiation pressure) and is applicable to all orbit classes.
+        To begin with, only mean elements propagation is available.
+      </action>
       <action dev="evan" type="update" >
         Greatly improved performance of time-stamped caches for data that is
         read only once (like UTC leap seconds history or EOP).

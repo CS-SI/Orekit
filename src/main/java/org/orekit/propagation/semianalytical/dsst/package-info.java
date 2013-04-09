@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 /**
- * This package provides an implementation of the Drapper Semi-analytical
+ * This package provides an implementation of the Draper Semi-analytical
  * Satellite Theory (DSST).
  * <p>
  * The DSST theory, originated from P. J. Cefola and his colleagues (mid 70's),
