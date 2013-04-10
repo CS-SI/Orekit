@@ -2,7 +2,7 @@
 
 <project name="orekit" default="jar" basedir=".">
 
-  <property name="project.version"         value="6.0-SNAPSHOT"   />
+  <property name="project.version"         value="6.0"   />
 
   <property name="src.dir"                 location="src"                    />
   <property name="main.src.dir"            value="${src.dir}/main/java"      />
@@ -18,7 +18,7 @@
 
   <property name="lib.dir"                 location="lib"                    />
 
-  <property name="commons-math.version"    value="3.1.1" />
+  <property name="commons-math.version"    value="3.2" />
   <property name="commons-math.jar"        value="commons-math3-${commons-math.version}.jar" />
   <property name="commons-math.maven.path" value="org/apache/commons/commons-math3" />
   <property name="maven.repository"        value="http://repo1.maven.org/maven2" />
@@ -55,7 +55,7 @@
     <mkdir dir="${main.classes.dir}"/>
     <javac srcdir="${main.src.dir}" destdir="${main.classes.dir}"
            classpath="${lib.dir}/${commons-math.jar}"
-           deprecation="true" target="1.5" source="1.5">
+           deprecation="true" target="1.6" source="1.6">
     </javac>
     <copy todir="${main.classes.dir}">
       <fileset dir="${main.resources.dir}"/>
@@ -67,7 +67,7 @@
     <mkdir dir="${test.classes.dir}"/>
     <javac srcdir="${test.src.dir}" destdir="${test.classes.dir}"
            classpath="${main.classes.dir}:${lib.dir}/${commons-math.jar}"
-           deprecation="true" target="1.5" source="1.5">
+           deprecation="true" target="1.6" source="1.6">
     </javac>
     <copy todir="${test.classes.dir}">
       <fileset dir="${test.resources.dir}"/>
@@ -103,8 +103,8 @@
              encoding="UTF-8" version="true" use="true" author="true"
              charset="UTF-8" docencoding="UTF-8"
              bottom="&lt;i&gt;Copyright &#169; ${copyright}. All Rights Reserved.&lt;/i&gt;">
-      <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
-      <link href="http://commons.apache.org/math/apidocs/"/>
+      <link href="http://docs.oracle.com/javase/6/docs/api/"/>
+      <link href="http://commons.apache.org/proper/commons-math/javadocs/api-${commons-math.version}/"/>
     </javadoc>
   </target>
 

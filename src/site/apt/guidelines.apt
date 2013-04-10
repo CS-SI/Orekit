@@ -31,11 +31,11 @@ Development Guidelines
 
   The first goal, validation, implies tests must be as extensive as possible.
   They should include realistic operational cases but also contingency cases.
-  The {{{http://cobertura.sourceforge.net/}cobertura}} tool must be used to
+  The {{{http://www.eclemma.org/jacoco/}jacoco}} tool must be used to
   monitor test coverage. A very high level of coverage is desired. We do not
   set up mandatory objective figures, but only guidelines here. However,a 60%
   line coverage would clearly not be acceptable at all and 80% would be considered
-  deceptive
+  deceptive.
 
   The second goal, robustness, has some specific implications for a low level
   component like Orekit. In some sense, it can be considered an extension of the

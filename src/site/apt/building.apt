@@ -59,7 +59,7 @@ mvn install
   For other commands like generating the site, or generating the
   {{{http://checkstyle.sourceforge.net/}checkstyle}},
   {{{http://findbugs.sourceforge.net/}findbugs}} or
-  {{{http://cobertura.sourceforge.net/}cobertura}} reports, see the maven
+  {{{http://www.eclemma.org/jacoco/}jacoco}} reports, see the maven
   plugins documentation at maven site:
   {{http://maven.apache.org/plugins/index.html}}.
 

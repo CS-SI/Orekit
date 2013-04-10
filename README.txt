@@ -11,7 +11,8 @@ The src/main/java directory contains the library sources.
 The src/main/resources directory contains the library data.
 The src/test/java directory contains the tests sources.
 The src/test/resources directory contains the tests data.
-The src/tutorials directory contains sources for example use of the library.
+The src/tutorials/java directory contains sources for example use of the library.
+The src/tutorials/resources directory contains example data.
 The src/design directory contains pieces for a UML model of the library.
 
 Orekit relies on the following free software, all released under
