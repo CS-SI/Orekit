@@ -20,10 +20,10 @@ UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = die Eckstein-Hechler Durchs
 NULL_PARENT_FOR_FRAME = null parent für Koordinatennetz {0}
 
 # frame {0} is already attached to frame {1}
-FRAME_ALREADY_ATTACHED = <MISSING TRANSLATION!>
+FRAME_ALREADY_ATTACHED = Koordinatennetz {0} is bereits an Koordinatennetz {1} angeschlossen
 
 # frame {0} is not attached to the main frames tree
-FRAME_NOT_ATTACHED = <MISSING TRANSLATION!>
+FRAME_NOT_ATTACHED = Koordinatennetz {0} ist nicht an den Haupt-Koordinatenbaum angeschlossen
 
 # frame {0} is an ancestor of both frames {1} and {2}
 FRAME_ANCESTOR_OF_BOTH_FRAMES = Koordinatennetz {0} ist ein gemeinsamer Vorgänger für beide Koordinatennetze {1} und {2}
@@ -32,7 +32,7 @@ FRAME_ANCESTOR_OF_BOTH_FRAMES = Koordinatennetz {0} ist ein gemeinsamer Vorgäng
 FRAME_ANCESTOR_OF_NEITHER_FRAME = Koordinatennetz {0} ist weder ein Vorgänger für Koordinatennetz {1} noch {2}
 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
-FRAME_NO_NTH_ANCESTOR = <MISSING TRANSLATION!>
+FRAME_NO_NTH_ANCESTOR = Koordinatennetz {0} hat eine Tiefe von {1}, es kann nicht einen Vorgänger {2} Ebenen darüber haben
 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = nicht unterstützte lokales Koordinatennetz, unterstützte Typen: {0} und {1}
@@ -98,7 +98,7 @@ POSITIVE_FLOW_RATE = positive Durchflussrate (q: {0})
 NO_GRAVITY_FIELD_DATA_LOADED = keine Gravitationsfeld Daten geladen
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = <MISSING TRANSLATION!>
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = Gravitätsfeld-Normalisierung hat einen underflow für Degree {0} und Order {1}
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = polare Umlaufbahn (Entfernung zu Polachse: {0})
@@ -107,10 +107,10 @@ POLAR_TRAJECTORY = polare Umlaufbahn (Entfernung zu Polachse: {0})
 UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = unerwarteter Formatfehler für Datei {0} geladen mit Programmlader {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
-DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = duplizierter Gravitätsfeld-Koeffizient {0}({1}, {2}) in Datei {3}
 
 # missing gravity field coefficient {0}({1}, {2}) in file {3}
-MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = fehlender Gravitätsfeld-Koeffizient {0}({1}, {2}) in Datei {3}
 
 # too large degree (n = {0}, potential maximal degree is {1})
 TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = Degree zu groß (n = {0}, maximaler Degree des Potenzials ist {1})
@@ -119,7 +119,7 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = Degree zu groß (n = {0}, maximaler Degree 
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = Order zu groß (m = {0}, maximale Order des Potenzials ist {1})
 
 # several reference dates ({0} and {1}) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION!>
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = mehrere Referenz-Daten ({0} und {1}) in Gravitätsfeld Datei {2} gefunden
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = keine TLE Daten verfügbar für Objekt {0}
@@ -182,7 +182,7 @@ ANGLE_TYPE_NOT_SUPPORTED = Winkeltyp nicht unterstützt, unterstützte Winkeltyp
 SATELLITE_COLLIDED_WITH_TARGET = Satellit kollidierte mit Ziel
 
 # attitude pointing law misses ground
-ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = <MISSING TRANSLATION!>
+ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = Attitude Pointing Law zeigt nicht zur Erde
 
 # orbit date ({0}) does not match attitude date ({1})
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = Datum der Umlaufbahn ({0}) stimmt nicht mit den Lagedatum überein ({1})
@@ -227,7 +227,7 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = Datum nicht im zulässigen Bereich für {0}
 OUT_OF_RANGE_EPHEMERIDES_DATE = Datum nicht im zulässigen Bereich für ephemerides: {0}, [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
-UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = <MISSING TRANSLATION!>
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = unerwartet zwei Höhenwerte: {0} und {1}, für einen Azimutwinkel: {2}
 
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = nicht unterstützter Parametername {0}, unterstützte Namen {1}
@@ -248,7 +248,7 @@ STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobi Zustandsmatrix ist eine {0}x{1} Matr
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobi Zustandsmatrix hat {0} Zeilen, aber Jacobi Parametermatrix hat {1} Zeilen
 
 # finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = <MISSING TRANSLATION!>
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = endliche Differenzschritte fur Kräftemodell Ableitungen nicht initialisiert
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
 INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = Initiale Jacobi-Matrix hat {0} Spalten, aber {1} Parameter wurden selektiert
@@ -257,37 +257,37 @@ INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = Initiale Jacobi-Matrix hat {0} S
 ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = Orbit sollte entweder elliptisch (a > 0 und e < 1), oder hyperbolisch (a < 1 und e > 1) sein, a = {0}, e = {1}
 
 # true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
-ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = <MISSING TRANSLATION!>
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = echte Anomalie {0} ausserhalb des hyperbolischen Bereichs (e = {1}, {2} < v < {3})
 
 # hyperbolic orbits cannot be handled as {0} instances
-HYPERBOLIC_ORBIT_NOT_HANDLED_AS = <MISSING TRANSLATION!>
+HYPERBOLIC_ORBIT_NOT_HANDLED_AS = hyperbolische Orbits können nicht als {0} Instanzen behandelt werden
 
 # invalid preamble field in CCSDS date: {0}
-CCSDS_DATE_INVALID_PREAMBLE_FIELD = <MISSING TRANSLATION!>
+CCSDS_DATE_INVALID_PREAMBLE_FIELD = ungültiges Präambel Feld in CCSDS Datum: {0}
 
 # invalid time field length in CCSDS date: {0}, expected {1}
-CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = <MISSING TRANSLATION!>
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ungültige Länge des Zeitfelds in CCSDS Datum: {0}, erwartet {1}
 
 # missing agency epoch in CCSDS date
-CCSDS_DATE_MISSING_AGENCY_EPOCH = <MISSING TRANSLATION!>
+CCSDS_DATE_MISSING_AGENCY_EPOCH = fehlende Agency Epoche in CCSDS Datum
 
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE = <MISSING TRANSLATION!>
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = Name "{0}" wird bereits für einen anderen Zustand verwendet
 
 # reset state not allowed
 NON_RESETABLE_STATE = nicht zurücksetzbarer Zustand
 
 # Cannot compute Newcomb operators for sigma > rho ({0} > {1})
-DSST_NEWCOMB_OPERATORS_COMPUTATION = <MISSING TRANSLATION!>
+DSST_NEWCOMB_OPERATORS_COMPUTATION = Newcomb Operator für sigma > rho ({0} > {1}) kann nicht berechnet werden
 
 # Cannot compute the Vmns coefficient with m > n ({0} > {1})
-DSST_VMNS_COEFFICIENT_ERROR_MS = <MISSING TRANSLATION!>
+DSST_VMNS_COEFFICIENT_ERROR_MS = Vmns Koeffizient mit m > n ({0} > {1}) kann nicht berechnet werden
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
-DSST_SPR_SHADOW_INCONSISTENT = <MISSING TRANSLATION!>
+DSST_SPR_SHADOW_INCONSISTENT = inkonsistente Schattenberechnung: Anfang = {0} wobei Ende = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
-DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = <MISSING TRANSLATION!>
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Der aktuelle Orbit hat eine Exzentrizität ({0} > 0.5). DSST benötigt eine nicht implementierte, zeitabhängige numerische Methode um die gemittelten Raten zu berechnen
 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = nicht unterstützte SP3 Dateiversion {0}
