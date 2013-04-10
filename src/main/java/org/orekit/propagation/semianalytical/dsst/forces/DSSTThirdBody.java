@@ -255,7 +255,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         XX = X * X;
         XXX = X * XX;
         // -2 * a / A
-        m2aoA = a / A;
+        m2aoA = -2. * a / A;
         // B / A
         BoA = B / A;
         // 1 / AB
