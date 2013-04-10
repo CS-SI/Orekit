@@ -201,7 +201,6 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Add a set of user-specified equations to be integrated along with the orbit propagation.
      * @param additional additional equations
-     * @see #setInitialAdditionalState(String, double[])
      * @exception OrekitException if a set of equations with the same name is already present
      */
     public void addAdditionalEquations(final AdditionalEquations additional)

@@ -30,8 +30,8 @@ import org.orekit.time.AbsoluteDate;
  * raw types (double and double arrays) with space dynamics types
  * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
  *
- * <p>General {@link EventHandler events} are defined implicitely
- * by a {@link EventHandler#g(double, double[]) g function} crossing
+ * <p>General {@link EventDetector events} are defined implicitely
+ * by a {@link EventDetector#g(SpacecraftState) g function} crossing
  * zero. This function needs to be continuous in the event neighborhood,
  * and its sign must remain consistent between events. This implies that
  * during an ODE integration, events triggered are alternately events
@@ -58,8 +58,6 @@ import org.orekit.time.AbsoluteDate;
  * {@code decreasing} events. the number of calls to the {@link
  * EventDetector#g(SpacecraftState) g function} will also be reduced.</p>
  *
- * @version $Id$
- * @since 3.2
  */
 
 public class EventFilter implements EventDetector {
@@ -102,7 +100,7 @@ public class EventFilter implements EventDetector {
     /**  {@inheritDoc} */
     public void init(final SpacecraftState s0, final AbsoluteDate t) {
 
-        // delegate to raw handler
+        // delegate to raw detector
         rawDetector.init(s0, t);
 
         // initialize events triggering logic
@@ -205,14 +203,14 @@ public class EventFilter implements EventDetector {
     /**  {@inheritDoc} */
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
-        // delegate to raw handler, fixing increasing status on the fly
+        // delegate to raw detector, fixing increasing status on the fly
         return rawDetector.eventOccurred(s, filter.getTriggeredIncreasing());
     }
 
     /**  {@inheritDoc} */
     public SpacecraftState resetState(final SpacecraftState s)
         throws OrekitException {
-        // delegate to raw handler
+        // delegate to raw detector
         return rawDetector.resetState(s);
     }
 

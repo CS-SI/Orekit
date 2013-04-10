@@ -21,17 +21,17 @@ import org.orekit.errors.OrekitException;
 
 /** Enumerate for {@link EventFilter filtering events}.
  * <p>This class is heavily based on the class with the same name from the
- * Apache Commons Math library. The changes performed consist in replacing
- * raw types (double and double arrays) with space dynamics types
- * ({@link AbsoluteDate}, {@link SpacecraftState}).</p>
+ * Apache Commons Math library. The changes performed consist in package
+ * name and error handling.</p>
  * @since 6.0
  */
 
 public enum FilterType {
 
     /** Constant for triggering only decreasing events.
-     * <p>When this filter is used, the wrapped {@link EventHandler
-     * event handler} {@link EventHandler#eventOccurred(double, double[],
+     * <p>When this filter is used, the wrapped {@link EventDetector
+     * event detector} {@link
+     * EventDetector#eventOccurred(org.orekit.propagation.SpacecraftState,
      * boolean) eventOccurred} method will be called <em>only</em> with
      * its {@code increasing} argument set to false.</p>
      */
@@ -179,8 +179,9 @@ public enum FilterType {
     },
 
     /** Constant for triggering only increasing events.
-     * <p>When this filter is used, the wrapped {@link EventHandler
-     * event handler} {@link EventHandler#eventOccurred(double, double[],
+     * <p>When this filter is used, the wrapped {@link EventDetector
+     * event detector} {@link
+     * EventDetector#eventOccurred(org.orekit.propagation.SpacecraftState,
      * boolean) eventOccurred} method will be called <em>only</em> with
      * its {@code increasing} argument set to true.</p>
      */

@@ -26,7 +26,7 @@ import org.apache.commons.math3.util.Pair;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
-/** Simple container for Position/Velocity pairs, using {@link T}.
+/** Simple container for Position/Velocity pairs, using {@link RealFieldElement}.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
  * a simple linear model. It is <em>not</em> intended as a replacement for

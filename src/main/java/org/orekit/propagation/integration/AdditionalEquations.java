@@ -24,7 +24,7 @@ import org.orekit.propagation.SpacecraftState;
  * <p>
  * In some cases users may need to integrate some problem-specific equations along with
  * classical spacecraft equations of motions. One example is optimal control in low
- * thrust where adjoint parameters linked to the minimized hamiltonian must be integrated.
+ * thrust where adjoint parameters linked to the minimized Hamiltonian must be integrated.
  * Another example is formation flying or rendez-vous which use the Clohessy-Whiltshire
  * equations for the relative motion.
  * </p>
@@ -40,10 +40,10 @@ import org.orekit.propagation.SpacecraftState;
  * <p>
  * The additional parameters are gathered in a simple p array. The additional equations compute
  * the pDot array, which is the time-derivative of the p array. Since the additional parameters
- * p may also have an influence on the equations of motion themselves that should be cumulated
+ * p may also have an influence on the equations of motion themselves that should be accumulated
  * to the main state derivatives (for example an equation linked to a complex thrust model may
- * induce an acceleration and a mass change), the {@link #computeDerivatives(SpacecraftState,
- * double[], double[]) computeDerivatives} method can return a double array that will be
+ * induce an acceleration and a mass change), the {@link #computeDerivatives(SpacecraftState, double[])
+ * computeDerivatives} method can return a double array that will be
  * <em>added</em> to the main state derivatives. This means these equations can be used as an
  * additional force model if needed. If the additional parameters have no influence at all on
  * the main spacecraft state, a null reference may be returned.

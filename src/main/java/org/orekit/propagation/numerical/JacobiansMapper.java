@@ -27,8 +27,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 
 /** Mapper between two-dimensional Jacobian matrices and one-dimensional {@link
- * org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
- * additional state arrays}.
+ * SpacecraftState#getAdditionalState(String) additional state arrays}.
  * <p>
  * This class does not hold the states by itself. Instances of this class are guaranteed
  * to be immutable.
@@ -36,7 +35,7 @@ import org.orekit.propagation.SpacecraftState;
  * @author Luc Maisonobe
  * @see org.orekit.propagation.numerical.PartialDerivativesEquations
  * @see org.orekit.propagation.numerical.NumericalPropagator
- * @see org.orekit.propagation.sampling.OrekitStepInterpolator#getInterpolatedAdditionalState(String)
+ * @see SpacecraftState#getAdditionalState(String)
  * @see org.orekit.propagation.AbstractPropagator
  */
 public class JacobiansMapper {
@@ -176,7 +175,7 @@ public class JacobiansMapper {
      * @param state spacecraft state
      * @param dYdY0 placeholder where to put the Jacobian with respect to state
      * @exception OrekitException if state does not contain the Jacobian additional state
-     * @see #getParametersJacobian(SpacecraftState, double[], double[][])
+     * @see #getParametersJacobian(SpacecraftState, double[][])
      */
     public void getStateJacobian(final SpacecraftState state,  final double[][] dYdY0)
         throws OrekitException {
@@ -216,7 +215,7 @@ public class JacobiansMapper {
      * @param state spacecraft state
      * @param dYdP placeholder where to put the Jacobian with respect to parameters
      * @exception OrekitException if state does not contain the Jacobian additional state
-     * @see #getStateJacobian(SpacecraftState, double[], double[][])
+     * @see #getStateJacobian(SpacecraftState, double[][])
      */
     public void getParametersJacobian(final SpacecraftState state, final double[][] dYdP)
         throws OrekitException {
