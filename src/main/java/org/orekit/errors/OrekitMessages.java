@@ -16,8 +16,14 @@
  */
 package org.orekit.errors;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
 import org.apache.commons.math3.exception.util.Localizable;
@@ -178,7 +184,8 @@ public enum OrekitMessages implements Localizable {
     /** {@inheritDoc} */
     public String getLocalizedString(final Locale locale) {
         try {
-            final ResourceBundle bundle = ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale);
+            final ResourceBundle bundle =
+                    ResourceBundle.getBundle(RESOURCE_BASE_NAME, locale, new UTF8Control());
             if (bundle.getLocale().getLanguage().equals(locale.getLanguage())) {
                 final String translated = bundle.getString(name());
                 if ((translated != null) &&
@@ -196,6 +203,51 @@ public enum OrekitMessages implements Localizable {
         // either the locale is not supported or the resource is not translated or
         // it is unknown: don't translate and fall back to using the source format
         return sourceFormat;
+
+    }
+
+    /** Control class loading properties in UTF-8 encoding.
+     * <p>
+     * This class has been very slightly adapted from BalusC answer to question: <a
+     * href="http://stackoverflow.com/questions/4659929/how-to-use-utf-8-in-resource-properties-with-resourcebundle">
+     * How to use UTF-8 in resource properties with ResourceBundle</a>.
+     * </p>
+     * @since 6.0
+     */
+    public static class UTF8Control extends ResourceBundle.Control {
+
+        /** {@inheritDoc} */
+        @Override
+        public ResourceBundle newBundle(final String baseName, final Locale locale, final String format,
+                                        final ClassLoader loader, final boolean reload)
+            throws IllegalAccessException, InstantiationException, IOException {
+            // The below is a copy of the default implementation.
+            final String bundleName = toBundleName(baseName, locale);
+            final String resourceName = toResourceName(bundleName, "utf8");
+            ResourceBundle bundle = null;
+            InputStream stream = null;
+            if (reload) {
+                final URL url = loader.getResource(resourceName);
+                if (url != null) {
+                    final URLConnection connection = url.openConnection();
+                    if (connection != null) {
+                        connection.setUseCaches(false);
+                        stream = connection.getInputStream();
+                    }
+                }
+            } else {
+                stream = loader.getResourceAsStream(resourceName);
+            }
+            if (stream != null) {
+                try {
+                    // Only this line is changed to make it to read properties files as UTF-8.
+                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, "UTF-8"));
+                } finally {
+                    stream.close();
+                }
+            }
+            return bundle;
+        }
 
     }
 

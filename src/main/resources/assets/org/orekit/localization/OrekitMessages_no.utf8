@@ -1,23 +1,23 @@
 # internal error, contact maintenance at {0}
-INTERNAL_ERROR = erro interno, contacte co soporte t\u00e9cnico no {0}
+INTERNAL_ERROR = Intern feil. Kontakt vedlikeholdsansvarlig på {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
 ALTITUDE_BELOW_ALLOWED_THRESHOLD = <MISSING TRANSLATION!>
 
 # trajectory inside the Brillouin sphere (r = {0})
-TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = traxectoria interior \u00e1 esfera de Brillouin (r = {0})
+TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = bane innenfor Brillouins sfære (r = {0})
 
 # almost equatorial orbit (i = {0} degrees)
-ALMOST_EQUATORIAL_ORBIT = \u00f3rbita case ecuatorial (i = {0} graos)
+ALMOST_EQUATORIAL_ORBIT = nesten ekvatorialsk bane (i = {0} grader)
 
 # almost critically inclined orbit (i = {0} degrees)
-ALMOST_CRITICALLY_INCLINED_ORBIT = \u00f3rbita case con inclinaci\u00f3n critica (i = {0} graos)
+ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk helning (i = {0} degrés)
 
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = imposible de calcula-los par\u00e1metros medios de Eckstein-Hechler despois de {0} iteraci\u00f3ns
+UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = umulig å regne ut Eckstein-Hechlers middelsparameterene etter {0} iterasjoner
 
 # null parent for frame {0}
-NULL_PARENT_FOR_FRAME = pai do sistema de referencia {0} nulo
+NULL_PARENT_FOR_FRAME = null far for ramme {0}
 
 # frame {0} is already attached to frame {1}
 FRAME_ALREADY_ATTACHED = <MISSING TRANSLATION!>
@@ -35,73 +35,73 @@ FRAME_ANCESTOR_OF_NEITHER_FRAME = <MISSING TRANSLATION!>
 FRAME_NO_NTH_ANCESTOR = <MISSING TRANSLATION!>
 
 # unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local non soportado, sistemas de referencia soportados : {0} e {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, støttete ramme: {0} og {1}
 
 # non pseudo-inertial frame "{0}" is not suitable for defining orbits
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = <MISSING TRANSLATION!>
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = repertorio de datos ra\u00edz {0} inexistente
+DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = data rotmappen {0} finnes ikke
 
 # {0} is not a directory
-NOT_A_DIRECTORY = {0} non \u00e9 un repertorio
+NOT_A_DIRECTORY = {0} er ikke en mappe
 
 # {0} is neither a directory nor a zip/jar archive file
-NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} non \u00e9 un repertorio nin un ficheiro de arquivo zip/jar
+NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} er verken en mappe eller en zip/jar-arkiv fil
 
 # unable to find resource {0} in classpath
-UNABLE_TO_FIND_RESOURCE = {0} non existe no cami\u00f1o da clase
+UNABLE_TO_FIND_RESOURCE = Filen {0} finnes ikke i classpath''en
 
 # no Earth Orientation Parameters loaded
-NO_EARTH_ORIENTATION_PARAMETERS_LOADED = os par\u00e1metros de orientaci\u00f3n da Terra non est\u00e1n cargados
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = Ingen jordorienteringsparametere er lastet
 
 # missing Earth Orientation Parameters between {0} and {1}
-MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan Par\u00e1metros de Orientaci\u00f3n da Terra entre {0} e {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = manglende jordorienteringsparametere mellom {0} og {1}
 
 # file {0} is not a supported IERS data file
-NOT_A_SUPPORTED_IERS_DATA_FILE = o ficheiro {0} non \u00e9 un ficheiro de datos IERS soportado
+NOT_A_SUPPORTED_IERS_DATA_FILE = filen {0} er ikke en støttet IERS datafil
 
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
 INCONSISTENT_DATES_IN_IERS_FILE = <MISSING TRANSLATION!>
 
 # unexpected data after line {0} in file {1}: {2}
-UNEXPECTED_DATA_AFTER_LINE_IN_FILE = datos imprevistos na li\u00f1a {0} do ficheiro {1} : {2}
+UNEXPECTED_DATA_AFTER_LINE_IN_FILE = uventet data etter linje {0} i filen {1}: {2}
 
 # non-chronological dates in file {0}, line {1}
-NON_CHRONOLOGICAL_DATES_IN_FILE = datas non cronol\u00f3xicas no ficheiro {0} na li\u00f1a {1}
+NON_CHRONOLOGICAL_DATES_IN_FILE = ikkekronologiske datoer i filen {0}, linje {1}
 
 # no IERS UTC-TAI history data loaded
-NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = os datos hist\u00f3ricos IERS UTC-AIT non estan cargados
+NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = Ingen IERS UTC-TAI historikk data er lastet
 
 # no entries found in IERS UTC-TAI history file {0}
-NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  ning\u00fan dato atopado no ficheiro hist\u00f3rico UTC-TAI do IERS {0}
+NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  ingen data funnet i IERS UTC-TAI historiefilen {0}
 
 # missing serie j = {0} in file {1} (line {2})
-MISSING_SERIE_J_IN_FILE = falta a serie i = {0} no ficheiro {1} (li\u00f1a {2})
+MISSING_SERIE_J_IN_FILE = rekke j = {0} mangler i filen {1} (linje {2})
 
 # unexpected end of file {0} (after line {1})
-UNEXPECTED_END_OF_FILE_AFTER_LINE = fin imprevisto do ficheiro {0} (despois da li\u00f1a {1})
+UNEXPECTED_END_OF_FILE_AFTER_LINE = uventet slutt på filen {0} (etter linje {1})
 
 # unable to parse line {0} of file {1}:\n{2}
-UNABLE_TO_PARSE_LINE_IN_FILE = imposible de analiza-la li\u00f1a {0} do ficheiro {1} :\n{2}
+UNABLE_TO_PARSE_LINE_IN_FILE = umulig å analyserer linje {0} i filen {1}:\n{2}
 
 # unable to find file {0}
-UNABLE_TO_FIND_FILE = imposible de atopa-lo ficheiro {0}
+UNABLE_TO_FIND_FILE = umulig å finne filen {0}
 
 # spacecraft mass becomes negative: {0} kg
-SPACECRAFT_MASS_BECOMES_NEGATIVE = masa do veh\u00edculo fac\u00e9ndose negativa (m : {0})
+SPACECRAFT_MASS_BECOMES_NEGATIVE = romfartøyets masse blir negativ (m: {0})
 
 # positive flow rate (q: {0})
-POSITIVE_FLOW_RATE = fluxo de masa positiva (q : {0}) 
+POSITIVE_FLOW_RATE = positiv strøm (q: {0})
 
 # no gravity field data loaded
-NO_GRAVITY_FIELD_DATA_LOADED = os datos do campo de gravidade non est\u00e1n cargados
+NO_GRAVITY_FIELD_DATA_LOADED = ingen gravitasjonsfelts-data er lastet
 
 # gravity field normalization underflow for degree {0} and order {1}
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = <MISSING TRANSLATION!>
 
 # polar trajectory (distance to polar axis: {0})
-POLAR_TRAJECTORY = traxectoria polar (distancia ao eixo dos polos : {0})
+POLAR_TRAJECTORY = polar bane (avstand til polaksen: {0})
 
 # unexpected format error for file {0} with loader {1}
 UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = <MISSING TRANSLATION!>
@@ -113,31 +113,31 @@ DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
 MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
 
 # too large degree (n = {0}, potential maximal degree is {1})
-TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grao demasiado grande (n = {0}, o grao de potencial m\u00e1ximo \u00e9 {1})
+TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = for høy grad (n = {0}, maksimal potensial grad er {1})
 
 # too large order (m = {0}, potential maximal order is {1})
-TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = orde demasiado importante (n = {0}, a orde m\u00e1xima de potencial \u00e9 {1})
+TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = for høy kontroll (m = {0}, maksimal potensial kontrol er {1})
 
 # several reference dates ({0} and {1}) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION!>
 
 # no TLE data available for object {0}
-NO_TLE_FOR_OBJECT = non hay datos TLE disponibles para o obxeto {0}
+NO_TLE_FOR_OBJECT = ingen TLE data tilgjengelig for objektet {0}
 
 # no TLE data available for launch year {0}, launch number {1}, launch piece {2}
-NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = non hai datos TLE disponibles para o ano de lanzamento {0}, o n\u00famero de lanzamento {1}, parte de lanzamento {2}
+NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = ingen TLE data tilgjengelig for oppskytningsår {0}, oppskytningsnummer {1}, oppskytningsdel {2}
 
 # lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
-NOT_TLE_LINES = as li\u00f1as {0} e {1} non son li\u00f1as TLE:\n{0}: "{2}"\n{1}: "{3}"
+NOT_TLE_LINES = Linjene {0} og {1} er ikke TLE linjer:\n{0}: "{2}"\n{1}: "{3}"
 
 # expected a second TLE line after line {0}:\n{0}: "{1}"
-MISSING_SECOND_TLE_LINE = agardaba unha segunda linea TLE despois da li\u00f1a {0}:\n{0}: "{1}"
+MISSING_SECOND_TLE_LINE = forventet en annen TLE linje etter linje {0}:\n{0}: "{1}"
 
 # TLE lines do not refer to the same object:\n{0}\n{1}
-TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = as li\u00f1as TLE non se refiren ao mesmo obxeto:\n{0}\n{1}
+TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE linjene refererer ikke til det samme objektet:\n{0}\n{1}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
-TLE_CHECKSUM_ERROR = suma de control incorrecta para a li\u00f1a TLE {0}, {2} en vez do valor {1} esperado ({3})
+TLE_CHECKSUM_ERROR = gal sjekksum for TLE linje {0}, verdien {1} var ventet men fant {2} ({3})
 
 # no TLE data available
 NO_TLE_DATA_AVAILABLE = <MISSING TRANSLATION!>
@@ -146,85 +146,85 @@ NO_TLE_DATA_AVAILABLE = <MISSING TRANSLATION!>
 NOT_POSITIVE_SPACECRAFT_MASS = <MISSING TRANSLATION!>
 
 # too large eccentricity for propagation model: e = {0}
-TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = \u00f3rbita demasiado exc\u00e9ntrica para a extrapolaci\u00f3n (e = {0})
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = for eksentrisk bane for høy til propagasjon (e: {0})
 
 # no solar activity available at {0}, data available only in range [{1}, {2}]
-NO_SOLAR_ACTIVITY_AT_DATE = non hai par\u00e1metros de actividade solar dispo\u00f1ibles o {0}, datos dispo\u00f1ibles \u00fanicamente para o intervalo [{1}, {2}]
+NO_SOLAR_ACTIVITY_AT_DATE = ingen disponibel solaktivitet {0}, kun disponibel data i området [{1}, {2}]
 
 # non-existent month {0}
-NON_EXISTENT_MONTH = mes inexistente {0}
+NON_EXISTENT_MONTH = måneden {0} eksisterer ikke
 
 # non-existent date {0}-{1}-{2}
-NON_EXISTENT_YEAR_MONTH_DAY = data inexistente {0}-{1}-{2}
+NON_EXISTENT_YEAR_MONTH_DAY = datoen {0}-{1}-{2} eksisterer ikke
 
 # non-existent week date {0}-W{1}-{2}
 NON_EXISTENT_WEEK_DATE = <MISSING TRANSLATION!>
 
 # non-existent date {0}
-NON_EXISTENT_DATE = data inexistente {0}
+NON_EXISTENT_DATE = datoen {0} eksisterer ikke
 
 # no day number {0} in year {1}
-NON_EXISTENT_DAY_NUMBER_IN_YEAR = non hai d\u00eda n\u00famero {0} no ano {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = <MISSING TRANSLATION!>
 
 # non-existent time {0}:{1}:{2}
-NON_EXISTENT_HMS_TIME = hora inexistente {0}:{1}:{2}
+NON_EXISTENT_HMS_TIME = klokkeslettet {0}:{1}:{2} eksisterer ikke
 
 # non-existent time {0}
-NON_EXISTENT_TIME = hora inexistente {0}
+NON_EXISTENT_TIME = klokkeslettet {0} eksisterer ikke
 
 # out of range seconds number: {0}
-OUT_OF_RANGE_SECONDS_NUMBER = n\u00famero de segundos fora de rango : {0}
+OUT_OF_RANGE_SECONDS_NUMBER = sekundnummer {0} overskrider området
 
 # angle type not supported, supported angles: {0}, {1} and {2}
-ANGLE_TYPE_NOT_SUPPORTED = tipo de \u00e1ngulo non soportado, \u00e1ngulos soportados : {0}, {1} e {2}
+ANGLE_TYPE_NOT_SUPPORTED = vinkeltypen er ikke støttet, støttede vinkler: {0}, {1} og {2}
 
 # satellite collided with target
-SATELLITE_COLLIDED_WITH_TARGET = o sat\u00e9lite estr\u00e9lase no seu obxetivo
+SATELLITE_COLLIDED_WITH_TARGET = satellitten kræsjet med målet
 
 # attitude pointing law misses ground
-ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = a lei de actitude non apunta cara o chan
+ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = attitydesikteloven bommer på baken
 
 # orbit date ({0}) does not match attitude date ({1})
-ORBIT_AND_ATTITUDE_DATES_MISMATCH = a data da \u00f3rbita ({0}) non concorda coa data da actitude ({1})
+ORBIT_AND_ATTITUDE_DATES_MISMATCH = banedatoen ({0}) passer ikke med attitydedatoen ({1})
 
 # frame ({0}) does not match frame ({1})
 FRAMES_MISMATCH = <MISSING TRANSLATION!>
 
 # initial state not specified for orbit propagation
-INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial non especificado para a extrapolaci\u00f3n de \u00f3rbita
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initialstatusen er ikke presisert for banepropagasjon
 
 # propagator is not in ephemeris generation mode
-PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = o extrapolador non est\u00e1 en modo de xeneraci\u00f3n de efem\u00e9rides
+PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagtøren er ikke satt i stillingen efemeridegenerasjon
 
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
 EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION!>
 
 # unable to read header record from JPL ephemerides binary file {0}
-UNABLE_TO_READ_JPL_HEADER = imposible de ler o encabezado do ficheiro de efem\u00e9rides do JPL {0}
+UNABLE_TO_READ_JPL_HEADER = umulig å lese startblokken fra den binære JPL efemeridefilen {0}
 
 # inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = valores incoherentes da unidade astron\u00f3mica nos ficheiros de efem\u00e9rides do JPL : ({0} e {1})
+INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = selvmotsigende verdier for de astronomiske enhetene i JPL efemeridefilene: ({0} og {1})
 
 # inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = valores incoherentes da relaci\u00f3n de masa Terra/L\u00faa nos ficheiros de efem\u00e9rides do JPL : ({0} e {1})
+INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = selvmotsigende verdier for masseforholdet Jord/Måne i JPL efemeridefilene: ({0} og {1})
 
 # no data loaded for celestial body {0}
-NO_DATA_LOADED_FOR_CELESTIAL_BODY = non hai datos para o corpo celeste {0}
+NO_DATA_LOADED_FOR_CELESTIAL_BODY = ingen data er lastet for himmellegeme {0}
 
 # file {0} is not a JPL ephemerides binary file
-NOT_A_JPL_EPHEMERIDES_BINARY_FILE = o ficheiro {0} non \u00e9 un ficheiro binario de efem\u00e9rides do JPL
+NOT_A_JPL_EPHEMERIDES_BINARY_FILE = filen {0} er ikke en binær JPL efemeridefil
 
 # file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
 NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = <MISSING TRANSLATION!>
 
 # no JPL ephemerides binary files found
-NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = non existe ning\u00fan ficheiro binario de efem\u00e9rides do JPL
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = Ingen binære JPL efemeridefil funnet
 
 # out of range date for {0} ephemerides: {1}
-OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = data fora do rango de validez das efem\u00e9rides \u00ab {0} \u00bb : {1}
+OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til {0} efemeridene: {1}
 
 # out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = data fora do rango de validez das efem\u00e9rides : {0}, [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til efemeridene: {0}, [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = <MISSING TRANSLATION!>

@@ -2,22 +2,22 @@
 INTERNAL_ERROR = Interner Fehler, wenden Sie sich bitte an die Software-Wartung, Adresse {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
-ALTITUDE_BELOW_ALLOWED_THRESHOLD = H\u00f6he ({0} m) ist niedriger als der erlaubte Grenzwert von {1} m
+ALTITUDE_BELOW_ALLOWED_THRESHOLD = Höhe ({0} m) ist niedriger als der erlaubte Grenzwert von {1} m
 
 # trajectory inside the Brillouin sphere (r = {0})
-TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = Bewegungsbahn innerhalb der Brillouin-Sph\u00e4re (r = {0})
+TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = Bewegungsbahn innerhalb der Brillouin-Sphäre (r = {0})
 
 # almost equatorial orbit (i = {0} degrees)
-ALMOST_EQUATORIAL_ORBIT = fast \u00e4quatoriale Umlaufbahn (i = {0} degrees)
+ALMOST_EQUATORIAL_ORBIT = fast äquatoriale Umlaufbahn (i = {0} degrees)
 
 # almost critically inclined orbit (i = {0} degrees)
 ALMOST_CRITICALLY_INCLINED_ORBIT = Umlaufbahn mit einer fast kritischen Inklination (i = {0} degrees)
 
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
-UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = die Eckstein-Hechler Durchschnitt-Parameter k\u00f6nnen nicht berechnet werden nach {0} Iterationen
+UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = die Eckstein-Hechler Durchschnitt-Parameter können nicht berechnet werden nach {0} Iterationen
 
 # null parent for frame {0}
-NULL_PARENT_FOR_FRAME = null parent f\u00fcr Koordinatennetz {0}
+NULL_PARENT_FOR_FRAME = null parent für Koordinatennetz {0}
 
 # frame {0} is already attached to frame {1}
 FRAME_ALREADY_ATTACHED = <MISSING TRANSLATION!>
@@ -26,16 +26,16 @@ FRAME_ALREADY_ATTACHED = <MISSING TRANSLATION!>
 FRAME_NOT_ATTACHED = <MISSING TRANSLATION!>
 
 # frame {0} is an ancestor of both frames {1} and {2}
-FRAME_ANCESTOR_OF_BOTH_FRAMES = Koordinatennetz {0} ist ein gemeinsamer Vorg\u00e4nger f\u00fcr beide Koordinatennetze {1} und {2}
+FRAME_ANCESTOR_OF_BOTH_FRAMES = Koordinatennetz {0} ist ein gemeinsamer Vorgänger für beide Koordinatennetze {1} und {2}
 
 # frame {0} is an ancestor of neither frame {1} nor {2}
-FRAME_ANCESTOR_OF_NEITHER_FRAME = Koordinatennetz {0} ist weder ein Vorg\u00e4nger f\u00fcr Koordinatennetz {1} noch {2}
+FRAME_ANCESTOR_OF_NEITHER_FRAME = Koordinatennetz {0} ist weder ein Vorgänger für Koordinatennetz {1} noch {2}
 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = <MISSING TRANSLATION!>
 
 # unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = nicht unterst\u00fctzte lokales Koordinatennetz, unterst\u00fctzte Typen: {0} und {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = nicht unterstützte lokales Koordinatennetz, unterstützte Typen: {0} und {1}
 
 # non pseudo-inertial frame "{0}" is not suitable for defining orbits
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = nicht pseudo-inertiales Koordinatennetz "{0}" ist nicht geeignet um eine Umlaufbahn zu definieren
@@ -59,7 +59,7 @@ NO_EARTH_ORIENTATION_PARAMETERS_LOADED = Orientierungsparameter der Erde sind ni
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = Orientierungsparameter der Erde zwischen {0} und {1} fehlen
 
 # unable to par# file {0} is not a supported IERS data file
-NOT_A_SUPPORTED_IERS_DATA_FILE = Datei {0} ist keine unterst\u00fctzte IERS-Datendatei
+NOT_A_SUPPORTED_IERS_DATA_FILE = Datei {0} ist keine unterstützte IERS-Datendatei
 
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
 INCONSISTENT_DATES_IN_IERS_FILE = inkonsistente Datumsangaben in IERS Datei {0}: {1}-{2}-{3} und MJD {4}
@@ -104,7 +104,7 @@ GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = <MISSING TRANSLATION!>
 POLAR_TRAJECTORY = polare Umlaufbahn (Entfernung zu Polachse: {0})
 
 # unexpected format error for file {0} with loader {1}
-UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = unerwarteter Formatfehler f\u00fcr Datei {0} geladen mit Programmlader {1}
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = unerwarteter Formatfehler für Datei {0} geladen mit Programmlader {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
 DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
@@ -113,19 +113,19 @@ DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
 MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
 
 # too large degree (n = {0}, potential maximal degree is {1})
-TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = Degree zu gro\u00df (n = {0}, maximaler Degree des Potenzials ist {1})
+TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = Degree zu groß (n = {0}, maximaler Degree des Potenzials ist {1})
 
 # too large order (m = {0}, potential maximal order is {1})
-TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = Order zu gro\u00df (m = {0}, maximale Order des Potenzials ist {1})
+TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = Order zu groß (m = {0}, maximale Order des Potenzials ist {1})
 
 # several reference dates ({0} and {1}) found in gravity field file {2}
 SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION!>
 
 # no TLE data available for object {0}
-NO_TLE_FOR_OBJECT = keine TLE Daten verf\u00fcgbar f\u00fcr Objekt {0}
+NO_TLE_FOR_OBJECT = keine TLE Daten verfügbar für Objekt {0}
 
 # no TLE data available for launch year {0}, launch number {1}, launch piece {2}
-NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = keine TLE Daten verf\u00fcgbar f\u00fcr Startjahr {0}, Startnummer {1}, Startteil {2}
+NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = keine TLE Daten verfügbar für Startjahr {0}, Startnummer {1}, Startteil {2}
 
 # lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
 NOT_TLE_LINES = Zeilen {0} and {1} sind keine TLE Zeilen:\n{0}: "{2}"\n{1}: "{3}"
@@ -140,16 +140,16 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE Zeilen verweisen nicht auf das selbe
 TLE_CHECKSUM_ERROR = Falsche Checksummme der TLE Zeile {0}, erwartet {1} aber wird zu {2} ({3})
 
 # no TLE data available
-NO_TLE_DATA_AVAILABLE = keine TLE Daten verf\u00fcgbar
+NO_TLE_DATA_AVAILABLE = keine TLE Daten verfügbar
 
 # spacecraft mass is not positive: {0} kg
 NOT_POSITIVE_SPACECRAFT_MASS = Masse des Raumfahrzeugs ist nicht positiv: {0} kg
 
 # too large eccentricity for propagation model: e = {0}
-TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = Exzentrizit\u00e4t zu gro\u00df f\u00fcr propagation (e: {0})
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = Exzentrizität zu groß für propagation (e: {0})
 
 # no solar activity available at {0}, data available only in range [{1}, {2}]
-NO_SOLAR_ACTIVITY_AT_DATE = kein Solaraktivit\u00e4t g\u00fcltig am {0}, Daten nur in der Zeitspanne [{1}, {2}] verf\u00fcgbar
+NO_SOLAR_ACTIVITY_AT_DATE = kein Solaraktivität gültig am {0}, Daten nur in der Zeitspanne [{1}, {2}] verfügbar
 
 # non-existent month {0}
 NON_EXISTENT_MONTH = nicht existierender Monat {0}
@@ -173,10 +173,10 @@ NON_EXISTENT_HMS_TIME = nicht existierende Stunde {0}:{1}:{2}
 NON_EXISTENT_TIME = nicht existierende Stunde {0}
 
 # out of range seconds number: {0}
-OUT_OF_RANGE_SECONDS_NUMBER = Sekunden nicht im zul\u00e4ssigen Bereich: {0}
+OUT_OF_RANGE_SECONDS_NUMBER = Sekunden nicht im zulässigen Bereich: {0}
 
 # angle type not supported, supported angles: {0}, {1} and {2}
-ANGLE_TYPE_NOT_SUPPORTED = Winkeltyp nicht unterst\u00fctzt, unterst\u00fctzte Winkeltypen: {0}, {1} and {2}
+ANGLE_TYPE_NOT_SUPPORTED = Winkeltyp nicht unterstützt, unterstützte Winkeltypen: {0}, {1} and {2}
 
 # satellite collided with target
 SATELLITE_COLLIDED_WITH_TARGET = Satellit kollidierte mit Ziel
@@ -185,19 +185,19 @@ SATELLITE_COLLIDED_WITH_TARGET = Satellit kollidierte mit Ziel
 ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = <MISSING TRANSLATION!>
 
 # orbit date ({0}) does not match attitude date ({1})
-ORBIT_AND_ATTITUDE_DATES_MISMATCH = Datum der Umlaufbahn ({0}) stimmt nicht mit den Lagedatum \u00fcberein ({1})
+ORBIT_AND_ATTITUDE_DATES_MISMATCH = Datum der Umlaufbahn ({0}) stimmt nicht mit den Lagedatum überein ({1})
 
 # frame ({0}) does not match frame ({1})
-FRAMES_MISMATCH = Koordinatennetz ({0}) stimmt nicht mit Koordinatennetz ({1}) \u00fcberein ({1})
+FRAMES_MISMATCH = Koordinatennetz ({0}) stimmt nicht mit Koordinatennetz ({1}) überein ({1})
 
 # initial state not specified for orbit propagation
-INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = Anfangs Status nicht specifiziert f\u00fcr Orbit-propagation
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = Anfangs Status nicht specifiziert für Orbit-propagation
 
 # propagator is not in ephemeris generation mode
 PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Propagator ist nicht in den Modus der Ephemeris-generation
 
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
-EVENT_DATE_TOO_CLOSE = Ereignisdatum {0}, gr\u00f6sser als {1} minus {3} Sekunden and kleiner als {2} plus {3} Sekunden, kann nicht addiert werden
+EVENT_DATE_TOO_CLOSE = Ereignisdatum {0}, grösser als {1} minus {3} Sekunden and kleiner als {2} plus {3} Sekunden, kann nicht addiert werden
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = Der Anfangskennsatz der JPL Ephemerides binary file {0} ist nicht lesebar
@@ -209,7 +209,7 @@ INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = wiederspruchliche Werte der Astronomis
 INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = wiederspruchliche Werte des Erd-Mond-Quotient Einheit in JPL-Ephemerides files: ({0} and {1})
 
 # no data loaded for celestial body {0}
-NO_DATA_LOADED_FOR_CELESTIAL_BODY = keine Daten geladen f\u00fcr Himmelsk\u00f6rper {0}
+NO_DATA_LOADED_FOR_CELESTIAL_BODY = keine Daten geladen für Himmelskörper {0}
 
 # file {0} is not a JPL ephemerides binary file
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE = Datei {0} ist kein JPL ephemerides binary file
@@ -218,22 +218,22 @@ NOT_A_JPL_EPHEMERIDES_BINARY_FILE = Datei {0} ist kein JPL ephemerides binary fi
 NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = Datei {0} ist keine Marshall Solar Activity Future Estimation (MSAFE) Datei
 
 # no JPL ephemerides binary files found
-NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = kein JPL-Ephemerides Bin\u00E4rdateien gefunden
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = kein JPL-Ephemerides Binärdateien gefunden
 
 # out of range date for {0} ephemerides: {1}
-OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = Datum nicht im zul\u00e4ssigen Bereich f\u00fcr {0} ephemerides: {1}
+OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = Datum nicht im zulässigen Bereich für {0} ephemerides: {1}
 
 # out of range date for ephemerides: {0}, [{1}, {2}]
-OUT_OF_RANGE_EPHEMERIDES_DATE = Datum nicht im zul\u00e4ssigen Bereich f\u00fcr ephemerides: {0}, [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE = Datum nicht im zulässigen Bereich für ephemerides: {0}, [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
 UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = <MISSING TRANSLATION!>
 
 # unsupported parameter name {0}, supported names: {1}
-UNSUPPORTED_PARAMETER_NAME = nicht unterst\u00fctzter Parametername {0}, unterst\u00fctzte Namen {1}
+UNSUPPORTED_PARAMETER_NAME = nicht unterstützter Parametername {0}, unterstützte Namen {1}
 
 # unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = unbekannte zus\u00e4tzliche Gleichung "{0}"
+UNKNOWN_ADDITIONAL_STATE = unbekannte zusätzliche Gleichung "{0}"
 
 # unknown month "{0}"
 UNKNOWN_MONTH = unbekannter Monat "{0}"
@@ -275,7 +275,7 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = <MISSING TRANSLATION!>
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = <MISSING TRANSLATION!>
 
 # reset state not allowed
-NON_RESETABLE_STATE = nicht zur\u00fccksetzbarer Zustand
+NON_RESETABLE_STATE = nicht zurücksetzbarer Zustand
 
 # Cannot compute Newcomb operators for sigma > rho ({0} > {1})
 DSST_NEWCOMB_OPERATORS_COMPUTATION = <MISSING TRANSLATION!>
@@ -290,40 +290,40 @@ DSST_SPR_SHADOW_INCONSISTENT = <MISSING TRANSLATION!>
 DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = <MISSING TRANSLATION!>
 
 # unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = nicht unterst\u00fctzte SP3 Dateiversion {0}
+SP3_UNSUPPORTED_VERSION = nicht unterstützte SP3 Dateiversion {0}
 
 # unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = nicht unterst\u00fctzte Zeitreferenz {0}
+SP3_UNSUPPORTED_TIMESYSTEM = nicht unterstützte Zeitreferenz {0}
 
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = unerwartetes Ende in der SP3 Datei (nach Zeile {0})
 
 # non-existent geomagnetic model {0} for year {1}
-NON_EXISTENT_GEOMAGNETIC_MODEL = nicht existierendes geo-magnetisches Modell {0} f\u00fcr das Jahr {1}
+NON_EXISTENT_GEOMAGNETIC_MODEL = nicht existierendes geo-magnetisches Modell {0} für das Jahr {1}
 
 # geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
-UNSUPPORTED_TIME_TRANSFORM = geo-magnetisches Feldmodell {0} mit Epoche {1} unterst\u00fctzt keine Zeittransformation, keine Koeffizienten f\u00fcr secular variation definiert
+UNSUPPORTED_TIME_TRANSFORM = geo-magnetisches Feldmodell {0} mit Epoche {1} unterstützt keine Zeittransformation, keine Koeffizienten für secular variation definiert
 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
-OUT_OF_RANGE_TIME_TRANSFORM = Zeittransformation des geo-magnetischen Feldmodells {0} mit Epoche {1} liegt ausserhalb des g\u00fcltigen Bereichs: {2} != [{3}, {4}]
+OUT_OF_RANGE_TIME_TRANSFORM = Zeittransformation des geo-magnetischen Feldmodells {0} mit Epoche {1} liegt ausserhalb des gültigen Bereichs: {2} != [{3}, {4}]
 
 # too small number of cached neighbors: {0} (must be at least {1})
-NOT_ENOUGH_CACHED_NEIGHBORS = nicht genug Nachbareintr\u00e4ge im Cache verf\u00fcgbar: {0} (minimum {1})
+NOT_ENOUGH_CACHED_NEIGHBORS = nicht genug Nachbareinträge im Cache verfügbar: {0} (minimum {1})
 
 # no cached entries
-NO_CACHED_ENTRIES = keine Cache Eintr\u00e4ge verf\u00fcgbar
+NO_CACHED_ENTRIES = keine Cache Einträge verfügbar
 
 # generated entries not sorted: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = generierte Eintr\u00e4ge sind nicht chronologisch sortiert: {0} > {1}
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = generierte Einträge sind nicht chronologisch sortiert: {0} > {1}
 
 # no data generated around date: {0}
 NO_DATA_GENERATED = es wurden keine Daten rund um das Datum {0} generiert
 
 # unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = nicht m\u00f6glich Daten vor {0} zu generieren
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = nicht möglich Daten vor {0} zu generieren
 
 # unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = nicht m\u00f6glich Daten nach {0} zu generieren
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = nicht möglich Daten nach {0} zu generieren
 
 # abscissa {0} is duplicated
 DUPLICATED_ABSCISSA = Abszisse {0} ist dupliziert
