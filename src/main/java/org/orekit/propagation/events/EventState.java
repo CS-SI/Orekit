@@ -111,17 +111,18 @@ public class EventState implements Serializable {
 
     /** Reinitialize the beginning of the step.
      * @param state0 state value at the beginning of the step
+     * @param isForward if true, step will be forward
      * @exception OrekitException if the event detector
      * value cannot be evaluated at the beginning of the step
      */
-    public void reinitializeBegin(final SpacecraftState state0)
+    public void reinitializeBegin(final SpacecraftState state0, final boolean isForward)
         throws OrekitException {
         this.t0 = state0.getDate();
         g0 = detector.g(state0);
         if (g0 == 0) {
             // extremely rare case: there is a zero EXACTLY at interval start
             // we will use the sign slightly after step beginning to force ignoring this zero
-            g0 = detector.g(state0.shiftedBy(0.5 * detector.getThreshold()));
+            g0 = detector.g(state0.shiftedBy((isForward ? 0.5 : -0.5) * detector.getThreshold()));
         }
         g0Positive = g0 >= 0;
     }

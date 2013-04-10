@@ -208,7 +208,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             interpolator.setInterpolatedDate(t0);
             final SpacecraftState y = interpolator.getInterpolatedState();
             for (final EventState state : eventsStates) {
-                state.reinitializeBegin(y);
+                state.reinitializeBegin(y, interpolator.isForward());
             }
 
             statesInitialized = true;
