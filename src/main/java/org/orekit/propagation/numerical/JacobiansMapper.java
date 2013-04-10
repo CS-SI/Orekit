@@ -169,7 +169,7 @@ public class JacobiansMapper {
 
     /** Get the Jacobian with respect to state from a one-dimensional additional state array.
      * <p>
-     * This method extract the data from the {@code p} array and put it in the
+     * This method extract the data from the {@code state} and put it in the
      * {@code dYdY0} array.
      * </p>
      * @param state spacecraft state
