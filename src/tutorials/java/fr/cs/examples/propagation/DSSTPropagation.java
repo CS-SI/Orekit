@@ -184,15 +184,15 @@ public class DSSTPropagation {
 
         // All dates in UTC
         final TimeScale utc = TimeScalesFactory.getUTC();
-        
+
         final int degree = parser.getInt(ParameterKey.CENTRAL_BODY_DEGREE);
         final int order  = FastMath.min(degree, parser.getInt(ParameterKey.CENTRAL_BODY_ORDER));
 
         // Potential coefficients providers
         final UnnormalizedSphericalHarmonicsProvider unnormalized =
-                GravityFieldFactory.getUnnormalizedProvider(degree, order);
+                GravityFieldFactory.getConstantUnnormalizedProvider(degree, order);
         final NormalizedSphericalHarmonicsProvider normalized =
-                GravityFieldFactory.getNormalizedProvider(degree, order);
+                GravityFieldFactory.getConstantNormalizedProvider(degree, order);
 
         // Central body attraction coefficient (m³/s²)
         final double mu = unnormalized.getMu();
@@ -246,7 +246,7 @@ public class DSSTPropagation {
         dsstProp.propagate(start, start.shiftedBy(duration));
         final double dsstOff = System.currentTimeMillis();
         System.out.println("DSST execution time: " + (dsstOff - dsstOn) / 1000.);
-        
+
         // Print results
         printOutput(output, dsstHandler, start);
         System.out.println("DSST results saved as file " + output);
