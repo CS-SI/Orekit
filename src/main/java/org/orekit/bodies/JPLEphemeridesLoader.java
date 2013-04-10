@@ -69,7 +69,7 @@ import org.orekit.utils.TimeStampedGenerator;
 public class JPLEphemeridesLoader implements CelestialBodyLoader {
 
     /** Default supported files name pattern for JPL DE files. */
-    public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx[mp](\\d\\d\\d\\d)\\.(?:4\\d\\d)$";
+    public static final String DEFAULT_DE_SUPPORTED_NAMES = "^[lu]nx([mp](\\d\\d\\d\\d))+\\.(?:4\\d\\d)$";
 
     /** Default supported files name pattern for IMCCE INPOP files. */
     public static final String DEFAULT_INPOP_SUPPORTED_NAMES = "^inpop.*\\.dat$";
