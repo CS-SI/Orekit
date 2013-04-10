@@ -85,7 +85,7 @@ public class CelestialBodyFactoryTest {
             ObjectOutputStream    oos = new ObjectOutputStream(bos);
             oos.writeObject(original);
             Assert.assertTrue(bos.size() > 400);
-            Assert.assertTrue(bos.size() < 450);
+            Assert.assertTrue(bos.size() < 460);
 
             ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
             ObjectInputStream     ois = new ObjectInputStream(bis);
