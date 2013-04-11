@@ -97,7 +97,7 @@ public class GTODProvider implements TransformProvider {
     /** Get the Greenwich mean sidereal time, in radians.
      * @param date current date
      * @return Greenwich mean sidereal time, in radians
-     * @exception OrekitException if UTS taime scale cannot be retrieved
+     * @exception OrekitException if UTS time scale cannot be retrieved
      * @see #getGAST(AbsoluteDate)
      */
     public double getGMST(final AbsoluteDate date) throws OrekitException {
