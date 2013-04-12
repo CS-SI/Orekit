@@ -30,6 +30,10 @@
         Error messages properties are now loaded directly in UTF-8.
       </action>
       <action dev="luc" type="add" >
+        Added a way to know which tide system is used in gravity fields (zero-tide,
+        tide-free or unknown).
+      </action>
+      <action dev="luc" type="add" >
         Added orphan frame, i.e. trees that are not yet connected to the main
         frame tree but attached later on. This allows building frame trees
         from leaf to root. This change fixes feature request #98.

@@ -45,6 +45,7 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -96,7 +97,9 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         c[2][0] = c20;
         double[][] s = new double[3][1];
         propagator.addForceModel(new CunninghamAttractionModel(itrf2008,
-                                                               GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu, c, s)));
+                                                               GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu,
+                                                                                                           TideSystem.UNKNOWN,
+                                                                                                           c, s)));
 
         // let the step handler perform the test
         propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
@@ -159,6 +162,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
         propagator.addForceModel(new CunninghamAttractionModel(itrf2008,
                                                                GravityFieldFactory.getUnnormalizedProvider(ae, mu,
+                                                                                                           TideSystem.UNKNOWN,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -236,6 +240,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new CunninghamAttractionModel(itrf2008,
                                                                GravityFieldFactory.getUnnormalizedProvider(ae, mu,
+                                                                                                           TideSystem.UNKNOWN,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -252,6 +257,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
 
         propagator.addForceModel(new DrozinerAttractionModel(itrf2008,
                                                              GravityFieldFactory.getUnnormalizedProvider(ae, mu,
+                                                                                                         TideSystem.UNKNOWN,
                                                              new double[][] {
                 { 0.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -425,6 +431,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         propagator.setOrbitType(integrationType);
         CunninghamAttractionModel cuModel =
                 new CunninghamAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, cuModel.getTideSystem());
         propagator.addForceModel(cuModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);

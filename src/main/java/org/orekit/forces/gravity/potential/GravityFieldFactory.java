@@ -152,15 +152,18 @@ public class GravityFieldFactory {
      * </p>
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
+     * @param tideSystem tide system
      * @param normalizedC normalized tesseral-sectorial coefficients (cosine part)
      * @param normalizedS normalized tesseral-sectorial coefficients (sine part)
      * @return provider for normalized coefficients
      * @since 6.0
      */
     public static NormalizedSphericalHarmonicsProvider getNormalizedProvider(final double ae, final double mu,
+                                                                             final TideSystem tideSystem,
                                                                              final double[][] normalizedC,
                                                                              final double[][] normalizedS) {
-        return new WrappingNormalizedProvider(new ConstantSphericalHarmonics(ae, mu, normalizedC, normalizedS));
+        return new WrappingNormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
+                                                                             normalizedC, normalizedS));
     }
 
     /** Create a {@link NormalizedSphericalHarmonicsProvider} from an {@link UnnormalizedSphericalHarmonicsProvider}.
@@ -236,15 +239,18 @@ public class GravityFieldFactory {
      * </p>
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
+     * @param tideSystem tide system
      * @param unnormalizedC un-normalized tesseral-sectorial coefficients (cosine part)
      * @param unnormalizedS un-normalized tesseral-sectorial coefficients (sine part)
      * @return provider for un-normalized coefficients
      * @since 6.0
      */
     public static UnnormalizedSphericalHarmonicsProvider getUnnormalizedProvider(final double ae, final double mu,
+                                                                                 final TideSystem tideSystem,
                                                                                  final double[][] unnormalizedC,
                                                                                  final double[][] unnormalizedS) {
-        return new WrappingUnnormalizedProvider(new ConstantSphericalHarmonics(ae, mu, unnormalizedC, unnormalizedS));
+        return new WrappingUnnormalizedProvider(new ConstantSphericalHarmonics(ae, mu, tideSystem,
+                                                                               unnormalizedC, unnormalizedS));
     }
 
     /** Create an {@link UnnormalizedSphericalHarmonicsProvider} from a {@link NormalizedSphericalHarmonicsProvider}.

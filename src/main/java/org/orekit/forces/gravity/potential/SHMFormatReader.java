@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
@@ -86,6 +87,9 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
         cDot.clear();
         sDot.clear();
 
+        boolean    normalized = false;
+        TideSystem tideSystem = TideSystem.UNKNOWN;
+
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         boolean okEarth            = false;
         boolean okSHM              = false;
@@ -114,6 +118,13 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                         final int order  = FastMath.min(getMaxParseOrder(), degree);
                         c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
                         s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
+                        final String lowerCaseLine = line.toLowerCase(Locale.US);
+                        normalized = lowerCaseLine.contains("fully normalized");
+                        if (lowerCaseLine.contains("exclusive permanent tide")) {
+                            tideSystem = TideSystem.TIDE_FREE;
+                        } else {
+                            tideSystem = TideSystem.UNKNOWN;
+                        }
                         okSHM = true;
                     }
 
@@ -171,7 +182,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
                                       name, loaderName);
         }
 
-        setRawCoefficients(true, c, s, name);
+        setRawCoefficients(normalized, c, s, name);
+        setTideSystem(tideSystem);
         setReadComplete(true);
 
     }

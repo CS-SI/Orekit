@@ -72,6 +72,9 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
     /** Indicator for normalized raw coefficients. */
     private boolean normalized;
 
+    /** Tide system. */
+    private TideSystem tideSystem;
+
     /** Simple constructor.
      * <p>Build an uninitialized reader.</p>
      * @param supportedNames regular expression for supported files names
@@ -89,6 +92,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         this.rawC                       = null;
         this.rawS                       = null;
         this.normalized                 = false;
+        this.tideSystem                 = TideSystem.UNKNOWN;
     }
 
     /** Get the regular expression for supported files names.
@@ -179,6 +183,20 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
      */
     protected double getMu() {
         return mu;
+    }
+
+    /** Set the {@link TideSystem} used in the gravity field.
+     * @param tideSystem tide system used in the gravity field
+     */
+    protected void setTideSystem(final TideSystem tideSystem) {
+        this.tideSystem = tideSystem;
+    }
+
+    /** Get the {@link TideSystem} used in the gravity field.
+     * @return tide system used in the gravity field
+     */
+    protected TideSystem getTideSystem() {
+        return tideSystem;
     }
 
     /** Set the tesseral-sectorial coefficients matrix.
@@ -332,7 +350,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         final double[][] truncatedS = buildTriangularArray(degree, order, 0.0);
         rescale(1.0, normalized, rawC, rawS, wantNormalized, truncatedC, truncatedS);
 
-        return new ConstantSphericalHarmonics(ae, mu, truncatedC, truncatedS);
+        return new ConstantSphericalHarmonics(ae, mu, tideSystem, truncatedC, truncatedS);
 
     }
 

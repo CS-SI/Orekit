@@ -24,6 +24,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.CircularOrbit;
@@ -64,6 +65,7 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
      *        (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param referenceRadius reference radius of the Earth for the potential model (m)
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @param tideSystem tide system
      * @param c20 un-normalized zonal coefficient (about -1.08e-3 for Earth)
      * @param c30 un-normalized zonal coefficient (about +2.53e-6 for Earth)
      * @param c40 un-normalized zonal coefficient (about +1.62e-6 for Earth)
@@ -73,13 +75,14 @@ public class EcksteinHechlerPropagatorBuilder extends AbstractParameterizable
     public EcksteinHechlerPropagatorBuilder(final Frame frame,
                                             final double referenceRadius,
                                             final double mu,
+                                            final TideSystem tideSystem,
                                             final double c20,
                                             final double c30,
                                             final double c40,
                                             final double c50,
                                             final double c60) {
         this(frame,
-             GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu,
+             GravityFieldFactory.getUnnormalizedProvider(referenceRadius, mu, tideSystem,
                                                          new double[][] {
                                                              {
                                                                  0

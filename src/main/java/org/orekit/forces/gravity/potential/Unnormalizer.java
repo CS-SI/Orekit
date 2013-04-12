@@ -74,6 +74,11 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
+    public TideSystem getTideSystem() {
+        return normalized.getTideSystem();
+    }
+
+    /** {@inheritDoc} */
     public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
         return normalized.getNormalizedCnm(dateOffset, n, m) * factors[n][m];

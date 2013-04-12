@@ -43,6 +43,7 @@ import org.orekit.forces.AbstractForceModelTest;
 import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -91,6 +92,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
         propagator.addForceModel(new DrozinerAttractionModel(itrf2008,
                                                              GravityFieldFactory.getUnnormalizedProvider(6378136.460, mu,
+                                                                                                         TideSystem.UNKNOWN,
                                                              new double[][] { { 0.0 }, { 0.0 }, { c20 } },
                                                              new double[][] { { 0.0 }, { 0.0 }, { 0.0 } })));
 
@@ -154,6 +156,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
 
         propagator.addForceModel(new DrozinerAttractionModel(itrf2008,
                                                              GravityFieldFactory.getUnnormalizedProvider(ae, mu,
+                                                                                                         TideSystem.UNKNOWN,
                                                              new double[][] {
                 { 1.0 }, { 0.0 }, { c20 }, { c30 },
                 { c40 }, { c50 }, { c60 },
@@ -308,6 +311,7 @@ public class DrozinerAttractionModelTest extends AbstractForceModelTest {
         propagator.setOrbitType(integrationType);
         DrozinerAttractionModel drModel =
                 new DrozinerAttractionModel(itrf2008, GravityFieldFactory.getUnnormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, drModel.getTideSystem());
         propagator.addForceModel(drModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);

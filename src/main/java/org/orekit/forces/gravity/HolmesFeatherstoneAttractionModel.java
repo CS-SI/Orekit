@@ -31,6 +31,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.TideSystem;
+import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -67,7 +69,7 @@ import org.orekit.time.AbsoluteDate;
  */
 
 public class HolmesFeatherstoneAttractionModel
-    extends AbstractParameterizable implements ForceModel {
+    extends AbstractParameterizable implements ForceModel, TideSystemProvider {
 
     /** Exponent scaling to avoid floating point overflow.
      * <p>The paper uses 10^280, we prefer a power of two to preserve accuracy thanks to
@@ -142,6 +144,11 @@ public class HolmesFeatherstoneAttractionModel
             sectorial[m] = FastMath.sqrt((2 * m + 1) / (2.0 * m)) * sectorial[m - 1];
         }
 
+    }
+
+    /** {@inheritDoc} */
+    public TideSystem getTideSystem() {
+        return provider.getTideSystem();
     }
 
     /** Compute the value of the gravity field.

@@ -39,6 +39,7 @@ import org.orekit.forces.gravity.potential.GRGSFormatReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.Transform;
@@ -293,6 +294,10 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
             return 0;
         }
 
+        public TideSystem getTideSystem() {
+            return TideSystem.UNKNOWN;
+        }
+
         public double getNormalizedCnm(double dateOffset, int n, int m) {
             return 1;
         }
@@ -328,7 +333,9 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         c[2][0] = normalizedC20;
         double[][] s = new double[3][1];
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005,
-                                                                       GravityFieldFactory.getNormalizedProvider(6378136.460, mu, c, s)));
+                                                                       GravityFieldFactory.getNormalizedProvider(6378136.460, mu,
+                                                                                                                 TideSystem.UNKNOWN,
+                                                                                                                 c, s)));
 
         // let the step handler perform the test
         propagator.setMasterMode(Constants.JULIAN_DAY, new SpotStepHandler(date, mu));
@@ -391,6 +398,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005,
                                                                        GravityFieldFactory.getNormalizedProvider(ae, mu,
+                                                                                                                 TideSystem.UNKNOWN,
                                                                        new double[][] {
                 { 0.0 }, { 0.0 }, { normalizedC20 }, { normalizedC30 },
                 { normalizedC40 }, { normalizedC50 }, { normalizedC60 },
@@ -470,6 +478,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
         propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005,
                                                                        GravityFieldFactory.getNormalizedProvider(ae, mu,
+                                                                                                                 TideSystem.UNKNOWN,
                                                                        new double[][] {
                 { 0.0 }, { 0.0 }, { normalizedC20 }, { normalizedC30 },
                 { normalizedC40 }, { normalizedC50 }, { normalizedC60 },
@@ -486,6 +495,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
                                                                GravityFieldFactory.getUnnormalizedProvider(ae, mu,
+                                                                                                           TideSystem.UNKNOWN,
                                                                new double[][] {
                 { 0.0 }, { 0.0 }, { unnormalizedC20 }, { unnormalizedC30 },
                 { unnormalizedC40 }, { unnormalizedC50 }, { unnormalizedC60 },
@@ -696,6 +706,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         propagator.setOrbitType(integrationType);
         HolmesFeatherstoneAttractionModel hfModel =
                 new HolmesFeatherstoneAttractionModel(ITRF2005, GravityFieldFactory.getNormalizedProvider(50, 50));
+        Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         propagator.addForceModel(hfModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
         propagator.setInitialState(state0);

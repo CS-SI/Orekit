@@ -32,6 +32,9 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** Central body attraction coefficient. */
     private final double mu;
 
+    /** Tide system. */
+    private final TideSystem tideSystem;
+
     /** Raw tesseral-sectorial coefficients matrix. */
     private final double[][] rawC;
 
@@ -41,15 +44,18 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** Simple constructor.
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
+     * @param tideSystem tide system
      * @param rawC raw tesseral-sectorial coefficients
      * @param rawS raw tesseral-sectorial coefficients
      */
     public ConstantSphericalHarmonics(final double ae, final double mu,
+                                      final TideSystem tideSystem,
                                       final double[][] rawC, final double[][] rawS) {
-        this.ae   = ae;
-        this.mu   = mu;
-        this.rawC = rawC;
-        this.rawS = rawS;
+        this.ae         = ae;
+        this.mu         = mu;
+        this.tideSystem = tideSystem;
+        this.rawC       = rawC;
+        this.rawS       = rawS;
     }
 
     /** {@inheritDoc} */
@@ -84,6 +90,11 @@ class ConstantSphericalHarmonics implements RawSphericalHarmonicsProvider {
     /** {@inheritDoc} */
     public double getOffset(final AbsoluteDate date) {
         return 0.0;
+    }
+
+    /** {@inheritDoc} */
+    public TideSystem getTideSystem() {
+        return tideSystem;
     }
 
     /** {@inheritDoc} */

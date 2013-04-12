@@ -181,6 +181,7 @@ public class GRGSFormatReader extends PotentialCoefficientsReader {
         }
 
         setRawCoefficients(true, c, s, name);
+        setTideSystem(TideSystem.UNKNOWN);
         setReadComplete(true);
 
     }

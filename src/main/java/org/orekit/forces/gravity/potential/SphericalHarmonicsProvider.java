@@ -23,7 +23,7 @@ import org.orekit.time.AbsoluteDate;
  * @author Luc Maisonobe
  * @since 6.0
  */
-public interface SphericalHarmonicsProvider {
+public interface SphericalHarmonicsProvider extends TideSystemProvider {
 
     /** Get the maximal supported degree.
      * @return maximal supported degree
@@ -57,6 +57,5 @@ public interface SphericalHarmonicsProvider {
      * returns null)
      */
     double getOffset(AbsoluteDate date);
-
 
 }

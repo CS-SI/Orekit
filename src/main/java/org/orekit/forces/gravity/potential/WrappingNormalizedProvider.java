@@ -70,6 +70,11 @@ class WrappingNormalizedProvider implements NormalizedSphericalHarmonicsProvider
     }
 
     /** {@inheritDoc} */
+    public TideSystem getTideSystem() {
+        return rawProvider.getTideSystem();
+    }
+
+    /** {@inheritDoc} */
     public double getNormalizedCnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
         // no conversion is done here

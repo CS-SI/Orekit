@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
@@ -60,6 +61,12 @@ public class EGMFormatReader extends PotentialCoefficientsReader {
         // based on file name (a better way would be to have the data in the file...)
         setAe(Constants.EGM96_EARTH_EQUATORIAL_RADIUS);
         setMu(Constants.EGM96_EARTH_MU);
+        final String lowerCaseName = name.toLowerCase(Locale.US);
+        if (lowerCaseName.contains("2008") || lowerCaseName.contains("zerotide")) {
+            setTideSystem(TideSystem.ZERO_TIDE);
+        } else {
+            setTideSystem(TideSystem.TIDE_FREE);
+        }
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         final List<List<Double>> c = new ArrayList<List<Double>>();

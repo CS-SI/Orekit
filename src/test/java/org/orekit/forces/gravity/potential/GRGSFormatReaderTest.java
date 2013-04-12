@@ -35,6 +35,7 @@ public class GRGSFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5-c1.txt", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
 
+        Assert.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2011-05-01T01:02:03", TimeScalesFactory.getTT());
@@ -58,6 +59,7 @@ public class GRGSFormatReaderTest {
     public void testRegular05cNormalized() throws OrekitException {
         GravityFieldFactory.addPotentialCoefficientsReader(new GRGSFormatReader("grim5_C1.dat", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.UNKNOWN, provider.getTideSystem());
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());

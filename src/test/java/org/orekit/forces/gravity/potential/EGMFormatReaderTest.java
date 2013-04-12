@@ -32,6 +32,7 @@ public class EGMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         Assert.assertEquals( 0.957254173792E-06, provider.getNormalizedCnm(Double.NaN, 3, 0), 1.0e-15);
         Assert.assertEquals( 0.174971983203E-06, provider.getNormalizedCnm(Double.NaN, 5, 5), 1.0e-15);
         Assert.assertEquals( 0.0,                provider.getNormalizedSnm(Double.NaN, 4, 0), 1.0e-15);
@@ -48,6 +49,7 @@ public class EGMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("egm96_to5.ascii", true));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         int maxUlps = 1;
         checkValue(provider.getUnnormalizedCnm(Double.NaN, 3, 0), 3, 0, 0.957254173792E-06, maxUlps);
         checkValue(provider.getUnnormalizedCnm(Double.NaN, 5, 5), 5, 5, 0.174971983203E-06, maxUlps);
@@ -112,6 +114,22 @@ public class EGMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("corrupted-2-egm96_to5", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
+    @Test
+    public void testZeroTidePattern1() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("dummy_egm2008", true));
+        Assert.assertEquals(TideSystem.ZERO_TIDE,
+                            GravityFieldFactory.getUnnormalizedProvider(5, 5).getTideSystem());
+    }
+
+    @Test
+    public void testZeroTidePattern2() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new EGMFormatReader("dummy_zerotide", true));
+        Assert.assertEquals(TideSystem.ZERO_TIDE,
+                            GravityFieldFactory.getUnnormalizedProvider(5, 5).getTideSystem());
     }
 
     private void checkValue(final double value, final int n, final int m,

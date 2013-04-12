@@ -37,6 +37,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -178,6 +179,7 @@ public class EcksteinHechlerPropagatorTest {
         // one must put a non 0 value.
         UnnormalizedSphericalHarmonicsProvider kepProvider =
                 GravityFieldFactory.getUnnormalizedProvider(6.378137e6, 3.9860047e14,
+                                                            TideSystem.UNKNOWN,
                                                             new double[][] {
                                                                 { 0 }, { 0 }, { 0.1e-10 }, { 0.1e-13 }, { 0.1e-13 }, { 0.1e-14 }, { 0.1e-14 }
                                                             }, new double[][] {
@@ -704,7 +706,7 @@ public class EcksteinHechlerPropagatorTest {
         double[][] snm = new double[][] {
             { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }
            };
-        provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, cnm, snm);
+        provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, TideSystem.UNKNOWN, cnm, snm);
     }
 
     @After

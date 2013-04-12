@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
@@ -115,7 +116,7 @@ public class EcksteinHechlerConverterTest {
          double[][] snm = new double[][] {
              { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }, { 0 }
             };
-         provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, cnm, snm);
+         provider = GravityFieldFactory.getUnnormalizedProvider(ae, mu, TideSystem.UNKNOWN, cnm, snm);
 
         orbit = new EquinoctialOrbit(new PVCoordinates(new Vector3D(3220103., 69623., 6449822.),
                                                        new Vector3D(6414.7, -2006., -3180.)),

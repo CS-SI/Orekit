@@ -86,6 +86,11 @@ class SecularTrendSphericalHarmonics implements RawSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
+    public TideSystem getTideSystem() {
+        return provider.getTideSystem();
+    }
+
+    /** {@inheritDoc} */
     public double getRawCnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
 

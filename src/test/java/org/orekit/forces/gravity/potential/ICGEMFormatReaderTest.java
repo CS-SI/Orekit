@@ -35,6 +35,7 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(3, 2);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         try {
             provider.getUnnormalizedCnm(0.0, 3, 3);
             Assert.fail("an exception should have been thrown");
@@ -61,6 +62,7 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
@@ -82,6 +84,7 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("g007_eigen_05c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate refDate = new AbsoluteDate("2004-10-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
@@ -108,6 +111,7 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("eigen-6s-truncated", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
         AbsoluteDate refDate = new AbsoluteDate("2005-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
         AbsoluteDate date = new AbsoluteDate("2013-01-08T10:46:53", TimeScalesFactory.getTT());
@@ -144,6 +148,36 @@ public class ICGEMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("corrupted-2-g007_eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testInvalidNorm() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_invalid_norm_icgem", false));
+        GravityFieldFactory.getUnnormalizedProvider(3, 3);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testInvalidTide() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_invalid_tide_icgem", false));
+        GravityFieldFactory.getUnnormalizedProvider(3, 3);
+    }
+
+    @Test
+    public void testZeroTide() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_zero_tide_icgem", false));
+        Assert.assertEquals(TideSystem.ZERO_TIDE,
+                            GravityFieldFactory.getUnnormalizedProvider(3, 3).getTideSystem());
+    }
+
+    @Test
+    public void testUnknownTide() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_unknown_tide_icgem", false));
+        Assert.assertEquals(TideSystem.UNKNOWN,
+                            GravityFieldFactory.getUnnormalizedProvider(3, 3).getTideSystem());
     }
 
     private void checkValue(final double value,

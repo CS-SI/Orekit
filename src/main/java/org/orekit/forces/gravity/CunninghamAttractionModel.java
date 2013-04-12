@@ -29,6 +29,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.TideSystem;
+import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -72,7 +74,8 @@ import org.orekit.time.AbsoluteDate;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 
-public class CunninghamAttractionModel extends AbstractParameterizable implements ForceModel {
+public class CunninghamAttractionModel
+    extends AbstractParameterizable implements ForceModel, TideSystemProvider {
 
     /** Provider for the spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -97,7 +100,8 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
     public CunninghamAttractionModel(final Frame centralBodyFrame,
                                      final double equatorialRadius, final double mu,
                                      final double[][] C, final double[][] S) {
-        this(centralBodyFrame, GravityFieldFactory.getUnnormalizedProvider(equatorialRadius, mu, C, S));
+        this(centralBodyFrame, GravityFieldFactory.getUnnormalizedProvider(equatorialRadius, mu,
+                                                                           TideSystem.UNKNOWN, C, S));
     }
 
    /** Creates a new instance.
@@ -126,6 +130,11 @@ public class CunninghamAttractionModel extends AbstractParameterizable implement
         final ParameterConfiguration muConfig =
                 new ParameterConfiguration(NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT, hMu);
         jacobianizer = new Jacobianizer(this, mu, Collections.singletonList(muConfig), hPosition);
+    }
+
+    /** {@inheritDoc} */
+    public TideSystem getTideSystem() {
+        return provider.getTideSystem();
     }
 
     /** {@inheritDoc} */

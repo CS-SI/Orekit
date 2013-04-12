@@ -91,6 +91,18 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
     /** Max degree. */
     private static final String MAX_DEGREE              = "max_degree";
 
+    /** Tide system indicator. */
+    private static final String TIDE_SYSTEM_INDICATOR   = "tide_system";
+
+    /** Indicator value for zero-tide system. */
+    private static final String ZERO_TIDE               = "zero_tide";
+
+    /** Indicator value for tide-free system. */
+    private static final String TIDE_FREE               = "tide_free";
+
+    /** Indicator value for unknown tide system. */
+    private static final String TIDE_UNKNOWN            = "unknown";
+
     /** Normalization indicator. */
     private static final String NORMALIZATION_INDICATOR = "norm";
 
@@ -120,6 +132,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
 
     /** Gravity field coefficient cosine amplitude. */
     private static final String ACOS                    = "acos";
+
+    /** Tide system. */
+    private TideSystem tideSystem;
 
     /** Indicator for normalized coeffcients. */
     private boolean normalized;
@@ -174,8 +189,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         sCos.clear();
         sSin.clear();
 
-        // by default, the field is normalized (will be overridden later if non-default)
+        // by default, the field is normalized with unknown tide system
+        // (will be overridden later if non-default)
         normalized = true;
+        tideSystem = TideSystem.UNKNOWN;
 
         final BufferedReader r = new BufferedReader(new InputStreamReader(input, "UTF-8"));
         boolean inHeader = true;
@@ -207,6 +224,17 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                         c = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
                         s = buildTriangularArray(degree, order, missingCoefficientsAllowed() ? 0.0 : Double.NaN);
 
+                    } else if ((tab.length == 2) && TIDE_SYSTEM_INDICATOR.equals(tab[0])) {
+                        if (ZERO_TIDE.equals(tab[1])) {
+                            tideSystem = TideSystem.ZERO_TIDE;
+                        } else if (TIDE_FREE.equals(tab[1])) {
+                            tideSystem = TideSystem.TIDE_FREE;
+                        } else if (TIDE_UNKNOWN.equals(tab[1])) {
+                            tideSystem = TideSystem.UNKNOWN;
+                        } else {
+                            throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                                       lineNumber, name, line);
+                        }
                     } else if ((tab.length == 2) && NORMALIZATION_INDICATOR.equals(tab[0])) {
                         if (NORMALIZED.equals(tab[1])) {
                             normalized = true;
@@ -319,6 +347,7 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
         }
 
         setRawCoefficients(normalized, c, s, name);
+        setTideSystem(tideSystem);
         setReadComplete(true);
 
     }

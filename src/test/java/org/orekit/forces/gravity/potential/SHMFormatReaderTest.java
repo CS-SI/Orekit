@@ -60,6 +60,7 @@ public class SHMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
@@ -83,6 +84,7 @@ public class SHMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("eigen_cg03c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
@@ -108,6 +110,7 @@ public class SHMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("compressed-eigen-cg01c_coef", false));
         UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(5, 5);
+        Assert.assertEquals(TideSystem.TIDE_FREE, provider.getTideSystem());
 
         AbsoluteDate refDate = new AbsoluteDate("1997-01-01T12:00:00", TimeScalesFactory.getTT());
         Assert.assertEquals(refDate, provider.getReferenceDate());
@@ -147,6 +150,14 @@ public class SHMFormatReaderTest {
         Utils.setDataRoot("potential");
         GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("corrupted-3-eigen_coef", false));
         GravityFieldFactory.getUnnormalizedProvider(5, 5);
+    }
+
+    @Test
+    public void testZeroTide() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new SHMFormatReader("dummy_unknown_tide_shm", false));
+        Assert.assertEquals(TideSystem.UNKNOWN,
+                            GravityFieldFactory.getUnnormalizedProvider(5, 5).getTideSystem());
     }
 
     private void checkValue(final double value,
