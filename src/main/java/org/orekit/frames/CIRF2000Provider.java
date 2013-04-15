@@ -127,7 +127,7 @@ class CIRF2000Provider implements TransformProvider {
         // load the nutation model
         xDevelopment    = loadModel(conventions.getXModel());
         yDevelopment    = loadModel(conventions.getYModel());
-        sxy2Development = loadModel(conventions.geSXY2XModel());
+        sxy2Development = loadModel(conventions.getSXY2XModel());
 
     }
 

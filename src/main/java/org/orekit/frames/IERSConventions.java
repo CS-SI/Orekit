@@ -37,7 +37,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public String geSXY2XModel() {
+        public String getSXY2XModel() {
             return IERS_BASE + "2010/tab5.2d.txt";
         }
 
@@ -57,7 +57,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public String geSXY2XModel() {
+        public String getSXY2XModel() {
             return IERS_BASE + "2003/tab5.2c.txt";
         }
 
@@ -79,6 +79,6 @@ public enum IERSConventions {
     /** Get the table resource name for the S + XY/2 pole component model.
      * @return table resource name for the S + XY/2 pole component model
      */
-    public abstract String geSXY2XModel();
+    public abstract String getSXY2XModel();
 
 }
