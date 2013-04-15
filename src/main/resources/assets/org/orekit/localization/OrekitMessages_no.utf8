@@ -1,8 +1,8 @@
 # internal error, contact maintenance at {0}
-INTERNAL_ERROR = Intern feil. Kontakt vedlikeholdsansvarlig på {0}
+INTERNAL_ERROR = intern feil. Kontakt vedlikeholdsansvarlig på {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
-ALTITUDE_BELOW_ALLOWED_THRESHOLD = <MISSING TRANSLATION!>
+ALTITUDE_BELOW_ALLOWED_THRESHOLD = høyde ({0} m) er under den tillate terskelen {1} m
 
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = bane innenfor Brillouins sfære (r = {0})
@@ -11,34 +11,34 @@ TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = bane innenfor Brillouins sfære (r = {0})
 ALMOST_EQUATORIAL_ORBIT = nesten ekvatorialsk bane (i = {0} grader)
 
 # almost critically inclined orbit (i = {0} degrees)
-ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk helning (i = {0} degrés)
+ALMOST_CRITICALLY_INCLINED_ORBIT = banen er nær kritisk helning (i = {0} grader)
 
 # unable to compute Eckstein-Hechler mean parameters after {0} iterations
 UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = umulig å regne ut Eckstein-Hechlers middelsparameterene etter {0} iterasjoner
 
 # null parent for frame {0}
-NULL_PARENT_FOR_FRAME = null far for ramme {0}
+NULL_PARENT_FOR_FRAME = null forelder for ramme {0}
 
 # frame {0} is already attached to frame {1}
-FRAME_ALREADY_ATTACHED = <MISSING TRANSLATION!>
+FRAME_ALREADY_ATTACHED = ramme {0} er allerede knyttet til ramme {1}
 
 # frame {0} is not attached to the main frames tree
-FRAME_NOT_ATTACHED = <MISSING TRANSLATION!>
+FRAME_NOT_ATTACHED = ramme {0} er ikke knyttet til hovedramme treet
 
 # frame {0} is an ancestor of both frames {1} and {2}
-FRAME_ANCESTOR_OF_BOTH_FRAMES = <MISSING TRANSLATION!>
+FRAME_ANCESTOR_OF_BOTH_FRAMES = ramme {0} er en forgjenger for begge rammene {1} og {2}
 
 # frame {0} is an ancestor of neither frame {1} nor {2}
-FRAME_ANCESTOR_OF_NEITHER_FRAME = <MISSING TRANSLATION!>
+FRAME_ANCESTOR_OF_NEITHER_FRAME = ramme {0} er ikke en forgjenger for verken ramme {1} eller {2}
 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
-FRAME_NO_NTH_ANCESTOR = <MISSING TRANSLATION!>
+FRAME_NO_NTH_ANCESTOR = ramme {0} har dybden {1}, den kan ikke ha en forgjenger {2} nivåer ovenfor
 
 # unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, støttete ramme: {0} og {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = ikke understøttet baneramme, støttete typer: {0} og {1}
 
 # non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = <MISSING TRANSLATION!>
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = ikke pseudo-treghet ramme "{0}" er ikke passende for å definere baner
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = data rotmappen {0} finnes ikke
@@ -53,7 +53,7 @@ NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} er verken en mappe eller en zip/jar-arkiv
 UNABLE_TO_FIND_RESOURCE = Filen {0} finnes ikke i classpath''en
 
 # no Earth Orientation Parameters loaded
-NO_EARTH_ORIENTATION_PARAMETERS_LOADED = Ingen jordorienteringsparametere er lastet
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = ingen jordorienteringsparametere er lastet
 
 # missing Earth Orientation Parameters between {0} and {1}
 MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = manglende jordorienteringsparametere mellom {0} og {1}
@@ -62,7 +62,7 @@ MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = manglende jordorienteringsp
 NOT_A_SUPPORTED_IERS_DATA_FILE = filen {0} er ikke en støttet IERS datafil
 
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
-INCONSISTENT_DATES_IN_IERS_FILE = <MISSING TRANSLATION!>
+INCONSISTENT_DATES_IN_IERS_FILE = ukonsekvente datoer i IERS filen {0}: {1}-{2}-{3} og MJD {4}
 
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = uventet data etter linje {0} i filen {1}: {2}
@@ -71,7 +71,7 @@ UNEXPECTED_DATA_AFTER_LINE_IN_FILE = uventet data etter linje {0} i filen {1}: {
 NON_CHRONOLOGICAL_DATES_IN_FILE = ikkekronologiske datoer i filen {0}, linje {1}
 
 # no IERS UTC-TAI history data loaded
-NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = Ingen IERS UTC-TAI historikk data er lastet
+NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = ingen IERS UTC-TAI historikk data er lastet
 
 # no entries found in IERS UTC-TAI history file {0}
 NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  ingen data funnet i IERS UTC-TAI historiefilen {0}
@@ -95,22 +95,22 @@ SPACECRAFT_MASS_BECOMES_NEGATIVE = romfartøyets masse blir negativ (m: {0})
 POSITIVE_FLOW_RATE = positiv strøm (q: {0})
 
 # no gravity field data loaded
-NO_GRAVITY_FIELD_DATA_LOADED = ingen gravitasjonsfelts-data er lastet
+NO_GRAVITY_FIELD_DATA_LOADED = ingen tyngdefelt-data er lastet
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = <MISSING TRANSLATION!>
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = tyngdefeltsnormalisering underflyt for grad {0} og rekkefølge {1}
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = polar bane (avstand til polaksen: {0})
 
 # unexpected format error for file {0} with loader {1}
-UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = <MISSING TRANSLATION!>
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = uventet filformat for filen {0} med lasteren {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
-DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = duplisert tyngdefeltskoeffisient {0}({1}, {2}) i filen {3}
 
 # missing gravity field coefficient {0}({1}, {2}) in file {3}
-MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = manglende tyngdefeltskoeffisient {0}({1}, {2}) i filen {3}
 
 # too large degree (n = {0}, potential maximal degree is {1})
 TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = for høy grad (n = {0}, maksimal potensial grad er {1})
@@ -119,7 +119,7 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = for høy grad (n = {0}, maksimal potensial 
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = for høy kontroll (m = {0}, maksimal potensial kontrol er {1})
 
 # several reference dates ({0} and {1}) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION!>
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = flere referansedatoer ({0} og {1}) funnet i tyngdefeltsfilen {2}
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = ingen TLE data tilgjengelig for objektet {0}
@@ -128,7 +128,7 @@ NO_TLE_FOR_OBJECT = ingen TLE data tilgjengelig for objektet {0}
 NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = ingen TLE data tilgjengelig for oppskytningsår {0}, oppskytningsnummer {1}, oppskytningsdel {2}
 
 # lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
-NOT_TLE_LINES = Linjene {0} og {1} er ikke TLE linjer:\n{0}: "{2}"\n{1}: "{3}"
+NOT_TLE_LINES = linjene {0} og {1} er ikke TLE linjer:\n{0}: "{2}"\n{1}: "{3}"
 
 # expected a second TLE line after line {0}:\n{0}: "{1}"
 MISSING_SECOND_TLE_LINE = forventet en annen TLE linje etter linje {0}:\n{0}: "{1}"
@@ -140,10 +140,10 @@ TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = TLE linjene refererer ikke til det samme
 TLE_CHECKSUM_ERROR = gal sjekksum for TLE linje {0}, verdien {1} var ventet men fant {2} ({3})
 
 # no TLE data available
-NO_TLE_DATA_AVAILABLE = <MISSING TRANSLATION!>
+NO_TLE_DATA_AVAILABLE = ingen TLE data tilgjengelig
 
 # spacecraft mass is not positive: {0} kg
-NOT_POSITIVE_SPACECRAFT_MASS = <MISSING TRANSLATION!>
+NOT_POSITIVE_SPACECRAFT_MASS = romfartøyets masse er ikke positiv: {0} kg
 
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = for eksentrisk bane for høy til propagasjon (e: {0})
@@ -158,13 +158,13 @@ NON_EXISTENT_MONTH = måneden {0} eksisterer ikke
 NON_EXISTENT_YEAR_MONTH_DAY = datoen {0}-{1}-{2} eksisterer ikke
 
 # non-existent week date {0}-W{1}-{2}
-NON_EXISTENT_WEEK_DATE = <MISSING TRANSLATION!>
+NON_EXISTENT_WEEK_DATE = ukedatoen {0}-W{1}-{2} eksisterer ikke
 
 # non-existent date {0}
 NON_EXISTENT_DATE = datoen {0} eksisterer ikke
 
 # no day number {0} in year {1}
-NON_EXISTENT_DAY_NUMBER_IN_YEAR = <MISSING TRANSLATION!>
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = ingen dag nummer {0} i år {1}
 
 # non-existent time {0}:{1}:{2}
 NON_EXISTENT_HMS_TIME = klokkeslettet {0}:{1}:{2} eksisterer ikke
@@ -188,7 +188,7 @@ ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = attitydesikteloven bommer på b
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = banedatoen ({0}) passer ikke med attitydedatoen ({1})
 
 # frame ({0}) does not match frame ({1})
-FRAMES_MISMATCH = <MISSING TRANSLATION!>
+FRAMES_MISMATCH = ramme ({0}) passer ikke med ramme ({1})
 
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initialstatusen er ikke presisert for banepropagasjon
@@ -197,7 +197,7 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = initialstatusen er ikke pres
 PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = propagtøren er ikke satt i stillingen efemeridegenerasjon
 
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
-EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION!>
+EVENT_DATE_TOO_CLOSE = hendelsedatoen {0}, større enn {1} minus {3} sekunder og mindre enn {2} pluss {3} sekunder, kan ikke bli legget til
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = umulig å lese startblokken fra den binære JPL efemeridefilen {0}
@@ -215,10 +215,10 @@ NO_DATA_LOADED_FOR_CELESTIAL_BODY = ingen data er lastet for himmellegeme {0}
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE = filen {0} er ikke en binær JPL efemeridefil
 
 # file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
-NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = <MISSING TRANSLATION!>
+NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = filen {0} er ikke en Marshall Solar Activity Future Estimation (MSAFE) fil
 
 # no JPL ephemerides binary files found
-NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = Ingen binære JPL efemeridefil funnet
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = ingen binære JPL efemeridefil funnet
 
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til {0} efemeridene: {1}
@@ -227,109 +227,109 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til {0} efe
 OUT_OF_RANGE_EPHEMERIDES_DATE = dato utenfor gyldighetsperioden til efemeridene: {0}, [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
-UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = <MISSING TRANSLATION!>
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = uventete to høydeverdier: {0} og {1}, for en asimut: {2}
 
 # unsupported parameter name {0}, supported names: {1}
-UNSUPPORTED_PARAMETER_NAME = <MISSING TRANSLATION!>
+UNSUPPORTED_PARAMETER_NAME = ustøttet parameter navn {0}, støttete navn: {1}
 
 # unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = <MISSING TRANSLATION!>
+UNKNOWN_ADDITIONAL_STATE = ukjent ytterligere tilstand "{0}"
 
 # unknown month "{0}"
-UNKNOWN_MONTH = <MISSING TRANSLATION!>
+UNKNOWN_MONTH = ukjent måned "{0}"
 
 # state Jacobian has not been initialized yet
-STATE_JACOBIAN_NOT_INITIALIZED = <MISSING TRANSLATION!>
+STATE_JACOBIAN_NOT_INITIALIZED = Jacobian-tilstanden har ikke blitt initialisert ennå
 
 # state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = <MISSING TRANSLATION!>
+STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobian-tilstanden er en {0}x{1} matrise, den burde enten være en 6x6 eller en 7x7 matrise
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
-STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = <MISSING TRANSLATION!>
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobian-tilstanden har {0} rader men Jacobian parameterene har {1} rader
 
 # finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = <MISSING TRANSLATION!>
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = endelige forskjellige trinn for kraftmodelderivater ikke initialisert
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
-INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = <MISSING TRANSLATION!>
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = initiale Jacobian matrisen har {0} kolonner, men {1} parametere har blitt valgt
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
-ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = <MISSING TRANSLATION!>
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = banen burde enten være elliptisk med a > 0 og e < 1 eller hyperbolsk med a < 0 og e > 1, a = {0}, e = {1}
 
 # true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
-ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = <MISSING TRANSLATION!>
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = sann anomali {0} utenfor det hyperbolske området (e = {1}, {2} < v < {3})
 
 # hyperbolic orbits cannot be handled as {0} instances
-HYPERBOLIC_ORBIT_NOT_HANDLED_AS = <MISSING TRANSLATION!>
+HYPERBOLIC_ORBIT_NOT_HANDLED_AS = hyperbolske baner kan ikke bli behandlet som {0} enheter
 
 # invalid preamble field in CCSDS date: {0}
-CCSDS_DATE_INVALID_PREAMBLE_FIELD = <MISSING TRANSLATION!>
+CCSDS_DATE_INVALID_PREAMBLE_FIELD = ugyldig blokkstartfelt for CCSDS dato: {0}
 
 # invalid time field length in CCSDS date: {0}, expected {1}
-CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = <MISSING TRANSLATION!>
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ugyldig datofelt-lengde for CCSDS dato: {0}
 
 # missing agency epoch in CCSDS date
-CCSDS_DATE_MISSING_AGENCY_EPOCH = <MISSING TRANSLATION!>
+CCSDS_DATE_MISSING_AGENCY_EPOCH = manglende byrå epoke for CCSDS dato
 
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE = <MISSING TRANSLATION!>
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = navnet "{0}" er allerede brukt for en annen tilstand
 
 # reset state not allowed
-NON_RESETABLE_STATE = <MISSING TRANSLATION!>
+NON_RESETABLE_STATE = tilbakestille-tilstand er ikke tillatt
 
 # Cannot compute Newcomb operators for sigma > rho ({0} > {1})
-DSST_NEWCOMB_OPERATORS_COMPUTATION = <MISSING TRANSLATION!>
+DSST_NEWCOMB_OPERATORS_COMPUTATION = kan ikke beregne Newcomp operatører for sigma > rho ({0} > {1})
 
 # Cannot compute the Vmns coefficient with m > n ({0} > {1})
-DSST_VMNS_COEFFICIENT_ERROR_MS = <MISSING TRANSLATION!>
+DSST_VMNS_COEFFICIENT_ERROR_MS = kan ikke beregne Vmns-koeffisienten for m > n ({0} > {1})
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
-DSST_SPR_SHADOW_INCONSISTENT = <MISSING TRANSLATION!>
+DSST_SPR_SHADOW_INCONSISTENT = ukonsekvent skyggeberegning: inngang = {0} og utgang = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
-DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = <MISSING TRANSLATION!>
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Den aktuelle banen har en eksentrisitet ({0} > 0.5). DSST trenger en implementert tid avhengig numerisk metode til å beregne de gjennomsnittlige hastighetene
 
 # unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = <MISSING TRANSLATION!>
+SP3_UNSUPPORTED_VERSION = ustøttet version for sp3 filen {0}
 
 # unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = <MISSING TRANSLATION!>
+SP3_UNSUPPORTED_TIMESYSTEM = ustøttet tidssystem {0}
 
 # unexpected end of file in sp3 file (after line {0})
-SP3_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION!>
+SP3_UNEXPECTED_END_OF_FILE = uventet slutt på fil for sp3 fil (etter linje {0})
 
 # non-existent geomagnetic model {0} for year {1}
-NON_EXISTENT_GEOMAGNETIC_MODEL = <MISSING TRANSLATION!>
+NON_EXISTENT_GEOMAGNETIC_MODEL = ikke-eksisterende geomagnetisk model {0} for år {1}
 
 # geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
-UNSUPPORTED_TIME_TRANSFORM = <MISSING TRANSLATION!>
+UNSUPPORTED_TIME_TRANSFORM = geomagnetisk model {0} med epoke {1} støtter ikke tidstransformasjon, ingen sekulær variasjonskoeffisient er definert
 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
-OUT_OF_RANGE_TIME_TRANSFORM = <MISSING TRANSLATION!>
+OUT_OF_RANGE_TIME_TRANSFORM = tidstransformasjonen av den geomagnetiske modelen {0} med epoke {1} er utenfor sitt gyldighetsområde: {2} != [{3}, {4}]
 
 # too small number of cached neighbors: {0} (must be at least {1})
-NOT_ENOUGH_CACHED_NEIGHBORS = <MISSING TRANSLATION!>
+NOT_ENOUGH_CACHED_NEIGHBORS = for få bufrete naboer: {0} (må i allefall være {1})
 
 # no cached entries
-NO_CACHED_ENTRIES = <MISSING TRANSLATION!>
+NO_CACHED_ENTRIES = ingen bufrete oppføringer
 
 # generated entries not sorted: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION!>
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = generte oppføringer er ikke sorterte: {0} > {1}
 
 # no data generated around date: {0}
-NO_DATA_GENERATED = <MISSING TRANSLATION!>
+NO_DATA_GENERATED = ingen data generert rundt dato: {0}
 
 # unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION!>
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = kan ikke generere ny data før {0}
 
 # unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION!>
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = kan ikke generere ny data etter {0}
 
 # abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = <MISSING TRANSLATION!>
+DUPLICATED_ABSCISSA = abscissen {0} er duplisert
 
 # sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = <MISSING TRANSLATION!>
+EMPTY_INTERPOLATION_SAMPLE = samplen for interpolasjonen er ikke satt
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
-UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = <MISSING TRANSLATION!>
+UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = kan ikke beregne hyperbolsk eksentrisk anomali fra hovedanomalien etter {0} iterasjoner
