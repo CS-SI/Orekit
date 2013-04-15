@@ -41,6 +41,11 @@ public enum IERSConventions {
             return IERS_BASE + "2010/tab5.2d.txt";
         }
 
+        /** {@inheritDoc} */
+        public String getLoveNumbersModel() {
+            return IERS_BASE + "2010/tab6.3.txt";
+        }
+
     },
 
     /** Constant for IERS 2010 conventions. */
@@ -59,6 +64,11 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         public String getSXY2XModel() {
             return IERS_BASE + "2003/tab5.2c.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getLoveNumbersModel() {
+            return IERS_BASE + "2003/tab6.1.txt";
         }
 
     };
@@ -80,5 +90,10 @@ public enum IERSConventions {
      * @return table resource name for the S + XY/2 pole component model
      */
     public abstract String getSXY2XModel();
+
+    /** Get the table resource name for the Love numbers.
+     * @return table resource name for the Love numbers
+     */
+    public abstract String getLoveNumbersModel();
 
 }
