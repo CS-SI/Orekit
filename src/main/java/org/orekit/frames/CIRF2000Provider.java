@@ -26,6 +26,7 @@ import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /** Celestial Intermediate Reference Frame 2000.
  * <p>This provider includes precession effects according to either the IAU 2006 precession
