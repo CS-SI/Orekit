@@ -73,6 +73,7 @@ Overview
     * mass management
 
     * user-defined associated state
+      (for example battery status, or higher order derivatives, or anything else)
 
   ** Maneuvers
 

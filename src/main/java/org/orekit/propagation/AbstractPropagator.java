@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -174,12 +175,32 @@ public abstract class AbstractPropagator implements Propagator {
      */
     protected SpacecraftState updateAdditionalStates(final SpacecraftState original)
         throws PropagationException {
+
+        // start with original state,
+        // which may already contain additional states, for example in interpolated ephemerides
         SpacecraftState updated = original;
+
+        if (initialState != null) {
+            // there is an initial state
+            // (null initial states occur for example in interpolated ephemerides)
+            // copy the additional states present in initialState but otherwise not managed
+            for (final Map.Entry<String, double[]> initial : initialState.getAdditionalStates().entrySet()) {
+                if (!isAdditionalStateManaged(initial.getKey())) {
+                    // this additional state was in the initial state, but is unknown to the propagator
+                    // we simply copy its initial value as is
+                    updated = updated.addAdditionalState(initial.getKey(), initial.getValue());
+                }
+            }
+        }
+
+        // update the additional states managed by providers
         for (final AdditionalStateProvider provider : additionalStateProviders) {
             updated = updated.addAdditionalState(provider.getName(),
                                                  provider.getAdditionalState(updated));
         }
+
         return updated;
+
     }
 
     /** {@inheritDoc} */
@@ -193,7 +214,7 @@ public abstract class AbstractPropagator implements Propagator {
     }
 
     /** {@inheritDoc} */
-    public String[] getManagedStates() {
+    public String[] getManagedAdditionalStates() {
         final String[] managed = new String[additionalStateProviders.size()];
         for (int i = 0; i < managed.length; ++i) {
             managed[i] = additionalStateProviders.get(i).getName();

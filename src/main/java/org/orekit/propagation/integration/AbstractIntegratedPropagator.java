@@ -19,7 +19,9 @@ package org.orekit.propagation.integration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
@@ -189,8 +191,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** {@inheritDoc} */
     @Override
-    public String[] getManagedStates() {
-        final String[] alreadyIntegrated = super.getManagedStates();
+    public String[] getManagedAdditionalStates() {
+        final String[] alreadyIntegrated = super.getManagedAdditionalStates();
         final String[] managed = new String[alreadyIntegrated.length + additionalEquations.size()];
         System.arraycopy(alreadyIntegrated, 0, managed, 0, alreadyIntegrated.length);
         for (int i = 0; i < additionalEquations.size(); ++i) {
@@ -971,15 +973,25 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
                             maxDate = stateMapper.mapDoubleToDate(tF);
                         }
 
-                        // store the names of additional states
+                        // get the initial additional states that are not managed
+                        final Map<String, double[]> unmanaged = new HashMap<String, double[]>();
+                        for (final Map.Entry<String, double[]> initial : getInitialState().getAdditionalStates().entrySet()) {
+                            if (!isAdditionalStateManaged(initial.getKey())) {
+                                // this additional state was in the initial state, but is unknown to the propagator
+                                // we simply copy its initial value as is
+                                unmanaged.put(initial.getKey(), initial.getValue());
+                            }
+                        }
+
+                        // get the names of additional states managed by differential equations
                         final String[] names = new String[additionalEquations.size()];
                         for (int i = 0; i < names.length; ++i) {
                             names[i] = additionalEquations.get(i).getName();
                         }
+
                         // create the ephemeris
-                        // TODO: add the providers for already integrated additional states
                         ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                            stateMapper, model,
+                                                            stateMapper, model, unmanaged,
                                                             getAdditionalStateProviders(), names);
 
                     }

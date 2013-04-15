@@ -439,7 +439,7 @@ public class NumericalPropagatorTest {
         Assert.assertTrue(propagator.isAdditionalStateManaged("linear"));
         Assert.assertTrue(propagator.isAdditionalStateManaged("constant"));
         Assert.assertFalse(propagator.isAdditionalStateManaged("non-managed"));
-        Assert.assertEquals(2, propagator.getManagedStates().length);
+        Assert.assertEquals(2, propagator.getManagedAdditionalStates().length);
         propagator.setInitialState(propagator.getInitialState().addAdditionalState("linear", 1.5));
 
         propagator.addEventDetector(new AbstractDetector(10.0, 1.0e-8) {

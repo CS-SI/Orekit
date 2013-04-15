@@ -17,6 +17,7 @@
 package org.orekit.propagation.integration;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.orekit.errors.OrekitException;
@@ -83,12 +84,16 @@ public class IntegratedEphemeris
     /** Underlying raw mathematical model. */
     private ContinuousOutputModel model;
 
+    /** Unmanaged additional states that must be simply copied. */
+    private final Map<String, double[]> unmanaged;
+
     /** Creates a new instance of IntegratedEphemeris.
      * @param startDate Start date of the integration (can be minDate or maxDate)
      * @param minDate first date of the range
      * @param maxDate last date of the range
      * @param mapper mapper between raw double components and spacecraft state
      * @param model underlying raw mathematical model
+     * @param unmanaged unmanaged additional states that must be simply copied
      * @param providers providers for pre-integrated states
      * @param equations names of additional equations
      * @exception OrekitException if several providers have the same name
@@ -96,6 +101,7 @@ public class IntegratedEphemeris
     public IntegratedEphemeris(final AbsoluteDate startDate,
                                final AbsoluteDate minDate, final AbsoluteDate maxDate,
                                final StateMapper mapper, final ContinuousOutputModel model,
+                               final Map<String, double[]> unmanaged,
                                final List<AdditionalStateProvider> providers,
                                final String[] equations)
         throws OrekitException {
@@ -107,6 +113,7 @@ public class IntegratedEphemeris
         this.maxDate   = maxDate;
         this.mapper    = mapper;
         this.model     = model;
+        this.unmanaged = unmanaged;
 
         // set up the pre-integrated providers
         for (final AdditionalStateProvider provider : providers) {
@@ -150,8 +157,12 @@ public class IntegratedEphemeris
         throws PropagationException {
         try {
             setInterpolationDate(date);
-            return mapper.mapArrayToState(model.getInterpolatedTime(),
-                                          model.getInterpolatedState());
+            SpacecraftState state = mapper.mapArrayToState(model.getInterpolatedTime(),
+                                                           model.getInterpolatedState());
+            for (Map.Entry<String, double[]> initial : unmanaged.entrySet()) {
+                state = state.addAdditionalState(initial.getKey(), initial.getValue());
+            }
+            return state;
         } catch (OrekitExceptionWrapper oew) {
             if (oew.getException() instanceof PropagationException) {
                 throw (PropagationException) oew.getException();
@@ -211,7 +222,7 @@ public class IntegratedEphemeris
 
     /** {@inheritDoc} */
     public SpacecraftState getInitialState() throws PropagationException {
-        return basicPropagate(getMinDate());
+        return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
     /** Local provider for additional state data. */

@@ -19,6 +19,7 @@ package org.orekit.propagation.analytical;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -127,13 +128,22 @@ public class AdapterPropagator extends AbstractAnalyticalPropagator {
         try {
             // compute reference state
             SpacecraftState state = reference.propagate(date);
+            final Map<String, double[]> before = state.getAdditionalStates();
 
             // add all the effects
             for (final DifferentialEffect effect : effects) {
                 state = effect.apply(state);
             }
 
+            // forward additional states from the reference propagator
+            for (final Map.Entry<String, double[]> entry : before.entrySet()) {
+                if (!state.hasAdditionalState(entry.getKey())) {
+                    state = state.addAdditionalState(entry.getKey(), entry.getValue());
+                }
+            }
+
             return state;
+
         } catch (OrekitExceptionWrapper oew) {
             if (oew.getException() instanceof PropagationException) {
                 throw (PropagationException) oew.getException();

@@ -177,8 +177,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     /** {@inheritDoc} */
     @Override
-    public String[] getManagedStates() {
-        final String[] upperManaged = super.getManagedStates();
+    public String[] getManagedAdditionalStates() {
+        final String[] upperManaged = super.getManagedAdditionalStates();
         final String[] managed = new String[upperManaged.length + additional.length];
         System.arraycopy(upperManaged, 0, managed, 0, upperManaged.length);
         System.arraycopy(additional, 0, managed, upperManaged.length, additional.length);

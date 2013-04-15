@@ -163,6 +163,26 @@ public interface Propagator extends PVCoordinatesProvider {
     List<AdditionalStateProvider> getAdditionalStateProviders();
 
     /** Check if an additional state is managed.
+     * <p>
+     * Managed states are states for which the propagators know how to compute
+     * its evolution. They correspond to additional states for which an
+     * {@link AdditionalStateProvider additional state provider} has been registered
+     * by calling the {@link #addAdditionalStateProvider(AdditionalStateProvider)
+     * addAdditionalStateProvider} method. If the propagator is an {@link
+     * org.orekit.propagation.integration.AbstractIntegratedPropagator integrator-based
+     * propagator}, the states for which a set of {@link
+     * org.orekit.propagation.integration.AdditionalEquations additional equations} has
+     * been registered by calling the {@link
+     * org.orekit.propagation.integration.AbstractIntegratedPropagator#addAdditionalEquations(
+     * org.orekit.propagation.integration.AdditionalEquations) addAdditionalEquations}
+     * method are also counted as managed additional states.
+     * </p>
+     * <p>
+     * Additional states that are present in the {@link #getInitialState() initial state}
+     * but have no evolution method registered are <em>not</em> considered as managed states.
+     * These unmanaged additional states are not lost during propagation, though. Their
+     * value will simply be copied unchanged throughout propagation.
+     * </p>
      * @param name name of the additional state
      * @return true if the additional state is managed
      */
@@ -171,7 +191,7 @@ public interface Propagator extends PVCoordinatesProvider {
     /** Get all the names of all managed states.
      * @return names of all managed states
      */
-    String[] getManagedStates();
+    String[] getManagedAdditionalStates();
 
     /** Add an event detector.
      * @param detector event detector to add

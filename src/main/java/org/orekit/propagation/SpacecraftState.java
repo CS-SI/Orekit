@@ -208,7 +208,7 @@ public class SpacecraftState
      * creates a new instance, which has the same orbit, attitude, mass
      * and additional states as the original instance, except it also
      * has the specified state. If the original instance already had an
-     * additional state with the same name, it will be overriden. If it
+     * additional state with the same name, it will be overridden. If it
      * did not have any additional state with that name, the new instance
      * will have one more additional state than the original instance.
      * </p>

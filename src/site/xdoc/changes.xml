@@ -78,9 +78,9 @@
       <action dev="luc" type="add" >
         Added a way to store user data into SpacecraftState. User data are
         simply double arrays associated to a name. They are handled properly
-        by interpolation. Note that since SpacecraftState instances are
-        immutable, adding states generates a new instance, using a fluent
-        API principle (fixes feature request #132).
+        by interpolation, event handlers, ephemerides and adapter propagators.
+        Note that since SpacecraftState instances are immutable, adding states
+        generates a new instance, using a fluent API principle (fixes feature request #132).
       </action>
       <action dev="luc" type="add" >
         Added a way to retrieve all additional states at once from a step interpolator.

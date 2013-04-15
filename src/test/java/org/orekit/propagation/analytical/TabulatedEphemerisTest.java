@@ -201,8 +201,8 @@ public class TabulatedEphemerisTest {
                                   double threshold, boolean expectedBelow)
         throws OrekitException {
 
-        Assert.assertEquals(eph1.getManagedStates().length, eph2.getManagedStates().length);
-        for (String name : eph1.getManagedStates()) {
+        Assert.assertEquals(eph1.getManagedAdditionalStates().length, eph2.getManagedAdditionalStates().length);
+        for (String name : eph1.getManagedAdditionalStates()) {
             Assert.assertTrue(eph2.isAdditionalStateManaged(name));
         }
         SpacecraftState state1 = eph1.propagate(date);
@@ -213,7 +213,7 @@ public class TabulatedEphemerisTest {
         maxError = FastMath.max(maxError, FastMath.abs(state1.getHx() - state2.getHx()));
         maxError = FastMath.max(maxError, FastMath.abs(state1.getHy() - state2.getHy()));
         maxError = FastMath.max(maxError, FastMath.abs(state1.getLv() - state2.getLv()));
-        for (String name : eph1.getManagedStates()) {
+        for (String name : eph1.getManagedAdditionalStates()) {
             double[] add1 = state1.getAdditionalState(name);
             double[] add2 = state2.getAdditionalState(name);
             Assert.assertEquals(add1.length, add2.length);

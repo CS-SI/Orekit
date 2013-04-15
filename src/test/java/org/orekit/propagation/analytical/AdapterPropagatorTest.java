@@ -45,6 +45,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
+import org.orekit.propagation.AdditionalStateProvider;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -90,6 +91,20 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
+        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() {
+                return "dummy 3";
+            }
+            public double[] getAdditionalState(SpacecraftState state) {
+                return new double[3];
+            }
+        });
+
+        // the adapted propagators do not manage the additional states from the reference,
+        // they simply forward them
+        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        Assert.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -98,6 +113,9 @@ public class AdapterPropagatorTest {
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, leo.getFrame());
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             Assert.assertEquals(0, revertError, 0.45);
+            Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
 
     }
@@ -135,6 +153,20 @@ public class AdapterPropagatorTest {
         AdapterPropagator.DifferentialEffect effect =
                 new SmallManeuverAnalyticalModel(adapterPropagator.propagate(t0), dV.negate(), isp);
         adapterPropagator.addEffect(effect);
+        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() {
+                return "dummy 3";
+            }
+            public double[] getAdditionalState(SpacecraftState state) {
+                return new double[3];
+            }
+        });
+
+        // the adapted propagators do not manage the additional states from the reference,
+        // they simply forward them
+        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        Assert.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         for (AbsoluteDate t = t0.shiftedBy(0.5 * dt);
              t.compareTo(withoutManeuver.getMaxDate()) < 0;
@@ -143,6 +175,9 @@ public class AdapterPropagatorTest {
             PVCoordinates pvReverted = adapterPropagator.getPVCoordinates(t, heo.getFrame());
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             Assert.assertEquals(0, revertError, 180.0);
+            Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
 
     }
@@ -190,6 +225,20 @@ public class AdapterPropagatorTest {
                                          GravityFieldFactory.getUnnormalizedProvider(gravityField));
         adapterPropagator.addEffect(directEffect);
         adapterPropagator.addEffect(derivedEffect);
+        adapterPropagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() {
+                return "dummy 3";
+            }
+            public double[] getAdditionalState(SpacecraftState state) {
+                return new double[3];
+            }
+        });
+
+        // the adapted propagators do not manage the additional states from the reference,
+        // they simply forward them
+        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 1"));
+        Assert.assertFalse(adapterPropagator.isAdditionalStateManaged("dummy 2"));
+        Assert.assertTrue(adapterPropagator.isAdditionalStateManaged("dummy 3"));
 
         double maxDelta = 0;
         double maxNominal = 0;
@@ -202,7 +251,10 @@ public class AdapterPropagatorTest {
             double nominal           = new PVCoordinates(pvWithout, pvWith).getPosition().getNorm();
             double revertError       = new PVCoordinates(pvWithout, pvReverted).getPosition().getNorm();
             maxDelta = FastMath.max(maxDelta, revertError);
-            maxNominal = FastMath.max(maxNominal, nominal);
+            maxNominal = FastMath.max(maxNominal, nominal);           
+            Assert.assertEquals(2, adapterPropagator.propagate(t).getAdditionalState("dummy 1").length);
+            Assert.assertEquals(1, adapterPropagator.propagate(t).getAdditionalState("dummy 2").length);
+            Assert.assertEquals(3, adapterPropagator.propagate(t).getAdditionalState("dummy 3").length);
         }
         Assert.assertTrue(maxDelta   < 120);
         Assert.assertTrue(maxNominal > 2800);
@@ -217,9 +269,12 @@ public class AdapterPropagatorTest {
                                            final NormalizedSphericalHarmonicsProvider gravityField)
         throws OrekitException, ParseException, IOException {
 
-        final SpacecraftState initialState =
+        SpacecraftState initialState =
             new SpacecraftState(orbit, law.getAttitude(orbit, orbit.getDate(), orbit.getFrame()), mass);
 
+        // add some dummy additional states
+        initialState = initialState.addAdditionalState("dummy 1", 1.25, 2.5);
+        initialState = initialState.addAdditionalState("dummy 2", 5.0);
 
         // set up numerical propagator
         final double dP = 1.0;
@@ -228,6 +283,14 @@ public class AdapterPropagatorTest {
             new DormandPrince853Integrator(0.001, 1000, tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(orbit.getKeplerianPeriod() / 100.0);
         final NumericalPropagator propagator = new NumericalPropagator(integrator);
+        propagator.addAdditionalStateProvider(new AdditionalStateProvider() {
+            public String getName() {
+                return "dummy 2";
+            }
+            public double[] getAdditionalState(SpacecraftState state) {
+                return new double[] { 5.0 };
+            }
+        });
         propagator.setInitialState(initialState);
         propagator.setAttitudeProvider(law);
 
@@ -255,7 +318,19 @@ public class AdapterPropagatorTest {
 
         propagator.setEphemerisMode();
         propagator.propagate(t0.shiftedBy(nbOrbits * orbit.getKeplerianPeriod()));
-        return propagator.getGeneratedEphemeris();
+
+        final BoundedPropagator ephemeris = propagator.getGeneratedEphemeris();
+
+        // both the initial propagator and generated ephemeris manage one of the two
+        // additional states, but they also contain unmanaged copies of the other one
+        Assert.assertFalse(propagator.isAdditionalStateManaged("dummy 1"));
+        Assert.assertTrue(propagator.isAdditionalStateManaged("dummy 2"));
+        Assert.assertFalse(ephemeris.isAdditionalStateManaged("dummy 1"));
+        Assert.assertTrue(ephemeris.isAdditionalStateManaged("dummy 2"));
+        Assert.assertEquals(2, ephemeris.getInitialState().getAdditionalState("dummy 1").length);
+        Assert.assertEquals(1, ephemeris.getInitialState().getAdditionalState("dummy 2").length);
+
+        return ephemeris;
 
     }
 
