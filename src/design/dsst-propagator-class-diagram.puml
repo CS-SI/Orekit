@@ -50,7 +50,8 @@
         class AuxiliaryElements
 
         interface DSSTForceModel {
-          +void initialize(SpacecraftState initialState)
+          +void initialize(AuxiliaryElements auxiliary)
+          +void initialize(AuxiliaryElements auxiliary)
           +double[] getMeanElementRate(SpacecraftState state)
           +double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
         }
@@ -69,13 +70,12 @@
 
         package utilities #ECEBD8
 
-          DSSTThirdBody --> UpperBounds
           ZonalContribution --> UpperBounds
-          DSSTThirdBody --> CoefficientFactory
           ZonalContribution --> CoefficientFactory
           TesseralContribution --> CoefficientFactory
-          DSSTAtmosphericDrag --> GaussQuadrature
-          DSSTSolarRadiationPressure --> GaussQuadrature
+          TesseralContribution --> NewcombOperators
+          DSSTThirdBody --> UpperBounds
+          DSSTThirdBody --> CoefficientFactory
           
         end package
 
