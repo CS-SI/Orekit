@@ -116,35 +116,35 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         this.bodies            = bodies;
 
         // load Love numbers
-        this.loveReal          = new double[MAX_LOVE_DEGREE + 1 - MIN_LOVE_DEGREE][MAX_LOVE_DEGREE + 1];
-        this.loveImaginary     = new double[MAX_LOVE_DEGREE + 1 - MIN_LOVE_DEGREE][MAX_LOVE_DEGREE + 1];
-        this.lovePlus          = new double[MAX_LOVE_DEGREE + 1 - MIN_LOVE_DEGREE][MAX_LOVE_DEGREE + 1];
+        this.loveReal          = buildTriangularArray(MAX_LOVE_DEGREE);
+        this.loveImaginary     = buildTriangularArray(MAX_LOVE_DEGREE);
+        this.lovePlus          = buildTriangularArray(MAX_LOVE_DEGREE);
         loadLoveNumbers(name);
 
         // compute recursion coefficients for Legendre functions
-        this.pnm               = new double[MAX_LEGENDRE_DEGREE + 1][MAX_LEGENDRE_DEGREE + 1];
-        this.anm               = new double[MAX_LEGENDRE_DEGREE + 1][MAX_LEGENDRE_DEGREE + 1];
-        this.bnm               = new double[MAX_LEGENDRE_DEGREE + 1][MAX_LEGENDRE_DEGREE + 1];
-        this.dmm               = new double[MAX_LEGENDRE_DEGREE + 1];
+        this.pnm               = buildTriangularArray(MAX_LOVE_DEGREE);
+        this.anm               = buildTriangularArray(MAX_LOVE_DEGREE);
+        this.bnm               = buildTriangularArray(MAX_LOVE_DEGREE);
+        this.dmm               = new double[MAX_LOVE_DEGREE + 1];
         recursionCoefficients();
 
         // prepare coefficients caching
         this.cachedOffset      = Double.NaN;
-        this.cachedCnm         = new double[MAX_LEGENDRE_DEGREE + 1][MAX_LEGENDRE_DEGREE + 1];
-        this.cachedSnm         = new double[MAX_LEGENDRE_DEGREE + 1][MAX_LEGENDRE_DEGREE + 1];
+        this.cachedCnm         = buildTriangularArray(MAX_LOVE_DEGREE);
+        this.cachedSnm         = buildTriangularArray(MAX_LOVE_DEGREE);
 
     }
 
     /** {@inheritDoc} */
     @Override
     public int getMaxDegree() {
-        return 4;
+        return MAX_LEGENDRE_DEGREE;
     }
 
     /** {@inheritDoc} */
     @Override
     public int getMaxOrder() {
-        return 4;
+        return MAX_LEGENDRE_DEGREE;
     }
 
     /** {@inheritDoc} */
@@ -231,43 +231,12 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             final double r    = FastMath.sqrt (r2);
             final double rho2 = x2 + y2;
             final double rho  = FastMath.sqrt(rho2);
-            final double t    = z / r;   // cos(theta), where theta is the polar angle
-            final double u    = rho / r; // sin(theta), where theta is the polar angle
-            final double cosLambda = x / rho;
-            final double sinLambda = y / rho;
 
             // evaluate Pnm
-            evaluateLegendre(t, u);
+            evaluateLegendre(z / r, rho / r);
 
             // update spherical harmonic coefficients
-            final double rRatio = ae / position.getNorm();
-            final double mRatio = body.getGM() / mu;
-            double cosMLambda = 1;
-            double sinMLambda = 0;
-            for (int m = 0; m < dmm.length; ++m) {
-                double f = mRatio;
-                for (int n = 0; n <= m; ++n) {
-                    f *= rRatio;
-                    final double coeff = (f / (2 * n + 1)) * pnm[n][m];
-
-                    // direct effect of degree n tide on degree n coefficients
-                    cachedCnm[n][m] += coeff * (loveReal[n][m] * cosMLambda + loveImaginary[n][m] * sinMLambda);
-                    cachedSnm[n][m] += coeff * (loveReal[n][m] * sinMLambda - loveImaginary[n][m] * cosMLambda);
-
-                    if (n == 2) {
-                        // indirect effect of degree 2 tide on degree 4 coefficients
-                        cachedCnm[4][m] += coeff * lovePlus[n][m] * cosMLambda;
-                        cachedSnm[4][m] += coeff * lovePlus[n][m] * sinMLambda;
-                    }
-
-                }
-
-                // prepare next iteration on order
-                final double tmp = cosMLambda * cosLambda - sinMLambda * sinLambda;
-                sinMLambda = sinMLambda * cosLambda + cosMLambda * sinLambda;
-                cosMLambda = tmp;
-
-            }
+            frequencyIndependentPart(r, body.getGM(), x / rho, y / rho);
 
         }
 
@@ -321,9 +290,9 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
                                                   lineNumber, name, line);
 
                     }
-                    loveReal[n - MIN_LOVE_DEGREE][m]      = Double.parseDouble(fields[2]);
-                    loveImaginary[n - MIN_LOVE_DEGREE][m] = Double.parseDouble(fields[3]);
-                    lovePlus[n - MIN_LOVE_DEGREE][m]      = Double.parseDouble(fields[4]);
+                    loveReal[n][m]      = Double.parseDouble(fields[2]);
+                    loveImaginary[n][m] = Double.parseDouble(fields[3]);
+                    lovePlus[n][m]      = Double.parseDouble(fields[4]);
                 }
 
                 // next line
@@ -360,8 +329,8 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
         // pre-compute the recursion coefficients
         // (see equations 11 and 12 from Holmes and Featherstone paper)
-        for (int m = anm.length - 1; m >= 0; --m) {
-            for (int n = FastMath.max(2, m + 1); n < anm.length; ++n) {
+        for (int n = 0; n < anm.length; ++n) {
+            for (int m = 0; m <= n; ++m) {
                 anm[n][m] = FastMath.sqrt((2 * n - 1) * (2 * n + 1) /
                                           ((n - m) * (n + m)));
                 bnm[n][m] = FastMath.sqrt((2 * n + 1) * (n + m - 1) * (n - m - 1) /
@@ -401,4 +370,56 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
     }
 
+    /** Update coefficients applying frequency independent step.
+     * @param r distance to tide generating body
+     * @param gm tide generating body attraction coefficient
+     * @param cosLambda cosine of the tide generating body longitude
+     * @param sinLambda sine of the tide generating body longitude
+     */
+    private void frequencyIndependentPart(final double r, final double gm,
+                                          final double cosLambda, final double sinLambda) {
+
+        final double rRatio = ae / r;
+        final double mRatio = gm / mu;
+
+        double cosMLambda = 1;
+        double sinMLambda = 0;
+        for (int m = 0; m <= loveReal.length; ++m) {
+            double f = mRatio;
+            for (int n = 0; n <= m; ++n) {
+                f *= rRatio;
+                final double coeff = (f / (2 * n + 1)) * pnm[n][m];
+
+                // direct effect of degree n tides on degree n coefficients
+                cachedCnm[n][m] += coeff * (loveReal[n][m] * cosMLambda + loveImaginary[n][m] * sinMLambda);
+                cachedSnm[n][m] += coeff * (loveReal[n][m] * sinMLambda - loveImaginary[n][m] * cosMLambda);
+
+                if (n == 2) {
+                    // indirect effect of degree 2 tides on degree 4 coefficients
+                    cachedCnm[4][m] += coeff * lovePlus[2][m] * cosMLambda;
+                    cachedSnm[4][m] += coeff * lovePlus[2][m] * sinMLambda;
+                }
+
+            }
+
+            // prepare next iteration on order
+            final double tmp = cosMLambda * cosLambda - sinMLambda * sinLambda;
+            sinMLambda = sinMLambda * cosLambda + cosMLambda * sinLambda;
+            cosMLambda = tmp;
+
+        }
+
+    }
+
+    /** Create a triangular array.
+     * @param maxDegree maximum degree
+     * @return new triangule array
+     */
+    private double[][] buildTriangularArray(final int maxDegree) {
+        final double[][] array = new double[maxDegree + 1][];
+        for (int i = 0; i < array.length; ++i) {
+            array[i] = new double[i + 1];
+        }
+        return array;
+    }
 }
