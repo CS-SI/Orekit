@@ -550,7 +550,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         SpacecraftState cOrb = propagator.propagate(targetDate);
 
         Vector3D dif = hfOrb.getPVCoordinates().getPosition().subtract(cOrb.getPVCoordinates().getPosition());
-        Assert.assertEquals(0, dif.getNorm(), 2e-5);
+        Assert.assertEquals(0, dif.getNorm(), 3e-5);
     }
 
     @Test
@@ -712,7 +712,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         propagator.setInitialState(state0);
 
         checkStateJacobian(propagator, state0, date.shiftedBy(3.5 * 3600.0),
-                           50000, tolerances[0], 4.0e-10);
+                           50000, tolerances[0], 7.0e-10);
     }
 
     @Before

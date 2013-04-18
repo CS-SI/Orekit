@@ -28,26 +28,6 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         public String getXModel() {
-            return IERS_BASE + "2010/tab5.2a.txt";
-        }
-
-        /** {@inheritDoc} */
-        public String getYModel() {
-            return IERS_BASE + "2010/tab5.2b.txt";
-        }
-
-        /** {@inheritDoc} */
-        public String getSXY2XModel() {
-            return IERS_BASE + "2010/tab5.2d.txt";
-        }
-
-    },
-
-    /** Constant for IERS 2010 conventions. */
-    IERS_2010 {
-
-        /** {@inheritDoc} */
-        public String getXModel() {
             return IERS_BASE + "2003/tab5.2a.txt";
         }
 
@@ -59,6 +39,26 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         public String getSXY2XModel() {
             return IERS_BASE + "2003/tab5.2c.txt";
+        }
+
+    },
+
+    /** Constant for IERS 2010 conventions. */
+    IERS_2010 {
+
+        /** {@inheritDoc} */
+        public String getXModel() {
+            return IERS_BASE + "2010/tab5.2a.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getYModel() {
+            return IERS_BASE + "2010/tab5.2b.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getSXY2XModel() {
+            return IERS_BASE + "2010/tab5.2d.txt";
         }
 
     };
