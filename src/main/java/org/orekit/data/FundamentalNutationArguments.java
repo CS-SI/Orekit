@@ -388,7 +388,7 @@ public class FundamentalNutationArguments implements Serializable {
     }
 
     /** Local parser for argument definition lines. */
-    private class DefinitionParser {
+    private static class DefinitionParser {
 
         /** Regular expression pattern for definitions. */
         private final Pattern pattern;
@@ -487,7 +487,7 @@ public class FundamentalNutationArguments implements Serializable {
     }
 
     /** Local parser for monomials. */
-    private class MonomialParser {
+    private static class MonomialParser {
 
         /** Constant for degree unit. */
         private static final String UNICODE_DEGREE              = "\u00b0";
