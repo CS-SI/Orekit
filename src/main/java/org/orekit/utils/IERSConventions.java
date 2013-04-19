@@ -27,6 +27,11 @@ public enum IERSConventions {
     IERS_2003 {
 
         /** {@inheritDoc} */
+        public String getNutationArguments() {
+            return IERS_BASE + "2003/nutation-arguments.txt";
+        }
+
+        /** {@inheritDoc} */
         public String getXModel() {
             return IERS_BASE + "2003/tab5.2a.txt";
         }
@@ -47,6 +52,11 @@ public enum IERSConventions {
     IERS_2010 {
 
         /** {@inheritDoc} */
+        public String getNutationArguments() {
+            return IERS_BASE + "2010/nutation-arguments.txt";
+        }
+
+        /** {@inheritDoc} */
         public String getXModel() {
             return IERS_BASE + "2010/tab5.2a.txt";
         }
@@ -65,6 +75,11 @@ public enum IERSConventions {
 
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
+
+    /** Get the resource name for the nutation arguments (luni-solar + planetary).
+     * @return resource name for the nutation arguments (luni-solar + planetary)
+     */
+    public abstract String getNutationArguments();
 
     /** Get the table resource name for the X pole component model.
      * @return table resource name for the X pole component model

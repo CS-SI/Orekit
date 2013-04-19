@@ -26,7 +26,10 @@ import java.io.Serializable;
 public final class BodiesElements implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 9193325350743225370L;
+    private static final long serialVersionUID = 20130418L;
+
+    /** Offset in Julian centuries. */
+    private final double tc;
 
     /** Mean anomaly of the Moon. */
     private final double l;
@@ -71,6 +74,7 @@ public final class BodiesElements implements Serializable {
     private final double pa;
 
     /** Simple constructor.
+     * @param tc offset in Julian centuries
      * @param l mean anomaly of the Moon
      * @param lPrime mean anomaly of the Sun
      * @param f L - &Omega; where L is the mean longitude of the Moon
@@ -86,9 +90,11 @@ public final class BodiesElements implements Serializable {
      * @param lNe mean Neptune longitude
      * @param pa general accumulated precession in longitude
      */
-    public BodiesElements(final double l, final double lPrime, final double f, final double d, final double omega,
+    public BodiesElements(final double tc,
+                          final double l, final double lPrime, final double f, final double d, final double omega,
                           final double lMe, final double lVe, final double lE, final double lMa, final double lJu,
                           final double lSa, final double lUr, final double lNe, final double pa) {
+        this.tc     = tc;
         this.l      = l;
         this.lPrime = lPrime;
         this.f      = f;
@@ -103,6 +109,13 @@ public final class BodiesElements implements Serializable {
         this.lUr    = lUr;
         this.lNe    = lNe;
         this.pa     = pa;
+    }
+
+    /** Get the offset in Julian centuries.
+     * @return offset in Julian centuries
+     */
+    public double getTC() {
+        return tc;
     }
 
     /** Get the mean anomaly of the Moon.

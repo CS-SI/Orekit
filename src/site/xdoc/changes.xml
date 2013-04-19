@@ -22,6 +22,12 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
+      <action dev="luc" type="add" >
+        Extracted fundamental nutation arguments from CIRF frame. This allows both reuse of
+        the arguments for other computations (typically tides), and also allows to use
+        convention-dependent arguments (they are similar for IERS conventions 2003 and 2010,
+        but have changed before and may change in the future).
+      </action>
       <action dev="luc" type="fix" >
         Fixed event g function correction when starting exactly at 0 with a backward
         propagation (fixes issue #125).
