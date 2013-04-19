@@ -239,9 +239,19 @@ public class CartesianParametersTest {
     public void testShiftHyperbolic() {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(3 * FastMath.sqrt(mu / position.getNorm()), position.orthogonal());
-        PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
         CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date, mu);
         testShift(orbit, new KeplerianOrbit(orbit), 1.0e-15);
+    }
+
+    @Test
+    public void testNumericalIssue135() throws OrekitException {
+        Vector3D position = new Vector3D(-6.7884943832e7, -2.1423006112e7, -3.1603915377e7);
+        Vector3D velocity = new Vector3D(-4732.55, -2472.086, -3022.177);
+        PVCoordinates pvCoordinates = new PVCoordinates(position, velocity);
+        CartesianOrbit orbit = new CartesianOrbit(pvCoordinates, FramesFactory.getEME2000(), date,
+                                                  324858598826460.);
+        testShift(orbit, new KeplerianOrbit(orbit), 3.0e-15);
     }
 
     private void testShift(CartesianOrbit tested, Orbit reference, double threshold) {

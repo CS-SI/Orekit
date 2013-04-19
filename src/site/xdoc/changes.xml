@@ -22,7 +22,10 @@
   <body>
     <release version="6.0" date="TBD"
              description="TBD.">
-      <action dev="luc" type="add" >
+      <action dev="pascal" type="fix" >
+        Fixed conversion of mean anomaly to hyperbolic eccentric anomaly (fixes issue #135).
+      </action>
+        <action dev="luc" type="add" >
         Extracted fundamental nutation arguments from CIRF frame. This allows both reuse of
         the arguments for other computations (typically tides), and also allows to use
         convention-dependent arguments (they are similar for IERS conventions 2003 and 2010,

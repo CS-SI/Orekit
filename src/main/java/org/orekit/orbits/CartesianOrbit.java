@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
@@ -336,61 +338,85 @@ public class CartesianOrbit extends Orbit {
         //      thetaM = eta + M = thetaE - ex.sin(thetaE) + ey.cos(thetaE)
         // and eta being counted from an arbitrary reference in the orbital plane
         double thetaE        = thetaM;
-        double shift         = 0.0;
         double thetaEMthetaM = 0.0;
-        double cosThetaE     = FastMath.cos(thetaE);
-        double sinThetaE     = FastMath.sin(thetaE);
         int    iter          = 0;
         do {
+            final double cosThetaE = FastMath.cos(thetaE);
+            final double sinThetaE = FastMath.sin(thetaE);
+
             final double f2 = ex * sinThetaE - ey * cosThetaE;
             final double f1 = 1.0 - ex * cosThetaE - ey * sinThetaE;
             final double f0 = thetaEMthetaM - f2;
 
             final double f12 = 2.0 * f1;
-            shift = f0 * f12 / (f1 * f12 - f0 * f2);
+            final double shift = f0 * f12 / (f1 * f12 - f0 * f2);
 
             thetaEMthetaM -= shift;
             thetaE         = thetaM + thetaEMthetaM;
-            cosThetaE      = FastMath.cos(thetaE);
-            sinThetaE      = FastMath.sin(thetaE);
 
-        } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
+            if (FastMath.abs(shift) <= 1.0e-12) {
+                return thetaE;
+            }
 
-        return thetaE;
+        } while (++iter < 50);
+
+        throw new ConvergenceException();
 
     }
 
     /** Computes the hyperbolic eccentric anomaly from the mean anomaly.
      * <p>
      * The algorithm used here for solving hyperbolic Kepler equation is
-     * a naive initialization and classical Halley method for iterations.
+     * Danby's iterative method (3rd order) with Vallado's initial guess.
      * </p>
      * @param M mean anomaly (rad)
-     * @param e eccentricity
-     * @return the true anomaly
+     * @param ecc eccentricity
+     * @return the hyperbolic eccentric anomaly
      */
-    private double meanToHyperbolicEccentric(final double M, final double e) {
+    private double meanToHyperbolicEccentric(final double M, final double ecc) {
 
-        // resolution of hyperbolic Kepler equation for keplerian parameters
-        double H     = -M;
-        double shift = 0.0;
-        double HpM   = 0.0;
-        int    iter  = 0;
+        // Resolution of hyperbolic Kepler equation for keplerian parameters
+
+        // Initial guess
+        double H;
+        if (ecc < 1.6) {
+            if ((-FastMath.PI < M && M < 0.) || M > FastMath.PI) {
+                H = M - ecc;
+            } else {
+                H = M + ecc;
+            }
+        } else {
+            if (ecc < 3.6 && FastMath.abs(M) > FastMath.PI) {
+                H = M - FastMath.copySign(ecc, M);
+            } else {
+                H = M / (ecc - 1.);
+            }
+        }
+
+        // Iterative computation
+        int iter = 0;
         do {
-            final double f2 = e * FastMath.sinh(H);
-            final double f1 = e * FastMath.cosh(H) - 1;
-            final double f0 = f2 - HpM;
+            final double f3  = ecc * FastMath.cosh(H);
+            final double f2  = ecc * FastMath.sinh(H);
+            final double f1  = f3 - 1.;
+            final double f0  = f2 - H - M;
+            final double f12 = 2. * f1;
+            final double d   = f0 / f12;
+            final double fdf = f1 - d * f2;
+            final double ds  = f0 / fdf;
 
-            final double f12 = 2 * f1;
-            shift = f0 * f12 / (f1 * f12 - f0 * f2);
+            final double shift = f0 / (fdf + ds * ds * f3 / 6.);
 
-            HpM -= shift;
-            H    = HpM - M;
+            H -= shift;
 
-        } while ((++iter < 50) && (FastMath.abs(shift) > 1.0e-12));
+            if (FastMath.abs(shift) <= 1.0e-12) {
+                return H;
+            }
 
-        return H;
+        } while (++iter < 50);
 
+        throw new ConvergenceException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
+                                       iter);
     }
 
     @Override

@@ -51,7 +51,7 @@
 
         interface DSSTForceModel {
           +void initialize(AuxiliaryElements auxiliary)
-          +void initialize(AuxiliaryElements auxiliary)
+          +void initializeStep(AuxiliaryElements auxiliary)
           +double[] getMeanElementRate(SpacecraftState state)
           +double[] getShortPeriodicVariations(AbsoluteDate date, double[] meanElements)
         }
