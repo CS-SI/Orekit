@@ -2,7 +2,7 @@
 INTERNAL_ERROR = erro interno, contacte co soporte técnico no {0}
 
 # altitude ({0} m) is below the {1} m allowed threshold
-ALTITUDE_BELOW_ALLOWED_THRESHOLD = <MISSING TRANSLATION!>
+ALTITUDE_BELOW_ALLOWED_THRESHOLD = altitude ({0} m) inferior ao umbral permitido {1} m
 
 # trajectory inside the Brillouin sphere (r = {0})
 TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = traxectoria interior á esfera de Brillouin (r = {0})
@@ -20,25 +20,25 @@ UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS = imposible de calcula-los pa
 NULL_PARENT_FOR_FRAME = pai do sistema de referencia {0} nulo
 
 # frame {0} is already attached to frame {1}
-FRAME_ALREADY_ATTACHED = <MISSING TRANSLATION!>
+FRAME_ALREADY_ATTACHED = sistema de referencia {0} está xa ligado ao sistema de referencia {1}
 
 # frame {0} is not attached to the main frames tree
-FRAME_NOT_ATTACHED = <MISSING TRANSLATION!>
+FRAME_NOT_ATTACHED = o sistema de referencia {0} non está ligado á árbore de sistemas de referencia
 
 # frame {0} is an ancestor of both frames {1} and {2}
-FRAME_ANCESTOR_OF_BOTH_FRAMES = <MISSING TRANSLATION!>
+FRAME_ANCESTOR_OF_BOTH_FRAMES = o sistema de referencia {0} é antepasado á vez do sistema de referencia {1} e do sistema de referencia {2}
 
 # frame {0} is an ancestor of neither frame {1} nor {2}
-FRAME_ANCESTOR_OF_NEITHER_FRAME = <MISSING TRANSLATION!>
+FRAME_ANCESTOR_OF_NEITHER_FRAME = o sistema de referencia {0} non é antepasado nin do sistema de referencia {1} nin do sistema de referencia {2}
 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
-FRAME_NO_NTH_ANCESTOR = <MISSING TRANSLATION!>
+FRAME_NO_NTH_ANCESTOR = o sistema de referencia {0} está a unha profundidade do sistema de referencia {1}, non pode ter un antecesor {2} niveis máis arriba
 
 # unsupported local orbital frame, supported types: {0} and {1}
 UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local non soportado, sistemas de referencia soportados : {0} e {1}
 
 # non pseudo-inertial frame "{0}" is not suitable for defining orbits
-NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = <MISSING TRANSLATION!>
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = o sistema de referencia non pseudo-inercial "{0}" non está adaptado á definición de órbitas
 
 # data root directory {0} does not exist
 DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = repertorio de datos raíz {0} inexistente
@@ -62,7 +62,7 @@ MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan Parámetros de Orien
 NOT_A_SUPPORTED_IERS_DATA_FILE = o ficheiro {0} non é un ficheiro de datos IERS soportado
 
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
-INCONSISTENT_DATES_IN_IERS_FILE = <MISSING TRANSLATION!>
+INCONSISTENT_DATES_IN_IERS_FILE = datas {1}-{2}-{3} e MJD {4} incoherentes no ficheiro IERS {0}
 
 # unexpected data after line {0} in file {1}: {2}
 UNEXPECTED_DATA_AFTER_LINE_IN_FILE = datos imprevistos na liña {0} do ficheiro {1} : {2}
@@ -98,19 +98,19 @@ POSITIVE_FLOW_RATE = fluxo de masa positiva (q : {0})
 NO_GRAVITY_FIELD_DATA_LOADED = os datos do campo de gravidade non están cargados
 
 # gravity field normalization underflow for degree {0} and order {1}
-GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = <MISSING TRANSLATION!>
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético para a normalización dun campo de gravedad para o grao {0} e a orde {1}
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = traxectoria polar (distancia ao eixo dos polos : {0})
 
 # unexpected format error for file {0} with loader {1}
-UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = <MISSING TRANSLATION!>
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = erro de formato imprevisto no ficheiro {0} e no cargador {1}
 
 # duplicated gravity field coefficient {0}({1}, {2}) in file {3}
-DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = coeficiente {0}({1}, {2}) duplicado no ficheiro de campo de gravidade {3}
 
 # missing gravity field coefficient {0}({1}, {2}) in file {3}
-MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = <MISSING TRANSLATION!>
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = falta o coeficiente {0}({1}, {2}) no ficheiro de campo de gravidade {3}
 
 # too large degree (n = {0}, potential maximal degree is {1})
 TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grao demasiado grande (n = {0}, o grao de potencial máximo é {1})
@@ -119,7 +119,7 @@ TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = grao demasiado grande (n = {0}, o grao de p
 TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = orde demasiado importante (n = {0}, a orde máxima de potencial é {1})
 
 # several reference dates ({0} and {1}) found in gravity field file {2}
-SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = <MISSING TRANSLATION!>
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = varias datas de referencias ({0} e {1}) atopadas no ficheiro de campo de gravidade {2}
 
 # no TLE data available for object {0}
 NO_TLE_FOR_OBJECT = non hay datos TLE disponibles para o obxeto {0}
@@ -137,13 +137,13 @@ MISSING_SECOND_TLE_LINE = agardaba unha segunda linea TLE despois da liña {0}:\
 TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = as liñas TLE non se refiren ao mesmo obxeto:\n{0}\n{1}
 
 # wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
-TLE_CHECKSUM_ERROR = suma de control incorrecta para a liña TLE {0}, {2} en vez do valor {1} esperado ({3})
+TLE_CHECKSUM_ERROR = suma de control incorrecta para a liña TLE {0}, {2} en vez do valor {1} agardado ({3})
 
 # no TLE data available
-NO_TLE_DATA_AVAILABLE = <MISSING TRANSLATION!>
+NO_TLE_DATA_AVAILABLE = ningún dato TLE está disponible
 
 # spacecraft mass is not positive: {0} kg
-NOT_POSITIVE_SPACECRAFT_MASS = <MISSING TRANSLATION!>
+NOT_POSITIVE_SPACECRAFT_MASS = a masa do vehículo espacial non é positiva: {0} kg
 
 # too large eccentricity for propagation model: e = {0}
 TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = órbita demasiado excéntrica para a extrapolación (e = {0})
@@ -158,7 +158,7 @@ NON_EXISTENT_MONTH = mes inexistente {0}
 NON_EXISTENT_YEAR_MONTH_DAY = data inexistente {0}-{1}-{2}
 
 # non-existent week date {0}-W{1}-{2}
-NON_EXISTENT_WEEK_DATE = <MISSING TRANSLATION!>
+NON_EXISTENT_WEEK_DATE = data da semana inexistente {0}-W{1}-{2}
 
 # non-existent date {0}
 NON_EXISTENT_DATE = data inexistente {0}
@@ -188,7 +188,7 @@ ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = a lei de actitude non apunta ca
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = a data da órbita ({0}) non concorda coa data da actitude ({1})
 
 # frame ({0}) does not match frame ({1})
-FRAMES_MISMATCH = <MISSING TRANSLATION!>
+FRAMES_MISMATCH = o sistema de referencia ({0}) non corresponde ao sistema de referencia ({1})
 
 # initial state not specified for orbit propagation
 INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial non especificado para a extrapolación de órbita
@@ -197,7 +197,7 @@ INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = estado inicial non especific
 PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = o extrapolador non está en modo de xeneración de efemérides
 
 # event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
-EVENT_DATE_TOO_CLOSE = <MISSING TRANSLATION!>
+EVENT_DATE_TOO_CLOSE =  a data acontecemento {0}, máis grande que {1}, menos {3} segundos e máis pequena que {2} máis {3} segundos, non pode ser engadida
 
 # unable to read header record from JPL ephemerides binary file {0}
 UNABLE_TO_READ_JPL_HEADER = imposible de ler o encabezado do ficheiro de efemérides do JPL {0}
@@ -215,7 +215,7 @@ NO_DATA_LOADED_FOR_CELESTIAL_BODY = non hai datos para o corpo celeste {0}
 NOT_A_JPL_EPHEMERIDES_BINARY_FILE = o ficheiro {0} non é un ficheiro binario de efemérides do JPL
 
 # file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
-NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = <MISSING TRANSLATION!>
+NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = o ficheiro {0} non é un ficheiro de Estimación de Actividade Solar Futura Marshall (MSAFE)
 
 # no JPL ephemerides binary files found
 NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = non existe ningún ficheiro binario de efemérides do JPL
@@ -227,109 +227,109 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = data fora do rango de validez das efemérid
 OUT_OF_RANGE_EPHEMERIDES_DATE = data fora do rango de validez das efemérides : {0}, [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
-UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = <MISSING TRANSLATION!>
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = datos inesperados, dous valores de elevación: {0} e {1}, para un acimut : {2}
 
 # unsupported parameter name {0}, supported names: {1}
-UNSUPPORTED_PARAMETER_NAME = <MISSING TRANSLATION!>
+UNSUPPORTED_PARAMETER_NAME = nome de parámetro non coñecido {0}, parámetro coñecido {1}
 
 # unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = <MISSING TRANSLATION!>
+UNKNOWN_ADDITIONAL_STATE = estado adicional descoñecido "{0}"
 
 # unknown month "{0}"
-UNKNOWN_MONTH = <MISSING TRANSLATION!>
+UNKNOWN_MONTH = mes descoñecido "{0}"
 
 # state Jacobian has not been initialized yet
-STATE_JACOBIAN_NOT_INITIALIZED = <MISSING TRANSLATION!>
+STATE_JACOBIAN_NOT_INITIALIZED = a xacobiana do estado non foi aínda inicializada
 
 # state Jacobian is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
-STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = <MISSING TRANSLATION!>
+STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = a xacobiana do estado es una matriz {0}x{1}, y debería ser una matriz 6x6 o 7x7
 
 # state Jacobian has {0} rows but parameters Jacobian has {1} rows
-STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = <MISSING TRANSLATION!>
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = a xacobiana do estado ten {0} liñas mentres que a xacobiana de parámetros ten {1}
 
 # finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = <MISSING TRANSLATION!>
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = pasos non inicializados para o cálculo de derivadas do modelo de forzas por diferencias finitas
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
-INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = <MISSING TRANSLATION!>
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = a matriz inicial ten {0} columnas mentres que {1} parámetros foron seleccionados
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
-ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = <MISSING TRANSLATION!>
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = a órbita debería ser elíptica con a > 0 e con e < 1 ou ben hiperbólica con a < 0 e con e > 1, a = {0}, e = {1} 
 
 # true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
-ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = <MISSING TRANSLATION!>
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = a anomalía verdadeira {0} está fora do dominio para a órbita hiperbólica (e = {1}, {2} < v < {3})
 
 # hyperbolic orbits cannot be handled as {0} instances
-HYPERBOLIC_ORBIT_NOT_HANDLED_AS = <MISSING TRANSLATION!>
+HYPERBOLIC_ORBIT_NOT_HANDLED_AS = las órbitas hiperbólicas no pueden ser casos de {0}
 
 # invalid preamble field in CCSDS date: {0}
-CCSDS_DATE_INVALID_PREAMBLE_FIELD = <MISSING TRANSLATION!>
+CCSDS_DATE_INVALID_PREAMBLE_FIELD = preámbulo inválido nunha data CCSDS : {0}
 
 # invalid time field length in CCSDS date: {0}, expected {1}
-CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = <MISSING TRANSLATION!>
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lonxitude inválida para o campo data nunha data CCSDS : {0} en vez do valor agardado {1}
 
 # missing agency epoch in CCSDS date
-CCSDS_DATE_MISSING_AGENCY_EPOCH = <MISSING TRANSLATION!>
+CCSDS_DATE_MISSING_AGENCY_EPOCH = falta época de referencia específica axencia nunha CCSDS
 
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE = <MISSING TRANSLATION!>
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = o nome {0} xa está empregado por un estado adicional
 
 # reset state not allowed
-NON_RESETABLE_STATE = <MISSING TRANSLATION!>
+NON_RESETABLE_STATE = reinicialización do estado non autorizado
 
 # Cannot compute Newcomb operators for sigma > rho ({0} > {1})
-DSST_NEWCOMB_OPERATORS_COMPUTATION = <MISSING TRANSLATION!>
+DSST_NEWCOMB_OPERATORS_COMPUTATION = imposible de calcula-las operacións de Newcomb con sigma ({0}) > rho ({1}) 
 
 # Cannot compute the Vmns coefficient with m > n ({0} > {1})
-DSST_VMNS_COEFFICIENT_ERROR_MS = <MISSING TRANSLATION!>
+DSST_VMNS_COEFFICIENT_ERROR_MS = imposible de calcula-los coeficientes Vmns con  m > n ({0} > {1})
 
 # inconsistent shadow computation: entry = {0} whereas exit = {1}
-DSST_SPR_SHADOW_INCONSISTENT = <MISSING TRANSLATION!>
+DSST_SPR_SHADOW_INCONSISTENT = cálculo de sombra incoherente : entrada = {0} e saída = {1}
 
 # The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
-DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = <MISSING TRANSLATION!>
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = a órbita corrente ten unha excentricidade ({0} > 0.5) que necesita un método de medianización non implementada
 
 # unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = <MISSING TRANSLATION!>
+SP3_UNSUPPORTED_VERSION = versión de formato sp3 {0} non incluída
 
 # unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = <MISSING TRANSLATION!>
+SP3_UNSUPPORTED_TIMESYSTEM = versión de sistema temporal {0} non incluída
 
 # unexpected end of file in sp3 file (after line {0})
-SP3_UNEXPECTED_END_OF_FILE = <MISSING TRANSLATION!>
+SP3_UNEXPECTED_END_OF_FILE = final inesperado dun ficheiro sp3 (despois da liña {0})
 
 # non-existent geomagnetic model {0} for year {1}
-NON_EXISTENT_GEOMAGNETIC_MODEL = <MISSING TRANSLATION!>
+NON_EXISTENT_GEOMAGNETIC_MODEL = ficheiro de modelo xeomagnético {0} ausente do ano {1}
 
 # geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
-UNSUPPORTED_TIME_TRANSFORM = <MISSING TRANSLATION!>
+UNSUPPORTED_TIME_TRANSFORM = o modelo xeomagnético {0} na época {1} non ten en conta as transformacións temporais, ningunha variación secular dos coeficientes está definida
 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
-OUT_OF_RANGE_TIME_TRANSFORM = <MISSING TRANSLATION!>
+OUT_OF_RANGE_TIME_TRANSFORM = a transformación temporal do modelo xeomagnético {0} na época {1} está fora do dominio de validez: {2} != [{3}, {4}]
 
 # too small number of cached neighbors: {0} (must be at least {1})
-NOT_ENOUGH_CACHED_NEIGHBORS = <MISSING TRANSLATION!>
+NOT_ENOUGH_CACHED_NEIGHBORS = número de vecinos almacenados demasiado pequeno: {0} (debe ser polo menos {1})
 
 # no cached entries
-NO_CACHED_ENTRIES = <MISSING TRANSLATION!>
+NO_CACHED_ENTRIES = ningunha entrada almacenada
 
 # generated entries not sorted: {0} > {1}
-NON_CHRONOLOGICALLY_SORTED_ENTRIES = <MISSING TRANSLATION!>
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = as entradas xeneradas non están en orde cronolóxica: {0} > {1}
 
 # no data generated around date: {0}
-NO_DATA_GENERATED = <MISSING TRANSLATION!>
+NO_DATA_GENERATED = ningún dato xerado alrededor da data: {0}
 
 # unable to generate new data before {0}
-UNABLE_TO_GENERATE_NEW_DATA_BEFORE = <MISSING TRANSLATION!>
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = imposible de xerar datos antes de {0}
 
 # unable to generate new data after {0}
-UNABLE_TO_GENERATE_NEW_DATA_AFTER = <MISSING TRANSLATION!>
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = imposible de xerar datos despois de {0}
 
 # abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = <MISSING TRANSLATION!>
+DUPLICATED_ABSCISSA = a abscisa {0} está duplicada
 
 # sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = <MISSING TRANSLATION!>
+EMPTY_INTERPOLATION_SAMPLE = mostra de interpolación baleira
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
-UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = <MISSING TRANSLATION!>
+UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = imposible de calcular la anomalía excéntrica hiperbólica a partir de la anomalía media después de {0} iteraciones
