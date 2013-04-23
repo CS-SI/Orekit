@@ -20,8 +20,25 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="6.0" date="TBD"
-             description="TBD.">
+    <release version="6.0" date="2013-04-23"
+             description="Version 6.0 is a major release of Orekit. It introduces several new
+             features and bug fixes. Several incompatibilities with respect to previous
+             versions 5.x have been introduced. Users are strongly advised to upgrade to this
+             version. The major features introduced in version 6.0 are the inclusion of the DSST
+             semi-analytical propagator, an improved propagator architecture where all propagators
+             can use events and step handlers, much better and faster gravity field force model,
+             Jacobians availability for all force models, converters between different propagation
+             models (which can be used to convert between mean and osculating elements), thread
+             safety for many parts (mainly frames, but still excluding propagators) while still
+             preserving caching for performances even in multi-threaded environments, time-dependent
+             gravity fields, support for IERS 2010 conventions, support for INPOP and all DExxx
+             ephemerides, new frames, new time scales, support for user-defined states in spacecraft
+             state, availability of additional states in events, interpolators for many components
+             like position-velocity, spacecraft state and attitude allowing to compute high order
+             derivatives if desired, filtering of events, orphan frames, magnetic fields models,
+             SP3 files support, visibility circles, support for Marshall Solar Activity Future
+             Estimation of solar activity. Numerous bugs were also fixed. Version 6.0 now depends
+             on version 3.2 of Apache commons math.">
       <action dev="pascal" type="fix" >
         Fixed conversion of mean anomaly to hyperbolic eccentric anomaly (fixes issue #135).
       </action>

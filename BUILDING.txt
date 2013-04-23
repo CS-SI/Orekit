@@ -1,8 +1,8 @@
-Orekit can be built from source either using maven 2,
+Orekit can be built from source either using maven 3,
 ant or eclipse.
 
-Building with Maven 2:
- - Maven 2 can be downloaded here:
+Building with Maven 3:
+ - Maven 3 can be downloaded here:
        http://maven.apache.org/download.html
  - If you are behind a proxy (which is a traditional
    setting in a corporate environment), then you need

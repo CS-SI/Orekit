@@ -138,14 +138,14 @@ session 3
 |                       session                           |       industry       |      academics        |  students  |
 |                                                         | commercial companies | research laboratories |            |
 *---------------------------------------------------------*----------------------*-----------------------*------------*
-|  Object oriented technology for numerical computing     |      600 \u20ac      |      300 \u20ac       | 150 \u20ac |
+|  Object oriented technology for numerical computing     |      600 €           |      300 €            | 150 €      |
 |  (session 1)                                            |                      |                       |            |
 *--------------------*------------------------------------*----------------------*-----------------------*------------*
-|  Object oriented concepts and the Java language         |     2400 \u20ac      |     1200 \u20ac       | 600 \u20ac |
+|  Object oriented concepts and the Java language         |     2400 €           |     1200 €            | 600 €      |
 |  (session 2)                                            |                      |                       |            |
 *--------------------*------------------------------------*----------------------*-----------------------*------------*
-|  Developing numerical applications in the Java language |     1800 \u20ac      |      900 \u20ac       | 450 \u20ac |
-| using Apache commons-math and Orekit (session 3)        |                      |                       |            |
+|  Developing numerical applications in the Java language |     1800 €           |      900 €            | 450 €      |
+|  using Apache commons-math and Orekit (session 3)       |                      |                       |            |
 *--------------------*------------------------------------*----------------------*-----------------------*------------*
 prices for training sessions at CS premises
 
