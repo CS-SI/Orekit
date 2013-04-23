@@ -20,6 +20,8 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
+    <release version="6.1" date="TBD" description="TBD">
+    </release>
     <release version="6.0" date="2013-04-23"
              description="Version 6.0 is a major release of Orekit. It introduces several new
              features and bug fixes. Several incompatibilities with respect to previous
