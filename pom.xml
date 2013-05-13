@@ -36,6 +36,7 @@
     <orekit.maven-site-plugin.version>3.3</orekit.maven-site-plugin.version>
     <orekit.maven-source-plugin.version>2.2.1</orekit.maven-source-plugin.version>
     <orekit.maven-surefire-plugin.version>2.14.1</orekit.maven-surefire-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>2.14.1</orekit.maven-surefire-report-plugin.version>
     <orekit.plantuml.version>7955</orekit.plantuml.version>
   </properties>
 
@@ -400,6 +401,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>${orekit.maven-surefire-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+        <version>${orekit.maven-surefire-report-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
