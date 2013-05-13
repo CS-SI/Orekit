@@ -38,7 +38,7 @@
     <orekit.maven.source.plugin.version>2.2.1</orekit.maven.source.plugin.version>
     <orekit.maven.surefire.plugin.version>2.14.1</orekit.maven.surefire.plugin.version>
     <orekit.plantuml.version>7955</orekit.plantuml.version>
-    </properties>
+  </properties>
 
   <developers>
     <developer>
