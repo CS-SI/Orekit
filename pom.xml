@@ -20,22 +20,22 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.findbugs.maven.plugin.version>2.5.2</orekit.findbugs.maven.plugin.version>
-    <orekit.jacoco.maven.plugin.version>0.6.2.201302030002</orekit.jacoco.maven.plugin.version>
-    <orekit.maven.assembly.plugin.version>2.4</orekit.maven.assembly.plugin.version>
-    <orekit.maven.bundle.plugin.version>2.3.7</orekit.maven.bundle.plugin.version>
-    <orekit.maven.changes.plugin.version>2.9</orekit.maven.changes.plugin.version>
-    <orekit.maven.checkstyle.plugin.version>2.10</orekit.maven.checkstyle.plugin.version>
-    <orekit.maven.clean.plugin.version>2.5</orekit.maven.clean.plugin.version>
-    <orekit.maven.compiler.plugin.version>3.1</orekit.maven.compiler.plugin.version>
-    <orekit.maven.javadoc.plugin.version>2.9</orekit.maven.javadoc.plugin.version>
-    <orekit.maven.jxr.plugin.version>2.3</orekit.maven.jxr.plugin.version>
-    <orekit.maven.plantuml.plugin.version>7940</orekit.maven.plantuml.plugin.version>
-    <orekit.maven.project.info.reports.plugin.version>2.6</orekit.maven.project.info.reports.plugin.version>
-    <orekit.maven.resources.plugin.version>2.6</orekit.maven.resources.plugin.version>
-    <orekit.maven.site.plugin.version>3.3</orekit.maven.site.plugin.version>
-    <orekit.maven.source.plugin.version>2.2.1</orekit.maven.source.plugin.version>
-    <orekit.maven.surefire.plugin.version>2.14.1</orekit.maven.surefire.plugin.version>
+    <orekit.findbugs-maven-plugin.version>2.5.2</orekit.findbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.6.2.201302030002</orekit.jacoco-maven-plugin.version>
+    <orekit.maven-assembly-plugin.version>2.4</orekit.maven-assembly-plugin.version>
+    <orekit.maven-bundle-plugin.version>2.3.7</orekit.maven-bundle-plugin.version>
+    <orekit.maven-changes-plugin.version>2.9</orekit.maven-changes-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>2.10</orekit.maven-checkstyle-plugin.version>
+    <orekit.maven-clean-plugin.version>2.5</orekit.maven-clean-plugin.version>
+    <orekit.maven-compiler-plugin.version>3.1</orekit.maven-compiler-plugin.version>
+    <orekit.maven-javadoc-plugin.version>2.9</orekit.maven-javadoc-plugin.version>
+    <orekit.maven-jxr-plugin.version>2.3</orekit.maven-jxr-plugin.version>
+    <orekit.maven-plantuml-plugin.version>7940</orekit.maven-plantuml-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>2.6</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-resources-plugin.version>2.6</orekit.maven-resources-plugin.version>
+    <orekit.maven-site-plugin.version>3.3</orekit.maven-site-plugin.version>
+    <orekit.maven-source-plugin.version>2.2.1</orekit.maven-source-plugin.version>
+    <orekit.maven-surefire-plugin.version>2.14.1</orekit.maven-surefire-plugin.version>
     <orekit.plantuml.version>7955</orekit.plantuml.version>
   </properties>
 
@@ -227,7 +227,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>${orekit.maven.compiler.plugin.version}</version>
+        <version>${orekit.maven-compiler-plugin.version}</version>
         <configuration>
           <source>1.6</source>
           <target>1.6</target>
@@ -236,7 +236,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>${orekit.maven.assembly.plugin.version}</version>
+        <version>${orekit.maven-assembly-plugin.version}</version>
         <configuration>
           <descriptors>
             <descriptor>src/main/assembly/source-assembly.xml</descriptor>
@@ -247,7 +247,7 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>${orekit.maven.bundle.plugin.version}</version>
+        <version>${orekit.maven-bundle-plugin.version}</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
@@ -268,42 +268,42 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>${orekit.maven.resources.plugin.version}</version>
+        <version>${orekit.maven-resources-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-clean-plugin</artifactId>
-        <version>${orekit.maven.clean.plugin.version}</version>
+        <version>${orekit.maven-clean-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>${orekit.maven.site.plugin.version}</version>
+        <version>${orekit.maven-site-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${orekit.maven.surefire.plugin.version}</version>
+        <version>${orekit.maven-surefire-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changes-plugin</artifactId>
-        <version>${orekit.maven.changes.plugin.version}</version>
+        <version>${orekit.maven-changes-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
-        <version>${orekit.maven.jxr.plugin.version}</version>
+        <version>${orekit.maven-jxr-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${orekit.maven.javadoc.plugin.version}</version>
+        <version>${orekit.maven-javadoc-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${orekit.jacoco.maven.plugin.version}</version>
+        <version>${orekit.jacoco-maven-plugin.version}</version>
         <executions>
           <execution>
             <id>prepare-agent</id>
@@ -341,7 +341,7 @@
       <plugin>
         <groupId>com.github.jeluard</groupId>
         <artifactId>maven-plantuml-plugin</artifactId>
-        <version>${orekit.maven.plantuml.plugin.version}</version>
+        <version>${orekit.maven-plantuml-plugin.version}</version>
         <configuration>
           <sourceFiles>
             <directory>${basedir}</directory>
@@ -379,17 +379,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>${orekit.maven.site.plugin.version}</version>
+        <version>${orekit.maven-site-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>${orekit.maven.project.info.reports.plugin.version}</version>
+        <version>${orekit.maven-project-info-reports-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${orekit.findbugs.maven.plugin.version}</version>
+        <version>${orekit.findbugs-maven-plugin.version}</version>
         <configuration>
           <threshold>Normal</threshold>
           <effort>Default</effort>
@@ -399,12 +399,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>${orekit.maven.surefire.plugin.version}</version>
+        <version>${orekit.maven-surefire-plugin.version}</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${orekit.maven.checkstyle.plugin.version}</version>
+        <version>${orekit.maven-checkstyle-plugin.version}</version>
         <configuration>
           <configLocation>${basedir}/checkstyle.xml</configLocation>
           <enableRulesSummary>false</enableRulesSummary>
@@ -421,7 +421,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-changes-plugin</artifactId>
-        <version>${orekit.maven.changes.plugin.version}</version>
+        <version>${orekit.maven-changes-plugin.version}</version>
         <configuration>
           <xmlPath>${basedir}/src/site/xdoc/changes.xml</xmlPath>
         </configuration>
@@ -436,7 +436,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jxr-plugin</artifactId>
-        <version>${orekit.maven.jxr.plugin.version}</version>
+        <version>${orekit.maven-jxr-plugin.version}</version>
         <configuration>
           <linkJavadoc>false</linkJavadoc>
         </configuration>
@@ -444,7 +444,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${orekit.maven.javadoc.plugin.version}</version>
+        <version>${orekit.maven-javadoc-plugin.version}</version>
         <configuration>
           <overview>${basedir}/src/main/java/org/orekit/overview.html</overview>
           <links>
@@ -463,7 +463,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${orekit.jacoco.maven.plugin.version}</version>
+        <version>${orekit.jacoco-maven-plugin.version}</version>
       </plugin>
     </plugins>
   </reporting>
@@ -476,7 +476,7 @@
            <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>${orekit.maven.source.plugin.version}</version>
+            <version>${orekit.maven-source-plugin.version}</version>
             <executions>
               <execution>
                 <id>create-source-jar</id>
