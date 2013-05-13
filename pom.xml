@@ -22,7 +22,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <orekit.findbugs.maven.plugin.version>2.5.2</orekit.findbugs.maven.plugin.version>
     <orekit.jacoco.maven.plugin.version>0.6.2.201302030002</orekit.jacoco.maven.plugin.version>
-    <orekit.maven.antrun.plugin.version>1.7</orekit.maven.antrun.plugin.version>
     <orekit.maven.assembly.plugin.version>2.4</orekit.maven.assembly.plugin.version>
     <orekit.maven.bundle.plugin.version>2.3.7</orekit.maven.bundle.plugin.version>
     <orekit.maven.changes.plugin.version>2.9</orekit.maven.changes.plugin.version>
@@ -225,30 +224,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>${orekit.maven.antrun.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>javadoc.resources</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <copy todir="${project.build.directory}/apidocs/META-INF">
-                  <fileset dir="${basedir}">
-                    <include name="LICENSE.txt" />
-                    <include name="NOTICE.txt" />
-                  </fileset>
-                </copy>
-              </target>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
