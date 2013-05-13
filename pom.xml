@@ -226,10 +226,6 @@
   <build>
     <plugins>
       <plugin>
-        <!--
-          - Copy LICENSE.txt and NOTICE.txt so that they are included
-          - in the -javadoc jar file for the component.
-          -->
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-antrun-plugin</artifactId>
         <version>${orekit.maven.antrun.plugin.version}</version>
