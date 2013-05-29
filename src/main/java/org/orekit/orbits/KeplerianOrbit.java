@@ -19,6 +19,7 @@ package org.orekit.orbits;
 import java.util.Collection;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -160,7 +161,7 @@ public class KeplerianOrbit extends Orbit {
         switch (type) {
         case MEAN :
             tmpV = (a < 0) ?
-                     hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly)) :
+                     hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e)) :
                      ellipticEccentricToTrue(meanToEllipticEccentric(anomaly));
             break;
         case ECCENTRIC :
@@ -232,7 +233,7 @@ public class KeplerianOrbit extends Orbit {
         switch (type) {
         case MEAN_ANOMALY :
             this.v = (a < 0) ?
-                     hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly)) :
+                     hyperbolicEccentricToTrue(meanToHyperbolicEccentric(anomaly, e)) :
                      ellipticEccentricToTrue(meanToEllipticEccentric(anomaly));
             break;
         case ECCENTRIC_ANOMALY :
@@ -504,30 +505,47 @@ public class KeplerianOrbit extends Orbit {
     /** Computes the hyperbolic eccentric anomaly from the mean anomaly.
      * <p>
      * The algorithm used here for solving hyperbolic Kepler equation is
-     * a naive initialization and classical Halley method for iterations.
+     * Danby's iterative method (3rd order) with Vallado's initial guess.
      * </p>
      * @param M mean anomaly (rad)
-     * @return v the true anomaly
-     * @throws IllegalArgumentException if convergence cannot be reached when
-     * computing the hyperbolic eccentric anomaly
+     * @param ecc eccentricity
+     * @return H the hyperbolic eccentric anomaly
      */
-    private double meanToHyperbolicEccentric(final double M) throws IllegalArgumentException {
+    private double meanToHyperbolicEccentric(final double M, final double ecc) {
 
-        // resolution of hyperbolic Kepler equation for keplerian parameters
-        double H     = -M;
-        double shift = 0.0;
-        double HpM   = 0.0;
-        int    iter  = 0;
+        // Resolution of hyperbolic Kepler equation for keplerian parameters
+
+        // Initial guess
+        double H;
+        if (ecc < 1.6) {
+            if ((-FastMath.PI < M && M < 0.) || M > FastMath.PI) {
+                H = M - ecc;
+            } else {
+                H = M + ecc;
+            }
+        } else {
+            if (ecc < 3.6 && FastMath.abs(M) > FastMath.PI) {
+                H = M - FastMath.copySign(ecc, M);
+            } else {
+                H = M / (ecc - 1.);
+            }
+        }
+
+        // Iterative computation
+        int iter = 0;
         do {
-            final double f2 = e * FastMath.sinh(H);
-            final double f1 = e * FastMath.cosh(H) - 1;
-            final double f0 = f2 - HpM;
+            final double f3  = ecc * FastMath.cosh(H);
+            final double f2  = ecc * FastMath.sinh(H);
+            final double f1  = f3 - 1.;
+            final double f0  = f2 - H - M;
+            final double f12 = 2. * f1;
+            final double d   = f0 / f12;
+            final double fdf = f1 - d * f2;
+            final double ds  = f0 / fdf;
 
-            final double f12 = 2 * f1;
-            shift = f0 * f12 / (f1 * f12 - f0 * f2);
+            final double shift = f0 / (fdf + ds * ds * f3 / 6.);
 
-            HpM -= shift;
-            H    = HpM - M;
+            H -= shift;
 
             if (FastMath.abs(shift) <= 1.0e-12) {
                 return H;
@@ -535,8 +553,8 @@ public class KeplerianOrbit extends Orbit {
 
         } while (++iter < 50);
 
-        throw OrekitException.createIllegalArgumentException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
-                                                             iter);
+        throw new ConvergenceException(OrekitMessages.UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY,
+                                       iter);
     }
 
     /** {@inheritDoc} */

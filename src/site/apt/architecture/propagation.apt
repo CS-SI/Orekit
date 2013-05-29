@@ -296,7 +296,7 @@ propagator = new NumericalPropagator(integrator);
   It retains the best of both worlds, speed from analytical models and accuracy from numerical models.
   Semianalytical propagation is implemented using Draper Semianalytical Satellite Theory (DSST).
 
-  As of writing (March 2012), only the mean element equation of motion models have been implemented;
+  As of writing (May 2013), only the mean elements equations of motion models have been implemented;
   the short periodic terms are still missing. They will be added later on.
 
 * Authors

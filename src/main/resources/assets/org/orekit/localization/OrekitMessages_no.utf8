@@ -266,7 +266,7 @@ HYPERBOLIC_ORBIT_NOT_HANDLED_AS = hyperbolske baner kan ikke bli behandlet som {
 CCSDS_DATE_INVALID_PREAMBLE_FIELD = ugyldig blokkstartfelt for CCSDS dato: {0}
 
 # invalid time field length in CCSDS date: {0}, expected {1}
-CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ugyldig datofelt-lengde for CCSDS dato: {0}
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ugyldig datofelt-lengde for CCSDS dato: {0}, ventet {1}
 
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = manglende byrå epoke for CCSDS dato

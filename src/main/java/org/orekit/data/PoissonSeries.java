@@ -255,16 +255,17 @@ public class PoissonSeries implements Serializable {
     }
 
     /** Compute the value of the development for the current date.
-     * @param t current date
      * @param elements luni-solar and planetary elements for the current date
      * @return current value of the development
      */
-    public double value(final double t, final BodiesElements elements) {
+    public double value(final BodiesElements elements) {
+
+        final double tc = elements.getTC();
 
         // polynomial part
         double p = 0;
         for (int i = coefficients.length - 1; i >= 0; --i) {
-            p = p * t + coefficients[i];
+            p = p * tc + coefficients[i];
         }
 
         // non-polynomial part
@@ -280,7 +281,7 @@ public class PoissonSeries implements Serializable {
                 s += serie[k].value(elements);
             }
 
-            np = np * t + s;
+            np = np * tc + s;
 
         }
 

@@ -44,6 +44,17 @@ Downloads
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
 *----------*--------------------------------------------------------*
+|  source  | {{{https://www.orekit.org/forge/attachments/download/356/orekit-6.0-sources.zip}orekit-6.0-sources.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/357/orekit-6.0.jar}orekit-6.0.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/358/orekit-6.0-javadoc.jar}orekit-6.0-javadoc.jar}} |
+*----------*--------------------------------------------------------*
+version 6.0 downloads (release date: 2013-04-23)
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
 |  source  | {{{https://www.orekit.org/forge/attachments/download/48/orekit-5.0.3-sources.zip}orekit-5.0.3-sources.zip}} |
 *----------*--------------------------------------------------------*
 |  binary  |     {{{https://www.orekit.org/forge/attachments/download/44/orekit-5.0.3.jar}orekit-5.0.3.jar}}     |
@@ -127,19 +138,19 @@ version 3.1 downloads (release date: 2008-07-16)
 
   This file contents is:
 
-    ** leap seconds data up to 2012,
+    ** leap seconds data up to 2013,
 
-    ** IERS Earth orientation parameters from 1973 to mid-2012
-       with predicted date to mid-2013 (both IAU-1980 and IAU-2000),
+    ** IERS Earth orientation parameters from 1973 to early 2013
+       with predicted date to 2014 for some parameters (both IAU-1980 and IAU-2000),
 
-    ** Marshall Solar Activity Futur Estimation from 1999 to 2012,
+    ** Marshall Solar Activity Futur Estimation from 1999 to 2013,
 
     ** DE 406 planetary ephemerides from 1962 to 2029,
 
     ** Eigen 06S gravity field.
   
-  There is no guarantee that this file will be available indefinitely or that its
+  There are no guarantees that this file will be available indefinitely or that its
   content will be updated. It should be considered as a simple configuration example.
   Users are encouraged to set up their own configuration data.
 
-  The file is available by following this link: {{{https://www.orekit.org/forge/attachments/download/313/orekit-data.zip}orekit-data.zip}}.
+  The file is available by following this link: {{{https://www.orekit.org/forge/attachments/download/355/orekit-data.zip}orekit-data.zip}}.

@@ -19,7 +19,7 @@ Building Orekit
   systems, including Unix, GNU/Linux, Windows and Mac OS X. Some GNU/Linux
   distributions provide these tools in their packages repositories.
 
-* Building with Maven 2
+* Building with Maven 3
 
   {{{http://maven.apache.org/}Maven}} is a build tool that goes far beyond
   simply compiling and packaging a product. It is also able to resolve
@@ -29,7 +29,7 @@ Building Orekit
   
   For systems not providing maven as a package, maven can be downloaded
   from its site at the Apache Software Foundation:
-  {{http://maven.apache.org/download.html}}, this page also explains the
+  {{http://maven.apache.org/download.cgi}}, this page also explains the
   installation procedure.
 
   As with all maven enabled projects, building Orekit is straightforward, simply
@@ -76,7 +76,7 @@ mvn install
 
   If you need to configure a proxy server for dependencies retrieval, see
   the
-  {{{http://ant.apache.org/manual/index.html}Proxy configuration}}
+  {{{http://ant.apache.org/manual/proxy.html}Proxy configuration}}
   page at the ant site.
 
   Compiling is done by running the command:
@@ -106,11 +106,12 @@ ant
        directory where you unpacked Orekit
 
     * set the source folders to orekit/src/main/java, orekit/src/main/resources,
-      orekit/src/test/java, orekit/src/test/resources, orekit/src/tutorials in
-      the source tab of the Configure Build Path dialog
+      orekit/src/test/java, orekit/src/test/resources, orekit/src/tutorials/java
+      and orekit/src/tutorials/resources in the source tab of the Configure Build
+      Path dialog
 
     * set the external libraries to JRE system library (provided by Eclipse),
-      Junit 4.x (provided by Eclipse) and Apache Commons Math 3.0 (available at
+      Junit 4.x (provided by Eclipse) and Apache Commons Math 3.2 (available at
       Apache Software Foundation Commons Math
-      {{{http://commons.apache.org/downloads/download_math.cgi}downloads page}})
+      {{{http://commons.apache.org/proper/commons-math/download_math.cgi}downloads page}})
       in the libraries tab of the Configure Build Path dialog

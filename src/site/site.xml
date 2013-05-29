@@ -60,7 +60,6 @@
       <item name="Contributing"  href="/contributing.html"      />
       <item name="Guidelines"    href="/guidelines.html"        />
       <item name="Javadoc"       href="/apidocs/index.html"     />
-      <item name="Test coverage" href="/jacoco/index.html#dn-a" />
       </menu>
     <menu ref="reports"/>
   </body>

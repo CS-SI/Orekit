@@ -27,29 +27,9 @@ public enum IERSConventions {
     IERS_2003 {
 
         /** {@inheritDoc} */
-        public String getXModel() {
-            return IERS_BASE + "2010/tab5.2a.txt";
+        public String getNutationArguments() {
+            return IERS_BASE + "2003/nutation-arguments.txt";
         }
-
-        /** {@inheritDoc} */
-        public String getYModel() {
-            return IERS_BASE + "2010/tab5.2b.txt";
-        }
-
-        /** {@inheritDoc} */
-        public String getSXY2XModel() {
-            return IERS_BASE + "2010/tab5.2d.txt";
-        }
-
-        /** {@inheritDoc} */
-        public String getLoveNumbersModel() {
-            return IERS_BASE + "2010/tab6.3.txt";
-        }
-
-    },
-
-    /** Constant for IERS 2010 conventions. */
-    IERS_2010 {
 
         /** {@inheritDoc} */
         public String getXModel() {
@@ -71,10 +51,45 @@ public enum IERSConventions {
             return IERS_BASE + "2003/tab6.1.txt";
         }
 
+    },
+
+    /** Constant for IERS 2010 conventions. */
+    IERS_2010 {
+
+        /** {@inheritDoc} */
+        public String getNutationArguments() {
+            return IERS_BASE + "2010/nutation-arguments.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getXModel() {
+            return IERS_BASE + "2010/tab5.2a.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getYModel() {
+            return IERS_BASE + "2010/tab5.2b.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getSXY2XModel() {
+            return IERS_BASE + "2010/tab5.2d.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getLoveNumbersModel() {
+            return IERS_BASE + "2010/tab6.3.txt";
+        }
+
     };
 
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
+
+    /** Get the resource name for the nutation arguments (luni-solar + planetary).
+     * @return resource name for the nutation arguments (luni-solar + planetary)
+     */
+    public abstract String getNutationArguments();
 
     /** Get the table resource name for the X pole component model.
      * @return table resource name for the X pole component model

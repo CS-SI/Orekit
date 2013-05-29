@@ -1,0 +1,45 @@
+# Extract from IERS conventions 2010 (equations 5.43 and 5.44)
+
+reference = 2000-01-01T12:00:00 TT
+
+# Mean Anomaly of the Moon
+ F1 ≡ l = 134.96340251◦ + 1717915923.2178″t + 31.8792″t² + 0.051635″t³ − 0.00024470″t⁴
+
+# Mean Anomaly of the Sun
+ F2 ≡ l' = 357.52910918◦ + 129596581.0481″t − 0.5532″t² + 0.000136″t³ − 0.00001149″t⁴
+
+# L − Ω
+ F3 ≡ F = 93.27209062◦ + 1739527262.8478″t − 12.7512″t² − 0.001037″t³ + 0.00000417″t⁴
+
+# Mean Elongation of the Moon from the Sun
+ F4 ≡ D = 297.85019547◦ + 1602961601.2090″t − 6.3706″t² + 0.006593″t³ − 0.00003169″t⁴
+
+# Mean Longitude of the Ascending Node of the Moon
+ F5 ≡ Ω = 125.04455501◦ − 6962890.5431″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴
+
+# Mean Mercury longitude
+ F6 ≡ LMe = 4.402608842 + 2608.7903141574 × t
+
+# Mean Venus longitude
+ F7 ≡ LVe = 3.176146697 + 1021.3285546211 × t
+
+# Mean Earth longitude
+ F8 ≡ LE  = 1.753470314 +  628.3075849991 × t
+
+# Mean Mars longitude
+ F9 ≡ LMa = 6.203480913 +  334.0612426700 × t
+
+# Mean Jupiter longitude
+F10 ≡ LJ  = 0.599546497 +   52.9690962641 × t
+
+# Mean Saturn longitude
+F11 ≡ LSa = 0.874016757 +   21.3299104960 × t
+
+# Mean Uranus longitude
+F12 ≡ LU  = 5.481293872 +    7.4781598567 × t
+
+# Mean Neptune longitude
+F13 ≡ LNe = 5.311886287 +    3.8133035638 × t
+
+# General accumulated precession
+F14 ≡ pA  = 0.02438175 × t + 0.00000538691 × t²
