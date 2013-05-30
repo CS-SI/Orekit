@@ -33,7 +33,7 @@ import org.orekit.utils.Constants;
 class VEISProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 6918291423091809232L;
+    private static final long serialVersionUID = 20130530L;
 
     /** Reference date. */
     private static AbsoluteDate VST_REFERENCE =
@@ -48,15 +48,9 @@ class VEISProvider implements TransformProvider {
     /** Veis sidereal time derivative in rad/s. */
     private static final double VSTD = 7.292115146705209e-5;
 
-    /** EOP history. */
-    private final EOP1980History eopHistory;
-
     /** Constructor for the singleton.
-     * @exception OrekitException if EOP data cannot be read
      */
-    public VEISProvider()
-        throws OrekitException {
-        eopHistory = FramesFactory.getEOP1980History();
+    public VEISProvider() {
     }
 
     /** Get the transform from GTOD at specified date.
@@ -69,7 +63,7 @@ class VEISProvider implements TransformProvider {
         // offset from FIFTIES epoch (UT1 scale)
         final double dtai = date.durationFrom(VST_REFERENCE);
         final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
-        final double dut1 = eopHistory.getUT1MinusUTC(date);
+        final double dut1 = 0.0; // fixed at 0 since Veis parent is GTOD frame WITHOUT EOP corrections
 
         final double tut1 = dtai + dutc + dut1;
         final double ttd  = tut1 / Constants.JULIAN_DAY;

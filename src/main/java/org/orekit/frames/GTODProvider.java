@@ -65,11 +65,12 @@ public class GTODProvider implements TransformProvider {
     private final EOP1980History eopHistory;
 
     /** Simple constructor.
+     * @param applyEOPCorr if true, EOP correction is applied (here, LOD)
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected GTODProvider()
+    protected GTODProvider(final boolean applyEOPCorr)
         throws OrekitException {
-        eopHistory = FramesFactory.getEOP1980History();
+        eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
     }
 
     /** Get the transform from TOD at specified date.
@@ -85,7 +86,7 @@ public class GTODProvider implements TransformProvider {
         final double gast = getGAST(date);
 
         // compute true angular rotation of Earth, in rad/s
-        final double lod = eopHistory.getLOD(date);
+        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
         final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
         final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
 
@@ -105,7 +106,7 @@ public class GTODProvider implements TransformProvider {
         // offset in julian centuries from J2000 epoch (UT1 scale)
         final double dtai = date.durationFrom(GMST_REFERENCE);
         final double dutc = TimeScalesFactory.getUTC().offsetFromTAI(date);
-        final double dut1 = eopHistory.getUT1MinusUTC(date);
+        final double dut1 = (eopHistory == null) ? 0.0 : eopHistory.getUT1MinusUTC(date);
 
         final double tut1 = dtai + dutc + dut1;
         final double tt   = tut1 / Constants.JULIAN_CENTURY;

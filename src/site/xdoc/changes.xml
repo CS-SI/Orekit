@@ -22,6 +22,9 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Fixed GTOD and Veis frame that did apply UT1-UTC correction when they should not (fixes issue #131).
+      </action>
+      <action dev="luc" type="fix" >
         Completely rewrote conversion from Cartesian to geodetic coordinates to improve
         numerical stability for very far points (typically when computing coordinates
         of Sun). Fixes issue #137.

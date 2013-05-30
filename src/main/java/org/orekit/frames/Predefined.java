@@ -82,7 +82,7 @@ public enum Predefined {
     /** CIRF2000 frame, IERS 2003 conventions. */
     CIRF_2000_CONV_2003("CIRF2000/2003"),
 
-    /** Veis 1950 with tidal effects. */
+    /** Veis 1950. */
     VEIS_1950("VEIS1950"),
 
     /** GTOD without EOP corrections. */
