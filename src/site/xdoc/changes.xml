@@ -22,6 +22,10 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Improved event bracketing by backporting changes made in Apache Commons Math (may fix issues #110
+        and #136, but we cannot be sure as neither issues were reproducible even before this change...).
+      </action>
+      <action dev="luc" type="fix" >
         Fixed GTOD and Veis frame that did apply UT1-UTC correction when they should not (fixes issue #131).
       </action>
       <action dev="luc" type="fix" >
