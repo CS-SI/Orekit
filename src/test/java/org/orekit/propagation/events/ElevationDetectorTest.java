@@ -32,10 +32,14 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -122,6 +126,112 @@ public class ElevationDetectorTest {
             }
 
         }
+
+    }
+
+    @Test
+    public void testIssue136() throws OrekitException {
+
+        //  Initial state definition : date, orbit
+        AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000, TimeScalesFactory.getUTC());
+        Frame inertialFrame = FramesFactory.getEME2000(); // inertial frame for orbit definition
+        Orbit initialOrbit = new KeplerianOrbit(6828137.005, 7.322641382145889e-10, 1.6967079057368113,
+                                                0.0, 1.658054062748353,
+                                                0.0001223149429077902, PositionAngle.MEAN,
+                                                inertialFrame, initialDate, Constants.EIGEN5C_EARTH_MU);
+
+        // Propagator : consider a simple keplerian motion (could be more elaborate)
+        Propagator kepler = new EcksteinHechlerPropagator(initialOrbit,
+                                                          Constants.EGM96_EARTH_EQUATORIAL_RADIUS, Constants.EGM96_EARTH_MU,
+                                                          Constants.EGM96_EARTH_C20, 0.0, 0.0, 0.0, 0.0);
+
+        // Earth and frame
+        double ae =  6378137.0; // equatorial radius in meter
+        double f  =  1.0 / 298.257223563; // flattening
+        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+        BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+
+        // Station
+        final double longitude = FastMath.toRadians(-147.5);
+        final double latitude  = FastMath.toRadians(64);
+        final double altitude  = 160;
+        final GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
+        final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
+
+        // Event definition
+        final double maxcheck  = 120.0;
+        final double elevation = FastMath.toRadians(5.);
+        final double threshold = 10.0;
+        final EventDetector rawEvent = new ElevationDetector(maxcheck, threshold, elevation, sta1Frame) {
+            private static final long serialVersionUID = 1L;
+            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+                    return Action.CONTINUE;
+                }
+        };
+        final EventsLogger logger = new EventsLogger();
+        kepler.addEventDetector(logger.monitorDetector(rawEvent));
+
+        // Propagate from the initial date to the first raising or for the fixed duration
+        kepler.propagate(initialDate.shiftedBy(60*60*24.0*40));
+        int countIncreasing = 0;
+        int countDecreasing = 0;
+        for (LoggedEvent le : logger.getLoggedEvents()) {
+            if (le.isIncreasing()) {
+                ++countIncreasing;
+            } else {
+                ++countDecreasing;
+            }
+        }
+        Assert.assertEquals(314, countIncreasing);
+        Assert.assertEquals(314, countDecreasing);
+
+    }
+
+    @Test
+    public void testIssue110() throws OrekitException {
+
+        // KEPLERIAN PROPAGATOR
+        final Frame eme2000Frame = FramesFactory.getEME2000();
+        final AbsoluteDate initDate = AbsoluteDate.J2000_EPOCH;
+        final double a = 7000000.0;
+        final Orbit initialOrbit = new KeplerianOrbit(a, 0.0,
+                FastMath.PI / 2.2, 0.0, FastMath.PI / 2., 0.0,
+                PositionAngle.TRUE, eme2000Frame, initDate,
+                Constants.EGM96_EARTH_MU);
+        final KeplerianPropagator kProp = new KeplerianPropagator(initialOrbit);
+
+        // earth shape
+        final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(
+                Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF2005());
+        // Ground station
+        final GeodeticPoint stat = new GeodeticPoint(FastMath.toRadians(35.),
+                FastMath.toRadians(149.8), 0.);
+        final TopocentricFrame station = new TopocentricFrame(earthShape, stat,
+                "GSTATION");
+
+        // detector creation
+        // =================
+        final double maxCheck = 600.;
+        final double threshold = 1.0e-3;
+        final EventDetector rawEvent = new ElevationDetector(maxCheck, threshold, FastMath.toRadians(5.0), station) {
+            private static final long serialVersionUID = 1L;
+            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+                    return Action.CONTINUE;
+                }
+        };
+        final EventsLogger logger = new EventsLogger();
+        kProp.addEventDetector(logger.monitorDetector(rawEvent));
+
+        // PROPAGATION with DETECTION
+        final AbsoluteDate finalDate = initDate.shiftedBy(30 * 60.);
+
+        kProp.propagate(finalDate);
+        Assert.assertEquals(2, logger.getLoggedEvents().size());
+        Assert.assertTrue(logger.getLoggedEvents().get(0).isIncreasing());
+        Assert.assertEquals(478.945, logger.getLoggedEvents().get(0).getState().getDate().durationFrom(initDate), 1.0e-3);
+        Assert.assertFalse(logger.getLoggedEvents().get(1).isIncreasing());
+        Assert.assertEquals(665.721, logger.getLoggedEvents().get(1).getState().getDate().durationFrom(initDate), 1.0e-3);
 
     }
 

@@ -22,8 +22,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.commons.math3.exception.NoBracketingException;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
@@ -216,18 +214,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         // search for next events that may occur during the step
-        final int orderingSign = interpolator.isForward() ? +1 : -1;
-        final SortedSet<EventState> occuringEvents =
-            new TreeSet<EventState>(new Comparator<EventState>() {
-
-                /** {@inheritDoc} */
-                public int compare(final EventState es0, final EventState es1) {
-                    return orderingSign * es0.getEventTime().compareTo(es1.getEventTime());
-                }
-
-            });
-
-
+        final List<EventState> occuringEvents = new ArrayList<EventState>();
         for (final EventState state : eventsStates) {
             if (state.evaluateStep(interpolator)) {
                 // the event occurs during the current step
@@ -235,9 +222,21 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             }
         }
 
+        // chronological or reverse chronological sorter, according to propagation direction
+        final int orderingSign = interpolator.isForward() ? +1 : -1;
+        final Comparator<EventState> sorter = new Comparator<EventState>() {
+
+            /** {@inheritDoc} */
+            public int compare(final EventState es0, final EventState es1) {
+                return orderingSign * es0.getEventTime().compareTo(es1.getEventTime());
+            }
+
+        };
+
         while (!occuringEvents.isEmpty()) {
 
             // handle the chronologically first event
+            Collections.sort(occuringEvents, sorter);
             final Iterator<EventState> iterator = occuringEvents.iterator();
             final EventState currentEvent = iterator.next();
             iterator.remove();

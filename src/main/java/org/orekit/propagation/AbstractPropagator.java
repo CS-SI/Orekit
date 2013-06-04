@@ -116,6 +116,7 @@ public abstract class AbstractPropagator implements Propagator {
     /** {@inheritDoc} */
     public void resetInitialState(final SpacecraftState state) throws PropagationException {
         initialState = state;
+        setStartDate(state.getDate());
     }
 
     /** {@inheritDoc} */

@@ -107,4 +107,13 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
                             new EOP2000History(history).getEndDate());
     }
 
+    @Test
+    public void testIssue139() throws OrekitException, ParseException {
+        setRoot("zipped-data");
+        final List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory1980(history);
+        Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
+                            new EOP1980History(history).getStartDate());
+    }
+
 }

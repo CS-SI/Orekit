@@ -21,6 +21,27 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed missing events detection when two events occurred at exactly the same time using an analytical
+        propagator (like generated ephemerides for example). Fixes issue #138.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed data loading from zip/jar. A more streamlined architecture has been set up, and each zip entry
+        now uses its own input stream. Closing the stream triggers the switch to the next entry, and duplicate
+        close are handled gracefully. Fixes issue #139.
+      </action>
+      <action dev="luc" type="fix" >
+        Improved event bracketing by backporting changes made in Apache Commons Math (may fix issues #110
+        and #136, but we cannot be sure as neither issues were reproducible even before this change...).
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed GTOD and Veis frame that did apply UT1-UTC correction when they should not (fixes issue #131).
+      </action>
+      <action dev="luc" type="fix" >
+        Completely rewrote conversion from Cartesian to geodetic coordinates to improve
+        numerical stability for very far points (typically when computing coordinates
+        of Sun). Fixes issue #137.
+      </action>
     </release>
     <release version="6.0" date="2013-04-23"
              description="Version 6.0 is a major release of Orekit. It introduces several new
@@ -44,7 +65,7 @@
       <action dev="pascal" type="fix" >
         Fixed conversion of mean anomaly to hyperbolic eccentric anomaly (fixes issue #135).
       </action>
-        <action dev="luc" type="add" >
+      <action dev="luc" type="add" >
         Extracted fundamental nutation arguments from CIRF frame. This allows both reuse of
         the arguments for other computations (typically tides), and also allows to use
         convention-dependent arguments (they are similar for IERS conventions 2003 and 2010,

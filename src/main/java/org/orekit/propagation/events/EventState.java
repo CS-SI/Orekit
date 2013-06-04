@@ -20,9 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.solvers.AllowedSolution;
-import org.apache.commons.math3.analysis.solvers.BrentSolver;
-import org.apache.commons.math3.analysis.solvers.PegasusSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolverUtils;
+import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.apache.commons.math3.exception.NoBracketingException;
 import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.util.FastMath;
@@ -170,8 +168,8 @@ public class EventState implements Serializable {
                 }
             };
 
-            final BrentSolver nonBracketing = new BrentSolver(convergence);
-            final PegasusSolver bracketing  = new PegasusSolver(convergence);
+            final BracketingNthOrderBrentSolver solver =
+                    new BracketingNthOrderBrentSolver(convergence, 5);
 
             AbsoluteDate ta = t0;
             double ga = g0;
@@ -192,15 +190,9 @@ public class EventState implements Serializable {
                     // find the event time making sure we select a solution just at or past the exact root
                     final double dtA = ta.durationFrom(t0);
                     final double dtB = tb.durationFrom(t0);
-                    final double dtBaseRoot = forward ?
-                                              nonBracketing.solve(maxIterationcount, f, dtA, dtB) :
-                                              nonBracketing.solve(maxIterationcount, f, dtB, dtA);
-                    final int remainingEval = maxIterationcount - nonBracketing.getEvaluations();
-                    final double dtRoot     = forward ?
-                                              UnivariateSolverUtils.forceSide(remainingEval, f, bracketing,
-                                                                              dtBaseRoot, dtA, dtB, AllowedSolution.RIGHT_SIDE) :
-                                              UnivariateSolverUtils.forceSide(remainingEval, f, bracketing,
-                                                                              dtBaseRoot, dtB, dtA, AllowedSolution.LEFT_SIDE);
+                    final double dtRoot = forward ?
+                                          solver.solve(maxIterationcount, f, dtA, dtB, AllowedSolution.RIGHT_SIDE) :
+                                          solver.solve(maxIterationcount, f, dtB, dtA, AllowedSolution.LEFT_SIDE);
                     final AbsoluteDate root = t0.shiftedBy(dtRoot);
 
                     if ((previousEventTime != null) &&
