@@ -22,6 +22,10 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Fixed missing events detection when two events occurred at exactly the same time using an analytical
+        propagator (like generated ephemerides for example). Fixes issue #138.
+      </action>
+      <action dev="luc" type="fix" >
         Fixed data loading from zip/jar. A more streamlined architecture has been set up, and each zip entry
         now uses its own input stream. Closing the stream triggers the switch to the next entry, and duplicate
         close are handled gracefully. Fixes issue #139.
