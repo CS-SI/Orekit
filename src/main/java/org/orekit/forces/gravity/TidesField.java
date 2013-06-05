@@ -246,7 +246,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
         if (centralTideSystem == TideSystem.ZERO_TIDE) {
             // step 3: remove permanent tide which is already considered
-            // in the central body gravitaty field
+            // in the central body gravity field
             // equations 6.13 and 6.14 in IERS conventions 2010
             // TODO: compute step 3
         }
