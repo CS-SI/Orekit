@@ -17,6 +17,12 @@
 package org.orekit.bodies;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -35,6 +41,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -81,6 +88,33 @@ public class OneAxisEllipsoidTest {
         checkCartesianToEllipsoidic(6378137.0, 1.0 / 298.257222101,
                                     6379888.0, 6377000.0, 0.0,
                                     0.785171775899913, 0.0, 2642345.24279301);
+    }
+
+    @Test
+    public void testNoFlattening() throws OrekitException {
+        final double r      = 7000000.0;
+        final double lambda = 2.345;
+        final double phi    = -1.23;
+        final double cL = FastMath.cos(lambda);
+        final double sL = FastMath.sin(lambda);
+        final double cH = FastMath.cos(phi);
+        final double sH = FastMath.sin(phi);
+        checkCartesianToEllipsoidic(6378137.0, 0,
+                                    r * cL * cH, r * sL * cH, r * sH,
+                                    lambda, phi, r - 6378137.0);
+    }
+
+    @Test
+    public void testOnSurface() throws OrekitException {
+        Vector3D surfacePoint = new Vector3D(-1092200.775949484,
+                                             -3944945.7282234835,
+                                              4874931.946956173);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101,
+                                                           FramesFactory.getITRF2008());
+        GeodeticPoint gp = earthShape.transform(surfacePoint, earthShape.getBodyFrame(),
+                                                   AbsoluteDate.J2000_EPOCH);
+        Vector3D rebuilt = earthShape.transform(gp);
+        Assert.assertEquals(0, rebuilt.distance(surfacePoint), 3.0e-9);
     }
 
     @Test
@@ -175,6 +209,62 @@ public class OneAxisEllipsoidTest {
         Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
         Line line = new Line(point, point.add(direction));
         Assert.assertNull(model.getIntersectionPoint(line, point, frame, date));
+    }
+
+    @Test
+    public void testNegativeZ() throws OrekitException {
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame frame = FramesFactory.getITRF2005(true);
+        OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
+        Vector3D point     = new Vector3D(140.0, 0.0, -30.0);
+        GeodeticPoint gp = model.transform(point, frame, date);
+        Vector3D rebuilt = model.transform(gp);
+        Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-10);
+    }
+
+    @Test
+    public void testEquatorialInside() throws OrekitException {
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame frame = FramesFactory.getITRF2005(true);
+        OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
+        for (double rho = 0; rho < model.getEquatorialRadius(); rho += 0.01) {
+            Vector3D point     = new Vector3D(rho, 0.0, 0.0);
+            GeodeticPoint gp = model.transform(point, frame, date);
+            Vector3D rebuilt = model.transform(gp);
+            Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-10);
+        }
+    }
+
+    @Test
+    public void testFarPoint() throws OrekitException {
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame frame = FramesFactory.getITRF2005(true);
+        OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
+        Vector3D point     = new Vector3D(1.0e15, 2.0e15, -1.0e12);
+        GeodeticPoint gp = model.transform(point, frame, date);
+        Vector3D rebuilt = model.transform(gp);
+        Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());
+    }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        OneAxisEllipsoid original = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                         Constants.WGS84_EARTH_FLATTENING,
+                                                         FramesFactory.getITRFEquinox());
+        original.setAngularThreshold(1.0e-3);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(original);
+        Assert.assertTrue(bos.size() > 250);
+        Assert.assertTrue(bos.size() < 300);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        OneAxisEllipsoid deserialized  = (OneAxisEllipsoid) ois.readObject();
+        Assert.assertEquals(original.getEquatorialRadius(), deserialized.getEquatorialRadius(), 1.0e-12);
+        Assert.assertEquals(original.getFlattening(), deserialized.getFlattening(), 1.0e-12);
+
     }
 
     @Test
@@ -319,7 +409,7 @@ public class OneAxisEllipsoidTest {
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
         Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);
         Assert.assertEquals(latitude,  gp.getLatitude(),  1.0e-10);
-        Assert.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * FastMath.abs(altitude));
+        Assert.assertEquals(altitude,  gp.getAltitude(),  1.0e-10 * FastMath.abs(ae));
         Vector3D rebuiltNadir = Vector3D.crossProduct(gp.getSouth(), gp.getWest());
         Assert.assertEquals(0, rebuiltNadir.subtract(gp.getNadir()).getNorm(), 1.0e-15);
     }

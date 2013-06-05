@@ -16,13 +16,16 @@
  */
 package org.orekit.data;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.channels.UnsupportedAddressTypeException;
 import java.text.ParseException;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
@@ -140,26 +143,21 @@ public class ZipJarCrawler implements DataProvider {
         try {
 
             // open the raw data stream
-            InputStream    rawStream = null;
-            ZipInputStream zip       = null;
+            Archive archive = null;;
             try {
                 if (file != null) {
-                    rawStream = new FileInputStream(file);
+                    archive = new Archive(new FileInputStream(file));
                 } else if (resource != null) {
-                    rawStream = classLoader.getResourceAsStream(resource);
+                    archive = new Archive(classLoader.getResourceAsStream(resource));
                 } else {
-                    rawStream = url.openConnection().getInputStream();
+                    archive = new Archive(url.openConnection().getInputStream());
                 }
 
-                // add the zip format analysis layer and browse the archive
-                zip = new ZipInputStream(rawStream);
-                return feed(name, supported, visitor, zip);
+                return feed(name, supported, visitor, archive);
+
             } finally {
-                if (zip != null) {
-                    zip.close();
-                }
-                if (rawStream != null) {
-                    rawStream.close();
+                if (archive != null) {
+                    archive.close();
                 }
             }
 
@@ -175,7 +173,7 @@ public class ZipJarCrawler implements DataProvider {
      * @param prefix prefix to use for name
      * @param supported pattern for file names supported by the visitor
      * @param visitor data file visitor to use
-     * @param zip zip/jar input stream
+     * @param archive archive to read
      * @exception OrekitException if some data is missing, duplicated
      * or can't be read
      * @return true if something has been loaded
@@ -183,15 +181,14 @@ public class ZipJarCrawler implements DataProvider {
      * @exception ParseException if data cannot be read
      */
     private boolean feed(final String prefix, final Pattern supported,
-                         final DataLoader visitor, final ZipInputStream zip)
+                         final DataLoader visitor, final Archive archive)
         throws OrekitException, IOException, ParseException {
 
         OrekitException delayedException = null;
         boolean loaded = false;
 
         // loop over all entries
-        ZipEntry entry = zip.getNextEntry();
-        while (entry != null) {
+        for (final Archive.EntryStream entry : archive) {
 
             try {
 
@@ -202,7 +199,7 @@ public class ZipJarCrawler implements DataProvider {
                     if (ZIP_ARCHIVE_PATTERN.matcher(entry.getName()).matches()) {
 
                         // recurse inside the archive entry
-                        loaded = feed(fullName, supported, visitor, new ZipInputStream(zip)) || loaded;
+                        loaded = feed(fullName, supported, visitor, new Archive(entry)) || loaded;
 
                     } else {
 
@@ -221,8 +218,9 @@ public class ZipJarCrawler implements DataProvider {
 
                             // visit the current entry
                             final InputStream stream =
-                                gzipMatcher.matches() ? new GZIPInputStream(zip) : zip;
+                                gzipMatcher.matches() ? new GZIPInputStream(entry) : entry;
                             visitor.loadData(stream, fullName);
+                            stream.close();
                             loaded = true;
 
                         }
@@ -235,9 +233,7 @@ public class ZipJarCrawler implements DataProvider {
                 delayedException = oe;
             }
 
-            // prepare next entry processing
-            zip.closeEntry();
-            entry = zip.getNextEntry();
+            entry.close();
 
         }
 
@@ -245,6 +241,126 @@ public class ZipJarCrawler implements DataProvider {
             throw delayedException;
         }
         return loaded;
+
+    }
+
+    /** Local class wrapping a zip archive. */
+    private final class Archive implements Closeable, Iterable<Archive.EntryStream> {
+
+        /** Zip stream. */
+        private final ZipInputStream zip;
+
+        /** Next entry. */
+        private EntryStream next;
+
+        /** Simple constructor.
+         * @param rawStream raw stream
+         * @exception IOException if first entry cannot be retrieved
+         */
+        public Archive(final InputStream rawStream) throws IOException {
+            zip = new ZipInputStream(rawStream);
+            goToNext();
+        }
+
+        /** Go to next entry.
+        * @exception IOException if next entry cannot be retrieved
+         */
+        private void goToNext() throws IOException {
+            final ZipEntry ze = zip.getNextEntry();
+            if (ze == null) {
+                next = null;
+            } else {
+                next = new EntryStream(ze.getName(), ze.isDirectory());
+            }
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Iterator<Archive.EntryStream> iterator() {
+            return new Iterator<EntryStream> () {
+
+                /** {@inheritDoc} */
+                @Override
+                public boolean hasNext() {
+                    return next != null;
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public EntryStream next() {
+                    return next;
+                }
+
+                /** {@inheritDoc} */
+                @Override
+                public void remove() {
+                    // this part is never called
+                    throw new UnsupportedAddressTypeException();
+                }
+
+            };
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void close() throws IOException {
+            zip.close();
+        }
+
+        /** Archive entry. */
+        public class EntryStream extends InputStream {
+
+            /** Name of the entry. */
+            private final String name;
+
+            /** Directory indicator. */
+            private boolean isDirectory;
+
+            /** Indicator for already closed stream. */
+            private boolean closed;
+
+            /** Simple constructor.
+             * @param name name of the entry
+             * @param isDirectory if true, the entry is a directory
+             */
+            public EntryStream(final String name, final boolean isDirectory) {
+                this.name        = name;
+                this.isDirectory = isDirectory;
+                this.closed      = false;
+            }
+
+            /** Get the name of the entry.
+             * @return name of the entry
+             */
+            public String getName() {
+                return name;
+            }
+
+            /** Check if the entry is a directory.
+             * @return true if the entry is a directory
+             */
+            public boolean isDirectory() {
+                return isDirectory;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public int read() throws IOException {
+                // delegate read to global input stream
+                return zip.read();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void close() throws IOException {
+                if (!closed) {
+                    zip.closeEntry();
+                    goToNext();
+                    closed = true;
+                }
+            }
+
+        }
 
     }
 

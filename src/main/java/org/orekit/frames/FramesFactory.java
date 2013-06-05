@@ -896,9 +896,9 @@ public class FramesFactory implements Serializable {
      * The applyEOPCorr parameter is available mainly for testing purposes or for
      * consistency with legacy software that don't handle EOP correction parameters.
      * Beware that setting this parameter to {@code false} leads to crude accuracy
-     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
+     * (order of magnitudes for errors might be above 250m in LEO and 1400m in GEO).
      * </p>
-     * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
+     * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
@@ -913,7 +913,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getTOD(applyEOPCorr), new GTODProvider(), false, factoryKey);
+                frame = new FactoryManagedFrame(getTOD(applyEOPCorr), new GTODProvider(applyEOPCorr), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -927,7 +927,7 @@ public class FramesFactory implements Serializable {
      * The applyEOPCorr parameter is available mainly for testing purposes or for
      * consistency with legacy software that don't handle EOP correction parameters.
      * Beware that setting this parameter to {@code false} leads to crude accuracy
-     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
+     * (order of magnitudes for errors might be above 250m in LEO and 1400m in GEO).
      * </p>
      * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
      * @return the selected reference frame singleton.

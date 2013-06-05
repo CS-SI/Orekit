@@ -16,11 +16,15 @@
  */
 package org.orekit.bodies;
 
+import java.io.Serializable;
+
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.solvers.BracketedUnivariateSolver;
+import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -34,21 +38,12 @@ import org.orekit.time.AbsoluteDate;
  * a fluid body under its own gravity field when it rotates. The symmetry
  * axis is the rotation or polar axis.</p>
 
- * <p>This class is a simple adaptation of the <a
- * href="http://www.spaceroots.org/documents/distance/Ellipsoid.java">Ellipsoid</a>
- * example class implementing the algorithms described in the paper <a
- * href="http://www.spaceroots.org/documents/distance/distance-to-ellipse.pdf"> Quick
- * computation of the distance between a point and an ellipse</a>.</p>
- *
  * @author Luc Maisonobe
  */
 public class OneAxisEllipsoid implements BodyShape {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1418386024561514172L;
-
-    /** One third. */
-    private static final double ONE_THIRD = 1.0 / 3.0;
+    private static final long serialVersionUID = 20130518L;
 
     /** Body frame related to body shape. */
     private final Frame bodyFrame;
@@ -58,6 +53,12 @@ public class OneAxisEllipsoid implements BodyShape {
 
     /** Equatorial radius power 2. */
     private final double ae2;
+
+    /** Polar radius. */
+    private final double ap;
+
+    /** Polar radius power 2. */
+    private final double ap2;
 
     /** Flattening. */
     private final double f;
@@ -70,9 +71,6 @@ public class OneAxisEllipsoid implements BodyShape {
 
     /** g * g. */
     private final double g2;
-
-    /** Convergence limit. */
-    private double closeApproachThreshold;
 
     /** Convergence limit. */
     private double angularThreshold;
@@ -90,48 +88,34 @@ public class OneAxisEllipsoid implements BodyShape {
      * @see org.orekit.frames.FramesFactory#getITRF2005()
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
-        this.ae  = ae;
         this.f   = f;
+        this.ae  = ae;
         this.ae2 = ae * ae;
         this.e2  = f * (2.0 - f);
         this.g   = 1.0 - f;
         this.g2  = g * g;
-        setCloseApproachThreshold(1.0e-10);
-        setAngularThreshold(1.0e-14);
+        this.ap  = ae * g;
+        this.ap2 = ap * ap;
+        setAngularThreshold(1.0e-12);
         this.bodyFrame = bodyFrame;
     }
 
     /** Set the close approach threshold.
-     * <p>The close approach threshold is a ratio used to identify
-     * special cases in the {@link #transform(Vector3D, Frame,
-     * AbsoluteDate)} method.</p>
-     * <p>Let d = (x<sup>2</sup>+y<sup>2</sup>+z<sup>2</sup>)<sup>&frac12;</sup>
-     * be the distance between the point and the ellipsoid center.</p>
-     * <ul>
-     *   <li>all points such that d&lt;&epsilon; a<sub>e</sub> where
-     *       a<sub>e</sub> is the equatorial radius of the ellipsoid are
-     *       considered at the center</li>
-     *   <li>all points closer to the surface of the ellipsoid than
-     *       &epsilon; d are considered on the surface </li>
-     * </ul>
-     * <p>If this method is not called, the default value is set to
-     * 10<sup>-10</sup>.</p>
      * @param closeApproachThreshold close approach threshold (no unit)
+     * @deprecated as of 6.1, this threshold is not used anymore
      */
+    @Deprecated
     public void setCloseApproachThreshold(final double closeApproachThreshold) {
-        this.closeApproachThreshold = closeApproachThreshold;
+        // unused
     }
 
     /** Set the angular convergence threshold.
-     * <p>The angular threshold is the convergence threshold used to
+     * <p>The angular threshold is used both to identify points close to
+     * the ellipse axes and as the convergence threshold used to
      * stop the iterations in the {@link #transform(Vector3D, Frame,
-     * AbsoluteDate)} method.
-     * It applies directly to the latitude. When convergence is reached,
-     * the real latitude is guaranteed to be between &phi; - &delta;&phi;/2
-     * and &phi; + &delta;&phi;/2 where &phi; is the computed latitude
-     * and &delta;&phi; is the angular threshold set by this method.</p>
+     * AbsoluteDate)} method.</p>
      * <p>If this method is not called, the default value is set to
-     * 10<sup>-14</sup>.</p>
+     * 10<sup>-12</sup>.</p>
      * @param angularThreshold angular convergence threshold (rad)
      */
     public void setAngularThreshold(final double angularThreshold) {
@@ -244,132 +228,252 @@ public class OneAxisEllipsoid implements BodyShape {
         // transform line to body frame
         final Vector3D pointInBodyFrame =
             frame.getTransformTo(bodyFrame, date).transformPosition(point);
+        final double lambda = FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
 
         // compute some miscellaneous variables outside of the loop
-        final double z          = pointInBodyFrame.getZ();
-        final double z2         = z * z;
-        final double r2         = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
-                                  pointInBodyFrame.getY() * pointInBodyFrame.getY();
-        final double r          = FastMath.sqrt(r2);
-        final double g2r2ma2    = g2 * (r2 - ae2);
-        final double g2r2ma2pz2 = g2r2ma2 + z2;
-        final double dist       = FastMath.sqrt(r2 + z2);
-        final boolean inside    = g2r2ma2pz2 <= 0;
+        final double z  = pointInBodyFrame.getZ();
+        final double z2 = z * z;
+        final double r2 = pointInBodyFrame.getX() * pointInBodyFrame.getX() +
+                          pointInBodyFrame.getY() * pointInBodyFrame.getY();
+        final double r  = FastMath.sqrt(r2);
 
-        // point at the center
-        if (dist < (closeApproachThreshold * ae)) {
-            return new GeodeticPoint(0.5 * FastMath.PI, 0.0, -ae * FastMath.sqrt(1.0 - e2));
+        if (r <= angularThreshold * FastMath.abs(z)) {
+            // the point is almost on the minor axis, approximate the ellipse with
+            // the osculating circle whose center is at evolute cusp along minor axis
+            final double osculatingRadius = ae2 / ap;
+            final double evoluteCusp      = ae * e2 / g;
+            final double delta            = z + FastMath.copySign(evoluteCusp, z);
+            return new GeodeticPoint(FastMath.atan2(delta, r), lambda,
+                                     FastMath.hypot(delta, r) - osculatingRadius);
         }
 
-        final double cz = r / dist;
-        final double sz = z / dist;
-        double t = z / (dist + r);
+        // find ellipse point closest to test point
+        final double[] ellipsePoint;
+        if (FastMath.abs(z) <= angularThreshold * r) {
+            // the point is almost on the major axis
 
-        // distance to the ellipse along the current line
-        // as the smallest root of a 2nd degree polynom :
-        // a k^2 - 2 b k + c = 0
-        double a  = 1.0 - e2 * cz * cz;
-        double b  = g2 * r * cz + z * sz;
-        double c  = g2r2ma2pz2;
-        double b2 = b * b;
-        final double ac = a * c;
-        double k  = c / (b + FastMath.sqrt(b2 - ac));
-        final double lambda = FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
-        double phi    = FastMath.atan2(z - k * sz, g2 * (r - k * cz));
+            final double osculatingRadius = ap2 / ae;
+            final double evoluteCusp      = ae * e2;
+            final double delta            = r - evoluteCusp;
+            if (delta >= 0) {
+                // the point is outside of the ellipse evolute, approximate the ellipse
+                // with the osculating circle whose center is at evolute cusp along major axis
+                return new GeodeticPoint(FastMath.atan2(z, delta), lambda,
+                                         FastMath.hypot(z, delta) - osculatingRadius);
+            }
 
-        // point on the ellipse
-        if (FastMath.abs(k) < (closeApproachThreshold * dist)) {
-            return new GeodeticPoint(phi, lambda, k);
-        }
+            // the point is on the part of the major axis within ellipse evolute
+            // we can compute the closest ellipse point analytically
+            final double rEllipse = r / e2;
+            ellipsePoint = new double[] {
+                rEllipse,
+                FastMath.copySign(g * FastMath.sqrt(ae2 - rEllipse * rEllipse), z)
+            };
 
-        for (int iterations = 0; iterations < 100; ++iterations) {
+        } else {
 
-            // 4th degree normalized polynom describing
-            // circle/ellipse intersections
-            // tau^4 + b tau^3 + c tau^2 + d tau + e = 0
-            // (there is no need to compute e here)
-            a        = g2r2ma2pz2 + g2 * (2.0 * r + k) * k;
-            b        = -4.0 * k * z / a;
-            c        = 2.0 * (g2r2ma2pz2 + (1.0 + e2) * k * k) / a;
-            double d = b;
-
-            // reduce the polynom to degree 3 by removing
-            // the already known real root t
-            // tau^3 + b tau^2 + c tau + d = 0
-            b += t;
-            c += t * b;
-            d += t * c;
-
-            // find the other real root
-            b2       = b * b;
-            double Q = (3.0 * c - b2) / 9.0;
-            final double R = (b * (9.0 * c - 2.0 * b2) - 27.0 * d) / 54.0;
-            final double D = Q * Q * Q + R * R;
-            double tildeT;
-            double tildePhi;
-            if (D >= 0) {
-                final double rootD = FastMath.sqrt(D);
-                tildeT = FastMath.cbrt(R + rootD) + FastMath.cbrt(R - rootD) - b * ONE_THIRD;
-                final double tildeT2   = tildeT * tildeT;
-                final double tildeT2P1 = 1.0 + tildeT2;
-                tildePhi = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
-                                      g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
+            final ClosestPointFinder finder = new ClosestPointFinder(r, z);
+            final double rho;
+            if (e2 >= angularThreshold) {
+                // search the nadir point on the major axis,
+                // somewhere within the evolute, i.e. between 0 and ae * e2
+                final BracketedUnivariateSolver<UnivariateFunction> solver =
+                        new BracketingNthOrderBrentSolver(angularThreshold * ap, 5);
+                rho = solver.solve(100, finder, 0, ae * e2);
             } else {
-                Q = -Q;
-                final double qRoot     = FastMath.sqrt(Q);
-                final double theta     = FastMath.acos(R / (Q * qRoot));
-
-                // first root based on theta / 3,
-                tildeT           = 2.0 * qRoot * FastMath.cos(theta * ONE_THIRD) - b * ONE_THIRD;
-                double tildeT2   = tildeT * tildeT;
-                double tildeT2P1 = 1.0 + tildeT2;
-                tildePhi         = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
-                                              g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
-                if ((tildePhi * phi) < 0) {
-                    // the first root was on the wrong hemisphere,
-                    // try the second root based on (theta + 2PI) / 3
-                    tildeT    = 2.0 * qRoot * FastMath.cos((theta + MathUtils.TWO_PI) * ONE_THIRD) - b * ONE_THIRD;
-                    tildeT2   = tildeT * tildeT;
-                    tildeT2P1 = 1.0 + tildeT2;
-                    tildePhi  = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
-                                           g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
-                    if (tildePhi * phi < 0) {
-                        // the second root was on the wrong  hemisphere,
-                        // try the third (and last) root based on (theta + 4PI) / 3
-                        tildeT    = 2.0 * qRoot * FastMath.cos((theta + 4.0 * FastMath.PI) * ONE_THIRD) - b * ONE_THIRD;
-                        tildeT2   = tildeT * tildeT;
-                        tildeT2P1 = 1.0 + tildeT2;
-                        tildePhi  = FastMath.atan2(z * tildeT2P1 - 2 * k * tildeT,
-                                               g2 * (r * tildeT2P1 - k * (1.0 - tildeT2)));
-                    }
-                }
+                // the evolute is almost reduced to the central point,
+                // the ellipsoid is almost a sphere
+                rho = 0;
             }
-
-            // midpoint on the ellipse
-            final double dPhi  = FastMath.abs(0.5 * (tildePhi - phi));
-            phi          = 0.5 * (phi + tildePhi);
-            final double cPhi  = FastMath.cos(phi);
-            final double sPhi  = FastMath.sin(phi);
-            final double coeff = FastMath.sqrt(1.0 - e2 * sPhi * sPhi);
-            if (dPhi < angularThreshold) {
-                // angular convergence reached
-                return new GeodeticPoint(phi, lambda,
-                                         r * cPhi + z * sPhi - ae * coeff);
-            }
-
-            b = ae / coeff;
-            final double dR = r - cPhi * b;
-            final double dZ = z - sPhi * b * g2;
-            k = FastMath.sqrt(dR * dR + dZ * dZ);
-            if (inside) {
-                k = -k;
-            }
-            t = dZ / (k + dR);
+            ellipsePoint = finder.intersectionPoint(rho);
 
         }
 
-        // unable to converge
-        throw new RuntimeException("internal error");
+        // relative position of test point with respect to its ellipse sub-point
+        final double dr = r - ellipsePoint[0];
+        final double dz = z - ellipsePoint[1];
+        final double insideIfNegative = g2 * (r2 - ae2) + z2;
+
+        return new GeodeticPoint(FastMath.atan2(ellipsePoint[1], g2 * ellipsePoint[0]),
+                                 lambda,
+                                 FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
+
+    }
+
+    /** Local class for finding closest point to ellipse.
+     * <p>
+     * We consider a guessed equatorial point E somewhere along
+     * the ellipse major axis, and within the ellipse evolute curve.
+     * This point is defined by its coordinates (&rho;, 0).
+     * </p>
+     * <p>
+     * A point P belonging to line (E, A) can be computed from a
+     * parameter k as follows:
+     * </p>
+     * <pre>
+     *   u = &rho; + k * (r - &rho;)
+     *   v = 0 + k * (z - 0)
+     * </pre>
+     * <p>
+     * For some specific positive value of k, the line (E, A)
+     * intersects the ellipse at a point I which lies in the same quadrant
+     * as test point A. There is another intersection point with k
+     * negative, but this intersection point is not in the same quadrant
+     * as test point A.
+     * </p>
+     * <p>
+     * The line joining point I and the center of the corresponding
+     * osculating circle (i.e. the normal to the ellipse at point I)
+     * crosses major axis at another equatorial point E'. If E and E' are
+     * the same points, then the guessed point E is the true nadir. When
+     * the point I is close to the major axis, the intersection of the
+     * line I with equatorial line is not well defined, but the limit
+     * position of point E' can be computed, it is the cusp of the
+     * ellipse evolute.
+     * </p>
+     * <p>
+     * This class provides methods to compute I and to compute the
+     * offset between E' and E, which allows to find the value
+     * of &rho; such that I is the closest point of the ellipse to A.
+     * </p>
+     */
+    private class ClosestPointFinder implements UnivariateFunction {
+
+        /** Abscissa of test point A along ellipse major axis. */
+        private final double r;
+
+        /** Ordinate of test point A along ellipse minor axis. */
+        private final double z;
+
+        /** Simple constructor.
+         * @param r abscissa of test point A along ellipse major axis
+         * @param z ordinate of test point A along ellipse minor axis
+         */
+        public ClosestPointFinder(final double r, final double z) {
+            this.r = r;
+            this.z = z;
+        }
+
+        /** Compute intersection point I.
+         * @param rho guessed equatorial point radius
+         * @return coordinates of intersection point I
+         */
+        private double[] intersectionPoint(final double rho) {
+            final double k = kOnEllipse(rho);
+            return new double[] {
+                rho + k * (r - rho),
+                k * z
+            };
+        }
+
+        /** Compute parameter k of intersection point I.
+         * @param rho guessed equatorial point radius
+         * @return value of parameter k such that line point belongs to the ellipse
+         */
+        private double kOnEllipse(final double rho) {
+
+            // rho defines a point on the ellipse major axis E with coordinates (rho, 0)
+            // the fixed test point A has coordinates (r, z)
+            // the coordinates (u, v) of point P belonging to line (E, A) can be
+            // computed from a parameter k as follows:
+            //     u = rho + k * (r - rho)
+            //     v = 0   + k * (z - 0)
+            // if P also belongs to the ellipse, the following quadratic
+            // equation in k holds: a * k^2 + 2 * b * k + c = 0
+            final double dr = r - rho;
+            final double a  = ap2 * dr * dr + ae2 * z * z;
+            final double b  = ap2 * rho * dr;
+            final double c  = ap2 * (rho - ae) * (rho + ae);
+
+            // positive root of the quadratic equation
+            final double s = FastMath.sqrt(b * b - a * c);
+            return (b > 0) ? -c / (s + b) : (s - b) / a;
+
+        }
+
+        /** Compute offset between guessed equatorial point and nadir.
+         * <p>
+         * We consider a guessed equatorial point E somewhere along
+         * the ellipse major axis, and within the ellipse evolute curve.
+         * The line (E, A) intersects the ellipse at some point P. The
+         * line segment starting at point P and going along the interior
+         * normal of the ellipse crosses major axis at another equatorial
+         * point E'. If E and E' are the same points, then the guessed
+         * point E is the true nadir. This method compute the offset
+         * between E and E' along major axis.
+         * </p>
+         * @param rho guessed equatorial point radius
+         * (point E is at coordinates (rho, 0) in the ellipse canonical axes system)
+         * @return offset between E and E'
+         */
+        @Override
+        public double value(final double rho) {
+
+            // intersection of line (E, A) with ellipse
+            final double k = kOnEllipse(rho);
+            final double u = rho + k * (r - rho);
+
+            // equatorial point E' in the nadir direction of P
+            final double rhoPrime = u * e2;
+
+            // offset between guessed point and recovered nadir point
+            return rhoPrime - rho;
+
+        }
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes the files supported names, the ephemeris type
+     * and the body name.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(ae, f, bodyFrame, angularThreshold);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20130518L;
+
+        /** Equatorial radius. */
+        private final double ae;
+
+        /** Flattening. */
+        private final double f;
+
+        /** Body frame related to body shape. */
+        private final Frame bodyFrame;
+
+        /** Convergence limit. */
+        private final double angularThreshold;
+
+        /** Simple constructor.
+         * @param ae equatorial radius
+         * @param f the flattening (f = (a-b)/a)
+         * @param bodyFrame body frame related to body shape
+         * @param angularThreshold convergence limit
+         */
+        public DataTransferObject(final double ae, final double f, final Frame bodyFrame,
+                                  final double angularThreshold) {
+            this.ae               = ae;
+            this.f                = f;
+            this.bodyFrame        = bodyFrame;
+            this.angularThreshold = angularThreshold;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link JPLCelestialBody}.
+         * @return replacement {@link JPLCelestialBody}
+         */
+        private Object readResolve() {
+            final OneAxisEllipsoid ellipsoid = new OneAxisEllipsoid(ae, f, bodyFrame);
+            ellipsoid.setAngularThreshold(angularThreshold);
+            return ellipsoid;
+        }
 
     }
 
