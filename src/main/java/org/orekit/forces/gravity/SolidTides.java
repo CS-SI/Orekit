@@ -16,12 +16,10 @@
  */
 package org.orekit.forces.gravity;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
+import org.apache.commons.math3.ode.AbstractParameterizable;
 import org.apache.commons.math3.ode.UnknownParameterException;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
@@ -38,7 +36,7 @@ import org.orekit.utils.IERSConventions;
  *
  * @author Luc Maisonobe
  */
-public class SolidTides implements ForceModel {
+public class SolidTides extends AbstractParameterizable implements ForceModel {
 
     /** Underlying attraction model. */
     private final ForceModel attractionModel;
@@ -61,20 +59,6 @@ public class SolidTides implements ForceModel {
         final TidesField tidesField =
                 new TidesField(resourceName, centralBodyFrame, ae, mu, centralTideSystem, bodies);
         attractionModel = new HolmesFeatherstoneAttractionModel(centralBodyFrame, tidesField);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public Collection<String> getParametersNames() {
-        // there are no tunable parameters at all in this force model
-        return Collections.emptyList();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isSupported(final String name) {
-        // there are no tunable parameters at all in this force model
-        return false;
     }
 
     /** {@inheritDoc} */
