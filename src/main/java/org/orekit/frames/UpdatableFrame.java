@@ -25,6 +25,32 @@ import org.orekit.time.AbsoluteDate;
 
 
 /** Frame whose transform from its parent can be updated.
+ * <p>This class allows to control the relative position of two parts
+ * of the global frames tree using any two frames in each part as
+ * control handles. Consider the following simplified frames tree as an
+ * example:</p>
+ * <pre>
+ *              GCRF
+ *                |
+ *  --------------------------------
+ *  |             |                |
+ * Sun        satellite          Earth
+ *                |                |
+ *        on-board antenna   ground station
+ *                                 |
+ *                          tracking antenna
+ * </pre>
+ * <p>Tracking measurements really correspond to the link between the ground
+ * and on-board antennas. This is tightly linked to the transform between
+ * these two frames, however neither frame is the direct parent frame of the
+ * other one: the path involves four intermediate frames. When we process a
+ * measurement, what we really want to update is the transform that defines
+ * the satellite frame with respect to its parent GCRF frame.</p>
+ * <p>In order to implement the above case, the satellite frame is defined
+ * as an instance of this class and its {@link #updateTransform(Frame, Frame,
+ * Transform, AbsoluteDate) updateTransform} would be called each time we want
+ * to adjust the frame, i.e. each time we get a new measurement between the
+ * two antennas.</p>
  * @author Luc Maisonobe
  */
 public class UpdatableFrame extends Frame {
@@ -67,13 +93,6 @@ public class UpdatableFrame extends Frame {
         super(parent, new UpdatableProvider(transform), name, pseudoInertial);
     }
 
-    /** Update the transform from the parent frame to the instance.
-     * @param transform new transform from parent frame to instance
-     */
-    public void setTransform(final Transform transform) {
-        ((UpdatableProvider) getTransformProvider()).setTransform(transform);
-    }
-
     /** Update the transform from parent frame implicitly according to two other
      * frames.
 
@@ -109,10 +128,10 @@ public class UpdatableFrame extends Frame {
      * sub-tree rooted at the instance on one hand (satellite and on-board antenna
      * in the example above) and the tree containing all the other frames on the
      * other hand (GCRF, Sun, Earth, ground station, tracking antenna).
-     * Both tree are considered as solid sets linked by a flexible spring, which is
-     * the transform we want to update. The method stretches the spring to make
-     * sure the transform between the two specified frames (one in each tree part)
-     * matches the specified transform.</p>
+     * Both tree are considered as two solid sets linked together by a flexible
+     * spring, which is the transform we want to update. The method stretches the
+     * spring to make sure the transform between the two specified frames (one in
+     * each tree part) matches the specified transform.</p>
      * @param f1 first control frame (may be the instance itself)
      * @param f2 second control frame (may be the instance itself)
      * @param f1Tof2 desired transform from first to second control frame
@@ -149,11 +168,14 @@ public class UpdatableFrame extends Frame {
         }
 
         // rebuild the transform by traveling from parent to self
-        // WITHOUT using the existing this.transform that will be updated
-        final Transform parentTofA = getParent().getTransformTo(fA, date);
-        final Transform fBtoSelf   = fB.getTransformTo(this, date);
-        final Transform fAtoSelf   = new Transform(date, fAtoB, fBtoSelf);
-        setTransform(new Transform(date, parentTofA, fAtoSelf));
+        // WITHOUT using the existing provider from parent to self that will be updated
+        final Transform parentTofA   = getParent().getTransformTo(fA, date);
+        final Transform fBtoSelf     = fB.getTransformTo(this, date);
+        final Transform fAtoSelf     = new Transform(date, fAtoB, fBtoSelf);
+        final Transform parentToSelf = new Transform(date, parentTofA, fAtoSelf);
+
+        // update the existing provider from parent to self
+        ((UpdatableProvider) getTransformProvider()).setTransform(parentToSelf);
 
     }
 
