@@ -32,11 +32,16 @@ import org.orekit.time.AbsoluteDate;
 class TEMEProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 2701925895720334216L;
+    private static final long serialVersionUID = 20130606L;
+
+    /** Provider for the parent ToD frame. */
+    private final TODProvider todProvider;
 
     /** Simple constructor.
+     * @param todProvider provider for the parent ToD frame
      */
-    public TEMEProvider() {
+    public TEMEProvider(final TODProvider todProvider) {
+        this.todProvider = todProvider;
     }
 
     /** Get the transform from True Of Date date.
@@ -47,7 +52,7 @@ class TEMEProvider implements TransformProvider {
      * library cannot be read
      */
     public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
-        final double eqe = TODProvider.getEquationOfEquinoxes(date);
+        final double eqe = todProvider.getEquationOfEquinoxes(date);
         return new Transform(date, new Rotation(Vector3D.PLUS_K, -eqe));
     }
 

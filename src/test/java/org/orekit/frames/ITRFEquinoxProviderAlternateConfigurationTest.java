@@ -54,7 +54,7 @@ public class ITRFEquinoxProviderAlternateConfigurationTest {
                               new Vector3D(-3225.632747, -2872.442511, 5531.931288));
 
         Transform t = FramesFactory.getGTOD(true).getTransformTo(FramesFactory.getITRFEquinox(), t0);
-        checkPV(pvITRF, t.transformPVCoordinates(pvGTOD), 5.6e-5, 3.7e-7);
+        checkPV(pvITRF, t.transformPVCoordinates(pvGTOD), 5.54e-5, 3.61e-7);
 
     }
 
@@ -81,7 +81,7 @@ public class ITRFEquinoxProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(24796919.2915, -34115870.9234, 10226.0621),
                               new Vector3D(-0.979178, -1.476538, -0.928776));
 
-        checkPV(pvITRF, t.transformPVCoordinates(pvGTOD), 0.028, 4.7e-7);
+        checkPV(pvITRF, t.transformPVCoordinates(pvGTOD), 1.062e-4, 4.69e-7);
 
     }
 
@@ -90,14 +90,13 @@ public class ITRFEquinoxProviderAlternateConfigurationTest {
         Utils.setDataRoot("testpef-data");
     }
 
-    private void checkPV(PVCoordinates reference,
-                         PVCoordinates result, double positionThreshold,
-                         double velocityThreshold) {
+    private void checkPV(PVCoordinates reference, PVCoordinates result,
+                         double expectedPositionError, double expectedVelocityError) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
 }

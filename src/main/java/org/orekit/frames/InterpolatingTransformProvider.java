@@ -103,6 +103,20 @@ public class InterpolatingTransformProvider implements TransformProvider {
         return rawProvider;
     }
 
+    /** Get the number of interpolation grid points.
+     * @return number of interpolation grid points
+     */
+    public int getGridPoints() {
+        return cache.getNeighborsSize();
+    }
+
+    /** Get the grid points time step.
+     * @return grid points time step
+     */
+    public double getStep() {
+        return step;
+    }
+
     /** {@inheritDoc} */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
         try {

@@ -56,14 +56,14 @@ public class ITRF2008ProviderAlternateConfigurationTest {
                               new Vector3D(-4743.220156, 790.536497, 5533.755728));
         checkPV(pvGcrfIau2000A,
                 itrfA.getTransformTo(FramesFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.012, 2.3e-5);
+                0.0103, 1.44e-5);
 
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(5102509.0383, 6123011.9758, 6378136.3118),
                               new Vector3D(-4743.219766, 790.536344, 5533.756084));
         checkPV(pvEME2000EqA,
                 itrfA.getTransformTo(FramesFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
-                0.012, 2.3e-5);
+                0.0103, 1.43e-5);
 
     }
 
@@ -90,14 +90,14 @@ public class ITRF2008ProviderAlternateConfigurationTest {
                               new Vector3D(834.787458, -2958.305691, -1.172993));
         checkPV(pvGCRFiau2000A,
                 itrfA.getTransformTo(FramesFactory.getGCRF(), t0).transformPVCoordinates(pvITRF),
-                0.061, 1.1e-4);
+                0.0602, 1.06e-4);
 
         PVCoordinates pvEME2000EqA =
             new PVCoordinates(new Vector3D(-40588149.5482, -11462169.9118, 27146.8462),
                               new Vector3D(834.787667, -2958.305632, -1.172963));
         checkPV(pvEME2000EqA,
                 itrfA.getTransformTo(FramesFactory.getEME2000(), t0).transformPVCoordinates(pvITRF),
-                0.061, 1.1e-4);
+                0.0603, 1.07e-4);
 
     }
 
@@ -107,12 +107,12 @@ public class ITRF2008ProviderAlternateConfigurationTest {
     }
 
     private void checkPV(PVCoordinates reference, PVCoordinates result,
-                         double positionThreshold, double velocityThreshold) {
+                         double expectedPositionError, double expectedVelocityError) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
 }

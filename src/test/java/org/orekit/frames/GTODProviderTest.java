@@ -53,20 +53,15 @@ public class GTODProviderTest {
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
 
-        Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
-
         // this test gives worse result than GTODFrameAlternateConfigurationTest because
         // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
         // in lod with the data used by Vallado to set up this test case
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(0.29, delta.getPosition().getNorm(), 0.01);
-        Assert.assertEquals(1.6e-4, delta.getVelocity().getNorm(), 1.0e-5);
+        Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.296, 1.71e-4);
 
-        // if we forget to apply lod and UT1 correction, results are much worse, which is normal
+        // if we forget to apply lod and UT1 correction, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
-        delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(255.64, delta.getPosition().getNorm(), 0.01);
-        Assert.assertEquals(0.13856, delta.getVelocity().getNorm(), 1.0e-5);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 255.64, 0.13856);
 
     }
 
@@ -93,13 +88,11 @@ public class GTODProviderTest {
             new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
                               new Vector3D(-0.979178, -1.476540, -0.928772));
 
-        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.013, 1.5e-5);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0129, 3.459e-4);
 
-        // if we forget to apply lod and UT1 correction, results are much worse, which is normal
+        // if we forget to apply lod and UT1 correction, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(1448.21, delta.getPosition().getNorm(), 0.01);
-        Assert.assertEquals(6.1e-5, delta.getVelocity().getNorm(), 1.0e-6);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 1448.21, 3.845e-4);
 
     }
 
@@ -108,14 +101,13 @@ public class GTODProviderTest {
         Utils.setDataRoot("compressed-data");
     }
 
-    private void checkPV(PVCoordinates reference,
-                         PVCoordinates result, double positionThreshold,
-                         double velocityThreshold) {
+    private void checkPV(PVCoordinates reference, PVCoordinates result,
+                         double expectedPositionError, double expectedVelocityError) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
 }

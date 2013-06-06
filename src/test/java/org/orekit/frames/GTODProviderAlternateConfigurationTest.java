@@ -54,13 +54,11 @@ public class GTODProviderAlternateConfigurationTest {
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
 
         Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
-        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0094, 4.9e-6);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.00939, 3.12e-5);
 
-        // if we forget to apply lod and UT1 correction, results are much worse, which is normal
+        // if we forget to apply lod and UT1 correction, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(255.64, delta.getPosition().getNorm(), 0.01);
-        Assert.assertEquals(0.13856, delta.getVelocity().getNorm(), 1.0e-5);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 255.64, 0.13856);
 
     }
 
@@ -87,13 +85,11 @@ public class GTODProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
                               new Vector3D(-0.979178, -1.476540, -0.928772));
 
-        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.051, 5.2e-7);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0501, 3.61e-4);
 
-        // if we forget to apply lod and UT1 correction, results are much worse, which is normal
+        // if we forget to apply lod and UT1 correction, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
-        PVCoordinates delta = new PVCoordinates(t.transformPVCoordinates(pvTOD), pvGTOD);
-        Assert.assertEquals(1448.21, delta.getPosition().getNorm(), 0.01);
-        Assert.assertEquals(6.1e-5, delta.getVelocity().getNorm(), 1.0e-6);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 1448.21, 3.845e-4);
 
     }
 
@@ -102,14 +98,13 @@ public class GTODProviderAlternateConfigurationTest {
         Utils.setDataRoot("testpef-data");
     }
 
-    private void checkPV(PVCoordinates reference,
-                         PVCoordinates result, double positionThreshold,
-                         double velocityThreshold) {
+    private void checkPV(PVCoordinates reference, PVCoordinates result,
+                         double expectedPositionError, double expectedVelocityError) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
 }

@@ -37,7 +37,7 @@ import org.orekit.utils.Constants;
 public class GTODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1727797229994466102L;
+    private static final long serialVersionUID = 20130606L;
 
     /** Radians per second of time. */
     private static final double RADIANS_PER_SECOND = MathUtils.TWO_PI / Constants.JULIAN_DAY;
@@ -64,13 +64,18 @@ public class GTODProvider implements TransformProvider {
     /** EOP history. */
     private final EOP1980History eopHistory;
 
+    /** Provider for the parent ToD frame. */
+    private final TODProvider todProvider;
+
     /** Simple constructor.
+     * @param todProvider provider for the parent ToD frame
      * @param applyEOPCorr if true, EOP correction is applied (here, LOD)
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected GTODProvider(final boolean applyEOPCorr)
+    protected GTODProvider(final TODProvider todProvider, final boolean applyEOPCorr)
         throws OrekitException {
-        eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
+        this.eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
+        this.todProvider = todProvider;
     }
 
     /** Get the transform from TOD at specified date.
@@ -134,7 +139,7 @@ public class GTODProvider implements TransformProvider {
     public double getGAST(final AbsoluteDate date) throws OrekitException {
 
         // offset from J2000.0 epoch
-        final double eqe = TODProvider.getEquationOfEquinoxes(date);
+        final double eqe = todProvider.getEquationOfEquinoxes(date);
 
         // compute Greenwich apparent sidereal time, in radians
         return getGMST(date) + eqe;
