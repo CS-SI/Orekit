@@ -913,7 +913,18 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getTOD(applyEOPCorr), new GTODProvider(applyEOPCorr), false, factoryKey);
+                final Frame tod = getTOD(applyEOPCorr);
+                final InterpolatingTransformProvider todInterpolating =
+                        (InterpolatingTransformProvider) tod.getTransformProvider();
+                final TODProvider todRaw = (TODProvider) todInterpolating.getRawProvider();
+                final GTODProvider gtodRaw = new GTODProvider(todRaw, applyEOPCorr);
+                final TransformProvider gtodInterpolating =
+                        new InterpolatingTransformProvider(gtodRaw, true, false,
+                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                           todInterpolating.getGridPoints(), todInterpolating.getStep(),
+                                                           OrekitConfiguration.getCacheSlotsNumber(),
+                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+                frame = new FactoryManagedFrame(tod, gtodInterpolating, false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -1054,7 +1065,19 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getTOD(false), new TEMEProvider(), true, factoryKey);
+                final Frame tod = getTOD(false);
+                final InterpolatingTransformProvider todInterpolating =
+                        (InterpolatingTransformProvider) tod.getTransformProvider();
+                final TODProvider  todRaw  = (TODProvider) todInterpolating.getRawProvider();
+                final TEMEProvider temeRaw = new TEMEProvider(todRaw);
+                final TransformProvider temeInterpolating =
+                        new InterpolatingTransformProvider(temeRaw, true, false,
+                                                           AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                           todInterpolating.getGridPoints(), todInterpolating.getStep(),
+                                                           OrekitConfiguration.getCacheSlotsNumber(),
+                                                           Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+
+                frame = new FactoryManagedFrame(tod, temeInterpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

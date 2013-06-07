@@ -138,7 +138,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
 
 
         // tests using direct transform
-        checkPV(pvRef, trans.transformPVCoordinates(pvEME2000), 0.61, 2.0e-4);
+        checkPV(pvRef, trans.transformPVCoordinates(pvEME2000), 0.593, 1.79e-4);
 
         // compute local evolution using finite differences
         double h = 0.1;
@@ -163,7 +163,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
         Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
         Transform finiteDiffTransform = new Transform(t0, trans.getRotation() , new Vector3D(w ,axis));
 
-        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.61, 2.0e-4);
+        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.594, 1.005e-4);
 
     }
 
@@ -177,17 +177,17 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));
         checkPV(new PVCoordinates(new Vector3D(-23830592.685,  -9747073.881,  -6779831.010),
                                   new Vector3D( 1561.9646362, -1754.3454485, -3068.8504996)),
-                                  trans.transformPVCoordinates(pvWGS), 0.16, 2.4e-5);
+                                  trans.transformPVCoordinates(pvWGS), 0.156, 2.4e-5);
 
     }
 
     private void checkPV(PVCoordinates reference, PVCoordinates result,
-                         double positionThreshold, double velocityThreshold) {
+                         double expectedPositionError, double expectedVelocityError) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
     @Before

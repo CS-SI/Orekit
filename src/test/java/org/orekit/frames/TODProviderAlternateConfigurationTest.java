@@ -44,7 +44,7 @@ public class TODProviderAlternateConfigurationTest {
                                            TimeScalesFactory.getUTC());
 
         Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
-        Transform tf = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -59,10 +59,8 @@ public class TODProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.8, 1.6e-3);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 2.5, 1.5e-3);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 1.1e-3, 5.3e-5);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 0.90615, 7.4e-4);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.79, 1.59e-3);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 1.03e-3, 5.3e-5);
 
     }
 
@@ -79,7 +77,7 @@ public class TODProviderAlternateConfigurationTest {
                                            TimeScalesFactory.getUTC());
 
         Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
-        Transform tf = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -94,11 +92,8 @@ public class TODProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.4, 8.1e-4);
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76Wcorr), 4.5, 7.2e-5);
-
-        checkPV(pvTODiau76, tf.transformPVCoordinates(pvMODiau76), 5.2e-4, 6.4e-5);
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 3.5, 7.9e-4);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.39, 8.06e-4);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 5.002e-4, 6.31e-5);
 
     }
 
@@ -107,14 +102,13 @@ public class TODProviderAlternateConfigurationTest {
         Utils.setDataRoot("testpef-data");
     }
 
-    private void checkPV(PVCoordinates reference,
-                         PVCoordinates result, double positionThreshold,
-                         double velocityThreshold) {
+    private void checkPV(PVCoordinates reference, PVCoordinates result,
+                         double expectedPositionError, double expectedVelocityError) {
 
         Vector3D dP = result.getPosition().subtract(reference.getPosition());
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
-        Assert.assertEquals(0, dP.getNorm(), positionThreshold);
-        Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+        Assert.assertEquals(expectedPositionError, dP.getNorm(), 0.01 * expectedPositionError);
+        Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
 }

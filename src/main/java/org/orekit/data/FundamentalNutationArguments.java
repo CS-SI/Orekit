@@ -188,11 +188,29 @@ public class FundamentalNutationArguments implements Serializable {
         return value;
     }
 
-    /** Evaluate fundamental arguments for the current date.
+    /** Evaluate Delaunay arguments for the current date.
      * @param date current date
-     * @return fundamental arguments for the current date
+     * @return Delaunay arguments for the current date
      */
-    public BodiesElements evaluate(final AbsoluteDate date) {
+    public DelaunayArguments evaluateDelaunay(final AbsoluteDate date) {
+
+        // offset in julian centuries
+        final double tc =  date.durationFrom(reference) / Constants.JULIAN_CENTURY;
+
+        return new DelaunayArguments(tc,
+                                  value(tc, lCoefficients),      // mean anomaly of the Moon
+                                  value(tc, lPrimeCoefficients), // mean anomaly of the Sun
+                                  value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
+                                  value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
+                                  value(tc, omegaCoefficients)); // mean longitude of the ascending node of the Moon
+
+    }
+
+    /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary).
+     * @param date current date
+     * @return all fundamental arguments for the current date (Delaunay plus planetary)
+     */
+    public BodiesElements evaluateAll(final AbsoluteDate date) {
 
         // offset in julian centuries
         final double tc =  date.durationFrom(reference) / Constants.JULIAN_CENTURY;

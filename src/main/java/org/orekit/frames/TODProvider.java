@@ -16,75 +16,46 @@
  */
 package org.orekit.frames;
 
+import java.io.InputStream;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.orekit.data.DelaunayArguments;
+import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
-/** True Equator, Mean Equinox of Date Frame.
+/** Provider for True of Date (ToD) frame.
  * <p>This frame handles nutation effects according to the IAU-80 theory.</p>
- * <p>Its parent frame is the {@link MODProvider}.</p>
- * <p>It is sometimes called True of Date (ToD) frame.<p>
+ * <p>Transform is computed with reference to the frame is the {@link MODProvider Mean of Date}.</p>
  * @author Pascal Parraud
  */
 class TODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 7013467596084047566L;
+    private static final long serialVersionUID = 20130606L;
 
-    // CHECKSTYLE: stop JavadocVariable check
-
-    // Coefficients for the Equation of the Equinoxes.
+    /** First Moon correction term for the Equation of the Equinoxes. */
     private static final double EQE_1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
+
+    /** Second Moon correction term for the Equation of the Equinoxes. */
     private static final double EQE_2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
 
-    // Coefficients for the Mean Obliquity of the Ecliptic.
+    /** Degree 0 coefficient for the Mean Obliquity of the Ecliptic. */
     private static final double MOE_0 = 84381.448    * Constants.ARC_SECONDS_TO_RADIANS;
+
+    /** Degree 1 coefficient for the Mean Obliquity of the Ecliptic. */
     private static final double MOE_1 =   -46.8150   * Constants.ARC_SECONDS_TO_RADIANS;
+
+    /** Degree 2 coefficient for the Mean Obliquity of the Ecliptic. */
     private static final double MOE_2 =    -0.00059  * Constants.ARC_SECONDS_TO_RADIANS;
+
+    /** Degree 3 coefficient for the Mean Obliquity of the Ecliptic. */
     private static final double MOE_3 =     0.001813 * Constants.ARC_SECONDS_TO_RADIANS;
-
-    // lunisolar nutation elements
-    // Coefficients for l (Mean Anomaly of the Moon).
-    private static final double F10  = FastMath.toRadians(134.96340251);
-    private static final double F110 =    715923.2178    * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F111 =      1325.0;
-    private static final double F12  =        31.87908   * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F13  =         0.0516348 * Constants.ARC_SECONDS_TO_RADIANS;
-
-    // Coefficients for l' (Mean Anomaly of the Sun).
-    private static final double F20  = FastMath.toRadians(357.52910918);
-    private static final double F210 =   1292581.048     * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F211 =        99.0;
-    private static final double F22  =        -0.55332   * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F23  =         0.0001368 * Constants.ARC_SECONDS_TO_RADIANS;
-
-    // Coefficients for F = L (Mean Longitude of the Moon) - Omega.
-    private static final double F30  = FastMath.toRadians(93.27209062);
-    private static final double F310 =    295262.8477    * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F311 =      1342.0;
-    private static final double F32  =       -12.7512    * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F33  =        -0.0010368 * Constants.ARC_SECONDS_TO_RADIANS;
-
-    // Coefficients for D (Mean Elongation of the Moon from the Sun).
-    private static final double F40  = FastMath.toRadians(297.85019547);
-    private static final double F410 =   1105601.209     * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F411 =      1236.0;
-    private static final double F42  =        -6.37056   * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F43  =         0.0065916 * Constants.ARC_SECONDS_TO_RADIANS;
-
-    // Coefficients for Omega (Mean Longitude of the Ascending Node of the Moon).
-    private static final double F50  = FastMath.toRadians(125.0445501);
-    private static final double F510 =   -482890.2665   * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F511 =        -5.0;
-    private static final double F52  =         7.4722   * Constants.ARC_SECONDS_TO_RADIANS;
-    private static final double F53  =         0.007702 * Constants.ARC_SECONDS_TO_RADIANS;
-
-    // CHECKSTYLE: resume JavadocVariable check
 
     /** coefficients of l, mean anomaly of the Moon. */
     private static final int[] CL = {
@@ -230,13 +201,28 @@ class TODProvider implements TransformProvider {
     /** EOP history. */
     private final EOP1980History eopHistory;
 
+    /** Generator for fundamental nutation arguments. */
+    private final FundamentalNutationArguments nutationArguments;
+
     /** Simple constructor.
      * @param applyEOPCorr if true, EOP correction is applied (here, nutation)
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
     public TODProvider(final boolean applyEOPCorr)
         throws OrekitException {
+
         eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
+
+        // get the Delaunay arguments table data, from IERS 2010 conventions
+        // the TOD itself is not defined in the 2010 conventions. It was superseded in 2003
+        // when IERS switched from equinox-based frame to non-rotating origin paradigm
+        // So we don't set up a constructor argument allowing the user to choose
+        // IERS conventions here, as it would be misleading. However, we do need the
+        // raw Delaunay arguments, so we retrieve them from a hard-coded set of conventions.
+        final String name        = IERSConventions.IERS_2010.getNutationArguments();
+        final InputStream stream = TODProvider.class.getResourceAsStream(name);
+        nutationArguments        = new FundamentalNutationArguments(stream, name);
+
     }
 
     /** Get the LoD (Length of Day) value.
@@ -267,14 +253,14 @@ class TODProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        // offset from J2000.0 epoch
-        final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        // compute Delaunay arguments
+        final DelaunayArguments arguments = nutationArguments.evaluateDelaunay(date);
 
         // evaluate the nutation elements
-        final double[] nutation = computeNutationElements(t);
+        final double[] nutation = computeNutationElements(arguments);
 
         // compute the mean obliquity of the ecliptic
-        final double moe = getMeanObliquityOfEcliptic(t);
+        final double moe = getMeanObliquityOfEcliptic(arguments);
 
         // get the IAU1980 corrections for the nutation parameters
         final NutationCorrection nutCorr = (eopHistory == null) ?
@@ -305,17 +291,17 @@ class TODProvider implements TransformProvider {
      * @return equation of the equinoxes
      * @exception OrekitException if nutation model cannot be computed
      */
-    public static double getEquationOfEquinoxes(final AbsoluteDate date)
+    public double getEquationOfEquinoxes(final AbsoluteDate date)
         throws OrekitException {
 
-        // offset from J2000 epoch in seconds
-        final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        // compute Delaunay arguments
+        final DelaunayArguments elements = nutationArguments.evaluateDelaunay(date);
 
         // nutation in longitude
-        final double dPsi = computeNutationElements(t) [0];
+        final double dPsi = computeNutationElements(elements) [0];
 
         // mean obliquity of ecliptic
-        final double moe = getMeanObliquityOfEcliptic(t);
+        final double moe = getMeanObliquityOfEcliptic(elements);
 
         // original definition of equation of equinoxes
         double eqe = dPsi * FastMath.cos(moe);
@@ -326,8 +312,7 @@ class TODProvider implements TransformProvider {
             // taking effect since 1997-02-27 for continuity
 
             // Mean longitude of the ascending node of the Moon
-            final double tc = t / Constants.JULIAN_CENTURY;
-            final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * MathUtils.TWO_PI;
+            final double om = elements.getOmega();
 
             // add the two correction terms
             eqe += EQE_1 * FastMath.sin(om) + EQE_2 * FastMath.sin(om + om);
@@ -339,13 +324,13 @@ class TODProvider implements TransformProvider {
     }
 
     /** Compute the mean obliquity of the ecliptic.
-     * @param t offset from J2000 epoch in seconds
+     * @param arguments Delaunay arguments
      * @return mean obliquity of ecliptic
      */
-    private static double getMeanObliquityOfEcliptic(final double t) {
+    private double getMeanObliquityOfEcliptic(final DelaunayArguments arguments) {
 
-        // offset from J2000 epoch in julian centuries
-        final double tc = t / Constants.JULIAN_CENTURY;
+        // offset from J2000 epoch in Julian centuries
+        final double tc = arguments.getTC();
 
         // compute the mean obliquity of the ecliptic
         return ((MOE_3 * tc + MOE_2) * tc + MOE_1) * tc + MOE_0;
@@ -356,24 +341,24 @@ class TODProvider implements TransformProvider {
      * <p>This method applies the IAU-1980 theory and hence is rather slow.
      * It is indirectly called by the {@link #getInterpolatedNutationElements(double)}
      * on a small number of reference points only.</p>
-     * @param t offset from J2000.0 epoch in seconds
+     * @param arguments Delaunay arguments
      * @return computed nutation elements in a two elements array,
      * with dPsi at index 0 and dEpsilon at index 1
      */
-    private static double[] computeNutationElements(final double t) {
+    private double[] computeNutationElements(final DelaunayArguments arguments) {
 
         // offset in julian centuries
-        final double tc =  t / Constants.JULIAN_CENTURY;
+        final double tc =  arguments.getTC();
         // mean anomaly of the Moon
-        final double l  = ((F13 * tc + F12) * tc + F110) * tc + F10 + ((F111 * tc) % 1.0) * MathUtils.TWO_PI;
+        final double l  = arguments.getL();
         // mean anomaly of the Sun
-        final double lp = ((F23 * tc + F22) * tc + F210) * tc + F20 + ((F211 * tc) % 1.0) * MathUtils.TWO_PI;
+        final double lp = arguments.getLPrime();
         // L - &Omega; where L is the mean longitude of the Moon
-        final double f  = ((F33 * tc + F32) * tc + F310) * tc + F30 + ((F311 * tc) % 1.0) * MathUtils.TWO_PI;
+        final double f  = arguments.getF();
         // mean elongation of the Moon from the Sun
-        final double d  = ((F43 * tc + F42) * tc + F410) * tc + F40 + ((F411 * tc) % 1.0) * MathUtils.TWO_PI;
+        final double d  = arguments.getD();
         // mean longitude of the ascending node of the Moon
-        final double om = ((F53 * tc + F52) * tc + F510) * tc + F50 + ((F511 * tc) % 1.0) * MathUtils.TWO_PI;
+        final double om = arguments.getOmega();
 
         // loop size
         final int n = CL.length;

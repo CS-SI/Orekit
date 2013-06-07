@@ -115,7 +115,7 @@ class CIRF2000Provider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        final BodiesElements elements = nutationArguments.evaluate(date);
+        final BodiesElements elements = nutationArguments.evaluateAll(date);
 
         // pole position
         final double xCurrent =    xDevelopment.value(elements);
