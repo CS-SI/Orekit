@@ -21,7 +21,7 @@ import java.io.InputStream;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.data.BodiesElements;
+import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -254,13 +254,13 @@ class TODProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // compute Delaunay arguments
-        final BodiesElements elements = nutationArguments.evaluate(date);
+        final DelaunayArguments arguments = nutationArguments.evaluateDelaunay(date);
 
         // evaluate the nutation elements
-        final double[] nutation = computeNutationElements(elements);
+        final double[] nutation = computeNutationElements(arguments);
 
         // compute the mean obliquity of the ecliptic
-        final double moe = getMeanObliquityOfEcliptic(elements);
+        final double moe = getMeanObliquityOfEcliptic(arguments);
 
         // get the IAU1980 corrections for the nutation parameters
         final NutationCorrection nutCorr = (eopHistory == null) ?
@@ -295,7 +295,7 @@ class TODProvider implements TransformProvider {
         throws OrekitException {
 
         // compute Delaunay arguments
-        final BodiesElements elements = nutationArguments.evaluate(date);
+        final DelaunayArguments elements = nutationArguments.evaluateDelaunay(date);
 
         // nutation in longitude
         final double dPsi = computeNutationElements(elements) [0];
@@ -324,13 +324,13 @@ class TODProvider implements TransformProvider {
     }
 
     /** Compute the mean obliquity of the ecliptic.
-     * @param elements Delaunay arguments
+     * @param arguments Delaunay arguments
      * @return mean obliquity of ecliptic
      */
-    private double getMeanObliquityOfEcliptic(final BodiesElements elements) {
+    private double getMeanObliquityOfEcliptic(final DelaunayArguments arguments) {
 
         // offset from J2000 epoch in Julian centuries
-        final double tc = elements.getTC();
+        final double tc = arguments.getTC();
 
         // compute the mean obliquity of the ecliptic
         return ((MOE_3 * tc + MOE_2) * tc + MOE_1) * tc + MOE_0;
@@ -341,24 +341,24 @@ class TODProvider implements TransformProvider {
      * <p>This method applies the IAU-1980 theory and hence is rather slow.
      * It is indirectly called by the {@link #getInterpolatedNutationElements(double)}
      * on a small number of reference points only.</p>
-     * @param elements Delaunay arguments
+     * @param arguments Delaunay arguments
      * @return computed nutation elements in a two elements array,
      * with dPsi at index 0 and dEpsilon at index 1
      */
-    private double[] computeNutationElements(final BodiesElements elements) {
+    private double[] computeNutationElements(final DelaunayArguments arguments) {
 
         // offset in julian centuries
-        final double tc =  elements.getTC();
+        final double tc =  arguments.getTC();
         // mean anomaly of the Moon
-        final double l  = elements.getL();
+        final double l  = arguments.getL();
         // mean anomaly of the Sun
-        final double lp = elements.getLPrime();
+        final double lp = arguments.getLPrime();
         // L - &Omega; where L is the mean longitude of the Moon
-        final double f  = elements.getF();
+        final double f  = arguments.getF();
         // mean elongation of the Moon from the Sun
-        final double d  = elements.getD();
+        final double d  = arguments.getD();
         // mean longitude of the ascending node of the Moon
-        final double om = elements.getOmega();
+        final double om = arguments.getOmega();
 
         // loop size
         final int n = CL.length;

@@ -23,28 +23,10 @@ import java.io.Serializable;
  * it does not provide any processing method.</p>
  * @author Luc Maisonobe
  */
-public final class BodiesElements implements Serializable {
+public final class BodiesElements extends  DelaunayArguments implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130418L;
-
-    /** Offset in Julian centuries. */
-    private final double tc;
-
-    /** Mean anomaly of the Moon. */
-    private final double l;
-
-    /** Mean anomaly of the Sun. */
-    private final double lPrime;
-
-    /** L - &Omega; where L is the mean longitude of the Moon. */
-    private final double f;
-
-    /** Mean elongation of the Moon from the Sun. */
-    private final double d;
-
-    /** Mean longitude of the ascending node of the Moon. */
-    private final double omega;
 
     /** Mean Mercury longitude. */
     private final double lMe;
@@ -94,12 +76,7 @@ public final class BodiesElements implements Serializable {
                           final double l, final double lPrime, final double f, final double d, final double omega,
                           final double lMe, final double lVe, final double lE, final double lMa, final double lJu,
                           final double lSa, final double lUr, final double lNe, final double pa) {
-        this.tc     = tc;
-        this.l      = l;
-        this.lPrime = lPrime;
-        this.f      = f;
-        this.d      = d;
-        this.omega  = omega;
+        super(tc, l, lPrime, f, d, omega);
         this.lMe    = lMe;
         this.lVe    = lVe;
         this.lE     = lE;
@@ -109,48 +86,6 @@ public final class BodiesElements implements Serializable {
         this.lUr    = lUr;
         this.lNe    = lNe;
         this.pa     = pa;
-    }
-
-    /** Get the offset in Julian centuries.
-     * @return offset in Julian centuries
-     */
-    public double getTC() {
-        return tc;
-    }
-
-    /** Get the mean anomaly of the Moon.
-     * @return mean anomaly of the Moon
-     */
-    public double getL() {
-        return l;
-    }
-
-    /** Get the mean anomaly of the Sun.
-     * @return mean anomaly of the Sun.
-     */
-    public double getLPrime() {
-        return lPrime;
-    }
-
-    /** Get L - &Omega; where L is the mean longitude of the Moon.
-     * @return L - &Omega;
-     */
-    public double getF() {
-        return f;
-    }
-
-    /** Get the mean elongation of the Moon from the Sun.
-     * @return mean elongation of the Moon from the Sun.
-     */
-    public double getD() {
-        return d;
-    }
-
-    /** Get the mean longitude of the ascending node of the Moon.
-     * @return mean longitude of the ascending node of the Moon.
-     */
-    public double getOmega() {
-        return omega;
     }
 
     /** Get the mean Mercury longitude.
