@@ -60,6 +60,9 @@ class TesseralContribution implements DSSTForceModel {
      */
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
+    /** Newcomb operators. */
+    private static NewcombOperators newcomb;
+
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
@@ -165,6 +168,9 @@ class TesseralContribution implements DSSTForceModel {
         this.resOrders = new ArrayList<Integer>();
         this.maxEccPow = 0;
         this.maxHansen = 0;
+
+        // Provider for Newcomb operators
+        TesseralContribution.newcomb  = new NewcombOperators();
 
         // Factorials computation
         final int maxFact = maxDegree + provider.getMaxOrder() + 1;
@@ -384,15 +390,83 @@ class TesseralContribution implements DSSTForceModel {
 
             // SUM over resonant terms {j,m}
             for (int m : resOrders) {
+
+                // Resonant index for the current resonant order
                 final int j = FastMath.max(1, (int) FastMath.round(ratio * m));
-                final double[] potential = computeUsnDerivatives(dateOffset, j, m, roaPow, ghMSJ, gammaMNS, hansen);
-                dUda  += potential[0];
-                dUdh  += potential[1];
-                dUdk  += potential[2];
-                dUdl  += potential[3];
-                dUdAl += potential[4];
-                dUdBe += potential[5];
-                dUdGa += potential[6];
+
+                // Phase angle
+                final double jlMmt  = j * lm - m * theta;
+                final double sinPhi = FastMath.sin(jlMmt);
+                final double cosPhi = FastMath.cos(jlMmt);
+
+                // Potential derivatives components for a given resonant pair {j,m}
+                double dUdaCos  = 0.;
+                double dUdaSin  = 0.;
+                double dUdhCos  = 0.;
+                double dUdhSin  = 0.;
+                double dUdkCos  = 0.;
+                double dUdkSin  = 0.;
+                double dUdlCos  = 0.;
+                double dUdlSin  = 0.;
+                double dUdAlCos = 0.;
+                double dUdAlSin = 0.;
+                double dUdBeCos = 0.;
+                double dUdBeSin = 0.;
+                double dUdGaCos = 0.;
+                double dUdGaSin = 0.;
+
+                // s-SUM from -sMin to sMax
+                final int sMin = FastMath.min(maxEccPow - j, maxDegree);
+                final int sMax = FastMath.min(maxEccPow + j, maxDegree);
+                for (int s = 0; s <= sMax; s++) {
+
+                    // n-SUM for s positive
+                    final double[][] nSumSpos = computeNSum(dateOffset, j, m, s,
+                                                            roaPow, ghMSJ, gammaMNS, hansen);
+                    dUdaCos  += nSumSpos[0][0];
+                    dUdaSin  += nSumSpos[0][1];
+                    dUdhCos  += nSumSpos[1][0];
+                    dUdhSin  += nSumSpos[1][1];
+                    dUdkCos  += nSumSpos[2][0];
+                    dUdkSin  += nSumSpos[2][1];
+                    dUdlCos  += nSumSpos[3][0];
+                    dUdlSin  += nSumSpos[3][1];
+                    dUdAlCos += nSumSpos[4][0];
+                    dUdAlSin += nSumSpos[4][1];
+                    dUdBeCos += nSumSpos[5][0];
+                    dUdBeSin += nSumSpos[5][1];
+                    dUdGaCos += nSumSpos[6][0];
+                    dUdGaSin += nSumSpos[6][1];
+
+                    // n-SUM for s negative
+                    if (s > 0 && s <= sMin) {
+                        final double[][] nSumSneg = computeNSum(dateOffset, j, m, -s,
+                                                                roaPow, ghMSJ, gammaMNS, hansen);
+                        dUdaCos  += nSumSneg[0][0];
+                        dUdaSin  += nSumSneg[0][1];
+                        dUdhCos  += nSumSneg[1][0];
+                        dUdhSin  += nSumSneg[1][1];
+                        dUdkCos  += nSumSneg[2][0];
+                        dUdkSin  += nSumSneg[2][1];
+                        dUdlCos  += nSumSneg[3][0];
+                        dUdlSin  += nSumSneg[3][1];
+                        dUdAlCos += nSumSneg[4][0];
+                        dUdAlSin += nSumSneg[4][1];
+                        dUdBeCos += nSumSneg[5][0];
+                        dUdBeSin += nSumSneg[5][1];
+                        dUdGaCos += nSumSneg[6][0];
+                        dUdGaSin += nSumSneg[6][1];
+                    }
+                }
+
+                // Assembly of potential derivatives componants
+                dUda  += cosPhi * dUdaCos  + sinPhi * dUdaSin;
+                dUdh  += cosPhi * dUdhCos  + sinPhi * dUdhSin;
+                dUdk  += cosPhi * dUdkCos  + sinPhi * dUdkSin;
+                dUdl  += cosPhi * dUdlCos  + sinPhi * dUdlSin;
+                dUdAl += cosPhi * dUdAlCos + sinPhi * dUdAlSin;
+                dUdBe += cosPhi * dUdBeCos + sinPhi * dUdBeSin;
+                dUdGa += cosPhi * dUdGaCos + sinPhi * dUdGaSin;
             }
 
             dUda  *= -moa / a;
@@ -407,132 +481,154 @@ class TesseralContribution implements DSSTForceModel {
         return new double[] {dUda, dUdh, dUdk, dUdl, dUdAl, dUdBe, dUdGa};
     }
 
-    /** Compute potential derivatives for each resonant tesseral term.
+    /** Compute the n-SUM for potential derivatives components.
      *  @param dateOffset offset between current date and gravity field reference date
      *  @param j resonant index <i>j</i>
      *  @param m resonant order <i>m</i>
-     *  @param roaPow powers of R/a up to degree
+     *  @param s d'Alembert characteristic <i>s</i>
+     *  @param roaPow powers of R/a up to degree <i>n</i>
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(&gamma;) function
      *  @param hansen Hansen coefficients
-     *  @return U<sub>s,n</sub> derivatives
+     *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      * @throws OrekitException if some error occurred
      */
-    private double[] computeUsnDerivatives(final double dateOffset,
-                                           final int j, final int m,
-                                           final double[] roaPow,
-                                           final GHmsjPolynomials ghMSJ,
-                                           final GammaMnsFunction gammaMNS,
-                                           final HansenTesseral hansen) throws OrekitException {
+    private double[][] computeNSum(final double dateOffset,
+                                             final int j, final int m, final int s,
+                                             final double[] roaPow,
+                                             final GHmsjPolynomials ghMSJ,
+                                             final GammaMnsFunction gammaMNS,
+                                             final HansenTesseral hansen) throws OrekitException {
 
-        // Initialize potential derivatives
-        double dUda  = 0.;
-        double dUdh  = 0.;
-        double dUdk  = 0.;
-        double dUdl  = 0.;
-        double dUdAl = 0.;
-        double dUdBe = 0.;
-        double dUdGa = 0.;
-
-        // Resonance angle
-        final double jlMmt  = j * lm - m * theta;
-        final double sinPhi = FastMath.sin(jlMmt);
-        final double cosPhi = FastMath.cos(jlMmt);
+        // Potential derivatives components
+        double dUdaCos  = 0.;
+        double dUdaSin  = 0.;
+        double dUdhCos  = 0.;
+        double dUdhSin  = 0.;
+        double dUdkCos  = 0.;
+        double dUdkSin  = 0.;
+        double dUdlCos  = 0.;
+        double dUdlSin  = 0.;
+        double dUdAlCos = 0.;
+        double dUdAlSin = 0.;
+        double dUdBeCos = 0.;
+        double dUdBeSin = 0.;
+        double dUdGaCos = 0.;
+        double dUdGaSin = 0.;
 
         // I^m
         final int Im = I > 0 ? 1 : (m % 2 == 0 ? 1 : -1);
 
-        // s-SUM from -sMin to sMax
-        final int sMin = FastMath.min(maxEccPow - j, maxDegree);
-        final int sMax = FastMath.min(maxEccPow + j, maxDegree);
-        for (int s = -sMin; s <= sMax; s++) {
+        // jacobi v, w, indices from 2.7.1-(15)
+        final int v = FastMath.abs(m - s);
+        final int w = FastMath.abs(m + s);
 
-            // jacobi v, w, indices from 2.7.1-(15)
-            final int v = FastMath.abs(m - s);
-            final int w = FastMath.abs(m + s);
+        // Initialise lower degree nmin = (Max(2, m, |s|)) for summation over n
+        final int nmin = FastMath.max(FastMath.max(2, m), FastMath.abs(s));
+        // n max value for computing Hansen kernel from Newcomb operators
+        final int nmax = nmin + 3;
 
-            // n-SUM from (Max(2, m, |s|)) to N
-            final int nmin = FastMath.max(FastMath.max(2, m), FastMath.abs(s));
-            for (int n = nmin; n <= maxDegree; n++) {
-                // If (n - s) is odd, the contribution is null because of Vmns
-                if ((n - s) % 2 == 0) {
-                    final double fns    = fact[n + FastMath.abs(s)];
-                    final double vMNS   = CoefficientsFactory.getVmns(m, n, s, fns, fact[n - m]);
+        // n-SUM from nmin to N
+        for (int n = nmin; n <= maxDegree; n++) {
 
-                    final double gaMNS  = gammaMNS.getValue(m, n, s);
-                    final double dGaMNS = gammaMNS.getDerivative(m, n, s);
+            // Compute Hansen kernel values and derivatives
+            if (n <= nmax) {
+                // from Newcomb operators
+                hansen.valueFromNewcomb(j, -n - 1, s);
+                hansen.derivFromNewcomb(j, -n - 1, s);
+            } else {
+                // from recurrence relations
+                hansen.valueFromRecurrence(j, -n - 1, s);
+                hansen.derivFromRecurrence(j, -n - 1, s);
+            }
 
-                    final double kJNS   = hansen.getValue(j, -n - 1, s);
-                    final double dkJNS  = hansen.getDerivative(j, -n - 1, s);
+            // If (n - s) is odd, the contribution is null because of Vmns
+            if ((n - s) % 2 == 0) {
 
-                    final double gMSJ   = ghMSJ.getGmsj(m, s, j);
-                    final double hMSJ   = ghMSJ.getHmsj(m, s, j);
-                    final double dGdh   = ghMSJ.getdGmsdh(m, s, j);
-                    final double dGdk   = ghMSJ.getdGmsdk(m, s, j);
-                    final double dGdA   = ghMSJ.getdGmsdAlpha(m, s, j);
-                    final double dGdB   = ghMSJ.getdGmsdBeta(m, s, j);
-                    final double dHdh   = ghMSJ.getdHmsdh(m, s, j);
-                    final double dHdk   = ghMSJ.getdHmsdk(m, s, j);
-                    final double dHdA   = ghMSJ.getdHmsdAlpha(m, s, j);
-                    final double dHdB   = ghMSJ.getdHmsdBeta(m, s, j);
+                // Vmns coefficient
+                final double fns    = fact[n + FastMath.abs(s)];
+                final double vMNS   = CoefficientsFactory.getVmns(m, n, s, fns, fact[n - m]);
 
-                    // Jacobi l-index from 2.7.1-(15)
-                    final int l = FastMath.min(n - m, n - FastMath.abs(s));
-                    final PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                    final double jacobi  = jacobiPoly.value(gamma);
-                    final double dJacobi = jacobiPoly.derivative().value(gamma);
+                // Inclination function Gamma and derivative
+                final double gaMNS  = gammaMNS.getValue(m, n, s);
+                final double dGaMNS = gammaMNS.getDerivative(m, n, s);
 
-                    final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
-                    final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+                // Hansen kernel value and derivative
+                final double kJNS   = hansen.getValue(j, -n - 1, s);
+                final double dkJNS  = hansen.getDeriv(j, -n - 1, s);
 
-                    // Common factors
-                    final double cf_0 = roaPow[n] * Im * vMNS;
-                    final double cf_1 = cf_0 * gaMNS * jacobi;
-                    final double cf_2 = cf_1 * kJNS;
-                    final double gcPhs = gMSJ * cnm + hMSJ * snm;
-                    final double gsMhc = gMSJ * snm - hMSJ * cnm;
-                    final double dKgcPhsx2 = 2. * dkJNS * gcPhs;
-                    final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
+                // Gjms, Hjms polynomials and derivatives
+                final double gMSJ   = ghMSJ.getGmsj(m, s, j);
+                final double hMSJ   = ghMSJ.getHmsj(m, s, j);
+                final double dGdh   = ghMSJ.getdGmsdh(m, s, j);
+                final double dGdk   = ghMSJ.getdGmsdk(m, s, j);
+                final double dGdA   = ghMSJ.getdGmsdAlpha(m, s, j);
+                final double dGdB   = ghMSJ.getdGmsdBeta(m, s, j);
+                final double dHdh   = ghMSJ.getdHmsdh(m, s, j);
+                final double dHdk   = ghMSJ.getdHmsdk(m, s, j);
+                final double dHdA   = ghMSJ.getdHmsdAlpha(m, s, j);
+                final double dHdB   = ghMSJ.getdHmsdBeta(m, s, j);
 
-                    // Compute dU / da from expansion of equation (4-a)
-                    double realCosFactor = gcPhs * cosPhi;
-                    double realSinFactor = gsMhc * sinPhi;
-                    dUda += (n + 1) * cf_2 * (realCosFactor + realSinFactor);
+                // Jacobi l-index from 2.7.1-(15)
+                final int l = FastMath.min(n - m, n - FastMath.abs(s));
+                // Jacobi polynomial and derivative
+                final PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
+                final double jacobi  = jacobiPoly.value(gamma);
+                final double dJacobi = jacobiPoly.derivative().value(gamma);
 
-                    // Compute dU / dh from expansion of equation (4-b)
-                    realCosFactor = (kJNS * (cnm * dGdh + snm * dHdh) + h * dKgcPhsx2) * cosPhi;
-                    realSinFactor = (kJNS * (snm * dGdh - cnm * dHdh) + h * dKgsMhcx2) * sinPhi;
-                    dUdh += cf_1 * (realCosFactor + realSinFactor);
+                // Geopotential coefficients
+                final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
+                final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
 
-                    // Compute dU / dk from expansion of equation (4-c)
-                    realCosFactor = (kJNS * (cnm * dGdk + snm * dHdk) + k * dKgcPhsx2) * cosPhi;
-                    realSinFactor = (kJNS * (snm * dGdk - cnm * dHdk) + k * dKgsMhcx2) * sinPhi;
-                    dUdk += cf_1 * (realCosFactor + realSinFactor);
+                // Common factors from expansion of equations 3.3-4
+                final double cf_0      = roaPow[n] * Im * vMNS;
+                final double cf_1      = cf_0 * gaMNS * jacobi;
+                final double cf_2      = cf_1 * kJNS;
+                final double gcPhs     = gMSJ * cnm + hMSJ * snm;
+                final double gsMhc     = gMSJ * snm - hMSJ * cnm;
+                final double dKgcPhsx2 = 2. * dkJNS * gcPhs;
+                final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
+                final double dUdaCoef  = (n + 1) * cf_2;
+                final double dUdlCoef  = j * cf_2;
+                final double dUdGaCoef = cf_0 * kJNS * (jacobi * dGaMNS + gaMNS * dJacobi);
 
-                    // Compute dU / dLambda from expansion of equation (4-d)
-                    realCosFactor = gsMhc * cosPhi;
-                    realSinFactor = gcPhs * sinPhi;
-                    dUdl += j * cf_2 * (realCosFactor - realSinFactor);
+                // dU / da components
+                dUdaCos  += dUdaCoef * gcPhs;
+                dUdaSin  += dUdaCoef * gsMhc;
 
-                    // Compute dU / alpha from expansion of equation (4-e)
-                    realCosFactor = (dGdA * cnm + dHdA * snm) * cosPhi;
-                    realSinFactor = (dGdA * snm - dHdA * cnm) * sinPhi;
-                    dUdAl += cf_2 * (realCosFactor + realSinFactor);
+                // dU / dh components
+                dUdhCos  += cf_1 * (kJNS * (cnm * dGdh + snm * dHdh) + h * dKgcPhsx2);
+                dUdhSin  += cf_1 * (kJNS * (snm * dGdh - cnm * dHdh) + h * dKgsMhcx2);
 
-                    // Compute dU / dBeta from expansion of equation (4-f)
-                    realCosFactor = (dGdB * cnm + dHdB * snm) * cosPhi;
-                    realSinFactor = (dGdB * snm - dHdB * cnm) * sinPhi;
-                    dUdBe += cf_2 * (realCosFactor + realSinFactor);
+                // dU / dk components
+                dUdkCos  += cf_1 * (kJNS * (cnm * dGdk + snm * dHdk) + k * dKgcPhsx2);
+                dUdkSin  += cf_1 * (kJNS * (snm * dGdk - cnm * dHdk) + k * dKgsMhcx2);
 
-                    // Compute dU / dGamma from expansion of equation (4-g)
-                    realCosFactor = gcPhs * cosPhi;
-                    realSinFactor = gsMhc * sinPhi;
-                    dUdGa += cf_0 * kJNS * (jacobi * dGaMNS + gaMNS * dJacobi) * (realCosFactor + realSinFactor);
-                }
+                // dU / dLambda components
+                dUdlCos  +=  dUdlCoef * gsMhc;
+                dUdlSin  += -dUdlCoef * gcPhs;
+
+                // dU / alpha components
+                dUdAlCos += cf_2 * (dGdA * cnm + dHdA * snm);
+                dUdAlSin += cf_2 * (dGdA * snm - dHdA * cnm);
+
+                // dU / dBeta components
+                dUdBeCos += cf_2 * (dGdB * cnm + dHdB * snm);
+                dUdBeSin += cf_2 * (dGdB * snm - dHdB * cnm);
+
+                // dU / dGamma components
+                dUdGaCos += dUdGaCoef * gcPhs;
+                dUdGaSin += dUdGaCoef * gsMhc;
             }
         }
 
-        return new double[] {dUda, dUdh, dUdk, dUdl, dUdAl, dUdBe, dUdGa};
+        return new double[][] {{dUdaCos,  dUdaSin},
+                               {dUdhCos,  dUdhSin},
+                               {dUdkCos,  dUdkSin},
+                               {dUdlCos,  dUdlSin},
+                               {dUdAlCos, dUdAlSin},
+                               {dUdBeCos, dUdBeSin},
+                               {dUdGaCos, dUdGaSin}};
     }
 
     /** Hansen coefficients for tesseral contribution to central body force model.
@@ -543,10 +639,10 @@ class TesseralContribution implements DSSTForceModel {
      */
     private static class HansenTesseral {
 
-        /** Map to store every Hansen coefficient computed. */
-        private TreeMap<MNSKey, Double> coefficients;
+        /** Map to store every Hansen kernel value computed. */
+        private TreeMap<MNSKey, Double> values;
 
-        /** Map to store every Hansen coefficient derivatives computed. */
+        /** Map to store every Hansen kernel derivative computed. */
         private TreeMap<MNSKey, Double> derivatives;
 
         /** Eccentricity. */
@@ -567,8 +663,8 @@ class TesseralContribution implements DSSTForceModel {
         /** d&chi;<sup>2</sup> / de<sup>2</sup> = &chi;<sup>4</sup>. */
         private final double dchi2;
 
-        /** Maximum power of e<sup>2</sup> to use in series expansion for the Hansen coefficient when
-         * using modified Newcomb operator.
+        /** Max power of e<sup>2</sup> in serie expansion
+         *  using Newcomb operator for Hansen kernel computation.
          */
         private final int    maxNewcomb;
 
@@ -577,9 +673,9 @@ class TesseralContribution implements DSSTForceModel {
          *  @param maxHansen maximum power of e<sup>2</sup> to use in series expansion for the Hansen coefficient
          */
         public HansenTesseral(final double ecc, final int maxHansen) {
-            this.coefficients = new TreeMap<CoefficientsFactory.MNSKey, Double>();
-            this.derivatives  = new TreeMap<CoefficientsFactory.MNSKey, Double>();
-            this.maxNewcomb   = maxHansen;
+            this.values      = new TreeMap<CoefficientsFactory.MNSKey, Double>();
+            this.derivatives = new TreeMap<CoefficientsFactory.MNSKey, Double>();
+            this.maxNewcomb  = maxHansen;
             this.e2    = ecc * ecc;
             this.ome2  = 1. - e2;
             this.chi   = 1. / FastMath.sqrt(ome2);
@@ -588,132 +684,24 @@ class TesseralContribution implements DSSTForceModel {
             this.dchi2 = chi2 * chi2;
         }
 
-        /** Get the K<sub>j</sub><sup>-n-1,s</sup> coefficient value.
+        /** Get the K<sub>j</sub><sup>-n-1,s</sup> value.
          * @param j j value
          * @param mnm1 -n-1 value
          * @param s s value
          * @return K<sub>j</sub><sup>-n-1,s</sup>
          */
         public double getValue(final int j, final int mnm1, final int s) {
-            if (coefficients.containsKey(new MNSKey(j, mnm1, s))) {
-                // Get Kj,-n-1,s
-                return coefficients.get(new MNSKey(j, mnm1, s));
-            } else {
-                // Compute Kj,-n-1,s
-                return computeValue(j, mnm1, s);
-            }
+            return values.get(new MNSKey(j, mnm1, s));
         }
 
-        /** Get the dK<sub>j</sub><sup>-n-1,s</sup> / de<sup>2</sup> coefficient derivative.
+        /** Get the dK<sub>j</sub><sup>-n-1,s</sup> / de<sup>2</sup> derivative.
          *  @param j j value
          *  @param mnm1 -n-1 value
          *  @param s s value
          *  @return dK<sub>j</sub><sup>-n-1,s</sup> / de<sup>2</sup>
          */
-        public double getDerivative(final int j, final int mnm1, final int s) {
-            if (derivatives.containsKey(new MNSKey(j, mnm1, s))) {
-                // Get dKj,-n-1,s/de2
-                return derivatives.get(new MNSKey(j, mnm1, s));
-            } else {
-                // Compute dKj,-n-1,s/de2
-                return computeDerivative(j, mnm1, s);
-            }
-        }
-
-        /** Compute the K<sub>j</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(9).
-         *
-         *  @param j j value
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         *  @return K<sub>j</sub><sup>-n-1,s</sup>
-         */
-        private double computeValue(final int j, final int mnm1, final int s) {
-            final int n = -mnm1 - 1;
-            double result = 0;
-            if ((n == 3) || (n == s + 1) || (n == 1 - s)) {
-                // Direct computation from Newcomb operator
-                result = valueFromNewcomb(j, mnm1, s);
-            } else {
-                // Recursive computation
-                double kmn = 0.;
-                if (coefficients.containsKey(new MNSKey(j, -n, s))) {
-                    kmn = coefficients.get(new MNSKey(j, -n, s));
-                } else {
-                    kmn = valueFromNewcomb(j, -n, s);
-                }
-                double kmnp1 = 0.;
-                if (coefficients.containsKey(new MNSKey(j, -n + 1, s))) {
-                    kmnp1 = coefficients.get(new MNSKey(j, -n + 1, s));
-                } else {
-                    kmnp1 = valueFromNewcomb(j, -n + 1, s);
-                }
-                double kmnp3 = 0.;
-                if (coefficients.containsKey(new MNSKey(j, -n + 3, s))) {
-                    kmnp3 = coefficients.get(new MNSKey(j, -n + 3, s));
-                } else {
-                    kmnp3 = valueFromNewcomb(j, -n + 3, s);
-                }
-
-                final double den    = (3 - n) * (1 - n + s) * (1 - n - s);
-                final double ck     = chi2 / den;
-                final double ckmn   = (3 - n) * (1 - n) * (3 - 2 * n);
-                final double ckmnp1 = (2 - n) * ((3 - n) * (1 - n) + (2 * j * s) / chi);
-                final double ckmnp3 = j * j * (1 - n);
-                result = ck * (ckmn * kmn - ckmnp1 * kmnp1 + ckmnp3 * kmnp3);
-            }
-            coefficients.put(new MNSKey(j, mnm1, s), result);
-            return result;
-        }
-
-        /** Compute dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup>.
-         *
-         *  @param j j value
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         *  @return dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup>
-         */
-        private double computeDerivative(final int j, final int mnm1, final int s) {
-            final int n = -mnm1 - 1;
-            double result = 0;
-            if ((n == 3) || (n == s + 1) || (n == 1 - s)) {
-                // Direct computation from Newcomb operator
-                result = derivativeFromNewcomb(j, -n - 1, s);
-            } else {
-                // Recursive computation
-                final double kmn   = getValue(j, -n    , s);
-                final double kmnp1 = getValue(j, -n + 1, s);
-                final double kmnp3 = getValue(j, -n + 3, s);
-
-                double dkmn = 0.;
-                if (derivatives.containsKey(new MNSKey(j, -n, s))) {
-                    dkmn = derivatives.get(new MNSKey(j, -n, s));
-                } else {
-                    dkmn = derivativeFromNewcomb(j, -n, s);
-                }
-                double dkmnp1 = 0.;
-                if (derivatives.containsKey(new MNSKey(j, -n + 1, s))) {
-                    dkmnp1 = derivatives.get(new MNSKey(j, -n + 1, s));
-                } else {
-                    dkmnp1 = derivativeFromNewcomb(j, -n + 1, s);
-                }
-                double dkmnp3 = 0.;
-                if (derivatives.containsKey(new MNSKey(j, -n + 3, s))) {
-                    dkmnp3 = derivatives.get(new MNSKey(j, -n + 3, s));
-                } else {
-                    dkmnp3 = derivativeFromNewcomb(j, -n + 3, s);
-                }
-
-                final double den      = (3 - n) * (1 - n + s) * (1 - n - s);
-                final double cdkmn    = (3 - n) * (1 - n) * (3 - 2 * n);
-                final double c0dkmnp1 = (n - 2) * (3 - n) * (1 - n);
-                final double c1dkmnp1 = (n - 2) * (2 * j * s);
-                final double cdkmnp3  = j * j * (1 - n);
-                result = chi2 * (cdkmn * dkmn + c0dkmnp1 * dkmnp1 + cdkmnp3 * dkmnp3) + chi  * c1dkmnp1 * dkmnp1 +
-                         dchi2 * (cdkmn * kmn + c0dkmnp1 * kmnp1  + cdkmnp3 * kmnp3)  + dchi * c1dkmnp1 * kmnp1;
-                result /= den;
-            }
-            derivatives.put(new MNSKey(j, mnm1, s), result);
-            return result;
+        public double getDeriv(final int j, final int mnm1, final int s) {
+            return derivatives.get(new MNSKey(j, mnm1, s));
         }
 
         /** Compute the K<sub>j</sub><sup>-n-1,s</sup> from equation 2.7.3-(10).<br>
@@ -723,26 +711,21 @@ class TesseralContribution implements DSSTForceModel {
          *  @param j j value
          *  @param mnm1 -n-1 value
          *  @param s s value
-         *  @return K<sub>j</sub><sup>-n-1,s</sup>
          */
-        private double valueFromNewcomb(final int j, final int mnm1, final int s) {
+        public void valueFromNewcomb(final int j, final int mnm1, final int s) {
             // Initialization
             final int a = FastMath.max(j - s, 0);
             final int b = FastMath.max(s - j, 0);
-
-            // Expansion until the maximum power in e^2 is reached
-            // e^2*alpha
-            double eP2a = 1.;
-            double sum  = 0.;
-            for (int alpha = 0; alpha <= maxNewcomb; alpha++) {
-                final double newcomb = NewcombOperators.getValue(alpha + a, alpha + b, mnm1, s);
-                sum += newcomb * eP2a;
-                eP2a *= e2;
+            // Expansion until maxNewcomb, the maximum power in e^2 for the Kernel value
+            double sum = newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
+            for (int alpha = maxNewcomb - 1; alpha >= 0; alpha--) {
+                sum *= e2;
+                sum += newcomb.getValue(alpha + a, alpha + b, mnm1, s);
             }
-
+            // Kernel value from equation 2.7.3-(10)
             final double value = FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
-            coefficients.put(new MNSKey(j, mnm1, s), value);
-            return value;
+            // Storage of the Kernel value in the map
+            values.put(new MNSKey(j, mnm1, s), value);
         }
 
         /** Compute dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup> from equation 3.3-(5).
@@ -752,29 +735,75 @@ class TesseralContribution implements DSSTForceModel {
          *  @param j j value
          *  @param mnm1 -n-1 value
          *  @param s s value
-         *  @return dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup>
          */
-        private double derivativeFromNewcomb(final int j, final int mnm1, final int s) {
+        public void derivFromNewcomb(final int j, final int mnm1, final int s) {
             // Initialization
             final int a = FastMath.max(j - s, 0);
             final int b = FastMath.max(s - j, 0);
-
-            // Expansion until the maximum power in e^2 is reached
-            // e^2(alpha-1)
-            double e2Pam1 = 1.;
-            double sum    = 0.;
-            for (int alpha = 1; alpha <= maxNewcomb; alpha++) {
-                final double newcomb = NewcombOperators.getValue(alpha + a, alpha + b, mnm1, s);
-                sum += alpha * newcomb * e2Pam1;
-                e2Pam1 *= e2;
+            // Expansion until maxNewcomb-1, the maximum power in e^2 for the Kernel derivative
+            double sum = newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
+            for (int alpha = maxNewcomb - 1; alpha >= 1; alpha--) {
+                sum *= e2;
+                sum += newcomb.getValue(alpha + a, alpha + b, mnm1, s);
             }
-
+            // Kernel derivative from equation 3.3-(5)
+            final MNSKey key  = new MNSKey(j, mnm1, s);
             final double coef = -(mnm1 + 1.5);
-            final double Kjns = getValue(j, mnm1, s);
-
+            final double Kjns = values.get(key);
             final double derivative = coef * chi2 * Kjns + FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
+            // Storage of the Kernel derivative in the map
             derivatives.put(new MNSKey(j, mnm1, s), derivative);
-            return derivative;
+        }
+
+        /** Compute the K<sub>j</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(9).
+         *
+         *  @param j j value
+         *  @param mnm1 -n-1 value
+         *  @param s s value
+         */
+        public void valueFromRecurrence(final int j, final int mnm1, final int s) {
+            final int n = -mnm1 - 1;
+            final double kmn    = values.get(new MNSKey(j, -n, s));
+            final double kmnp1  = values.get(new MNSKey(j, -n + 1, s));
+            final double kmnp3  = values.get(new MNSKey(j, -n + 3, s));
+            final double den    = (3 - n) * (1 - n + s) * (1 - n - s);
+            final double ck     = chi2 / den;
+            final double ckmn   = (3 - n) * (1 - n) * (3 - 2 * n);
+            final double ckmnp1 = (2 - n) * ((3 - n) * (1 - n) + (2 * j * s) / chi);
+            final double ckmnp3 = j * j * (1 - n);
+            final double value  = ck * (ckmn * kmn - ckmnp1 * kmnp1 + ckmnp3 * kmnp3);
+            // Store value
+            values.put(new MNSKey(j, mnm1, s), value);
+        }
+
+        /** Compute dK<sub>j</sub><sup>-n-1,s</sup>/de<sup>2</sup> from derivation of equation 2.7.3-(9).
+         *
+         *  @param j j value
+         *  @param mnm1 -n-1 value
+         *  @param s s value
+         */
+        public void derivFromRecurrence(final int j, final int mnm1, final int s) {
+            final int n = -mnm1 - 1;
+            final MNSKey keymn    = new MNSKey(j, -n, s);
+            final MNSKey keymnp1  = new MNSKey(j, -n + 1, s);
+            final MNSKey keymnp3  = new MNSKey(j, -n + 3, s);
+            final double kmn      = values.get(keymn);
+            final double kmnp1    = values.get(keymnp1);
+            final double kmnp3    = values.get(keymnp3);
+            final double dkmn     = derivatives.get(keymn);
+            final double dkmnp1   = derivatives.get(keymnp1);
+            final double dkmnp3   = derivatives.get(keymnp3);
+            final double den      = (3 - n) * (1 - n + s) * (1 - n - s);
+            final double cdkmn    = (3 - n) * (1 - n) * (3 - 2 * n);
+            final double c0dkmnp1 = (n - 2) * (3 - n) * (1 - n);
+            final double c1dkmnp1 = (n - 2) * (2 * j * s);
+            final double cdkmnp3  = j * j * (1 - n);
+            final double deriv    = chi2  * (cdkmn * dkmn + c0dkmnp1 * dkmnp1 + cdkmnp3 * dkmnp3) +
+                                    chi   * c1dkmnp1 * dkmnp1 +
+                                    dchi2 * (cdkmn * kmn + c0dkmnp1 * kmnp1  + cdkmnp3 * kmnp3)  +
+                                    dchi  * c1dkmnp1 * kmnp1;
+            // Store derivative
+            derivatives.put(new MNSKey(j, mnm1, s), deriv / den);
         }
     }
 }

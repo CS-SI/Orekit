@@ -60,8 +60,9 @@ public class GammaMnsFunction {
      */
     public double getValue(final int m, final int n, final int s) {
         double res = 0.;
-        if (map.containsKey(new MNSKey(m, n, s))) {
-            res = map.get(new MNSKey(m, n, s));
+        final MNSKey key = new MNSKey(m, n, s);
+        if (map.containsKey(key)) {
+            res = map.get(key);
         } else {
             if (s <= -m) {
                 res = FastMath.pow(-1, m - s) * FastMath.pow(2, s) * FastMath.pow(opIg, -I * m);
@@ -72,7 +73,7 @@ public class GammaMnsFunction {
                 res *= fact[n + m] * fact[n - m];
                 res /= fact[n + s] * fact[n - s];
             }
-            map.put(new MNSKey(m, n, s), res);
+            map.put(key, res);
         }
         return res;
     }

@@ -55,9 +55,13 @@ import org.apache.commons.math3.util.FastMath;
  */
 public class NewcombOperators {
 
+    /** Storage map. */
+    private final Map<NewKey, Double> map;
+
     /** Private constructor as class is a utility.
      */
-    private NewcombOperators() {
+    public NewcombOperators() {
+        this.map = new TreeMap<NewKey, Double>();
     }
 
     /** Get the Newcomb operator evaluated at n, s, &rho;, &sigma;.
@@ -68,19 +72,22 @@ public class NewcombOperators {
      *  @param s s index
      *  @return Y<sub>&rho;,&sigma;</sub><sup>n,s</sup>
      */
-    public static double getValue(final int rho, final int sigma, final int n, final int s) {
-
-        // Get the Newcomb polynomials for the given rho and sigma
-        final List<PolynomialFunction> polynomials = PolynomialsGenerator.getPolynomials(rho, sigma);
-
-        // Compute the value from the list of polynomials for the given n and s
-        double value  = 0.;
-        double nPower = 1.;
-        for (final PolynomialFunction polynomial : polynomials) {
-            value += polynomial.value(s) * nPower;
-            nPower = n * nPower;
+    public double getValue(final int rho, final int sigma, final int n, final int s) {
+        double value = 0.;
+        final NewKey key = new NewKey(n, s, rho, sigma);
+        if (map.containsKey(key)) {
+            value = map.get(key);
+        } else {
+            // Get the Newcomb polynomials for the given rho and sigma
+            final List<PolynomialFunction> polynomials = PolynomialsGenerator.getPolynomials(rho, sigma);
+            // Compute the value from the list of polynomials for the given n and s
+            double nPower = 1.;
+            for (final PolynomialFunction polynomial : polynomials) {
+                value += polynomial.value(s) * nPower;
+                nPower = n * nPower;
+            }
+            map.put(key, value);
         }
-
         return value;
     }
 
@@ -403,4 +410,88 @@ public class NewcombOperators {
         }
 
     }
+
+    /** Newcomb operator's key. */
+    private static class NewKey implements Comparable<NewKey> {
+
+        /** n value. */
+        private final int n;
+
+        /** s value. */
+        private final int s;
+
+        /** &rho; value. */
+        private final int rho;
+
+        /** &sigma; value. */
+        private final int sigma;
+
+        /** Simpleconstructor.
+         * @param n n
+         * @param s s
+         * @param rho &rho;
+         * @param sigma &sigma;
+         */
+        public NewKey(final int n, final int s, final int rho, final int sigma) {
+            this.n = n;
+            this.s = s;
+            this.rho = rho;
+            this.sigma = sigma;
+        }
+
+        /** {@inheritDoc} */
+        public int compareTo(final NewKey key) {
+            int result = 1;
+            if (n == key.n) {
+                if (s == key.s) {
+                    if (rho == key.rho) {
+                        if (sigma < key.sigma) {
+                            result = -1;
+                        } else if (sigma == key.sigma) {
+                            result = 0;
+                        } else {
+                            result = 1;
+                        }
+                    } else if (rho < key.rho) {
+                        result = -1;
+                    } else {
+                        result = 1;
+                    }
+                } else if (s < key.s) {
+                    result = -1;
+                } else {
+                    result = 1;
+                }
+            } else if (n < key.n) {
+                result = -1;
+            }
+            return result;
+        }
+
+        /** {@inheritDoc} */
+        public boolean equals(final Object key) {
+
+            if (key == this) {
+                // first fast check
+                return true;
+            }
+
+            if ((key != null) && (key instanceof NewKey)) {
+                return (n     == ((NewKey) key).n) &&
+                       (s     == ((NewKey) key).s) &&
+                       (rho   == ((NewKey) key).rho) &&
+                       (sigma == ((NewKey) key).sigma);
+            }
+
+            return false;
+
+        }
+
+        /** {@inheritDoc} */
+        public int hashCode() {
+            return 0x25baa451 ^ (n << 32) ^ (s << 16) ^ (rho << 8) ^ sigma;
+        }
+
+    }
+
 }
