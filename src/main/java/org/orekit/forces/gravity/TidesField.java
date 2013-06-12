@@ -34,6 +34,20 @@ import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 
 /** Gravity field corresponding to tides.
+ * <p>
+ * This solid tides force model implementation corresponds to the method described
+ * in <a href="http://www.iers.org/nn_11216/IERS/EN/Publications/TechnicalNotes/tn36.html">
+ * IERS conventions (2010)</a>, chapter 6, section 6.2.
+ * </p>
+ * <p>
+ * The computation of the spherical harmonics part is done using the algorithm implemented
+ * designed by S. A. Holmes and W. E. Featherstone from Department of Spatial Sciences,
+ * Curtin University of Technology, Perth, Australia and described in their 2002 paper:
+ * <a href="http://cct.gfy.ku.dk/publ_others/ccta1870.pdf">A unified approach to
+ * the Clenshaw summation and the recursive computation of very high degree and
+ * order normalised associated Legendre functions</a> (Journal of Geodesy (2002)
+ * 76: 279–299).
+ * </p>
  * @see SolidTides
  * @author Luc Maisonobe
  */
@@ -214,7 +228,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         final AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, offset);
 
         // step 1: frequency independent part
-        // equation 6.6 in IERS conventions 2010
+        // equations 6.6 (for degrees 2 and 3) and 6.7 (for degree 4) in IERS conventions 2010
         for (final CelestialBody body : bodies) {
 
             // compute tide generating body state
@@ -315,15 +329,6 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     }
 
     /** Compute recursion coefficients.
-     * <p>
-     * The algorithm implemented in this class has been designed by S. A. Holmes
-     * and W. E. Featherstone from Department of Spatial Sciences, Curtin University
-     * of Technology, Perth, Australia. It is described in their 2002 paper: <a
-     * href="http://cct.gfy.ku.dk/publ_others/ccta1870.pdf">A unified approach to
-     * the Clenshaw summation and the recursive computation of very high degree and
-     * order normalised associated Legendre functions</a> (Journal of Geodesy (2002)
-     * 76: 279–299).
-     * </p>
      */
     private void recursionCoefficients() {
 
@@ -354,7 +359,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     private void evaluateLegendre(final double t, final double u) {
 
         // as the degree is very low, we use the standard forward column method
-        // and store everything
+        // and store everything (see equations 11 and 13 from Holmes and Featherstone paper)
         pnm[0][0] = 1;
         pnm[1][0] = anm[1][0] * t;
         pnm[1][1] = FastMath.sqrt(3) * u;
@@ -370,7 +375,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
     }
 
-    /** Update coefficients applying frequency independent step.
+    /** Update coefficients applying frequency independent step, for one tide generating body.
      * @param r distance to tide generating body
      * @param gm tide generating body attraction coefficient
      * @param cosLambda cosine of the tide generating body longitude
@@ -380,22 +385,24 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
                                           final double cosLambda, final double sinLambda) {
 
         final double rRatio = ae / r;
-        final double mRatio = gm / mu;
-
-        double cosMLambda = 1;
-        double sinMLambda = 0;
+        double fM           = gm / mu;
+        double cosMLambda   = 1;
+        double sinMLambda   = 0;
         for (int m = 0; m <= loveReal.length; ++m) {
-            double f = mRatio;
-            for (int n = 0; n <= m; ++n) {
-                f *= rRatio;
-                final double coeff = (f / (2 * n + 1)) * pnm[n][m];
+
+            double fNPlus1 = fM;
+            for (int n = m; n <= loveReal.length; ++n) {
+                fNPlus1 *= rRatio;
+                final double coeff = (fNPlus1 / (2 * n + 1)) * pnm[n][m];
 
                 // direct effect of degree n tides on degree n coefficients
+                // equation 6.6 from IERS conventions (2010)
                 cachedCnm[n][m] += coeff * (loveReal[n][m] * cosMLambda + loveImaginary[n][m] * sinMLambda);
                 cachedSnm[n][m] += coeff * (loveReal[n][m] * sinMLambda - loveImaginary[n][m] * cosMLambda);
 
                 if (n == 2) {
                     // indirect effect of degree 2 tides on degree 4 coefficients
+                    // equation 6.7 from IERS conventions (2010)
                     cachedCnm[4][m] += coeff * lovePlus[2][m] * cosMLambda;
                     cachedSnm[4][m] += coeff * lovePlus[2][m] * sinMLambda;
                 }
@@ -406,6 +413,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             final double tmp = cosMLambda * cosLambda - sinMLambda * sinLambda;
             sinMLambda = sinMLambda * cosLambda + cosMLambda * sinLambda;
             cosMLambda = tmp;
+            fM        *= rRatio;
 
         }
 
