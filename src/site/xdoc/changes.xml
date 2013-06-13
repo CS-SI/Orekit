@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added back serialization for some ephemerides produced by integration-based propagators.
+        The ephemerides produced by NumericalPropagator are always serializable, and the ones
+        produced by DSSTPropagator may be serializable or not depending on the force models used.
+      </action>
       <action dev="luc" type="fix" >
         Fixed missing events detection when two events occurred at exactly the same time using an analytical
         propagator (like generated ephemerides for example). Fixes issue #138.

@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.semianalytical.dsst;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -137,14 +139,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     private static final int I = 1;
 
-    /** Force models used during the extrapolation of the orbit. */
-    private final List<DSSTForceModel> forceModels;
-
-    /** Determine if the initial orbital state is given with osculating elements. */
-    private boolean isOsculating;
-
-    /** Number of satellite revolutions defining the averaging interval. */
-    private int     satelliteRevolution;
+    /** State mapper holding the force models. */
+    private MeanPlusShortPeriodicMapper mapper;
 
     /** Create a new instance of DSSTPropagator.
      *  <p>
@@ -157,10 +153,6 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public DSSTPropagator(final AbstractIntegrator integrator) {
         super(integrator);
-        this.forceModels = new ArrayList<DSSTForceModel>();
-        this.isOsculating = true;
-        // Default averaging period for conversion from osculating to mean elements
-        this.satelliteRevolution = 2;
         initMapper();
         // DSST uses only equinoctial orbits and mean longitude argument
         setOrbitType(OrbitType.EQUINOCTIAL);
@@ -185,7 +177,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     public void setInitialState(final SpacecraftState initialState,
                                 final boolean withOsculatingElements)
         throws PropagationException {
-        this.isOsculating = withOsculatingElements;
+        mapper.setInitialIsOsculating(withOsculatingElements);
         resetInitialState(initialState);
     }
 
@@ -199,6 +191,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         super.resetInitialState(state);
     }
 
+    /** Check if the initial state is provided in osculating elements.
+     * @return true if initial state is provided in osculating elements
+     */
+    public boolean initialIsOsculating() {
+        return mapper.initialIsOsculating();
+    }
+
     /** Add a force model to the global perturbation model.
      *  <p>
      *  If this method is not called at all,
@@ -208,7 +207,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @see #removeForceModels()
      */
     public void addForceModel(final DSSTForceModel force) {
-        forceModels.add(force);
+        mapper.addForceModel(force);
     }
 
     /** Remove all perturbing force models from the global perturbation model.
@@ -219,7 +218,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  @see #addForceModel(DSSTForceModel)
      */
     public void removeForceModels() {
-        forceModels.clear();
+        mapper.removeForceModels();
     }
 
     /** Override the default value of the parameter.
@@ -232,7 +231,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *                             elements
      */
     public void setSatelliteRevolution(final int satelliteRevolution) {
-        this.satelliteRevolution = satelliteRevolution;
+        mapper.setSatelliteRevolution(satelliteRevolution);
+    }
+
+    /** Get the number of satellite revolutions to use for converting osculating to mean elements.
+     *  @return number of satellite revolutions to use for converting osculating to mean elements
+     */
+    public int getSatelliteRevolution() {
+        return mapper.getSatelliteRevolution();
     }
 
     /** Method called just before integration.
@@ -251,7 +257,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
 
         // initialize all perturbing forces
-        for (final DSSTForceModel force : forceModels) {
+        for (final DSSTForceModel force : mapper.getForceModels()) {
             force.initialize(aux);
         }
 
@@ -261,13 +267,33 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     protected StateMapper createMapper(final AbsoluteDate referenceDate, final double mu,
                                        final OrbitType orbitType, final PositionAngle positionAngleType,
                                        final AttitudeProvider attitudeProvider, final Frame frame) {
-        return new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame,
-                                               isOsculating ? forceModels : new ArrayList<DSSTForceModel>(),
-                                               satelliteRevolution);
+
+        // create a mapper with the common settings provided as arguments
+        final MeanPlusShortPeriodicMapper newMapper =
+                new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
+
+        // copy the specific settings from the existing mapper
+        if (mapper != null) {
+            for (final DSSTForceModel forceModel : mapper.getForceModels()) {
+                newMapper.addForceModel(forceModel);
+            }
+            newMapper.setSatelliteRevolution(mapper.getSatelliteRevolution());
+            newMapper.setInitialIsOsculating(mapper.initialIsOsculating());
+        }
+
+        mapper = newMapper;
+        return mapper;
+
     }
 
     /** Internal mapper using mean parameters plus short periodic terms. */
-    private static class MeanPlusShortPeriodicMapper extends StateMapper {
+    private static class MeanPlusShortPeriodicMapper extends StateMapper implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20130621L;
+
+        /** Flag specifying whether the initial orbital state is given with osculating elements. */
+        private boolean                    initialIsOsculating;
 
         /** Force models used to compute short periodic terms. */
         private final List<DSSTForceModel> forceModels;
@@ -286,17 +312,19 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
          * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
          * @param attitudeProvider attitude provider
          * @param frame inertial frame
-         * @param forceModels force models to use for short periodic terms computation
-         * (empty list if parameters remain as mean parameters only)
-         * @param satelliteRevolution number of satellite revolutions in the averaging interval
-         * (unused if forceModels is empty)
          */
         public MeanPlusShortPeriodicMapper(final AbsoluteDate referenceDate, final double mu,
-                                           final AttitudeProvider attitudeProvider, final Frame frame,
-                                           final List<DSSTForceModel> forceModels, final int satelliteRevolution) {
+                                           final AttitudeProvider attitudeProvider, final Frame frame) {
+
             super(referenceDate, mu, OrbitType.EQUINOCTIAL, PositionAngle.MEAN, attitudeProvider, frame);
-            this.forceModels = new ArrayList<DSSTForceModel>(forceModels);
-            this.satelliteRevolution = satelliteRevolution;
+
+            this.forceModels = new ArrayList<DSSTForceModel>();
+
+            // Default averaging period for conversion from osculating to mean elements
+            this.satelliteRevolution = 2;
+
+            this.initialIsOsculating = true;
+
         }
 
         /** {@inheritDoc} */
@@ -333,7 +361,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             throws OrekitException {
 
             final Orbit meanOrbit;
-            if (forceModels.isEmpty()) {
+            if (!initialIsOsculating) {
                 // the state is considered to be already a mean state
                 meanOrbit = state.getOrbit();
             } else {
@@ -345,6 +373,70 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             OrbitType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngle.MEAN, y);
             y[6] = state.getMass();
 
+        }
+
+        /** Add a force model to the global perturbation model.
+         *  <p>
+         *  If this method is not called at all,
+         *  the integrated orbit will follow a keplerian evolution only.
+         *  </p>
+         *  @param force perturbing {@link DSSTForceModel force} to add
+         *  @see #removeForceModels()
+         */
+        public void addForceModel(final DSSTForceModel force) {
+            forceModels.add(force);
+        }
+
+        /** Remove all perturbing force models from the global perturbation model.
+         *  <p>
+         *  Once all perturbing forces have been removed (and as long as no new force model is added),
+         *  the integrated orbit will follow a keplerian evolution only.
+         *  </p>
+         *  @see #addForceModel(DSSTForceModel)
+         */
+        public void removeForceModels() {
+            forceModels.clear();
+        }
+
+        /** Get the force models.
+         * @return force models
+         */
+        public List<DSSTForceModel> getForceModels() {
+            return forceModels;
+        }
+
+        /** Set the number of satellite revolutions to use for converting osculating to mean elements.
+         *  <p>
+         *  By default, if the initial orbit is defined as osculating,
+         *  it will be averaged over 2 satellite revolutions.
+         *  This can be changed by using this method.
+         *  </p>
+         *  @param satelliteRevolution number of satellite revolutions to use for converting osculating to mean
+         *                             elements
+         */
+        public void setSatelliteRevolution(final int satelliteRevolution) {
+            this.satelliteRevolution = satelliteRevolution;
+        }
+
+        /** Get the number of satellite revolutions to use for converting osculating to mean elements.
+         *  @return number of satellite revolutions to use for converting osculating to mean elements
+         */
+        public int getSatelliteRevolution() {
+            return satelliteRevolution;
+        }
+
+        /** Set the osculating parameters flag.
+         * @param initialIsOsculating if true, the initial state is provided in osculating elements
+         */
+        public void setInitialIsOsculating(final boolean initialIsOsculating) {
+            this.initialIsOsculating = initialIsOsculating;
+        }
+
+        /** Check if the initial state is provided in osculating elements.
+         * @return true if initial state is provided in osculating elements
+         */
+        public boolean initialIsOsculating() {
+            return initialIsOsculating;
         }
 
         /** Create a reference numerical propagator to convert orbit to mean elements.
@@ -401,6 +493,91 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             return propagator;
         }
 
+        /** Replace the instance with a data transfer object for serialization.
+         * @return data transfer object that will be serialized
+         * @exception NotSerializableException if one of the force models cannot be serialized
+         */
+        private Object writeReplace() throws NotSerializableException {
+
+            // Check the force models can be serialized
+            final DSSTForceModel[] serializableorceModels = new DSSTForceModel[forceModels.size()];
+            for (int i = 0; i < serializableorceModels.length; ++i) {
+                final DSSTForceModel forceModel = forceModels.get(i);
+                if (forceModel instanceof Serializable) {
+                    serializableorceModels[i] = forceModel;
+                } else {
+                    throw new NotSerializableException(forceModel.getClass().getName());
+                }
+            }
+            return new DataTransferObject(getReferenceDate(), getMu(), getAttitudeProvider(), getFrame(),
+                                          initialIsOsculating, serializableorceModels, satelliteRevolution);
+        }
+
+        /** Internal class used only for serialization. */
+        private static class DataTransferObject implements Serializable {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 20130621L;
+
+            /** Reference date. */
+            private final AbsoluteDate referenceDate;
+
+            /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+            private final double mu;
+
+            /** Attitude provider. */
+            private final AttitudeProvider attitudeProvider;
+
+            /** Inertial frame. */
+            private final Frame frame;
+
+            /** Flag specifying whether the initial orbital state is given with osculating elements. */
+            private final boolean initialIsOsculating;
+
+            /** Force models to use for short periodic terms computation. */
+            private final DSSTForceModel[] forceModels;
+
+            /** Number of satellite revolutions in the averaging interval. */
+            private final int satelliteRevolution;
+
+            /** Simple constructor.
+             * @param referenceDate reference date
+             * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+             * @param attitudeProvider attitude provider
+             * @param frame inertial frame
+             * @param initialIsOsculating if true, initial orbital state is given with osculating elements
+             * @param forceModels force models to use for short periodic terms computation
+             * @param satelliteRevolution number of satellite revolutions in the averaging interval
+             */
+            public DataTransferObject(final AbsoluteDate referenceDate, final double mu,
+                                      final AttitudeProvider attitudeProvider, final Frame frame,
+                                      final boolean initialIsOsculating,
+                                      final DSSTForceModel[] forceModels, final int satelliteRevolution) {
+                this.referenceDate       = referenceDate;
+                this.mu                  = mu;
+                this.attitudeProvider    = attitudeProvider;
+                this.frame               = frame;
+                this.initialIsOsculating = initialIsOsculating;
+                this.forceModels         = forceModels;
+                this.satelliteRevolution = satelliteRevolution;
+            }
+
+            /** Replace the deserialized data transfer object with a {@link MeanPlusShortPeriodicMapper}.
+             * @return replacement {@link MeanPlusShortPeriodicMapper}
+             */
+            private Object readResolve() {
+                final MeanPlusShortPeriodicMapper mapper =
+                        new MeanPlusShortPeriodicMapper(referenceDate, mu, attitudeProvider, frame);
+                for (final DSSTForceModel forceModel : forceModels) {
+                    mapper.addForceModel(forceModel);
+                }
+                mapper.setSatelliteRevolution(satelliteRevolution);
+                mapper.setInitialIsOsculating(initialIsOsculating);
+                return mapper;
+            }
+
+        }
+
     }
 
     /** {@inheritDoc} */
@@ -420,7 +597,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         public Main(final AbstractIntegrator integrator) {
             yDot = new double[7];
 
-            for (final DSSTForceModel forceModel : forceModels) {
+            for (final DSSTForceModel forceModel : mapper.getForceModels()) {
                 final EventDetector[] modelDetectors = forceModel.getEventsDetectors();
                 if (modelDetectors != null) {
                     for (final EventDetector detector : modelDetectors) {
@@ -438,14 +615,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
 
             // initialize all perturbing forces
-            for (final DSSTForceModel force : forceModels) {
+            for (final DSSTForceModel force : mapper.getForceModels()) {
                 force.initializeStep(aux);
             }
 
             Arrays.fill(yDot, 0.0);
 
             // compute the contributions of all perturbing forces
-            for (final DSSTForceModel forceModel : forceModels) {
+            for (final DSSTForceModel forceModel : mapper.getForceModels()) {
                 final double[] daidt = forceModel.getMeanElementRate(state);
                 for (int i = 0; i < daidt.length; i++) {
                     yDot[i] += daidt[i];
