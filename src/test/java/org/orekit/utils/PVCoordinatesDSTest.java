@@ -83,6 +83,77 @@ public class PVCoordinatesDSTest {
     }
 
     @Test
+    public void testGetMomentum() {
+        //setup
+        DerivativeStructure oneDS = new DerivativeStructure(1, 1, 1);
+        DerivativeStructure zeroDS = new DerivativeStructure(1, 1, 0);
+        FieldVector3D<DerivativeStructure> zero = new FieldVector3D<DerivativeStructure>(
+                zeroDS, zeroDS, zeroDS);
+        FieldVector3D<DerivativeStructure> i = new FieldVector3D<DerivativeStructure>(
+                oneDS, zeroDS, zeroDS);
+        FieldVector3D<DerivativeStructure> j = new FieldVector3D<DerivativeStructure>(
+                zeroDS, oneDS, zeroDS);
+        FieldVector3D<DerivativeStructure> k = new FieldVector3D<DerivativeStructure>(
+                zeroDS, zeroDS, oneDS);
+        FieldVector3D<DerivativeStructure> p = new FieldVector3D<DerivativeStructure>(
+                oneDS,
+                new DerivativeStructure(1, 1, -2),
+                new DerivativeStructure(1, 1, 3));
+        FieldVector3D<DerivativeStructure> v = new FieldVector3D<DerivativeStructure>(
+                new DerivativeStructure(1, 1, -9),
+                new DerivativeStructure(1, 1, 8),
+                new DerivativeStructure(1, 1, -7));
+
+        //action + verify
+        Assert.assertEquals(
+                new FieldPVCoordinates<DerivativeStructure>(p, v).getMomentum(),
+                p.crossProduct(v));
+        //check simple cases
+        Assert.assertEquals(
+                new FieldPVCoordinates<DerivativeStructure>(i, i.scalarMultiply(-1)).getMomentum(),
+                zero);
+        Assert.assertEquals(
+                new FieldPVCoordinates<DerivativeStructure>(i, j).getMomentum(),
+                k);
+    }
+
+    @Test
+    public void testGetAngularVelocity() {
+        //setup
+        DerivativeStructure oneDS = new DerivativeStructure(1, 1, 1);
+        DerivativeStructure zeroDS = new DerivativeStructure(1, 1, 0);
+        FieldVector3D<DerivativeStructure> zero = new FieldVector3D<DerivativeStructure>(
+                zeroDS, zeroDS, zeroDS);
+        FieldVector3D<DerivativeStructure> i = new FieldVector3D<DerivativeStructure>(
+                oneDS, zeroDS, zeroDS);
+        FieldVector3D<DerivativeStructure> j = new FieldVector3D<DerivativeStructure>(
+                zeroDS, oneDS, zeroDS);
+        FieldVector3D<DerivativeStructure> k = new FieldVector3D<DerivativeStructure>(
+                zeroDS, zeroDS, oneDS);
+        FieldVector3D<DerivativeStructure> p = new FieldVector3D<DerivativeStructure>(
+                oneDS,
+                new DerivativeStructure(1, 1, -2),
+                new DerivativeStructure(1, 1, 3));
+        FieldVector3D<DerivativeStructure> v = new FieldVector3D<DerivativeStructure>(
+                new DerivativeStructure(1, 1, -9),
+                new DerivativeStructure(1, 1, 8),
+                new DerivativeStructure(1, 1, -7));
+
+        //action + verify
+        Assert.assertEquals(
+                new FieldPVCoordinates<DerivativeStructure>(p, v).getAngularVelocity(),
+                p.crossProduct(v).scalarMultiply(p.getNormSq().reciprocal()));
+        //check extra simple cases
+        Assert.assertEquals(
+                new FieldPVCoordinates<DerivativeStructure>(i, i.scalarMultiply(-1)).getAngularVelocity(),
+                zero);
+        Assert.assertEquals(
+                new FieldPVCoordinates<DerivativeStructure>(i.scalarMultiply(2), j).getAngularVelocity(),
+                k.scalarMultiply(0.5));
+    }
+
+
+    @Test
     public void testShift() {
         FieldVector3D<DerivativeStructure> p1 = createVector(1, 0.1, 10, 6);
         FieldVector3D<DerivativeStructure> p2 = createVector(2, 0.2, 20, 6);
