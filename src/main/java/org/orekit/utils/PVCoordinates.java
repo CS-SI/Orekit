@@ -261,6 +261,20 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         return Vector3D.crossProduct(position, velocity);
     }
 
+    /**
+     * Get the angular velocity (spin) of this point as seen from the origin.
+     * <p/>
+     * The angular velocity vector is parallel to the {@link #getMomentum() angular
+     * momentum} and is computed by &omega; = p &times; v / ||p||<sup>2</sup>
+     *
+     * @return the angular velocity vector
+     * @see <a href="http://en.wikipedia.org/wiki/Angular_velocity">Angular Velocity on
+     *      Wikipedia</a>
+     */
+    public Vector3D getAngularVelocity() {
+        return this.getMomentum().scalarMultiply(1.0 / this.getPosition().getNormSq());
+    }
+
     /** Get the opposite of the instance.
      * @return a new position-velocity which is opposite to the instance
      */

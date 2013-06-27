@@ -165,6 +165,42 @@ public class PVCoordinatesTest {
 
     }
 
+    @Test
+    public void testGetMomentum() {
+        //setup
+        Vector3D p = new Vector3D(1, -2, 3);
+        Vector3D v = new Vector3D(-9, 8, -7);
+
+        //action + verify
+        Assert.assertEquals(new PVCoordinates(p, v).getMomentum(), p.crossProduct(v));
+        //check simple cases
+        Assert.assertEquals(
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.MINUS_I).getMomentum(),
+                Vector3D.ZERO);
+        Assert.assertEquals(
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_J).getMomentum(),
+                Vector3D.PLUS_K);
+    }
+
+    @Test
+    public void testGetAngularVelocity() {
+        //setup
+        Vector3D p = new Vector3D(1, -2, 3);
+        Vector3D v = new Vector3D(-9, 8, -7);
+
+        //action + verify
+        Assert.assertEquals(
+                new PVCoordinates(p, v).getAngularVelocity(),
+                p.crossProduct(v).scalarMultiply(1.0 / p.getNormSq()));
+        //check extra simple cases
+        Assert.assertEquals(
+                new PVCoordinates(Vector3D.PLUS_I, Vector3D.MINUS_I).getAngularVelocity(),
+                Vector3D.ZERO);
+        Assert.assertEquals(
+                new PVCoordinates(new Vector3D(2, 0, 0), Vector3D.PLUS_J).getAngularVelocity(),
+                Vector3D.PLUS_K.scalarMultiply(0.5));
+    }
+
     private PolynomialFunction randomPolynomial(int degree, Random random) {
         double[] coeff = new double[ 1 + degree];
         for (int j = 0; j < degree; ++j) {
