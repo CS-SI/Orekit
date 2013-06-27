@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="evan" type="add" >
+        Added getAngularVelocity() to PVCoordinates.
+      </action>
       <action dev="luc" type="add" >
         Added back serialization for some ephemerides produced by integration-based propagators.
         The ephemerides produced by NumericalPropagator are always serializable, and the ones
