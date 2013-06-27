@@ -16,6 +16,11 @@
  */
 package org.orekit.propagation.integration;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +54,8 @@ import org.orekit.utils.PVCoordinates;
  * cumbersome tight links with the integrator.
  * </p>
  * <p>
- * Another use case is for persistence, as this class is serializable.
+ * Another use case is persistence, as this class is one of the few propagators
+ * to be serializable.
  * </p>
  * <p>
  * As this class implements the {@link org.orekit.propagation.Propagator Propagator}
@@ -67,7 +73,10 @@ import org.orekit.utils.PVCoordinates;
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class IntegratedEphemeris
-    extends AbstractAnalyticalPropagator implements BoundedPropagator {
+    extends AbstractAnalyticalPropagator implements BoundedPropagator, Serializable  {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20130613L;
 
     /** Mapper between raw double components and spacecraft state. */
     private final StateMapper mapper;
@@ -225,6 +234,40 @@ public class IntegratedEphemeris
         return updateAdditionalStates(basicPropagate(getMinDate()));
     }
 
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
+     */
+    private Object writeReplace() throws NotSerializableException {
+
+        // unmanaged additional states
+        final String[]   unmanagedNames  = new String[unmanaged.size()];
+        final double[][] unmanagedValues = new double[unmanaged.size()][];
+        int i = 0;
+        for (Map.Entry<String, double[]> entry : unmanaged.entrySet()) {
+            unmanagedNames[i]  = entry.getKey();
+            unmanagedValues[i] = entry.getValue();
+            ++i;
+        }
+
+        // managed states providers
+        final List<AdditionalStateProvider> serializableProviders = new ArrayList<AdditionalStateProvider>();
+        final List<String> equationNames = new ArrayList<String>();
+        for (final AdditionalStateProvider provider : getAdditionalStateProviders()) {
+            if (provider instanceof LocalProvider) {
+                equationNames.add(((LocalProvider) provider).getName());
+            } else if (provider instanceof Serializable) {
+                serializableProviders.add(provider);
+            }
+        }
+
+        return new DataTransferObject(startDate, minDate, maxDate, mapper, model,
+                                      unmanagedNames, unmanagedValues,
+                                      serializableProviders.toArray(new AdditionalStateProvider[serializableProviders.size()]),
+                                      equationNames.toArray(new String[equationNames.size()]));
+
+    }
+
     /** Local provider for additional state data. */
     private class LocalProvider implements AdditionalStateProvider {
 
@@ -258,6 +301,85 @@ public class IntegratedEphemeris
             // extract the part of the interpolated array corresponding to the additional state
             return model.getInterpolatedSecondaryState(index);
 
+        }
+
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20130621L;
+
+        /** Mapper between raw double components and spacecraft state. */
+        private final StateMapper mapper;
+
+        /** Start date of the integration (can be min or max). */
+        private final AbsoluteDate startDate;
+
+        /** First date of the range. */
+        private final AbsoluteDate minDate;
+
+        /** Last date of the range. */
+        private final AbsoluteDate maxDate;
+
+        /** Underlying raw mathematical model. */
+        private final ContinuousOutputModel model;
+
+        /** Names of unmanaged additional states that must be simply copied. */
+        private final String[] unmanagedNames;
+
+        /** Values of unmanaged additional states that must be simply copied. */
+        private final double[][] unmanagedValues;
+
+        /** Names of additional equations. */
+        private final String[] equations;
+
+        /** Providers for pre-integrated states. */
+        private final AdditionalStateProvider[] providers;
+
+        /** Simple constructor.
+         * @param startDate Start date of the integration (can be minDate or maxDate)
+         * @param minDate first date of the range
+         * @param maxDate last date of the range
+         * @param mapper mapper between raw double components and spacecraft state
+         * @param model underlying raw mathematical model
+         * @param unmanagedNames names of unmanaged additional states that must be simply copied
+         * @param unmanagedValues values of unmanaged additional states that must be simply copied
+         * @param providers providers for pre-integrated states
+         * @param equations names of additional equations
+         */
+        public DataTransferObject(final AbsoluteDate startDate,
+                                  final AbsoluteDate minDate, final AbsoluteDate maxDate,
+                                  final StateMapper mapper, final ContinuousOutputModel model,
+                                  final String[] unmanagedNames, final double[][] unmanagedValues,
+                                  final AdditionalStateProvider[] providers,
+                                  final String[] equations) {
+            this.startDate       = startDate;
+            this.minDate         = minDate;
+            this.maxDate         = maxDate;
+            this.mapper          = mapper;
+            this.model           = model;
+            this.unmanagedNames  = unmanagedNames;
+            this.unmanagedValues = unmanagedValues;
+            this.providers       = providers;
+            this.equations       = equations;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link IntegratedEphemeris}.
+         * @return replacement {@link IntegratedEphemeris}
+         */
+        private Object readResolve() {
+            try {
+                final Map<String, double[]> unmanaged = new HashMap<String, double[]>(unmanagedNames.length);
+                for (int i = 0; i < unmanagedNames.length; ++i) {
+                    unmanaged.put(unmanagedNames[i], unmanagedValues[i]);
+                }
+                return new IntegratedEphemeris(startDate, minDate, maxDate, mapper, model,
+                                               unmanaged, Arrays.asList(providers), equations);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
         }
 
     }
