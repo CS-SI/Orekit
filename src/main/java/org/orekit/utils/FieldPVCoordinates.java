@@ -376,6 +376,21 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         return FieldVector3D.crossProduct(position, velocity);
     }
 
+    /**
+     * Get the angular velocity (spin) of this point as seen from the origin.
+     * <p/>
+     * The angular velocity vector is parallel to the {@link #getMomentum() angular
+     * momentum} and is computed by &omega; = p &times; v / ||p||<sup>2</sup>
+     *
+     * @return the angular velocity vector
+     * @see <a href="http://en.wikipedia.org/wiki/Angular_velocity">Angular Velocity on
+     *      Wikipedia</a>
+     */
+    public FieldVector3D<T> getAngularVelocity() {
+        return this.getMomentum().scalarMultiply(
+                this.getPosition().getNormSq().reciprocal());
+    }
+
     /** Get the opposite of the instance.
      * @return a new position-velocity which is opposite to the instance
      */

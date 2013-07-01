@@ -16,6 +16,8 @@
  */
 package org.orekit.propagation.numerical;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -284,7 +286,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** Internal mapper using directly osculating parameters. */
-    private static class OsculatingMapper extends StateMapper {
+    private static class OsculatingMapper extends StateMapper implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20130621L;
 
         /** Simple constructor.
          * <p>
@@ -327,6 +332,66 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         public void mapStateToArray(final SpacecraftState state, final double[] y) {
             getOrbitType().mapOrbitToArray(state.getOrbit(), getPositionAngleType(), y);
             y[6] = state.getMass();
+        }
+
+        /** Replace the instance with a data transfer object for serialization.
+         * @return data transfer object that will be serialized
+         * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
+         */
+        private Object writeReplace() throws NotSerializableException {
+            return new DataTransferObject(getReferenceDate(), getMu(), getOrbitType(),
+                                          getPositionAngleType(), getAttitudeProvider(), getFrame());
+        }
+
+        /** Internal class used only for serialization. */
+        private static class DataTransferObject implements Serializable {
+
+            /** Serializable UID. */
+            private static final long serialVersionUID = 20130621L;
+
+            /** Reference date. */
+            private final AbsoluteDate referenceDate;
+
+            /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
+            private final double mu;
+
+            /** Orbit type to use for mapping. */
+            private final OrbitType orbitType;
+
+            /** Angle type to use for propagation. */
+            private final PositionAngle positionAngleType;
+
+            /** Attitude provider. */
+            private final AttitudeProvider attitudeProvider;
+
+            /** Inertial frame. */
+            private final Frame frame;
+
+            /** Simple constructor.
+             * @param referenceDate reference date
+             * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+             * @param orbitType orbit type to use for mapping
+             * @param positionAngleType angle type to use for propagation
+             * @param attitudeProvider attitude provider
+             * @param frame inertial frame
+             */
+            public DataTransferObject(final AbsoluteDate referenceDate, final double mu,
+                                      final OrbitType orbitType, final PositionAngle positionAngleType,
+                                      final AttitudeProvider attitudeProvider, final Frame frame) {
+                this.referenceDate     = referenceDate;
+                this.mu                = mu;
+                this.orbitType         = orbitType;
+                this.positionAngleType = positionAngleType;
+                this.attitudeProvider  = attitudeProvider;
+                this.frame             = frame;
+            }
+
+            /** Replace the deserialized data transfer object with a {@link OsculatingMapper}.
+             * @return replacement {@link OsculatingMapper}
+             */
+            private Object readResolve() {
+                return new OsculatingMapper(referenceDate, mu, orbitType, positionAngleType, attitudeProvider, frame);
+            }
         }
 
     }

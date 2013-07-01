@@ -16,6 +16,13 @@
  */
 package org.orekit.propagation.integration;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -34,11 +41,15 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.JacobiansMapper;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.numerical.PartialDerivativesEquations;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
+import org.orekit.propagation.semianalytical.dsst.DSSTPropagator;
+import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -143,6 +154,103 @@ public class IntegratedEphemerisTest {
         //action
         Assert.assertNotNull(ephemeris.getFrame());
         Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+    }
+
+    @Test
+    public void testSerializationNumerical() throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
+        numericalPropagator.setEphemerisMode();
+        numericalPropagator.setInitialState(new SpacecraftState(initialOrbit));
+        numericalPropagator.propagate(finalDate);
+        IntegratedEphemeris ephemeris = (IntegratedEphemeris) numericalPropagator.getGeneratedEphemeris();
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(ephemeris);
+
+        Assert.assertTrue(bos.size() > 192000);
+        Assert.assertTrue(bos.size() < 193000);
+
+        Assert.assertNotNull(ephemeris.getFrame());
+        Assert.assertSame(ephemeris.getFrame(), numericalPropagator.getFrame());
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        IntegratedEphemeris deserialized  = (IntegratedEphemeris) ois.readObject();
+        Assert.assertEquals(deserialized.getMinDate(), deserialized.getMinDate());
+        Assert.assertEquals(deserialized.getMaxDate(), deserialized.getMaxDate());
+
+    }
+
+    @Test
+    public void testSerializationDSST() throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
+        final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(10, Constants.JULIAN_DAY, tol[0], tol[1]);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator);
+        dsstProp.setInitialState(new SpacecraftState(initialOrbit), false);
+        dsstProp.setEphemerisMode();
+        dsstProp.propagate(finalDate);
+        IntegratedEphemeris ephemeris = (IntegratedEphemeris) dsstProp.getGeneratedEphemeris();
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(ephemeris);
+
+        Assert.assertTrue(bos.size() > 8000);
+        Assert.assertTrue(bos.size() < 9000);
+
+        Assert.assertNotNull(ephemeris.getFrame());
+        Assert.assertSame(ephemeris.getFrame(), dsstProp.getFrame());
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        IntegratedEphemeris deserialized  = (IntegratedEphemeris) ois.readObject();
+        Assert.assertEquals(deserialized.getMinDate(), deserialized.getMinDate());
+        Assert.assertEquals(deserialized.getMaxDate(), deserialized.getMaxDate());
+
+    }
+
+    @Test(expected=NotSerializableException.class)
+    public void testSerializationDSSTNotSerializableForceModel() throws PropagationException, OrekitException, IOException, ClassNotFoundException {
+
+        AbsoluteDate finalDate = initialOrbit.getDate().shiftedBy(Constants.JULIAN_DAY);
+        final double[][] tol = DSSTPropagator.tolerances(1.0, initialOrbit);
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(10, Constants.JULIAN_DAY, tol[0], tol[1]);
+        DSSTPropagator dsstProp = new DSSTPropagator(integrator);
+        dsstProp.setInitialState(new SpacecraftState(initialOrbit), false);
+
+        // set up a dummy not serializable force model
+        dsstProp.addForceModel(new DSSTForceModel() {
+
+            public void initializeStep(AuxiliaryElements aux) {
+            }
+
+            public void initialize(AuxiliaryElements aux) {
+            }
+
+            public double[] getShortPeriodicVariations(AbsoluteDate date,
+                                                       double[] meanElements) {
+                return new double[6];
+            }
+
+            public double[] getMeanElementRate(SpacecraftState state) {
+                return new double[6];
+            }
+
+            public EventDetector[] getEventsDetectors() {
+                return null;
+            }
+        });
+
+        dsstProp.setEphemerisMode();
+        dsstProp.propagate(finalDate);
+        IntegratedEphemeris ephemeris = (IntegratedEphemeris) dsstProp.getGeneratedEphemeris();
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(ephemeris);
+
     }
 
     @Before
