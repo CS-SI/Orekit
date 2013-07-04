@@ -33,56 +33,36 @@
 
   box "User application" #F3EDF7
     participant "Main" as U
-    participant "Step handler" as H
     participant "Display" as D
   end box
 
   participant Propagator
-  participant StepInterpolator
 
   activate U
-  U                    ->           H          : create
-    activate H
-    deactivate H
-  U                    ->           Propagator : setMasterMode
+  U                    ->           Propagator : setSlaveMode
     activate Propagator
-    Propagator         ->           H          : grab
-      activate H
-      deactivate H
     deactivate Propagator
   U                    ->           Propagator : propagate
     activate Propagator
-    Propagator           ->           H : init
-      activate H
-      deactivate H
-    Propagator           ->           Propagator : compute one step
-      activate Propagator
-      Propagator           ->           StepInterpolator : update
-        activate StepInterpolator
-        Propagator           ->           H : handleStep
-          activate H
-          H           ->           StepInterpolator : getInterpolatedStep
-          H           ->           D : display current state
-            activate D
-            deactivate D
-          deactivate H
-        deactivate StepInterpolator
-      deactivate Propagator
-    Propagator           ->           Propagator : compute one step
-      activate Propagator
-      Propagator           ->           StepInterpolator : update
-        activate StepInterpolator
-        Propagator           ->           H : handleStep
-          activate H
-          H           ->           StepInterpolator : getInterpolatedStep
-          H           ->           D : display current state
-            activate D
-            deactivate D
-          deactivate H
-        deactivate StepInterpolator
-      deactivate Propagator
-    Propagator           ->           U : final state 
+    Propagator           ->         U : current state 
     deactivate Propagator
+  U                    ->           D : display current state
+    activate D
+    deactivate D
+  U                    ->           Propagator : propagate
+    activate Propagator
+    Propagator           ->         U : current state 
+    deactivate Propagator
+  U                    ->           D : display current state
+    activate D
+    deactivate D
+  U                    ->           Propagator : propagate
+    activate Propagator
+    Propagator           ->         U : current state 
+    deactivate Propagator
+  U                    ->           D : display current state
+    activate D
+    deactivate D
   deactivate U
 
 @enduml

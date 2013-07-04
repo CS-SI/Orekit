@@ -33,17 +33,19 @@ Propagation
   Depending on the needs of the calling application, all propagators can be used in
   different modes:
  
-   * slave mode: This mode is used when the user needs only the final orbit at the target 
-  time. The (slave) propagator is passive: it computes this result and returns it to the 
-  calling (master) application, without any intermediate feedback. In that case the events 
-  detection is made but the <step handler> does nothing, actions are managed directly by the
-  calling application.
+   * slave mode: This mode is used when the user wants to completely drive evolution of
+  time with his own loop. The (slave) propagator is passive: it computes this result and
+  returns it to the  calling (master) application, without any intermediate feedback.
+  Users often use this mode in loops, each target propagation time representing the next
+  small time step. In that case the events  detection is made but the <step handler> does
+  nothing, actions are managed directly by the calling application.
 
 
    * master mode: This mode is used when the user needs to have some custom function 
   called at the end of each finalized step during integration. The (master) propagator 
   is active: the integration loop calls the (slave) application callback methods at each 
-  finalized step, through the <step handler>.
+  finalized step, through the <step handler>. Users often use this mode with only a single
+  call to propagation with the target propagation time representing the end final date.
 
 
    * ephemeris generation mode: This mode is used when the user needs random access 
@@ -69,6 +71,17 @@ Propagation
   called when propagation is done in master mode.
 
 [../images/design/master-mode-sequence-diagram.png]
+
+  The following sequence diagram shows how user can handle themselves time when
+  propagation is done in slave mode, with a loop managed at user level.
+
+[../images/design/slave-mode-sequence-diagram.png]
+
+  The following sequence diagram shows how user can use ephemeris generation mode to
+  do a two phases propagation, one first phase to generate the epehemeris, and a second
+  phase using the generated ephemeris.
+
+[../images/design/ephemeris-generation-mode-sequence-diagram.png]
 
 ** Events management
 
