@@ -50,6 +50,7 @@ import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.GTODProvider;
+import org.orekit.frames.InterpolatingTransformProvider;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -112,12 +113,14 @@ public class Phasing {
             System.err.println(ioe.getLocalizedMessage());
             System.exit(1);
         } catch (IllegalArgumentException iae) {
+            iae.printStackTrace(System.err);
             System.err.println(iae.getLocalizedMessage());
             System.exit(1);
         } catch (ParseException pe) {
             System.err.println(pe.getLocalizedMessage());
             System.exit(1);
         } catch (OrekitException oe) {
+            oe.printStackTrace(System.err);
             System.err.println(oe.getLocalizedMessage());
             System.exit(1);
         }
@@ -148,7 +151,7 @@ public class Phasing {
 
     public Phasing() throws IOException, ParseException, OrekitException {
         Frame gtodFrame = FramesFactory.getGTOD(false);
-        gtod         = (GTODProvider) gtodFrame.getTransformProvider();
+        gtod         = (GTODProvider) (((InterpolatingTransformProvider) gtodFrame.getTransformProvider()).getRawProvider());
         earth        = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                             Constants.WGS84_EARTH_FLATTENING,
                                             gtodFrame);
