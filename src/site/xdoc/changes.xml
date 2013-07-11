@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed non-bracketing exception while converting Cartesian points very close to equator into geodetic
+        coordinates. Fixes issue #141.
+      </action>
       <action dev="evan" type="add" >
         Added getAngularVelocity() to PVCoordinates.
       </action>

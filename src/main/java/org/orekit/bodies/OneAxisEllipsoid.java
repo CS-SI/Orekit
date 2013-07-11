@@ -277,9 +277,11 @@ public class OneAxisEllipsoid implements BodyShape {
             if (e2 >= angularThreshold) {
                 // search the nadir point on the major axis,
                 // somewhere within the evolute, i.e. between 0 and ae * e2
+                // we use a slight margin factor 1.1 to make sure we properly bracket
+                // the solution even for points very close to major axis
                 final BracketedUnivariateSolver<UnivariateFunction> solver =
                         new BracketingNthOrderBrentSolver(angularThreshold * ap, 5);
-                rho = solver.solve(100, finder, 0, ae * e2);
+                rho = solver.solve(100, finder, 0, 1.1 * ae * e2);
             } else {
                 // the evolute is almost reduced to the central point,
                 // the ellipsoid is almost a sphere
