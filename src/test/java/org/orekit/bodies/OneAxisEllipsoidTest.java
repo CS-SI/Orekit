@@ -35,6 +35,8 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.GTODProvider;
+import org.orekit.frames.InterpolatingTransformProvider;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
@@ -241,6 +243,19 @@ public class OneAxisEllipsoidTest {
         Frame frame = FramesFactory.getITRF2005(true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
         Vector3D point     = new Vector3D(1.0e15, 2.0e15, -1.0e12);
+        GeodeticPoint gp = model.transform(point, frame, date);
+        Vector3D rebuilt = model.transform(gp);
+        Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());
+    }
+
+    @Test
+    public void testIssue141() throws OrekitException {
+        AbsoluteDate date = new AbsoluteDate("2002-03-06T20:50:20.44188731559965033", TimeScalesFactory.getUTC());
+        Frame frame = FramesFactory.getGTOD(false);
+        OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      frame);
+        Vector3D point     = new Vector3D(-6838696.282102453, -2148321.403361013, -0.011907944179711194);
         GeodeticPoint gp = model.transform(point, frame, date);
         Vector3D rebuilt = model.transform(gp);
         Assert.assertEquals(0.0, rebuilt.distance(point), 1.0e-15 * point.getNorm());

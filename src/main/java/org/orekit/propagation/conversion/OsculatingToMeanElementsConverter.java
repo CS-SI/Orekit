@@ -24,7 +24,15 @@ import org.orekit.propagation.SpacecraftState;
  *  <p>
  *  As this process depends on the force models used to average the orbit,
  *  a {@link Propagator} is given as input. The force models used will be
- *  those contained into the propagator.
+ *  those contained into the propagator. This propagator <em>must</em>
+ *  support its initial state to be reset, and this initial state <em>must</em>
+ *  represent some mean value. This implies that this method will not work
+ *  with {@link org.orekit.propagation.analytical.tle.TLEPropagator TLE propagators}
+ *  because their initial state cannot be reset, and it won't work either with
+ *  {@link org.orekit.propagation.analytical.EcksteinHechlerPropagator Eckstein-Hechler
+ *  propagator} as their initial state is osculating and not mean. As of 6.0, this
+ *  works mainly for {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator
+ *  DSST propagator}.
  *  </p>
  *  @author rdicosta
  *  @author Pascal Parraud
