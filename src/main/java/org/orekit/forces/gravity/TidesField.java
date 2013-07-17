@@ -86,6 +86,15 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     /** Tide generating bodies (typically Sun and Moon). */
     private final CelestialBody[] bodies;
 
+    /** A0 coefficient for frequency dependent correction on C20. */
+    private final double a0;
+
+    /** A1 coefficient for frequency dependent correction on C21/S21. */
+    private final double a1;
+
+    /** A2 coefficient for frequency dependent correction on C22/S22. */
+    private final double a2;
+
     /** Date offset of cached coefficients. */
     private double cachedOffset;
 
@@ -128,6 +137,9 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         this.mu                = mu;
         this.centralTideSystem = centralTideSystem;
         this.bodies            = bodies;
+        this.a0                =  1.0 / (ae * FastMath.sqrt(4 * FastMath.PI));
+        this.a1                = -1.0 / (ae * FastMath.sqrt(8 * FastMath.PI));
+        this.a2                = -a1;
 
         // load Love numbers
         this.loveReal          = buildTriangularArray(MAX_LOVE_DEGREE);
@@ -255,14 +267,12 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         }
 
         // step 2: frequency dependent corrections
-        // equations 6.8a and 6.8b in IERS conventions 2010
-        // TODO: compute step 2
+        frequencyDependentPart();
 
         if (centralTideSystem == TideSystem.ZERO_TIDE) {
             // step 3: remove permanent tide which is already considered
             // in the central body gravity field
-            // equations 6.13 and 6.14 in IERS conventions 2010
-            // TODO: compute step 3
+            removePermanentTide();
         }
 
     }
@@ -274,6 +284,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      */
     private void loadLoveNumbers(final String name) throws OrekitException {
         InputStream stream = null;
+        BufferedReader reader = null;
         try {
 
             stream = TidesField.class.getResourceAsStream(name);
@@ -282,7 +293,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             }
 
             // setup the reader
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
             String line = reader.readLine().trim();
             int lineNumber = 1;
 
@@ -321,6 +332,9 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             try {
                 if (stream != null) {
                     stream.close();
+                }
+                if (reader != null) {
+                    reader.close();
                 }
             } catch (IOException ioe) {
                 // ignored here
@@ -417,6 +431,18 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
         }
 
+    }
+
+    /** Update coefficients applying frequency dependent step.
+     */
+    private void frequencyDependentPart() {
+        // TODO implement equations 6.8a and 6.8b in IERS conventions 2010
+    }
+
+    /** Remove the permanent tide already counted in zero-tide central gravity fields.
+     */
+    private void removePermanentTide() {
+        // TODO implement equations 6.13 and 6.14 in IERS conventions 2010
     }
 
     /** Create a triangular array.
