@@ -1,4 +1,4 @@
-# Extract from IERS conventions 2010 (table 6.5c)
+# values extracted from IERS conventions 2003 table 6.3c
 
 Scale   δkf  1.0
 Scale   Amp  1.0e-12

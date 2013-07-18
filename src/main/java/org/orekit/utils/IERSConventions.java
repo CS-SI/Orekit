@@ -51,6 +51,24 @@ public enum IERSConventions {
             return IERS_BASE + "2003/tab6.1.txt";
         }
 
+        /** {@inheritDoc} */
+        public String getK20FrequencyDependenceModel() {
+            // beware that in the conventions, the tables are given in the order k21, k20, k22
+            return IERS_BASE + "2003/tab6.3b.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getK21FrequencyDependenceModel() {
+            // beware that in the conventions, the tables are given in the order k21, k20, k22
+            return IERS_BASE + "2003/tab6.3a.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getK22FrequencyDependenceModel() {
+            // beware that in the conventions, the tables are given in the order k21, k20, k22
+            return IERS_BASE + "2003/tab6.3c.txt";
+        }
+
     },
 
     /** Constant for IERS 2010 conventions. */
@@ -79,6 +97,24 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         public String getLoveNumbersModel() {
             return IERS_BASE + "2010/tab6.3.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getK20FrequencyDependenceModel() {
+            // beware that in the conventions, the tables are given in the order k21, k20, k22
+            return IERS_BASE + "2010/tab6.5b.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getK21FrequencyDependenceModel() {
+            // beware that in the conventions, the tables are given in the order k21, k20, k22
+            return IERS_BASE + "2010/tab6.5a.txt";
+        }
+
+        /** {@inheritDoc} */
+        public String getK22FrequencyDependenceModel() {
+            // beware that in the conventions, the tables are given in the order k21, k20, k22
+            return IERS_BASE + "2010/tab6.5c.txt";
         }
 
     };
@@ -110,5 +146,20 @@ public enum IERSConventions {
      * @return table resource name for the Love numbers
      */
     public abstract String getLoveNumbersModel();
+
+    /** Get the table resource name for the k20 frequency dependence in tides computation.
+     * @return table resource name for the k20 frequency dependence in tides computation.
+     */
+    public abstract String getK20FrequencyDependenceModel();
+
+    /** Get the table resource name for the k21 frequency dependence in tides computation.
+     * @return table resource name for the k21 frequency dependence in tides computation.
+     */
+    public abstract String getK21FrequencyDependenceModel();
+
+    /** Get the table resource name for the k22 frequency dependence in tides computation.
+     * @return table resource name for the k22 frequency dependence in tides computation.
+     */
+    public abstract String getK22FrequencyDependenceModel();
 
 }
