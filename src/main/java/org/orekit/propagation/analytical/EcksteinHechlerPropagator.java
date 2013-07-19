@@ -297,11 +297,11 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
 
             // compute mean parameters
             // transform into circular adapted parameters used by the Eckstein-Hechler model
-            computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(initialOrbit));
-
             resetInitialState(new SpacecraftState(initialOrbit,
-                                               attitudeProv.getAttitude(getPvProvider(), initialOrbit.getDate(), initialOrbit.getFrame()),
-                                               mass));
+                                                  attitudeProv.getAttitude(initialOrbit,
+                                                                           initialOrbit.getDate(),
+                                                                           initialOrbit.getFrame()),
+                                                  mass));
 
         } catch (OrekitException oe) {
             throw new PropagationException(oe);
@@ -313,7 +313,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
         throws PropagationException {
         super.resetInitialState(state);
         this.mass = state.getMass();
-        computeMeanParameters(new CircularOrbit(state.getOrbit()));
+        computeMeanParameters((CircularOrbit) OrbitType.CIRCULAR.convertType(state.getOrbit()));
     }
 
     /** Compute mean parameters according to the Eckstein-Hechler analytical model.
