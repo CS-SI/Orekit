@@ -1,6 +1,5 @@
 # This file is intentionally corrupted for test purposes
 
-Scale   δkf  1.0e-5
 Scale   Amp  1.0e-12
 
 Name   deg/hr    Doodson  τ  s  h  p  N' ps   l  l' F  D  Ω  δkfR  δkfI     Amp.    Amp.

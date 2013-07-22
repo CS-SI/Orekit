@@ -168,13 +168,11 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         loadLoveNumbers(nameLove);
 
         // header coefficients lines have the form:
-        // Scale   δkf  1.0e-5
         // Scale   Amp  1.0e-12
         final String  initialBlanks            = "^\\s*";
         final String  integerRegexp            = "\\s+([-+]?\\d+)";
         final String  realRegexp               = "\\s+([-+]?(?:\\d*(?:\\.\\d*)?|\\.\\d+?)(?:[eE][-+]?\\d+)?)";
         final String  trailingBlanks           = "\\s*$";
-        final Pattern scaleDeltaKFPattern      = Pattern.compile(initialBlanks + "Scale\\s+\u03b4kf"  + realRegexp + trailingBlanks);
         final Pattern scaleAmpPattern          = Pattern.compile(initialBlanks + "Scale\\s+Amp"       + realRegexp + trailingBlanks);
 
         final String nameRegexp                = "[^\\s]*";
@@ -190,15 +188,13 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         //        55,575   0.00441 0 0  0  0  2  0  0  0  0  0  2  0.01124 -0.1 -0.00488  0.1
         // Sa     56,554   0.04107 0 0  1  0  0 -1  0 -1  0  0  0  0.00547 -1.2 -0.00349  0.8
         // Ssa    57,555   0.08214 0 0  2  0  0  0  0  0 -2  2 -2  0.00403 -5.5 -0.00315  4.3
-        this.frequencyDependenceK20 = loadFrequencyDependenceModel(nameK20,
-                                                                   scaleDeltaKFPattern,
-                                                                   scaleAmpPattern,
+        this.frequencyDependenceK20 = loadFrequencyDependenceModel(nameK20, scaleAmpPattern,
                                                                    Pattern.compile(initialBlanks +
                                                                                    nameRegexp + doodsonNumberRegexp + realRegexp +
                                                                                    doodsonMultipliersRegexp + delaunayMultipliersRegexp +
                                                                                    realRegexp + realRegexp + realRegexp + realRegexp +
                                                                                    trailingBlanks),
-                                                                   1, 4, 10, 15, 17, 16, 18);
+                                                                   1, 4, 10, 16, 18);
 
         // k21 model table has Doodson number column after deg/hr column,,
         // both real and imaginary parts, delta and amplitude separated
@@ -209,30 +205,26 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         //       13.39645   135,645  1 -2  0  1  -1  0   1  0  2  0  1    -45     5    -0.1     0.0
         //    Q1 13.39866   135,655  1 -2  0  1   0  0   1  0  2  0  2    -46     5    -0.7     0.1
         //    ρ1 13.47151   137,455  1 -2  2 -1   0  0  -1  0  2  2  2    -49     5    -0.1     0.0
-        this.frequencyDependenceK21 = loadFrequencyDependenceModel(nameK21,
-                                                                   scaleDeltaKFPattern,
-                                                                   scaleAmpPattern,
+        this.frequencyDependenceK21 = loadFrequencyDependenceModel(nameK21, scaleAmpPattern,
                                                                    Pattern.compile(initialBlanks +
                                                                                    nameRegexp + realRegexp + doodsonNumberRegexp +
                                                                                    doodsonMultipliersRegexp + delaunayMultipliersRegexp +
                                                                                    realRegexp + realRegexp + realRegexp + realRegexp +
                                                                                    trailingBlanks),
-                                                                   2, 4, 10, 15, 16, 17, 18);
+                                                                   2, 4, 10, 17, 18);
         // k22 model table has Doodson number column before deg/hr column,
         // only real correction and therefore neither mixing nor separation of real/imaginary
         // Name  Doodson  deg/hr  τ  s h p N' ps l l' F D Ω   δkfR    Amp.
         //          No.
         // N2    245,655 28.43973 2 -1 0 1 0   0 1 0  2 0 2 0.00006  -0.3
         // M2    255,555 28.98410 2  0 0 0 0   0 0 0  2 0 2 0.00004  -1.2
-        this.frequencyDependenceK22 = loadFrequencyDependenceModel(nameK22,
-                                                                   scaleDeltaKFPattern,
-                                                                   scaleAmpPattern,
+        this.frequencyDependenceK22 = loadFrequencyDependenceModel(nameK22, scaleAmpPattern,
                                                                    Pattern.compile(initialBlanks +
                                                                                    nameRegexp + doodsonNumberRegexp + realRegexp +
                                                                                    doodsonMultipliersRegexp + delaunayMultipliersRegexp +
                                                                                    realRegexp + realRegexp +
                                                                                    trailingBlanks),
-                                                                   1, 4, 10, 15, -1, 16, -1);
+                                                                   1, 4, 10, 16, -1);
 
     }
 
@@ -420,14 +412,11 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** Load the frequency dependence models.
      * @param nameKnm name of the knm frequency dependence resource
-     * @param scaleDeltaKFPattern pattern for the scale parameter of delta columns
      * @param scaleAmpPattern pattern for the scale parameter of amplitude columns
      * @param wavePattern patern for the tide waves lines
      * @param doodsonNumberGroup group containing the Doodson number
      * @param doodsonMultipliersGroup group containing the first Doodson argument
      * @param delaunayMultipliersGroup group containing the first Delaunay argument
-     * @param deltaKfRGroup group containing the real part of delta kf
-     * @param deltaKfIGroup group containing the imaginary part of delta kf (negative if not present)
      * @param inPhaseAmplitudeGroup group containing the in-phase amplitude
      * @param outOfPhaseAmplitudeGroup group containing the out-of-phase amplitude (negative if not present)
      * @return list of corrections for each tide wave in the table
@@ -435,14 +424,11 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      * library cannot be read
      */
     private List<FrequencyDependence> loadFrequencyDependenceModel(final String nameKnm,
-                                                                   final Pattern scaleDeltaKFPattern,
                                                                    final Pattern scaleAmpPattern,
                                                                    final Pattern wavePattern,
                                                                    final int doodsonNumberGroup,
                                                                    final int doodsonMultipliersGroup,
                                                                    final int delaunayMultipliersGroup,
-                                                                   final int deltaKfRGroup,
-                                                                   final int deltaKfIGroup,
                                                                    final int inPhaseAmplitudeGroup,
                                                                    final int outOfPhaseAmplitudeGroup)
         throws OrekitException {
@@ -463,88 +449,76 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
             // parse data
             int lineNumber = 0;
-            double scaleDelta     = Double.NaN;
             double scaleAmplitude = Double.NaN;
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
                 ++lineNumber;
 
-                Matcher matcher = scaleDeltaKFPattern.matcher(line);
+                Matcher matcher = scaleAmpPattern.matcher(line);
                 if (matcher.matches()) {
 
-                    // we have found the scale factor for delta kf columns
-                    scaleDelta = Double.parseDouble(matcher.group(1));
+                    // we have found the scale factor for amplitude columns
+                    scaleAmplitude = Double.parseDouble(matcher.group(1));
 
                 } else {
 
-                    matcher = scaleAmpPattern.matcher(line);
+                    matcher = wavePattern.matcher(line);
                     if (matcher.matches()) {
 
-                        // we have found the scale factor for amplitude columns
-                        scaleAmplitude = Double.parseDouble(matcher.group(1));
-
-                    } else {
-
-                        matcher = wavePattern.matcher(line);
-                        if (matcher.matches()) {
-
-                            // when we parse wave data, the scales must have been parsed already
-                            if (Double.isNaN(scaleDelta) || Double.isNaN(scaleAmplitude)) {
-                                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, nameKnm);
-                            }
-
-                            // get Doodson number
-                            final int doodsonNumber = Integer.parseInt(matcher.group(doodsonNumberGroup) +
-                                                                       matcher.group(doodsonNumberGroup + 1));
-
-                            // reconstruct Doodson number from Doodson arguments, for checking purpose
-                            final int tauFactor    = Integer.parseInt(matcher.group(doodsonMultipliersGroup));
-                            final int sFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 1));
-                            final int hFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 2));
-                            final int pFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 3));
-                            final int nPrimeFactor = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 4));
-                            final int psFactor     = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 5));
-                            final int doodsonNumberCheck = ((((tauFactor * 10 +
-                                                               (sFactor + 5)) * 10 +
-                                                                 (hFactor + 5)) * 10 +
-                                                                  (pFactor + 5)) * 10 +
-                                                                   (nPrimeFactor + 5)) * 10 +
-                                                                    (psFactor + 5);
-
-                            // check consistency of Doodson and Delaunay arguments
-                            final int lFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup));
-                            final int lPrimeFactor = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 1));
-                            final int fFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 2));
-                            final int dFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 3));
-                            final int omegaFactor  = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 4));
-
-                            // check consistency of all arguments
-                            boolean ok = doodsonNumber == doodsonNumberCheck;
-                            ok = ok && (lFactor      ==                                 pFactor);
-                            ok = ok && (lPrimeFactor ==                                                          psFactor);
-                            ok = ok && (fFactor      == tauFactor - sFactor - hFactor - pFactor                - psFactor);
-                            ok = ok && (dFactor      ==                       hFactor                          + psFactor);
-                            ok = ok && (omegaFactor  == tauFactor - sFactor - hFactor - pFactor + nPrimeFactor - psFactor);
-                            if (!ok) {
-                                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, nameKnm, line);
-                            }
-
-                            // parse the final coluns data
-                            final double deltaKfReal         = Double.parseDouble(matcher.group(deltaKfRGroup));
-                            final double deltaKfImaginary    = deltaKfIGroup < 0 ? 0.0 : Double.parseDouble(matcher.group(deltaKfIGroup));
-                            final double inPhaseAmplitude    = Double.parseDouble(matcher.group(inPhaseAmplitudeGroup));
-                            final double outOfPhaseAmplitude = outOfPhaseAmplitudeGroup < 0 ? 0.0 : Double.parseDouble(matcher.group(outOfPhaseAmplitudeGroup));
-
-                            // store the table entry
-                            corrections.add(new FrequencyDependence(lFactor, lPrimeFactor, fFactor, dFactor, omegaFactor,
-                                                                    scaleDelta * deltaKfReal, scaleDelta * deltaKfImaginary,
-                                                                    scaleAmplitude * inPhaseAmplitude, scaleAmplitude * outOfPhaseAmplitude));
-
+                        // when we parse wave data, the scale must have been parsed already
+                        if (Double.isNaN(scaleAmplitude)) {
+                            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, nameKnm);
                         }
+
+                        // get Doodson number
+                        final int doodsonNumber = Integer.parseInt(matcher.group(doodsonNumberGroup) +
+                                                                   matcher.group(doodsonNumberGroup + 1));
+
+                        // reconstruct Doodson number from Doodson arguments, for checking purpose
+                        final int tauFactor    = Integer.parseInt(matcher.group(doodsonMultipliersGroup));
+                        final int sFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 1));
+                        final int hFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 2));
+                        final int pFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 3));
+                        final int nPrimeFactor = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 4));
+                        final int psFactor     = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 5));
+                        final int doodsonNumberCheck = ((((tauFactor * 10 +
+                                (sFactor + 5)) * 10 +
+                                (hFactor + 5)) * 10 +
+                                (pFactor + 5)) * 10 +
+                                (nPrimeFactor + 5)) * 10 +
+                                (psFactor + 5);
+
+                        // check consistency of Doodson and Delaunay arguments
+                        final int lFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup));
+                        final int lPrimeFactor = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 1));
+                        final int fFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 2));
+                        final int dFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 3));
+                        final int omegaFactor  = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 4));
+
+                        // check consistency of all arguments
+                        boolean ok = doodsonNumber == doodsonNumberCheck;
+                        ok = ok && (lFactor      ==                                 pFactor);
+                        ok = ok && (lPrimeFactor ==                                                          psFactor);
+                        ok = ok && (fFactor      == tauFactor - sFactor - hFactor - pFactor                - psFactor);
+                        ok = ok && (dFactor      ==                       hFactor                          + psFactor);
+                        ok = ok && (omegaFactor  == tauFactor - sFactor - hFactor - pFactor + nPrimeFactor - psFactor);
+                        if (!ok) {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, nameKnm, line);
+                        }
+
+                        // parse the final coluns data
+                        final double inPhaseAmplitude    = Double.parseDouble(matcher.group(inPhaseAmplitudeGroup));
+                        final double outOfPhaseAmplitude = outOfPhaseAmplitudeGroup < 0 ? 0.0 : Double.parseDouble(matcher.group(outOfPhaseAmplitudeGroup));
+
+                        // store the table entry
+                        corrections.add(new FrequencyDependence(lFactor, lPrimeFactor, fFactor, dFactor, omegaFactor,
+                                                                scaleAmplitude * inPhaseAmplitude,
+                                                                scaleAmplitude * outOfPhaseAmplitude));
+
                     }
                 }
-
             }
+
 
             return corrections;
 
@@ -700,12 +674,6 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         /** Angular factor for mean longitude of the ascending node of the Moon. */
         private final int omegaFactor;
 
-        /** Real part of the difference with respect to nominal knm Love number. */
-        private final double deltaKfReal;
-
-        /** Imaginary part of the difference with respect to nominal knm Love number. */
-        private final double deltaKfImaginary;
-
         /** In-phase amplitude. */
         private final double inPhaseAmplitude;
 
@@ -718,22 +686,17 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
          * @param fFactor angular factor for L - &Omega; where L is the mean longitude of the Moon
          * @param dFactor angular factor for mean elongation of the Moon from the Sun
          * @param omegaFactor angular factor for mean longitude of the ascending node of the Moon
-         * @param deltaKfReal real part of the difference with respect to nominal knm Love number
-         * @param deltaKfImaginary imaginary part of the difference with respect to nominal knm Love number
          * @param inPhaseAmplitude in-phase amplitude
          * @param outOfPhaseAmplitude out-of-phase amplitude
          */
         public FrequencyDependence(final int lFactor, final int lPrimeFactor, final int fFactor,
                                    final int dFactor, final int omegaFactor,
-                                   final double deltaKfReal, final double deltaKfImaginary,
                                    final double inPhaseAmplitude, final double outOfPhaseAmplitude) {
             this.lFactor             = lFactor;
             this.lPrimeFactor        = lPrimeFactor;
             this.fFactor             = fFactor;
             this.dFactor             = dFactor;
             this.omegaFactor         = omegaFactor;
-            this.deltaKfReal         = deltaKfReal;
-            this.deltaKfImaginary    = deltaKfImaginary;
             this.inPhaseAmplitude    = inPhaseAmplitude;
             this.outOfPhaseAmplitude = outOfPhaseAmplitude;
         }

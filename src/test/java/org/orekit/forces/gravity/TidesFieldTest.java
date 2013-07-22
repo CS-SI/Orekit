@@ -161,11 +161,6 @@ public class TidesFieldTest {
         checkCorrupted("/tides/tab6.5a-missing-amplitude-scale.txt", null);
     }
 
-    @Test
-    public void testMissingDeltaScale() {
-        checkCorrupted("/tides/tab6.5a-missing-delta-scale.txt", null);
-    }
-
     private void checkCorrupted(String resourceName, String lineStart) {
         try {
             new TidesField(IERSConventions.IERS_2010.getLoveNumbersModel(),
