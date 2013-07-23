@@ -85,7 +85,7 @@ public class EarthObservation {
                 private static final long serialVersionUID = 8091992101063392941L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
                     if (!increasing) {
-                        output.add(s.getDate() + " : event occured, entering eclipse => switching to night law");
+                        output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
                     }
                     return Action.CONTINUE;
                 }
@@ -94,7 +94,7 @@ public class EarthObservation {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
                     if (increasing) {
-                        output.add(s.getDate() + " : event occured, exiting eclipse => switching to day law");
+                        output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
                     }
                     return Action.CONTINUE;
                 }

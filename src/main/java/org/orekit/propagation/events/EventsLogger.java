@@ -39,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
  * EventDetector.Action#eventOccurred(SpacecraftState, boolean) eventOccurred}
  * and store the corresponding events as {@link LoggedEvent} instances.
  * After propagation is complete, the user can retrieve all the events
- * that have occured at once by calling method {@link #getLoggedEvents()}.</p>
+ * that have occurred at once by calling method {@link #getLoggedEvents()}.</p>
  *
  * @author Luc Maisonobe
  */

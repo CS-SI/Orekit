@@ -72,7 +72,7 @@ PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
 EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
     public int eventOccurred(final SpacecraftState s, final boolean increasing) {
         if (!increasing) {
-            output.add(s.getDate() + " : event occured, entering eclipse => switching to night law");
+            output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
         }
         return CONTINUE;
     }
@@ -80,7 +80,7 @@ EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Consta
 EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
     public int eventOccurred(final SpacecraftState s, final boolean increasing) {
         if (increasing) {
-            output.add(s.getDate() + " : event occured, exiting eclipse => switching to day law");
+            output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
         }
         return CONTINUE;
     }
@@ -198,7 +198,7 @@ SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate.s
 2004-01-01T23:48:00.000 -18°207  00°000
 2004-01-01T23:51:00.000 -12°146  00°000
 2004-01-01T23:54:00.000 -05°042  00°000
-2004-01-01T23:55:57.968 : event occured, exiting eclipse => switching to day law
+2004-01-01T23:55:57.968 : event occurred, exiting eclipse => switching to day law
 2004-01-01T23:57:00.000  02°741  43°958
 2004-01-02T00:00:00.000  10°946  43°958
 2004-01-02T00:03:00.000  19°390  43°958
@@ -222,7 +222,7 @@ SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate.s
 2004-01-02T00:57:00.000  18°596  43°958
 2004-01-02T01:00:00.000  10°184  43°958
 2004-01-02T01:03:00.000  02°022  43°958
-2004-01-02T01:03:45.919 : event occured, entering eclipse => switching to night law
+2004-01-02T01:03:45.919 : event occurred, entering eclipse => switching to night law
 2004-01-02T01:06:00.000 -05°706  00°000
 2004-01-02T01:09:00.000 -12°733  00°000
 2004-01-02T01:12:00.000 -18°680  00°000
@@ -233,7 +233,7 @@ SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate.s
 2004-01-02T01:27:00.000 -17°313  00°000
 2004-01-02T01:30:00.000 -11°051  00°000
 2004-01-02T01:33:00.000 -03°814  00°000
-2004-01-02T01:34:28.690 : event occured, exiting eclipse => switching to day law
+2004-01-02T01:34:28.690 : event occurred, exiting eclipse => switching to day law
 2004-01-02T01:36:00.000  04°052  43°958
 2004-01-02T01:39:00.000  12°308  43°958
 2004-01-02T01:42:00.000  20°777  43°958
@@ -257,7 +257,7 @@ SpacecraftState finalState = propagator.propagate(new AbsoluteDate(initialDate.s
 2004-01-02T02:36:00.000  17°215  43°958
 2004-01-02T02:39:00.000  08°834  43°958
 2004-01-02T02:42:00.000  00°727  43°958
-2004-01-02T02:42:16.591 : event occured, entering eclipse => switching to night law
+2004-01-02T02:42:16.591 : event occurred, entering eclipse => switching to night law
 2004-01-02T02:45:00.000 -06°907  00°000
 2004-01-02T02:48:00.000 -13°788  00°000
 2004-01-02T02:51:00.000 -19°515  00°000
