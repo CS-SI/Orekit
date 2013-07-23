@@ -474,7 +474,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
                         final int doodsonNumber = Integer.parseInt(matcher.group(doodsonNumberGroup) +
                                                                    matcher.group(doodsonNumberGroup + 1));
 
-                        // reconstruct Doodson number from Doodson arguments, for checking purpose
+                        // reconstruct Doodson number from Doodson multipliers, for checking purpose
                         final int tauFactor    = Integer.parseInt(matcher.group(doodsonMultipliersGroup));
                         final int sFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 1));
                         final int hFactor      = Integer.parseInt(matcher.group(doodsonMultipliersGroup + 2));
@@ -488,21 +488,20 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
                                 (nPrimeFactor + 5)) * 10 +
                                 (psFactor + 5);
 
-                        // check consistency of Doodson and Delaunay arguments
+                        // check consistency of Doodson and Delaunay multipliers
                         final int lFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup));
                         final int lPrimeFactor = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 1));
                         final int fFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 2));
                         final int dFactor      = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 3));
                         final int omegaFactor  = Integer.parseInt(matcher.group(delaunayMultipliersGroup + 4));
 
-                        // check consistency of all arguments
-                        boolean ok = doodsonNumber == doodsonNumberCheck;
-                        ok = ok && (lFactor      ==                                 pFactor);
-                        ok = ok && (lPrimeFactor ==                                                          psFactor);
-                        ok = ok && (fFactor      == tauFactor - sFactor - hFactor - pFactor                - psFactor);
-                        ok = ok && (dFactor      ==                       hFactor                          + psFactor);
-                        ok = ok && (omegaFactor  == tauFactor - sFactor - hFactor - pFactor + nPrimeFactor - psFactor);
-                        if (!ok) {
+                        // check consistency of all multipliers
+                        if ((doodsonNumber != doodsonNumberCheck)                                                ||
+                            (lFactor       !=                                 pFactor)                           ||
+                            (lPrimeFactor  !=                                                          psFactor) ||
+                            (fFactor       != tauFactor - sFactor - hFactor - pFactor                - psFactor) ||
+                            (dFactor       !=                       hFactor                          + psFactor) ||
+                            (omegaFactor   != tauFactor - sFactor - hFactor - pFactor + nPrimeFactor - psFactor)) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, nameKnm, line);
                         }
 

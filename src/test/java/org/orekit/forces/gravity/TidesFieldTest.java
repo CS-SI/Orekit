@@ -142,8 +142,28 @@ public class TidesFieldTest {
     }
 
     @Test
-    public void testCorruptedDelaunayMultiplier() {
-        checkCorrupted("/tides/tab6.5a-corrupted-Delaunay-multiplier.txt", "Q1");
+    public void testCorruptedLDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-l-Delaunay-multiplier.txt", "σ1");
+    }
+
+    @Test
+    public void testCorruptedLPrimeDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-lPrime-Delaunay-multiplier.txt", "Q1");
+    }
+
+    @Test
+    public void testCorruptedFDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-F-Delaunay-multiplier.txt", "Nτ1");
+    }
+
+    @Test
+    public void testCorruptedDDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-D-Delaunay-multiplier.txt", "2Q1");
+    }
+
+    @Test
+    public void testCorruptedOmegaDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-Omega-Delaunay-multiplier.txt", "τ1");
     }
 
     @Test
