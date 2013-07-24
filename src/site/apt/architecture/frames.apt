@@ -78,7 +78,8 @@ Frames
   The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
   <<<getICRF()>>>, <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF93()>>>, <<<getITRF97()>>>,
   <<<getITRF2000()>>>, <<<getITRF2005()>>>, <<<getITRF2008()>>>, <<<getMOD()>>>, <<<getTOD()>>>,
-  <<<getGTOD()>>>, <<<getITRFEquinox()>>>, <<<getTEME()>>>, <<<getTIRF2000()>>> and <<<getVeis1950()>>>.
+  <<<getGTOD()>>>, <<<getITRFEquinox()>>>, <<<getTEME()>>>, <<<getTIRF2000()>>>, <<<getVeis1950()>>>
+  and <<<getB1950()>>>.
   One of these reference frames has been arbitrarily chosen as the root of the frames tree:
   the <Geocentric Celestial Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 

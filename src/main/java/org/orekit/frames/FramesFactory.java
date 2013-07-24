@@ -54,8 +54,8 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
  * {@link #getITRF2008(boolean)}, {@link #getITRF2008()},
  * {@link #getEME2000()}, {@link #getMOD(boolean)}, {@link #getTOD(boolean)},
- * {@link #getGTOD(boolean)}, {@link #getITRFEquinox()}, {@link #getTEME()}
- * and {@link #getVeis1950()}).
+ * {@link #getGTOD(boolean)}, {@link #getITRFEquinox()}, {@link #getTEME()},
+ * {@link #getVeis1950()} and {@link #getB1950()}).
  * </p>
  * <h5> International Terrestrial Reference Frame 2008 </h5>
  * <p>
@@ -125,9 +125,9 @@ import org.orekit.utils.OrekitConfiguration;
  *                                                 |                         |     Frame bias     |
  *                                                 |                         |                 EME2000
  *                                                 |                         |                    |
- *                                                 |                         | Precession effects |
- *                                                 |                         |                    |
- *           Bias, Precession and Nutation effects |                        MOD                  MOD  (Mean Equator Of Date)
+ *                                                 |                         | Precession effects |-------------------------------
+ *                                                 |                         |                    |                              |
+ *           Bias, Precession and Nutation effects |                        MOD                  MOD  (Mean Equator Of Date)   B1950
  *                                                 |                         |             w/o EOP corrections
  *                                                 |                         |  Nutation effects  |
  *    (Celestial Intermediate Reference Frame) CIRF2000                      |                    |
@@ -1019,7 +1019,7 @@ public class FramesFactory implements Serializable {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 frame = new FactoryManagedFrame(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
-                                                new MODProvider(), true, factoryKey);
+                                                new MODProvider(AbsoluteDate.J2000_EPOCH), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -1079,6 +1079,39 @@ public class FramesFactory implements Serializable {
 
                 frame = new FactoryManagedFrame(tod, temeInterpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
+            }
+
+            return frame;
+
+        }
+    }
+
+    /** Get the unique B1950 frame.
+     * <p>The B1950 frame is an inertial frame using a mean equinox frozen at
+     * {@link AbsoluteDate#createBesselianEpoch(double) Besselian date 1950.0}.
+     * It played a similar role to {@link #getEME2000() EME2000} and is still in
+     * use in some systems.</p>
+     * @return the unique instance of the B1950 frame
+     * @exception OrekitException if bias between equinoxes at B1950.0 and J2000.0 cannot be computed
+     */
+    public static FactoryManagedFrame getB1950() throws OrekitException {
+        synchronized (FramesFactory.class) {
+
+            // try to find an already built frame
+            FactoryManagedFrame frame = FRAMES.get(Predefined.B1950);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+
+                // compute the bias from equinox at B1950.0 and equinox at J2000.0
+                final AbsoluteDate b1950 = AbsoluteDate.createBesselianEpoch(1950.0);
+                final TransformProvider mod1950 = new MODProvider(b1950);
+                final Transform bias = mod1950.getTransform(AbsoluteDate.J2000_EPOCH);
+
+                frame = new FactoryManagedFrame(getEME2000(), new FixedTransformProvider(bias.getInverse()),
+                                                true, Predefined.B1950);
+                FRAMES.put(Predefined.B1950, frame);
+
             }
 
             return frame;

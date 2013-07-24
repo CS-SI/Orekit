@@ -36,7 +36,7 @@ Overview
       (or telemetry-dependent) frames
 
     * predefined frames (EME2000/J2000, ICRF, GCRF, ITRF93, ITRF97, ITRF2000, ITRF2005, ITRF2008
-      and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, topocentric, tnw and qsw
+      and intermediate frames, TOD, MOD, GTOD and TOD frames, Veis, B1950, topocentric, tnw and qsw
       local orbital frames, spacecraft body, Moon, Sun, planets, solar system barycenter,
       Earth-Moon barycenter)
 

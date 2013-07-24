@@ -73,7 +73,8 @@ public class FramesFactoryTest {
             { Predefined.TOD_WITH_EOP_CORRECTIONS,                  Predefined.MOD_WITH_EOP_CORRECTIONS },
             { Predefined.MOD_WITHOUT_EOP_CORRECTIONS,               Predefined.EME2000 },
             { Predefined.MOD_WITH_EOP_CORRECTIONS,                  Predefined.GCRF },
-            { Predefined.TEME,                                      Predefined.TOD_WITHOUT_EOP_CORRECTIONS }
+            { Predefined.TEME,                                      Predefined.TOD_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.B1950,                                     Predefined.EME2000 }
         };
         for (final Predefined[] pair : reference) {
             Frame child  = FramesFactory.getFrame(pair[0]);

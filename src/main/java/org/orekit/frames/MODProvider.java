@@ -22,61 +22,125 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** Mean Equator, Mean Equinox Frame.
- * <p>This frame handles precession effects according to the IAU-76 model (Lieske).</p>
+ * <p>This providers handles precession effects according to the IAU-76 model, which
+ * is decribed in the Lieske paper: <a
+ * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf.">
+ * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
+ * vol. 73, no. 3, Mar. 1979, p. 282-284.</p>
  * <p>Its parent frame is the GCRF frame.<p>
- * <p>It is sometimes called Mean of Date (MoD) frame.<p>
  * @author Pascal Parraud
+ * @author Luc Maisonobe
  */
 class MODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8795437689936129851L;
+    private static final long serialVersionUID = 20130724L;
+
+    /** Constant term of the 1st coefficient for ZETA precession angle. */
+    private static final double ZETA_1_0  = 2306.2181 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Linear term of the 1st coefficient for ZETA precession angle. */
+    private static final double ZETA_1_1  =  1.39656  * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Quadratic term of the 1st coefficient for ZETA precession angle. */
+    private static final double ZETA_1_2  = -0.000139 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Constant term of the 2nd coefficient for ZETA precession angle. */
+    private static final double ZETA_2_0  =  0.30188  * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Linear term of the 2nd coefficient for ZETA precession angle. */
+    private static final double ZETA_2_1  = -0.000344 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Constant term of the 3rd coefficient for ZETA precession angle. */
+    private static final double ZETA_3_0  =  0.017998 * Constants.ARC_SECONDS_TO_RADIANS;
+
+    /** Constant term of the 1st coefficient for THETA precession angle. */
+    private static final double THETA_1_0 = 2004.3109 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Linear term of the 1st coefficient for THETA precession angle. */
+    private static final double THETA_1_1 = -0.85330 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Quadratic term of the 1st coefficient for THETA precession angle. */
+    private static final double THETA_1_2 = -0.000217 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Constant term of the 2nd coefficient for THETA precession angle. */
+    private static final double THETA_2_0 = -0.42665  * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Linear term of the 2nd coefficient for THETA precession angle. */
+    private static final double THETA_2_1 = -0.000217 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Constant term of the 3rd coefficient for THETA precession angle. */
+    private static final double THETA_3_0 = -0.041833 * Constants.ARC_SECONDS_TO_RADIANS;
+
+    /** Constant term of the 1st coefficient for Z precession angle. */
+    private static final double Z_1_0     = 2306.2181 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Linear term of the 1st coefficient for Z precession angle. */
+    private static final double Z_1_1     =  1.39656  * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Quadratic term of the 1st coefficient for Z precession angle. */
+    private static final double Z_1_2     = -0.000139 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Constant term of the 2nd coefficient for Z precession angle. */
+    private static final double Z_2_0     =  1.09468  * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Linear term of the 2nd coefficient for Z precession angle. */
+    private static final double Z_2_1     =  0.000066 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Constant term of the 3rd coefficient for Z precession angle. */
+    private static final double Z_3_0     =  0.018203 * Constants.ARC_SECONDS_TO_RADIANS;
+
+    /** Equinox epoch. */
+    private final AbsoluteDate equinoxEpoch;
 
     /** 1st coefficient for ZETA precession angle. */
-    private static final double ZETA_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double zeta1;
     /** 2nd coefficient for ZETA precession angle. */
-    private static final double ZETA_2 =    0.30188  * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double zeta2;
     /** 3rd coefficient for ZETA precession angle. */
-    private static final double ZETA_3 =    0.017998 * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double zeta3;
 
     /** 1st coefficient for THETA precession angle. */
-    private static final double THETA_1 = 2004.3109   * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double theta1;
     /** 2nd coefficient for THETA precession angle. */
-    private static final double THETA_2 =   -0.42665  * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double theta2;
     /** 3rd coefficient for THETA precession angle. */
-    private static final double THETA_3 =   -0.041833 * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double theta3;
 
     /** 1st coefficient for Z precession angle. */
-    private static final double Z_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double z1;
     /** 2nd coefficient for Z precession angle. */
-    private static final double Z_2 =    1.09468  * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double z2;
     /** 3rd coefficient for Z precession angle. */
-    private static final double Z_3 =    0.018203 * Constants.ARC_SECONDS_TO_RADIANS;
+    private final double z3;
 
     /** Simple constructor.
+     * @param equinoxEpoch reference epoch for equinox
      */
-    public MODProvider() {
+    public MODProvider(final AbsoluteDate equinoxEpoch) {
+
+        this.equinoxEpoch = equinoxEpoch;
+
+        // evaluate polynomials factors for the specified epoch
+        final double bigT = equinoxEpoch.durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_CENTURY;
+        zeta1  = ZETA_1_0 + bigT * (ZETA_1_1 + bigT * ZETA_1_2);
+        zeta2  = ZETA_2_0 + bigT * ZETA_2_1;
+        zeta3  = ZETA_3_0;
+
+        theta1 = THETA_1_0 + bigT * (THETA_1_1 + bigT * THETA_1_2);
+        theta2 = THETA_2_0 + bigT * THETA_2_1;
+        theta3 = THETA_3_0;
+
+        z1     = Z_1_0 + bigT * (Z_1_1 + bigT * Z_1_2);
+        z2     = Z_2_0 + bigT * Z_2_1;
+        z3     = Z_3_0;
+
     }
 
-    /** Get the transfrom from parent frame.
+    /** Get the transform from parent frame.
      * <p>The update considers the precession effects.</p>
      * @param date new value of the date
      * @return transform at the specified date
      */
     public Transform getTransform(final AbsoluteDate date) {
 
-        // offset from J2000 epoch in julian centuries
-        final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+        // offset from equinox epoch in julian centuries
+        final double tts = date.durationFrom(equinoxEpoch);
         final double ttc = tts / Constants.JULIAN_CENTURY;
 
         // compute the zeta precession angle
-        final double zeta = ((ZETA_3 * ttc + ZETA_2) * ttc + ZETA_1) * ttc;
+        final double zeta = ((zeta3 * ttc + zeta2) * ttc + zeta1) * ttc;
 
         // compute the theta precession angle
-        final double theta = ((THETA_3 * ttc + THETA_2) * ttc + THETA_1) * ttc;
+        final double theta = ((theta3 * ttc + theta2) * ttc + theta1) * ttc;
 
         // compute the z precession angle
-        final double z = ((Z_3 * ttc + Z_2) * ttc + Z_1) * ttc;
+        final double z = ((z3 * ttc + z2) * ttc + z1) * ttc;
 
         // elementary rotations for precession
         final Rotation r1 = new Rotation(Vector3D.PLUS_K,  z);

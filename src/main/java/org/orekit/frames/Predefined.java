@@ -104,7 +104,10 @@ public enum Predefined {
     MOD_WITH_EOP_CORRECTIONS("MOD with EOP"),
 
     /** TEME frame. */
-    TEME("TEME");
+    TEME("TEME"),
+
+    /** B1950 frame. */
+    B1950("B1950");
 
     /** Name fo the frame. */
     private final String name;
