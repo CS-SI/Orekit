@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.Constants;
@@ -31,7 +32,7 @@ import org.orekit.utils.Constants;
  * that each one represent the occurrence of some event and can be compared
  * to other instances or located in <em>any</em> {@link TimeScale time scale}. In
  * other words the different locations of an event with respect to two different
- * time scale (say {@link TAIScale TAI} and {@link UTCScale UTC} for example) are
+ * time scales (say {@link TAIScale TAI} and {@link UTCScale UTC} for example) are
  * simply different perspective related to a single object. Only one
  * <code>AbsoluteDate</code> instance is needed, both representations being available
  * from this single instance by specifying the time scales as parameter when calling
@@ -77,7 +78,9 @@ import org.orekit.utils.Constants;
  * epochs can be used as the basis for offset computation. The supported epochs are:
  * {@link #JULIAN_EPOCH}, {@link #MODIFIED_JULIAN_EPOCH}, {@link #FIFTIES_EPOCH},
  * {@link #CCSDS_EPOCH}, {@link #GALILEO_EPOCH}, {@link #GPS_EPOCH}, {@link #J2000_EPOCH},
- * {@link #JAVA_EPOCH}.
+ * {@link #JAVA_EPOCH}. There are also two factory methods {@link #createJulianEpoch(double)}
+ * and {@link #createBesselianEpoch(double)} that can be used to compute other reference
+ * epochs like J1900.0 or B1950.0.
  * In addition to these reference epochs, two other constants are defined for convenience:
  * {@link #PAST_INFINITY} and {@link #FUTURE_INFINITY}, which can be used either as dummy
  * dates when a date is not yet initialized, or for initialization of loops searching for
@@ -126,7 +129,10 @@ public class AbsoluteDate
     public static final AbsoluteDate GPS_EPOCH =
         new AbsoluteDate(DateComponents.GPS_EPOCH, TimeComponents.H00, TimeScalesFactory.getGPS());
 
-    /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC). */
+    /** J2000.0 Reference epoch: 2000-01-01T12:00:00 Terrestrial Time (<em>not</em> UTC).
+     * @see #createJulianEpoch(double)
+     * @see #createBesselianEpoch(double)
+     */
     public static final AbsoluteDate J2000_EPOCH =
         new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
 
@@ -608,6 +614,49 @@ public class AbsoluteDate
         return new AbsoluteDate(new DateComponents(DateComponents.GPS_EPOCH, weekNumber * 7 + day),
                                 new TimeComponents(secondsInDay),
                                 TimeScalesFactory.getGPS());
+    }
+
+    /** Build an instance corresponding to a Julian Epoch (JE).
+     * <p>According to Lieske paper: <a
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf.">
+     * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
+     * vol. 73, no. 3, Mar. 1979, p. 282-284, Julian Epoch is related to Julian Ephemeris Date as:</p>
+     * <pre>
+     * JE = 2000.0 + (JED - 2451545.0) / 365.25
+     * </pre>
+     * <p>
+     * This method reverts the formula above and computes an {@code AbsoluteDate} from the Julian Epoch.
+     * </p>
+     * @param julianEpoch Julian epoch, like 2000.0 for defining the classical reference J2000.0
+     * @return a new instant
+     * @see #J2000_EPOCH
+     * @see #createBesselianEpoch(double)
+     */
+    public static AbsoluteDate createJulianEpoch(final double julianEpoch) {
+        return new AbsoluteDate(J2000_EPOCH,
+                                Constants.JULIAN_YEAR * (julianEpoch - 2000.0));
+    }
+
+    /** Build an instance corresponding to a Besselian Epoch (BE).
+     * <p>According to Lieske paper: <a
+     * href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf.">
+     * Precession Matrix Based on IAU (1976) System of Astronomical Constants</a>, Astronomy and Astrophysics,
+     * vol. 73, no. 3, Mar. 1979, p. 282-284, Besselian Epoch is related to Julian Ephemeris Date as:</p>
+     * <pre>
+     * BE = 1900.0 + (JED - 2415020.31352) / 365.242198781
+     * </pre>
+     * <p>
+     * This method reverts the formula above and computes an {@code AbsoluteDate} from the Besselian Epoch.
+     * </p>
+     * @param besselianEpoch Besselian epoch, like 1950 for defining the classical reference B1950.0
+     * @return a new instant
+     * @see #createJulianEpoch(double)
+     */
+    public static AbsoluteDate createBesselianEpoch(final double besselianEpoch) {
+        return new AbsoluteDate(J2000_EPOCH,
+                                MathArrays.linearCombination(Constants.BESSELIAN_YEAR, besselianEpoch - 1900,
+                                                             Constants.JULIAN_DAY, -36525,
+                                                             Constants.JULIAN_DAY, 0.31352));
     }
 
     /** Get a time-shifted date.
