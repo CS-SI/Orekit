@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added factory methods to compute arbitrary Julian Epochs (J1900.0, J2000.0 ...)
+        and Besselian Epochs (B1900.0, B1950.0 ...) that are used as reference dates
+        in some models and frames.
+      </action>
       <action dev="luc" type="fix" >
         Fixed non-bracketing exception while converting Cartesian points very close to equator into geodetic
         coordinates. Fixes issue #141.

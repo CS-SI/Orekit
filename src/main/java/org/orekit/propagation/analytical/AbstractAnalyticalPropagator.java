@@ -214,11 +214,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         // search for next events that may occur during the step
-        final List<EventState> occuringEvents = new ArrayList<EventState>();
+        final List<EventState> occurringEvents = new ArrayList<EventState>();
         for (final EventState state : eventsStates) {
             if (state.evaluateStep(interpolator)) {
                 // the event occurs during the current step
-                occuringEvents.add(state);
+                occurringEvents.add(state);
             }
         }
 
@@ -233,11 +233,11 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         };
 
-        while (!occuringEvents.isEmpty()) {
+        while (!occurringEvents.isEmpty()) {
 
             // handle the chronologically first event
-            Collections.sort(occuringEvents, sorter);
-            final Iterator<EventState> iterator = occuringEvents.iterator();
+            Collections.sort(occurringEvents, sorter);
+            final Iterator<EventState> iterator = occurringEvents.iterator();
             final EventState currentEvent = iterator.next();
             iterator.remove();
 
@@ -276,7 +276,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             // check if the same event occurs again in the remaining part of the step
             if (currentEvent.evaluateStep(interpolator)) {
                 // the event occurs during the current step
-                occuringEvents.add(currentEvent);
+                occurringEvents.add(currentEvent);
             }
 
         }

@@ -32,11 +32,15 @@ public interface Constants {
     /** Duration of a mean solar day: 86400.0 s. */
     double JULIAN_DAY = 86400.0;
 
-    /** Duration of a julian year: 365.25 {@link #JULIAN_DAY}. */
+    /** Duration of a Julian year: 365.25 {@link #JULIAN_DAY}. */
     double JULIAN_YEAR = 31557600.0;
 
-    /** Duration of a julian century: 36525 {@link #JULIAN_DAY}. */
+    /** Duration of a Julian century: 36525 {@link #JULIAN_DAY}. */
     double JULIAN_CENTURY = 36525 * JULIAN_DAY;
+
+
+    /** Duration of a Besselian year: 365.242198781 {@link #JULIAN_DAY}. */
+    double BESSELIAN_YEAR = 365.242198781 * JULIAN_DAY;
 
 
     /** Conversion factor from arc seconds to radians: 2*PI/(360*60*60). */

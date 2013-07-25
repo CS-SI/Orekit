@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.utils.Constants;
 
 public class AbsoluteDateTest {
 
@@ -59,6 +60,64 @@ public class AbsoluteDateTest {
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
                      AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getTAI()));
+    }
+
+    @Test
+    public void testJulianEpochRate() throws OrekitException {
+        
+        for (int i = 0; i < 10; ++i) {
+            AbsoluteDate j200i = AbsoluteDate.createJulianEpoch(2000.0 + i);
+            AbsoluteDate j2000 = AbsoluteDate.J2000_EPOCH;
+            double expected    = i * Constants.JULIAN_YEAR;
+            Assert.assertEquals(expected, j200i.durationFrom(j2000), 4.0e-15 * expected);
+        }
+
+    }
+
+    @Test
+    public void testBesselianEpochRate() throws OrekitException {
+        
+        for (int i = 0; i < 10; ++i) {
+            AbsoluteDate b195i = AbsoluteDate.createBesselianEpoch(1950.0 + i);
+            AbsoluteDate b1950 = AbsoluteDate.createBesselianEpoch(1950.0);
+            double expected    = i * Constants.BESSELIAN_YEAR;
+            Assert.assertEquals(expected, b195i.durationFrom(b1950), 4.0e-15 * expected);
+        }
+
+    }
+
+    @Test
+    public void testLieske() throws OrekitException {
+
+        // the following test values correspond to table 1 in the paper:
+        // Precession Matrix Based on IAU (1976) System of Astronomical Constants,
+        // Jay H. Lieske, Astronomy and Astrophysics, vol. 73, no. 3, Mar. 1979, p. 282-284
+        // http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1979A%26A....73..282L&defaultprint=YES&filetype=.pdf
+
+        // published table, with limited accuracy
+        final double publishedEpsilon = 1.0e-6 * Constants.JULIAN_YEAR;
+        checkEpochs(1899.999142, 1900.000000, publishedEpsilon);
+        checkEpochs(1900.000000, 1900.000858, publishedEpsilon);
+        checkEpochs(1950.000000, 1949.999790, publishedEpsilon);
+        checkEpochs(1950.000210, 1950.000000, publishedEpsilon);
+        checkEpochs(2000.000000, 1999.998722, publishedEpsilon);
+        checkEpochs(2000.001278, 2000.000000, publishedEpsilon);
+
+        // recomputed table, using directly Lieske formulas (i.e. *not* Orekit implementation) with high accuracy
+        final double accurateEpsilon = 1.2e-13 * Constants.JULIAN_YEAR;
+        checkEpochs(1899.99914161068724704, 1900.00000000000000000, accurateEpsilon);
+        checkEpochs(1900.00000000000000000, 1900.00085837097878165, accurateEpsilon);
+        checkEpochs(1950.00000000000000000, 1949.99979044229979466, accurateEpsilon);
+        checkEpochs(1950.00020956217615449, 1950.00000000000000000, accurateEpsilon);
+        checkEpochs(2000.00000000000000000, 1999.99872251362080766, accurateEpsilon);
+        checkEpochs(2000.00127751366506194, 2000.00000000000000000, accurateEpsilon);
+
+    }
+
+    private void checkEpochs(final double besselianEpoch, final double julianEpoch, final double epsilon) {
+        final AbsoluteDate b = AbsoluteDate.createBesselianEpoch(besselianEpoch);
+        final AbsoluteDate j = AbsoluteDate.createJulianEpoch(julianEpoch);
+        Assert.assertEquals(0.0, b.durationFrom(j), epsilon);
     }
 
     @Test
