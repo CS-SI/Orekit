@@ -16,6 +16,12 @@
  */
 package org.orekit.utils;
 
+import java.io.InputStream;
+
+import org.orekit.data.FundamentalNutationArguments;
+import org.orekit.data.PoissonSeries;
+import org.orekit.errors.OrekitException;
+
 
 /** Supported IERS conventions.
  * @since 6.0
@@ -23,27 +29,64 @@ package org.orekit.utils;
  */
 public enum IERSConventions {
 
+    /** Constant for IERS 1996 conventions. */
+    IERS_1996 {
+
+        /** {@inheritDoc} */
+        public FundamentalNutationArguments getNutationArguments() throws OrekitException {
+            return loadArguments(IERS_BASE + "1996/nutation-arguments.txt");
+        }
+
+        /** {@inheritDoc} */
+        public PoissonSeries getXSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "1996/tab5.4x.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+        }
+
+        /** {@inheritDoc} */
+        public PoissonSeries getYSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "1996/tab5.4y.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+        }
+
+        /** {@inheritDoc} */
+        public PoissonSeries getSXY2XSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "1996/s-equation.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+        }
+
+    },
+
     /** Constant for IERS 2003 conventions. */
     IERS_2003 {
 
         /** {@inheritDoc} */
-        public String getNutationArguments() {
-            return IERS_BASE + "2003/nutation-arguments.txt";
+        public FundamentalNutationArguments getNutationArguments() throws OrekitException {
+            return loadArguments(IERS_BASE + "2003/nutation-arguments.txt");
         }
 
         /** {@inheritDoc} */
-        public String getXModel() {
-            return IERS_BASE + "2003/tab5.2a.txt";
+        public PoissonSeries getXSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "2003/tab5.2a.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
         /** {@inheritDoc} */
-        public String getYModel() {
-            return IERS_BASE + "2003/tab5.2b.txt";
+        public PoissonSeries getYSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "2003/tab5.2b.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
         /** {@inheritDoc} */
-        public String getSXY2XModel() {
-            return IERS_BASE + "2003/tab5.2c.txt";
+        public PoissonSeries getSXY2XSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "2003/tab5.2c.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
     },
@@ -52,23 +95,29 @@ public enum IERSConventions {
     IERS_2010 {
 
         /** {@inheritDoc} */
-        public String getNutationArguments() {
-            return IERS_BASE + "2010/nutation-arguments.txt";
+        public FundamentalNutationArguments getNutationArguments() throws OrekitException {
+            return loadArguments(IERS_BASE + "2010/nutation-arguments.txt");
         }
 
         /** {@inheritDoc} */
-        public String getXModel() {
-            return IERS_BASE + "2010/tab5.2a.txt";
+        public PoissonSeries getXSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "2010/tab5.2a.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
         /** {@inheritDoc} */
-        public String getYModel() {
-            return IERS_BASE + "2010/tab5.2b.txt";
+        public PoissonSeries getYSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "2010/tab5.2b.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
         /** {@inheritDoc} */
-        public String getSXY2XModel() {
-            return IERS_BASE + "2010/tab5.2d.txt";
+        public PoissonSeries getSXY2XSeries() throws OrekitException {
+            return loadModel(IERS_BASE + "2010/tab5.2d.txt",
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
     };
@@ -76,24 +125,61 @@ public enum IERSConventions {
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
 
-    /** Get the resource name for the nutation arguments (luni-solar + planetary).
-     * @return resource name for the nutation arguments (luni-solar + planetary)
+    /** Get the fundamental nutation arguments.
+     * @return fundamental nutation arguments
+     * @exception OrekitException if fundamental nutation arguments cannot be loaded
      */
-    public abstract String getNutationArguments();
+    public abstract FundamentalNutationArguments getNutationArguments() throws OrekitException;
 
-    /** Get the table resource name for the X pole component model.
-     * @return table resource name for the X pole component model
+    /** Get the {@link PoissonSeries Poisson series} for the X pole component.
+     * @return {@link PoissonSeries Poisson series} for the X pole component
+     * @exception OrekitException if table cannot be loaded
      */
-    public abstract String getXModel();
+    public abstract PoissonSeries getXSeries() throws OrekitException;
 
-    /** Get the table resource name for the Y pole component model.
-     * @return table resource name for the Y pole component model
+    /** Get the {@link PoissonSeries Poisson series} for the Y pole component.
+     * @return {@link PoissonSeries Poisson series} for the Y pole component
+     * @exception OrekitException if table cannot be loaded
      */
-    public abstract String getYModel();
+    public abstract PoissonSeries getYSeries() throws OrekitException;
 
-    /** Get the table resource name for the S + XY/2 pole component model.
-     * @return table resource name for the S + XY/2 pole component model
+    /** Get the {@link PoissonSeries Poisson series} for the S + XY/2 pole component.
+     * @return {@link PoissonSeries Poisson series} for the S + XY/2 pole component
+     * @exception OrekitException if table cannot be loaded
      */
-    public abstract String getSXY2XModel();
+    public abstract PoissonSeries getSXY2XSeries() throws OrekitException;
+
+    /** Load a series development model.
+     * @param name file name of the series development
+     * @param polyFactor multiplicative factor to use for polynomial coefficients
+     * @param nonPolyFactor multiplicative factor to use for non-ploynomial coefficients
+     * @return series development model
+     * @exception OrekitException if table cannot be loaded
+     */
+    protected static PoissonSeries loadModel(final String name,
+                                             final double polyFactor, final double nonPolyFactor)
+        throws OrekitException {
+
+        // get the table data
+        final InputStream stream = IERSConventions.class.getResourceAsStream(name);
+
+        return new PoissonSeries(stream, name, polyFactor, nonPolyFactor);
+
+    }
+
+    /** Load fundamental nutation arguments.
+     * @param name file name of the fundamental arguments expressions
+     * @return fundamental nutation arguments
+     * @exception OrekitException if table cannot be loaded
+     */
+    protected static FundamentalNutationArguments loadArguments(final String name)
+        throws OrekitException {
+
+        // get the table data
+        final InputStream stream = IERSConventions.class.getResourceAsStream(name);
+
+        return new FundamentalNutationArguments(stream, name);
+
+    }
 
 }

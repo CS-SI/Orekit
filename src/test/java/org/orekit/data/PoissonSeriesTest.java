@@ -50,14 +50,14 @@ public class PoissonSeriesTest {
 
     private PoissonSeries buildData(String data) throws OrekitException {
         return new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
-                                 1.0, "<file-content>" + data + "</file-content>");
+                                 "<file-content>" + data + "</file-content>", 1.0, 1.0);
     }
 
     @Test(expected=OrekitException.class)
     public void testNoFile() throws OrekitException {
         InputStream stream =
             PoissonSeriesTest.class.getResourceAsStream("/org/orekit/resources/missing");
-        new PoissonSeries(stream, 1.0, "missing");
+        new PoissonSeries(stream, "missing", 1.0, 1.0);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class PoissonSeriesTest {
             + "j = 0  Nb of terms = 1\n"
             + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
         PoissonSeries nd =
-            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
+            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "", 1.0, 1.0);
         Assert.assertNotNull(nd);
     }
 
@@ -78,7 +78,7 @@ public class PoissonSeriesTest {
             + "j = 0  Nb of terms = 1\n"
             + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
         PoissonSeries nd =
-            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), 1.0, "");
+            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "", 1.0, 1.0);
         Assert.assertNotNull(nd);
     }
 
@@ -143,7 +143,7 @@ public class PoissonSeriesTest {
             + "       \n"
             + "  1600          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
         Assert.assertNotNull(new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
-                                               1.0, "dummy"));
+                                               "dummy", 1.0, 1.0));
     }
 
     @Test
@@ -151,13 +151,13 @@ public class PoissonSeriesTest {
         String directory = "/assets/org/orekit/IERS-conventions/";
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2a.txt");
-        Assert.assertNotNull(new PoissonSeries(xStream, 1.0, "2003/tab5.2a.txt"));
+        Assert.assertNotNull(new PoissonSeries(xStream, "2003/tab5.2a.txt", 1.0, 1.0));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2b.txt");
-        Assert.assertNotNull(new PoissonSeries(yStream, 1.0, "2003/tab5.2b.txt"));
+        Assert.assertNotNull(new PoissonSeries(yStream, "2003/tab5.2b.txt", 1.0, 1.0));
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2c.txt");
-        Assert.assertNotNull(new PoissonSeries(zStream, 1.0, "2003/tab5.2c.txt"));
+        Assert.assertNotNull(new PoissonSeries(zStream, "2003/tab5.2c.txt", 1.0, 1.0));
     }
 
     @Test
@@ -165,13 +165,13 @@ public class PoissonSeriesTest {
         String directory = "/assets/org/orekit/IERS-conventions/";
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
-        Assert.assertNotNull(new PoissonSeries(xStream, 1.0, "2010/tab5.2a.txt"));
+        Assert.assertNotNull(new PoissonSeries(xStream, "2010/tab5.2a.txt", 1.0, 1.0));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
-        Assert.assertNotNull(new PoissonSeries(yStream, 1.0, "2010/tab5.2b.txt"));
+        Assert.assertNotNull(new PoissonSeries(yStream, "2010/tab5.2b.txt", 1.0, 1.0));
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
-        Assert.assertNotNull(new PoissonSeries(zStream, 1.0, "2010/tab5.2d.txt"));
+        Assert.assertNotNull(new PoissonSeries(zStream, "2010/tab5.2d.txt", 1.0, 1.0));
     }
 
 }

@@ -142,15 +142,32 @@ public class FundamentalNutationArguments implements Serializable {
             fCoefficients      = getCoefficients(FundamentalName.F,       polynomials, name);
             dCoefficients      = getCoefficients(FundamentalName.D,       polynomials, name);
             omegaCoefficients  = getCoefficients(FundamentalName.OMEGA,   polynomials, name);
-            lMeCoefficients    = getCoefficients(FundamentalName.L_ME,    polynomials, name);
-            lVeCoefficients    = getCoefficients(FundamentalName.L_VE,    polynomials, name);
-            lECoefficients     = getCoefficients(FundamentalName.L_E,     polynomials, name);
-            lMaCoefficients    = getCoefficients(FundamentalName.L_MA,    polynomials, name);
-            lJCoefficients     = getCoefficients(FundamentalName.L_J,     polynomials, name);
-            lSaCoefficients    = getCoefficients(FundamentalName.L_SA,    polynomials, name);
-            lUCoefficients     = getCoefficients(FundamentalName.L_U,     polynomials, name);
-            lNeCoefficients    = getCoefficients(FundamentalName.L_NE,    polynomials, name);
-            paCoefficients     = getCoefficients(FundamentalName.PA,      polynomials, name);
+            if (polynomials.containsKey(FundamentalName.L_ME)) {
+                // IERS conventions 2003 and later provide planetary nutation arguments
+                lMeCoefficients = getCoefficients(FundamentalName.L_ME,    polynomials, name);
+                lVeCoefficients = getCoefficients(FundamentalName.L_VE,    polynomials, name);
+                lECoefficients  = getCoefficients(FundamentalName.L_E,     polynomials, name);
+                lMaCoefficients = getCoefficients(FundamentalName.L_MA,    polynomials, name);
+                lJCoefficients  = getCoefficients(FundamentalName.L_J,     polynomials, name);
+                lSaCoefficients = getCoefficients(FundamentalName.L_SA,    polynomials, name);
+                lUCoefficients  = getCoefficients(FundamentalName.L_U,     polynomials, name);
+                lNeCoefficients = getCoefficients(FundamentalName.L_NE,    polynomials, name);
+                paCoefficients  = getCoefficients(FundamentalName.PA,      polynomials, name);
+            } else {
+                // IERS conventions 1996 and earlier don't provide planetary nutation arguments
+                final double[] zero = new double[] {
+                    0.0
+                };
+                lMeCoefficients = zero;
+                lVeCoefficients = zero;
+                lECoefficients  = zero;
+                lMaCoefficients = zero;
+                lJCoefficients  = zero;
+                lSaCoefficients = zero;
+                lUCoefficients  = zero;
+                lNeCoefficients = zero;
+                paCoefficients  = zero;
+            }
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

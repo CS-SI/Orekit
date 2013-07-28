@@ -46,7 +46,7 @@ import org.orekit.errors.OrekitMessages;
 public class PoissonSeries implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -3016824169123970737L;
+    private static final long serialVersionUID = 20130728L;
 
     /** Coefficients of the polynomial part. */
     private double[] coefficients;
@@ -56,11 +56,13 @@ public class PoissonSeries implements Serializable {
 
     /** Build a Poisson series from an IERS table file.
      * @param stream stream containing the IERS table
-     * @param factor multiplicative factor to use for coefficients
      * @param name name of the resource file (for error messages only)
+     * @param polyFactor multiplicative factor to use for polynomial coefficients
+     * @param nonPolyFactor multiplicative factor to use for non-ploynomial coefficients
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public PoissonSeries(final InputStream stream, final double factor, final String name)
+    public PoissonSeries(final InputStream stream, final String name,
+                         final double polyFactor, final double nonPolyFactor)
         throws OrekitException {
 
         if (stream == null) {
@@ -96,7 +98,7 @@ public class PoissonSeries implements Serializable {
 
             // look for the polynomial part
             while (line != null) {
-                if (parsePolynomial(termPattern.matcher(line), factor)) {
+                if (parsePolynomial(termPattern.matcher(line), polyFactor)) {
                     // we have parsed the polynomial part
                     line = null;
                 } else {
@@ -131,7 +133,7 @@ public class PoissonSeries implements Serializable {
                     // read the terms of the current serie
                     final SeriesTerm[] serie = new SeriesTerm[nTerms];
                     for (int i = 0; i < nTerms; ++i) {
-                        serie[i] = parseSeriesTerm(line, factor, name, lineNumber);
+                        serie[i] = parseSeriesTerm(line, nonPolyFactor, name, lineNumber);
                         line = reader.readLine();
                         ++lineNumber;
                     }
@@ -161,10 +163,10 @@ public class PoissonSeries implements Serializable {
 
     /** Parse a polynomial description line.
      * @param termMatcher matcher for the polynomial terms
-     * @param factor multiplicative factor to use for coefficients
+     * @param polyFactor multiplicative factor to use for polynomial coefficients
      * @return true if the line was parsed successfully
      */
-    private boolean parsePolynomial(final Matcher termMatcher, final double factor) {
+    private boolean parsePolynomial(final Matcher termMatcher, final double polyFactor) {
 
         // parse the polynomial one polynomial term after the other
         if (!termMatcher.lookingAt()) {
@@ -180,7 +182,7 @@ public class PoissonSeries implements Serializable {
         // parse the coefficients
         coefficients = new double[coeffs.size()];
         for (int i = 0; i < coefficients.length; ++i) {
-            coefficients[i] = factor * Double.parseDouble(coeffs.get(i));
+            coefficients[i] = polyFactor * Double.parseDouble(coeffs.get(i));
         }
 
         return true;
@@ -218,13 +220,13 @@ public class PoissonSeries implements Serializable {
 
     /** Parse a series term line.
      * @param line data line to parse
-     * @param factor multiplicative factor to use for coefficients
+     * @param nonPolyFactor multiplicative factor to use for non-ploynomial coefficients
      * @param name name of the resource file (for error messages only)
      * @param lineNumber line number (for error messages only)
      * @return a series term
      * @exception OrekitException if the line is null or cannot be parsed
      */
-    private SeriesTerm parseSeriesTerm (final String line, final double factor,
+    private SeriesTerm parseSeriesTerm (final String line, final double nonPolyFactor,
                                         final String name, final int lineNumber)
         throws OrekitException {
 
@@ -238,8 +240,8 @@ public class PoissonSeries implements Serializable {
         final String[] fields = line.split("\\p{Space}+");
         final int l = fields.length;
         if ((l == 17) || ((l == 18) && (fields[0].length() == 0))) {
-            return SeriesTerm.buildTerm(Double.parseDouble(fields[l - 16]) * factor,
-                                        Double.parseDouble(fields[l - 15]) * factor,
+            return SeriesTerm.buildTerm(Double.parseDouble(fields[l - 16]) * nonPolyFactor,
+                                        Double.parseDouble(fields[l - 15]) * nonPolyFactor,
                                         Integer.parseInt(fields[l - 14]), Integer.parseInt(fields[l - 13]),
                                         Integer.parseInt(fields[l - 12]), Integer.parseInt(fields[l - 11]),
                                         Integer.parseInt(fields[l - 10]), Integer.parseInt(fields[l -  9]),

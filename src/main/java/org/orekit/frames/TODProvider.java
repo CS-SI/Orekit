@@ -16,14 +16,13 @@
  */
 package org.orekit.frames;
 
-import java.io.InputStream;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -219,9 +218,7 @@ class TODProvider implements TransformProvider {
         // So we don't set up a constructor argument allowing the user to choose
         // IERS conventions here, as it would be misleading. However, we do need the
         // raw Delaunay arguments, so we retrieve them from a hard-coded set of conventions.
-        final String name        = IERSConventions.IERS_2010.getNutationArguments();
-        final InputStream stream = TODProvider.class.getResourceAsStream(name);
-        nutationArguments        = new FundamentalNutationArguments(stream, name);
+        nutationArguments = IERSConventions.IERS_2010.getNutationArguments();
 
     }
 
@@ -229,8 +226,9 @@ class TODProvider implements TransformProvider {
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the value is desired
      * @return LoD in seconds (0 if date is outside covered range)
+     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
-    double getLOD(final AbsoluteDate date) {
+    double getLOD(final AbsoluteDate date) throws TimeStampedCacheException {
         return (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
     }
 
@@ -327,7 +325,7 @@ class TODProvider implements TransformProvider {
      * @param arguments Delaunay arguments
      * @return mean obliquity of ecliptic
      */
-    private double getMeanObliquityOfEcliptic(final DelaunayArguments arguments) {
+    double getMeanObliquityOfEcliptic(final DelaunayArguments arguments) {
 
         // offset from J2000 epoch in Julian centuries
         final double tc = arguments.getTC();
@@ -345,7 +343,7 @@ class TODProvider implements TransformProvider {
      * @return computed nutation elements in a two elements array,
      * with dPsi at index 0 and dEpsilon at index 1
      */
-    private double[] computeNutationElements(final DelaunayArguments arguments) {
+    double[] computeNutationElements(final DelaunayArguments arguments) {
 
         // offset in julian centuries
         final double tc =  arguments.getTC();

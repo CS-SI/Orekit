@@ -16,8 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.InputStream;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -26,7 +24,6 @@ import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /** Celestial Intermediate Reference Frame 2000.
@@ -67,42 +64,10 @@ class CIRF2000Provider implements TransformProvider {
         throws OrekitException {
 
         // load the nutation model
-        nutationArguments = loadArguments(conventions.getNutationArguments());
-        xDevelopment      = loadModel(conventions.getXModel());
-        yDevelopment      = loadModel(conventions.getYModel());
-        sxy2Development   = loadModel(conventions.getSXY2XModel());
-
-    }
-
-    /** Load fundamental nutation arguments.
-     * @param name file name of the fundamental arguments expressions
-     * @return fundamental nutation arguments
-     * @exception OrekitException if table cannot be loaded
-     */
-    private static FundamentalNutationArguments loadArguments(final String name)
-        throws OrekitException {
-
-        // get the table data
-        final InputStream stream = CIRF2000Provider.class.getResourceAsStream(name);
-
-        return new FundamentalNutationArguments(stream, name);
-
-    }
-
-    /** Load a series development model.
-     * @param name file name of the series development
-     * @return series development model
-     * @exception OrekitException if table cannot be loaded
-     */
-    private static PoissonSeries loadModel(final String name)
-        throws OrekitException {
-
-        // get the table data
-        final InputStream stream = CIRF2000Provider.class.getResourceAsStream(name);
-
-        // nutation models are in micro arcseconds in the data files
-        // we store and use them in radians
-        return new PoissonSeries(stream, Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6, name);
+        nutationArguments = conventions.getNutationArguments();
+        xDevelopment      = conventions.getXSeries();
+        yDevelopment      = conventions.getYSeries();
+        sxy2Development   = conventions.getSXY2XSeries();
 
     }
 
