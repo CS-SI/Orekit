@@ -243,7 +243,7 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
                 }
 
                 if (history2000 != null) {
-                    history2000.add(new EOP2000Entry(date, dtu1, lod, x, y));
+                    history2000.add(new EOP2000Entry(date, dtu1, lod, x, y, dpsi, deps));
                 }
             }
 

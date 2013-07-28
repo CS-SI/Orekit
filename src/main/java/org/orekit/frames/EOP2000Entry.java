@@ -24,7 +24,7 @@ import org.orekit.errors.OrekitException;
 public class EOP2000Entry extends EOPEntry {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -6291663706005945705L;
+    private static final long serialVersionUID = 20130728L;
 
    /** Simple constructor.
     * @param mjd entry date (modified julian day, 00h00 UTC scale)
@@ -32,12 +32,15 @@ public class EOP2000Entry extends EOPEntry {
     * @param lod length of day
     * @param x X component of pole motion
     * @param y Y component of pole motion
+    * @param ddPsi correction for nutation in longitude
+    * @param ddEps correction for nutation in obliquity
     * @exception OrekitException if UTC time scale cannot be retrieved
     */
     public EOP2000Entry(final int mjd, final double dt, final double lod,
-                        final double x, final double y)
+                        final double x, final double y,
+                        final double ddPsi, final double ddEps)
         throws OrekitException {
-        super(mjd, dt, lod, x, y);
+        super(mjd, dt, lod, x, y, ddPsi, ddEps);
     }
 
 }

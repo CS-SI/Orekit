@@ -24,13 +24,7 @@ import org.orekit.errors.OrekitException;
 public class EOP1980Entry extends EOPEntry {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8829663105212993131L;
-
-    /** Correction for nutation in longitude. */
-    private final double ddPsi;
-
-    /** Correction for nutation in obliquity. */
-    private final double ddEps;
+    private static final long serialVersionUID = 20130728L;
 
    /** Simple constructor.
     * @param mjd entry date (modified julian day, 00h00 UTC scale)
@@ -46,23 +40,7 @@ public class EOP1980Entry extends EOPEntry {
                         final double x, final double y,
                         final double ddPsi, final double ddEps)
         throws OrekitException {
-        super(mjd, dt, lod, x, y);
-        this.ddPsi = ddPsi;
-        this.ddEps = ddEps;
-    }
-
-    /** Get the correction for nutation in longitude.
-     * @return correction for nutation in longitude
-     */
-    public double getDdPsi() {
-        return ddPsi;
-    }
-
-    /** Get the correction for nutation in obliquity.
-     * @return correction for nutation in obliquity
-     */
-    public double getDdEps() {
-        return ddEps;
+        super(mjd, dt, lod, x, y, ddPsi, ddEps);
     }
 
 }

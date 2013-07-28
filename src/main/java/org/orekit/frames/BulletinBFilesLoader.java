@@ -386,14 +386,14 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                 final double y    = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double dtu1 = Double.parseDouble(matcher.group(4));
                 final double lod  = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
+                final double dpsi = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                final double deps = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
                 if (date >= mjdMin) {
                     if (history1980 != null) {
-                        final double dpsi = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                        final double deps = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
                         history1980.add(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
                     }
                     if (history2000 != null) {
-                        history2000.add(new EOP2000Entry(date, dtu1, lod, x, y));
+                        history2000.add(new EOP2000Entry(date, dtu1, lod, x, y, dpsi, deps));
                     }
                     if (date >= mjdMax) {
                         // don't bother reading the rest of the file

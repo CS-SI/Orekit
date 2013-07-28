@@ -150,12 +150,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
         }
     }
 
-    /** Get the pole IERS Reference Pole correction.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the correction is desired
-     * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
-     * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
-     */
+    /** {@inheritDoc} */
     public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
         // check if there is data for date
         if (!this.hasDataFor(date)) {
@@ -173,6 +168,31 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
             }
             final double[] interpolated = interpolator.value(0);
             return new PoleCorrection(interpolated[0], interpolated[1]);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
+        }
+    }
+
+    /** {@inheritDoc} */
+    public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return NutationCorrection.NULL_CORRECTION;
+        }
+        //we have EOP data for date -> interpolate correction
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                final EOP1980Entry e1980 = (EOP1980Entry) entry;
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                                                e1980.getDdEps(), e1980.getDdPsi()
+                                            });
+            }
+            final double[] interpolated = interpolator.value(0);
+            return new NutationCorrection(interpolated[0], interpolated[1]);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
             throw OrekitException.createInternalError(tce);

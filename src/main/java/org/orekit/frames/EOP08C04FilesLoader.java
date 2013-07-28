@@ -160,7 +160,7 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                         history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                     }
                     if (history2000 != null) {
-                        history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                        history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                     }
                     parsed = true;
 

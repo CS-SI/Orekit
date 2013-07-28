@@ -49,4 +49,20 @@ public interface EOPHistory {
      */
     double getLOD(final AbsoluteDate date) throws TimeStampedCacheException;
 
+    /** Get the pole IERS Reference Pole correction.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
+     * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
+     */
+    PoleCorrection getPoleCorrection(final AbsoluteDate date);
+
+    /** Get the correction to the nutation parameters.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
+     * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
+     */
+    NutationCorrection getNutationCorrection(final AbsoluteDate date);
+
 }

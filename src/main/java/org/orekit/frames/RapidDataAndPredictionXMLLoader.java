@@ -322,7 +322,7 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
             }
         }
@@ -366,7 +366,7 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
             }
         }
