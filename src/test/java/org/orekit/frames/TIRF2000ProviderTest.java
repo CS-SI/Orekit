@@ -15,8 +15,6 @@
  */
 package org.orekit.frames;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -26,6 +24,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.util.Precision;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
@@ -108,7 +107,7 @@ public class TIRF2000ProviderTest {
 
         // verify - necessary to throw AssertionErrors from the Callable
         for (Future<Boolean> future : futures) {
-            assertEquals(true, future.get());
+            Assert.assertEquals(true, future.get());
         }
 
     }
@@ -125,10 +124,10 @@ public class TIRF2000ProviderTest {
         final PVCoordinates actualPV = actual.getCartesian();
 
         // transform
-        assertEquals(Rotation.distance(actualRotation, expectedRotation), 0, absTol);
-        assertEquals(expectedAngular.getRotationRate(), actualAngular.getRotationRate());
-        assertEquals(expectedPV.getPosition(), actualPV.getPosition());
-        assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
+        Assert.assertEquals(Rotation.distance(actualRotation, expectedRotation), 0, absTol);
+        Assert.assertEquals(expectedAngular.getRotationRate(), actualAngular.getRotationRate());
+        Assert.assertEquals(expectedPV.getPosition(), actualPV.getPosition());
+        Assert.assertEquals(expectedPV.getVelocity(), actualPV.getVelocity());
     }
 
     @Before
