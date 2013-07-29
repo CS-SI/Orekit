@@ -34,7 +34,7 @@ public class IERSConventionsTest {
     public void testIERS1996() {
         checkPrecessionSupported(IERSConventions.IERS_1996,        true);
         checkNutationSupported(IERSConventions.IERS_1996,          true);
-        checkNonRotatingOriginSupported(IERSConventions.IERS_1996, false);
+        checkNonRotatingOriginSupported(IERSConventions.IERS_1996, true);
     }
 
     @Test

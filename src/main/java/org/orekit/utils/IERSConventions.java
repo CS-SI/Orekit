@@ -52,8 +52,22 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
+        public boolean nonRotatingOriginSupported() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
             return loadArguments(IERS_BASE + "1996/nutation-arguments.txt");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getEpsilon0() {
+            // value from chapter 5, page 25
+            return 84381.448 * Constants.ARC_SECONDS_TO_RADIANS;
         }
 
         /** {@inheritDoc} */
@@ -148,6 +162,123 @@ public enum IERSConventions {
             };
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getXFunction() throws OrekitException {
+
+            // X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
+            //     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
+            //     + 0.00204″t² sin Ω + 0.00016″t² sin 2(F - D + Ω),
+            final PolynomialNutation polynomial =
+                    new PolynomialNutation(0,
+                                           2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.198656 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0000140 * Constants.ARC_SECONDS_TO_RADIANS);
+
+            final double fCosOm    = 0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fSinOm    = 0.00204 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fSin2FDOm = 0.00016 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double sinEps0   = FastMath.sin(getEpsilon0());
+
+            final NutationFunction sum =
+                    loadPoissonSeries(IERS_BASE + "1996/tab5.4-x.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
+
+            return new NutationFunction() {
+
+                /** {@inheritDoc} */
+                @Override
+                public double value(final BodiesElements elements) {
+                    final double omega     = elements.getOmega();
+                    final double f         = elements.getF();
+                    final double d         = elements.getD();
+                    final double t         = elements.getTC();
+                    final double cosOmega  = FastMath.cos(omega);
+                    final double sinOmega  = FastMath.sin(omega);
+                    final double cos2FDOm  = FastMath.cos(2 * (f - d + omega));
+                    return polynomial.value(elements) + sinEps0 * sum.value(elements) +
+                           t * t * (fCosOm * cosOmega + fSinOm * sinOmega + fSin2FDOm * cos2FDOm);
+                }
+
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getYFunction() throws OrekitException {
+
+            // Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
+            //     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
+            //    - 0.00231″t² cos Ω − 0.00014″t² cos 2(F - D + Ω)
+            final PolynomialNutation polynomial =
+                    new PolynomialNutation(-0.00013,
+                                           0.0,
+                                           -22.40992 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.001836  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0011130 * Constants.ARC_SECONDS_TO_RADIANS);
+
+            final double fCosOm    = -0.00231 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fCos2FDOm = -0.00014 * Constants.ARC_SECONDS_TO_RADIANS;
+
+            final NutationFunction sum =
+                    loadPoissonSeries(IERS_BASE + "1996/tab5.4-y.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
+
+            return new NutationFunction() {
+
+                /** {@inheritDoc} */
+                @Override
+                public double value(final BodiesElements elements) {
+                    final double omega    = elements.getOmega();
+                    final double f        = elements.getF();
+                    final double d        = elements.getD();
+                    final double t        = elements.getTC();
+                    final double cosOmega = FastMath.cos(omega);
+                    final double cos2FDOm = FastMath.cos(2 * (f - d + omega));
+                    return polynomial.value(elements) + sum.value(elements) +
+                           t * t * (fCosOm * cosOmega + fCos2FDOm * cos2FDOm);
+                }
+
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getSXY2XFunction() throws OrekitException {
+            // s = -XY/2 + 0.00385″t - 0.07259″t³ - 0.00264″ sin Ω - 0.00006″ sin 2Ω
+            //     + 0.00074″t² sin Ω + 0.00006″t² sin 2(F - D + Ω)
+
+            final double fT          =  0.00385 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fT3         = -0.07259 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fSinOm      = -0.00264 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fSin2Om     = -0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fT2SinOm    =  0.00074 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fT2Sin2FDOm =  0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
+
+            return new NutationFunction() {
+
+                /** {@inheritDoc} */
+                @Override
+                public double value(final BodiesElements elements) {
+                    final double omega     = elements.getOmega();
+                    final double f         = elements.getF();
+                    final double d         = elements.getD();
+                    final double t         = elements.getTC();
+                    final double sinOmega  = FastMath.sin(omega);
+                    final double sin2Omega = FastMath.sin(2 * omega);
+                    final double sin2FDOm  = FastMath.sin(2 * (f - d + omega));
+                    return fSinOm * sinOmega + fSin2Om * sin2Omega +
+                           t * (fT + t * (fT2SinOm * sinOmega + fT2Sin2FDOm * sin2FDOm + t * fT3));
+                }
+            };
+
+        }
+
     },
 
     /** Constant for IERS 2003 conventions. */
@@ -168,6 +299,13 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
             return loadArguments(IERS_BASE + "2003/nutation-arguments.txt");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getEpsilon0() {
+            // value from chapter 5, page 41
+            return 84381.448 * Constants.ARC_SECONDS_TO_RADIANS;
         }
 
         /** {@inheritDoc} */
@@ -248,6 +386,13 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
+        public double getEpsilon0() {
+            // value from chapter 5, page 56
+            return 84381.406 * Constants.ARC_SECONDS_TO_RADIANS;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public NutationFunction getXFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "2010/tab5.2a.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
@@ -311,6 +456,18 @@ public enum IERSConventions {
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      */
     public abstract FundamentalNutationArguments getNutationArguments() throws OrekitException;
+
+    /** Get the obliquity of the ecliptic at J2000.0 (for nutation models).
+     * <p>
+     * This value is the one used for IAU precession/nutation models, it <em>may</em>
+     * be different from the one listed in the numerical standards at the beginning
+     * of each conventions. As an example consider IERS conventions 1996. This value
+     * is set to 84381.448 arcseconds for nutation models (chapter 5, page 25), but the
+     * value from the numerical standards (chapter 4, page 19) is 84381.412 arcseconds.
+     * </p>
+     * @return obliquity of the ecliptic at J2000.0 (for nutation models)
+     */
+    public abstract double getEpsilon0();
 
     /** Get the function computing the X pole component.
      * @return function computing the X pole component

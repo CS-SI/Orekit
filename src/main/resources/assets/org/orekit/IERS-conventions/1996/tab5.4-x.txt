@@ -4,22 +4,52 @@ TeX files, in order to match the parser in Orekit. The changes done are:
  - reordered the columns
  - added the column for term index
  - added the columns for planetary arguments (which are not used in IAU-80 precession)
- - separated constant and linear terms (Ai/Ai' and Bi/Bi') in different lines
+ - separated constant and linear terms (Ai/Ai'/Ai'' and Bi/Bi'/Bi'') in different lines
  - removed the column for period
- - split the table in two tables, one for ∆ψ and one for ∆ε
+ - split the table in two tables:
+     * one for the X big sum (without the sin ε0 factor)
+     * one for the Y big sum
+ - the remaining elements of the equations polynomial, sin ε0, etc are in the code itself
  - removed the lines with only 0 coefficients (some appeared after table splitting)
  - added headers for the various parts of the tables
+ - the a
 
-The numerical values have of course not been altered!
+Two values are different in the TeX files and in the conventions that were printed. The
+reason for that is that they have been fixed by IERS after publication, is explained
+in the errata:
 
-Extract for IERS conventions 1996
+   ### 8.  p. 36:  i=1,106 has been removed from the summation, the B_i" 
+   ###     term -12.7 should be 12.7 and the B_i" term 1.4 should be -1.4.
 
-IAU 1980 Theory of Nutation in longitude ∆ψ and obliquity ∆ε, referred to the mean 
-equator and equinox of date, with t measured in Julian centuries from epoch J2000.0. The signs of
-the fundamental arguments, periods, and coefficients may differ from the original publication. These
-have been changed to be consistent with other portions of this  chapter.
+One value has been changed by Orekit team: the sign of Delaunay multiplier
+for argument l at term 30 in table X and 28 in table Y has been switched, so the
+multipliers for this term changed from (1, 0, 0 , 2, 1) to (-1, 0, 0 , 2, 1). This
+change ensure the term matches the corresponding value in table 5.1, it matches the
+coefficients found in all other references about IAU-80 nutation model we are able
+to check (Sofa library function iauNut80, IERS data file at
+http://hpiers.obspm.fr/eop-pc/models/nutations/nut_IAU1980.dat, various
+implementations fond on the web and relating to Explanatory Supplement to the
+Astronomical Almanac (1992), it matches the announced period of 32.0 days
+(the recomputed period for (-1, 0, 0 , 2, 1) is 31.9615 days whereas the
+recomputed period for (1, 0, 0 , 2, 1) is 9.62733 days), and it avoid a
+duplication as another term with multipliers (1, 0, 0 , 2, 1) and the correct
+period of 9.6 days appear later in the table.
 
-∆ψ = Σ (Ai+A'it) sin(ARGUMENT), ∆ε = Σ (Bi+B'it) cos(ARGUMENT)
+# Extract from IERS conventions 1996
+
+# Series for the celestial coordinates X and Y of the CEP referred to the mean equator and
+# equinox of epoch J2000.0, with t measured in Julian centuries from epoch J2000.0. The terms following
+# the dotted line are identical in Tables 5.1 and 5.4. The signs of the fundamental arguments, periods,
+# and coefficients may differ from the original publication. These have been changed to be consistent
+# with other portions of this chapter.
+
+# X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
+#     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
+#     + 0.00204″t² sin Ω + 0.00016″t² sin 2(F - D + Ω),
+
+# Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
+#     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
+#     -0.00231″t² cos Ω - 0.00014″t² cos 2(F - D + Ω)
 
 Polynomial part (unit arcsecond)
 
@@ -33,12 +63,12 @@ Non-polynomial part (unit 1.0e-4 arcsecond)
 
 --------------------------------------------------------------------------------------------------------------
 
-j = 0  Nb of terms = 106
+j = 0  Nb of terms = 107
 
     1    -171996.0             0.0     0    0    0    0    1   0   0     0   0     0   0     0   0     0
     2     -13187.0             0.0     0    0    2   -2    2   0   0     0   0     0   0     0   0     0
     3      -2274.0             0.0     0    0    2    0    2   0   0     0   0     0   0     0   0     0
-    4       2062.0             0.0     0    0    0    0    2   0   0     0   0     0   0     0   0     0
+    4       2053.2             0.0     0    0    0    0    2   0   0     0   0     0   0     0   0     0
     5      -1426.0             0.0     0   -1    0    0    0   0   0     0   0     0   0     0   0     0
     6        712.0             0.0     1    0    0    0    0   0   0     0   0     0   0     0   0     0
     7       -517.0             0.0     0    1    2   -2    2   0   0     0   0     0   0     0   0     0
@@ -141,20 +171,26 @@ j = 0  Nb of terms = 106
   104          1.0             0.0    -1    0    0    1    1   0   0     0   0     0   0     0   0     0
   105          1.0             0.0    -1   -1    0    2    1   0   0     0   0     0   0     0   0     0
   106          1.0             0.0     0    1    0    1    0   0   0     0   0     0   0     0   0     0
+  107         -1.2             0.0     0    0    2   -2    3   0   0     0   0     0   0     0   0     0
 
-j = 1  Nb of terms = 14
+j = 1  Nb of terms = 19
 
-  107       -174.2             0.0     0    0    0    0    1   0   0     0   0     0   0     0   0     0
-  108         -1.6             0.0     0    0    2   -2    2   0   0     0   0     0   0     0   0     0
-  109         -0.2             0.0     0    0    2    0    2   0   0     0   0     0   0     0   0     0
-  110          0.2             0.0     0    0    0    0    2   0   0     0   0     0   0     0   0     0
-  111          3.4             0.0     0   -1    0    0    0   0   0     0   0     0   0     0   0     0
-  112          0.1             0.0     1    0    0    0    0   0   0     0   0     0   0     0   0     0
-  113          1.2             0.0     0    1    2   -2    2   0   0     0   0     0   0     0   0     0
-  114         -0.4             0.0     0    0    2    0    1   0   0     0   0     0   0     0   0     0
-  115         -0.5             0.0     0   -1    2   -2    2   0   0     0   0     0   0     0   0     0
-  116          0.1             0.0     0    0    2   -2    1   0   0     0   0     0   0     0   0     0
-  117          0.1             0.0     1    0    0    0    1   0   0     0   0     0   0     0   0     0
-  118         -0.1             0.0    -1    0    0    0    1   0   0     0   0     0   0     0   0     0
-  119         -0.1             0.0     0    2    0    0    0   0   0     0   0     0   0     0   0     0
-  120          0.1             0.0     0    2    2   -2    2   0   0     0   0     0   0     0   0     0
+  108        -84.2          5173.2     0    0    0    0    1   0   0     0   0     0   0     0   0     0
+  109          5.3           322.2     0    0    2   -2    2   0   0     0   0     0   0     0   0     0
+  110          1.0            54.8     0    0    2    0    2   0   0     0   0     0   0     0   0     0
+  111         -1.0           -50.5     0    0    0    0    2   0   0     0   0     0   0     0   0     0
+  112          4.3             3.0     0   -1    0    0    0   0   0     0   0     0   0     0   0     0
+  113          0.1             0.0     1    0    0    0    0   0   0     0   0     0   0     0   0     0
+  114          1.5            12.6     0    1    2   -2    2   0   0     0   0     0   0     0   0     0
+  115         -0.4            11.3     0    0    2    0    1   0   0     0   0     0   0     0   0     0
+  116          0.0             7.3     1    0    2    0    2   0   0     0   0     0   0     0   0     0
+  117         -0.5            -5.3     0   -1    2   -2    2   0   0     0   0     0   0     0   0     0
+  118          0.1            -4.0     0    0    2   -2    1   0   0     0   0     0   0     0   0     0
+  119          0.0            -3.0    -1    0    2    0    2   0   0     0   0     0   0     0   0     0
+  120          0.1            -1.8     1    0    0    0    1   0   0     0   0     0   0     0   0     0
+  121          0.0             1.5    -1    0    2    2    2   0   0     0   0     0   0     0   0     0
+  122         -0.1             1.8    -1    0    0    0    1   0   0     0   0     0   0     0   0     0
+  123          0.0             1.5     1    0    2    0    1   0   0     0   0     0   0     0   0     0
+  124          0.0            -1.3    -2    0    2    0    1   0   0     0   0     0   0     0   0     0
+  125         -0.1             0.0     0    2    0    0    0   0   0     0   0     0   0     0   0     0
+  126          0.1             0.0     0    2    2   -2    2   0   0     0   0     0   0     0   0     0
