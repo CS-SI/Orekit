@@ -111,7 +111,7 @@ class TODProvider implements TransformProvider {
                                            eopHistory.getNutationCorrection(date);
 
         final double deps = nutationInObliquity.value(arguments) + nutCorr.getDdeps();
-        final double dpsi = nutationInLongitude.value(arguments)         + nutCorr.getDdpsi();
+        final double dpsi = nutationInLongitude.value(arguments) + nutCorr.getDdpsi();
 
         // compute the true obliquity of the ecliptic
         final double toe = moe + deps;
