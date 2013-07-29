@@ -32,45 +32,45 @@ public class IERSConventionsTest {
 
     @Test
     public void testIERS1996() {
-        checkPrecessionSupported(IERSConventions.IERS_1996);
-        checkNutationSupported(IERSConventions.IERS_1996);
-        checkNonRotatingOriginSupported(IERSConventions.IERS_1996);
+        checkPrecessionSupported(IERSConventions.IERS_1996,        true);
+        checkNutationSupported(IERSConventions.IERS_1996,          true);
+        checkNonRotatingOriginSupported(IERSConventions.IERS_1996, false);
     }
 
     @Test
     public void testIERS2003() {
-        checkPrecessionSupported(IERSConventions.IERS_2003);
-        checkNutationSupported(IERSConventions.IERS_2003);
-        checkNonRotatingOriginSupported(IERSConventions.IERS_2003);
+        checkPrecessionSupported(IERSConventions.IERS_2003,        true);
+        checkNutationSupported(IERSConventions.IERS_2003,          false);
+        checkNonRotatingOriginSupported(IERSConventions.IERS_2003, true);
     }
 
     @Test
     public void testIERS2010() {
-        checkPrecessionSupported(IERSConventions.IERS_2010);
-        checkNutationSupported(IERSConventions.IERS_2010);
-        checkNonRotatingOriginSupported(IERSConventions.IERS_2010);
+        checkPrecessionSupported(IERSConventions.IERS_2010,        false);
+        checkNutationSupported(IERSConventions.IERS_2010,          false);
+        checkNonRotatingOriginSupported(IERSConventions.IERS_2010, true);
     }
 
-    private void checkPrecessionSupported(IERSConventions conventions) {
-        boolean supported = conventions.precessionSupported();
-        Assert.assertEquals(supported, checkMethod(conventions, Method.PRECESSION_ZETA));
-        Assert.assertEquals(supported, checkMethod(conventions, Method.PRECESSION_THETA));
-        Assert.assertEquals(supported, checkMethod(conventions, Method.PRECESSION_Z));
+    private void checkPrecessionSupported(IERSConventions conventions, boolean expected) {
+        Assert.assertEquals(expected, conventions.precessionSupported());
+        Assert.assertEquals(expected, checkMethod(conventions, Method.PRECESSION_ZETA));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.PRECESSION_THETA));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.PRECESSION_Z));
     }
 
-    private void checkNutationSupported(IERSConventions conventions) {
-        boolean supported = conventions.nutationSupported();
-        Assert.assertEquals(supported, checkMethod(conventions, Method.NUTATION_LONGITUDE));
-        Assert.assertEquals(supported, checkMethod(conventions, Method.NUTATION_OBLIQUITY));
-        Assert.assertEquals(supported, checkMethod(conventions, Method.EQUINOXE_CORRECTION));
-        Assert.assertEquals(supported, checkMethod(conventions, Method.MEAN_OBLIQUITY));
+    private void checkNutationSupported(IERSConventions conventions, boolean expected) {
+        Assert.assertEquals(expected, conventions.nutationSupported());
+        Assert.assertEquals(expected, checkMethod(conventions, Method.NUTATION_LONGITUDE));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.NUTATION_OBLIQUITY));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.EQUINOXE_CORRECTION));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.MEAN_OBLIQUITY));
     }
 
-    private void checkNonRotatingOriginSupported(IERSConventions conventions) {
-        boolean supported = conventions.nonRotatingOriginSupported();
-        Assert.assertEquals(supported, checkMethod(conventions, Method.CIP_X));
-        Assert.assertEquals(supported, checkMethod(conventions, Method.CIP_Y));
-        Assert.assertEquals(supported, checkMethod(conventions, Method.CIO_S));
+    private void checkNonRotatingOriginSupported(IERSConventions conventions, boolean expected) {
+        Assert.assertEquals(expected, conventions.nonRotatingOriginSupported());
+        Assert.assertEquals(expected, checkMethod(conventions, Method.CIP_X));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.CIP_Y));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.CIO_S));
     }
 
     public boolean checkMethod(IERSConventions conventions, Method method) {
