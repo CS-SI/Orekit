@@ -105,7 +105,7 @@ class TODProvider implements TransformProvider {
         // compute the mean obliquity of the ecliptic
         final double moe = meanObliquityOfEcliptic.value(arguments);
 
-        // get the IAU1980 corrections for the nutation parameters
+        // get the corrections for the nutation parameters
         final NutationCorrection nutCorr = (eopHistory == null) ?
                                            NutationCorrection.NULL_CORRECTION :
                                            eopHistory.getNutationCorrection(date);
