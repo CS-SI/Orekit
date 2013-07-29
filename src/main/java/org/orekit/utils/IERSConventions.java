@@ -25,6 +25,7 @@ import org.orekit.data.NutationFunction;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -39,29 +40,24 @@ public enum IERSConventions {
     IERS_1996 {
 
         /** {@inheritDoc} */
+        @Override
+        public boolean precessionSupported() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean nutationSupported() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
             return loadArguments(IERS_BASE + "1996/nutation-arguments.txt");
         }
 
         /** {@inheritDoc} */
-        public NutationFunction getXFunction() throws OrekitException {
-            // TODO: load CIP pole X
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getYFunction() throws OrekitException {
-            // TODO: load CIP pole Y
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getSXY2XFunction() throws OrekitException {
-            // TODO: load CIO origin s
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
+        @Override
         public NutationFunction getPrecessionZetaFunction() throws OrekitException {
             return new PolynomialNutation(0.0,
                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -71,6 +67,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getPrecessionThetaFunction() throws OrekitException {
             return new PolynomialNutation(0.0,
                                           2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -79,6 +76,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getPrecessionZFunction() throws OrekitException {
             return new PolynomialNutation(0.0,
                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -87,6 +85,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "1996/tab5.1-psi.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
@@ -94,6 +93,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getNutationInObliquityFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "1996/tab5.1-epsilon.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
@@ -101,6 +101,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getMeanObliquityOfEclipticFunction() {
             return new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
                                             -46.8150   * Constants.ARC_SECONDS_TO_RADIANS,
@@ -109,6 +110,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
             return new NutationFunction() {
 
@@ -152,11 +154,24 @@ public enum IERSConventions {
     IERS_2003 {
 
         /** {@inheritDoc} */
+        @Override
+        public boolean precessionSupported() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public boolean nonRotatingOriginSupported() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
             return loadArguments(IERS_BASE + "2003/nutation-arguments.txt");
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getXFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "2003/tab5.2a.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
@@ -164,6 +179,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getYFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "2003/tab5.2b.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
@@ -171,6 +187,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getSXY2XFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "2003/tab5.2c.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
@@ -178,44 +195,39 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getPrecessionZetaFunction() throws OrekitException {
-            // TODO: load precession zeta
-            throw OrekitException.createInternalError(null);
+            // the following values are from equation 33 in IERS 2003 conventions
+            return new PolynomialNutation(2.5976176    * Constants.ARC_SECONDS_TO_RADIANS,
+                                          2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
+                                          0.3019015    * Constants.ARC_SECONDS_TO_RADIANS,
+                                          0.0179663    * Constants.ARC_SECONDS_TO_RADIANS,
+                                          -0.0000327   * Constants.ARC_SECONDS_TO_RADIANS,
+                                          -0.0000002   * Constants.ARC_SECONDS_TO_RADIANS);
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getPrecessionThetaFunction() throws OrekitException {
-            // TODO: load precession eta
-            throw OrekitException.createInternalError(null);
+            // the following values are from equation 33 in IERS 2003 conventions
+            return new PolynomialNutation(0.0,
+                                          2004.1917476 * Constants.ARC_SECONDS_TO_RADIANS,
+                                          -0.4269353   * Constants.ARC_SECONDS_TO_RADIANS,
+                                          -0.0418251   * Constants.ARC_SECONDS_TO_RADIANS,
+                                          -0.0000601   * Constants.ARC_SECONDS_TO_RADIANS,
+                                          -0.0000001   * Constants.ARC_SECONDS_TO_RADIANS);
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getPrecessionZFunction() throws OrekitException {
-            // TODO: load precession z
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
-            // TODO: load nutation in longitude
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getNutationInObliquityFunction() throws OrekitException {
-            // TODO: load nutation in obliquity
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getMeanObliquityOfEclipticFunction() {
-            // TODO: compute mean obliquity of ecliptic
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
-            return new Zero();
+            // the following values are from equation 33 in IERS 2003 conventions
+            return new PolynomialNutation(-2.5976176   * Constants.ARC_SECONDS_TO_RADIANS,
+                                          2306.0803226 * Constants.ARC_SECONDS_TO_RADIANS,
+                                          1.0947790    * Constants.ARC_SECONDS_TO_RADIANS,
+                                          0.0182273    * Constants.ARC_SECONDS_TO_RADIANS,
+                                          0.0000470    * Constants.ARC_SECONDS_TO_RADIANS,
+                                          -0.0000003   * Constants.ARC_SECONDS_TO_RADIANS);
         }
 
     },
@@ -224,11 +236,18 @@ public enum IERSConventions {
     IERS_2010 {
 
         /** {@inheritDoc} */
+        @Override
+        public boolean nonRotatingOriginSupported() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
             return loadArguments(IERS_BASE + "2010/nutation-arguments.txt");
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getXFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "2010/tab5.2a.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
@@ -236,6 +255,7 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getYFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "2010/tab5.2b.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
@@ -243,57 +263,48 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
+        @Override
         public NutationFunction getSXY2XFunction() throws OrekitException {
             return loadPoissonSeries(IERS_BASE + "2010/tab5.2d.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
-        /** {@inheritDoc} */
-        public NutationFunction getPrecessionZetaFunction() throws OrekitException {
-            // TODO: load precession zeta
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getPrecessionThetaFunction() throws OrekitException {
-            // TODO: load precession eta
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getPrecessionZFunction() throws OrekitException {
-            // TODO: load precession z
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
-            // TODO: load nutation in longitude
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getNutationInObliquityFunction() throws OrekitException {
-            // TODO: load nutation in obliquity
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getMeanObliquityOfEclipticFunction() {
-            // TODO: compute mean obliquity of ecliptic
-            throw OrekitException.createInternalError(null);
-        }
-
-        /** {@inheritDoc} */
-        public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
-            return new Zero();
-        }
-
     };
 
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
+
+    /** Check if {@link #getPrecessionZetaFunction()}, {@link #getPrecessionThetaFunction()}
+     * and {@link #getPrecessionZFunction()} methods are supported.
+     * @return true if all methods are supported, false if calling any of them would
+     * trigger an exception
+     */
+    public boolean precessionSupported() {
+        // by default, we consider we do not support precession functions
+        return false;
+    }
+
+    /** Check if {@link #getNutationInLongitudeFunction()}, {@link
+     * #getNutationInObliquityFunction()}, {link {@link #getEquationOfEquinoxesCorrectionFunction()}
+     * and {@link #getMeanObliquityOfEclipticFunction()} methods are supported.
+     * @return true if all methods are supported, false if calling any of them would
+     * trigger an exception
+     */
+    public boolean nutationSupported() {
+        // by default, we consider we do not support nutation functions
+        return false;
+    }
+
+    /** Check if {@link #getXFunction()}, {@link #getYFunction()} and {@link
+     * #getSXY2XFunction()} methods are supported.
+     * @return true if all methods are supported, false if calling any of them would
+     * trigger an exception
+     */
+    public boolean nonRotatingOriginSupported() {
+        // by default, we consider we do not support non-rotatin origin functions
+        return false;
+    }
 
     /** Get the fundamental nutation arguments.
      * @return fundamental nutation arguments
@@ -305,61 +316,110 @@ public enum IERSConventions {
      * @return function computing the X pole component
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getXFunction() throws OrekitException;
+    public NutationFunction getXFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "xCIP", toString());
+    }
 
     /** Get the function computing the Y pole component.
      * @return function computing the Y pole component
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getYFunction() throws OrekitException;
+    public NutationFunction getYFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "yCIP", toString());
+
+    }
 
     /** Get the function computing the S + XY/2 pole component.
      * @return function computing the S + XY/2 pole component
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getSXY2XFunction() throws OrekitException;
+    public NutationFunction getSXY2XFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "sCIO", toString());
+
+    }
 
     /** Get the function computing the precession angle &zeta;<sub>A</sub>.
      * @return function computing the precession angle &zeta;<sub>A</sub>
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getPrecessionZetaFunction() throws OrekitException;
+    public NutationFunction getPrecessionZetaFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "\u03b6A", toString());
+
+    }
 
     /** Get the function computing the precession angle &theta;<sub>A</sub>.
      * @return function computing the precession angle &theta;<sub>A</sub>
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getPrecessionThetaFunction() throws OrekitException;
+    public NutationFunction getPrecessionThetaFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "\u03b8A", toString());
+
+    }
 
     /** Get the function computing the precession angle z<sub>A</sub>.
      * @return function computing the precession angle z<sub>A</sub>
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getPrecessionZFunction() throws OrekitException;
+    public NutationFunction getPrecessionZFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "zA", toString());
+
+    }
 
     /** Get the function computing the nutation in longitude &Delta;&Psi;.
      * @return function computing the nutation in longitude &Delta;&Psi;
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getNutationInLongitudeFunction() throws OrekitException;
+    public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "\u0394\u03c8", toString());
+
+    }
 
     /** Get the function computing the nutation in obliquity &Delta;&epsilon;.
      * @return function computing the nutation in obliquity &Delta;&epsilon;
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getNutationInObliquityFunction() throws OrekitException;
+    public NutationFunction getNutationInObliquityFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "\u0394\u03b5", toString());
+
+    }
 
     /** Get the function computing the mean obliquity of ecliptic &epsilon;<sub>A</sub>.
      * @return function computing the mean obliquity of ecliptic &epsilon;<sub>A</sub>
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getMeanObliquityOfEclipticFunction() throws OrekitException;
+    public NutationFunction getMeanObliquityOfEclipticFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "\u03b5A", toString());
+
+    }
 
     /** Get the function computing a possible correction to the Equation of the Equinoxes.
      * @return function computing a possible correction to the Equation of the Equinoxes
      * @exception OrekitException if table cannot be loaded
      */
-    public abstract NutationFunction getEquationOfEquinoxesCorrectionFunction() throws OrekitException;
+    public NutationFunction getEquationOfEquinoxesCorrectionFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "\u0394eqe", toString());
+
+    }
 
     /** Load a series development model.
      * @param name file name of the series development
@@ -392,18 +452,6 @@ public enum IERSConventions {
         final InputStream stream = IERSConventions.class.getResourceAsStream(name);
 
         return new FundamentalNutationArguments(stream, name);
-
-    }
-
-    /** Local null function. */
-    private static class Zero implements NutationFunction {
-
-        /** {@inheritDoc} */
-        @Override
-        public double value(final BodiesElements elements) {
-            // always return 0
-            return 0;
-        }
 
     }
 

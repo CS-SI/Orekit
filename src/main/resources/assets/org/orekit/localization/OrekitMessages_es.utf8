@@ -61,6 +61,9 @@ MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = faltan parámetros de orien
 # unable to par# file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = el fichero {0} no es un fichero de datos IERS reconocido
 
+# parameter {0} is not supported in {1}
+NOT_A_SUPPORTED_IERS_PARAMETER = <MISSING TRANSLATION!>
+
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
 INCONSISTENT_DATES_IN_IERS_FILE = fechas {1}-{2}-{3} y MJD {4} incoherentes en el fichero IERS {0}
 
