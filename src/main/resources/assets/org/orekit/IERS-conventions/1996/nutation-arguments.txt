@@ -1,0 +1,34 @@
+# Readers may note that the linear rate for the mean longitude of the
+# ascending node of the moon above (6962890.2665″ per Julian century)
+# is different from the rate in later conventions (at 2003 and 2010),
+# where it is 6962890.5431″ per Julian century. This is the only Delaunay
+# argument that changes between 1996, 2003 and 2010 conventions.
+
+# The planetary nutation arguments (mean longitudes for Mercury, Venus, Earth, Mars,
+# Jupiter, Saturne, Uranus and Neptune longitudes and general accumulated precession)
+# are NOT present in IERS 1996 conventions. Initial values excluding Mercury, Uranus
+# and Neptune were provided as part of a specific IERS 1996 precession-nutation theory,
+# but this theory was not used for generation of EOP products. The conventions reads:
+#      These coefficients are meant to be used for prediction purposes
+#      and by those requiring accurate a priori estimates of nutation.
+#      They are not meant to replace the IAU Theory.
+
+
+# Extract from IERS conventions 1996 (page 23)
+
+reference = 2000-01-01T12:00:00 TT
+
+# Mean Anomaly of the Moon
+ F1 ≡ l = 134.96340251° + 1717915923.2178″t + 31.8792″t² + 0.051635″t³ − 0.00024470″t⁴
+
+# Mean Anomaly of the Sun
+ F2 ≡ l' = 357.52910918° + 129596581.0481″t − 0.5532″t² + 0.000136″t³ − 0.00001149″t⁴
+
+# L − Ω
+ F3 ≡ F = 93.27209062° + 1739527262.8478″t − 12.7512″t² − 0.001037″t³ + 0.00000417″t⁴
+
+# Mean Elongation of the Moon from the Sun
+ F4 ≡ D = 297.85019547° + 1602961601.2090″t − 6.3706″t² + 0.006593″t³ − 0.00003169″t⁴
+
+# Mean Longitude of the Ascending Node of the Moon
+ F5 ≡ Ω = 125.04455501° − 6962890.2665″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴

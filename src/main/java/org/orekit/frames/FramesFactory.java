@@ -966,14 +966,20 @@ public class FramesFactory implements Serializable {
 
             // try to find an already built frame
             final Predefined factoryKey;
+            final IERSConventions conventions;
+            final EOPHistory eopHistory;
             final int interpolationPoints;
             final int pointsPerDay;
             if (applyEOPCorr) {
                 factoryKey          = Predefined.TOD_WITH_EOP_CORRECTIONS;
+                conventions         = IERSConventions.IERS_1996;
+                eopHistory          = getEOP1980History();
                 interpolationPoints = 6;
                 pointsPerDay        = 24;
             } else {
                 factoryKey          = Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
+                conventions         = IERSConventions.IERS_1996;
+                eopHistory          = null;
                 interpolationPoints = 6;
                 pointsPerDay        = 8;
             }
@@ -982,7 +988,7 @@ public class FramesFactory implements Serializable {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final TransformProvider interpolating =
-                        new InterpolatingTransformProvider(new TODProvider(applyEOPCorr), true, false,
+                        new InterpolatingTransformProvider(new TODProvider(conventions, eopHistory), true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
@@ -1019,7 +1025,7 @@ public class FramesFactory implements Serializable {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 frame = new FactoryManagedFrame(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
-                                                new MODProvider(), true, factoryKey);
+                                                new MODProvider(IERSConventions.IERS_1996), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

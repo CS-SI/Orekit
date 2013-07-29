@@ -214,12 +214,12 @@ public class FundamentalNutationArguments implements Serializable {
         // offset in julian centuries
         final double tc =  date.durationFrom(reference) / Constants.JULIAN_CENTURY;
 
-        return new DelaunayArguments(tc,
-                                  value(tc, lCoefficients),      // mean anomaly of the Moon
-                                  value(tc, lPrimeCoefficients), // mean anomaly of the Sun
-                                  value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
-                                  value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
-                                  value(tc, omegaCoefficients)); // mean longitude of the ascending node of the Moon
+        return new DelaunayArguments(date, tc,
+                                     value(tc, lCoefficients),      // mean anomaly of the Moon
+                                     value(tc, lPrimeCoefficients), // mean anomaly of the Sun
+                                     value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
+                                     value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
+                                     value(tc, omegaCoefficients)); // mean longitude of the ascending node of the Moon
 
     }
 
@@ -232,7 +232,7 @@ public class FundamentalNutationArguments implements Serializable {
         // offset in julian centuries
         final double tc =  date.durationFrom(reference) / Constants.JULIAN_CENTURY;
 
-        return new BodiesElements(tc,
+        return new BodiesElements(date, tc,
                                   value(tc, lCoefficients),      // mean anomaly of the Moon
                                   value(tc, lPrimeCoefficients), // mean anomaly of the Sun
                                   value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon

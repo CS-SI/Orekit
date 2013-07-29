@@ -18,11 +18,15 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.orekit.data.BodiesElements;
+import org.orekit.data.FundamentalNutationArguments;
+import org.orekit.data.NutationFunction;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
- * <p>This frame handles precession effects according to the IAU-76 model (Lieske).</p>
+ * <p>This frame handles precession effects according to to selected IERS conventions.</p>
  * <p>Its parent frame is the GCRF frame.<p>
  * <p>It is sometimes called Mean of Date (MoD) frame.<p>
  * @author Pascal Parraud
@@ -30,32 +34,29 @@ import org.orekit.utils.Constants;
 class MODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8795437689936129851L;
+    private static final long serialVersionUID = 20130729L;
 
-    /** 1st coefficient for ZETA precession angle. */
-    private static final double ZETA_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 2nd coefficient for ZETA precession angle. */
-    private static final double ZETA_2 =    0.30188  * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 3rd coefficient for ZETA precession angle. */
-    private static final double ZETA_3 =    0.017998 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Generator for fundamental nutation arguments. */
+    private final FundamentalNutationArguments nutationArguments;
 
-    /** 1st coefficient for THETA precession angle. */
-    private static final double THETA_1 = 2004.3109   * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 2nd coefficient for THETA precession angle. */
-    private static final double THETA_2 =   -0.42665  * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 3rd coefficient for THETA precession angle. */
-    private static final double THETA_3 =   -0.041833 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Function computing the precession angle &zeta;<sub>A</sub>. */
+    private final NutationFunction precessionZeta;
 
-    /** 1st coefficient for Z precession angle. */
-    private static final double Z_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 2nd coefficient for Z precession angle. */
-    private static final double Z_2 =    1.09468  * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 3rd coefficient for Z precession angle. */
-    private static final double Z_3 =    0.018203 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Function computing the precession angle &theta;<sub>A</sub>. */
+    private final NutationFunction precessionTheta;
+
+    /** Function computing the precession angle z<sub>A</sub>. */
+    private final NutationFunction precessionZ;
 
     /** Simple constructor.
+     * @param conventions IERS conventions to apply
+     * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public MODProvider() {
+    public MODProvider(final IERSConventions conventions) throws OrekitException {
+        this.nutationArguments = conventions.getNutationArguments();
+        this.precessionZeta    = conventions.getPrecessionZetaFunction();
+        this.precessionTheta   = conventions.getPrecessionThetaFunction();
+        this.precessionZ       = conventions.getPrecessionZFunction();
     }
 
     /** Get the transfrom from parent frame.
@@ -65,18 +66,17 @@ class MODProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) {
 
-        // offset from J2000 epoch in julian centuries
-        final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-        final double ttc = tts / Constants.JULIAN_CENTURY;
+        // compute fundamental nutation arguments arguments
+        final BodiesElements arguments = nutationArguments.evaluateAll(date);
 
         // compute the zeta precession angle
-        final double zeta = ((ZETA_3 * ttc + ZETA_2) * ttc + ZETA_1) * ttc;
+        final double zeta = precessionZeta.value(arguments);
 
         // compute the theta precession angle
-        final double theta = ((THETA_3 * ttc + THETA_2) * ttc + THETA_1) * ttc;
+        final double theta = precessionTheta.value(arguments);
 
         // compute the z precession angle
-        final double z = ((Z_3 * ttc + Z_2) * ttc + Z_1) * ttc;
+        final double z = precessionZ.value(arguments);
 
         // elementary rotations for precession
         final Rotation r1 = new Rotation(Vector3D.PLUS_K,  z);

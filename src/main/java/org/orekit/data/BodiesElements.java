@@ -18,9 +18,12 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
+import org.orekit.time.AbsoluteDate;
+
 /** Elements of the bodies having an effect on nutation.
  * <p>This class is a simple placeholder,
  * it does not provide any processing method.</p>
+ * @see NutationFunction
  * @author Luc Maisonobe
  */
 public final class BodiesElements extends  DelaunayArguments implements Serializable {
@@ -56,6 +59,7 @@ public final class BodiesElements extends  DelaunayArguments implements Serializ
     private final double pa;
 
     /** Simple constructor.
+     * @param date current date
      * @param tc offset in Julian centuries
      * @param l mean anomaly of the Moon
      * @param lPrime mean anomaly of the Sun
@@ -72,11 +76,11 @@ public final class BodiesElements extends  DelaunayArguments implements Serializ
      * @param lNe mean Neptune longitude
      * @param pa general accumulated precession in longitude
      */
-    public BodiesElements(final double tc,
+    public BodiesElements(final AbsoluteDate date, final double tc,
                           final double l, final double lPrime, final double f, final double d, final double omega,
                           final double lMe, final double lVe, final double lE, final double lMa, final double lJu,
                           final double lSa, final double lUr, final double lNe, final double pa) {
-        super(tc, l, lPrime, f, d, omega);
+        super(date, tc, l, lPrime, f, d, omega);
         this.lMe    = lMe;
         this.lVe    = lVe;
         this.lE     = lE;

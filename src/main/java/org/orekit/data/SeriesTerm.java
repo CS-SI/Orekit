@@ -24,7 +24,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-public abstract class SeriesTerm implements Serializable {
+public abstract class SeriesTerm implements NutationFunction, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 7536446008538764006L;
@@ -44,10 +44,7 @@ public abstract class SeriesTerm implements Serializable {
         this.cosCoeff = cosCoeff;
     }
 
-    /** Compute the value of the term for the current date.
-     * @param elements luni-solar and planetary elements for the current date
-     * @return current value of the term
-     */
+    /** {@inheritDoc} */
     public double value(final BodiesElements elements) {
         final double a = argument(elements);
         return sinCoeff * FastMath.sin(a) + cosCoeff * FastMath.cos(a);

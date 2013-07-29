@@ -59,8 +59,8 @@ public class TODProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.79, 1.59e-3);
-        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 1.03e-3, 5.3e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.79, 1.6e-3);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 1.07e-3, 5.3e-5);
 
     }
 
@@ -92,8 +92,8 @@ public class TODProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.39, 8.06e-4);
-        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 5.002e-4, 6.31e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.40, 8.04e-4);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 4.87e-4, 6.31e-5);
 
     }
 

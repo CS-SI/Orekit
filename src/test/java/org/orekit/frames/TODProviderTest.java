@@ -31,6 +31,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVCoordinates;
 
@@ -39,7 +40,7 @@ public class TODProviderTest {
 
     @Test
     public void testEQESmallDiscontinuity() throws OrekitException {
-        TODProvider provider = new TODProvider(false);
+        TODProvider provider = new TODProvider(IERSConventions.IERS_1996, null);
         AbsoluteDate switchDate = new AbsoluteDate(1997, 2, 27, TimeScalesFactory.getUTC());
         double currentEQE = Double.NaN;
         double h = 0.01;
@@ -64,7 +65,7 @@ public class TODProviderTest {
     @Test
     public void testRotationRate() throws OrekitException {
         TransformProvider provider =
-                new InterpolatingTransformProvider(new TODProvider(false), true, false,
+                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null), true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2035, 3, 2, 15, 58, 59, TimeScalesFactory.getUTC());
@@ -102,8 +103,8 @@ public class TODProviderTest {
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.79, 1.59e-3);
-        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 1.03e-3, 5.3e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.79, 1.6e-3);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 1.07e-3, 5.3e-5);
 
     }
 
@@ -135,8 +136,8 @@ public class TODProviderTest {
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.39, 8.06e-4);
-        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 5.002e-4, 6.31e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.40, 8.04e-4);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 4.87e-4, 6.31e-5);
 
     }
 
@@ -177,7 +178,8 @@ public class TODProviderTest {
         // in order to get only numerical noise, we have to go as far as 1h between
         // the points.
         // We finally select 6 interpolation points separated by 1 hour each
-        TransformProvider nonInterpolating = new TODProvider(true);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996,
+                                                             FramesFactory.getEOP1980History());
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
@@ -230,7 +232,7 @@ public class TODProviderTest {
         // sampling. All values between 3e-15 and 6e-15 are really equivalent: it is
         // mostly numerical noise. The best settings are 6 or 8 points every 2 or 3 hours.
         // We finally select 6 interpolation points separated by 3 hours each
-        TransformProvider nonInterpolating = new TODProvider(false);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null);
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,

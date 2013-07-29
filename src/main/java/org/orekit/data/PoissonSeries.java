@@ -42,8 +42,9 @@ import org.orekit.errors.OrekitMessages;
  *
  * @author Luc Maisonobe
  * @see SeriesTerm
+ * @see PolynomialNutation
  */
-public class PoissonSeries implements Serializable {
+public class PoissonSeries implements NutationFunction, Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130728L;
@@ -256,10 +257,7 @@ public class PoissonSeries implements Serializable {
 
     }
 
-    /** Compute the value of the development for the current date.
-     * @param elements luni-solar and planetary elements for the current date
-     * @return current value of the development
-     */
+    /** {@inheritDoc} */
     public double value(final BodiesElements elements) {
 
         final double tc = elements.getTC();
