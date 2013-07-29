@@ -15,7 +15,7 @@ TeX files, in order to match the parser in Orekit. The changes done are:
  - the a
 
 Two values are different in the TeX files and in the conventions that were printed. The
-reason for that is that they have been fixed by IERS after publication, is explained
+reason for that is that they have been fixed by IERS after publication, as explained
 in the errata:
 
    ### 8.  p. 36:  i=1,106 has been removed from the summation, the B_i" 
