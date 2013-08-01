@@ -32,24 +32,25 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 /**
- * Unit tests for {@link TIRF2000Provider}.
+ * Unit tests for {@link TIRFProvider}.
  *
  * @author Evan Ward
  */
-public class TIRF2000ProviderTest {
+public class TIRFProviderTest {
 
     /**
-     * Checks that {@link TIRF2000Provider#getTransform(AbsoluteDate)} is thread safe.
+     * Checks that {@link TIRFProvider#getTransform(AbsoluteDate)} is thread safe.
      */
     @Test
     public void testConcurrentGetTransform()
         throws OrekitException, InterruptedException, ExecutionException {
 
         // subject under test
-        final TIRF2000Provider tirf = new TIRF2000Provider(false);
+        final TIRFProvider tirf = new TIRFProvider(IERSConventions.IERS_2010, false);
         // arbitrary date
         final AbsoluteDate start = new AbsoluteDate("2009-09-19T23:59:45.000", TimeScalesFactory.getUTC());
         // in seconds = 15min

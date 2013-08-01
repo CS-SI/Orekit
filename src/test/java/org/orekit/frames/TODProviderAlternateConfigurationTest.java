@@ -27,6 +27,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -43,8 +44,10 @@ public class TODProviderAlternateConfigurationTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
-        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
+        Transform ff = FramesFactory.getMOD(IERSConventions.IERS_1996, false).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -76,8 +79,10 @@ public class TODProviderAlternateConfigurationTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
-        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
+        Transform ff = FramesFactory.getMOD(IERSConventions.IERS_1996, false).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =

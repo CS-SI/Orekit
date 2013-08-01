@@ -62,6 +62,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.SecularAndHarmonic;
 
@@ -150,7 +151,7 @@ public class Phasing {
     }
 
     public Phasing() throws IOException, ParseException, OrekitException {
-        Frame gtodFrame = FramesFactory.getGTOD(false);
+        Frame gtodFrame = FramesFactory.getGTOD(IERSConventions.IERS_1996, false);
         gtod         = (GTODProvider) (((InterpolatingTransformProvider) gtodFrame.getTransformProvider()).getRawProvider());
         earth        = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                             Constants.WGS84_EARTH_FLATTENING,
@@ -208,7 +209,7 @@ public class Phasing {
                                                tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-2 * orbit.getKeplerianPeriod());
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(false), gravityField));
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(IERSConventions.IERS_1996, false), gravityField));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 

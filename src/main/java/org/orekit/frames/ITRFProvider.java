@@ -24,7 +24,7 @@ import org.orekit.utils.Constants;
 
 
 /** International Terrestrial Reference Frame.
- * <p> Handles pole motion effects and depends on {@link TIRF2000Provider}, its
+ * <p> Handles pole motion effects and depends on {@link TIRFProvider}, its
  * parent frame.</p>
  * @author Luc Maisonobe
  */
@@ -39,12 +39,12 @@ class ITRFProvider implements TransformProvider {
     private static final double S_PRIME_RATE = -47e-6 * Constants.ARC_SECONDS_TO_RADIANS;
 
     /** TIRF provider. */
-    private final TIRF2000Provider tirf;
+    private final TIRFProvider tirf;
 
     /** Simple constructor.
      * @param tirf TIRF 2000 provider
      */
-    public ITRFProvider(final TIRF2000Provider tirf) {
+    public ITRFProvider(final TIRFProvider tirf) {
         this.tirf = tirf;
     }
 

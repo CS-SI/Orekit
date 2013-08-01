@@ -57,12 +57,12 @@ class TODProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
-     * @param eopHistory Earth Orientation Parameters correction (for nutation), may be null
+     * @param applyEOPCorr if true, EOP correction is applied (here, pole correction and LOD)
      * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
+    public TODProvider(final IERSConventions conventions, final boolean applyEOPCorr)
         throws OrekitException {
-        this.eopHistory                    = eopHistory;
+        this.eopHistory                    = applyEOPCorr ? FramesFactory.getEOPHistory(conventions) : null;
         this.nutationArguments             = conventions.getNutationArguments();
         this.nutationInLongitude           = conventions.getNutationInLongitudeFunction();
         this.nutationInObliquity           = conventions.getNutationInObliquityFunction();

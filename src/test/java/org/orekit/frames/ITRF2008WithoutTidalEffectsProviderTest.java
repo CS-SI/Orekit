@@ -85,7 +85,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
     public void testRoughERA() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
-        TIRF2000Provider TIRF2000 = (TIRF2000Provider) FramesFactory.getTIRF2000(IERSConventions.IERS_2010).getTransformProvider();
+        TIRFProvider TIRF2000 = (TIRFProvider) FramesFactory.getTIRF(IERSConventions.IERS_2010).getTransformProvider();
 
         Assert.assertEquals(180, FastMath.toDegrees(TIRF2000.getEarthRotationAngle(date)), 0.5);
 
@@ -106,7 +106,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
         AbsoluteDate date = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                              new TimeComponents(02, 00, 00),
                                              TimeScalesFactory.getUTC());
-        Transform trans = FramesFactory.getEME2000().getTransformTo(FramesFactory.getTIRF2000(IERSConventions.IERS_2010), date);
+        Transform trans = FramesFactory.getEME2000().getTransformTo(FramesFactory.getTIRF(IERSConventions.IERS_2010), date);
 
         // Positions
         Vector3D posTIRF =
@@ -138,10 +138,10 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
 
 
         // tests using direct transform
-        checkPV(pvRef, trans.transformPVCoordinates(pvEME2000), 0.593, 1.79e-4);
+        checkPV(pvRef, trans.transformPVCoordinates(pvEME2000), 0.594, 1.79e-4);
 
         // compute local evolution using finite differences
-        double h = 0.1;
+        double h = 1.0;
         Rotation r0 = trans.getRotation();
         AbsoluteDate date = t0.shiftedBy(-2 * h);
         Rotation evoM2h = FramesFactory.getEME2000().getTransformTo(itrf, date).getRotation().applyTo(r0.revert());
@@ -163,7 +163,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
         Vector3D axis = axisM2h.add(axisM1h).add(axisP1h.add(axisP2h)).normalize();
         Transform finiteDiffTransform = new Transform(t0, trans.getRotation() , new Vector3D(w ,axis));
 
-        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.594, 1.005e-4);
+        checkPV(pvRef, finiteDiffTransform.transformPVCoordinates(pvEME2000), 0.594, 1.78e-4);
 
     }
 

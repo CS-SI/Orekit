@@ -25,6 +25,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /** Greenwich True Of Date Frame, also known as True of Date Rotating frame (TDR)
  * or Greenwich Rotating Coordinate frame (GCR).
@@ -62,19 +63,21 @@ public class GTODProvider implements TransformProvider {
     private static final double GMST_3 = -6.2e-6;
 
     /** EOP history. */
-    private final EOP1980History eopHistory;
+    private final EOPHistory eopHistory;
 
     /** Provider for the parent ToD frame. */
     private final TODProvider todProvider;
 
     /** Simple constructor.
      * @param todProvider provider for the parent ToD frame
+     * @param conventions conventions to apply
      * @param applyEOPCorr if true, EOP correction is applied (here, LOD)
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected GTODProvider(final TODProvider todProvider, final boolean applyEOPCorr)
+    protected GTODProvider(final TODProvider todProvider, final IERSConventions conventions,
+                           final boolean applyEOPCorr)
         throws OrekitException {
-        this.eopHistory  = applyEOPCorr ? FramesFactory.getEOP1980History() : null;
+        this.eopHistory  = applyEOPCorr ? FramesFactory.getEOPHistory(conventions) : null;
         this.todProvider = todProvider;
     }
 

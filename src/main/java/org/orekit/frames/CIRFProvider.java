@@ -37,7 +37,7 @@ import org.orekit.utils.IERSConventions;
  * time which is consistent with the older models only.</p>
  * <p>Its parent frame is the GCRF frame.<p>
  */
-class CIRF2000Provider implements TransformProvider {
+class CIRFProvider implements TransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130728L;
@@ -60,7 +60,7 @@ class CIRF2000Provider implements TransformProvider {
      * library cannot be read.
      * @see Frame
      */
-    public CIRF2000Provider(final IERSConventions conventions)
+    public CIRFProvider(final IERSConventions conventions)
         throws OrekitException {
 
         // load the nutation model

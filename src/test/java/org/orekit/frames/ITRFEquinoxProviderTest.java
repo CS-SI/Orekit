@@ -25,13 +25,14 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 
 public class ITRFEquinoxProviderTest {
 
     @Test
     public void testEquinoxVersusCIO() throws OrekitException {
-        Frame itrfEquinox  = FramesFactory.getITRFEquinox();
+        Frame itrfEquinox  = FramesFactory.getITRFEquinox(IERSConventions.IERS_1996);
         Frame itrfCIO      = FramesFactory.getITRF2005();
         AbsoluteDate start = new AbsoluteDate(2011, 4, 10, TimeScalesFactory.getUTC());
         AbsoluteDate end   = new AbsoluteDate(2011, 7,  4, TimeScalesFactory.getUTC());

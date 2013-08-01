@@ -29,12 +29,12 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 
-public class CIRF2000ProviderTest {
+public class CIRFProviderTest {
 
     @Test
     public void testRotationRate() throws OrekitException {
         TransformProvider provider =
-                new InterpolatingTransformProvider(new CIRF2000Provider(IERSConventions.IERS_2010), true, false,
+                new InterpolatingTransformProvider(new CIRFProvider(IERSConventions.IERS_2010), true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2009, 4, 7, 2, 56, 33.816, TimeScalesFactory.getUTC());
@@ -70,7 +70,7 @@ public class CIRF2000ProviderTest {
         //       12                          86400s / 8 =  3h           6.9e-15 rad
         //
         // the two best settings are 6 points every 3 hours and 8 points every 4 hours
-        TransformProvider nonInterpolating = new CIRF2000Provider(IERSConventions.IERS_2010);
+        TransformProvider nonInterpolating = new CIRFProvider(IERSConventions.IERS_2010);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,

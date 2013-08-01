@@ -71,6 +71,7 @@ public class IERSConventionsTest {
         Assert.assertEquals(expected, checkMethod(conventions, Method.CIP_X));
         Assert.assertEquals(expected, checkMethod(conventions, Method.CIP_Y));
         Assert.assertEquals(expected, checkMethod(conventions, Method.CIO_S));
+        Assert.assertEquals(expected, checkMethod(conventions, Method.ERA));
     }
 
     public boolean checkMethod(IERSConventions conventions, Method method) {
@@ -131,6 +132,11 @@ public class IERSConventionsTest {
         CIO_S() {
             public Object invoke(IERSConventions conventions) throws OrekitException {
                 return conventions.getSXY2XFunction();
+            }
+        },
+        ERA() {
+            public Object invoke(IERSConventions conventions) throws OrekitException {
+                return conventions.getEarthOrientationAngleFunction();
             }
         };
 

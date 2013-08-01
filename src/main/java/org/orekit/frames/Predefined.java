@@ -61,47 +61,230 @@ public enum Predefined {
     /** ITRF93 with tidal effects. */
     ITRF_93_WITH_TIDAL_EFFECTS("ITRF93 with tides"),
 
-    /** Equinox-based ITRF. */
+    /** Equinox-based ITRF, IERS 1996 conventions. */
+    ITRF_EQUINOX_CONV_2010("Equinox/2010-based ITRF"),
+
+    /** Equinox-based ITRF, IERS 1996 conventions. */
+    ITRF_EQUINOX_CONV_2003("Equinox/2003-based ITRF"),
+
+    /** Equinox-based ITRF.
+     * @deprecated as of 6.1 replaced with {@link Predefined#ITRF_EQUINOX_CONV_1996}
+     */
+    @Deprecated
     ITRF_EQUINOX("Equinox-based ITRF"),
 
-    /** TIRF2000, IERS 2010 conventions, without tidal effects. */
+    /** Equinox-based ITRF, IERS 1996 conventions. */
+    ITRF_EQUINOX_CONV_1996("Equinox/1996-based ITRF"),
+
+    /** TIRF2000, IERS 2010 conventions, without tidal effects.
+     * @deprecated as of 6.1 replaced with {@link Predefined#TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS}
+     */
+    @Deprecated
     TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS("TIRF2000/2010 without tides"),
 
-    /** TIRF2000, IERS 2010 conventions, with tidal effects. */
+    /** TIRF, IERS 2010 conventions, without tidal effects.
+     * @since 6.1
+     */
+    TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS("TIRF/2010 without tides"),
+
+    /** TIRF2000, IERS 2010 conventions, with tidal effects.
+     * @deprecated as of 6.1 replaced with {@link Predefined#TIRF_CONV_2010_WITH_TIDAL_EFFECTS}
+     */
+    @Deprecated
     TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS("TIRF2000/2010 with tides"),
 
-    /** TIRF2000, IERS 2003 conventions, without tidal effects. */
+    /** TIRF, IERS 2010 conventions, with tidal effects.
+     * @since 6.1
+     */
+    TIRF_CONV_2010_WITH_TIDAL_EFFECTS("TIRF/2010 with tides"),
+
+    /** TIRF2000, IERS 2003 conventions, without tidal effects.
+     * @deprecated as of 6.1 replaced with {@link Predefined#TIRF_CONV_2003_WITHOUT_TIDAL_EFFECTS}
+     */
+    @Deprecated
     TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS("TIRF2000/2003 without tides"),
 
-    /** TIRF2000, IERS 2003 conventions, with tidal effects. */
+    /** TIRF, IERS 2003 conventions, without tidal effects.
+     * @since 6.1
+     */
+    TIRF_CONV_2003_WITHOUT_TIDAL_EFFECTS("TIRF/2003 without tides"),
+
+    /** TIRF2000, IERS 2003 conventions, with tidal effects.
+     * @deprecated as of 6.1 replaced with {@link Predefined#TIRF_CONV_2003_WITH_TIDAL_EFFECTS}
+     */
+    @Deprecated
     TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS("TIRF2000/2003 with tides"),
 
-    /** CIRF2000 frame, IERS 2010 conventions. */
+    /** TIRF, IERS 2003 conventions, with tidal effects.
+     * @since 6.1
+     */
+    TIRF_CONV_2003_WITH_TIDAL_EFFECTS("TIRF/2003 with tides"),
+
+    /** TIRF, IERS 1996 conventions, without tidal effects.
+     * @since 6.1
+     */
+    TIRF_CONV_1996_WITHOUT_TIDAL_EFFECTS("TIRF/1996 without tides"),
+
+    /** TIRF, IERS 996 conventions, with tidal effects.
+     * @since 6.1
+     */
+    TIRF_CONV_1996_WITH_TIDAL_EFFECTS("TIRF/1996 with tides"),
+
+    /** CIRF2000 frame, IERS 2010 conventions.
+     * @deprecated as of 6.1 replaced with {@link Predefined#CIRF_CONV_2010}
+     */
+    @Deprecated
     CIRF_2000_CONV_2010("CIRF2000/2010"),
 
-    /** CIRF2000 frame, IERS 2003 conventions. */
+    /** CIRF frame, IERS 2010 conventions.
+     * @since 6.1
+     */
+    CIRF_CONV_2010("CIRF/2010"),
+
+    /** CIRF2000 frame, IERS 2003 conventions.
+     * @deprecated as of 6.1 replaced with {@link Predefined#CIRF_CONV_2003}
+     */
+    @Deprecated
     CIRF_2000_CONV_2003("CIRF2000/2003"),
+
+    /** CIRF frame, IERS 2003 conventions.
+     * @since 6.1
+     */
+    CIRF_CONV_2003("CIRF/2003"),
+
+    /** CIRF frame, IERS 1996 conventions.
+     * @since 6.1
+     */
+    CIRF_CONV_1996("CIRF/1996"),
 
     /** Veis 1950. */
     VEIS_1950("VEIS1950"),
 
-    /** GTOD without EOP corrections. */
+    /** GTOD, IERS 2010 conventions without EOP corrections.
+     * @since 6.1
+     */
+    GTOD_CONV_2010_WITHOUT_EOP_CORRECTIONS("GTOD/2010 without EOP"),
+
+    /** GTOD, IERS 2003 conventions without EOP corrections.
+     * @since 6.1
+     */
+    GTOD_CONV_2003_WITHOUT_EOP_CORRECTIONS("GTOD/2003 without EOP"),
+
+    /** GTOD, IERS 1996 conventions without EOP corrections.
+     * @deprecated as of 6.1 replaced with {@link Predefined#GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS}
+     */
+    @Deprecated
     GTOD_WITHOUT_EOP_CORRECTIONS("GTOD without EOP"),
 
-    /** GTOD with EOP corrections. */
+    /** GTOD, IERS 1996 conventions without EOP corrections.
+     * @since 6.1
+     */
+    GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS("GTOD/1996 without EOP"),
+
+    /** GTOD, IERS 2010 conventions with EOP corrections.
+     * @since 6.1
+     */
+    GTOD_CONV_2010_WITH_EOP_CORRECTIONS("GTOD/2010 with EOP"),
+
+    /** GTOD, IERS 2003 conventions with EOP corrections.
+     * @since 6.1
+     */
+    GTOD_CONV_2003_WITH_EOP_CORRECTIONS("GTOD/2003 with EOP"),
+
+    /** GTOD, IERS 1996 conventions with EOP corrections.
+     * @deprecated as of 6.1 replaced with {@link Predefined#GTOD_CONV_1996_WITH_EOP_CORRECTIONS}
+     */
+    @Deprecated
     GTOD_WITH_EOP_CORRECTIONS("GTOD with EOP"),
 
-    /** TOD without EOP corrections. */
+    /** GTOD, IERS 1996 conventions with EOP corrections.
+     * @since 6.1
+     */
+    GTOD_CONV_1996_WITH_EOP_CORRECTIONS("GTOD/1996 with EOP"),
+
+    /** TOD, IERS 2010 conventions without EOP corrections.
+     * @since 6.1
+     */
+    TOD_CONV_2010_WITHOUT_EOP_CORRECTIONS("TOD/2010 without EOP"),
+
+    /** TOD, IERS 2003 conventions without EOP corrections.
+     * @since 6.1
+     */
+    TOD_CONV_2003_WITHOUT_EOP_CORRECTIONS("TOD/2003 without EOP"),
+
+    /** TOD, IERS 1996 conventions without EOP corrections.
+     * @deprecated as of 6.1 replaced with {@link Predefined#TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS}
+     */
+    @Deprecated
     TOD_WITHOUT_EOP_CORRECTIONS("TOD without EOP"),
 
-    /** TOD with EOP corrections. */
+    /** TOD, IERS 1996 conventions without EOP corrections.
+     * @since 6.1
+     */
+    TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS("TOD/1996 without EOP"),
+
+    /** TOD, IERS 2010 conventions with EOP corrections.
+     * @since 6.1
+     */
+    TOD_CONV_2010_WITH_EOP_CORRECTIONS("TOD/2010 with EOP"),
+
+    /** TOD, IERS 2003 conventions with EOP corrections.
+     * @since 6.1
+     */
+    TOD_CONV_2003_WITH_EOP_CORRECTIONS("TOD/2003 with EOP"),
+
+    /** TOD, IERS 1996 conventions with EOP corrections.
+     * @deprecated as of 6.1 replaced with {@link Predefined#TOD_CONV_1996_WITH_EOP_CORRECTIONS}
+     */
+    @Deprecated
     TOD_WITH_EOP_CORRECTIONS("TOD with EOP"),
 
-    /** MOD without EOP corrections. */
+    /** TOD, IERS 1996 conventions with EOP corrections.
+     * @since 6.1
+     */
+    TOD_CONV_1996_WITH_EOP_CORRECTIONS("TOD/1996 with EOP"),
+
+    /** MOD, IERS 2010 conventions without EOP corrections.
+     * @since 6.1
+     */
+    MOD_CONV_2010_WITHOUT_EOP_CORRECTIONS("MOD/2010 without EOP"),
+
+    /** MOD, IERS 2003 conventions without EOP corrections.
+     * @since 6.1
+     */
+    MOD_CONV_2003_WITHOUT_EOP_CORRECTIONS("MOD/2003 without EOP"),
+
+    /** MOD, IERS 1996 conventions without EOP corrections.
+     * @deprecated as of 6.1 replaced with {@link Predefined#MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS}
+     */
+    @Deprecated
     MOD_WITHOUT_EOP_CORRECTIONS("MOD without EOP"),
 
-    /** MOD with EOP corrections. */
+    /** MOD, IERS 1996 conventions without EOP corrections.
+     * @since 6.1
+     */
+    MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS("MOD/1996 without EOP"),
+
+    /** MOD, IERS 2010 conventions with EOP corrections.
+     * @since 6.1
+     */
+    MOD_CONV_2010_WITH_EOP_CORRECTIONS("MOD/2010 with EOP"),
+
+    /** MOD, IERS 2003 conventions with EOP corrections.
+     * @since 6.1
+     */
+    MOD_CONV_2003_WITH_EOP_CORRECTIONS("MOD/2003 with EOP"),
+
+    /** MOD, IERS 1996 conventions with EOP corrections.
+     * @deprecated as of 6.1 replaced with {@link Predefined#MOD_CONV_1996_WITH_EOP_CORRECTIONS}
+     */
+    @Deprecated
     MOD_WITH_EOP_CORRECTIONS("MOD with EOP"),
+
+    /** MOD, IERS 1996 conventions with EOP corrections.
+     * @since 6.1
+     */
+    MOD_CONV_1996_WITH_EOP_CORRECTIONS("MOD/1996 with EOP"),
 
     /** TEME frame. */
     TEME("TEME");

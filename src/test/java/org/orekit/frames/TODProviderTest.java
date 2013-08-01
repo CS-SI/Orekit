@@ -40,7 +40,7 @@ public class TODProviderTest {
 
     @Test
     public void testEQESmallDiscontinuity() throws OrekitException {
-        TODProvider provider = new TODProvider(IERSConventions.IERS_1996, null);
+        TODProvider provider = new TODProvider(IERSConventions.IERS_1996, false);
         AbsoluteDate switchDate = new AbsoluteDate(1997, 2, 27, TimeScalesFactory.getUTC());
         double currentEQE = Double.NaN;
         double h = 0.01;
@@ -65,7 +65,7 @@ public class TODProviderTest {
     @Test
     public void testRotationRate() throws OrekitException {
         TransformProvider provider =
-                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null), true, false,
+                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, false), true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2035, 3, 2, 15, 58, 59, TimeScalesFactory.getUTC());
@@ -87,8 +87,10 @@ public class TODProviderTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
-        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
+        Transform ff = FramesFactory.getMOD(IERSConventions.IERS_1996, false).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -120,8 +122,10 @@ public class TODProviderTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMOD(true).getTransformTo(FramesFactory.getTOD(true), t0);
-        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
+        Transform ff = FramesFactory.getMOD(IERSConventions.IERS_1996, false).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -178,8 +182,7 @@ public class TODProviderTest {
         // in order to get only numerical noise, we have to go as far as 1h between
         // the points.
         // We finally select 6 interpolation points separated by 1 hour each
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996,
-                                                             FramesFactory.getEOP1980History());
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, true);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
@@ -232,7 +235,7 @@ public class TODProviderTest {
         // sampling. All values between 3e-15 and 6e-15 are really equivalent: it is
         // mostly numerical noise. The best settings are 6 or 8 points every 2 or 3 hours.
         // We finally select 6 interpolation points separated by 3 hours each
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, false);
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,

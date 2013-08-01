@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -52,8 +53,8 @@ public class FramesFactoryTest {
     public void testTree() throws OrekitException {
         Predefined[][] reference = new Predefined[][] {
             { Predefined.EME2000,                                   Predefined.GCRF },
-            { Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS,           Predefined.TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS },
-            { Predefined.ITRF_2008_WITH_TIDAL_EFFECTS,              Predefined.TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS },
+            { Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS,           Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS },
+            { Predefined.ITRF_2008_WITH_TIDAL_EFFECTS,              Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS },
             { Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS,           Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS },
             { Predefined.ITRF_2005_WITH_TIDAL_EFFECTS,              Predefined.ITRF_2008_WITH_TIDAL_EFFECTS },
             { Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS,           Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS },
@@ -63,9 +64,9 @@ public class FramesFactoryTest {
             { Predefined.ITRF_93_WITHOUT_TIDAL_EFFECTS,             Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS },
             { Predefined.ITRF_93_WITH_TIDAL_EFFECTS,                Predefined.ITRF_2000_WITH_TIDAL_EFFECTS },
             { Predefined.ITRF_EQUINOX,                              Predefined.GTOD_WITH_EOP_CORRECTIONS },
-            { Predefined.TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS, Predefined.CIRF_2000_CONV_2010 },
-            { Predefined.TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS,    Predefined.CIRF_2000_CONV_2010 },
-            { Predefined.CIRF_2000_CONV_2010,                       Predefined.GCRF },
+            { Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS, Predefined.CIRF_CONV_2010 },
+            { Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS,    Predefined.CIRF_CONV_2010 },
+            { Predefined.CIRF_CONV_2010,                       Predefined.GCRF },
             { Predefined.VEIS_1950,                                 Predefined.GTOD_WITHOUT_EOP_CORRECTIONS },
             { Predefined.GTOD_WITHOUT_EOP_CORRECTIONS,              Predefined.TOD_WITHOUT_EOP_CORRECTIONS },
             { Predefined.GTOD_WITH_EOP_CORRECTIONS,                 Predefined.TOD_WITH_EOP_CORRECTIONS },
@@ -89,7 +90,20 @@ public class FramesFactoryTest {
         for (Predefined predefined : Predefined.values()) {
 
             Frame original = FramesFactory.getFrame(predefined);
-            if (predefined != Predefined.ICRF) {
+            switch (predefined) {
+            case ICRF :
+                Assert.assertEquals(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial", original.getName());
+                break;
+            case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
+            case TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+            case TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS :
+            case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+            case CIRF_2000_CONV_2003 :
+            case CIRF_2000_CONV_2010 :
+                Predefined nonDeprecated = Predefined.valueOf(predefined.toString().replaceAll("_2000", ""));
+                Assert.assertEquals(nonDeprecated.getName(), original.getName());
+                break;
+            default :
                 Assert.assertEquals(predefined.getName(), original.getName());
             }
 

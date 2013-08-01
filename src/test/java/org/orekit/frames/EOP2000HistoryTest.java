@@ -23,6 +23,7 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 
 public class EOP2000HistoryTest {
@@ -30,13 +31,13 @@ public class EOP2000HistoryTest {
     @Test
     public void testRegular() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate(2004, 1, 4, TimeScalesFactory.getUTC());
-        double dt = FramesFactory.getEOP2000History().getUT1MinusUTC(date);
+        double dt = FramesFactory.getEOPHistory(IERSConventions.IERS_2010).getUT1MinusUTC(date);
         Assert.assertEquals(-0.3906070, dt, 1.0e-10);
     }
 
     @Test
     public void testOutOfRange() throws OrekitException {
-        EOP2000History history = FramesFactory.getEOP2000History();
+        EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010);
         AbsoluteDate endDate = new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC());
         for (double t = -1000; t < 1000 ; t += 3) {
             AbsoluteDate date = endDate.shiftedBy(t);
@@ -53,7 +54,7 @@ public class EOP2000HistoryTest {
 
     @Test
     public void testUTCLeap() throws OrekitException {
-        EOP2000History history = FramesFactory.getEOP2000History();
+        EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2003);
         AbsoluteDate endLeap = new AbsoluteDate(2006, 1, 1, TimeScalesFactory.getUTC());
         for (double dt = -200; dt < 200; dt += 3) {
             final AbsoluteDate date = endLeap.shiftedBy(dt);

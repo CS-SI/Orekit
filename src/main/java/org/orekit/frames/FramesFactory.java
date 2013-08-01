@@ -46,15 +46,15 @@ import org.orekit.utils.OrekitConfiguration;
  * <p>
  * The user can retrieve those reference frames using various static methods
  * ({@link FramesFactory#getFrame(Predefined)},
- * {@link #getGCRF()}, {@link #getCIRF2000(IERSConventions)}
- * {@link #getTIRF2000(IERSConventions, boolean)}, {@link #getTIRF2000(IERSConventions)},
+ * {@link #getGCRF()}, {@link #getCIRF(IERSConventions)}
+ * {@link #getTIRF(IERSConventions, boolean)}, {@link #getTIRF(IERSConventions)},
  * {@link #getITRF93(boolean)}, {@link #getITRF93()},
  * {@link #getITRF97(boolean)}, {@link #getITRF97()},
  * {@link #getITRF2000(boolean)}, {@link #getITRF2000()},
  * {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
  * {@link #getITRF2008(boolean)}, {@link #getITRF2008()},
- * {@link #getEME2000()}, {@link #getMOD(boolean)}, {@link #getTOD(boolean)},
- * {@link #getGTOD(boolean)}, {@link #getITRFEquinox()}, {@link #getTEME()}
+ * {@link #getEME2000()}, {@link #getMOD(IERSConventions, boolean)}, {@link #getTOD(IERSConventions, boolean)},
+ * {@link #getGTOD(IERSConventions, boolean)}, {@link #getITRFEquinox(IERSConventions)}, {@link #getTEME()}
  * and {@link #getVeis1950()}).
  * </p>
  * <h5> International Terrestrial Reference Frame 2008 </h5>
@@ -130,12 +130,12 @@ import org.orekit.utils.OrekitConfiguration;
  *           Bias, Precession and Nutation effects |                        MOD                  MOD  (Mean Equator Of Date)
  *                                                 |                         |             w/o EOP corrections
  *                                                 |                         |  Nutation effects  |
- *    (Celestial Intermediate Reference Frame) CIRF2000                      |                    |
+ *    (Celestial Intermediate Reference Frame)   CIRF                        |                    |
  *                                                 |                        TOD                  TOD  (True Equator Of Date)
  *                          Earth natural rotation |                         |             w/o EOP corrections
  *                                                 |-------------            |    Sidereal Time   |
  *                                                 |            |            |                    |
- *  (Terrestrial Intermediate Reference Frame) TIRF2000     TIRF2000       GTOD                 GTOD  (Greenwich True Of Date)
+ *  (Terrestrial Intermediate Reference Frame)   TIRF         TIRF         GTOD                 GTOD  (Greenwich True Of Date)
  *                                                 |    w/o tidal effects                  w/o EOP corrections
  *                                     Pole motion |            |                                 |
  *                                                 |            |                                 |-------------
@@ -374,11 +374,35 @@ public class FramesFactory implements Serializable {
         return history;
     }
 
+    /** Get Earth Orientation Parameters history data.
+     * <p>
+     * This method simply calls either {@link #getEOP1980History()} or
+     * {@link #getEOP2000History()} depending on conventions.
+     * </p>
+     * @param conventions IEAR conventions with respect to which EOP are retrieved
+     * @return Earth Orientation Parameters history data
+     * @exception OrekitException if the data cannot be loaded
+     */
+    public static EOPHistory getEOPHistory(final IERSConventions conventions) throws OrekitException {
+        switch (conventions) {
+        case IERS_1996 :
+            return getEOP1980History();
+        case IERS_2003 :
+            return getEOP2000History();
+        case IERS_2010 :
+            return getEOP2000History();
+        default :
+            // this should never happen
+            throw OrekitException.createInternalError(null);
+        }
+    }
+
     /** Get one of the predefined frames.
      * @param factoryKey key of the frame within the factory
      * @return the predefined frame
      * @exception OrekitException if frame cannot be built due to missing data
      */
+    @SuppressWarnings("deprecation")
     public static Frame getFrame(final Predefined factoryKey)
         throws OrekitException {
         switch (factoryKey) {
@@ -408,34 +432,81 @@ public class FramesFactory implements Serializable {
             return getITRF93(true);
         case ITRF_93_WITH_TIDAL_EFFECTS :
             return getITRF93(false);
+        case ITRF_EQUINOX_CONV_2010 :
+            return getITRFEquinox(IERSConventions.IERS_2010);
+        case ITRF_EQUINOX_CONV_2003 :
+            return getITRFEquinox(IERSConventions.IERS_2003);
         case ITRF_EQUINOX :
-            return getITRFEquinox();
+        case ITRF_EQUINOX_CONV_1996 :
+            return getITRFEquinox(IERSConventions.IERS_1996);
         case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
-            return getTIRF2000(IERSConventions.IERS_2010, true);
+        case TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+            return getTIRF(IERSConventions.IERS_2010, true);
         case TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS :
-            return getTIRF2000(IERSConventions.IERS_2010, false);
+        case TIRF_CONV_2010_WITH_TIDAL_EFFECTS :
+            return getTIRF(IERSConventions.IERS_2010, false);
         case TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
-            return getTIRF2000(IERSConventions.IERS_2003, true);
+        case TIRF_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+            return getTIRF(IERSConventions.IERS_2003, true);
         case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
-            return getTIRF2000(IERSConventions.IERS_2003, false);
+        case TIRF_CONV_2003_WITH_TIDAL_EFFECTS :
+            return getTIRF(IERSConventions.IERS_2003, false);
+        case TIRF_CONV_1996_WITHOUT_TIDAL_EFFECTS :
+            return getTIRF(IERSConventions.IERS_1996, true);
+        case TIRF_CONV_1996_WITH_TIDAL_EFFECTS :
+            return getTIRF(IERSConventions.IERS_1996, false);
         case CIRF_2000_CONV_2010 :
-            return getCIRF2000(IERSConventions.IERS_2010);
+        case CIRF_CONV_2010 :
+            return getCIRF(IERSConventions.IERS_2010);
         case CIRF_2000_CONV_2003 :
-            return getCIRF2000(IERSConventions.IERS_2003);
+        case CIRF_CONV_2003 :
+            return getCIRF(IERSConventions.IERS_2003);
+        case CIRF_CONV_1996 :
+            return getCIRF(IERSConventions.IERS_1996);
         case VEIS_1950 :
             return getVeis1950();
+        case GTOD_CONV_2010_WITHOUT_EOP_CORRECTIONS :
+            return getGTOD(IERSConventions.IERS_2010, false);
+        case GTOD_CONV_2003_WITHOUT_EOP_CORRECTIONS :
+            return getGTOD(IERSConventions.IERS_2003, false);
         case GTOD_WITHOUT_EOP_CORRECTIONS :
-            return getGTOD(false);
+        case GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS :
+            return getGTOD(IERSConventions.IERS_1996, false);
+        case GTOD_CONV_2010_WITH_EOP_CORRECTIONS :
+            return getGTOD(IERSConventions.IERS_2010, true);
+        case GTOD_CONV_2003_WITH_EOP_CORRECTIONS :
+            return getGTOD(IERSConventions.IERS_2003, true);
         case GTOD_WITH_EOP_CORRECTIONS :
-            return getGTOD(true);
+        case GTOD_CONV_1996_WITH_EOP_CORRECTIONS :
+            return getGTOD(IERSConventions.IERS_1996, true);
+        case TOD_CONV_2010_WITHOUT_EOP_CORRECTIONS :
+            return getTOD(IERSConventions.IERS_2010, false);
+        case TOD_CONV_2003_WITHOUT_EOP_CORRECTIONS :
+            return getTOD(IERSConventions.IERS_2003, false);
         case TOD_WITHOUT_EOP_CORRECTIONS :
-            return getTOD(false);
+        case TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS :
+            return getTOD(IERSConventions.IERS_1996, false);
+        case TOD_CONV_2010_WITH_EOP_CORRECTIONS :
+            return getTOD(IERSConventions.IERS_2010, true);
+        case TOD_CONV_2003_WITH_EOP_CORRECTIONS :
+            return getTOD(IERSConventions.IERS_2003, true);
         case TOD_WITH_EOP_CORRECTIONS :
-            return getTOD(true);
+        case TOD_CONV_1996_WITH_EOP_CORRECTIONS :
+            return getTOD(IERSConventions.IERS_1996, true);
+        case MOD_CONV_2010_WITHOUT_EOP_CORRECTIONS :
+            return getMOD(IERSConventions.IERS_2010, false);
+        case MOD_CONV_2003_WITHOUT_EOP_CORRECTIONS :
+            return getMOD(IERSConventions.IERS_2003, false);
         case MOD_WITHOUT_EOP_CORRECTIONS :
-            return getMOD(false);
+        case MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS :
+            return getMOD(IERSConventions.IERS_1996, false);
+        case MOD_CONV_2010_WITH_EOP_CORRECTIONS :
+            return getMOD(IERSConventions.IERS_2010, true);
+        case MOD_CONV_2003_WITH_EOP_CORRECTIONS :
+            return getMOD(IERSConventions.IERS_2003, true);
         case MOD_WITH_EOP_CORRECTIONS :
-            return getMOD(true);
+        case MOD_CONV_1996_WITH_EOP_CORRECTIONS :
+            return getMOD(IERSConventions.IERS_1996, true);
         case TEME :
             return getTEME();
         default :
@@ -509,8 +580,8 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final Frame tirfFrame = getTIRF2000(IERSConventions.IERS_2010, ignoreTidalEffects);
-                final TIRF2000Provider tirfProvider = (TIRF2000Provider) tirfFrame.getTransformProvider();
+                final Frame tirfFrame = getTIRF(IERSConventions.IERS_2010, ignoreTidalEffects);
+                final TIRFProvider tirfProvider = (TIRFProvider) tirfFrame.getTransformProvider();
                 frame = new FactoryManagedFrame(tirfFrame, new ITRFProvider(tirfProvider), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
@@ -753,39 +824,71 @@ public class FramesFactory implements Serializable {
         }
     }
 
-    /** Get the TIRF2000 reference frame, ignoring tidal effects.
+    /** Get the TIRF reference frame, ignoring tidal effects.
+     * @param conventions IERS conventions to apply
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions)
+     */
+    @Deprecated
+    public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions) throws OrekitException {
+        return getTIRF(conventions);
+    }
+
+    /** Get the TIRF reference frame, ignoring tidal effects.
      * @param conventions IERS conventions to apply
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
      */
-    public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions) throws OrekitException {
-        return getTIRF2000(conventions, true);
+    public static FactoryManagedFrame getTIRF(final IERSConventions conventions) throws OrekitException {
+        return getTIRF(conventions, true);
     }
 
-    /** Get the TIRF2000 reference frame.
+    /** Get the TIRF reference frame.
      * @param conventions IERS conventions to apply
      * @param ignoreTidalEffects if true, tidal effects are ignored
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions, boolean)
      */
+    @Deprecated
     public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions,
                                                   final boolean ignoreTidalEffects) throws OrekitException {
+        return getTIRF(conventions, ignoreTidalEffects);
+    }
+
+    /** Get the TIRF reference frame.
+     * @param conventions IERS conventions to apply
+     * @param ignoreTidalEffects if true, tidal effects are ignored
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     * @since 6.1
+     */
+    public static FactoryManagedFrame getTIRF(final IERSConventions conventions,
+                                              final boolean ignoreTidalEffects) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey;
             switch (conventions) {
-            case IERS_2010 :
+            case IERS_1996 :
                 factoryKey = ignoreTidalEffects ?
-                                                 Predefined.TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
-                                                 Predefined.TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS;
+                             Predefined.TIRF_CONV_1996_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.TIRF_CONV_1996_WITH_TIDAL_EFFECTS;
                 break;
             case IERS_2003 :
                 factoryKey = ignoreTidalEffects ?
-                                                 Predefined.TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
-                                                 Predefined.TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS;
+                             Predefined.TIRF_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.TIRF_CONV_2003_WITH_TIDAL_EFFECTS;
+                break;
+            case IERS_2010 :
+                factoryKey = ignoreTidalEffects ?
+                             Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS;
                 break;
             default :
                 // this should never happen
@@ -795,7 +898,8 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getCIRF2000(conventions), new TIRF2000Provider(ignoreTidalEffects), false, factoryKey);
+                frame = new FactoryManagedFrame(getCIRF(conventions), new TIRFProvider(conventions, ignoreTidalEffects),
+                                                false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -809,18 +913,33 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated since 6.1 repaced with {@link #getCIRF(IERSConventions)}
      */
+    @Deprecated
     public static FactoryManagedFrame getCIRF2000(final IERSConventions conventions) throws OrekitException {
+        return getCIRF(conventions);
+    }
+
+    /** Get the CIRF2000 reference frame.
+     * @param conventions IERS conventions to apply
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     */
+    public static FactoryManagedFrame getCIRF(final IERSConventions conventions) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey;
             switch (conventions) {
-            case IERS_2010 :
-                factoryKey = Predefined.CIRF_2000_CONV_2010;
+            case IERS_1996 :
+                factoryKey = Predefined.CIRF_CONV_1996;
                 break;
             case IERS_2003 :
-                factoryKey = Predefined.CIRF_2000_CONV_2003;
+                factoryKey = Predefined.CIRF_CONV_2003;
+                break;
+            case IERS_2010 :
+                factoryKey = Predefined.CIRF_CONV_2010;
                 break;
             default :
                 // this should never happen
@@ -831,7 +950,7 @@ public class FramesFactory implements Serializable {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final TransformProvider interpolating =
-                        new InterpolatingTransformProvider(new CIRF2000Provider(conventions), true, false,
+                        new InterpolatingTransformProvider(new CIRFProvider(conventions), true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            8, Constants.JULIAN_DAY / 6,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
@@ -846,7 +965,7 @@ public class FramesFactory implements Serializable {
     }
 
     /** Get the VEIS 1950 reference frame.
-     * <p>Its parent frame is the GTOD frame without EOP corrections.<p>
+     * <p>Its parent frame is the GTOD frame with IERS 1996 conventions without EOP corrections.<p>
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
      */
@@ -859,8 +978,8 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(FramesFactory.getGTOD(false), new VEISProvider(),
-                                                true, factoryKey);
+                frame = new FactoryManagedFrame(FramesFactory.getGTOD(IERSConventions.IERS_1996, false),
+                                                new VEISProvider(), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -872,17 +991,43 @@ public class FramesFactory implements Serializable {
     /** Get the equinox-based ITRF reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
+     * @deprecated since 6.1 replaced with {@link #getITRFEquinox(IERSConventions)}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRFEquinox() throws OrekitException {
+        return getITRFEquinox(IERSConventions.IERS_1996);
+    }
+
+    /** Get the equinox-based ITRF reference frame.
+     * @param conventions IERS conventions to apply
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     */
+    public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions) throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Predefined factoryKey = Predefined.ITRF_EQUINOX;
+            final Predefined factoryKey;
+            switch (conventions) {
+            case IERS_1996 :
+                factoryKey = Predefined.ITRF_EQUINOX_CONV_1996;
+                break;
+            case IERS_2003 :
+                factoryKey = Predefined.ITRF_EQUINOX_CONV_2003;
+                break;
+            case IERS_2010 :
+                factoryKey = Predefined.ITRF_EQUINOX_CONV_2010;
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
+            }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(getGTOD(true), new ITRFEquinoxProvider(), false, factoryKey);
+                frame = new FactoryManagedFrame(getGTOD(conventions, true),
+                                                new ITRFEquinoxProvider(conventions), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -901,23 +1046,60 @@ public class FramesFactory implements Serializable {
      * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
+     * @deprecated since 6.1 replaced with {@link #getGTOD(IERSConventions, boolean)}
      */
+    @Deprecated
     public static FactoryManagedFrame getGTOD(final boolean applyEOPCorr) throws OrekitException {
+        return getGTOD(IERSConventions.IERS_1996, applyEOPCorr);
+    }
+
+    /** Get the GTOD reference frame.
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 250m in LEO and 1400m in GEO).
+     * </p>
+     * @param conventions IERS conventions to apply
+     * @param applyEOPCorr if true, EOP corrections are applied (here, dut1 and lod)
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     */
+    public static FactoryManagedFrame getGTOD(final IERSConventions conventions, final boolean applyEOPCorr)
+        throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Predefined factoryKey = applyEOPCorr ?
-                                          Predefined.GTOD_WITH_EOP_CORRECTIONS :
-                                          Predefined.GTOD_WITHOUT_EOP_CORRECTIONS;
+            final Predefined factoryKey;
+            switch (conventions) {
+            case IERS_1996 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.GTOD_CONV_1996_WITH_EOP_CORRECTIONS :
+                             Predefined.GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS;
+                break;
+            case IERS_2003 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.GTOD_CONV_2003_WITH_EOP_CORRECTIONS :
+                             Predefined.GTOD_CONV_2003_WITHOUT_EOP_CORRECTIONS;
+                break;
+            case IERS_2010 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.GTOD_CONV_2010_WITH_EOP_CORRECTIONS :
+                             Predefined.GTOD_CONV_2010_WITHOUT_EOP_CORRECTIONS;
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
+            }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final Frame tod = getTOD(applyEOPCorr);
+                final Frame tod = getTOD(conventions, applyEOPCorr);
                 final InterpolatingTransformProvider todInterpolating =
                         (InterpolatingTransformProvider) tod.getTransformProvider();
                 final TODProvider todRaw = (TODProvider) todInterpolating.getRawProvider();
-                final GTODProvider gtodRaw = new GTODProvider(todRaw, applyEOPCorr);
+                final GTODProvider gtodRaw = new GTODProvider(todRaw, conventions, applyEOPCorr);
                 final TransformProvider gtodInterpolating =
                         new InterpolatingTransformProvider(gtodRaw, true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
@@ -943,7 +1125,7 @@ public class FramesFactory implements Serializable {
      * @param applyEOPCorr if true, EOP corrections are applied (here, lod)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 6.0, replaced by {@link #getGTOD(boolean)}
+     * @deprecated as of 6.0, replaced by {@link #getGTOD(IERSConventions, boolean)}
      */
     @Deprecated
     public static FactoryManagedFrame getPEF(final boolean applyEOPCorr) throws OrekitException {
@@ -960,26 +1142,58 @@ public class FramesFactory implements Serializable {
      * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
+     * @deprecated as of 6.1 replaced with {@link #getTOD(IERSConventions, boolean)}
      */
-    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr) throws OrekitException {
+    @Deprecated
+    public static FactoryManagedFrame getTOD(final boolean applyEOPCorr)
+        throws OrekitException {
+        return getTOD(IERSConventions.IERS_1996, applyEOPCorr);
+    }
+
+    /** Get the TOD reference frame.
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
+     * </p>
+      * @param conventions IERS conventions to apply
+    * @param applyEOPCorr if true, EOP corrections are applied (here, nutation)
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     */
+    public static FactoryManagedFrame getTOD(final IERSConventions conventions, final boolean applyEOPCorr)
+        throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey;
-            final IERSConventions conventions;
-            final EOPHistory eopHistory;
+            switch (conventions) {
+            case IERS_1996 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.TOD_CONV_1996_WITH_EOP_CORRECTIONS :
+                             Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS;
+                break;
+            case IERS_2003 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.TOD_CONV_2003_WITH_EOP_CORRECTIONS :
+                             Predefined.TOD_CONV_2003_WITHOUT_EOP_CORRECTIONS;
+                break;
+            case IERS_2010 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.TOD_CONV_2010_WITH_EOP_CORRECTIONS :
+                             Predefined.TOD_CONV_2010_WITHOUT_EOP_CORRECTIONS;
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
+            }
             final int interpolationPoints;
             final int pointsPerDay;
             if (applyEOPCorr) {
-                factoryKey          = Predefined.TOD_WITH_EOP_CORRECTIONS;
-                conventions         = IERSConventions.IERS_1996;
-                eopHistory          = getEOP1980History();
                 interpolationPoints = 6;
                 pointsPerDay        = 24;
             } else {
-                factoryKey          = Predefined.TOD_WITHOUT_EOP_CORRECTIONS;
-                conventions         = IERSConventions.IERS_1996;
-                eopHistory          = null;
                 interpolationPoints = 6;
                 pointsPerDay        = 8;
             }
@@ -988,12 +1202,13 @@ public class FramesFactory implements Serializable {
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 final TransformProvider interpolating =
-                        new InterpolatingTransformProvider(new TODProvider(conventions, eopHistory), true, false,
+                        new InterpolatingTransformProvider(new TODProvider(conventions, applyEOPCorr),
+                                                           true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
                                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(getMOD(applyEOPCorr), interpolating, true, factoryKey);
+                frame = new FactoryManagedFrame(getMOD(conventions, applyEOPCorr), interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -1012,20 +1227,58 @@ public class FramesFactory implements Serializable {
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
+     * @deprecated as of 6.1, replaced with {@link #getMOD(IERSConventions, boolean)}
      */
-    public static FactoryManagedFrame getMOD(final boolean applyEOPCorr) throws OrekitException {
+    @Deprecated
+    public static FactoryManagedFrame getMOD(final boolean applyEOPCorr)
+        throws OrekitException {
+        return getMOD(IERSConventions.IERS_1996, applyEOPCorr);
+    }
+
+    /** Get the MOD reference frame.
+     * <p>
+     * The applyEOPCorr parameter is available mainly for testing purposes or for
+     * consistency with legacy software that don't handle EOP correction parameters.
+     * Beware that setting this parameter to {@code false} leads to crude accuracy
+     * (order of magnitudes for errors might be above 1m in LEO and 10m in GEO).
+     * </p>
+     * @param conventions IERS conventions to apply
+     * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     */
+    public static FactoryManagedFrame getMOD(final IERSConventions conventions, final boolean applyEOPCorr)
+        throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Predefined factoryKey = applyEOPCorr ?
-                                          Predefined.MOD_WITH_EOP_CORRECTIONS :
-                                          Predefined.MOD_WITHOUT_EOP_CORRECTIONS;
+            final Predefined factoryKey;
+            switch (conventions) {
+            case IERS_1996 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.MOD_CONV_1996_WITH_EOP_CORRECTIONS :
+                             Predefined.MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS;
+                break;
+            case IERS_2003 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.MOD_CONV_2003_WITH_EOP_CORRECTIONS :
+                             Predefined.MOD_CONV_2003_WITHOUT_EOP_CORRECTIONS;
+                break;
+            case IERS_2010 :
+                factoryKey = applyEOPCorr ?
+                             Predefined.MOD_CONV_2010_WITH_EOP_CORRECTIONS :
+                             Predefined.MOD_CONV_2010_WITHOUT_EOP_CORRECTIONS;
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
+            }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
                 frame = new FactoryManagedFrame(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
-                                                new MODProvider(IERSConventions.IERS_1996), true, factoryKey);
+                                                new MODProvider(conventions), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 
@@ -1044,11 +1297,11 @@ public class FramesFactory implements Serializable {
      * @param applyEOPCorr if true, EOP corrections are applied (EME2000/GCRF bias compensation)
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated as of 6.0, replaced by {@link #getMOD(boolean)}
+     * @deprecated as of 6.0, replaced by {@link #getMOD(IERSConventions, boolean)}
      */
     @Deprecated
     public static FactoryManagedFrame getMEME(final boolean applyEOPCorr) throws OrekitException {
-        return getMOD(applyEOPCorr);
+        return getMOD(IERSConventions.IERS_1996, applyEOPCorr);
     }
 
     /** Get the TEME reference frame.
@@ -1071,7 +1324,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final Frame tod = getTOD(false);
+                final Frame tod = getTOD(IERSConventions.IERS_1996, false);
                 final InterpolatingTransformProvider todInterpolating =
                         (InterpolatingTransformProvider) tod.getTransformProvider();
                 final TODProvider  todRaw  = (TODProvider) todInterpolating.getRawProvider();

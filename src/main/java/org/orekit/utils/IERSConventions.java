@@ -18,7 +18,9 @@ package org.orekit.utils;
 
 import java.io.InputStream;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.NutationFunction;
@@ -27,6 +29,10 @@ import org.orekit.data.PolynomialNutation;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
+import org.orekit.time.TimeComponents;
+import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 
 
@@ -279,6 +285,12 @@ public enum IERSConventions {
 
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction() throws OrekitException {
+            return new StellarAngleCapitaine(this);
+        }
+
     },
 
     /** Constant for IERS 2003 conventions. */
@@ -330,6 +342,12 @@ public enum IERSConventions {
             return loadPoissonSeries(IERS_BASE + "2003/tab5.2c.txt",
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction() throws OrekitException {
+            return new StellarAngleCapitaine(this);
         }
 
         /** {@inheritDoc} */
@@ -415,6 +433,12 @@ public enum IERSConventions {
                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction() throws OrekitException {
+            return new StellarAngleCapitaine(this);
+        }
+
     };
 
     /** IERS conventions resources base directory. */
@@ -441,13 +465,13 @@ public enum IERSConventions {
         return false;
     }
 
-    /** Check if {@link #getXFunction()}, {@link #getYFunction()} and {@link
-     * #getSXY2XFunction()} methods are supported.
+    /** Check if {@link #getXFunction()}, {@link #getYFunction()}, {@link
+     * #getSXY2XFunction()} and {@link #getEarthOrientationAngleFunction()} methods are supported.
      * @return true if all methods are supported, false if calling any of them would
      * trigger an exception
      */
     public boolean nonRotatingOriginSupported() {
-        // by default, we consider we do not support non-rotatin origin functions
+        // by default, we consider we do not support non-rotating origin functions
         return false;
     }
 
@@ -498,6 +522,24 @@ public enum IERSConventions {
         // default implementation triggers an error
         throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
                                   "sCIO", toString());
+
+    }
+
+    /** Get the function computing the raw Earth Orientation Angle.
+     * <p>
+     * The raw angle does not contain any correction. If for example dTU1 correction
+     * due to tidal effect is desired, it must be added afterward by the caller.
+     * The returned value contain the angle as the value and the angular rate as
+     * the first derivative.
+     * </p>
+     * @return function computing the rawEarth Orientation Angle, in the non-rotating origin paradigm,
+     * the return value containing both the angle and its first time derivative
+     * @exception OrekitException if table cannot be loaded
+     */
+    public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction() throws OrekitException {
+        // default implementation triggers an error
+        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
+                                  "ERA", toString());
 
     }
 
@@ -609,6 +651,82 @@ public enum IERSConventions {
         final InputStream stream = IERSConventions.class.getResourceAsStream(name);
 
         return new FundamentalNutationArguments(stream, name);
+
+    }
+
+    /** Stellar angle model.
+     * <p>
+     * The stellar angle computed here has been defined in the paper "A non-rotating origin on the
+     * instantaneous equator: Definition, properties and use", N. Capitaine, Guinot B., and Souchay J.,
+     * Celestial Mechanics, Volume 39, Issue 3, pp 283-307. It has been proposed as a conventional
+     * conventional relationship between UT1 and Earth rotation in the paper "Definition of the Celestial
+     * Ephemeris origin and of UT1 in the International Celestial Reference Frame", Capitaine, N.,
+     * Guinot, B., and McCarthy, D. D., 2000, “,” Astronomy and Astrophysics, 355(1), pp. 398–405.
+     * </p>
+     * <p>
+     * It is presented simply as stellar angle in IERS conventions 1996 but as since been adopted as
+     * the conventional relationship defining UT1 from ICRF and is called Earth Rotation Angle in
+     * IERS conventions 2003 and 2010.
+     * </p>
+     */
+    private static class StellarAngleCapitaine implements TimeFunction<DerivativeStructure> {
+
+        /** Reference date of Capitaine's Earth Rotation Angle model. */
+        private final AbsoluteDate eraReference;
+
+        /** Constant term of Capitaine's Earth Rotation Angle model. */
+        private final double era0;
+
+        /** Rate term of Capitaine's Earth Rotation Angle model.
+         * (radians per day, main part) */
+        private final double era1A;
+
+        /** Rate term of Capitaine's Earth Rotation Angle model.
+         * (radians per day, fractional part) */
+        private final double era1B;
+
+        /** Total rate term of Capitaine's Earth Rotation Angle model. */
+        private final double era1AB;
+
+        /** UT1 time scale. */
+        private final TimeScale ut1;
+
+        /** Simple constructor.
+         * @param conventions IERS conventions to which this function applies
+         * @exception OrekitException if UT1 time scale cannot be retrieved
+         */
+        public StellarAngleCapitaine(final IERSConventions conventions) throws OrekitException {
+
+            // constants for Capitaine's Earth Rotation Angle model
+            eraReference =
+                    new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
+            era0   = MathUtils.TWO_PI * 0.7790572732640;
+            era1A  = MathUtils.TWO_PI / Constants.JULIAN_DAY;
+            era1B  = era1A * 0.00273781191135448;
+
+            // store the toal rate to avoid computing the same addition over and over
+            era1AB = era1A + era1B;
+
+            ut1 = TimeScalesFactory.getUT1(conventions);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public DerivativeStructure value(final AbsoluteDate date) {
+
+            // split the date offset as a full number of days plus a smaller part
+            final int secondsInDay = 86400;
+            final double dt  = date.durationFrom(eraReference);
+            final long days  = ((long) dt) / secondsInDay;
+            final double dtA = secondsInDay * days;
+            final double dtB = (dt - dtA) + ut1.offsetFromTAI(date);
+
+            return new DerivativeStructure(1, 1,
+                                           era0 + era1A * dtB + era1B * (dtA + dtB),
+                                           era1AB);
+
+        }
 
     }
 

@@ -27,6 +27,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -53,11 +54,13 @@ public class GTODProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
 
-        Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
+        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.00939, 3.12e-5);
 
         // if we forget to apply lod and UT1 correction, results are much worse, which is expected
-        t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
+        t = FramesFactory.getTOD(IERSConventions.IERS_1996, false).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, false), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 255.64, 0.13856);
 
     }
@@ -73,7 +76,8 @@ public class GTODProviderAlternateConfigurationTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getTOD(true).getTransformTo(FramesFactory.getGTOD(true), t0);
+        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
 
         // TOD iau76
         PVCoordinates pvTOD =
@@ -88,7 +92,8 @@ public class GTODProviderAlternateConfigurationTest {
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0501, 3.61e-4);
 
         // if we forget to apply lod and UT1 correction, results are much worse, which is expected
-        t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
+        t = FramesFactory.getTOD(IERSConventions.IERS_1996, false).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, false), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 1448.21, 3.845e-4);
 
     }

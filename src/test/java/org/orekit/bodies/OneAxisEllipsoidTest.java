@@ -35,8 +35,6 @@ import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.GTODProvider;
-import org.orekit.frames.InterpolatingTransformProvider;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
@@ -44,6 +42,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -251,7 +250,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testIssue141() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate("2002-03-06T20:50:20.44188731559965033", TimeScalesFactory.getUTC());
-        Frame frame = FramesFactory.getGTOD(false);
+        Frame frame = FramesFactory.getGTOD(IERSConventions.IERS_1996, false);
         OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       frame);
@@ -265,7 +264,7 @@ public class OneAxisEllipsoidTest {
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         OneAxisEllipsoid original = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          Constants.WGS84_EARTH_FLATTENING,
-                                                         FramesFactory.getITRFEquinox());
+                                                         FramesFactory.getITRFEquinox(IERSConventions.IERS_1996));
         original.setAngularThreshold(1.0e-3);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

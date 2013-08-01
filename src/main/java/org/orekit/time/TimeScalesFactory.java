@@ -26,6 +26,7 @@ import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.FramesFactory;
+import org.orekit.utils.IERSConventions;
 
 /** Factory for predefined time scales.
  * <p>
@@ -180,12 +181,32 @@ public class TimeScalesFactory implements Serializable {
      * file content is corrupted
      * @see #getUTC()
      * @see FramesFactory#getEOP2000History()
+     * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions)}
      */
     public static UT1Scale getUT1() throws OrekitException {
+        return getUT1(IERSConventions.IERS_2010);
+    }
+
+    /** Get the Universal Time 1 scale.
+     * <p>
+     * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
+     * so this method loads these data sets. See the {@link #getUTC()
+     * TimeScalesFactory.getUTC()} and {@link FramesFactory#getEOPHistory(IERSConventions)
+     * FramesFactory.getEOPHistory(IERSConventions)} methods for an explanation of how the
+     * corresponding data loaders can be configured.
+     * </p>
+     * @param conventions IERS conventions for which EOP parameters will provide dUT1
+     * @return Universal Time 1 scale
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
+     * @see #getUTC()
+     * @see FramesFactory#getEOPHistory(IERSConventions)
+     */
+    public static UT1Scale getUT1(final IERSConventions conventions) throws OrekitException {
         synchronized (TimeScalesFactory.class) {
 
             if (ut1 == null) {
-                ut1 = new UT1Scale(FramesFactory.getEOP2000History(), getUTC());
+                ut1 = new UT1Scale(FramesFactory.getEOPHistory(conventions), getUTC());
             }
 
             return ut1;
