@@ -132,40 +132,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
-            return new NutationFunction() {
-
-                /** First Moon correction term for the Equation of the Equinoxes. */
-                private final double eqe1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
-
-                /** Second Moon correction term for the Equation of the Equinoxes. */
-                private final double eqe2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
-
-                /** Start date for applying Moon corrections to the equation of the equinoxes.
-                 * This date corresponds to 1997-02-27T00:00:00 UTC, hence the 30s offset from TAI.
-                 */
-                private final AbsoluteDate newEQEModelStart =
-                    new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
-
-                /** {@inheritDoc} */
-                @Override
-                public double value(final BodiesElements elements) {
-                    if (elements.getDate().compareTo(newEQEModelStart) >= 0) {
-
-                        // IAU 1994 resolution C7 added two terms to the equation of equinoxes
-                        // taking effect since 1997-02-27 for continuity
-
-                        // Mean longitude of the ascending node of the Moon
-                        final double om = elements.getOmega();
-
-                        // add the two correction terms
-                        return eqe1 * FastMath.sin(om) + eqe2 * FastMath.sin(om + om);
-
-                    } else {
-                        return 0.0;
-                    }
-                }
-
-            };
+            return new IAU1994ResolutionC7();
         }
 
         /** {@inheritDoc} */
@@ -304,6 +271,12 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
+        public boolean nutationSupported() {
+            return true;
+        }
+
+      /** {@inheritDoc} */
+        @Override
         public boolean nonRotatingOriginSupported() {
             return true;
         }
@@ -318,6 +291,38 @@ public enum IERSConventions {
         public double getEpsilon0() {
             // value from chapter 5, page 41
             return 84381.448 * Constants.ARC_SECONDS_TO_RADIANS;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
+            return loadPoissonSeries(IERS_BASE + "2003/tab5.3-psi.txt",
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getNutationInObliquityFunction() throws OrekitException {
+            return loadPoissonSeries(IERS_BASE + "2003/tab5.3-epsilon.txt",
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getMeanObliquityOfEclipticFunction() {
+            // value from chapter 5, equation 32, page 45
+            return new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
+                                            -46.84024  * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
+            return new IAU1994ResolutionC7();
         }
 
         /** {@inheritDoc} */
@@ -455,7 +460,7 @@ public enum IERSConventions {
     }
 
     /** Check if {@link #getNutationInLongitudeFunction()}, {@link
-     * #getNutationInObliquityFunction()}, {link {@link #getEquationOfEquinoxesCorrectionFunction()}
+     * #getNutationInObliquityFunction()}, {@link #getEquationOfEquinoxesCorrectionFunction()}
      * and {@link #getMeanObliquityOfEclipticFunction()} methods are supported.
      * @return true if all methods are supported, false if calling any of them would
      * trigger an exception
@@ -653,6 +658,46 @@ public enum IERSConventions {
         return new FundamentalNutationArguments(stream, name);
 
     }
+
+    /** Correction to equation of equinoxes.
+     * <p>IAU 1994 resolution C7 added two terms to the equation of equinoxes
+     * taking effect since 1997-02-27 for continuity
+     * </p>
+     */
+    private static class IAU1994ResolutionC7 implements NutationFunction {
+
+        /** First Moon correction term for the Equation of the Equinoxes. */
+        private final double eqe1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
+
+        /** Second Moon correction term for the Equation of the Equinoxes. */
+        private final double eqe2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
+
+        /** Start date for applying Moon corrections to the equation of the equinoxes.
+         * This date corresponds to 1997-02-27T00:00:00 UTC, hence the 30s offset from TAI.
+         */
+        private final AbsoluteDate newEQEModelStart =
+            new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
+
+        /** {@inheritDoc} */
+        @Override
+        public double value(final BodiesElements elements) {
+            if (elements.getDate().compareTo(newEQEModelStart) >= 0) {
+
+                // IAU 1994 resolution C7 added two terms to the equation of equinoxes
+                // taking effect since 1997-02-27 for continuity
+
+                // Mean longitude of the ascending node of the Moon
+                final double om = elements.getOmega();
+
+                // add the two correction terms
+                return eqe1 * FastMath.sin(om) + eqe2 * FastMath.sin(om + om);
+
+            } else {
+                return 0.0;
+            }
+        }
+
+    };
 
     /** Stellar angle model.
      * <p>
