@@ -15,9 +15,6 @@ The changes done are:
 The numerical values have of course not been altered!
 
 Extract for IERS conventions 2003
-Polynomial part (unit arcsecond)
-
-   0.0
 
 Non-polynomial part (unit 1.0e-3 arcsecond)
 

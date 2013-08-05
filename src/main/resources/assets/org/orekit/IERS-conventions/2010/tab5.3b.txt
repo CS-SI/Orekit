@@ -13,7 +13,7 @@ lunisolar and planetary components with slight IAU 2006 adjustments
 The Table below provides the values for B_i and B"_i (j=0) and then B'_i and B"'_i (j=1)
 
 The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part) 
-and in columns 6 to 17 (planetary part) are those of the IERS Conventions 2003
+and in columns 9 to 17 (planetary part) are those of the IERS Conventions 2003
 
 ----------------------------------------------------------------------------------------------------------
 j = 0  Number  of terms = 1037     

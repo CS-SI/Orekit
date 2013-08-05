@@ -21,10 +21,6 @@ have been changed to be consistent with other portions of this  chapter.
 
 ∆ψ = Σ (Ai+A'it) sin(ARGUMENT), ∆ε = Σ (Bi+B'it) cos(ARGUMENT)
 
-Polynomial part (unit arcsecond)
-
-   0.0
-
 Non-polynomial part (unit 1.0e-4 arcsecond)
 
 --------------------------------------------------------------------------------------------------------------

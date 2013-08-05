@@ -51,10 +51,6 @@ period of 9.6 days appear later in the table.
 #     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
 #     -0.00231″t² cos Ω - 0.00014″t² cos 2(F - D + Ω)
 
-Polynomial part (unit arcsecond)
-
-   0.0
-
 Non-polynomial part (unit 1.0e-4 arcsecond)
 
 --------------------------------------------------------------------------------------------------------------
