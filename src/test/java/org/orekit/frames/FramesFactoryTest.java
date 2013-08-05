@@ -64,17 +64,38 @@ public class FramesFactoryTest {
             { Predefined.ITRF_93_WITHOUT_TIDAL_EFFECTS,             Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS },
             { Predefined.ITRF_93_WITH_TIDAL_EFFECTS,                Predefined.ITRF_2000_WITH_TIDAL_EFFECTS },
             { Predefined.ITRF_EQUINOX,                              Predefined.GTOD_WITH_EOP_CORRECTIONS },
-            { Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS, Predefined.CIRF_CONV_2010 },
-            { Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS,    Predefined.CIRF_CONV_2010 },
-            { Predefined.CIRF_CONV_2010,                       Predefined.GCRF },
-            { Predefined.VEIS_1950,                                 Predefined.GTOD_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.ITRF_EQUINOX_CONV_1996,                    Predefined.GTOD_CONV_1996_WITH_EOP_CORRECTIONS },
+            { Predefined.ITRF_EQUINOX_CONV_2003,                    Predefined.GTOD_CONV_2003_WITH_EOP_CORRECTIONS },
+            { Predefined.ITRF_EQUINOX_CONV_2010,                    Predefined.GTOD_CONV_2010_WITH_EOP_CORRECTIONS },
+            { Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS,      Predefined.CIRF_CONV_2010 },
+            { Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS,         Predefined.CIRF_CONV_2010 },
+            { Predefined.CIRF_CONV_2010,                            Predefined.GCRF },
+            { Predefined.VEIS_1950,                                 Predefined.GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS },
             { Predefined.GTOD_WITHOUT_EOP_CORRECTIONS,              Predefined.TOD_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS,    Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.GTOD_CONV_2003_WITHOUT_EOP_CORRECTIONS,    Predefined.TOD_CONV_2003_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.GTOD_CONV_2010_WITHOUT_EOP_CORRECTIONS,    Predefined.TOD_CONV_2010_WITHOUT_EOP_CORRECTIONS },
             { Predefined.GTOD_WITH_EOP_CORRECTIONS,                 Predefined.TOD_WITH_EOP_CORRECTIONS },
+            { Predefined.GTOD_CONV_1996_WITH_EOP_CORRECTIONS,       Predefined.TOD_CONV_1996_WITH_EOP_CORRECTIONS },
+            { Predefined.GTOD_CONV_2003_WITH_EOP_CORRECTIONS,       Predefined.TOD_CONV_2003_WITH_EOP_CORRECTIONS },
+            { Predefined.GTOD_CONV_2010_WITH_EOP_CORRECTIONS,       Predefined.TOD_CONV_2010_WITH_EOP_CORRECTIONS },
             { Predefined.TOD_WITHOUT_EOP_CORRECTIONS,               Predefined.MOD_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS,     Predefined.MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.TOD_CONV_2003_WITHOUT_EOP_CORRECTIONS,     Predefined.MOD_CONV_2003_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.TOD_CONV_2010_WITHOUT_EOP_CORRECTIONS,     Predefined.MOD_CONV_2010_WITHOUT_EOP_CORRECTIONS },
             { Predefined.TOD_WITH_EOP_CORRECTIONS,                  Predefined.MOD_WITH_EOP_CORRECTIONS },
+            { Predefined.TOD_CONV_1996_WITH_EOP_CORRECTIONS,        Predefined.MOD_CONV_1996_WITH_EOP_CORRECTIONS },
+            { Predefined.TOD_CONV_2003_WITH_EOP_CORRECTIONS,        Predefined.MOD_CONV_2003_WITH_EOP_CORRECTIONS },
+            { Predefined.TOD_CONV_2010_WITH_EOP_CORRECTIONS,        Predefined.MOD_CONV_2010_WITH_EOP_CORRECTIONS },
             { Predefined.MOD_WITHOUT_EOP_CORRECTIONS,               Predefined.EME2000 },
+            { Predefined.MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS,     Predefined.EME2000 },
+            { Predefined.MOD_CONV_2003_WITHOUT_EOP_CORRECTIONS,     Predefined.EME2000 },
+            { Predefined.MOD_CONV_2010_WITHOUT_EOP_CORRECTIONS,     Predefined.EME2000 },
             { Predefined.MOD_WITH_EOP_CORRECTIONS,                  Predefined.GCRF },
-            { Predefined.TEME,                                      Predefined.TOD_WITHOUT_EOP_CORRECTIONS }
+            { Predefined.MOD_CONV_1996_WITH_EOP_CORRECTIONS,        Predefined.GCRF },
+            { Predefined.MOD_CONV_2003_WITH_EOP_CORRECTIONS,        Predefined.GCRF },
+            { Predefined.MOD_CONV_2010_WITH_EOP_CORRECTIONS,        Predefined.GCRF },
+            { Predefined.TEME,                                      Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS }
         };
         for (final Predefined[] pair : reference) {
             Frame child  = FramesFactory.getFrame(pair[0]);
@@ -94,17 +115,26 @@ public class FramesFactoryTest {
             case ICRF :
                 Assert.assertEquals(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial", original.getName());
                 break;
+            case ITRF_EQUINOX :
+                Assert.assertEquals(Predefined.ITRF_EQUINOX_CONV_1996, original.getName());
+                break;
             case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
+                Assert.assertEquals(Predefined.TIRF_CONV_2003_WITH_TIDAL_EFFECTS.getName(), original.getName());
+                break;
             case TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+                Assert.assertEquals(Predefined.TIRF_CONV_2003_WITHOUT_TIDAL_EFFECTS.getName(), original.getName());
+                break;
             case TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS :
+                Assert.assertEquals(Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS.getName(), original.getName());
+                break;
             case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+                Assert.assertEquals(Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS.getName(), original.getName());
+                break;
             case CIRF_2000_CONV_2003 :
+                Assert.assertEquals(Predefined.CIRF_CONV_2003.getName(), original.getName());
+                break;
             case CIRF_2000_CONV_2010 :
-                // the deprecated enum constants have been replaced by constants without the "_2000" part
-                // as long as the constants are not removed, we have to do the test this way
-                // when the constants will be removed, this part of the test may be suppressed too
-                Predefined nonDeprecated = Predefined.valueOf(predefined.toString().replaceAll("_2000", ""));
-                Assert.assertEquals(nonDeprecated.getName(), original.getName());
+                Assert.assertEquals(Predefined.CIRF_CONV_2010.getName(), original.getName());
                 break;
             default :
                 Assert.assertEquals(predefined.getName(), original.getName());

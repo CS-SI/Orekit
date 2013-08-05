@@ -18,7 +18,9 @@ package org.orekit.utils;
 
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -40,14 +42,14 @@ public class IERSConventionsTest {
     @Test
     public void testIERS2003() {
         checkPrecessionSupported(IERSConventions.IERS_2003,        true);
-        checkNutationSupported(IERSConventions.IERS_2003,          false);
+        checkNutationSupported(IERSConventions.IERS_2003,          true);
         checkNonRotatingOriginSupported(IERSConventions.IERS_2003, true);
     }
 
     @Test
     public void testIERS2010() {
         checkPrecessionSupported(IERSConventions.IERS_2010,        false);
-        checkNutationSupported(IERSConventions.IERS_2010,          false);
+        checkNutationSupported(IERSConventions.IERS_2010,          true);
         checkNonRotatingOriginSupported(IERSConventions.IERS_2010, true);
     }
 
@@ -142,6 +144,11 @@ public class IERSConventionsTest {
 
         public abstract Object invoke(IERSConventions conventions) throws OrekitException;
 
+    }
+
+    @Before
+    public void setUp() {
+        Utils.setDataRoot("regular-data");
     }
 
 }

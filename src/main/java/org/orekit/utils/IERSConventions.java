@@ -398,6 +398,12 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
+        public boolean nutationSupported() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public boolean nonRotatingOriginSupported() {
             return true;
         }
@@ -412,6 +418,41 @@ public enum IERSConventions {
         public double getEpsilon0() {
             // value from chapter 5, page 56
             return 84381.406 * Constants.ARC_SECONDS_TO_RADIANS;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
+            return loadPoissonSeries(IERS_BASE + "2010/tab5.3a.txt",
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getNutationInObliquityFunction() throws OrekitException {
+            return loadPoissonSeries(IERS_BASE + "2010/tab5.3b.txt",
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getMeanObliquityOfEclipticFunction() {
+            // value from section 5.6.4, page 64 for epsilon0
+            // and page 65 equation 5.40 for the other terms
+            return new PolynomialNutation(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
+                                            -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
+                                              0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
+            return new IAU1994ResolutionC7();
         }
 
         /** {@inheritDoc} */
