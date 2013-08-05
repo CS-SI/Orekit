@@ -100,6 +100,9 @@ public class FramesFactoryTest {
             case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
             case CIRF_2000_CONV_2003 :
             case CIRF_2000_CONV_2010 :
+                // the deprecated enum constants have been replaced by constants without the "_2000" part
+                // as long as the constants are not removed, we have to do the test this way
+                // when the constants will be removed, this part of the test may be suppressed too
                 Predefined nonDeprecated = Predefined.valueOf(predefined.toString().replaceAll("_2000", ""));
                 Assert.assertEquals(nonDeprecated.getName(), original.getName());
                 break;
