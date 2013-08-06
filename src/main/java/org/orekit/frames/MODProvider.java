@@ -18,10 +18,9 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.data.NutationFunction;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
@@ -33,21 +32,17 @@ import org.orekit.utils.IERSConventions;
 class MODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130729L;
-
-    /** Generator for fundamental nutation arguments. */
-    private final FundamentalNutationArguments nutationArguments;
+    private static final long serialVersionUID = 20130806L;
 
     /** Function computing the precession angles. */
-    private final NutationFunction<double[]> precessionFunction;
+    private final TimeFunction<double[]> precessionFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
      * @exception OrekitException if IERS conventions tables cannot be read
      */
     public MODProvider(final IERSConventions conventions) throws OrekitException {
-        this.nutationArguments = conventions.getNutationArguments();
-        this.precessionFunction        = conventions.getPrecessionFunction();
+        this.precessionFunction = conventions.getPrecessionFunction();
     }
 
     /** Get the transfrom from parent frame.
@@ -58,7 +53,7 @@ class MODProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date) {
 
         // compute the precession angles
-        final double[] angles = precessionFunction.value(nutationArguments.evaluateAll(date));
+        final double[] angles = precessionFunction.value(date);
 
         final Rotation precession;
         if (angles.length == 3) {

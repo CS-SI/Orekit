@@ -19,10 +19,9 @@ package org.orekit.frames;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.data.NutationFunction;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Celestial Intermediate Reference Frame 2000.
@@ -39,13 +38,10 @@ import org.orekit.utils.IERSConventions;
 class CIRFProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130728L;
-
-   /** Generator for fundamental nutation arguments. */
-    private final FundamentalNutationArguments nutationArguments;
+    private static final long serialVersionUID = 20130806L;
 
     /** Function computing CIP/CIO components. */
-    private final NutationFunction<double[]> xysPxy2Function;
+    private final TimeFunction<double[]> xysPxy2Function;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -57,8 +53,7 @@ class CIRFProvider implements TransformProvider {
         throws OrekitException {
 
         // load the nutation model
-        nutationArguments = conventions.getNutationArguments();
-        xysPxy2Function   = conventions.getXYSpXY2Function();
+        xysPxy2Function = conventions.getXYSpXY2Function();
 
     }
 
@@ -71,7 +66,7 @@ class CIRFProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        final double[] xys = xysPxy2Function.value(nutationArguments.evaluateAll(date));
+        final double[] xys = xysPxy2Function.value(date);
 
         // position of the Celestial Intermediate Pole (CIP)
         final double xCurrent = xys[0];

@@ -19,11 +19,10 @@ package org.orekit.frames;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.data.FundamentalNutationArguments;
-import org.orekit.data.NutationFunction;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
 
 /** Provider for True of Date (ToD) frame.
@@ -34,16 +33,13 @@ import org.orekit.utils.IERSConventions;
 class TODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130729L;
+    private static final long serialVersionUID = 20130806L;
 
     /** EOP history. */
     private final EOPHistory eopHistory;
 
-    /** Generator for fundamental nutation arguments. */
-    private final FundamentalNutationArguments nutationArguments;
-
     /** Function computing the nutation angles. */
-    private final NutationFunction<double[]> nutationFunction;
+    private final TimeFunction<double[]> nutationFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -53,7 +49,6 @@ class TODProvider implements TransformProvider {
     public TODProvider(final IERSConventions conventions, final boolean applyEOPCorr)
         throws OrekitException {
         this.eopHistory        = applyEOPCorr ? FramesFactory.getEOPHistory(conventions) : null;
-        this.nutationArguments = conventions.getNutationArguments();
         this.nutationFunction  = conventions.getNutationFunction();
     }
 
@@ -87,7 +82,7 @@ class TODProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // compute nutation angles
-        final double[] angles = nutationFunction.value(nutationArguments.evaluateAll(date));
+        final double[] angles = nutationFunction.value(date);
 
         // compute the mean obliquity of the ecliptic
         final double moe = angles[2];
@@ -125,7 +120,7 @@ class TODProvider implements TransformProvider {
         throws OrekitException {
 
         // compute nutation angles
-        final double[] angles = nutationFunction.value(nutationArguments.evaluateAll(date));
+        final double[] angles = nutationFunction.value(date);
 
         // nutation in longitude
         final double dPsi = angles[0];
