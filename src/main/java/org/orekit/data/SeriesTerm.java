@@ -24,7 +24,7 @@ import org.apache.commons.math3.util.FastMath;
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-public abstract class SeriesTerm implements NutationFunction, Serializable {
+public abstract class SeriesTerm implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 7536446008538764006L;
@@ -44,7 +44,10 @@ public abstract class SeriesTerm implements NutationFunction, Serializable {
         this.cosCoeff = cosCoeff;
     }
 
-    /** {@inheritDoc} */
+    /** Evaluate the value of the series term.
+     * @param elements bodies elements for nutation
+     * @return value of the series term
+     */
     public double value(final BodiesElements elements) {
         final double a = argument(elements);
         return sinCoeff * FastMath.sin(a) + cosCoeff * FastMath.cos(a);

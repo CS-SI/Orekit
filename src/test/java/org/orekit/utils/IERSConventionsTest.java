@@ -22,7 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 
 
 public class IERSConventionsTest {
@@ -33,117 +32,18 @@ public class IERSConventionsTest {
     }
 
     @Test
-    public void testIERS1996() {
-        checkPrecessionSupported(IERSConventions.IERS_1996,        true);
-        checkNutationSupported(IERSConventions.IERS_1996,          true);
-        checkNonRotatingOriginSupported(IERSConventions.IERS_1996, true);
+    public void testIERS1996() throws OrekitException {
+        Assert.assertNotNull(IERSConventions.IERS_1996.getEarthOrientationAngleFunction());
     }
 
     @Test
-    public void testIERS2003() {
-        checkPrecessionSupported(IERSConventions.IERS_2003,        true);
-        checkNutationSupported(IERSConventions.IERS_2003,          true);
-        checkNonRotatingOriginSupported(IERSConventions.IERS_2003, true);
+    public void testIERS2003() throws OrekitException {
+        Assert.assertNotNull(IERSConventions.IERS_2003.getEarthOrientationAngleFunction());
     }
 
     @Test
-    public void testIERS2010() {
-        checkPrecessionSupported(IERSConventions.IERS_2010,        false);
-        checkNutationSupported(IERSConventions.IERS_2010,          true);
-        checkNonRotatingOriginSupported(IERSConventions.IERS_2010, true);
-    }
-
-    private void checkPrecessionSupported(IERSConventions conventions, boolean expected) {
-        Assert.assertEquals(expected, conventions.precessionSupported());
-        Assert.assertEquals(expected, checkMethod(conventions, Method.PRECESSION_ZETA));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.PRECESSION_THETA));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.PRECESSION_Z));
-    }
-
-    private void checkNutationSupported(IERSConventions conventions, boolean expected) {
-        Assert.assertEquals(expected, conventions.nutationSupported());
-        Assert.assertEquals(expected, checkMethod(conventions, Method.NUTATION_LONGITUDE));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.NUTATION_OBLIQUITY));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.EQUINOXE_CORRECTION));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.MEAN_OBLIQUITY));
-    }
-
-    private void checkNonRotatingOriginSupported(IERSConventions conventions, boolean expected) {
-        Assert.assertEquals(expected, conventions.nonRotatingOriginSupported());
-        Assert.assertEquals(expected, checkMethod(conventions, Method.CIP_X));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.CIP_Y));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.CIO_S));
-        Assert.assertEquals(expected, checkMethod(conventions, Method.ERA));
-    }
-
-    public boolean checkMethod(IERSConventions conventions, Method method) {
-        try {
-            return method.invoke(conventions) != null;
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER, oe.getSpecifier());
-        }
-        return false;
-    }
-
-    private static enum Method {
-        NUTATION_LONGITUDE() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getNutationInLongitudeFunction();
-            }
-        },
-        NUTATION_OBLIQUITY() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getNutationInObliquityFunction();
-            }
-        },
-        PRECESSION_ZETA() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getPrecessionZetaFunction();
-            }
-        },
-        PRECESSION_THETA() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getPrecessionThetaFunction();
-            }
-        },
-        PRECESSION_Z() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getPrecessionZFunction();
-            }
-        },
-        EQUINOXE_CORRECTION() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getEquationOfEquinoxesCorrectionFunction();
-            }
-        },
-        MEAN_OBLIQUITY() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getMeanObliquityOfEclipticFunction();
-            }
-        },
-        CIP_X() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getXFunction();
-            }
-        },
-        CIP_Y() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getYFunction();
-            }
-        },
-        CIO_S() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getSXY2XFunction();
-            }
-        },
-        ERA() {
-            public Object invoke(IERSConventions conventions) throws OrekitException {
-                return conventions.getEarthOrientationAngleFunction();
-            }
-        };
-
-        public abstract Object invoke(IERSConventions conventions) throws OrekitException;
-
+    public void testIERS2010() throws OrekitException {
+        Assert.assertNotNull(IERSConventions.IERS_2010.getEarthOrientationAngleFunction());
     }
 
     @Before

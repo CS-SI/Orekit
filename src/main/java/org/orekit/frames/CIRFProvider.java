@@ -19,7 +19,6 @@ package org.orekit.frames;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.NutationFunction;
 import org.orekit.errors.OrekitException;
@@ -45,14 +44,8 @@ class CIRFProvider implements TransformProvider {
    /** Generator for fundamental nutation arguments. */
     private final FundamentalNutationArguments nutationArguments;
 
-    /** Pole position (X). */
-    private final NutationFunction xFunction;
-
-    /** Pole position (Y). */
-    private final NutationFunction yFunction;
-
-    /** Pole position (S + XY/2). */
-    private final NutationFunction sxy2Function;
+    /** Function computing CIP/CIO components. */
+    private final NutationFunction<double[]> xysPxy2Function;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -65,9 +58,7 @@ class CIRFProvider implements TransformProvider {
 
         // load the nutation model
         nutationArguments = conventions.getNutationArguments();
-        xFunction         = conventions.getXFunction();
-        yFunction         = conventions.getYFunction();
-        sxy2Function      = conventions.getSXY2XFunction();
+        xysPxy2Function   = conventions.getXYSpXY2Function();
 
     }
 
@@ -80,14 +71,14 @@ class CIRFProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        final BodiesElements elements = nutationArguments.evaluateAll(date);
+        final double[] xys = xysPxy2Function.value(nutationArguments.evaluateAll(date));
 
         // position of the Celestial Intermediate Pole (CIP)
-        final double xCurrent =    xFunction.value(elements);
-        final double yCurrent =    yFunction.value(elements);
+        final double xCurrent = xys[0];
+        final double yCurrent = xys[1];
 
         // position of the Celestial Intermediate Origin (CIO)
-        final double sCurrent = sxy2Function.value(elements) - xCurrent * yCurrent / 2;
+        final double sCurrent = xys[2] - xCurrent * yCurrent / 2;
 
         // set up the bias, precession and nutation rotation
         final double x2Py2  = xCurrent * xCurrent + yCurrent * yCurrent;

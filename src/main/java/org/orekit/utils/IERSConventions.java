@@ -27,7 +27,6 @@ import org.orekit.data.NutationFunction;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -47,19 +46,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public boolean precessionSupported() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public boolean nutationSupported() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean nonRotatingOriginSupported() {
             return true;
         }
 
@@ -78,176 +65,150 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getPrecessionZetaFunction() throws OrekitException {
-            return new PolynomialNutation(0.0,
-                                          2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
-                                          0.30188   * Constants.ARC_SECONDS_TO_RADIANS,
-                                          0.017998  * Constants.ARC_SECONDS_TO_RADIANS);
+        public NutationFunction<double[]> getPrecessionFunction() throws OrekitException {
+
+            // set up the conventional polynomials
+            final PolynomialNutation zetaA =
+                    new PolynomialNutation(0.0,
+                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.30188   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.017998  * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation thetaA =
+                    new PolynomialNutation(0.0,
+                                           2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.041833 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation zA =
+                    new PolynomialNutation(0.0,
+                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           1.09468   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.018203  * Constants.ARC_SECONDS_TO_RADIANS);
+
+            return new NutationFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        zetaA.value(elements), thetaA.value(elements), zA.value(elements)
+                    };
+                }
+            };
 
         }
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getPrecessionThetaFunction() throws OrekitException {
-            return new PolynomialNutation(0.0,
-                                          2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.041833 * Constants.ARC_SECONDS_TO_RADIANS);
+        public NutationFunction<double[]> getNutationFunction() throws OrekitException {
+
+            final PoissonSeries psiSeries =
+                    loadPoissonSeries(IERS_BASE + "1996/tab5.1-psi.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
+            final PoissonSeries epsilonSeries =
+                    loadPoissonSeries(IERS_BASE + "1996/tab5.1-epsilon.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
+            final PolynomialNutation moePolynomial =
+                    new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.8150   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+            final IAU1994ResolutionC7 eqeCorrectionFunction = new IAU1994ResolutionC7();
+
+            return new NutationFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        psiSeries.value(elements), epsilonSeries.value(elements),
+                        moePolynomial.value(elements), eqeCorrectionFunction.value(elements)
+                    };
+                }
+            };
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getPrecessionZFunction() throws OrekitException {
-            return new PolynomialNutation(0.0,
-                                          2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
-                                          1.09468   * Constants.ARC_SECONDS_TO_RADIANS,
-                                          0.018203  * Constants.ARC_SECONDS_TO_RADIANS);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "1996/tab5.1-psi.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getNutationInObliquityFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "1996/tab5.1-epsilon.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getMeanObliquityOfEclipticFunction() {
-            return new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
-                                            -46.8150   * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
-            return new IAU1994ResolutionC7();
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getXFunction() throws OrekitException {
+        public NutationFunction<double[]> getXYSpXY2Function() throws OrekitException {
 
             // X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
             //     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
             //     + 0.00204″t² sin Ω + 0.00016″t² sin 2(F - D + Ω),
-            final PolynomialNutation polynomial =
+            final PolynomialNutation xPolynomial =
                     new PolynomialNutation(0,
                                            2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
                                            -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
                                            -0.198656 * Constants.ARC_SECONDS_TO_RADIANS,
                                            0.0000140 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            final double fCosOm    = 0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fSinOm    = 0.00204 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fSin2FDOm = 0.00016 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fXCosOm    = 0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fXSinOm    = 0.00204 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fXSin2FDOm = 0.00016 * Constants.ARC_SECONDS_TO_RADIANS;
             final double sinEps0   = FastMath.sin(getEpsilon0());
 
-            final NutationFunction sum =
+            final PoissonSeries xSum =
                     loadPoissonSeries(IERS_BASE + "1996/tab5.4-x.txt",
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
 
-            return new NutationFunction() {
-
-                /** {@inheritDoc} */
-                @Override
-                public double value(final BodiesElements elements) {
-                    final double omega     = elements.getOmega();
-                    final double f         = elements.getF();
-                    final double d         = elements.getD();
-                    final double t         = elements.getTC();
-                    final double cosOmega  = FastMath.cos(omega);
-                    final double sinOmega  = FastMath.sin(omega);
-                    final double cos2FDOm  = FastMath.cos(2 * (f - d + omega));
-                    return polynomial.value(elements) + sinEps0 * sum.value(elements) +
-                           t * t * (fCosOm * cosOmega + fSinOm * sinOmega + fSin2FDOm * cos2FDOm);
-                }
-
-            };
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getYFunction() throws OrekitException {
-
             // Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
             //     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
             //    - 0.00231″t² cos Ω − 0.00014″t² cos 2(F - D + Ω)
-            final PolynomialNutation polynomial =
+            final PolynomialNutation yPolynomial =
                     new PolynomialNutation(-0.00013,
                                            0.0,
                                            -22.40992 * Constants.ARC_SECONDS_TO_RADIANS,
                                            0.001836  * Constants.ARC_SECONDS_TO_RADIANS,
                                            0.0011130 * Constants.ARC_SECONDS_TO_RADIANS);
 
-            final double fCosOm    = -0.00231 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fCos2FDOm = -0.00014 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fYCosOm    = -0.00231 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fYCos2FDOm = -0.00014 * Constants.ARC_SECONDS_TO_RADIANS;
 
-            final NutationFunction sum =
+            final PoissonSeries ySum =
                     loadPoissonSeries(IERS_BASE + "1996/tab5.4-y.txt",
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
 
-            return new NutationFunction() {
-
-                /** {@inheritDoc} */
-                @Override
-                public double value(final BodiesElements elements) {
-                    final double omega    = elements.getOmega();
-                    final double f        = elements.getF();
-                    final double d        = elements.getD();
-                    final double t        = elements.getTC();
-                    final double cosOmega = FastMath.cos(omega);
-                    final double cos2FDOm = FastMath.cos(2 * (f - d + omega));
-                    return polynomial.value(elements) + sum.value(elements) +
-                           t * t * (fCosOm * cosOmega + fCos2FDOm * cos2FDOm);
-                }
-
-            };
-
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getSXY2XFunction() throws OrekitException {
             // s = -XY/2 + 0.00385″t - 0.07259″t³ - 0.00264″ sin Ω - 0.00006″ sin 2Ω
             //     + 0.00074″t² sin Ω + 0.00006″t² sin 2(F - D + Ω)
+            final double fST          =  0.00385 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fST3         = -0.07259 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fSSinOm      = -0.00264 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fSSin2Om     = -0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fST2SinOm    =  0.00074 * Constants.ARC_SECONDS_TO_RADIANS;
+            final double fST2Sin2FDOm =  0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
 
-            final double fT          =  0.00385 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fT3         = -0.07259 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fSinOm      = -0.00264 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fSin2Om     = -0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fT2SinOm    =  0.00074 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double fT2Sin2FDOm =  0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
-
-            return new NutationFunction() {
+            return new NutationFunction<double[]>() {
 
                 /** {@inheritDoc} */
                 @Override
-                public double value(final BodiesElements elements) {
+                public double[] value(final BodiesElements elements) {
+
                     final double omega     = elements.getOmega();
                     final double f         = elements.getF();
                     final double d         = elements.getD();
                     final double t         = elements.getTC();
+
+                    final double cosOmega  = FastMath.cos(omega);
                     final double sinOmega  = FastMath.sin(omega);
                     final double sin2Omega = FastMath.sin(2 * omega);
+                    final double cos2FDOm  = FastMath.cos(2 * (f - d + omega));
                     final double sin2FDOm  = FastMath.sin(2 * (f - d + omega));
-                    return fSinOm * sinOmega + fSin2Om * sin2Omega +
-                           t * (fT + t * (fT2SinOm * sinOmega + fT2Sin2FDOm * sin2FDOm + t * fT3));
+
+                    final double x = xPolynomial.value(elements) + sinEps0 * xSum.value(elements) +
+                            t * t * (fXCosOm * cosOmega + fXSinOm * sinOmega + fXSin2FDOm * cos2FDOm);
+                    final double y = yPolynomial.value(elements) + ySum.value(elements) +
+                            t * t * (fYCosOm * cosOmega + fYCos2FDOm * cos2FDOm);
+                    final double sPxy2 = fSSinOm * sinOmega + fSSin2Om * sin2Omega +
+                            t * (fST + t * (fST2SinOm * sinOmega + fST2Sin2FDOm * sin2FDOm + t * fST3));
+
+                    return new double[] {
+                        x, y, sPxy2
+                    };
+
                 }
+
             };
 
         }
@@ -265,19 +226,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public boolean precessionSupported() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        @Override
         public boolean nutationSupported() {
-            return true;
-        }
-
-      /** {@inheritDoc} */
-        @Override
-        public boolean nonRotatingOriginSupported() {
             return true;
         }
 
@@ -295,58 +244,67 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2003/tab5.3-psi.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
-        }
+        public NutationFunction<double[]> getNutationFunction() throws OrekitException {
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getNutationInObliquityFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2003/tab5.3-epsilon.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
-        }
+            final PoissonSeries psiSeries =
+                    loadPoissonSeries(IERS_BASE + "2003/tab5.3-psi.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
+            final PoissonSeries epsilonSeries =
+                    loadPoissonSeries(IERS_BASE + "2003/tab5.3-epsilon.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getMeanObliquityOfEclipticFunction() {
             // value from chapter 5, equation 32, page 45
-            return new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
-                                            -46.84024  * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation moePolynomial =
+                    new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.84024  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+
+            final IAU1994ResolutionC7 eqeCorrectionFunction = new IAU1994ResolutionC7();
+
+            return new NutationFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        psiSeries.value(elements), epsilonSeries.value(elements),
+                        moePolynomial.value(elements), eqeCorrectionFunction.value(elements)
+                    };
+                }
+            };
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
-            return new IAU1994ResolutionC7();
-        }
+        public NutationFunction<double[]> getXYSpXY2Function() throws OrekitException {
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getXFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2003/tab5.2a.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-        }
+            // load the Poisson series
+            final PoissonSeries xSeries = loadPoissonSeries(IERS_BASE + "2003/tab5.2a.txt",
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+            final PoissonSeries ySeries = loadPoissonSeries(IERS_BASE + "2003/tab5.2b.txt",
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+            final PoissonSeries sSeries = loadPoissonSeries(IERS_BASE + "2003/tab5.2c.txt",
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getYFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2003/tab5.2b.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-        }
+            // create a function evaluating the series
+            return new NutationFunction<double[]>() {
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getSXY2XFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2003/tab5.2c.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        xSeries.value(elements), ySeries.value(elements), sSeries.value(elements)
+                    };
+                }
+
+            };
+
         }
 
         /** {@inheritDoc} */
@@ -357,38 +315,42 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getPrecessionZetaFunction() throws OrekitException {
-            // the following values are from equation 33 in IERS 2003 conventions
-            return new PolynomialNutation(2.5976176    * Constants.ARC_SECONDS_TO_RADIANS,
-                                          2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
-                                          0.3019015    * Constants.ARC_SECONDS_TO_RADIANS,
-                                          0.0179663    * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.0000327   * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.0000002   * Constants.ARC_SECONDS_TO_RADIANS);
-        }
+        public NutationFunction<double[]> getPrecessionFunction() throws OrekitException {
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getPrecessionThetaFunction() throws OrekitException {
+            // set up the conventional polynomials
             // the following values are from equation 33 in IERS 2003 conventions
-            return new PolynomialNutation(0.0,
-                                          2004.1917476 * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.4269353   * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.0418251   * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.0000601   * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.0000001   * Constants.ARC_SECONDS_TO_RADIANS);
-        }
+            final PolynomialNutation zetaA =
+                    new PolynomialNutation(2.5976176    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.3019015    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0179663    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.0000327   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.0000002   * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation thetaA =
+                    new PolynomialNutation(0.0,
+                                           2004.1917476 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.4269353   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.0418251   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.0000601   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.0000001   * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation zA =
+                    new PolynomialNutation(-2.5976176   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           2306.0803226 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           1.0947790    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0182273    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.0000470    * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.0000003   * Constants.ARC_SECONDS_TO_RADIANS);
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getPrecessionZFunction() throws OrekitException {
-            // the following values are from equation 33 in IERS 2003 conventions
-            return new PolynomialNutation(-2.5976176   * Constants.ARC_SECONDS_TO_RADIANS,
-                                          2306.0803226 * Constants.ARC_SECONDS_TO_RADIANS,
-                                          1.0947790    * Constants.ARC_SECONDS_TO_RADIANS,
-                                          0.0182273    * Constants.ARC_SECONDS_TO_RADIANS,
-                                          0.0000470    * Constants.ARC_SECONDS_TO_RADIANS,
-                                          -0.0000003   * Constants.ARC_SECONDS_TO_RADIANS);
+            return new NutationFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        zetaA.value(elements), thetaA.value(elements), zA.value(elements)
+                    };
+                }
+            };
+
         }
 
     },
@@ -399,12 +361,6 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public boolean nutationSupported() {
-            return true;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public boolean nonRotatingOriginSupported() {
             return true;
         }
 
@@ -422,61 +378,70 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2010/tab5.3a.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-        }
+        public NutationFunction<double[]> getNutationFunction() throws OrekitException {
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getNutationInObliquityFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2010/tab5.3b.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-        }
+            final PoissonSeries psiSeries =
+                    loadPoissonSeries(IERS_BASE + "2010/tab5.3a.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+            final PoissonSeries epsilonSeries =
+                    loadPoissonSeries(IERS_BASE + "2010/tab5.3b.txt",
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getMeanObliquityOfEclipticFunction() {
             // value from section 5.6.4, page 64 for epsilon0
             // and page 65 equation 5.40 for the other terms
-            return new PolynomialNutation(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
-                                            -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
-                                              0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation moePolynomial =
+                    new PolynomialNutation(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
+
+            final IAU1994ResolutionC7 eqeCorrectionFunction = new IAU1994ResolutionC7();
+
+            return new NutationFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        psiSeries.value(elements), epsilonSeries.value(elements),
+                        moePolynomial.value(elements), eqeCorrectionFunction.value(elements)
+                    };
+                }
+            };
+
         }
 
         /** {@inheritDoc} */
         @Override
-        public NutationFunction getEquationOfEquinoxesCorrectionFunction() {
-            return new IAU1994ResolutionC7();
-        }
+        public NutationFunction<double[]> getXYSpXY2Function() throws OrekitException {
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getXFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2010/tab5.2a.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-        }
+            // load the Poisson series
+            final PoissonSeries xSeries = loadPoissonSeries(IERS_BASE + "2010/tab5.2a.txt",
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+            final PoissonSeries ySeries = loadPoissonSeries(IERS_BASE + "2010/tab5.2b.txt",
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+            final PoissonSeries sSeries = loadPoissonSeries(IERS_BASE + "2010/tab5.2d.txt",
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getYFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2010/tab5.2b.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-        }
+            // create a function evaluating the series
+            return new NutationFunction<double[]>() {
 
-        /** {@inheritDoc} */
-        @Override
-        public NutationFunction getSXY2XFunction() throws OrekitException {
-            return loadPoissonSeries(IERS_BASE + "2010/tab5.2d.txt",
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                     Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        xSeries.value(elements), ySeries.value(elements), sSeries.value(elements)
+                    };
+                }
+
+            };
+
         }
 
         /** {@inheritDoc} */
@@ -485,20 +450,58 @@ public enum IERSConventions {
             return new StellarAngleCapitaine(this);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public NutationFunction<double[]> getPrecessionFunction() throws OrekitException {
+
+            // set up the conventional polynomials
+            // the following values are from equation 5.40 in IERS 2010 conventions
+            final PolynomialNutation gammaBar =
+                    new PolynomialNutation(   -0.052928     * Constants.ARC_SECONDS_TO_RADIANS,
+                                              10.556378     * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.4932044    * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.00031238   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.000002788  * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.0000000260 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation phiBar =
+                    new PolynomialNutation(84381.412819     * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.811016     * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.0511268    * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.00053289   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.000000440  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0000000176 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation psiBar =
+                    new PolynomialNutation(   -0.041775     * Constants.ARC_SECONDS_TO_RADIANS,
+                                            5038.481484     * Constants.ARC_SECONDS_TO_RADIANS,
+                                               1.5584175    * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.00018522   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.000026452  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0000000148 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation epsilonBar =
+                    new PolynomialNutation(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
+                                               0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
+                                              -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
+
+            return new NutationFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final BodiesElements elements) {
+                    return new double[] {
+                        gammaBar.value(elements), phiBar.value(elements),
+                        psiBar.value(elements), epsilonBar.value(elements)
+                    };
+                }
+            };
+
+        }
+
     };
 
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
-
-    /** Check if {@link #getPrecessionZetaFunction()}, {@link #getPrecessionThetaFunction()}
-     * and {@link #getPrecessionZFunction()} methods are supported.
-     * @return true if all methods are supported, false if calling any of them would
-     * trigger an exception
-     */
-    public boolean precessionSupported() {
-        // by default, we consider we do not support precession functions
-        return false;
-    }
 
     /** Check if {@link #getNutationInLongitudeFunction()}, {@link
      * #getNutationInObliquityFunction()}, {@link #getEquationOfEquinoxesCorrectionFunction()}
@@ -508,16 +511,6 @@ public enum IERSConventions {
      */
     public boolean nutationSupported() {
         // by default, we consider we do not support nutation functions
-        return false;
-    }
-
-    /** Check if {@link #getXFunction()}, {@link #getYFunction()}, {@link
-     * #getSXY2XFunction()} and {@link #getEarthOrientationAngleFunction()} methods are supported.
-     * @return true if all methods are supported, false if calling any of them would
-     * trigger an exception
-     */
-    public boolean nonRotatingOriginSupported() {
-        // by default, we consider we do not support non-rotating origin functions
         return false;
     }
 
@@ -539,37 +532,14 @@ public enum IERSConventions {
      */
     public abstract double getEpsilon0();
 
-    /** Get the function computing the X pole component.
-     * @return function computing the X pole component
+    /** Get the function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components.
+     * <p>
+     * The returned function computes the two X, Y commponents of CIP and the S+XY/2 component of the non-rotating CIO.
+     * </p>
+     * @return function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components
      * @exception OrekitException if table cannot be loaded
      */
-    public NutationFunction getXFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "xCIP", toString());
-    }
-
-    /** Get the function computing the Y pole component.
-     * @return function computing the Y pole component
-     * @exception OrekitException if table cannot be loaded
-     */
-    public NutationFunction getYFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "yCIP", toString());
-
-    }
-
-    /** Get the function computing the S + XY/2 pole component.
-     * @return function computing the S + XY/2 pole component
-     * @exception OrekitException if table cannot be loaded
-     */
-    public NutationFunction getSXY2XFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "sCIO", toString());
-
-    }
+    public abstract NutationFunction<double[]> getXYSpXY2Function() throws OrekitException;
 
     /** Get the function computing the raw Earth Orientation Angle.
      * <p>
@@ -582,89 +552,33 @@ public enum IERSConventions {
      * the return value containing both the angle and its first time derivative
      * @exception OrekitException if table cannot be loaded
      */
-    public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "ERA", toString());
+    public abstract TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction() throws OrekitException;
 
-    }
-
-    /** Get the function computing the precession angle &zeta;<sub>A</sub>.
-     * @return function computing the precession angle &zeta;<sub>A</sub>
+    /** Get the function computing the precession angles.
+     * <p>
+     * The function returned computes either the three classical angles
+     * &zeta;<sub>A</sub> (around Z axis), &theta;<sub>A</sub> (around Y axis)
+     * and z<sub>A</sub> (around Z axis) or the four Fukushima-Williams angles
+     * &gamma; (around Z axis), &phi; (around X axis), &psi; (around Z axis) and
+     * &epsilon; (around X axis). The caller should check the number of components
+     * in the returned array to identify which rotations set is used.
+     * </p>
+     * @return function computing the precession angle
      * @exception OrekitException if table cannot be loaded
      */
-    public NutationFunction getPrecessionZetaFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "\u03b6A", toString());
+    public abstract NutationFunction<double[]> getPrecessionFunction() throws OrekitException;
 
-    }
-
-    /** Get the function computing the precession angle &theta;<sub>A</sub>.
-     * @return function computing the precession angle &theta;<sub>A</sub>
+    /** Get the function computing the nutation angles.
+     * <p>
+     * The function returned computes the two classical angles &Delta;&Psi; and &Delta;&epsilon;,
+     * the mean obliquity of ecliptic &epsilon;<sub>A</sub>, and the correction to the
+     * equation of equinoxes introduced since 1997-02-27 by IAU 1994 resolution C7 (the correction
+     * is forced to 0 before this date)
+     * </p>
+     * @return function computing the nutation in longitude &Delta;&Psi; and &Delta;&epsilon;
      * @exception OrekitException if table cannot be loaded
      */
-    public NutationFunction getPrecessionThetaFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "\u03b8A", toString());
-
-    }
-
-    /** Get the function computing the precession angle z<sub>A</sub>.
-     * @return function computing the precession angle z<sub>A</sub>
-     * @exception OrekitException if table cannot be loaded
-     */
-    public NutationFunction getPrecessionZFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "zA", toString());
-
-    }
-
-    /** Get the function computing the nutation in longitude &Delta;&Psi;.
-     * @return function computing the nutation in longitude &Delta;&Psi;
-     * @exception OrekitException if table cannot be loaded
-     */
-    public NutationFunction getNutationInLongitudeFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "\u0394\u03c8", toString());
-
-    }
-
-    /** Get the function computing the nutation in obliquity &Delta;&epsilon;.
-     * @return function computing the nutation in obliquity &Delta;&epsilon;
-     * @exception OrekitException if table cannot be loaded
-     */
-    public NutationFunction getNutationInObliquityFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "\u0394\u03b5", toString());
-
-    }
-
-    /** Get the function computing the mean obliquity of ecliptic &epsilon;<sub>A</sub>.
-     * @return function computing the mean obliquity of ecliptic &epsilon;<sub>A</sub>
-     * @exception OrekitException if table cannot be loaded
-     */
-    public NutationFunction getMeanObliquityOfEclipticFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "\u03b5A", toString());
-
-    }
-
-    /** Get the function computing a possible correction to the Equation of the Equinoxes.
-     * @return function computing a possible correction to the Equation of the Equinoxes
-     * @exception OrekitException if table cannot be loaded
-     */
-    public NutationFunction getEquationOfEquinoxesCorrectionFunction() throws OrekitException {
-        // default implementation triggers an error
-        throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_PARAMETER,
-                                  "\u0394eqe", toString());
-
-    }
+    public abstract NutationFunction<double[]> getNutationFunction() throws OrekitException;
 
     /** Load a series development model.
      * @param name file name of the series development
@@ -673,9 +587,9 @@ public enum IERSConventions {
      * @return series development model
      * @exception OrekitException if table cannot be loaded
      */
-    private static NutationFunction loadPoissonSeries(final String name,
-                                                      final double polyFactor,
-                                                      final double nonPolyFactor)
+    private static PoissonSeries loadPoissonSeries(final String name,
+                                                   final double polyFactor,
+                                                   final double nonPolyFactor)
         throws OrekitException {
 
         // get the table data
@@ -705,7 +619,7 @@ public enum IERSConventions {
      * taking effect since 1997-02-27 for continuity
      * </p>
      */
-    private static class IAU1994ResolutionC7 implements NutationFunction {
+    private static class IAU1994ResolutionC7 {
 
         /** First Moon correction term for the Equation of the Equinoxes. */
         private final double eqe1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
@@ -719,8 +633,10 @@ public enum IERSConventions {
         private final AbsoluteDate newEQEModelStart =
             new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
 
-        /** {@inheritDoc} */
-        @Override
+        /** Evaluate the correction.
+         * @param elements bodies elements for nutation
+         * @return correction value (0 before 1997-02-27)
+         */
         public double value(final BodiesElements elements) {
             if (elements.getDate().compareTo(newEQEModelStart) >= 0) {
 

@@ -61,9 +61,6 @@ MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = missing Earth Orientation P
 # file {0} is not a supported IERS data file
 NOT_A_SUPPORTED_IERS_DATA_FILE = file {0} is not a supported IERS data file
 
-# parameter {0} is not supported in {1}
-NOT_A_SUPPORTED_IERS_PARAMETER = parameter {0} is not supported in {1}
-
 # inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
 INCONSISTENT_DATES_IN_IERS_FILE = inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
 

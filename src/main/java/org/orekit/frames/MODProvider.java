@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.NutationFunction;
 import org.orekit.errors.OrekitException;
@@ -39,14 +38,8 @@ class MODProvider implements TransformProvider {
     /** Generator for fundamental nutation arguments. */
     private final FundamentalNutationArguments nutationArguments;
 
-    /** Function computing the precession angle &zeta;<sub>A</sub>. */
-    private final NutationFunction precessionZeta;
-
-    /** Function computing the precession angle &theta;<sub>A</sub>. */
-    private final NutationFunction precessionTheta;
-
-    /** Function computing the precession angle z<sub>A</sub>. */
-    private final NutationFunction precessionZ;
+    /** Function computing the precession angles. */
+    private final NutationFunction<double[]> precessionFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -54,9 +47,7 @@ class MODProvider implements TransformProvider {
      */
     public MODProvider(final IERSConventions conventions) throws OrekitException {
         this.nutationArguments = conventions.getNutationArguments();
-        this.precessionZeta    = conventions.getPrecessionZetaFunction();
-        this.precessionTheta   = conventions.getPrecessionThetaFunction();
-        this.precessionZ       = conventions.getPrecessionZFunction();
+        this.precessionFunction        = conventions.getPrecessionFunction();
     }
 
     /** Get the transfrom from parent frame.
@@ -66,25 +57,34 @@ class MODProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) {
 
-        // compute fundamental nutation arguments arguments
-        final BodiesElements arguments = nutationArguments.evaluateAll(date);
+        // compute the precession angles
+        final double[] angles = precessionFunction.value(nutationArguments.evaluateAll(date));
 
-        // compute the zeta precession angle
-        final double zeta = precessionZeta.value(arguments);
+        final Rotation precession;
+        if (angles.length == 3) {
+            // the model provides the three classical angles zetaA, thetaA and zA
 
-        // compute the theta precession angle
-        final double theta = precessionTheta.value(arguments);
+            // elementary rotations for precession
+            final Rotation r1 = new Rotation(Vector3D.PLUS_K,  angles[2]);
+            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -angles[1]);
+            final Rotation r3 = new Rotation(Vector3D.PLUS_K,  angles[0]);
 
-        // compute the z precession angle
-        final double z = precessionZ.value(arguments);
+            // complete precession
+            precession = r1.applyTo(r2.applyTo(r3));
 
-        // elementary rotations for precession
-        final Rotation r1 = new Rotation(Vector3D.PLUS_K,  z);
-        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -theta);
-        final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zeta);
+        } else {
+            // the model provides the four Fukushima-Williams angles gammaBar, phiBar, psiBar, epsilonBar
 
-        // complete precession
-        final Rotation precession = r1.applyTo(r2.applyTo(r3));
+            // elementary rotations for precession
+            final Rotation r1 = new Rotation(Vector3D.PLUS_I,  angles[3]);
+            final Rotation r2 = new Rotation(Vector3D.PLUS_K,  angles[2]);
+            final Rotation r3 = new Rotation(Vector3D.PLUS_I, -angles[1]);
+            final Rotation r4 = new Rotation(Vector3D.PLUS_K, -angles[0]);
+
+            // complete precession
+            precession = r1.applyTo(r2.applyTo(r3.applyTo(r4)));
+
+        }
 
         // set up the transform from parent GCRF
         return new Transform(date, precession);

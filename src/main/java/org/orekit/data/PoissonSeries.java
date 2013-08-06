@@ -44,7 +44,7 @@ import org.orekit.errors.OrekitMessages;
  * @see SeriesTerm
  * @see PolynomialNutation
  */
-public class PoissonSeries implements NutationFunction, Serializable {
+public class PoissonSeries implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130728L;
@@ -274,7 +274,10 @@ public class PoissonSeries implements NutationFunction, Serializable {
 
     }
 
-    /** {@inheritDoc} */
+    /** Evaluate the value of the series.
+     * @param elements bodies elements for nutation
+     * @return value of the series
+     */
     public double value(final BodiesElements elements) {
 
         final double tc = elements.getTC();

@@ -18,18 +18,18 @@
 package org.orekit.data;
 
 /** Interface for scalar nutation function.
+ * @param <T> Type of the return value.
  * @see BodiesElements
  * @see FundamentalNutationArguments
- * @see PolynomialNutation
- * @see PoissonSeries
+ * @see org.orekit.utils.IERSConventions
  * @author Luc Maisonobe
  */
-public interface NutationFunction {
+public interface NutationFunction<T> {
 
     /** Evaluate the function.
      * @param elements bodies elements for nutation
      * @return function value
      */
-    double value(final BodiesElements elements);
+    T value(final BodiesElements elements);
 
 }

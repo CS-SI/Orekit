@@ -24,7 +24,7 @@ import java.io.Serializable;
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-public class PolynomialNutation implements NutationFunction, Serializable {
+public class PolynomialNutation implements Serializable {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130728L;
@@ -39,9 +39,9 @@ public class PolynomialNutation implements NutationFunction, Serializable {
         this.coefficients = coefficients.clone();
     }
 
-    /** Compute the value of the development for the current date.
-     * @param elements luni-solar and planetary elements for the current date
-     * @return current value of the development
+    /** Evaluate the value of the polynomial.
+     * @param elements bodies elements for nutation
+     * @return value of the polynomial
      */
     public double value(final BodiesElements elements) {
 

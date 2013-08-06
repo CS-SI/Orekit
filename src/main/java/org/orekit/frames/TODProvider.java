@@ -19,7 +19,6 @@ package org.orekit.frames;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.orekit.data.BodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.NutationFunction;
 import org.orekit.errors.OrekitException;
@@ -43,17 +42,8 @@ class TODProvider implements TransformProvider {
     /** Generator for fundamental nutation arguments. */
     private final FundamentalNutationArguments nutationArguments;
 
-    /** Function computing the nutation in longitude &Delta;&Psi;. */
-    private final NutationFunction nutationInLongitude;
-
-    /** Function computing the nutation in obliquity &Delta;&epsilon;. */
-    private final NutationFunction nutationInObliquity;
-
-    /** Function computing the mean obliquity of ecliptic &epsilon;<sub>A</sub>. */
-    private final NutationFunction meanObliquityOfEcliptic;
-
-    /** Function computing a possible correction to the Equation of the Equinoxes. */
-    private final NutationFunction equationOfEquinoxesCorrection;
+    /** Function computing the nutation angles. */
+    private final NutationFunction<double[]> nutationFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -62,12 +52,9 @@ class TODProvider implements TransformProvider {
      */
     public TODProvider(final IERSConventions conventions, final boolean applyEOPCorr)
         throws OrekitException {
-        this.eopHistory                    = applyEOPCorr ? FramesFactory.getEOPHistory(conventions) : null;
-        this.nutationArguments             = conventions.getNutationArguments();
-        this.nutationInLongitude           = conventions.getNutationInLongitudeFunction();
-        this.nutationInObliquity           = conventions.getNutationInObliquityFunction();
-        this.meanObliquityOfEcliptic       = conventions.getMeanObliquityOfEclipticFunction();
-        this.equationOfEquinoxesCorrection = conventions.getEquationOfEquinoxesCorrectionFunction();
+        this.eopHistory        = applyEOPCorr ? FramesFactory.getEOPHistory(conventions) : null;
+        this.nutationArguments = conventions.getNutationArguments();
+        this.nutationFunction  = conventions.getNutationFunction();
     }
 
     /** Get the LoD (Length of Day) value.
@@ -99,19 +86,19 @@ class TODProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        // compute fundamental nutation arguments arguments
-        final BodiesElements arguments = nutationArguments.evaluateAll(date);
+        // compute nutation angles
+        final double[] angles = nutationFunction.value(nutationArguments.evaluateAll(date));
 
         // compute the mean obliquity of the ecliptic
-        final double moe = meanObliquityOfEcliptic.value(arguments);
+        final double moe = angles[2];
 
         // get the corrections for the nutation parameters
         final NutationCorrection nutCorr = (eopHistory == null) ?
                                            NutationCorrection.NULL_CORRECTION :
                                            eopHistory.getNutationCorrection(date);
 
-        final double deps = nutationInObliquity.value(arguments) + nutCorr.getDdeps();
-        final double dpsi = nutationInLongitude.value(arguments) + nutCorr.getDdpsi();
+        final double deps = angles[1] + nutCorr.getDdeps();
+        final double dpsi = angles[0] + nutCorr.getDdpsi();
 
         // compute the true obliquity of the ecliptic
         final double toe = moe + deps;
@@ -137,20 +124,20 @@ class TODProvider implements TransformProvider {
     public double getEquationOfEquinoxes(final AbsoluteDate date)
         throws OrekitException {
 
-        // compute fundamental nutation arguments arguments
-        final BodiesElements arguments = nutationArguments.evaluateAll(date);
+        // compute nutation angles
+        final double[] angles = nutationFunction.value(nutationArguments.evaluateAll(date));
 
         // nutation in longitude
-        final double dPsi = nutationInLongitude.value(arguments);
+        final double dPsi = angles[0];
 
         // mean obliquity of ecliptic
-        final double moe = meanObliquityOfEcliptic.value(arguments);
+        final double moe = angles[2];
 
         // original definition of equation of equinoxes
         final double eqe = dPsi * FastMath.cos(moe);
 
         // apply correction if needed
-        return eqe + equationOfEquinoxesCorrection.value(arguments);
+        return eqe + angles[3];
 
     }
 

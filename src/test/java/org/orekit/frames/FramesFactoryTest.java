@@ -116,7 +116,7 @@ public class FramesFactoryTest {
                 Assert.assertEquals(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial", original.getName());
                 break;
             case ITRF_EQUINOX :
-                Assert.assertEquals(Predefined.ITRF_EQUINOX_CONV_1996, original.getName());
+                Assert.assertEquals(Predefined.ITRF_EQUINOX_CONV_1996.getName(), original.getName());
                 break;
             case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
                 Assert.assertEquals(Predefined.TIRF_CONV_2003_WITH_TIDAL_EFFECTS.getName(), original.getName());
@@ -135,6 +135,24 @@ public class FramesFactoryTest {
                 break;
             case CIRF_2000_CONV_2010 :
                 Assert.assertEquals(Predefined.CIRF_CONV_2010.getName(), original.getName());
+                break;
+            case GTOD_WITHOUT_EOP_CORRECTIONS :
+                Assert.assertEquals(Predefined.GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS.getName(), original.getName());
+                break;
+            case GTOD_WITH_EOP_CORRECTIONS :
+                Assert.assertEquals(Predefined.GTOD_CONV_1996_WITH_EOP_CORRECTIONS.getName(), original.getName());
+                break;
+            case TOD_WITHOUT_EOP_CORRECTIONS :
+                Assert.assertEquals(Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS.getName(), original.getName());
+                break;
+            case TOD_WITH_EOP_CORRECTIONS :
+                Assert.assertEquals(Predefined.TOD_CONV_1996_WITH_EOP_CORRECTIONS.getName(), original.getName());
+                break;
+            case MOD_WITHOUT_EOP_CORRECTIONS :
+                Assert.assertEquals(Predefined.MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS.getName(), original.getName());
+                break;
+            case MOD_WITH_EOP_CORRECTIONS :
+                Assert.assertEquals(Predefined.MOD_CONV_1996_WITH_EOP_CORRECTIONS.getName(), original.getName());
                 break;
             default :
                 Assert.assertEquals(predefined.getName(), original.getName());
