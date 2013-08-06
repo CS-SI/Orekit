@@ -65,6 +65,14 @@ public class TCGScaleTest {
         Assert.assertEquals(0, ttRef.durationFrom(utcRef), 1.0e-15);
     }
 
+    @Test
+    public void testSofa() {
+        TimeScale tt  = TimeScalesFactory.getTT();
+        AbsoluteDate date = new AbsoluteDate(2006, 1, 15, 21, 25, 10.5000096, tt);
+        double delta = TimeScalesFactory.getTCG().offsetFromTAI(date) - tt.offsetFromTAI(date);
+        Assert.assertEquals(Constants.JULIAN_DAY * (0.8924900312508587113 -  0.892482639), delta, 5.0e-10);
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("regular-data");
