@@ -1098,8 +1098,7 @@ public class FramesFactory implements Serializable {
                 final Frame tod = getTOD(conventions, applyEOPCorr);
                 final InterpolatingTransformProvider todInterpolating =
                         (InterpolatingTransformProvider) tod.getTransformProvider();
-                final TODProvider todRaw = (TODProvider) todInterpolating.getRawProvider();
-                final GTODProvider gtodRaw = new GTODProvider(todRaw, conventions, applyEOPCorr);
+                final GTODProvider gtodRaw = new GTODProvider(conventions, applyEOPCorr);
                 final TransformProvider gtodInterpolating =
                         new InterpolatingTransformProvider(gtodRaw, true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,

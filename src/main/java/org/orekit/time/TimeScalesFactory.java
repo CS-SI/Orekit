@@ -18,13 +18,16 @@ package org.orekit.time;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.IERSConventions;
 
@@ -37,7 +40,7 @@ import org.orekit.utils.IERSConventions;
 public class TimeScalesFactory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -2063625014942931917L;
+    private static final long serialVersionUID = 20130807L;
 
     /** International Atomic Time scale. */
     private static TAIScale tai = null;
@@ -46,7 +49,7 @@ public class TimeScalesFactory implements Serializable {
     private static UTCScale utc = null;
 
     /** Universal Time 1 scale. */
-    private static UT1Scale ut1 = null;
+    private static Map<IERSConventions, UT1Scale> ut1Map = new HashMap<IERSConventions, UT1Scale>();
 
     /** Terrestrial Time scale. */
     private static TTScale tt = null;
@@ -169,18 +172,11 @@ public class TimeScalesFactory implements Serializable {
     }
 
     /** Get the Universal Time 1 scale.
-     * <p>
-     * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
-     * so this method loads these data sets. See the {@link #getUTC()
-     * TimeScalesFactory.getUTC()} and {@link FramesFactory#getEOP2000History()
-     * FramesFactory.getEOP2000History()} methods for an explanation of how the
-     * corresponding data loaders can be configured.
-     * </p>
      * @return Universal Time 1 scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #getUTC()
-     * @see FramesFactory#getEOP2000History()
+     * @see FramesFactory#getEOPHistory()
      * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions)}
      */
     public static UT1Scale getUT1() throws OrekitException {
@@ -205,13 +201,35 @@ public class TimeScalesFactory implements Serializable {
     public static UT1Scale getUT1(final IERSConventions conventions) throws OrekitException {
         synchronized (TimeScalesFactory.class) {
 
+            UT1Scale ut1 = ut1Map.get(conventions);
             if (ut1 == null) {
-                ut1 = new UT1Scale(FramesFactory.getEOPHistory(conventions), getUTC());
+                ut1 = getUT1(FramesFactory.getEOPHistory(conventions));
+                ut1Map.put(conventions, ut1);
             }
-
             return ut1;
 
         }
+    }
+
+    /** Get the Universal Time 1 scale.
+     * <p>
+     * As this method allow associating any history with the time scale,
+     * it may involve large data sets. So this method does <em>not</em>
+     * cache the resulting {@link UT1Scale UT1Scale} instance, a new
+     * instance will be returned each time. In order to avoid wasting
+     * memory, calling {@link #getUT1(IERSConventions) getUT1(IERSConventions)}
+     * with the single enumerate corresponding to the conventions may be
+     * a better solution. This method is made available only for expert use.
+     * </p>
+     * @param history EOP parameters providing dUT1
+     * (may be null if no correction is desired)
+     * @return Universal Time 1 scale
+     * @exception OrekitException if some data can't be read or some
+     * file content is corrupted
+     * @see #getUT1(IERSConventions)
+     */
+    public static UT1Scale getUT1(final EOPHistory history) throws OrekitException {
+        return new UT1Scale(history, getUTC());
     }
 
     /** Get the Terrestrial Time scale.

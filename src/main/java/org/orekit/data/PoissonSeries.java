@@ -47,10 +47,10 @@ import org.orekit.errors.OrekitMessages;
 public class PoissonSeries implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130728L;
+    private static final long serialVersionUID = 20130807L;
 
-    /** Coefficients of the polynomial part. */
-    private double[] coefficients;
+    /** Polynomial part. */
+    private PolynomialNutation polynomial;
 
     /** Non-polynomial series. */
     private SeriesTerm[][] series;
@@ -117,10 +117,10 @@ public class PoissonSeries implements Serializable {
 
                     // we have found a non-polynomial series
 
-                    if (coefficients == null) {
+                    if (polynomial == null) {
                         // since non-polynomial part starts after polynomial part,
                         // getting here means there are no coefficients at all
-                        coefficients = new double[0];
+                        polynomial = new PolynomialNutation(new double[0]);
                     }
 
                     // skip sub-headers lines
@@ -151,9 +151,9 @@ public class PoissonSeries implements Serializable {
 
                 } else {
 
-                    if (coefficients == null) {
+                    if (polynomial == null) {
                         // look for the polynomial part
-                        coefficients = parsePolynomial(termPattern.matcher(line), polyFactor);
+                        polynomial = parsePolynomial(termPattern.matcher(line), polyFactor);
                     }
 
                     // we are still in the header
@@ -164,7 +164,7 @@ public class PoissonSeries implements Serializable {
 
             }
 
-            if (coefficients == null || array.isEmpty()) {
+            if (polynomial == null || array.isEmpty()) {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
@@ -177,12 +177,19 @@ public class PoissonSeries implements Serializable {
 
     }
 
+    /** Extract only the polynomial part of the series.
+     * @return polynomial part of the series
+     */
+    public PolynomialNutation getPolynomialPart() {
+        return polynomial;
+    }
+
     /** Parse a polynomial description line.
      * @param termMatcher matcher for the polynomial terms
      * @param polyFactor multiplicative factor to use for polynomial coefficients
      * @return parsed coefficients, or null if no coefficients found
      */
-    private double[] parsePolynomial(final Matcher termMatcher, final double polyFactor) {
+    private PolynomialNutation parsePolynomial(final Matcher termMatcher, final double polyFactor) {
 
         // parse the polynomial one polynomial term after the other
         if (!termMatcher.lookingAt()) {
@@ -201,7 +208,7 @@ public class PoissonSeries implements Serializable {
             c[i] = polyFactor * Double.parseDouble(coeffs.get(i));
         }
 
-        return c;
+        return new PolynomialNutation(c);
 
     }
 
@@ -283,10 +290,7 @@ public class PoissonSeries implements Serializable {
         final double tc = elements.getTC();
 
         // polynomial part
-        double p = 0;
-        for (int i = coefficients.length - 1; i >= 0; --i) {
-            p = p * tc + coefficients[i];
-        }
+        final double p = polynomial.value(elements);
 
         // non-polynomial part
         double np = 0;

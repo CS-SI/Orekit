@@ -18,6 +18,9 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.orekit.utils.Constants;
+
 /**
  * Polynomial nutation function.
  *
@@ -53,6 +56,30 @@ public class PolynomialNutation implements Serializable {
         }
 
         return p;
+
+    }
+
+    /** Evaluate the value of the polynomial.
+     * <p>
+     * The returned value contains both the value and its first time derivative
+     * </p>
+     * @param elements bodies elements for nutation
+     * @return value of the polynomial
+     */
+    public DerivativeStructure valueDS(final BodiesElements elements) {
+
+        final double tc = elements.getTC();
+
+        double p    = 0;
+        double pDot = 0;
+        for (int i = coefficients.length - 1; i > 0; --i) {
+            p    = p    * tc +     coefficients[i];
+            pDot = pDot * tc + i * coefficients[i];
+        }
+        p     = p * tc + coefficients[0];
+        pDot /= Constants.JULIAN_CENTURY;
+
+        return new DerivativeStructure(1, 1, p, pDot);
 
     }
 

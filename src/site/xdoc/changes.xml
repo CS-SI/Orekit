@@ -21,6 +21,28 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        When UT1 time scale is used, it is now possible to choose which Earth Orientation
+        Parameters history to use (formerly, only EOP compatible with IAU-2000/2006 was
+        used, even for systems relying only on older conventions).
+      </action>
+      <action dev="luc" type="add" >
+        Added Greenwich Mean Sidereal Time and Greenwich Apparent Sidereal Time
+        to all supported IERS conventions (i.e. IERS 1996, IERS 2003 and IERS 2010).
+      </action>
+      <action dev="luc" type="add" >
+        Classical equinox-based paradigm and new non-rotating origin paradigm for
+        inertial and terrestrial frames are now supported with all IERS conventions.
+        This means it is now possible to use MOD/TOD/GTOD with the recent precession/nutation
+        models from recent conventions, and it is also possible to use CIRF/TIRF/ITRF with
+        the older precession nutation models from ancient conventions. Of course, all these
+        conventions and frames can be used at the same time, which is very important to
+        support legacy systems and to convert coordinates between older and newer reference
+        systems.
+      </action>
+      <action dev="luc" type="add" >
+        Added IERS 1996 in the list of supported IERS conventions.
+      </action>
       <action dev="luc" type="add" >
         Added factory methods to compute arbitrary Julian Epochs (J1900.0, J2000.0 ...)
         and Besselian Epochs (B1900.0, B1950.0 ...) that are used as reference dates
