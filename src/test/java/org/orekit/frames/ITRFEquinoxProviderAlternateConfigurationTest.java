@@ -54,7 +54,7 @@ public class ITRFEquinoxProviderAlternateConfigurationTest {
             new PVCoordinates(new Vector3D(-1033475.0313, 7901305.5856, 6380344.5328),
                               new Vector3D(-3225.632747, -2872.442511, 5531.931288));
 
-        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996, true).
+        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996).
                 getTransformTo(FramesFactory.getITRFEquinox(IERSConventions.IERS_1996), t0);
         checkPV(pvITRF, t.transformPVCoordinates(pvGTOD), 5.54e-5, 3.61e-7);
 
@@ -71,7 +71,7 @@ public class ITRFEquinoxProviderAlternateConfigurationTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996, true).
+        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996).
                 getTransformTo(FramesFactory.getITRFEquinox(IERSConventions.IERS_1996), t0);
 
         // GTOD

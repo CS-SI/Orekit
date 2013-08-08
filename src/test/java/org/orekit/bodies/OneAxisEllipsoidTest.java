@@ -250,7 +250,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testIssue141() throws OrekitException {
         AbsoluteDate date = new AbsoluteDate("2002-03-06T20:50:20.44188731559965033", TimeScalesFactory.getUTC());
-        Frame frame = FramesFactory.getGTOD(IERSConventions.IERS_1996, false);
+        Frame frame = FramesFactory.getGTOD(IERSConventions.IERS_1996);
         OneAxisEllipsoid model = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                       Constants.WGS84_EARTH_FLATTENING,
                                                       frame);

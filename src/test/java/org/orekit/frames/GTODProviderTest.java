@@ -57,13 +57,12 @@ public class GTODProviderTest {
         // this test gives worse result than GTODFrameAlternateConfigurationTest because
         // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
         // in lod with the data used by Vallado to set up this test case
-        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
-                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
+        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.296, 1.71e-4);
 
         // if we forget to apply lod and UT1 correction, results are much worse, which is expected
-        t = FramesFactory.getTOD(IERSConventions.IERS_1996, false).
-                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, false), t0);
+        t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 255.64, 0.13856);
 
     }
@@ -79,8 +78,8 @@ public class GTODProviderTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
-                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
+        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996), t0);
 
         // TOD iau76
         PVCoordinates pvTOD =
@@ -95,8 +94,7 @@ public class GTODProviderTest {
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0129, 3.459e-4);
 
         // if we forget to apply lod and UT1 correction, results are much worse, which is expected
-        t = FramesFactory.getTOD(IERSConventions.IERS_1996, false).
-                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, false), t0);
+        t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
         checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 1448.21, 3.845e-4);
 
     }

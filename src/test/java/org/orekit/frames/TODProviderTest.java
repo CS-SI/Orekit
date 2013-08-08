@@ -87,10 +87,9 @@ public class TODProviderTest {
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996, true).
-                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
-        Transform ff = FramesFactory.getMOD(IERSConventions.IERS_1996, false).
-                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, false), t0);
+        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996), t0);
+        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -122,10 +121,9 @@ public class TODProviderTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996, true).
-                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
-        Transform ff = FramesFactory.getMOD(IERSConventions.IERS_1996, false).
-                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, false), t0);
+        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996), t0);
+        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =

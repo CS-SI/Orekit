@@ -54,7 +54,6 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class AdapterPropagatorTest {
@@ -313,8 +312,7 @@ public class AdapterPropagatorTest {
         }
 
         if (gravityField != null) {
-            propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(IERSConventions.IERS_1996,
-                                                                                                 false),
+            propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(false),
                                                                            gravityField));
         }
 

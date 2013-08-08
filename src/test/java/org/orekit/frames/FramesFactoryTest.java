@@ -51,50 +51,37 @@ public class FramesFactoryTest {
     @Test
     public void testTree() throws OrekitException {
         Predefined[][] reference = new Predefined[][] {
-            { Predefined.EME2000,                                   Predefined.GCRF },
-            { Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS,           Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS },
-            { Predefined.ITRF_2008_WITH_TIDAL_EFFECTS,              Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS },
-            { Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS,           Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS },
-            { Predefined.ITRF_2005_WITH_TIDAL_EFFECTS,              Predefined.ITRF_2008_WITH_TIDAL_EFFECTS },
-            { Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS,           Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS },
-            { Predefined.ITRF_2000_WITH_TIDAL_EFFECTS,              Predefined.ITRF_2005_WITH_TIDAL_EFFECTS },
-            { Predefined.ITRF_97_WITHOUT_TIDAL_EFFECTS,             Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS },
-            { Predefined.ITRF_97_WITH_TIDAL_EFFECTS,                Predefined.ITRF_2000_WITH_TIDAL_EFFECTS },
-            { Predefined.ITRF_93_WITHOUT_TIDAL_EFFECTS,             Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS },
-            { Predefined.ITRF_93_WITH_TIDAL_EFFECTS,                Predefined.ITRF_2000_WITH_TIDAL_EFFECTS },
-            { Predefined.ITRF_EQUINOX,                              Predefined.GTOD_WITH_EOP_CORRECTIONS },
-            { Predefined.ITRF_EQUINOX_CONV_1996,                    Predefined.GTOD_CONV_1996_WITH_EOP_CORRECTIONS },
-            { Predefined.ITRF_EQUINOX_CONV_2003,                    Predefined.GTOD_CONV_2003_WITH_EOP_CORRECTIONS },
-            { Predefined.ITRF_EQUINOX_CONV_2010,                    Predefined.GTOD_CONV_2010_WITH_EOP_CORRECTIONS },
-            { Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS,      Predefined.CIRF_CONV_2010 },
-            { Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS,         Predefined.CIRF_CONV_2010 },
-            { Predefined.CIRF_CONV_2010,                            Predefined.GCRF },
-            { Predefined.VEIS_1950,                                 Predefined.GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.GTOD_WITHOUT_EOP_CORRECTIONS,              Predefined.TOD_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS,    Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.GTOD_CONV_2003_WITHOUT_EOP_CORRECTIONS,    Predefined.TOD_CONV_2003_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.GTOD_CONV_2010_WITHOUT_EOP_CORRECTIONS,    Predefined.TOD_CONV_2010_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.GTOD_WITH_EOP_CORRECTIONS,                 Predefined.TOD_WITH_EOP_CORRECTIONS },
-            { Predefined.GTOD_CONV_1996_WITH_EOP_CORRECTIONS,       Predefined.TOD_CONV_1996_WITH_EOP_CORRECTIONS },
-            { Predefined.GTOD_CONV_2003_WITH_EOP_CORRECTIONS,       Predefined.TOD_CONV_2003_WITH_EOP_CORRECTIONS },
-            { Predefined.GTOD_CONV_2010_WITH_EOP_CORRECTIONS,       Predefined.TOD_CONV_2010_WITH_EOP_CORRECTIONS },
-            { Predefined.TOD_WITHOUT_EOP_CORRECTIONS,               Predefined.MOD_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS,     Predefined.MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.TOD_CONV_2003_WITHOUT_EOP_CORRECTIONS,     Predefined.MOD_CONV_2003_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.TOD_CONV_2010_WITHOUT_EOP_CORRECTIONS,     Predefined.MOD_CONV_2010_WITHOUT_EOP_CORRECTIONS },
-            { Predefined.TOD_WITH_EOP_CORRECTIONS,                  Predefined.MOD_WITH_EOP_CORRECTIONS },
-            { Predefined.TOD_CONV_1996_WITH_EOP_CORRECTIONS,        Predefined.MOD_CONV_1996_WITH_EOP_CORRECTIONS },
-            { Predefined.TOD_CONV_2003_WITH_EOP_CORRECTIONS,        Predefined.MOD_CONV_2003_WITH_EOP_CORRECTIONS },
-            { Predefined.TOD_CONV_2010_WITH_EOP_CORRECTIONS,        Predefined.MOD_CONV_2010_WITH_EOP_CORRECTIONS },
-            { Predefined.MOD_WITHOUT_EOP_CORRECTIONS,               Predefined.EME2000 },
-            { Predefined.MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS,     Predefined.EME2000 },
-            { Predefined.MOD_CONV_2003_WITHOUT_EOP_CORRECTIONS,     Predefined.EME2000 },
-            { Predefined.MOD_CONV_2010_WITHOUT_EOP_CORRECTIONS,     Predefined.EME2000 },
-            { Predefined.MOD_WITH_EOP_CORRECTIONS,                  Predefined.GCRF },
-            { Predefined.MOD_CONV_1996_WITH_EOP_CORRECTIONS,        Predefined.GCRF },
-            { Predefined.MOD_CONV_2003_WITH_EOP_CORRECTIONS,        Predefined.GCRF },
-            { Predefined.MOD_CONV_2010_WITH_EOP_CORRECTIONS,        Predefined.GCRF },
-            { Predefined.TEME,                                      Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS }
+            { Predefined.EME2000,                                     Predefined.GCRF },
+            { Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS,             Predefined.TIRF_CONVENTIONS_2010_WITHOUT_TIDAL_EFFECTS },
+            { Predefined.ITRF_2008_WITH_TIDAL_EFFECTS,                Predefined.TIRF_CONVENTIONS_2010_WITH_TIDAL_EFFECTS },
+            { Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS,             Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS },
+            { Predefined.ITRF_2005_WITH_TIDAL_EFFECTS,                Predefined.ITRF_2008_WITH_TIDAL_EFFECTS },
+            { Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS,             Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS },
+            { Predefined.ITRF_2000_WITH_TIDAL_EFFECTS,                Predefined.ITRF_2005_WITH_TIDAL_EFFECTS },
+            { Predefined.ITRF_97_WITHOUT_TIDAL_EFFECTS,               Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS },
+            { Predefined.ITRF_97_WITH_TIDAL_EFFECTS,                  Predefined.ITRF_2000_WITH_TIDAL_EFFECTS },
+            { Predefined.ITRF_93_WITHOUT_TIDAL_EFFECTS,               Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS },
+            { Predefined.ITRF_93_WITH_TIDAL_EFFECTS,                  Predefined.ITRF_2000_WITH_TIDAL_EFFECTS },
+            { Predefined.ITRF_EQUINOX_CONVENTIONS_1996,               Predefined.GTOD_CONVENTIONS_1996 },
+            { Predefined.ITRF_EQUINOX_CONV_2003,                      Predefined.GTOD_CONVENTIONS_2003 },
+            { Predefined.ITRF_EQUINOX_CONV_2010,                      Predefined.GTOD_CONVENTIONS_2010 },
+            { Predefined.TIRF_CONVENTIONS_2010_WITHOUT_TIDAL_EFFECTS, Predefined.CIRF_CONVENTIONS_2010 },
+            { Predefined.TIRF_CONVENTIONS_2010_WITH_TIDAL_EFFECTS,    Predefined.CIRF_CONVENTIONS_2010 },
+            { Predefined.CIRF_CONVENTIONS_2010,                       Predefined.GCRF },
+            { Predefined.VEIS_1950,                                   Predefined.GTOD_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.GTOD_WITHOUT_EOP_CORRECTIONS,                Predefined.TOD_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.GTOD_CONVENTIONS_1996,                       Predefined.TOD_CONVENTIONS_1996 },
+            { Predefined.GTOD_CONVENTIONS_2003,                       Predefined.TOD_CONVENTIONS_2003 },
+            { Predefined.GTOD_CONVENTIONS_2010,                       Predefined.TOD_CONVENTIONS_2010 },
+            { Predefined.TOD_WITHOUT_EOP_CORRECTIONS,                 Predefined.MOD_WITHOUT_EOP_CORRECTIONS },
+            { Predefined.TOD_CONVENTIONS_1996,                        Predefined.MOD_CONVENTIONS_1996 },
+            { Predefined.TOD_CONVENTIONS_2003,                        Predefined.MOD_CONVENTIONS_2003 },
+            { Predefined.TOD_CONVENTIONS_2010,                        Predefined.MOD_CONVENTIONS_2010 },
+            { Predefined.MOD_WITHOUT_EOP_CORRECTIONS,                 Predefined.EME2000 },
+            { Predefined.MOD_CONVENTIONS_1996,                        Predefined.GCRF },
+            { Predefined.MOD_CONVENTIONS_2003,                        Predefined.GCRF },
+            { Predefined.MOD_CONVENTIONS_2010,                        Predefined.GCRF },
+            { Predefined.TEME,                                        Predefined.TOD_WITHOUT_EOP_CORRECTIONS }
         };
         for (final Predefined[] pair : reference) {
             Frame child  = FramesFactory.getFrame(pair[0]);
@@ -115,43 +102,34 @@ public class FramesFactoryTest {
                 Assert.assertEquals(CelestialBodyFactory.SOLAR_SYSTEM_BARYCENTER + "/inertial", original.getName());
                 break;
             case ITRF_EQUINOX :
-                Assert.assertEquals(Predefined.ITRF_EQUINOX_CONV_1996.getName(), original.getName());
+                Assert.assertEquals(Predefined.ITRF_EQUINOX_CONVENTIONS_1996.getName(), original.getName());
                 break;
             case TIRF_2000_CONV_2003_WITH_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONV_2003_WITH_TIDAL_EFFECTS.getName(), original.getName());
+                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2003_WITH_TIDAL_EFFECTS.getName(), original.getName());
                 break;
             case TIRF_2000_CONV_2003_WITHOUT_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONV_2003_WITHOUT_TIDAL_EFFECTS.getName(), original.getName());
+                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2003_WITHOUT_TIDAL_EFFECTS.getName(), original.getName());
                 break;
             case TIRF_2000_CONV_2010_WITH_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONV_2010_WITH_TIDAL_EFFECTS.getName(), original.getName());
+                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2010_WITH_TIDAL_EFFECTS.getName(), original.getName());
                 break;
             case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
-                Assert.assertEquals(Predefined.TIRF_CONV_2010_WITHOUT_TIDAL_EFFECTS.getName(), original.getName());
+                Assert.assertEquals(Predefined.TIRF_CONVENTIONS_2010_WITHOUT_TIDAL_EFFECTS.getName(), original.getName());
                 break;
             case CIRF_2000_CONV_2003 :
-                Assert.assertEquals(Predefined.CIRF_CONV_2003.getName(), original.getName());
+                Assert.assertEquals(Predefined.CIRF_CONVENTIONS_2003.getName(), original.getName());
                 break;
             case CIRF_2000_CONV_2010 :
-                Assert.assertEquals(Predefined.CIRF_CONV_2010.getName(), original.getName());
-                break;
-            case GTOD_WITHOUT_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.GTOD_CONV_1996_WITHOUT_EOP_CORRECTIONS.getName(), original.getName());
+                Assert.assertEquals(Predefined.CIRF_CONVENTIONS_2010.getName(), original.getName());
                 break;
             case GTOD_WITH_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.GTOD_CONV_1996_WITH_EOP_CORRECTIONS.getName(), original.getName());
-                break;
-            case TOD_WITHOUT_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.TOD_CONV_1996_WITHOUT_EOP_CORRECTIONS.getName(), original.getName());
+                Assert.assertEquals(Predefined.GTOD_CONVENTIONS_1996.getName(), original.getName());
                 break;
             case TOD_WITH_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.TOD_CONV_1996_WITH_EOP_CORRECTIONS.getName(), original.getName());
-                break;
-            case MOD_WITHOUT_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.MOD_CONV_1996_WITHOUT_EOP_CORRECTIONS.getName(), original.getName());
+                Assert.assertEquals(Predefined.TOD_CONVENTIONS_1996.getName(), original.getName());
                 break;
             case MOD_WITH_EOP_CORRECTIONS :
-                Assert.assertEquals(Predefined.MOD_CONV_1996_WITH_EOP_CORRECTIONS.getName(), original.getName());
+                Assert.assertEquals(Predefined.MOD_CONVENTIONS_1996.getName(), original.getName());
                 break;
             default :
                 Assert.assertEquals(predefined.getName(), original.getName());
@@ -168,7 +146,7 @@ public class FramesFactoryTest {
                 Assert.assertTrue(bos.size() < 480);
             } else {
                 Assert.assertTrue(bos.size() > 100);
-                Assert.assertTrue(bos.size() < 150);
+                Assert.assertTrue(bos.size() < 160);
             }
 
             ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
