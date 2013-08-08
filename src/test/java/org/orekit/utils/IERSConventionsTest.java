@@ -75,7 +75,7 @@ public class IERSConventionsTest {
     public void testGMST82Derivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_1996.getGMSTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 60.0, 10.0, 1.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.0e-12);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class IERSConventionsTest {
     public void testGMST00Derivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_2003.getGMSTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 60.0, 10.0, 1.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.0e-12);
     }
 
     @Test
@@ -171,7 +171,7 @@ public class IERSConventionsTest {
     public void testGMST06Derivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_2010.getGMSTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 60.0, 10.0, 1.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 600.0, 10.0, 1.0e-12);
     }
 
     @Test
@@ -222,7 +222,7 @@ public class IERSConventionsTest {
     public void testERADerivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_2010.getGMSTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 60.0, 10.0, 1.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 1.0e-12);
     }
 
     @Test
@@ -269,7 +269,7 @@ public class IERSConventionsTest {
     public void testGST94Derivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_1996.getGASTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 60.0, 10.0, 2.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
     }
 
     @Test
@@ -314,7 +314,7 @@ public class IERSConventionsTest {
     public void testGST00ADerivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_2003.getGASTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 60.0, 10.0, 2.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
     }
 
     @Test
@@ -366,7 +366,7 @@ public class IERSConventionsTest {
     public void testGST06Derivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_2010.getGASTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 60.0, 10.0, 2.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
     }
 
     @Test
@@ -375,17 +375,42 @@ public class IERSConventionsTest {
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
+        //        double utc1, utc2, tai1, tai2, tt1, tt2, ut11, ut12, gst;
+        //
+        //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
+        //        utc1  = DJM0 + 53049.0;
+        //        utc2  = 0.0;
+        //        iauUtctai(utc1, utc2, &tai1, &tai2);
+        //        iauTaitt(tai1, tai2, &tt1, &tt2);
+        //        iauUtcut1(utc1, utc2, -0.4093509, &ut11, &ut12);
+        //        gst = iauGst06a(ut11, ut12, tt1, tt2);
+        //        printf("iaugst06a(%.20g, %.20g, %.20g, %.20g)\n  --> %.20g\n",
+        //               ut11, ut12, tt1, tt2, gst);
+        //
+        //        // 2004-02-29:00:00:00Z, MJD = 53064, UT1-UTC = -0.4175723
+        //        utc1 = DJM0 + 53064.0;
+        //        utc2 = 0.0;
+        //        iauUtctai(utc1, utc2, &tai1, &tai2);
+        //        iauTaitt(tai1, tai2, &tt1, &tt2);
+        //        iauUtcut1(utc1, utc2, -0.4175723, &ut11, &ut12);
+        //        gst = iauGst06a(ut11, ut12, tt1, tt2);
+        //        printf("iaugst06a(%.20g, %.20g, %.20g, %.20g)\n  --> %.20g\n",
+        //               ut11, ut12, tt1, tt2, gst);
         //
         // the output of this test reads:
+        //      iaugst06a(2453049.5, -4.7378576388888813016e-06, 2453049.5, 0.00074287037037037029902)
+        //        --> 2.5021491022006503435
+        //      iaugst06a(2453064.5, -4.8330127314815448519e-06, 2453064.5, 0.00074287037037037029902)
+        //        --> 2.7601901613234058885
 
         final TimeFunction<DerivativeStructure> gst06 =
                 IERSConventions.IERS_2010.getGASTFunction();
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst06.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.5021491022006503435, gst, 5.0e-9);
+        Assert.assertEquals(2.5021491022006503435, gst, 5.0e-11);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gst = MathUtils.normalizeAngle(gst06.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.7601901613234058885, gst, 2.0e-9);
+        Assert.assertEquals(2.7601901613234058885, gst, 4.0e-11);
 
     }
 
@@ -417,7 +442,7 @@ public class IERSConventionsTest {
             DerivativeStructure delta = gmst06.value(date).subtract(gmst00.value(date));
             // GMST2006 and GMST2000 are similar to about 0.15 milli-arcseconds between 2000 and 2010
             Assert.assertEquals(0.0, MathUtils.normalizeAngle(delta.getValue(), 0.0), 7e-10);
-            Assert.assertEquals(0.0, delta.getPartialDerivative(1), 1.0e-15);
+            Assert.assertEquals(0.0, delta.getPartialDerivative(1), 3.0e-18);
         }
     }
 
@@ -436,7 +461,6 @@ public class IERSConventionsTest {
         for (double dt = 0; dt < span; dt += sampleStep) {
             DerivativeStructure yRef = differentiated.value(new DerivativeStructure(1, 1, 0, dt));
             DerivativeStructure y    = function.value(date.shiftedBy(dt));
-//            System.out.println(dt + " " + (yRef.getPartialDerivative(1) - y.getPartialDerivative(1)));
             Assert.assertEquals(yRef.getPartialDerivative(1), y.getPartialDerivative(1), tolerance);
         }
 
