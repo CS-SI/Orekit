@@ -53,8 +53,8 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link #getITRF2000(boolean)}, {@link #getITRF2000()},
  * {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
  * {@link #getITRF2008(boolean)}, {@link #getITRF2008()},
- * {@link #getEME2000()}, {@link #getMOD(IERSConventions, boolean)}, {@link #getTOD(IERSConventions, boolean)},
- * {@link #getGTOD(IERSConventions, boolean)}, {@link #getITRFEquinox(IERSConventions)}, {@link #getTEME()}
+ * {@link #getEME2000()}, {@link #getMOD(IERSConventions)}, {@link #getTOD(IERSConventions)},
+ * {@link #getGTOD(IERSConventions)}, {@link #getITRFEquinox(IERSConventions)}, {@link #getTEME()}
  * and {@link #getVeis1950()}).
  * </p>
  * <h5> International Terrestrial Reference Frame 2008 </h5>
