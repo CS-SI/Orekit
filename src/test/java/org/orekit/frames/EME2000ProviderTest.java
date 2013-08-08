@@ -18,6 +18,7 @@ package org.orekit.frames;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,6 +95,61 @@ public class EME2000ProviderTest {
 
     }
 
+    @Test
+    public void testSofaBp00() throws OrekitException {
+
+        // the reference value has been computed using the March 2012 version of the SOFA library
+        // http://www.iausofa.org/2012_0301_C.html, with the following code
+        //
+        //        double utc1, utc2, tai1, tai2, tt1, tt2, rb[3][3], rp[3][3], rbp[3][3];
+        //        
+        //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
+        //        utc1  = DJM0 + 53049.0;
+        //        utc2  = 0.0;
+        //        iauUtctai(utc1, utc2, &tai1, &tai2);
+        //        iauTaitt(tai1, tai2, &tt1, &tt2);
+        //
+        //        iauBp00(tt1, tt2, rb, rp, rbp);
+        //
+        //        printf("iauBp00(%.20g, %.20g, rb, rp, rbp)\n"
+        //               "  rb  --> %.20g %.20g %.20g\n          %.20g %.20g %.20g\n          %.20g %.20g %.20g\n"
+        //               "  rp  --> %.20g %.20g %.20g\n          %.20g %.20g %.20g\n          %.20g %.20g %.20g\n"
+        //               "  rbp --> %.20g %.20g %.20g\n          %.20g %.20g %.20g\n          %.20g %.20g %.20g\n",
+        //               tt1, tt2,
+        //               rb[0][0],  rb[0][1],  rb[0][2],
+        //               rb[1][0],  rb[1][1],  rb[1][2],
+        //               rb[2][0],  rb[2][1],  rb[2][2],
+        //               rp[0][0],  rp[0][1],  rp[0][2],
+        //               rp[1][0],  rp[1][1],  rp[1][2],
+        //               rp[2][0],  rp[2][1],  rp[2][2],
+        //               rbp[0][0], rbp[0][1], rbp[0][2],
+        //               rbp[1][0], rbp[1][1], rbp[1][2],
+        //               rbp[2][0], rbp[2][1], rbp[2][2]);
+        //
+        // the output of this test reads:
+        //        iauBp00(2453049.5, 0.00074287037037037029902, rb, rp, rbp)
+        //        rb  --> 0.99999999999999422684 -7.0782797441991980175e-08 8.0562171469761337802e-08
+        //                7.0782794778573375197e-08 0.99999999999999689138 3.3060414542221364117e-08
+        //                -8.0562173809869716745e-08 -3.3060408839805516801e-08 0.99999999999999622524
+        //        rp  --> 0.99999949573309343531 -0.00092105778423522924759 -0.00040023257863225548568
+        //                0.00092105778625203805956 0.99999957582617116092 -1.7927962069881782439e-07
+        //                0.00040023257399096032498 -1.8935780260465051583e-07 0.99999991990692216337
+        //        rbp --> 0.99999949570013624278 -0.00092112855376512230675 -0.00040015204695196122638
+        //                0.00092112856903123034591 0.99999957576097886491 -1.4614501776464880046e-07
+        //                0.00040015201181019732432 -2.2244653837776004327e-07 0.99999991993915571253
+
+        AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
+        Frame eme2000 = FramesFactory.getFrame(Predefined.EME2000);
+        Frame gcrf    = FramesFactory.getFrame(Predefined.GCRF);
+        checkRotation(new double[][] {
+            {  0.99999999999999422684,    -7.0782797441991980175e-08, 8.0562171469761337802e-08 },
+            {  7.0782794778573375197e-08,  0.99999999999999689138,    3.3060414542221364117e-08 },
+            { -8.0562173809869716745e-08, -3.3060408839805516801e-08, 0.99999999999999622524    }
+
+        }, gcrf.getTransformTo(eme2000, date), 2.5e-16);
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("compressed-data");
@@ -107,6 +163,16 @@ public class EME2000ProviderTest {
         Vector3D dV = result.getVelocity().subtract(reference.getVelocity());
         Assert.assertEquals(0, dP.getNorm(), positionThreshold);
         Assert.assertEquals(0, dV.getNorm(), velocityThreshold);
+    }
+
+    private void checkRotation(double[][] reference, Transform t, double epsilon) {
+        double[][] mat = t.getRotation().getMatrix();
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                Assert.assertEquals(reference[i][j], mat[i][j], epsilon * FastMath.abs(reference[i][j]));
+                
+            }
+        }
     }
 
 }
