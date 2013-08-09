@@ -72,6 +72,67 @@ public class IERSConventionsTest {
     }
 
     @Test
+    public void testIERS1996NutationAngles() throws OrekitException {
+
+        // the reference value has been computed using the March 2012 version of the SOFA library
+        // http://www.iausofa.org/2012_0301_C.html, with the following code
+        //
+        //        double utc1, utc2, tai1, tai2, tt1, tt2, dpsi, deps, epsa;
+        //        
+        //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
+        //        utc1  = DJM0 + 53049.0;
+        //        utc2  = 0.0;
+        //        iauUtctai(utc1, utc2, &tai1, &tai2);
+        //        iauTaitt(tai1, tai2, &tt1, &tt2);
+        //
+        //        iauNut80(tt1, tt2, &dpsi, &deps);
+        //        epsa = iauObl80(tt1, tt2);
+        //
+        //        printf("iauNut80(%.20g, %.20g, dpsi, deps)\n  --> %.20g %.20g\n",
+        //               tt1, tt2, dpsi, deps);
+        //        printf("iau0bl80(%.20g, %.20g)\n  --> %.20g\n",
+        //               tt1, tt2, epsa);
+        //
+        // the output of this test reads:
+        //      iauNut80(2453049.5, 0.00074287037037037029902, dpsi, deps)
+        //        --> -5.3059154211478291722e-05 3.2051803135750973851e-05
+        //      iau0bl80(2453049.5, 0.00074287037037037029902)
+        //        --> 0.40908345528446415917
+
+        // the thresholds below have been set up large enough to have the test pass with
+        // the default Orekit setting and the reference SOFA setting. There are implementation
+        // differences between the two libraries, as the Delaunay parameters are not the
+        // same. If the content of the IERS-conventions/1996/nutation-arguments.txt file
+        // by Orekit is changed to match SOFA setting as follows:
+        //
+        //        # Mean Anomaly of the Moon
+        //        F1 ≡ l = 485866.733″ + 1717915922.633″t + 31.310″t² + 0.064″t³
+        //
+        //       # Mean Anomaly of the Sun
+        //        F2 ≡ l' = 1287099.804″ + 129596581.224″t − 0.577″t² − 0.012t³
+        //
+        //       # L − Ω
+        //        F3 ≡ F = 335778.877″ + 1739527263.137″t − 13.257″t² + 0.011″t³
+        //
+        //       # Mean Elongation of the Moon from the Sun
+        //        F4 ≡ D = 1072261.307″ + 1602961601.328″t − 6.891″t² + 0.019″t³
+        //
+        //       # Mean Longitude of the Ascending Node of the Moon
+        //        F5 ≡ Ω = 450160.280″ − 6962890.539″t + 7.455″t² + 0.008″t³
+        //
+        // then the thresholds for the test can be reduced to 3e-13 for ∆ψ and 7e-14 for ∆ε.
+        // We decided to stick with IERS published reference values for the default Orekit setting.
+        // The differences are nevertheless quite small (4.8e-11 radians is sub-millimeter level
+        // in low Earth orbit).
+        AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
+        double[] angles= IERSConventions.IERS_1996.getNutationFunction().value(date);
+        Assert.assertEquals(-5.3059154211478291722e-05, angles[0], 4.8e-11); // 3e-13 with SOFA values
+        Assert.assertEquals(3.2051803135750973851e-05,  angles[1], 1.3e-11); // 7e-14 with SOFA values
+        Assert.assertEquals(0.40908345528446415917,     angles[2], 1.0e-16);
+
+    }
+
+    @Test
     public void testGMST82Derivative() throws OrekitException {
         checkDerivative(IERSConventions.IERS_1996.getGMSTFunction(),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
