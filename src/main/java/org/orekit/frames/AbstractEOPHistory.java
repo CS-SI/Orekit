@@ -185,10 +185,9 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
         try {
             final HermiteInterpolator interpolator = new HermiteInterpolator();
             for (final EOPEntry entry : getNeighbors(date)) {
-                final EOP1980Entry e1980 = (EOP1980Entry) entry;
                 interpolator.addSamplePoint(entry.getDate().durationFrom(date),
                                             new double[] {
-                                                e1980.getDdEps(), e1980.getDdPsi()
+                                                entry.getDdEps(), entry.getDdPsi()
                                             });
             }
             final double[] interpolated = interpolator.value(0);
