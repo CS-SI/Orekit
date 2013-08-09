@@ -258,6 +258,91 @@ public class TODProviderTest {
 
     }
 
+    @Test
+    public void testSofaPnm80() throws OrekitException {
+
+        // the reference value has been computed using the March 2012 version of the SOFA library
+        // http://www.iausofa.org/2012_0301_C.html, with the following code
+        //
+        //        double utc1, utc2, tai1, tai2, tt1, tt2, rmatpn[3][3];
+        //        
+        //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
+        //        utc1  = DJM0 + 53049.0;
+        //        utc2  = 0.0;
+        //        iauUtctai(utc1, utc2, &tai1, &tai2);
+        //        iauTaitt(tai1, tai2, &tt1, &tt2);
+        //
+        //        iauPnm80(tt1, tt2, rmatpn);
+        //
+        //        printf("iauPnm80(%.20g, %.20g, rmatpn)\n"
+        //               "  --> %.20g %.20g %.20g\n"
+        //               "      %.20g %.20g %.20g\n"
+        //               "      %.20g %.20g %.20g\n",
+        //               tt1, tt2,
+        //               rmatpn[0][0], rmatpn[0][1], rmatpn[0][2],
+        //               rmatpn[1][0], rmatpn[1][1], rmatpn[1][2],
+        //               rmatpn[2][0], rmatpn[2][1], rmatpn[2][2]);
+        //
+        // the output of this test reads:
+        //        iauNutm80(2453049.5, 0.00074287037037037029902, nut)
+        //         --> 0.99999999859236310407 4.8681019508684473249e-05 2.1105264333587349032e-05
+        //            -4.8680343021901595118e-05 0.99999999830143670998 -3.205231683600651138e-05
+        //            -2.1106824637199909505e-05 3.2051289379386727063e-05 0.99999999926360838565
+        //        iauPnm80(2453049.5, 0.00074287037037037029902, rmatpn)
+        //         --> 0.99999954755358466674 -0.00087243169070689370777 -0.00037915111913272635073
+        //            0.0008724195377896877112 0.99999961892302935418 -3.2217171614061089913e-05
+        //            0.00037917908192846747854 3.1886378193416632805e-05 0.99999992760323874741
+
+        // As the iauNutm80 and iauPnm80 do not allow user to specify EOP corrections,
+        // the test is done with Predefined.TOD_WITHOUT_EOP_CORRECTIONS.
+
+        AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
+        Frame tod  = FramesFactory.getFrame(Predefined.TOD_WITHOUT_EOP_CORRECTIONS);
+        checkRotation(new double[][] {
+            { 0.99999999859236310407, 4.8681019508684473249e-05, 2.1105264333587349032e-05 },
+            { -4.8680343021901595118e-05, 0.99999999830143670998, -3.205231683600651138e-05 },
+            { -2.1106824637199909505e-05, 3.2051289379386727063e-05, 0.99999999926360838565    }
+
+        }, tod.getParent().getTransformTo(tod, date), 5.0e-11);
+        checkRotation(new double[][] {
+            { 0.99999954755358466674,   -0.00087243169070689370777, -0.00037915111913272635073 },
+            { 0.0008724195377896877112,  0.99999961892302935418,    -3.2217171614061089913e-05 },
+            { 0.00037917908192846747854, 3.1886378193416632805e-05,  0.99999992760323874741    }
+
+        }, tod.getParent().getParent().getTransformTo(tod, date), 5.0e-11);
+
+    }
+
+    @Test
+    public void testTOD1976vs2006() throws OrekitException {
+
+        final Frame tod1976 = FramesFactory.getTOD(IERSConventions.IERS_1996);
+        final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010);
+        for (double dt = 0; dt < 2 * Constants.JULIAN_YEAR; dt += 100 * Constants.JULIAN_DAY) {
+            AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
+            double delta = tod1976.getTransformTo(tod2006, date).getRotation().getAngle();
+            // TOD2006 and TOD2000 are similar to about 65 milli-arcseconds
+            // between 2000 and 2002, with EOP corrections taken into account in both cases
+            Assert.assertEquals(0.0, delta, 3.2e-7);
+        }
+
+    }
+
+    @Test
+    public void testTOD2000vs2006() throws OrekitException {
+
+        final Frame tod2000 = FramesFactory.getTOD(IERSConventions.IERS_2003);
+        final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010);
+        for (double dt = 0; dt < 2 * Constants.JULIAN_YEAR; dt += 100 * Constants.JULIAN_DAY) {
+            AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
+            double delta = tod2000.getTransformTo(tod2006, date).getRotation().getAngle();
+            // TOD2006 and TOD2000 are similar to about 30 micro-arcseconds
+            // between 2000 and 2002, with EOP corrections taken into account in both cases
+            Assert.assertEquals(0.0, delta, 1.5e-10);
+        }
+
+    }
+
     @Before
     public void setUp() {
         Utils.setDataRoot("compressed-data");
@@ -276,11 +361,7 @@ public class TODProviderTest {
         double[][] mat = t.getRotation().getMatrix();
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
-                System.out.println(i + " " + j + " " +
-                                   reference[i][j] + " " + mat[i][j] + " " +
-                                   (reference[i][j] - mat[i][j]));
                 Assert.assertEquals(reference[i][j], mat[i][j], epsilon);
-                
             }
         }
     }
