@@ -368,6 +368,7 @@ public enum IERSConventions {
 
             // set up the conventional polynomials
             // the following values are from equation 33 in IERS 2003 conventions
+            // BEWARE! The following series are computed from EME2000, not from GCRF
             final PolynomialNutation zetaA =
                     new PolynomialNutation(2.5976176    * Constants.ARC_SECONDS_TO_RADIANS,
                                            2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,

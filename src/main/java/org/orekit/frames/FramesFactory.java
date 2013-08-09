@@ -1283,28 +1283,34 @@ public class FramesFactory implements Serializable {
 
         synchronized (FramesFactory.class) {
 
-            // try to find an already built frame
             final Predefined factoryKey;
+            final Frame parent;
             switch (conventions) {
             case IERS_1996 :
                 factoryKey = applyEOPCorr ? Predefined.MOD_CONVENTIONS_1996 : Predefined.MOD_WITHOUT_EOP_CORRECTIONS;
+                parent     = applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000();
                 break;
             case IERS_2003 :
                 factoryKey = Predefined.MOD_CONVENTIONS_2003;
+                // in IERS conventions 2003, the precession angles zetaA, thetaA and zA
+                // from equation 33 are computed from EME2000, not from GCRF
+                parent     = FramesFactory.getEME2000();
                 break;
             case IERS_2010 :
                 factoryKey = Predefined.MOD_CONVENTIONS_2010;
+                parent     = FramesFactory.getGCRF();
                 break;
             default :
                 // this should never happen
                 throw OrekitException.createInternalError(null);
             }
+
+            // try to find an already built frame
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                frame = new FactoryManagedFrame(applyEOPCorr ? FramesFactory.getGCRF() : FramesFactory.getEME2000(),
-                                                new MODProvider(conventions), true, factoryKey);
+                frame = new FactoryManagedFrame(parent, new MODProvider(conventions), true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

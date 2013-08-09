@@ -272,4 +272,17 @@ public class TODProviderTest {
         Assert.assertEquals(expectedVelocityError, dV.getNorm(), 0.01 * expectedVelocityError);
     }
 
+    private void checkRotation(double[][] reference, Transform t, double epsilon) {
+        double[][] mat = t.getRotation().getMatrix();
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                System.out.println(i + " " + j + " " +
+                                   reference[i][j] + " " + mat[i][j] + " " +
+                                   (reference[i][j] - mat[i][j]));
+                Assert.assertEquals(reference[i][j], mat[i][j], epsilon);
+                
+            }
+        }
+    }
+
 }
