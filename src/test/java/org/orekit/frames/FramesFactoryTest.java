@@ -79,7 +79,7 @@ public class FramesFactoryTest {
             { Predefined.TOD_CONVENTIONS_2010,                        Predefined.MOD_CONVENTIONS_2010 },
             { Predefined.MOD_WITHOUT_EOP_CORRECTIONS,                 Predefined.EME2000 },
             { Predefined.MOD_CONVENTIONS_1996,                        Predefined.GCRF },
-            { Predefined.MOD_CONVENTIONS_2003,                        Predefined.GCRF },
+            { Predefined.MOD_CONVENTIONS_2003,                        Predefined.EME2000 },
             { Predefined.MOD_CONVENTIONS_2010,                        Predefined.GCRF },
             { Predefined.TEME,                                        Predefined.TOD_WITHOUT_EOP_CORRECTIONS }
         };
