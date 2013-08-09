@@ -43,12 +43,10 @@ public class PolynomialNutation implements Serializable {
     }
 
     /** Evaluate the value of the polynomial.
-     * @param elements bodies elements for nutation
+     * @param tc date offset in Julian centuries
      * @return value of the polynomial
      */
-    public double value(final BodiesElements elements) {
-
-        final double tc = elements.getTC();
+    public double value(final double tc) {
 
         double p = 0;
         for (int i = coefficients.length - 1; i >= 0; --i) {
@@ -63,12 +61,10 @@ public class PolynomialNutation implements Serializable {
      * <p>
      * The returned value contains both the value and its first time derivative
      * </p>
-     * @param elements bodies elements for nutation
+     * @param tc date offset in Julian centuries
      * @return value of the polynomial
      */
-    public DerivativeStructure valueDS(final BodiesElements elements) {
-
-        final double tc = elements.getTC();
+    public DerivativeStructure valueDS(final double tc) {
 
         double p    = 0;
         double pDot = 0;

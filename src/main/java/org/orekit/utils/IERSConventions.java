@@ -22,6 +22,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.data.BodiesElements;
+import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PolynomialNutation;
@@ -146,9 +147,9 @@ public enum IERSConventions {
                     final double cos2FDOm  = FastMath.cos(2 * (f - d + omega));
                     final double sin2FDOm  = FastMath.sin(2 * (f - d + omega));
 
-                    final double x = xPolynomial.value(elements) + sinEps0 * xSum.value(elements) +
+                    final double x = xPolynomial.value(t) + sinEps0 * xSum.value(elements) +
                             t * t * (fXCosOm * cosOmega + fXSinOm * sinOmega + fXSin2FDOm * cos2FDOm);
-                    final double y = yPolynomial.value(elements) + ySum.value(elements) +
+                    final double y = yPolynomial.value(t) + ySum.value(elements) +
                             t * t * (fYCosOm * cosOmega + fYCos2FDOm * cos2FDOm);
                     final double sPxy2 = fSSinOm * sinOmega + fSSin2Om * sin2Omega +
                             t * (fST + t * (fST2SinOm * sinOmega + fST2Sin2FDOm * sin2FDOm + t * fST3));
@@ -191,9 +192,9 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final BodiesElements elements = arguments.evaluateAll(date);
+                    final double tc = arguments.evaluateTC(date);
                     return new double[] {
-                        zetaA.value(elements), thetaA.value(elements), zA.value(elements)
+                        zetaA.value(tc), thetaA.value(tc), zA.value(tc)
                     };
                 }
             };
@@ -231,7 +232,7 @@ public enum IERSConventions {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     return new double[] {
                         psiSeries.value(elements), epsilonSeries.value(elements),
-                        moePolynomial.value(elements), eqeCorrectionFunction.value(elements)
+                        moePolynomial.value(elements.getTC()), eqeCorrectionFunction.value(elements)
                     };
                 }
             };
@@ -395,9 +396,9 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final BodiesElements elements = arguments.evaluateAll(date);
+                    final double tc = arguments.evaluateTC(date);
                     return new double[] {
-                        zetaA.value(elements), thetaA.value(elements), zA.value(elements)
+                        zetaA.value(tc), thetaA.value(tc), zA.value(tc)
                     };
                 }
             };
@@ -437,7 +438,7 @@ public enum IERSConventions {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     return new double[] {
                         psiSeries.value(elements), epsilonSeries.value(elements),
-                        moePolynomial.value(elements), eqeCorrectionFunction.value(elements)
+                        moePolynomial.value(elements.getTC()), eqeCorrectionFunction.value(elements)
                     };
                 }
             };
@@ -471,7 +472,7 @@ public enum IERSConventions {
                 @Override
                 public DerivativeStructure value(final AbsoluteDate date) {
                     final BodiesElements elements = arguments.evaluateAll(date);
-                    return era.value(date).add(gstPolynomial.valueDS(elements));
+                    return era.value(date).add(gstPolynomial.valueDS(elements.getTC()));
                 }
 
             };
@@ -589,10 +590,10 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final BodiesElements elements = arguments.evaluateAll(date);
+                    final double tc = arguments.evaluateTC(date);
                     return new double[] {
-                        gammaBar.value(elements), phiBar.value(elements),
-                        psiBar.value(elements), epsilonBar.value(elements)
+                        gammaBar.value(tc), phiBar.value(tc),
+                        psiBar.value(tc), epsilonBar.value(tc)
                     };
                 }
             };
@@ -635,7 +636,7 @@ public enum IERSConventions {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     return new double[] {
                         psiSeries.value(elements), epsilonSeries.value(elements),
-                        moePolynomial.value(elements), eqeCorrectionFunction.value(elements)
+                        moePolynomial.value(elements.getTC()), eqeCorrectionFunction.value(elements)
                     };
                 }
             };
@@ -669,7 +670,7 @@ public enum IERSConventions {
                 @Override
                 public DerivativeStructure value(final AbsoluteDate date) {
                     final BodiesElements elements = arguments.evaluateAll(date);
-                    return era.value(date).add(gstPolynomial.valueDS(elements));
+                    return era.value(date).add(gstPolynomial.valueDS(elements.getTC()));
                 }
 
             };
@@ -884,17 +885,17 @@ public enum IERSConventions {
             new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
 
         /** Evaluate the correction.
-         * @param elements bodies elements for nutation
+         * @param arguments Delaunay for nutation
          * @return correction value (0 before 1997-02-27)
          */
-        public double value(final BodiesElements elements) {
-            if (elements.getDate().compareTo(newEQEModelStart) >= 0) {
+        public double value(final DelaunayArguments arguments) {
+            if (arguments.getDate().compareTo(newEQEModelStart) >= 0) {
 
                 // IAU 1994 resolution C7 added two terms to the equation of equinoxes
                 // taking effect since 1997-02-27 for continuity
 
                 // Mean longitude of the ascending node of the Moon
-                final double om = elements.getOmega();
+                final double om = arguments.getOmega();
 
                 // add the two correction terms
                 return eqe1 * FastMath.sin(om) + eqe2 * FastMath.sin(om + om);

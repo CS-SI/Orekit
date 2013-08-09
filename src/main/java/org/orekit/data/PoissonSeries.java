@@ -290,7 +290,7 @@ public class PoissonSeries implements Serializable {
         final double tc = elements.getTC();
 
         // polynomial part
-        final double p = polynomial.value(elements);
+        final double p = polynomial.value(elements.getTC());
 
         // non-polynomial part
         double np = 0;
