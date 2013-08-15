@@ -58,12 +58,14 @@ public class PoissonSeries implements Serializable {
     /** Build a Poisson series from an IERS table file.
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
-     * @param polyFactor multiplicative factor to use for polynomial coefficients
+     * @param freeVariable name of the free variable in the polynomial part
+     * @param unit default unit for polynomial, if not explicit within the file
      * @param nonPolyFactor multiplicative factor to use for non-ploynomial coefficients
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
     public PoissonSeries(final InputStream stream, final String name,
-                         final double polyFactor, final double nonPolyFactor)
+                         final char freeVariable, final PolynomialParser.Unit unit,
+                         final double nonPolyFactor)
         throws OrekitException {
 
         if (stream == null) {
@@ -75,10 +77,9 @@ public class PoissonSeries implements Serializable {
             // - 16617. + 2004191898. t - 429782.9 t^2 - 198618.34 t^3 + 7.578 t^4 + 5.9285 t^5
             // or something like:
             // 0''.014506 + 4612''.15739966t + 1''.39667721t^2 - 0''.00009344t^3 + 0''.00001882t^4
-            final Pattern termPattern =
-                Pattern.compile("\\p{Space}*([-+]?)" +
-                                "\\p{Space}*(\\p{Digit}+)(?:'')?(\\.\\p{Digit}*)" +
-                                "(?:\\p{Space}*t(?:\\^\\p{Digit}+)?)?");
+            // or even:
+            // 125.04455501° − 6962890.5431″ × t + 7.4722″ × t² + 0.007702″ × t³ − 0.00005939″ × t⁴
+            final PolynomialParser polynomialParser = new PolynomialParser(freeVariable, unit);
 
             // the series parts should read something like:
             // j = 0  Nb of terms = 1306
@@ -100,7 +101,6 @@ public class PoissonSeries implements Serializable {
             final Pattern seriesHeaderPattern =
                 Pattern.compile("^\\p{Space}*j\\p{Space}*=\\p{Space}*(\\p{Digit}+)" +
                                 ".*=\\p{Space}*(\\p{Digit}+)\\p{Space}*$");
-
 
             // setup the reader
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
@@ -153,7 +153,10 @@ public class PoissonSeries implements Serializable {
 
                     if (polynomial == null) {
                         // look for the polynomial part
-                        polynomial = parsePolynomial(termPattern.matcher(line), polyFactor);
+                        final double[] coefficients = polynomialParser.parse(line);
+                        if (coefficients != null) {
+                            polynomial = new PolynomialNutation(coefficients);
+                        }
                     }
 
                     // we are still in the header
@@ -182,34 +185,6 @@ public class PoissonSeries implements Serializable {
      */
     public PolynomialNutation getPolynomialPart() {
         return polynomial;
-    }
-
-    /** Parse a polynomial description line.
-     * @param termMatcher matcher for the polynomial terms
-     * @param polyFactor multiplicative factor to use for polynomial coefficients
-     * @return parsed coefficients, or null if no coefficients found
-     */
-    private PolynomialNutation parsePolynomial(final Matcher termMatcher, final double polyFactor) {
-
-        // parse the polynomial one polynomial term after the other
-        if (!termMatcher.lookingAt()) {
-            return null;
-        }
-
-        // store the concatenated sign, integer and fractional parts of the monomial coefficient
-        final List<String> coeffs = new ArrayList<String>();
-        do {
-            coeffs.add(termMatcher.group(1) + termMatcher.group(2) + termMatcher.group(3));
-        } while (termMatcher.find());
-
-        // parse the coefficients
-        final double[] c = new double[coeffs.size()];
-        for (int i = 0; i < c.length; ++i) {
-            c[i] = polyFactor * Double.parseDouble(coeffs.get(i));
-        }
-
-        return new PolynomialNutation(c);
-
     }
 
     /** Parse a series header line.

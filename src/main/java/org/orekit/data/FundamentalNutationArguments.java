@@ -27,7 +27,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
@@ -52,7 +51,7 @@ import org.orekit.utils.Constants;
 public class FundamentalNutationArguments implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130418L;
+    private static final long serialVersionUID = 20130815L;
 
     /** Reference epoch.*/
     private final AbsoluteDate reference;
@@ -194,12 +193,12 @@ public class FundamentalNutationArguments implements Serializable {
 
     /** Evaluate a polynomial.
      * @param tc offset in Julian centuries
-     * @param coefficients polynomial coefficients (ordered from high degrees to low degrees)
+     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
      * @return value of the polynomial
      */
     private double value(final double tc, final double[] coefficients) {
-        double value = coefficients[0];
-        for (int i = 1; i < coefficients.length; ++i) {
+        double value = 0;
+        for (int i = coefficients.length - 1; i >= 0; --i) {
             value = coefficients[i] + tc * value;
         }
         return value;
@@ -436,8 +435,8 @@ public class FundamentalNutationArguments implements Serializable {
         /** Regular expression pattern for definitions. */
         private final Pattern pattern;
 
-        /** Parser for monomials. */
-        private MonomialParser monomialParser;
+        /** Parser for polynomials. */
+        private PolynomialParser polynomialParser;
 
         /** Last parsed fundamental name. */
         private FundamentalName parsedName;
@@ -466,7 +465,7 @@ public class FundamentalNutationArguments implements Serializable {
             pattern = Pattern.compile("\\p{Space}*F\\p{Digit}+\\p{Space}*" + unicodeIdenticalTo +
                                       fundamentalName + "\\p{Space}*=\\p{Space}*(.*)");
 
-            monomialParser = new MonomialParser();
+            polynomialParser = new PolynomialParser('t', PolynomialParser.Unit.NO_UNITS);
 
         }
 
@@ -492,18 +491,7 @@ public class FundamentalNutationArguments implements Serializable {
                 }
 
                 // parse the polynomial
-                final Map<Integer, Double> coefficients = new HashMap<Integer, Double>();
-                int maxDegree = -1;
-                monomialParser.initialize(matcher.group(2));
-                while (monomialParser.parseNext()) {
-                    maxDegree = FastMath.max(maxDegree, monomialParser.getParsedPower());
-                    coefficients.put(monomialParser.getParsedPower(),
-                                     monomialParser.getParsedCoefficient());
-                }
-                parsedPolynomial = new double[maxDegree + 1];
-                for (Map.Entry<Integer, Double> entry : coefficients.entrySet()) {
-                    parsedPolynomial[maxDegree - entry.getKey()] = entry.getValue();
-                }
+                parsedPolynomial = polynomialParser.parse(matcher.group(2));
 
                 return true;
 
@@ -525,162 +513,6 @@ public class FundamentalNutationArguments implements Serializable {
          */
         public double[] getParsedPolynomial() {
             return parsedPolynomial.clone();
-        }
-
-    }
-
-    /** Local parser for monomials. */
-    private static class MonomialParser {
-
-        /** Constant for degree unit. */
-        private static final String UNICODE_DEGREE              = "\u00b0";
-
-        /** Constant for white bullet used as degree unit. */
-        private static final String UNICODE_WHITE_BULLET        = "\u25e6";
-
-        /** Constant for arc-seconds unit. */
-        private static final String UNICODE_DOUBLE_PRIME        = "\u2033";
-
-        /** Constant for apostrophes used as arc-seconds unit. */
-        private static final String UNICODE_DOUBLED_APOSTROPHE  = "''";
-
-        /** Constant for quotation mark used as arc-seconds unit. */
-        private static final String UNICODE_QUOTATION_MARK      = "\"";
-
-        /** Constant for multiplication sign. */
-        private static final String UNICODE_MULTIPLICATION_SIGN = "\u00d7";
-
-        /** Constant for minus sign. */
-        private static final String UNICODE_MINUS_SIGN          = "\u2212";
-
-        /** Constant for power 2. */
-        private static final String UNICODE_SUPERSCRIPT_2       = "\u00b2";
-
-        /** Constant for power 3. */
-        private static final String UNICODE_SUPERSCRIPT_3       = "\u00b3";
-
-        /** Constant for power 4. */
-        private static final String UNICODE_SUPERSCRIPT_4       = "\u2074";
-
-        /** Constant for power 5. */
-        private static final String UNICODE_SUPERSCRIPT_5       = "\u2075";
-
-        // current IERS models don't use yet degree 5 or higher, so the previous
-        // constants are sufficient for now. If IERS increase degrees, unicode has
-        // special characters for up to degree 9 in the range 2076 to 2079
-
-        /** Regular expression pattern for monomials. */
-        private final Pattern pattern;
-
-        /** Matcher for a definition. */
-        private Matcher matcher;
-
-        /** Start index for next search. */
-        private int next;
-
-        /** Last parsed coefficient. */
-        private double parsedCoefficient;
-
-        /** Last parsed power. */
-        private int parsedPower;
-
-        /** Simple constructor. */
-        public MonomialParser() {
-
-            // the luni-solar Delaunay arguments polynomial parts should read something like:
-            // F5 ≡ Ω = 125.04455501° − 6962890.5431″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴
-            // whereas the planetary arguments polynomial parts should read something like:
-            // F14 ≡ pA  = 0.02438175 × t + 0.00000538691 × t²
-            final String space           = "\\p{Space}*";
-            final String sign            = "([-" + UNICODE_MINUS_SIGN + "+]?)";
-            final String mantissa        = "(\\p{Digit}+\\.\\p{Digit}*|\\.\\p{Digit}+)";
-            final String unit            = "(" +
-                                           UNICODE_DEGREE + '|' +
-                                           UNICODE_WHITE_BULLET + '|' +
-                                           UNICODE_DOUBLE_PRIME + '|' +
-                                           UNICODE_DOUBLED_APOSTROPHE + '|' +
-                                           UNICODE_QUOTATION_MARK + ")?";
-            final String power           = "(t(" +
-                                           UNICODE_SUPERSCRIPT_2 + '|' +
-                                           UNICODE_SUPERSCRIPT_3 + '|' +
-                                           UNICODE_SUPERSCRIPT_4 + '|' +
-                                           UNICODE_SUPERSCRIPT_5 + ")?)?";
-            pattern = Pattern.compile(space + sign + space + mantissa + space + unit +
-                                      space + UNICODE_MULTIPLICATION_SIGN + '?' + space + power);
-
-        }
-
-        /** Initialize parsing.
-         * @param definition polynomial complete definition.
-         */
-        public void initialize(final String definition) {
-            matcher = pattern.matcher(definition);
-            next = 0;
-        }
-
-        /** Parse next monomial.
-         * @return true if a monomial has been parsed
-         */
-        public boolean parseNext() {
-
-            // advance matcher
-            matcher.region(next, matcher.regionEnd());
-
-            if (matcher.lookingAt()) {
-
-                // parse coefficient, with proper sign and unit
-                parsedCoefficient = Double.parseDouble(matcher.group(2));
-                if ("-".equals(matcher.group(1)) || UNICODE_MINUS_SIGN.equals(matcher.group(1))) {
-                    parsedCoefficient = -parsedCoefficient;
-                }
-                if (UNICODE_DEGREE.equals(matcher.group(3)) ||
-                    UNICODE_WHITE_BULLET.equals(matcher.group(3))) {
-                    parsedCoefficient = FastMath.toRadians(parsedCoefficient);
-                } else if (UNICODE_DOUBLE_PRIME.equals(matcher.group(3)) ||
-                           UNICODE_DOUBLED_APOSTROPHE.equals(matcher.group(3)) ||
-                           UNICODE_QUOTATION_MARK.equals(matcher.group(3))) {
-                    parsedCoefficient = FastMath.toRadians(parsedCoefficient / 3600.0);
-                }
-
-                if (matcher.group(4) == null) {
-                    parsedPower = 0;
-                } else if (matcher.group(5) == null) {
-                    parsedPower = 1;
-                } else if (UNICODE_SUPERSCRIPT_2.equals(matcher.group(5))) {
-                    parsedPower = 2;
-                } else if (UNICODE_SUPERSCRIPT_3.equals(matcher.group(5))) {
-                    parsedPower = 3;
-                } else if (UNICODE_SUPERSCRIPT_4.equals(matcher.group(5))) {
-                    parsedPower = 4;
-                } else {
-                    // this should never happen for current IERS files (limited to degree 4)
-                    parsedPower = 5;
-                }
-
-                next = matcher.end();
-                return true;
-
-            } else {
-
-                parsedCoefficient = Double.NaN;
-                parsedPower       = -1;
-                return false;
-            }
-
-        }
-
-        /** Get the last parsed coefficient.
-         * @return last parsed coefficient converted to radians
-         */
-        public double getParsedCoefficient() {
-            return parsedCoefficient;
-        }
-
-        /** Get the last parsed power.
-         * @return last parsed power
-         */
-        public int getParsedPower() {
-            return parsedPower;
         }
 
     }

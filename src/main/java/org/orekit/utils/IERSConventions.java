@@ -26,6 +26,7 @@ import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PolynomialNutation;
+import org.orekit.data.PolynomialParser;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOPHistory;
 import org.orekit.frames.FramesFactory;
@@ -97,8 +98,8 @@ public enum IERSConventions {
             final double sinEps0   = FastMath.sin(getEpsilon0());
 
             final PoissonSeries xSum =
-                    loadPoissonSeries(X_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                    loadPoissonSeries(X_SERIES, 't',
+                                      PolynomialParser.Unit.DECIMILLI_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
 
             // Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
@@ -115,8 +116,8 @@ public enum IERSConventions {
             final double fYCos2FDOm = -0.00014 * Constants.ARC_SECONDS_TO_RADIANS;
 
             final PoissonSeries ySum =
-                    loadPoissonSeries(Y_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                    loadPoissonSeries(Y_SERIES, 't',
+                                      PolynomialParser.Unit.DECIMILLI_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
 
             // s = -XY/2 + 0.00385″t - 0.07259″t³ - 0.00264″ sin Ω - 0.00006″ sin 2Ω
@@ -210,12 +211,12 @@ public enum IERSConventions {
 
             // set up Poisson series
             final PoissonSeries psiSeries =
-                    loadPoissonSeries(PSI_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                    loadPoissonSeries(PSI_SERIES, 't',
+                                      PolynomialParser.Unit.DECIMILLI_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
             final PoissonSeries epsilonSeries =
-                    loadPoissonSeries(EPSILON_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
+                    loadPoissonSeries(EPSILON_SERIES, 't',
+                                      PolynomialParser.Unit.DECIMILLI_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4);
 
             final PolynomialNutation moePolynomial =
@@ -334,14 +335,14 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
-            final PoissonSeries xSeries = loadPoissonSeries(X_SERIES,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+            final PoissonSeries xSeries = loadPoissonSeries(X_SERIES, 't',
+                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-            final PoissonSeries ySeries = loadPoissonSeries(Y_SERIES,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+            final PoissonSeries ySeries = loadPoissonSeries(Y_SERIES, 't',
+                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-            final PoissonSeries sSeries = loadPoissonSeries(S_SERIES,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+            final PoissonSeries sSeries = loadPoissonSeries(S_SERIES, 't',
+                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
 
             // create a function evaluating the series
@@ -414,12 +415,12 @@ public enum IERSConventions {
 
             // set up Poisson series
             final PoissonSeries psiSeries =
-                    loadPoissonSeries(PSI_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
+                    loadPoissonSeries(PSI_SERIES, 't',
+                                      PolynomialParser.Unit.MILLI_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
             final PoissonSeries epsilonSeries =
-                    loadPoissonSeries(EPSILON_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
+                    loadPoissonSeries(EPSILON_SERIES, 't',
+                                      PolynomialParser.Unit.MILLI_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3);
 
             // value from chapter 5, equation 32, page 45
@@ -522,14 +523,14 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
-            final PoissonSeries xSeries = loadPoissonSeries(X_SERIES,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+            final PoissonSeries xSeries = loadPoissonSeries(X_SERIES, 't',
+                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-            final PoissonSeries ySeries = loadPoissonSeries(Y_SERIES,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+            final PoissonSeries ySeries = loadPoissonSeries(Y_SERIES, 't',
+                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
-            final PoissonSeries sSeries = loadPoissonSeries(S_SERIES,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+            final PoissonSeries sSeries = loadPoissonSeries(S_SERIES, 't',
+                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
 
             // create a function evaluating the series
@@ -609,12 +610,12 @@ public enum IERSConventions {
 
             // set up Poisson series
             final PoissonSeries psiSeries =
-                    loadPoissonSeries(PSI_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                    loadPoissonSeries(PSI_SERIES, 't',
+                                      PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
             final PoissonSeries epsilonSeries =
-                    loadPoissonSeries(EPSILON_SERIES,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
+                    loadPoissonSeries(EPSILON_SERIES, 't',
+                                      PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6);
 
             // value from section 5.6.4, page 64 for epsilon0
@@ -833,20 +834,22 @@ public enum IERSConventions {
 
     /** Load a series development model.
      * @param name file name of the series development
-     * @param polyFactor multiplicative factor to use for polynomial coefficients
+     * @param freeVariable name of the free variable in the polynomial part
+     * @param unit default unit for polynomial, if not explicit within the file
      * @param nonPolyFactor multiplicative factor to use for non-ploynomial coefficients
      * @return series development model
      * @exception OrekitException if table cannot be loaded
      */
     private static PoissonSeries loadPoissonSeries(final String name,
-                                                   final double polyFactor,
+                                                   final char freeVariable,
+                                                   final PolynomialParser.Unit unit,
                                                    final double nonPolyFactor)
         throws OrekitException {
 
         // get the table data
         final InputStream stream = IERSConventions.class.getResourceAsStream(name);
 
-        return new PoissonSeries(stream, name, polyFactor, nonPolyFactor);
+        return new PoissonSeries(stream, name, freeVariable, unit, nonPolyFactor);
 
     }
 
