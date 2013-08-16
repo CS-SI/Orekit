@@ -474,10 +474,8 @@ public class FundamentalNutationArguments implements Serializable {
          * @param lineNumber line number
          * @param fileName name of the file
          * @return true if a definition has been parsed
-         * @exception OrekitException if polynomial cannot be parsed
          */
-        public boolean parseDefinition(final String line, final int lineNumber, final String fileName)
-            throws OrekitException {
+        public boolean parseDefinition(final String line, final int lineNumber, final String fileName) {
 
             parsedName       = null;
             parsedPolynomial = null;
