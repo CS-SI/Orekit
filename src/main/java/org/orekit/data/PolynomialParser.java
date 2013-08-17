@@ -61,9 +61,6 @@ public class PolynomialParser {
         /** Milli arc-seconds angles. */
         MILLI_ARC_SECONDS(FastMath.toRadians(1.0 / 3600000.0)),
 
-        /** Decimilli arc-seconds angles. */
-        DECIMILLI_ARC_SECONDS(FastMath.toRadians(1.0 / 36000000.0)),
-
         /** Micro arc-seconds angles. */
         MICRO_ARC_SECONDS(FastMath.toRadians(1.0 / 3600000000.0)),
 

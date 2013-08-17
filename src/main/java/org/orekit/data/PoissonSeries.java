@@ -22,11 +22,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 
@@ -38,6 +40,126 @@ import org.orekit.errors.OrekitMessages;
  * are harmonic functions (combination of sines and cosines) of polynomial
  * <em>arguments</em>. The polynomial arguments are combinations of luni-solar or
  * planetary {@link BodiesElements elements}.
+ * </p>
+ * <p>
+ * The Poisson series files from IERS have various formats, with or without
+ * polynomial part, with or without planetary components, with or without
+ * period column, with terms of increasing degrees either in dedicated columns
+ * or in successive sections of the file ... This class attempts to read all the
+ * commonly found formats, by specifying the columns of interest.
+ * </p>
+ * <p>
+ * The handling of increasing degrees terms (i.e. sin, cos, t sin, t cos, t^2 sin,
+ * t^2 cos ...) is done as follows.
+ * </p>
+ * <ul>
+ *   <li>user must specify pairs of columns to be extracted at each line,
+ *       in increasing degree order</li>
+ *   <li>negative columns indices correspond to inexistant values that will be
+ *       replaced by 0.0)</li>
+ *   <li>file may provide section headers to specify a degree, which is added
+ *   to the current column degree</li>
+ * </ul>
+ * <p>
+ * A file from an old convention, like table 5.1 in IERS conventions 1996, uses
+ * separate columns for degree 0 and degree 1, and uses only sine for nutation in
+ * longitude and cosine for nutation in obliquity. It reads as follows:
+ * </p>
+ * <pre>
+ * ∆ψ = Σ (Ai+A'it) sin(ARGUMENT), ∆ε = Σ (Bi+B'it) cos(ARGUMENT)
+ *
+ *      MULTIPLIERS OF      PERIOD           LONGITUDE         OBLIQUITY
+ *  l    l'   F    D   Om     days         Ai       A'i       Bi       B'i
+ *
+ *  0    0    0    0    1   -6798.4    -171996    -174.2    92025      8.9
+ *  0    0    2   -2    2     182.6     -13187      -1.6     5736     -3.1
+ *  0    0    2    0    2      13.7      -2274      -0.2      977     -0.5
+ *  0    0    0    0    2   -3399.2       2062       0.2     -895      0.5
+ * </pre>
+ * <p>
+ * In order to parse the nutation in longitude from the previous table, the
+ * following settings should be used:
+ * </p>
+ * <ul>
+ *   <li>totalColumns   = 10</li>
+ *   <li>firstDelaunay  =  1</li>
+ *   <li>firstPlanetary = -1 (there are no planetary columns in this table)</li>
+ *   <li>sinCosColumns  =  7, -1, 8, -1 (we read only coefficients Ai and A'i here)</li>
+ * </ul>
+ * <p>
+ * In order to parse the nutation in obliquity from the previous table, the
+ * following settings should be used:
+ * </p>
+ * <ul>
+ *   <li>totalColumns   = 10</li>
+ *   <li>firstDelaunay  =  1</li>
+ *   <li>firstPlanetary = -1 (there are no planetary columns in this table)</li>
+ *   <li>sinCosColumns  =  -1, 9, -1, 10 (we read only coefficients Bi and B'i here)</li>
+ * </ul>
+ * <p>
+ * A file from a recent convention, like table 5.3a in IERS conventions 2010, uses
+ * only two columns for sin and cos, and separate degrees in successive sections with
+ * dedicated headers. It reads as follows:
+ * </p>
+ * <pre>
+ * ---------------------------------------------------------------------------------------------------
+ *
+ * (unit microarcsecond; cut-off: 0.1 microarcsecond)
+ * (ARG being for various combination of the fundamental arguments of the nutation theory)
+ *
+ *   Sum_i[A_i * sin(ARG) + A"_i * cos(ARG)]
+ *
+ * + Sum_i[A'_i * sin(ARG) + A"'_i * cos(ARG)] * t           (see Chapter 5, Eq. (35))
+ *
+ * The Table below provides the values for A_i and A"_i (j=0) and then A'_i and A"'_i (j=1)
+ *
+ * The expressions for the fundamental arguments appearing in columns 4 to 8 (luni-solar part)
+ * and in columns 9 to 17 (planetary part) are those of the IERS Conventions 2003
+ *
+ * ----------------------------------------------------------------------------------------------------------
+ * j = 0  Number of terms = 1320
+ * ----------------------------------------------------------------------------------------------------------
+ *     i        A_i             A"_i     l    l'   F    D    Om  L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A
+ * ----------------------------------------------------------------------------------------------------------
+ *     1   -17206424.18        3338.60    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+ *     2    -1317091.22       -1369.60    0    0    2   -2    2    0    0    0    0    0    0    0    0    0
+ *     3     -227641.81         279.60    0    0    2    0    2    0    0    0    0    0    0    0    0    0
+ *     4      207455.40         -69.80    0    0    0    0    2    0    0    0    0    0    0    0    0    0
+ *     5      147587.70        1181.70    0    1    0    0    0    0    0    0    0    0    0    0    0    0
+ *
+ * ...
+ *
+ *  1319          -0.10           0.00    0    0    0    0    0    1    0   -3    0    0    0    0    0   -2
+ *  1320          -0.10           0.00    0    0    0    0    0    0    0    1    0    1   -2    0    0    0
+ *
+ * --------------------------------------------------------------------------------------------------------------
+ * j = 1  Number of terms = 38
+ * --------------------------------------------------------------------------------------------------------------
+ *    i          A'_i            A"'_i    l    l'   F    D   Om L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A
+ * --------------------------------------------------------------------------------------------------------------
+ *  1321      -17418.82           2.89    0    0    0    0    1    0    0    0    0    0    0    0    0    0
+ *  1322        -363.71          -1.50    0    1    0    0    0    0    0    0    0    0    0    0    0    0
+ *  1323        -163.84           1.20    0    0    2   -2    2    0    0    0    0    0    0    0    0    0
+ *  1324         122.74           0.20    0    1    2   -2    2    0    0    0    0    0    0    0    0    0
+ * </pre>
+ * <p>
+ * In order to parse the nutation in longitude from the previous table, the
+ * following settings should be used:
+ * </p>
+ * <ul>
+ *   <li>totalColumns   = 17</li>
+ *   <li>firstDelaunay  =  4</li>
+ *   <li>firstPlanetary =  9</li>
+ *   <li>sinCosColumns  =  2, 3 (we specify only degree 0, so when we read section j = 0
+ *       we read degree 0, when we read section j = 1 we read degree 1 ...)</li>
+ * </ul>
+ * <p>
+ * Our parsing algorithm involves adding the section degree from the "j = 0, 1, 2 ..." header
+ * to the column degree. A side effect of this algorithm is that it is theoretically possible
+ * to mix both formats and have for example degree two term appear as degree 2 column in section
+ * j=0 and as degree 1 column in section j=1 and as degree 0 column in section j=2. This case
+ * is not expected to be encountered in practice. The real files use either several columns
+ * <em>or</em> several sections, but not both at the same time.
  * </p>
  *
  * @author Luc Maisonobe
@@ -53,19 +175,27 @@ public class PoissonSeries implements Serializable {
     private PolynomialNutation polynomial;
 
     /** Non-polynomial series. */
-    private SeriesTerm[][] series;
+    private List<List<SeriesTerm>> series;
 
     /** Build a Poisson series from an IERS table file.
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
      * @param freeVariable name of the free variable in the polynomial part
      * @param unit default unit for polynomial, if not explicit within the file
-     * @param nonPolyFactor multiplicative factor to use for non-ploynomial coefficients
+     * (may be null if the table has no polynomial part)
+     * @param factor multiplicative factor to use for non-polynomial coefficients
+     * @param totalColumns total number of columns in the non-polynomial sections
+     * @param firstDelaunay column of the first Delaunay multiplier (counting from 1)
+     * @param firstPlanetary column of the first planetary multiplier (counting from 1)
+     * @param sinCosColumns columns of the sine and cosine coefficients for successive
+     * degrees (i.e. sin, cos, t sin, t cos, t^2 sin, t^2 cos ...)
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
     public PoissonSeries(final InputStream stream, final String name,
                          final char freeVariable, final PolynomialParser.Unit unit,
-                         final double nonPolyFactor)
+                         final double factor, final int totalColumns,
+                         final int firstDelaunay, final int firstPlanetary,
+                         final int ... sinCosColumns)
         throws OrekitException {
 
         if (stream == null) {
@@ -73,85 +203,105 @@ public class PoissonSeries implements Serializable {
         }
 
         try {
-            // the polynomial part should read something like:
-            // - 16617. + 2004191898. t - 429782.9 t^2 - 198618.34 t^3 + 7.578 t^4 + 5.9285 t^5
-            // or something like:
-            // 0''.014506 + 4612''.15739966t + 1''.39667721t^2 - 0''.00009344t^3 + 0''.00001882t^4
-            // or even:
-            // 125.04455501° − 6962890.5431″ × t + 7.4722″ × t² + 0.007702″ × t³ − 0.00005939″ × t⁴
-            final PolynomialParser polynomialParser = new PolynomialParser(freeVariable, unit);
 
-            // the series parts should read something like:
+            final PolynomialParser polynomialParser;
+            if (unit == null) {
+                // we don't expect any polynomial, we directly the the zero polynomial
+                polynomialParser = null;
+                polynomial       = new PolynomialNutation(new double[0]);
+            } else {
+                // set up a parser that will later be used to fill in the polynomial
+                polynomialParser = new PolynomialParser(freeVariable, unit);
+                polynomial       = null;
+            }
+
+            // the degrees section header should read something like:
             // j = 0  Nb of terms = 1306
-            //
-            //  1    -6844318.44        1328.67    0    0    0    0    1    0    0    0    0    0    0    0    0    0
-            //  2     -523908.04        -544.76    0    0    2   -2    2    0    0    0    0    0    0    0    0    0
-            //  3      -90552.22         111.23    0    0    2    0    2    0    0    0    0    0    0    0    0    0
-            //  4       82168.76         -27.64    0    0    0    0    2    0    0    0    0    0    0    0    0    0
-            //
             // or something like:
-            //
-            // ----------------------------------------------------------------------------------------------------------
             // j = 0  Number  of terms = 1037
-            // ----------------------------------------------------------------------------------------------------------
-            //     i         B"_i            B_i      l    l'   F    D   Om  L_Me L_Ve  L_E L_Ma  L_J L_Sa  L_U L_Ne  p_A
-            // ----------------------------------------------------------------------------------------------------------
-            //     1        1537.70     9205233.10    0    0    0    0    1    0    0    0    0    0    0    0    0    0
-            //     2        -458.70      573033.60    0    0    2   -2    2    0    0    0    0    0    0    0    0    0
-            final Pattern seriesHeaderPattern =
+            final Pattern degreeSectionHeaderPattern =
                 Pattern.compile("^\\p{Space}*j\\p{Space}*=\\p{Space}*(\\p{Digit}+)" +
-                                ".*=\\p{Space}*(\\p{Digit}+)\\p{Space}*$");
+                                "[\\p{Alpha}\\p{Space}]+=\\p{Space}*(\\p{Digit}+)\\p{Space}*$");
+
+            // regular lines are simply a space separated list of numbers
+            final String number = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+            final StringBuilder builder = new StringBuilder("^\\p{Space}*");
+            for (int i = 0; i < totalColumns; ++i) {
+                builder.append("(");
+                builder.append(number);
+                builder.append(")");
+                builder.append((i < totalColumns - 1) ? "\\p{Space}+" : "\\p{Space}*$");
+            }
+            final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
             // setup the reader
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-            String line = reader.readLine();
-            int lineNumber    = 1;
-            int expectedIndex = 1;
-            final List<SeriesTerm[]> array = new ArrayList<SeriesTerm[]>();
+            ;
+            int lineNumber    =  0;
+            int expectedIndex = -1;
+            int nTerms        = -1;
+            int degree        =  0;
+            series            = new ArrayList<List<SeriesTerm>>();
 
-            while (line != null) {
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
-                final int nTerms = parseSeriesHeader(seriesHeaderPattern.matcher(line),
-                                                     array.size(), name, lineNumber);
-                if (nTerms >= 0) {
+                // replace unicode minus sign ('−') by regular hyphen ('-') for parsing
+                // such unicode characters occur in tables that are copy-pasted from PDF files
+                line = line.replace('\u2212', '-');
+                ++lineNumber;
 
-                    // we have found a non-polynomial series
+                final Matcher regularMatcher = regularLinePattern.matcher(line);
+                if (regularMatcher.matches()) {
+                    // we have found a regular data line
 
-                    if (polynomial == null) {
-                        // since non-polynomial part starts after polynomial part,
-                        // getting here means there are no coefficients at all
-                        polynomial = new PolynomialNutation(new double[0]);
-                    }
-
-                    // skip sub-headers lines
-                    line = reader.readLine();
-                    ++lineNumber;
-                    while (line != null) {
-                        final String fields[] = line.trim().split(" +");
-                        if (fields.length > 0 && Integer.toString(expectedIndex).equals(fields[0])) {
-                            // we have found the first line we are interested in
-                            break;
+                    for (int d = 0; d < sinCosColumns.length / 2; ++d) {
+                        final SeriesTerm term =  parseSeriesTerm(regularMatcher, expectedIndex, factor,
+                                                                 firstDelaunay, firstPlanetary,
+                                                                 sinCosColumns[2 * d],
+                                                                 sinCosColumns[2 * d + 1],
+                                                                 name, lineNumber);
+                        if (term != null) {
+                            while (series.size() <= degree + d) {
+                                series.add(new ArrayList<SeriesTerm>());
+                            }
+                            series.get(degree + d).add(term);
                         }
-                        line = reader.readLine();
-                        ++lineNumber;
                     }
 
-                    // read the terms of the current series
-                    final SeriesTerm[] serie = new SeriesTerm[nTerms];
-                    for (int i = 0; i < nTerms; ++i) {
-                        serie[i] =
-                                parseSeriesTerm(line, nonPolyFactor, expectedIndex, name, lineNumber);
-                        line = reader.readLine();
-                        ++lineNumber;
+                    if (expectedIndex > 0) {
+                        // we are in a file were terms are numbered
+                        // we must update the expected value for next term
                         ++expectedIndex;
                     }
 
-                    // the series has been completed, store it
-                    array.add(serie);
-
                 } else {
 
-                    if (polynomial == null) {
+                    final Matcher headerMatcher = degreeSectionHeaderPattern.matcher(line);
+                    if (headerMatcher.matches()) {
+
+                        // we have found a degree section header
+                        final int nextDegree = Integer.parseInt(headerMatcher.group(1));
+                        if ((nextDegree != degree + 1) && (degree != 0 || nextDegree != 0)) {
+                            throw new OrekitException(OrekitMessages.MISSING_SERIE_J_IN_FILE,
+                                                      degree + 1, name, lineNumber);
+                        }
+
+                        if (nextDegree == 0) {
+                            // in IERS files split in sections, all terms are numbered
+                            // we can check the indices
+                            expectedIndex = 1;
+                        }
+
+                        if (nextDegree > 0 && (series.size() <= degree || series.get(degree).size() != nTerms)) {
+                            // the previous degree does not have the expected number of terms
+                            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+                        }
+
+                        // remember the number of terms the upcoming sublist should have
+                        nTerms =  Integer.parseInt(headerMatcher.group(2));
+                        degree = nextDegree;
+
+                    } else if (polynomial == null) {
                         // look for the polynomial part
                         final double[] coefficients = polynomialParser.parse(line);
                         if (coefficients != null) {
@@ -159,20 +309,25 @@ public class PoissonSeries implements Serializable {
                         }
                     }
 
-                    // we are still in the header
-                    line = reader.readLine();
-                    ++lineNumber;
-
                 }
 
             }
 
-            if (polynomial == null || array.isEmpty()) {
+            if (polynomial == null || series.isEmpty()) {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
-            // store the non-polynomial part series
-            series = (SeriesTerm[][]) array.toArray(new SeriesTerm[array.size()][]);
+            if (nTerms > 0 && (series.size() <= degree || series.get(degree).size() != nTerms)) {
+                // the last degree does not have the expected number of terms
+                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+            }
+
+            // reverse the lists, so we can access them from smallest to largest elements
+            // and from highest to lowest degree
+            Collections.reverse(series);
+            for (final List<SeriesTerm> l : series) {
+                Collections.reverse(l);
+            }
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
@@ -187,72 +342,72 @@ public class PoissonSeries implements Serializable {
         return polynomial;
     }
 
-    /** Parse a series header line.
-     * @param headerMatcher matcher for the series header line
-     * @param expected expected series index
-     * @param name name of the resource file (for error messages only)
-     * @param lineNumber line number (for error messages only)
-     * @return the number of terms in the series (-1 if the line
-     * cannot be parsed)
-     * @exception OrekitException if the header does not match
-     * the expected series number
-     */
-    private int parseSeriesHeader(final Matcher headerMatcher, final int expected,
-                                  final String name, final int lineNumber)
-        throws OrekitException {
-
-        // is this a series header line ?
-        if (!headerMatcher.matches()) {
-            return -1;
-        }
-
-        // sanity check
-        if (Integer.parseInt(headerMatcher.group(1)) != expected) {
-            throw new OrekitException(OrekitMessages.MISSING_SERIE_J_IN_FILE,
-                                      expected, name, lineNumber);
-        }
-
-        return Integer.parseInt(headerMatcher.group(2));
-
-    }
-
     /** Parse a series term line.
-     * @param line data line to parse
-     * @param nonPolyFactor multiplicative factor to use for non-polynomial coefficients
-     * @param expectedIndex expected index of the series term
+     * @param matcher matcher for the line (each group correspond to a column)
+     * @param expectedIndex expected index of the series term (negative if terms are not numbered)
+     * @param factor multiplicative factor to use for non-polynomial coefficients
+     * @param firstDelaunay column of the first Delaunay multiplier (counting from 1)
+     * @param firstPlanetary column of the first planetary multiplier (counting from 1)
+     * @param sinColumn column of the sine coefficient
+     * @param cosColumn column of the sine coefficient
      * @param name name of the resource file (for error messages only)
      * @param lineNumber line number (for error messages only)
-     * @return a series term
+     * @return a series term, or null if the term has no effect at all (i.e. both its
+     * sine and cosine coefficients are zero)
      * @exception OrekitException if the line is null or cannot be parsed
      */
-    private SeriesTerm parseSeriesTerm (final String line, final double nonPolyFactor,
-                                        final int expectedIndex,
+    private SeriesTerm parseSeriesTerm (final Matcher matcher, final int expectedIndex,
+                                        final double factor,
+                                        final int firstDelaunay, final int firstPlanetary,
+                                        final int sinColumn, final int cosColumn,
                                         final String name, final int lineNumber)
         throws OrekitException {
 
-        // sanity check
-        if (line == null) {
-            throw new OrekitException(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE,
-                                      name, lineNumber - 1);
+        if (expectedIndex > 0) {
+            // we are in a file were terms are numbered, we check the index
+            if (Integer.parseInt(matcher.group(1)) != expectedIndex) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                          lineNumber, name, matcher.group());
+            }
         }
 
-        // parse the Poisson series term
-        final String[] fields = line.trim().split("\\p{Space}+");
-        final int l = fields.length;
-        if (l == 17 && Integer.parseInt(fields[0]) == expectedIndex) {
-            return SeriesTerm.buildTerm(Double.parseDouble(fields[l - 16]) * nonPolyFactor,
-                                        Double.parseDouble(fields[l - 15]) * nonPolyFactor,
-                                        Integer.parseInt(fields[l - 14]), Integer.parseInt(fields[l - 13]),
-                                        Integer.parseInt(fields[l - 12]), Integer.parseInt(fields[l - 11]),
-                                        Integer.parseInt(fields[l - 10]), Integer.parseInt(fields[l -  9]),
-                                        Integer.parseInt(fields[l -  8]), Integer.parseInt(fields[l -  7]),
-                                        Integer.parseInt(fields[l -  6]), Integer.parseInt(fields[l -  5]),
-                                        Integer.parseInt(fields[l -  4]), Integer.parseInt(fields[l -  3]),
-                                        Integer.parseInt(fields[l -  2]), Integer.parseInt(fields[l -  1]));
+        // some models have only sine or cosine components
+        final double sinCoeff =
+                (sinColumn < 0) ? 0.0 : Double.parseDouble(matcher.group(sinColumn)) * factor;
+        final double cosCoeff =
+                (cosColumn < 0) ? 0.0 : Double.parseDouble(matcher.group(cosColumn)) * factor;
+        if (Precision.equals(sinCoeff, 0.0, 1) && Precision.equals(cosCoeff, 0.0, 1)) {
+            // the term would have no effect at all, we ignore it
+            return null;
         }
 
-        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                  lineNumber, name, line);
+        if (firstPlanetary < 0) {
+            // there are no planetary terms
+            return SeriesTerm.buildTerm(sinCoeff, cosCoeff,
+                                        Integer.parseInt(matcher.group(firstDelaunay)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 1)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 2)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 3)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 4)),
+                                        0, 0, 0, 0, 0, 0, 0, 0, 0);
+        } else {
+            // there are planetary terms
+            return SeriesTerm.buildTerm(sinCoeff, cosCoeff,
+                                        Integer.parseInt(matcher.group(firstDelaunay)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 1)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 2)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 3)),
+                                        Integer.parseInt(matcher.group(firstDelaunay + 4)),
+                                        Integer.parseInt(matcher.group(firstPlanetary)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 1)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 2)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 3)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 4)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 5)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 6)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 7)),
+                                        Integer.parseInt(matcher.group(firstPlanetary + 8)));
+        }
 
     }
 
@@ -269,15 +424,11 @@ public class PoissonSeries implements Serializable {
 
         // non-polynomial part
         double np = 0;
-        for (int i = series.length - 1; i >= 0; --i) {
+        for (final List<SeriesTerm> subList : series) {
 
-            final SeriesTerm[] serie = series[i];
-
-            // add the harmonic terms starting from the last (smallest) terms,
-            // to avoid numerical problems
             double s = 0;
-            for (int k = serie.length - 1; k >= 0; --k) {
-                s += serie[k].value(elements);
+            for (final SeriesTerm term : subList) {
+                s += term.value(elements);
             }
 
             np = np * tc + s;

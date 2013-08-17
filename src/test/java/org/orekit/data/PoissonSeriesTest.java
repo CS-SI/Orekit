@@ -52,14 +52,32 @@ public class PoissonSeriesTest {
     private PoissonSeries buildData(String data) throws OrekitException {
         return new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
                                  "<file-content>" + data + "</file-content>",
-                                 't', PolynomialParser.Unit.NO_UNITS, 1.0);
+                                 't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                 17, 4, 9, 2, 3);
     }
 
     @Test(expected=OrekitException.class)
     public void testNoFile() throws OrekitException {
         InputStream stream =
             PoissonSeriesTest.class.getResourceAsStream("/org/orekit/resources/missing");
-        new PoissonSeries(stream, "missing", 't', PolynomialParser.Unit.NO_UNITS, 1.0);
+        new PoissonSeries(stream, "missing", 't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                          17, 4, 9, 2, 3);
+    }
+
+    @Test
+    public void testAllTermsIgnored() throws OrekitException {
+        try {
+            String data =
+                    "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
+                            + "j = 0  Nb of terms = 1\n"
+                            + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "",
+                              'x', PolynomialParser.Unit.NO_UNITS, 1.0,
+                              17, 4, 9, 2, 3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+        }
     }
 
     @Test
@@ -67,10 +85,11 @@ public class PoissonSeriesTest {
         String data =
             "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
             + "j = 0  Nb of terms = 1\n"
-            + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+            + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
         PoissonSeries nd =
             new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "",
-                              'x', PolynomialParser.Unit.NO_UNITS, 1.0);
+                              'x', PolynomialParser.Unit.NO_UNITS, 1.0,
+                              17, 4, 9, 2, 3);
         Assert.assertNotNull(nd);
     }
 
@@ -79,10 +98,10 @@ public class PoissonSeriesTest {
         String data =
             "  0''.0 + 0''.0 t - 0''.0 t^2 - 0''.0 t^3 - 0''.0 t^4 + 0''.0 t^5\n"
             + "j = 0  Nb of terms = 1\n"
-            + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+            + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
         PoissonSeries nd =
             new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "",
-                              't', PolynomialParser.Unit.NO_UNITS, 1.0);
+                              't', PolynomialParser.Unit.NO_UNITS, 1.0, 17, 4, 9, 2, 3);
         Assert.assertNotNull(nd);
     }
 
@@ -147,7 +166,8 @@ public class PoissonSeriesTest {
             + "       \n"
             + "   9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
         Assert.assertNotNull(new PoissonSeries(new ByteArrayInputStream(data.getBytes()),
-                                               "dummy", 't', PolynomialParser.Unit.NO_UNITS, 1.0));
+                                               "dummy", 't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                               17, 4, 9, 2, 3));
     }
 
     @Test
@@ -212,7 +232,7 @@ public class PoissonSeriesTest {
             + "   9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
         try {
             new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "dummy",
-                              't', PolynomialParser.Unit.NO_UNITS, 1.0);
+                              't', PolynomialParser.Unit.NO_UNITS, 1.0, 17, 4, 9, 2, 3);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
@@ -268,12 +288,26 @@ public class PoissonSeriesTest {
             + "   3       -3328.48      205833.15    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
         try {
             new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "dummy",
-                              't', PolynomialParser.Unit.NO_UNITS, 1.0);
+                              't', PolynomialParser.Unit.NO_UNITS, 1.0, 17, 4, 9, 2, 3);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.UNEXPECTED_END_OF_FILE_AFTER_LINE, oe.getSpecifier());
-            Assert.assertEquals(42, oe.getParts()[1]);
+            Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
         }
+    }
+
+    @Test
+    public void testTrue1996Files() throws OrekitException {
+        String directory = "/assets/org/orekit/IERS-conventions/";
+        InputStream psiStream =
+            getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
+        Assert.assertNotNull(new PoissonSeries(psiStream, "1996/tab5.1.txt",
+                                               't', null, 1.0,
+                                               10, 1, -1, 7, -1, 8, -1));
+        InputStream epsilonStream =
+            getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
+        Assert.assertNotNull(new PoissonSeries(epsilonStream, "1996/tab5.1.txt",
+                                               't', null, 1.0,
+                                               10, 1, -1, -1, 9, -1, 10));
     }
 
     @Test
@@ -282,15 +316,18 @@ public class PoissonSeriesTest {
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2a.txt");
         Assert.assertNotNull(new PoissonSeries(xStream, "2003/tab5.2a.txt",
-                                               't', PolynomialParser.Unit.NO_UNITS, 1.0));
+                                               't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                               17, 4, 9, 2, 3));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2b.txt");
         Assert.assertNotNull(new PoissonSeries(yStream, "2003/tab5.2b.txt",
-                                               't', PolynomialParser.Unit.NO_UNITS, 1.0));
+                                               't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                               17, 4, 9, 2, 3));
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2c.txt");
         Assert.assertNotNull(new PoissonSeries(zStream, "2003/tab5.2c.txt",
-                                               't', PolynomialParser.Unit.NO_UNITS, 1.0));
+                                               't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                               17, 4, 9, 2, 3));
     }
 
     @Test
@@ -299,15 +336,18 @@ public class PoissonSeriesTest {
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
         Assert.assertNotNull(new PoissonSeries(xStream, "2010/tab5.2a.txt",
-                                               't', PolynomialParser.Unit.NO_UNITS, 1.0));
+                                               't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                               17, 4, 9, 2, 3));
         InputStream yStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
         Assert.assertNotNull(new PoissonSeries(yStream, "2010/tab5.2b.txt",
-                                               't', PolynomialParser.Unit.NO_UNITS, 1.0));
+                                               't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                               17, 4, 9, 2, 3));
         InputStream zStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
         Assert.assertNotNull(new PoissonSeries(zStream, "2010/tab5.2d.txt",
-                                               't', PolynomialParser.Unit.NO_UNITS, 1.0));
+                                               't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                               17, 4, 9, 2, 3));
     }
 
 }
