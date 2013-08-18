@@ -16,7 +16,7 @@
  */
 package org.orekit.data;
 
-import java.io.Serializable;
+import java.util.Arrays;
 
 import org.apache.commons.math3.util.FastMath;
 
@@ -24,33 +24,108 @@ import org.apache.commons.math3.util.FastMath;
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-public abstract class SeriesTerm implements Serializable {
+abstract class SeriesTerm {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7536446008538764006L;
+    /** Coefficients for the sine part. */
+    private double[][] sinCoeff;
 
-    /** Coefficient for the sine of the argument. */
-    private final double sinCoeff;
-
-    /** Coefficient for the cosine of the argument. */
-    private final double cosCoeff;
+    /** Coefficients for the cosine part. */
+    private double[][] cosCoeff;
 
     /** Simple constructor for the base class.
-     * @param sinCoeff coefficient for the sine of the argument
-     * @param cosCoeff coefficient for the cosine of the argument
      */
-    protected SeriesTerm(final double sinCoeff, final double cosCoeff) {
-        this.sinCoeff = sinCoeff;
-        this.cosCoeff = cosCoeff;
+    protected SeriesTerm() {
+        this.sinCoeff = new double[0][0];
+        this.cosCoeff = new double[0][0];
+    }
+
+    /** Get the degree of the function component.
+     * @param index index of the function component (must be less than dimension)
+     * @return degree of the function component
+     */
+    public int getDegree(final int index) {
+        return  sinCoeff[index].length - 1;
+    }
+
+    /** Add a pair of values to existing term coefficients.
+     * <p>
+     * Despite it would seem logical to simply set coefficients
+     * rather than add to them, this does not work for some IERS
+     * files. As an example in table 5.3a in IERS conventions 2003,
+     * the coefficients for luni-solar term for 2F+Ω with period
+     * 13.633 days appears twice with different coefficients, as
+     * well as term for 2(F+D+Ω)+l with period 5.643 days, term for
+     * 2(F+D+Ω)-l with period 9.557 days, term for 2(Ω-l') with
+     * period -173.318 days, term for 2D-l with period 31.812 days ...
+     * 35 different duplicated terms have been identified in the
+     * tables 5.3a and 5.3b in IERS conventions 2003.
+     * The coefficients read in lines duplicating a term must be
+     * added together.
+     * </p>
+     * @param index index of the components (will automatically
+     * increase dimension if needed)
+     * @param degree degree of the coefficients, may be negative if
+     * the term does not contribute to component (will automatically
+     * increase {@link #getDegree() degree} of the component if needed)
+     * @param sinID coefficient for the sine part, at index and degree
+     * @param cosID coefficient for the cosine part, at index and degree
+     */
+    public void add(final int index, final int degree,
+                    final double sinID, final double cosID) {
+        sinCoeff = extendArray(index, degree, sinCoeff);
+        cosCoeff = extendArray(index, degree, cosCoeff);
+        if (degree >= 0) {
+            sinCoeff[index][degree] += sinID;
+            cosCoeff[index][degree] += cosID;
+        }
+    }
+
+    /** Get a coefficient for the sine part.
+     * @param index index of the function component (must be less than dimension)
+     * @param degree degree of the coefficients
+     * (must be less than {@link #getDegree() degree} for the component)
+     * @return coefficient for the sine part, at index and degree
+     */
+    public double getSinCoeff(final int index, final int degree) {
+        return sinCoeff[index][degree];
+    }
+
+    /** Get a coefficient for the cosine part.
+     * @param index index of the function component (must be less than dimension)
+     * @param degree degree of the coefficients
+     * (must be less than {@link #getDegree() degree} for the component)
+     * @return coefficient for the cosine part, at index and degree
+     */
+    public double getCosCoeff(final int index, final int degree) {
+        return cosCoeff[index][degree];
     }
 
     /** Evaluate the value of the series term.
      * @param elements bodies elements for nutation
      * @return value of the series term
      */
-    public double value(final BodiesElements elements) {
-        final double a = argument(elements);
-        return sinCoeff * FastMath.sin(a) + cosCoeff * FastMath.cos(a);
+    public double[] value(final BodiesElements elements) {
+
+        // preliminary computation
+        final double tc  = elements.getTC();
+        final double a   = argument(elements);
+        final double sin = FastMath.sin(a);
+        final double cos = FastMath.cos(a);
+
+        // compute each function
+        final double[] values = new double[sinCoeff.length];
+        for (int i = 0; i < values.length; ++i) {
+            double s = 0;
+            double c = 0;
+            for (int j = sinCoeff[i].length - 1; j >= 0; --j) {
+                s = s * tc + sinCoeff[i][j];
+                c = c * tc + cosCoeff[i][j];
+            }
+            values[i] = s * sin + c * cos;
+        }
+
+        return values;
+
     }
 
     /** Compute the argument for the current date.
@@ -63,8 +138,6 @@ public abstract class SeriesTerm implements Serializable {
      * <p>The method checks the null coefficients and build an instance
      * of an appropriate type to avoid too many unnecessary multiplications
      * by zero coefficients.</p>
-     * @param sinCoeff coefficient for the sine of the argument
-     * @param cosCoeff coefficient for the cosine of the argument
      * @param cL coefficient for mean anomaly of the Moon
      * @param cLPrime coefficient for mean anomaly of the Sun
      * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
@@ -81,29 +154,66 @@ public abstract class SeriesTerm implements Serializable {
      * @param cPa coefficient for general accumulated precession in longitude
      * @return a nutation serie term instance well suited for the set of coefficients
      */
-    public static SeriesTerm buildTerm(final double sinCoeff, final double cosCoeff,
-                                       final int cL, final int cLPrime, final int cF,
+    public static SeriesTerm buildTerm(final int cL, final int cLPrime, final int cF,
                                        final int cD, final int cOmega,
                                        final int cMe, final int cVe, final int cE,
                                        final int cMa, final int cJu, final int cSa,
                                        final int cUr, final int cNe, final int cPa) {
         if (cL == 0 && cLPrime == 0 && cF == 0 && cD == 0 && cOmega == 0) {
-            return new PlanetaryTerm(sinCoeff, cosCoeff,
-                                     cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+            return new PlanetaryTerm(cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
         } else if (cMe == 0 && cVe == 0 && cE == 0 && cMa == 0 && cJu == 0 &&
                    cSa == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new LuniSolarTerm(sinCoeff, cosCoeff,
-                                     cL, cLPrime, cF, cD, cOmega);
+            return new LuniSolarTerm(cL, cLPrime, cF, cD, cOmega);
         } else if (cLPrime == 0 && cUr == 0 && cNe == 0 && cPa == 0) {
-            return new NoFarPlanetsTerm(sinCoeff, cosCoeff,
-                                        cL, cF, cD, cOmega,
+            return new NoFarPlanetsTerm(cL, cF, cD, cOmega,
                                         cMe, cVe, cE, cMa, cJu, cSa);
         } else {
-            return new GeneralTerm(sinCoeff, cosCoeff,
-                                   cL, cLPrime, cF, cD, cOmega,
+            return new GeneralTerm(cL, cLPrime, cF, cD, cOmega,
                                    cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
         }
 
+    }
+
+    /** Extend an array to old at least index and degree.
+     * @param index index of the function
+     * @param degree degree of the coefficients
+     * @param array to extend
+     * @return extended array
+     */
+    private static double[][] extendArray(final int index, final int degree,
+                                          final double[][] array) {
+
+        // extend the number of rows if needed
+        final double[][] extended;
+        if (array.length > index) {
+            extended = array;
+        } else {
+            extended = new double[index + 1][];
+            System.arraycopy(array, 0, extended, 0, array.length);
+            Arrays.fill(extended, array.length, index + 1, new double[0]);
+        }
+
+        // extend the number of elements in the row if needed
+        extended[index] = extendArray(degree, extended[index]);
+
+        return extended;
+
+    }
+
+    /** Extend an array to old at least index and degree.
+     * @param degree degree of the coefficients
+     * @param array to extend
+     * @return extended array
+     */
+    private static double[] extendArray(final int degree, final double[] array) {
+        // extend the number of elements if needed
+        if (array.length > degree) {
+            return array;
+        } else {
+            final double[] extended = new double[degree + 1];
+            System.arraycopy(array, 0, extended, 0, array.length);
+            return extended;
+        }
     }
 
 }

@@ -114,6 +114,8 @@ public enum IERSConventions {
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
                                       12, 1, -1, -1, 10, 12, 11);
 
+            final PoissonSeries.CompiledSeries xySum = PoissonSeries.compile(xSum, ySum);
+
             // s = -XY/2 + 0.00385″t - 0.07259″t³ - 0.00264″ sin Ω - 0.00006″ sin 2Ω
             //     + 0.00074″t² sin Ω + 0.00006″t² sin 2(F - D + Ω)
             final double fST          =  0.00385 * Constants.ARC_SECONDS_TO_RADIANS;
@@ -130,6 +132,7 @@ public enum IERSConventions {
                 public double[] value(final AbsoluteDate date) {
 
                     final BodiesElements elements = arguments.evaluateAll(date);
+                    final double[] xy = xySum.value(elements);
 
                     final double omega     = elements.getOmega();
                     final double f         = elements.getF();
@@ -142,9 +145,9 @@ public enum IERSConventions {
                     final double cos2FDOm  = FastMath.cos(2 * (f - d + omega));
                     final double sin2FDOm  = FastMath.sin(2 * (f - d + omega));
 
-                    final double x = xPolynomial.value(t) + sinEps0 * xSum.value(elements) +
+                    final double x = xPolynomial.value(t) + sinEps0 * xy[0] +
                             t * t * (fXCosOm * cosOmega + fXSinOm * sinOmega + fXSin2FDOm * cos2FDOm);
-                    final double y = yPolynomial.value(t) + ySum.value(elements) +
+                    final double y = yPolynomial.value(t) + xy[1] +
                             t * t * (fYCosOm * cosOmega + fYCos2FDOm * cos2FDOm);
                     final double sPxy2 = fSSinOm * sinOmega + fSSin2Om * sin2Omega +
                             t * (fST + t * (fST2SinOm * sinOmega + fST2Sin2FDOm * sin2FDOm + t * fST3));
@@ -212,6 +215,8 @@ public enum IERSConventions {
                     loadPoissonSeries(PSI_EPSILON_SERIES, 't', null,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
                                       10, 1, -1, -1, 9, -1, 10);
+            final PoissonSeries.CompiledSeries psiEpsilonSeries =
+                    PoissonSeries.compile(psiSeries, epsilonSeries);
 
             final PolynomialNutation moePolynomial =
                     new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
@@ -225,8 +230,9 @@ public enum IERSConventions {
                 @Override
                 public double[] value(final AbsoluteDate date) {
                     final BodiesElements elements = arguments.evaluateAll(date);
+                    final double[] psiEpsilon = psiEpsilonSeries.value(elements);
                     return new double[] {
-                        psiSeries.value(elements), epsilonSeries.value(elements),
+                        psiEpsilon[0], psiEpsilon[1],
                         moePolynomial.value(elements.getTC()), eqeCorrectionFunction.value(elements)
                     };
                 }
@@ -341,6 +347,8 @@ public enum IERSConventions {
                                                             PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
                                                             17, 4, 9, 2, 3);
+            final PoissonSeries.CompiledSeries xys =
+                    PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -348,10 +356,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final BodiesElements elements = arguments.evaluateAll(date);
-                    return new double[] {
-                        xSeries.value(elements), ySeries.value(elements), sSeries.value(elements)
-                    };
+                    return xys.value(arguments.evaluateAll(date));
                 }
 
             };
@@ -427,6 +432,10 @@ public enum IERSConventions {
                     loadPoissonSeries(PLANETARY_SERIES, 't', null,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
                                       21, 2, 7, 19, 20);
+            final PoissonSeries.CompiledSeries luniSolarSeries =
+                    PoissonSeries.compile(psiLuniSolarSeries, epsilonLuniSolarSeries);
+            final PoissonSeries.CompiledSeries planetarySeries =
+                    PoissonSeries.compile(psiPlanetarySeries, epsilonPlanetarySeries);
 
             // value from chapter 5, equation 32, page 45
             final PolynomialNutation moePolynomial =
@@ -442,9 +451,10 @@ public enum IERSConventions {
                 @Override
                 public double[] value(final AbsoluteDate date) {
                     final BodiesElements elements = arguments.evaluateAll(date);
+                    final double[] luniSolar = luniSolarSeries.value(elements);
+                    final double[] planetary = planetarySeries.value(elements);
                     return new double[] {
-                        psiLuniSolarSeries.value(elements) + psiPlanetarySeries.value(elements),
-                        epsilonLuniSolarSeries.value(elements) + epsilonPlanetarySeries.value(elements),
+                        luniSolar[0] + planetary[0], luniSolar[1] + planetary[1],
                         moePolynomial.value(elements.getTC()), eqeCorrectionFunction.value(elements)
                     };
                 }
@@ -541,6 +551,8 @@ public enum IERSConventions {
                                                             PolynomialParser.Unit.MICRO_ARC_SECONDS,
                                                             Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
                                                             17, 4, 9, 2, 3);
+            final PoissonSeries.CompiledSeries xys =
+                    PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -548,10 +560,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final BodiesElements elements = arguments.evaluateAll(date);
-                    return new double[] {
-                        xSeries.value(elements), ySeries.value(elements), sSeries.value(elements)
-                    };
+                    return xys.value(arguments.evaluateAll(date));
                 }
 
             };
@@ -626,6 +635,8 @@ public enum IERSConventions {
                     loadPoissonSeries(EPSILON_SERIES, 't', null,
                                       Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
                                       17, 4, 9, 2, 3);
+            final PoissonSeries.CompiledSeries psiEpsilonSeries =
+                    PoissonSeries.compile(psiSeries, epsilonSeries);
 
             // value from section 5.6.4, page 64 for epsilon0
             // and page 65 equation 5.40 for the other terms
@@ -644,8 +655,9 @@ public enum IERSConventions {
                 @Override
                 public double[] value(final AbsoluteDate date) {
                     final BodiesElements elements = arguments.evaluateAll(date);
+                    final double[] psiEpsilon = psiEpsilonSeries.value(elements);
                     return new double[] {
-                        psiSeries.value(elements), epsilonSeries.value(elements),
+                        psiEpsilon[0], psiEpsilon[1],
                         moePolynomial.value(elements.getTC()), eqeCorrectionFunction.value(elements)
                     };
                 }

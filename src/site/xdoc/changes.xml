@@ -21,6 +21,19 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="update" >
+        Vastly improved performances for Poisson series computations. Poisson series are often
+        evaluated several components together (x/y/s in new non-rotating paradigm, ∆ψ/∆ε in old
+        equinox paradigm for example). As the components are built from a common model, they
+        share many nutation terms. We now evaluate these shared terms only once, as we evaluate
+        the components in parallel thanks to a preliminary "compilation" phase performed when
+        the Poisson series are set up. This dramatically improves speed: on a test case based
+        on x/y/s evaluations over a one year time span without any caching,  we noticed a
+        more than two-fold speedup: mean computation time reduced from 6.75 seconds (standard
+        deviation 0.49s) to 3.07 seconds (standard deviation 0.04s), so it was a 54.5% reduction
+        in mean computation time. At the same time, accuracy was also improved thanks to the
+        Møller-Knuth TwoSum algorithm without branching now used for summing all series terms.
+      </action>
       <action dev="luc" type="fix" >
         When UT1 time scale is used, it is now possible to choose which Earth Orientation
         Parameters history to use (formerly, only EOP compatible with IAU-2000/2006 was

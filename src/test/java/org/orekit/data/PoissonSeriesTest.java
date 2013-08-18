@@ -20,10 +20,14 @@ package org.orekit.data;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 
 public class PoissonSeriesTest {
@@ -65,12 +69,39 @@ public class PoissonSeriesTest {
     }
 
     @Test
-    public void testAllTermsIgnored() throws OrekitException {
+    public void testMissingSeries() throws OrekitException {
         try {
             String data =
                     "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
-                            + "j = 0  Nb of terms = 1\n"
-                            + "1 0.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+                    + "j = 0  Nb of terms = 1\n"
+                    + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
+                    + "j = 1  Nb of terms = 1\n"
+                    + "2 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
+                    + "j = 3  Nb of terms = 1\n"
+                    + "3 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
+            new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "",
+                              'x', PolynomialParser.Unit.NO_UNITS, 1.0,
+                              17, 4, 9, 2, 3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.MISSING_SERIE_J_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(2, oe.getParts()[0]);
+            Assert.assertEquals(6, oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testMissingTerms() throws OrekitException {
+        try {
+            String data =
+                    "  0.0 + 0.0 x - 0.0 x^2 - 0.0 x^3 - 0.0 x^4 + 0.0 x^5\n"
+                    + "j = 0  Nb of terms = 1\n"
+                    + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
+                    + "j = 1  Nb of terms = 3\n"
+                    + "2 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n"
+                    + "3 1.0 0.0 0 0 0 0 0 2 0 0 0 0 0 0 0 0\n"
+                    + "j = 2  Nb of terms = 1\n"
+                    + "4 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
             new PoissonSeries(new ByteArrayInputStream(data.getBytes()), "",
                               'x', PolynomialParser.Unit.NO_UNITS, 1.0,
                               17, 4, 9, 2, 3);
@@ -348,6 +379,42 @@ public class PoissonSeriesTest {
         Assert.assertNotNull(new PoissonSeries(zStream, "2010/tab5.2d.txt",
                                                't', PolynomialParser.Unit.NO_UNITS, 1.0,
                                                17, 4, 9, 2, 3));
+    }
+
+    @Test
+    public void testCompile() throws OrekitException {
+        String directory = "/assets/org/orekit/IERS-conventions/";
+        InputStream xStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
+        PoissonSeries xSeries = new PoissonSeries(xStream, "2010/tab5.2a.txt",
+                                                  't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                                  17, 4, 9, 2, 3);
+        InputStream yStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2b.txt");
+        PoissonSeries ySeries = new PoissonSeries(yStream, "2010/tab5.2b.txt",
+                                                  't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                                  17, 4, 9, 2, 3);
+        InputStream zStream =
+            getClass().getResourceAsStream(directory + "2010/tab5.2d.txt");
+        PoissonSeries sSeries = new PoissonSeries(zStream, "2010/tab5.2d.txt",
+                                                  't', PolynomialParser.Unit.NO_UNITS, 1.0,
+                                                  17, 4, 9, 2, 3);
+        PoissonSeries.CompiledSeries xysSeries =
+                PoissonSeries.compile(xSeries, ySeries, sSeries);
+        FundamentalNutationArguments arguments = IERSConventions.IERS_2010.getNutationArguments();
+
+        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += Constants.JULIAN_DAY) {
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            BodiesElements elements = arguments.evaluateAll(date);
+            double x     = xSeries.value(elements);
+            double y     = ySeries.value(elements);
+            double s     = sSeries.value(elements);
+            double[] xys = xysSeries.value(elements);
+            Assert.assertEquals(x, xys[0], 1.0e-15 * FastMath.abs(x));
+            Assert.assertEquals(y, xys[1], 1.0e-15 * FastMath.abs(y));
+            Assert.assertEquals(s, xys[2], 1.0e-15 * FastMath.abs(s));
+        }
+
     }
 
 }

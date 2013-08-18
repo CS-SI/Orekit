@@ -21,9 +21,6 @@ package org.orekit.data;
  */
 class PlanetaryTerm extends SeriesTerm {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = -666953066880447449L;
-
     /** Coefficient for mean Mercury longitude. */
     private final int cMe;
 
@@ -52,8 +49,6 @@ class PlanetaryTerm extends SeriesTerm {
     private final int cPa;
 
     /** Build a planetary term for nutation series.
-     * @param sinCoeff coefficient for the sine of the argument
-     * @param cosCoeff coefficient for the cosine of the argument
      * @param cMe coefficient for mean Mercury longitude
      * @param cVe coefficient for mean Venus longitude
      * @param cE coefficient for mean Earth longitude
@@ -64,10 +59,8 @@ class PlanetaryTerm extends SeriesTerm {
      * @param cNe coefficient for mean Neptune longitude
      * @param cPa coefficient for general accumulated precession in longitude
       */
-    public PlanetaryTerm(final double sinCoeff, final double cosCoeff,
-                         final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
+    public PlanetaryTerm(final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
                          final int cSa, final int cUr, final int cNe, final int cPa) {
-        super(sinCoeff, cosCoeff);
         this.cMe = cMe;
         this.cVe = cVe;
         this.cE  = cE;

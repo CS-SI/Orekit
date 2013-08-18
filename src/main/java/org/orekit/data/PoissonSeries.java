@@ -20,10 +20,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -166,16 +164,13 @@ import org.orekit.errors.OrekitMessages;
  * @see SeriesTerm
  * @see PolynomialNutation
  */
-public class PoissonSeries implements Serializable {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130807L;
+public class PoissonSeries {
 
     /** Polynomial part. */
     private PolynomialNutation polynomial;
 
     /** Non-polynomial series. */
-    private List<List<SeriesTerm>> series;
+    private Map<Long, SeriesTerm> series;
 
     /** Build a Poisson series from an IERS table file.
      * @param stream stream containing the IERS table
@@ -240,8 +235,9 @@ public class PoissonSeries implements Serializable {
             int lineNumber    =  0;
             int expectedIndex = -1;
             int nTerms        = -1;
+            int count         =  0;
             int degree        =  0;
-            series            = new ArrayList<List<SeriesTerm>>();
+            series            = new HashMap<Long, SeriesTerm>();
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
@@ -254,18 +250,55 @@ public class PoissonSeries implements Serializable {
                 if (regularMatcher.matches()) {
                     // we have found a regular data line
 
-                    for (int d = 0; d < sinCosColumns.length / 2; ++d) {
-                        final SeriesTerm term =  parseSeriesTerm(regularMatcher, expectedIndex, factor,
-                                                                 firstDelaunay, firstPlanetary,
-                                                                 sinCosColumns[2 * d],
-                                                                 sinCosColumns[2 * d + 1],
-                                                                 name, lineNumber);
-                        if (term != null) {
-                            while (series.size() <= degree + d) {
-                                series.add(new ArrayList<SeriesTerm>());
-                            }
-                            series.get(degree + d).add(term);
+                    if (expectedIndex > 0) {
+                        // we are in a file were terms are numbered, we check the index
+                        if (Integer.parseInt(regularMatcher.group(1)) != expectedIndex) {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, regularMatcher.group());
                         }
+                    }
+
+                    // get the Delaunay and planetary multipliers
+                    final int cL      = Integer.parseInt(regularMatcher.group(firstDelaunay));
+                    final int cLPrime = Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
+                    final int cF      = Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
+                    final int cD      = Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
+                    final int cOmega  = Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
+                    final int cMe = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary));
+                    final int cVe = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 1));
+                    final int cE  = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 2));
+                    final int cMa = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 3));
+                    final int cJu = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 4));
+                    final int cSa = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 5));
+                    final int cUr = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 6));
+                    final int cNe = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 7));
+                    final int cPa = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 8));
+                    final long key = NutationCodec.encode(cL, cLPrime, cF, cD, cOmega,
+                                                          cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+
+                    // retrived the term, or build it if it's the first time it is encountered in the file
+                    final SeriesTerm term;
+                    if (series.containsKey(key)) {
+                        // the term was already known, from another degree
+                        term = series.get(key);
+                    } else {
+                        // the term is a new one
+                        term = SeriesTerm.buildTerm(cL, cLPrime, cF, cD, cOmega,
+                                                    cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+                    }
+
+                    boolean nonZero = false;
+                    for (int d = 0; d < sinCosColumns.length / 2; ++d) {
+                        final double sinCoeff = parseCoefficient(regularMatcher, sinCosColumns[2 * d],     factor);
+                        final double cosCoeff = parseCoefficient(regularMatcher, sinCosColumns[2 * d + 1], factor);
+                        if (!Precision.equals(sinCoeff, 0.0, 1) || !Precision.equals(cosCoeff, 0.0, 1)) {
+                            nonZero = true;
+                            term.add(0, degree + d, sinCoeff, cosCoeff);
+                            ++count;
+                        }
+                    }
+                    if (nonZero) {
+                        series.put(key, term);
                     }
 
                     if (expectedIndex > 0) {
@@ -292,13 +325,14 @@ public class PoissonSeries implements Serializable {
                             expectedIndex = 1;
                         }
 
-                        if (nextDegree > 0 && (series.size() <= degree || series.get(degree).size() != nTerms)) {
+                        if (nextDegree > 0 && count != nTerms) {
                             // the previous degree does not have the expected number of terms
                             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
                         }
 
                         // remember the number of terms the upcoming sublist should have
                         nTerms =  Integer.parseInt(headerMatcher.group(2));
+                        count  = 0;
                         degree = nextDegree;
 
                     } else if (polynomial == null) {
@@ -317,16 +351,9 @@ public class PoissonSeries implements Serializable {
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
             }
 
-            if (nTerms > 0 && (series.size() <= degree || series.get(degree).size() != nTerms)) {
+            if (nTerms > 0 && count != nTerms) {
                 // the last degree does not have the expected number of terms
                 throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
-            }
-
-            // reverse the lists, so we can access them from smallest to largest elements
-            // and from highest to lowest degree
-            Collections.reverse(series);
-            for (final List<SeriesTerm> l : series) {
-                Collections.reverse(l);
             }
 
         } catch (IOException ioe) {
@@ -335,80 +362,18 @@ public class PoissonSeries implements Serializable {
 
     }
 
-    /** Extract only the polynomial part of the series.
-     * @return polynomial part of the series
+    /** Parse a scaled coefficient.
+     * @param matcher line matcher holding the coefficient
+     * @param group group number of the coefficient, or -1 if line does not contain coefficient
+     * @param scale scaling factor to apply
+     * @return scaled factor, or 0.0 if group is -1
      */
-    public PolynomialNutation getPolynomialPart() {
-        return polynomial;
-    }
-
-    /** Parse a series term line.
-     * @param matcher matcher for the line (each group correspond to a column)
-     * @param expectedIndex expected index of the series term (negative if terms are not numbered)
-     * @param factor multiplicative factor to use for non-polynomial coefficients
-     * @param firstDelaunay column of the first Delaunay multiplier (counting from 1)
-     * @param firstPlanetary column of the first planetary multiplier (counting from 1)
-     * @param sinColumn column of the sine coefficient
-     * @param cosColumn column of the sine coefficient
-     * @param name name of the resource file (for error messages only)
-     * @param lineNumber line number (for error messages only)
-     * @return a series term, or null if the term has no effect at all (i.e. both its
-     * sine and cosine coefficients are zero)
-     * @exception OrekitException if the line is null or cannot be parsed
-     */
-    private SeriesTerm parseSeriesTerm (final Matcher matcher, final int expectedIndex,
-                                        final double factor,
-                                        final int firstDelaunay, final int firstPlanetary,
-                                        final int sinColumn, final int cosColumn,
-                                        final String name, final int lineNumber)
-        throws OrekitException {
-
-        if (expectedIndex > 0) {
-            // we are in a file were terms are numbered, we check the index
-            if (Integer.parseInt(matcher.group(1)) != expectedIndex) {
-                throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                          lineNumber, name, matcher.group());
-            }
-        }
-
-        // some models have only sine or cosine components
-        final double sinCoeff =
-                (sinColumn < 0) ? 0.0 : Double.parseDouble(matcher.group(sinColumn)) * factor;
-        final double cosCoeff =
-                (cosColumn < 0) ? 0.0 : Double.parseDouble(matcher.group(cosColumn)) * factor;
-        if (Precision.equals(sinCoeff, 0.0, 1) && Precision.equals(cosCoeff, 0.0, 1)) {
-            // the term would have no effect at all, we ignore it
-            return null;
-        }
-
-        if (firstPlanetary < 0) {
-            // there are no planetary terms
-            return SeriesTerm.buildTerm(sinCoeff, cosCoeff,
-                                        Integer.parseInt(matcher.group(firstDelaunay)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 1)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 2)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 3)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 4)),
-                                        0, 0, 0, 0, 0, 0, 0, 0, 0);
+    private double parseCoefficient(final Matcher matcher, final int group, final double scale) {
+        if (group < 0) {
+            return 0.0;
         } else {
-            // there are planetary terms
-            return SeriesTerm.buildTerm(sinCoeff, cosCoeff,
-                                        Integer.parseInt(matcher.group(firstDelaunay)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 1)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 2)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 3)),
-                                        Integer.parseInt(matcher.group(firstDelaunay + 4)),
-                                        Integer.parseInt(matcher.group(firstPlanetary)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 1)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 2)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 3)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 4)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 5)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 6)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 7)),
-                                        Integer.parseInt(matcher.group(firstPlanetary + 8)));
+            return scale * Double.parseDouble(matcher.group(group));
         }
-
     }
 
     /** Evaluate the value of the series.
@@ -417,26 +382,134 @@ public class PoissonSeries implements Serializable {
      */
     public double value(final BodiesElements elements) {
 
-        final double tc = elements.getTC();
-
         // polynomial part
         final double p = polynomial.value(elements.getTC());
 
         // non-polynomial part
-        double np = 0;
-        for (final List<SeriesTerm> subList : series) {
-
-            double s = 0;
-            for (final SeriesTerm term : subList) {
-                s += term.value(elements);
-            }
-
-            np = np * tc + s;
-
+        // compute sum accurately, using Møller-Knuth TwoSum algorithm without branching
+        // the following statements must NOT be simplified, they rely on floating point
+        // arithmetic properties (rounding and representable numbers)
+        double npHigh = 0;
+        double npLow  = 0;
+        for (final SeriesTerm term : series.values()) {
+            final double v       = term.value(elements)[0];
+            final double sum     = npHigh + v;
+            final double sPrime  = sum - v;
+            final double tPrime  = sum - sPrime;
+            final double deltaS  = npHigh  - sPrime;
+            final double deltaT  = v - tPrime;
+            npLow  += deltaS   + deltaT;
+            npHigh  = sum;
         }
 
         // add the polynomial and the non-polynomial parts
-        return p + np;
+        return p + (npHigh + npLow);
+
+    }
+
+    /** This interface represents a fast evaluator for Poisson series.
+     * @see PoissonSeries#compile(PoissonSeries...)
+     * @since 6.1
+     */
+    public interface CompiledSeries {
+
+        /** Evaluate a set of Poisson series.
+         * @param elements bodies elements for nutation
+         * @return value of the series
+         */
+        double[] value(BodiesElements elements);
+
+    }
+
+    /** Join several nutation series, for fast simultaneous evaluation.
+     * @param poissonSeries Poisson series to join
+     * @return a single function that evaluates all series together
+     * @since 6.1
+     */
+    public static CompiledSeries compile(final PoissonSeries ... poissonSeries) {
+
+        // store all polynomials
+        final PolynomialNutation[] polynomials =
+                new PolynomialNutation[poissonSeries.length];
+        for (int i = 0; i < polynomials.length; ++i) {
+            polynomials[i] = poissonSeries[i].polynomial;
+        }
+
+        // gather all series terms
+        final Map<Long, SeriesTerm> joinedMap = new HashMap<Long, SeriesTerm>();
+        for (final PoissonSeries ps : poissonSeries) {
+            for (long key : ps.series.keySet()) {
+                if (!joinedMap.containsKey(key)) {
+
+                    // retrieve all Delaunay and planetary multipliers from the key
+                    final int[] m = NutationCodec.decode(key);
+
+                    // prepare a new term, ready to handle the required dimension
+                    final SeriesTerm term =
+                            SeriesTerm.buildTerm(m[0], m[1], m[2], m[3], m[4],
+                                                 m[5], m[6], m[7], m[8], m[9], m[10], m[11], m[12], m[13]);
+                    term.add(poissonSeries.length - 1, -1, Double.NaN, Double.NaN);
+
+                    // store it
+                    joinedMap.put(key, term);
+
+                }
+            }
+        }
+
+        // join series by sharing terms, in order to speed up evaluation
+        // which is dominated by the computation of sine/cosine in each term
+        for (int i = 0; i < poissonSeries.length; ++i) {
+            for (final Map.Entry<Long, SeriesTerm> entry : poissonSeries[i].series.entrySet()) {
+                final SeriesTerm singleTerm = entry.getValue();
+                final SeriesTerm joinedTerm = joinedMap.get(entry.getKey());
+                for (int degree = 0; degree <= singleTerm.getDegree(0); ++degree) {
+                    joinedTerm.add(i, degree,
+                                   singleTerm.getSinCoeff(0, degree),
+                                   singleTerm.getCosCoeff(0, degree));
+                }
+            }
+        }
+
+        // use a single array for faster access
+        final SeriesTerm[] joinedTerms =
+                joinedMap.values().toArray(new SeriesTerm[joinedMap.size()]);
+
+        return new CompiledSeries() {
+
+            /** {@inheritDoc} */
+            @Override
+            public double[] value(final BodiesElements elements) {
+
+               // non-polynomial part
+                // compute sum accurately, using Møller-Knuth TwoSum algorithm without branching
+                // the following statements must NOT be simplified, they rely on floating point
+                // arithmetic properties (rounding and representable numbers)
+                final double[] npHigh = new double[polynomials.length];
+                final double[] npLow  = new double[polynomials.length];
+                for (final SeriesTerm term : joinedTerms) {
+                    final double[] termValue = term.value(elements);
+                    for (int i = 0; i < termValue.length; ++i) {
+                        final double v       = termValue[i];
+                        final double sum     = npHigh[i] + v;
+                        final double sPrime  = sum - v;
+                        final double tPrime  = sum - sPrime;
+                        final double deltaS  = npHigh[i]  - sPrime;
+                        final double deltaT  = v - tPrime;
+                        npLow[i]  += deltaS   + deltaT;
+                        npHigh[i]  = sum;
+                    }
+                }
+
+                // add residual and polynomial part
+                for (int i = 0; i < npHigh.length; ++i) {
+                    npHigh[i] += npLow[i] + polynomials[i].value(elements.getTC());
+                }
+                return npHigh;
+
+            }
+
+        };
 
     }
 

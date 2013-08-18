@@ -21,9 +21,6 @@ package org.orekit.data;
  */
 class GeneralTerm extends SeriesTerm {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 7720307510510704383L;
-
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
 
@@ -67,8 +64,6 @@ class GeneralTerm extends SeriesTerm {
     private final int cPa;
 
     /** Build a general term for nutation series.
-     * @param sinCoeff coefficient for the sine of the argument
-     * @param cosCoeff coefficient for the cosine of the argument
      * @param cL coefficient for mean anomaly of the Moon
      * @param cLPrime coefficient for mean anomaly of the Sun
      * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
@@ -84,11 +79,9 @@ class GeneralTerm extends SeriesTerm {
      * @param cNe coefficient for mean Neptune longitude
      * @param cPa coefficient for general accumulated precession in longitude
      */
-    public GeneralTerm(final double sinCoeff, final double cosCoeff,
-                       final int cL, final int cLPrime, final int cF, final int cD, final int cOmega,
+    public GeneralTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega,
                        final int cMe, final int cVe, final int cE, final int cMa, final int cJu,
                        final int cSa, final int cUr, final int cNe, final int cPa) {
-        super(sinCoeff, cosCoeff);
         this.cL      = cL;
         this.cLPrime = cLPrime;
         this.cF      = cF;
