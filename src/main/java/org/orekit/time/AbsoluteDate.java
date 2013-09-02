@@ -136,9 +136,14 @@ public class AbsoluteDate
     public static final AbsoluteDate J2000_EPOCH =
         new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
 
-    /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate (which is considered equal to TAI earlier than 1972). */
+    /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
+     * <p>
+     * Between 1968-02-01 and 1972-01-01, UTC-TAI = 4.213 170 0s + (MJD - 39 126) x 0.002 592s.
+     * As on 1970-01-01 MJD = 40587, UTC-TAI = 8.000082s
+     * </p>
+     */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
+        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeScalesFactory.getTAI()).shiftedBy(8.000082);
 
     /** Dummy date at infinity in the past direction. */
     public static final AbsoluteDate PAST_INFINITY = JAVA_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);

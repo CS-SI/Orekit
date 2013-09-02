@@ -59,7 +59,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
-                     AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getTAI()));
+                     AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getUTC()));
     }
 
     @Test
@@ -568,7 +568,26 @@ public class AbsoluteDateTest {
         Assert.assertEquals(expectedMean, mean, meanTolerance);
     }
 
-   @Before
+    @Test
+    public void testIssue142() throws OrekitException {
+
+        final AbsoluteDate epoch = AbsoluteDate.JAVA_EPOCH;
+        final TimeScale utc = TimeScalesFactory.getUTC();
+
+        Assert.assertEquals("1970-01-01T00:00:00.000", epoch.toString(utc));
+        Assert.assertEquals(0.0, epoch.durationFrom(new AbsoluteDate(1970, 1, 1, utc)), 1.0e-15);
+        Assert.assertEquals(8.000082,
+                            epoch.durationFrom(new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeScalesFactory.getTAI())),
+                            1.0e-15);
+
+        //Milliseconds - April 1, 2006, in UTC
+        long msOffset = 1143849600000l;
+        final AbsoluteDate ad = new AbsoluteDate(epoch, msOffset/1000, TimeScalesFactory.getUTC());
+        Assert.assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
+
+    }
+
+    @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();
