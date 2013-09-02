@@ -35,7 +35,18 @@ import org.orekit.utils.PVCoordinatesProvider;
 
 
 /** Topocentric frame.
- * <p>Frame associated to a position at the surface of a body shape.</p>
+ * <p>Frame associated to a position near the surface of a body shape.</p>
+ * <p>
+ * The origin of the frame is at the defining {@link GeodeticPoint geodetic point}
+ * location, and the right-handed canonical trihedra is:
+ * </p>
+ * <ul>
+ *   <li>X axis in the local horizontal plane (normal to zenith direction) and
+ *   following the local parallel towards East</li>
+ *   <li>Y axis in the horizontal plane (normal to zenith direction) and
+ *   following the local meridian towards North</li>
+ *   <li>Z axis towards Zenith direction</li>
+ * </ul>
  * @author V&eacute;ronique Pommier-Maurussane
  */
 public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
@@ -158,7 +169,7 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
         final Vector3D extPointTopo = t.transformPosition(extPoint);
 
         // Elevation angle is PI/2 - angle between zenith and given point direction
-        return FastMath.asin(extPointTopo.normalize().getZ());
+        return extPointTopo.getDelta();
     }
 
     /** Get the azimuth of a point with regards to the topocentric frame center point.
@@ -286,7 +297,13 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
     public GeodeticPoint pointAtDistance(final double azimuth, final double elevation,
                                          final double distance)
         throws OrekitException {
-        final Vector3D  observed = new Vector3D(distance, new Vector3D(azimuth, elevation));
+        final double cosAz = FastMath.cos(azimuth);
+        final double sinAz = FastMath.sin(azimuth);
+        final double cosEl = FastMath.cos(elevation);
+        final double sinEl = FastMath.sin(elevation);
+        final Vector3D  observed = new Vector3D(distance * cosEl * sinAz,
+                                                distance * cosEl * cosAz,
+                                                distance * sinEl);
         return parentShape.transform(observed, this, AbsoluteDate.J2000_EPOCH);
     }
 

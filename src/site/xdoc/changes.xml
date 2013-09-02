@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed azimuth parameter in the TopocentricFrame.pointAtDistance method.
+        Fixes issue #145.
+      </action>
       <action dev="luc" type="fix"  due-to="Matt Edwards">
         Fixed location of JAVA_EPOCH. As we now take the linear models between UTC and TAI
         that were used between 1961 and 1972, we have to consider the offset that was in

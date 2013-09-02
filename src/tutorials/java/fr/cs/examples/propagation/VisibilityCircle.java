@@ -55,7 +55,7 @@ public class VisibilityCircle {
             Autoconfiguration.configureOrekit();
 
             // input/out
-            File input  = new File(TrackCorridor.class.getResource("/visibility-circle.in").toURI().getPath());
+            File input  = new File(VisibilityCircle.class.getResource("/visibility-circle.in").toURI().getPath());
             File output = new File(input.getParentFile(), "visibility-circle.csv");
 
             new VisibilityCircle().run(input, output, ",");
