@@ -44,7 +44,7 @@ public class HelmertTransformationTest {
                                                         0.3,  0.0,  0.0, 0.000, 0.000, 0.000,
                                                        pos2005, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2005.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2008 = itrf2005.getTransformTo(itrf2008, date).transformPosition(pos2005);
@@ -53,7 +53,7 @@ public class HelmertTransformationTest {
                                                0.3,  0.0,  0.0, 0.000, 0.000, 0.000,
                                               pos2005, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos2005.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 2.0e-13 * pos2005.getNorm());
 
     }
 
@@ -98,7 +98,7 @@ public class HelmertTransformationTest {
                                                         0.0, -0.6,  -1.4, 0.000, 0.000, 0.002,
                                                        pos2000, 0.0);
         Vector3D error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos97.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 2.0e-11 * pos97.getNorm());
 
         date = date.shiftedBy(Constants.JULIAN_YEAR);
         pos2000 = itrf97.getTransformTo(itrf2000, date).transformPosition(pos97);
@@ -107,7 +107,7 @@ public class HelmertTransformationTest {
                                                0.0, -0.6,  -1.4, 0.000, 0.000, 0.002,
                                                pos2000, 1.0);
         error         = generalOffset.subtract(linearOffset);
-        Assert.assertEquals(0.0, error.getNorm(), FastMath.ulp(pos97.getNorm()));
+        Assert.assertEquals(0.0, error.getNorm(), 2.0e-11 * pos97.getNorm());
 
     }
 
