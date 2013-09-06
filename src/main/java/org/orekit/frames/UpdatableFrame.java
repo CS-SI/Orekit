@@ -139,7 +139,6 @@ public class UpdatableFrame extends Frame {
      * @exception OrekitException if the path between the two control frames does
      * not cross the link between instance and its parent frame or if some
      * intermediate transform fails
-     * @see #setTransform(Transform)
      */
     public void updateTransform(final Frame f1, final Frame f2, final Transform f1Tof2,
                                 final AbsoluteDate date) throws OrekitException {

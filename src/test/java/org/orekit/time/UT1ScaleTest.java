@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class UT1ScaleTest {
 
@@ -107,7 +108,7 @@ public class UT1ScaleTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
-        ut1 = TimeScalesFactory.getUT1();
+        ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010);
     }
 
     @After

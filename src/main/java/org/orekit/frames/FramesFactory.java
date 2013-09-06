@@ -862,7 +862,7 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
-     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions)
+     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions)}
      */
     @Deprecated
     public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions) throws OrekitException {
@@ -885,7 +885,7 @@ public class FramesFactory implements Serializable {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
-     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions, boolean)
+     * @deprecated since 6.1 replaced with {@link #getTIRF(IERSConventions, boolean)}
      */
     @Deprecated
     public static FactoryManagedFrame getTIRF2000(final IERSConventions conventions,

@@ -176,7 +176,7 @@ public class TimeScalesFactory implements Serializable {
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #getUTC()
-     * @see FramesFactory#getEOPHistory()
+     * @see FramesFactory#getEOPHistory(IERSConventions)
      * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions)}
      */
     public static UT1Scale getUT1() throws OrekitException {
