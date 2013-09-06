@@ -23,7 +23,6 @@ import org.orekit.time.AbsoluteDate;
 /** Elements of the bodies having an effect on nutation.
  * <p>This class is a simple placeholder,
  * it does not provide any processing method.</p>
- * @see NutationFunction
  * @author Luc Maisonobe
  */
 public final class BodiesElements extends  DelaunayArguments implements Serializable {

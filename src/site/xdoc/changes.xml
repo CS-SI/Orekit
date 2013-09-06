@@ -21,9 +21,12 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Steven Ports">
+        Added support for parsing CCSDS ODM files (OPM, OMM and OEM).
+      </action>
       <action dev="luc" type="update">
         Flattened ITRF frames tree so all supported ITRF realizations (2005, 2000, 97, 93) share the same
-        parent ITRF2008. Previously, the tree was 2008 <- 2005 <- 2000 <- {93,97} and the reference dates
+        parent ITRF2008. Previously, the tree was 2008 &lt;- 2005 &lt;- 2000 &lt;- {93,97} and the reference dates
         for Helmert transforms were all different. We now use the parameters provided at epoch 2000.0 and
         with respect to ITRF2008 at http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt.
       </action>
