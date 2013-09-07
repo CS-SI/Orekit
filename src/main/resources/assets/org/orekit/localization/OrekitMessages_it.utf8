@@ -271,6 +271,9 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lunghezza non valida per il campo del tem
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia mancante nella data CCSDS
 
+# unexpected keyword in CCSDS ODM line number {0}: {1}
+CCSDS_UNEXPECTED_KEYWORD = <MISSING TRANSLATION>
+
 # the central body gravitational coefficient cannot be retrieved from the OPM
 CCSDS_UNKNOWN_GM = <MISSING TRANSLATION>
 
@@ -280,14 +283,11 @@ CCSDS_UNKNOWN_SPACECRAFT_MASS = <MISSING TRANSLATION>
 # no IERS conventions have been set before parsing
 CCSDS_UNKNOWN_CONVENTIONS = <MISSING TRANSLATION>
 
-# not a valid ODMBlock for this ODM File
-CCSDS_INVALID_ODM_BLOCK = <MISSING TRANSLATION>
-
 # frame {0} is not valid in this ODM file context
 CCSDS_INVALID_FRAME = <MISSING TRANSLATION>
 
-# the time scales of the ephemeris blocks are not identical
-CCSDS_OEM_TIMESYSTEM_NOT_IDENTICAL = <MISSING TRANSLATION>
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = il nome "{0}" è già utilizzato per uno stato aggiuntivo

@@ -23,14 +23,13 @@ import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.RealMatrix;
-import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.OrbitFile;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
 
 /** This class stocks all the information of the OEM File parsed by OEMParser. It
  * contains the header and a list of Ephemerides Blocks each containing
@@ -39,14 +38,10 @@ import org.orekit.time.TimeScale;
  * @author sports
  * @since 6.1
  */
-public class OEMFile
-    extends ODMFile {
+public class OEMFile extends ODMFile {
 
     /** List of ephemeris blocks. */
     private List<EphemeridesBlock> ephemeridesBlocks;
-
-    /** Time System of the OEMFile (should be common to every ephemeris block). */
-    private TimeSystem timeSystem;
 
     /** OEMFile constructor. */
     public OEMFile() {
@@ -65,49 +60,33 @@ public class OEMFile
         return Collections.unmodifiableList(ephemeridesBlocks);
     }
 
-    @Override
-    public TimeSystem getTimeSystem() {
-        return timeSystem;
-    }
-
-    /** Set the OEMFile time system after verifying that, according to the CCSDS standard,
-     *  every OEMBlock has the same time system.
+    /** Check that, according to the CCSDS standard, every OEMBlock has the same time system.
      *  @exception OrekitException if some blocks do not have the same time system
      */
-    void setTimeSystem() throws OrekitException {
-        boolean sameTimeSystem = true;
-        for (int i = 1; i < ephemeridesBlocks.size(); i++) {
-            if (getEphemeridesBlocks().get(i).getTimeSystem()
-                .equals(getEphemeridesBlocks().get(i - 1).getTimeSystem()) == false) {
-                sameTimeSystem = false;
-                break;
+    void checkTimeSystems() throws OrekitException {
+        final OrbitFile.TimeSystem timeSystem = getEphemeridesBlocks().get(0).getMetaData().getTimeSystem();
+        for (final EphemeridesBlock block : ephemeridesBlocks) {
+            if (!timeSystem.equals(block.getMetaData().getTimeSystem())) {
+                throw new OrekitException(OrekitMessages.CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS,
+                                          timeSystem, block.getMetaData().getTimeSystem());
             }
         }
-        if (sameTimeSystem) {
-            this.timeSystem = getEphemeridesBlocks().get(0).getTimeSystem();
-        } else {
-            throw new OrekitException(OrekitMessages.CCSDS_OEM_TIMESYSTEM_NOT_IDENTICAL);
-        }
     }
 
+    /** {@inheritDoc}
+     * <p>
+     * We return here only the coordinate systems of the first ephemerides block.
+     * </p>
+     */
     @Override
-    public List<String> getComment(final ODMBlock odmBlock)
-        throws OrekitException {
-        if (odmBlock.equals(ODMBlock.HEADER)) {
-            return getHeaderComment();
-        } else {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_ODM_BLOCK);
-        }
+    public String getCoordinateSystem() {
+        return ephemeridesBlocks.get(0).getMetaData().getFrame().toString();
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void setComment(final ODMBlock odmBlock, final List<String> comment)
-        throws OrekitException {
-        if (odmBlock.equals(ODMBlock.HEADER)) {
-            setHeaderComment(comment);
-        } else {
-            throw new OrekitException(OrekitMessages.CCSDS_INVALID_ODM_BLOCK);
-        }
+    public OrbitFile.TimeSystem getTimeSystem() {
+        return ephemeridesBlocks.get(0).getMetaData().getTimeSystem();
     }
 
     /** The Ephemerides Blocks class contain metadata, the list of ephemerides data
@@ -118,32 +97,8 @@ public class OEMFile
      */
     public class EphemeridesBlock {
 
-        /** Spacecraft name for which the orbit state is provided. */
-        private String objectName;
-
-        /**Object identifier of the object for which the orbit state is
-         * provided. */
-        private String objectID;
-
-        /** Origin of reference frame. */
-        private String centerName;
-
-        /** Celestial body corresponding to the centerName. */
-        private CelestialBody centerBody;
-
-        /** Reference frame in which data are given: used for ephemerides data. */
-        private Frame refFrame;
-
-        /** Epoch of reference frame, if not intrinsic to the definition of the
-         * reference frame. */
-        private AbsoluteDate frameEpoch;
-
-        /** Time System: used for metadata, ephemerides and
-         * covariance data. */
-        private TimeSystem timeSystem;
-
-        /** Time scale corresponding to the timeSystem. */
-        private TimeScale timeScale;
+        /** Meta-data for the block. */
+        private ODMMetaData metaData;
 
         /** Start of total time span covered by ephemerides data and covariance
          * data. */
@@ -176,24 +131,15 @@ public class OEMFile
         /** Tests whether the reference frame has an epoch associated to it. */
         private boolean hasRefFrameEpoch;
 
-        /** Tests whether the body corresponding to the centerName attribute can
-         * be created through the {@link org.orekit.bodies.CelestialBodyFactory} in order to
-         * obtain the corresponding gravitational coefficient. */
-        private boolean hasCreatableBody;
-
-        /** Metadata comments. The list contains a string for each line of
-         * comment. */
-        private List<String> metadataComment;
-
         /** Ephemerides Data Lines comments. The list contains a string for each
          * line of comment. */
         private List<String> ephemeridesDataLinesComment;
 
         /** EphemeridesBlock constructor. */
         public EphemeridesBlock() {
+            metaData = new ODMMetaData(OEMFile.this);
             ephemeridesDataLines = new ArrayList<EphemeridesDataLine>();
             covarianceMatrices = new ArrayList<CovarianceMatrix>();
-            hasCreatableBody = false;
         }
 
         /** Get the list of Ephemerides data lines.
@@ -210,128 +156,11 @@ public class OEMFile
             return covarianceMatrices;
         }
 
-        /** Get the spacecraft name for which the orbit state is provided.
-         * @return the spacecraft name
+        /** Get the meta-data for the block.
+         * @return meta-data for the block
          */
-        public String getObjectName() {
-            return objectName;
-        }
-
-        /** Set the spacecraft name for which the orbit state is provided.
-         * @param objectName the spacecraft name to be set
-         */
-        void setObjectName(final String objectName) {
-            this.objectName = objectName;
-        }
-
-        /** Get the spacecraft ID for which the orbit state is provided.
-         * @return the spacecraft ID
-         */
-        public String getObjectID() {
-            return objectID;
-        }
-
-        /** Set the spacecraft ID for which the orbit state is provided.
-         * @param objectID the spacecraft ID to be set
-         */
-        void setObjectID(final String objectID) {
-            this.objectID = objectID;
-        }
-
-        /** Get the origin of reference frame.
-         * @return the origin of reference frame.
-         */
-        public String getCenterName() {
-            return centerName;
-        }
-
-        /** Set the origin of reference frame.
-         * @param centerName the origin of reference frame.
-         */
-        void setCenterName(final String centerName) {
-            this.centerName = centerName;
-        }
-
-        /** Get the {@link CelestialBody} corresponding to the center name.
-         * @return the center body
-         */
-        public CelestialBody getCenterBody() {
-            return centerBody;
-        }
-
-        /** Set the {@link CelestialBody} corresponding to the center name.
-         * @param centerBody the {@link CelestialBody} to be set
-         */
-        void setCenterBody(final CelestialBody centerBody) {
-            this.centerBody = centerBody;
-        }
-
-        /** Get the reference frame used for ephemerides data.
-         * @return the reference frame
-         */
-        public Frame getFrame() {
-            return refFrame;
-        }
-
-        /** Set the reference frame used for ephemerides data.
-         * @param refFrame the reference frame to be set
-         */
-        void setRefFrame(final Frame refFrame) {
-            this.refFrame = refFrame;
-        }
-
-        /** Get epoch of reference frame, if not intrinsic to the definition of
-         * the reference frame.
-         * @return epoch of reference frame
-         */
-        public AbsoluteDate getFrameEpoch() {
-            return frameEpoch;
-        }
-
-        /** Set epoch of reference frame, if not intrinsic to the definition of
-         * the reference frame.
-         * @param frameEpoch the epoch of reference frame to be set
-         */
-        void setFrameEpoch(final AbsoluteDate frameEpoch) {
-            this.frameEpoch = frameEpoch;
-        }
-
-        /** Set epoch of reference frame for MET and MRT time systems, if not
-         * intrinsic to the definition of the reference frame.
-         * @param offset the offset between the epoch and the initial date
-         */
-        void setFrameEpoch(final double offset) {
-            this.frameEpoch = getInitialDate().shiftedBy(offset);
-        }
-
-        /** Get the Time System that is used for metadata,
-         * ephemeris and covariance data.
-         * @return the time system
-         */
-        public TimeSystem getTimeSystem() {
-            return timeSystem;
-        }
-
-        /** Set the Time System that is used for metadata,
-         * ephemerides and covariance data.
-         * @param timeSystem the time system to be set
-         */
-        void setTimeSystem(final TimeSystem timeSystem) {
-            this.timeSystem = timeSystem;
-        }
-
-        /** Get time scale corresponding to the timeSystem.
-         * @return the time scale
-         */
-        public TimeScale getTimeScale() {
-            return timeScale;
-        }
-
-        /** Set time scale corresponding to the timeSystem.
-         * @param timeScale the time scale to be set
-         */
-        void setTimeScale(final TimeScale timeScale) {
-            this.timeScale = timeScale;
+        public ODMMetaData getMetaData() {
+            return metaData;
         }
 
         /** Get start of total time span covered by ephemerides data and
@@ -350,14 +179,6 @@ public class OEMFile
             this.startTime = startTime;
         }
 
-        /** Set start of total time span covered by ephemerides data and
-         * covariance data, for MET and MRT Time systems.
-         * @param offset the offset between start time and initial date.
-         */
-        void setStartTime(final double offset) {
-            this.startTime = getInitialDate().shiftedBy(offset);
-        }
-
         /** Get end of total time span covered by ephemerides data and covariance
          * data.
          * @return the stop time
@@ -372,14 +193,6 @@ public class OEMFile
          */
         void setStopTime(final AbsoluteDate stopTime) {
             this.stopTime = stopTime;
-        }
-
-        /** Set end of total time span covered by ephemerides data and covariance
-         * data, for MET and MRT Time systems.
-         * @param offset the offset between stop time and initial date.
-         */
-        void setStopTime(final double offset) {
-            this.stopTime = getInitialDate().shiftedBy(offset);
         }
 
         /** Get start of useable time span covered by ephemerides data, it may be
@@ -398,15 +211,6 @@ public class OEMFile
             this.useableStartTime = useableStartTime;
         }
 
-        /** Set start of useable time span covered by ephemerides data, it may be
-         * necessary to allow for proper interpolation, for MET and MRT Time
-         * systems.
-         * @param offset the offset between useable start time and initial date.
-         */
-        void setUseableStartTime(final double offset) {
-            this.useableStartTime = getInitialDate().shiftedBy(offset);
-        }
-
         /** Get end of useable time span covered by ephemerides data, it may be
          * necessary to allow for proper interpolation.
          * @return the useable stop time
@@ -421,15 +225,6 @@ public class OEMFile
          */
         void setUseableStopTime(final AbsoluteDate useableStopTime) {
             this.useableStopTime = useableStopTime;
-        }
-
-        /** Set end of useable time span covered by ephemerides data, it may be
-         * necessary to allow for proper interpolation, for MET and MRT Time
-         * systems.
-         * @param offset the offset between useable stop time and initial date.
-         */
-        void setUseableStopTime(final double offset) {
-            this.useableStopTime = getInitialDate().shiftedBy(offset);
         }
 
         /** Get the interpolation method to be used.
@@ -473,37 +268,6 @@ public class OEMFile
          */
         void setHasRefFrameEpoch(final boolean hasRefFrameEpoch) {
             this.hasRefFrameEpoch = hasRefFrameEpoch;
-        }
-
-        /** Get boolean testing whether the body corresponding to the centerName
-         * attribute can be created through the {@link org.orekit.bodies.CelestialBodyFactory}.
-         * @return true if {@link CelestialBody} can be created from centerName
-         *         false otherwise
-         */
-        public boolean getHasCreatableBody() {
-            return hasCreatableBody;
-        }
-
-        /** Set boolean testing whether the body corresponding to the centerName
-         * attribute can be created through the {@link org.orekit.bodies.CelestialBodyFactory}.
-         * @param hasCreatableBody the boolean to be set.
-         */
-        void setHasCreatableBody(final boolean hasCreatableBody) {
-            this.hasCreatableBody = hasCreatableBody;
-        }
-
-        /** Get the metadata comment.
-         * @return the comment
-         */
-        public List<String> getMetadataComment() {
-            return metadataComment;
-        }
-
-        /** Set the metadata comment.
-         * @param metadataComment the comment to be set
-         */
-        void setMetadataComment(final List<String> metadataComment) {
-            this.metadataComment = new ArrayList<String>(metadataComment);
         }
 
         /** Get the ephemerides data lines comment.

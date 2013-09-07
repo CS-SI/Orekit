@@ -28,20 +28,16 @@ import java.util.Scanner;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.ccsds.OEMFile;
-import org.orekit.files.general.OrbitFile;
 import org.orekit.files.general.OrbitFileParser;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.DateTimeComponents;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
@@ -50,63 +46,77 @@ import org.orekit.utils.PVCoordinates;
  * @author sports
  * @since 6.1
  */
-public class OEMParser
-    implements OrbitFileParser {
+public class OEMParser extends ODMParser implements OrbitFileParser {
 
     /** String representing one or more blanks. */
     private static final String BLANKS = " +";
 
-    /** Initial Date for MET or MRT time systems. Has to be configured by the user prior parsing.*/
-    private AbsoluteDate initialDate;
-
-    /** Gravitational coefficient. Has to be configured by the user prior parsing.*/
-    private double mu;
-
-    /** IERS Conventions to use. */
-    private IERSConventions conventions;
-
     /** Simple constructor.
+     * <p>
+     * This class is immutable, and hence thread safe. When parts
+     * must be changed, such as reference date for Mission Elapsed Time or
+     * Mission Relative Time time systems, or the gravitational coefficient or
+     * the IERS conventions, the various {@code withXxx} methods must be called,
+     * which create a new immutable instance with the new parameters. This
+     * is a combination of the <a href="">builder design pattern</a> and
+     * a <a href="http://en.wikipedia.org/wiki/Fluent_interface">fluent
+     * interface</a>.
+     * </p>
      * <p>
      * The initial date for Mission Elapsed Time and Mission Relative Time time systems is not set here.
      * If such time systems are used, it must be initialized before parsing by calling {@link
-     * #setInitialDate(AbsoluteDate)}.
+     * #withMissionReferenceDate(AbsoluteDate)}.
      * </p>
      * <p>
      * The gravitational coefficient is not set here. If it is needed in order
      * to parse Cartesian orbits where the value is not set in the CCSDS file, it must
-     * be initialized before parsing by calling {@link #setMu(double)}.
+     * be initialized before parsing by calling {@link #withMu(double)}.
      * </p>
      * <p>
      * The IERS conventions to use is not set here. If it is needed in order to
      * parse some reference frames or UT1 time scale, it must be initialized before
-     * parsing by calling {@link #setConventions(IERSConventions)}.
+     * parsing by calling {@link #withConventions(IERSConventions)}.
      * </p>
      */
     public OEMParser() {
-        initialDate = AbsoluteDate.FUTURE_INFINITY;
-        mu          = Double.NaN;
-        conventions = null;
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null);
     }
 
-    /** Set gravitational coefficient.
-     * @param mu gravitational coefficient to be set
+    /** Complete constructor.
+     * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
+     * @param mu gravitational coefficient
+     * @param conventions IERS Conventions
      */
-    public void setMu(final double mu) {
-        this.mu = mu;
+    private OEMParser(final AbsoluteDate missionReferenceDate, final double mu,
+                      final IERSConventions conventions) {
+        super(missionReferenceDate, mu, conventions);
     }
 
     /** Set initial date.
-     * @param initialDate date to be set
+     * @param newMissionReferenceDate mission reference date to use while parsing
+     * @return a new instance, with mission reference date replaced
+     * @see #getMissionReferenceDate()
      */
-    public void setInitialDate(final AbsoluteDate initialDate) {
-        this.initialDate = initialDate;
+    public OEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
+        return new OEMParser(newMissionReferenceDate, getMu(), getConventions());
+    }
+
+    /** Set gravitational coefficient.
+     * @param newMu gravitational coefficient to use while parsing
+     * @return a new instance, with gravitational coefficient date replaced
+     * @see #getMu()
+     */
+    public OEMParser withMu(final double newMu) {
+        return new OEMParser(getMissionReferenceDate(), newMu, getConventions());
     }
 
     /** Set IERS conventions.
-     * @param conventions IERS conventions to be set
+     * @param newConventions IERS conventions to use while parsing
+     * @return a new instance, with IERS conventions replaced
+     * @see #getConventions()
      */
-    public void setConventions(final IERSConventions conventions) {
-        this.conventions = conventions;
+    public OEMParser withConventions(final IERSConventions newConventions) {
+        return new OEMParser(getMissionReferenceDate(), getMu(), newConventions);
     }
 
     /** {@inheritDoc} */
@@ -154,269 +164,92 @@ public class OEMParser
     private OEMFile parseInternal(final InputStream stream)
         throws OrekitException, IOException {
 
-        final BufferedReader reader = new BufferedReader(
-                                                         new InputStreamReader(
-                                                                               stream,
-                                                                               "UTF-8"));
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
         // initialize internal data structures
         final ParseInfo pi = new ParseInfo();
         final OEMFile file = pi.file;
 
         // set the additional data that has been configured prior the parsing by the user.
-        if (!initialDate.equals(AbsoluteDate.FUTURE_INFINITY)) {
-            pi.file.setInitialDate(initialDate);
-        }
-
-        if (!Double.isNaN(mu)) {
-            pi.file.setMuSet(mu);
-        }
-
-        if (conventions != null) {
-            pi.file.setConventions(conventions);
-        }
+        pi.file.setMissionReferenceDate(getMissionReferenceDate());
+        pi.file.setMuSet(getMu());
+        pi.file.setConventions(getConventions());
 
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            if (line.trim().length() == 0)
+            ++pi.lineNumber;
+            if (line.trim().length() == 0) {
                 continue;
+            }
             final Scanner sc = new Scanner(line);
             pi.keyword = Keyword.valueOf(sc.next());
             if (pi.keyword != Keyword.COMMENT &&
-                pi.keyword != Keyword.META_START &&
-                pi.keyword != Keyword.META_STOP &&
-                pi.keyword != Keyword.COVARIANCE_START &&
-                pi.keyword != Keyword.COVARIANCE_STOP) {
+                pi.keyword != Keyword.META_START && pi.keyword != Keyword.META_STOP &&
+                pi.keyword != Keyword.COVARIANCE_START && pi.keyword != Keyword.COVARIANCE_STOP) {
                 pi.keyValue = line.split(BLANKS, 3)[2];
             } else if (pi.keyword == Keyword.COMMENT) {
                 pi.keyValue = sc.next();
             }
 
             switch (pi.keyword) {
-            case CCSDS_OEM_VERS: {
+            case CCSDS_OEM_VERS:
                 file.setFormatVersion(pi.keyValue);
-            }
                 break;
 
-            case COMMENT: {
-                pi.commentTmp.add(line.split(BLANKS, 2)[1]);
-            }
-                break;
-
-            case CREATION_DATE: {
-                checkSetComment(pi, file, ODMBlock.HEADER);
-                file.setCreationDate(new AbsoluteDate(pi.keyValue,
-                                                      TimeScalesFactory
-                                                          .getUTC()));
-            }
-                break;
-
-            case ORIGINATOR: {
-                file.setOriginator(pi.keyValue);
-            }
-                break;
-
-            case META_START: {
+            case META_START:
                 file.addEphemeridesBlock();
-                pi.lastEphemeridesBlock = file.getEphemeridesBlocks()
-                    .get(file.getEphemeridesBlocks().size() - 1);
-            }
+                pi.lastEphemeridesBlock = file.getEphemeridesBlocks().get(file.getEphemeridesBlocks().size() - 1);
                 break;
 
-            case OBJECT_NAME: {
-                if (!pi.commentTmp.isEmpty()) {
-                    pi.lastEphemeridesBlock.setMetadataComment(pi.commentTmp);
-                    pi.commentTmp.clear();
-                }
-                pi.lastEphemeridesBlock.setObjectName(pi.keyValue);
-            }
+            case START_TIME:
+                pi.lastEphemeridesBlock.setStartTime(parseDate(pi.keyValue,
+                                                               pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
                 break;
 
-            case OBJECT_ID: {
-                pi.lastEphemeridesBlock.setObjectID(pi.keyValue);
-            }
+            case USEABLE_START_TIME:
+                pi.lastEphemeridesBlock.setUseableStartTime(parseDate(pi.keyValue,
+                                                                      pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
                 break;
 
-            case CENTER_NAME: {
-                pi.lastEphemeridesBlock.setCenterName(pi.keyValue);
-                if (pi.keyValue.matches("SOLAR SYSTEM BARYCENTER") ||
-                    pi.keyValue.matches("SSB")) {
-                    pi.keyValue = "SOLAR_SYSTEM_BARYCENTER";
-                }
-                if (pi.keyValue.matches("EARTH MOON BARYCENTER") ||
-                    pi.keyValue.matches("EARTH-MOON BARYCENTER") ||
-                    pi.keyValue.matches("EARTH BARYCENTER") ||
-                    pi.keyValue.matches("EMB")) {
-                    pi.keyValue = "EARTH_MOON";
-                }
-                for (final CenterName c : CenterName.values()) {
-                    if (c.name().equals(pi.keyValue)) {
-                        pi.lastEphemeridesBlock.setHasCreatableBody(true);
-                        pi.lastEphemeridesBlock.setCenterBody(c.getCelestialBody());
-                        file.setMuCreated(c.getCelestialBody().getGM());
-                    }
-                }
-            }
+            case USEABLE_STOP_TIME:
+                pi.lastEphemeridesBlock.setUseableStopTime(parseDate(pi.keyValue, pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
                 break;
 
-            case REF_FRAME: {
-                pi.lastEphemeridesBlock.setRefFrame(CCSDSFrame.valueOf(pi.keyValue.replaceAll("-", "")).getFrame(conventions));
-            }
+            case STOP_TIME:
+                pi.lastEphemeridesBlock.setStopTime(parseDate(pi.keyValue, pi.lastEphemeridesBlock.getMetaData().getTimeSystem()));
                 break;
 
-            case REF_FRAME_EPOCH: {
-                pi.lastEphemeridesBlock.setHasRefFrameEpoch(true);
-                pi.epoch2 = pi.keyValue;
-            }
-                break;
-
-            case TIME_SYSTEM: {
-                pi.lastEphemeridesBlock.setTimeSystem(OrbitFile.TimeSystem.valueOf(pi.keyValue));
-                switch (pi.lastEphemeridesBlock.getTimeSystem()) {
-                case GMST:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getGMST());
-                    break;
-
-                case GPS:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getGPS());
-                    break;
-                case TAI:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getTAI());
-                    break;
-                case TCB:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getTCB());
-                    break;
-
-                case TDB:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getTDB());
-                    break;
-
-                case TCG:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getTCG());
-                    break;
-
-                case TT:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getTT());
-                    break;
-
-                case UT1:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getUT1(conventions));
-                    break;
-
-                case UTC:
-                    pi.lastEphemeridesBlock.setTimeScale(TimeScalesFactory.getUTC());
-                    break;
-
-                default:
-                    break;
-                }
-                if (pi.lastEphemeridesBlock.getHasRefFrameEpoch()) {
-                    if (pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MET) ||
-                            pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MRT)) {
-                        final DateTimeComponents clock = DateTimeComponents.parseDateTime(pi.epoch2);
-                        final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                            clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                            clock.getTime().getSecondsInDay();
-                        pi.lastEphemeridesBlock.setFrameEpoch(offset);
-                    } else {
-                        pi.lastEphemeridesBlock.setFrameEpoch(new AbsoluteDate(pi.epoch2,
-                                                                               pi.lastEphemeridesBlock.getTimeScale()));
-                    }
-                }
-
-            }
-                break;
-
-            case START_TIME: {
-                if (pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MET) ||
-                        pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MRT)) {
-                    final DateTimeComponents clock = DateTimeComponents.parseDateTime(pi.keyValue);
-                    final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                          clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                          clock.getTime().getSecondsInDay();
-                    pi.lastEphemeridesBlock.setStartTime(offset);
-                } else {
-                    pi.lastEphemeridesBlock.setStartTime(new AbsoluteDate(pi.keyValue,
-                                                                          pi.lastEphemeridesBlock.getTimeScale()));
-                }
-            }
-                break;
-
-            case USEABLE_START_TIME: {
-                if (pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MET) ||
-                        pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MRT)) {
-                    final DateTimeComponents clock = DateTimeComponents.parseDateTime(pi.keyValue);
-                    final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                          clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                          clock.getTime().getSecondsInDay();
-                    pi.lastEphemeridesBlock.setUseableStartTime(offset);
-                } else {
-                    pi.lastEphemeridesBlock.setUseableStartTime(new AbsoluteDate(pi.keyValue,
-                                                                                 pi.lastEphemeridesBlock.getTimeScale()));
-                }
-            }
-                break;
-
-            case USEABLE_STOP_TIME: {
-                if (pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MET) ||
-                        pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MRT)) {
-                    final DateTimeComponents clock = DateTimeComponents.parseDateTime(pi.keyValue);
-                    final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                          clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                          clock.getTime().getSecondsInDay();
-                    pi.lastEphemeridesBlock.setUseableStopTime(offset);
-                } else {
-                    pi.lastEphemeridesBlock.setUseableStopTime(new AbsoluteDate(pi.keyValue,
-                                                                                pi.lastEphemeridesBlock.getTimeScale()));
-                }
-            }
-                break;
-
-            case STOP_TIME: {
-                if (pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MET) ||
-                        pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MRT)) {
-                    final DateTimeComponents clock = DateTimeComponents.parseDateTime(pi.keyValue);
-                    final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                          clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                          clock.getTime().getSecondsInDay();
-                    pi.lastEphemeridesBlock.setStopTime(offset);
-                } else {
-                    pi.lastEphemeridesBlock.setStopTime(new AbsoluteDate(pi.keyValue,
-                                                                         pi.lastEphemeridesBlock.getTimeScale()));
-                }
-            }
-                break;
-
-            case INTERPOLATION: {
+            case INTERPOLATION:
                 pi.lastEphemeridesBlock.setInterpolationMethod(pi.keyValue);
-            }
                 break;
 
-            case INTERPOLATION_DEGREE: {
-                pi.lastEphemeridesBlock.setInterpolationDegree(Integer
-                    .parseInt(pi.keyValue));
-            }
+            case INTERPOLATION_DEGREE:
+                pi.lastEphemeridesBlock.setInterpolationDegree(Integer .parseInt(pi.keyValue));
                 break;
 
-            case META_STOP: {
+            case META_STOP:
                 file.setMuUsed();
                 parseEphemeridesDataLines(reader, pi);
-                if (!pi.commentTmp.isEmpty()) {
-                    pi.lastEphemeridesBlock
-                        .setEphemeridesDataLinesComment(pi.commentTmp);
-                    pi.commentTmp.clear();
-                }
-            }
+                pi.lastEphemeridesBlock.setEphemeridesDataLinesComment(pi.commentTmp);
+                pi.commentTmp.clear();
                 break;
 
-            case COVARIANCE_START: {
+            case COVARIANCE_START:
                 parseCovarianceDataLines(reader, pi);
-            }
                 break;
 
             default:
-                break;
+                boolean parsed = false;
+                parsed = parsed || parseComment(line, pi.keyword, pi.commentTmp);
+                parsed = parsed || parseHeaderEntry(pi.keyword, pi.keyValue, file, pi.commentTmp);
+                if (pi.lastEphemeridesBlock != null) {
+                    parsed = parsed || parseMetaDataEntry(line, pi.keyword, pi.keyValue,
+                                                          pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
+                }
+                if (!parsed) {
+                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
+                }
             }
         }
-        file.setTimeSystem();
+        file.checkTimeSystems();
         return file;
     }
 
@@ -426,14 +259,16 @@ public class OEMParser
      *
      * @param reader the reader
      * @param pi the parser info
-     * @throws IOException if an error occurs while reading from the stream
+     * @exception IOException if an error occurs while reading from the stream
+     * @exception OrekitException if a date cannot be parsed
      */
     private void parseEphemeridesDataLines(final BufferedReader reader,
                                            final ParseInfo pi)
-        throws IOException {
+        throws OrekitException, IOException {
 
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
+            ++pi.lineNumber;
             if (line.matches("META_START") || line.matches("COVARIANCE_START")) {
                 break;
             }
@@ -445,33 +280,16 @@ public class OEMParser
             if (pi.stringTmp.matches("COMMENT")) {
                 pi.commentTmp.add(line.split(BLANKS, 2)[1]);
             } else {
-                final AbsoluteDate date;
-                if (pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MET) ||
-                    pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MRT)) {
-                    final DateTimeComponents clock = DateTimeComponents.parseDateTime(pi.stringTmp);
-                    final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                          clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                          clock.getTime().getSecondsInDay();
-                    date = initialDate.shiftedBy(offset);
-                } else {
-                    date = new AbsoluteDate(pi.stringTmp,
-                                            pi.lastEphemeridesBlock.getTimeScale());
-                }
-
-                final Vector3D position = new Vector3D(
-                                                 Double.parseDouble(sc.next()) * 1000,
-                                                 Double.parseDouble(sc.next()) * 1000,
-                                                 Double.parseDouble(sc.next()) * 1000);
-                final Vector3D velocity = new Vector3D(
-                                                 Double.parseDouble(sc.next()) * 1000,
-                                                 Double.parseDouble(sc.next()) * 1000,
-                                                 Double.parseDouble(sc.next()) * 1000);
-                final CartesianOrbit orbit = new CartesianOrbit(
-                                                          new PVCoordinates(position,
-                                                                            velocity),
-                                                          pi.lastEphemeridesBlock.getFrame(),
-                                                          date,
-                                                          pi.file.getMuUsed());
+                final AbsoluteDate date = parseDate(pi.stringTmp, pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
+                final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                                       Double.parseDouble(sc.next()) * 1000,
+                                                       Double.parseDouble(sc.next()) * 1000);
+                final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                                       Double.parseDouble(sc.next()) * 1000,
+                                                       Double.parseDouble(sc.next()) * 1000);
+                final CartesianOrbit orbit =
+                        new CartesianOrbit(new PVCoordinates(position, velocity), pi.lastEphemeridesBlock.getMetaData().getFrame(),
+                                           date, pi.file.getMuUsed());
                 Vector3D acceleration = null;
                 if (sc.hasNext()) {
                     acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
@@ -501,6 +319,8 @@ public class OEMParser
         throws IOException, OrekitException  {
         int i = 0;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+
+            ++pi.lineNumber;
             if (line.trim().length() == 0) {
                 continue;
             }
@@ -514,37 +334,25 @@ public class OEMParser
                 sc.next();
                 pi.covRefLofType = null;
                 pi.covRefFrame   = null;
-                pi.lastMatrix    = new Array2DRowRealMatrix(6, 6);
-                if (pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MET) ||
-                    pi.lastEphemeridesBlock.getTimeSystem().equals(OrbitFile.TimeSystem.MRT)) {
-                    final DateTimeComponents clock = DateTimeComponents.parseDateTime(sc.next());
-                    final double offset = clock.getDate().getYear() * Constants.JULIAN_YEAR +
-                                          clock.getDate().getDayOfYear() * Constants.JULIAN_DAY +
-                                          clock.getTime().getSecondsInDay();
-                    pi.epoch = initialDate.shiftedBy(offset);
-                } else {
-                    pi.epoch = new AbsoluteDate(sc.next(),
-                                                pi.lastEphemeridesBlock.getTimeScale());
-                }
+                pi.lastMatrix    = MatrixUtils.createRealMatrix(6, 6);
+                pi.epoch         = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
             } else if (pi.stringTmp.matches("COV_REF_FRAME")) {
                 sc.next();
                 pi.keyValue = sc.next();
-                final CCSDSFrame frame = CCSDSFrame.valueOf(pi.keyValue.replaceAll("-", ""));
+                final CCSDSFrame frame = parseCCSDSFrame(pi.keyValue);
                 if (frame.isLof()) {
                     pi.covRefLofType = frame.getLofType();
                     pi.covRefFrame   = null;
                 } else {
                     pi.covRefLofType = null;
-                    pi.covRefFrame   = frame.getFrame(conventions);
+                    pi.covRefFrame   = frame.getFrame(getConventions());
                 }
             } else {
                 final Scanner sc2 = new Scanner(line);
                 for (int j = 0; j < i + 1; j++) {
-                    pi.lastMatrix.addToEntry(i, j,
-                                             Double.parseDouble(sc2.next()));
+                    pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc2.next()));
                     if (j != i) {
-                        pi.lastMatrix.addToEntry(j, i,
-                                                 pi.lastMatrix.getEntry(i, j));
+                        pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
                     }
                 }
                 if (i == 5) {
@@ -557,28 +365,16 @@ public class OEMParser
         }
     }
 
-    /** This method is called after a potential comment parsing. If there has been a comment parsing,
-     * it sets the comment to the associated ODM block.
-     * @param pi the parsing info
-     * @param file the OEM file to be set
-     * @param block comment's block
-     * @throws OrekitException if the ODM block is DATA_MANEUVER
-     */
-    public void checkSetComment(final ParseInfo pi, final OEMFile file, final ODMBlock block)
-        throws OrekitException {
-        if (!pi.commentTmp.isEmpty()) {
-            file.setComment(block, pi.commentTmp);
-            pi.commentTmp.clear();
-        }
-    }
-
-    /** Private class used to stock OEM parsing info.     *
+    /** Private class used to stock OEM parsing info.
      * @author sports
      */
     private static class ParseInfo {
 
         /** Ephemerides block being parsed. */
         private OEMFile.EphemeridesBlock lastEphemeridesBlock;
+
+        /** Current line number. */
+        private int lineNumber;
 
         /** OEM file being read. */
         private OEMFile file;
@@ -595,9 +391,6 @@ public class OEMParser
         /** Stored epoch. */
         private AbsoluteDate epoch;
 
-        /** Stored epoch. */
-        private String epoch2;
-
         /** Covariance reference type of Local Orbital Frame. */
         private LOFType covRefLofType;
 
@@ -611,6 +404,7 @@ public class OEMParser
 
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
+            lineNumber = 0;
             file = new OEMFile();
             commentTmp = new ArrayList<String>();
         }

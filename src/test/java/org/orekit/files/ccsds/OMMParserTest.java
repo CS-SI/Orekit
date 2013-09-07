@@ -50,13 +50,8 @@ public class OMMParserTest {
         // data.
         final String ex = "/ccsds/OMMExample.txt";
 
-        final OMMParser parser = new OMMParser();
-        
-        parser.setInitialDate(new AbsoluteDate());
-        parser.setMu(398600e9);
-        parser.setLaunchNumber(1);
-        parser.setLaunchPiece("a");
-        parser.setLaunchYear(1998);
+        final OMMParser parser =
+                new OMMParser().withMu(398600e9).withTLESettings(1998, 1, "a");
         
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -72,17 +67,15 @@ public class OMMParserTest {
         
         // Check Metadata Block;
         
-        Assert.assertEquals(file.getObjectName(), "GOES 9");
-        Assert.assertEquals(file.getObjectID(), "1995-025A");
-        Assert.assertEquals(file.getCenterName(),
-                            "EARTH");
-        Assert.assertTrue(file.getHasCreatableBody());
-        Assert.assertEquals(file.getCenterBody(),
+        Assert.assertEquals("GOES 9", file.getMetaData().getObjectName());
+        Assert.assertEquals("1995-025A", file.getMetaData().getObjectID());
+        Assert.assertEquals("EARTH", file.getMetaData().getCenterName());
+        Assert.assertTrue(file.getMetaData().getHasCreatableBody());
+        Assert.assertEquals(file.getMetaData().getCenterBody(),
                             CelestialBodyFactory.getEarth());
-        Assert.assertEquals(file.getFrame(), FramesFactory.getTEME());
+        Assert.assertEquals(file.getMetaData().getFrame(), FramesFactory.getTEME());
         Assert.assertEquals(file.getTimeSystem(), TimeSystem.UTC);
-        Assert.assertEquals(file.getTimeScale(), TimeScalesFactory.getUTC());  
-        Assert.assertEquals("SGP/SGP4", file.getMeanElementTheory());
+        Assert.assertEquals("SGP/SGP4", file.getMetaData().getMeanElementTheory());
         
         // Check Mean Keplerian elements data block;
         
@@ -141,16 +134,13 @@ public class OMMParserTest {
         // simple test for OMM file, contains p/v entries and other mandatory
         // data.
         final String name = getClass().getResource("/ccsds/OMMExample2.txt").toURI().getPath();
-        final OMMParser parser = new OMMParser();
-        parser.setConventions(IERSConventions.IERS_1996);
-        
-        parser.setInitialDate(new AbsoluteDate());
-        parser.setLaunchNumber(1);
-        parser.setLaunchPiece("a");
-        parser.setLaunchYear(1998);
+        final OMMParser parser = new OMMParser().
+                                 withMissionReferenceDate(new AbsoluteDate()).
+                                 withConventions(IERSConventions.IERS_1996).
+                                 withTLESettings(1998, 1, "a");
 
         final OMMFile file = parser.parse(name);
-        Assert.assertEquals(file.getInitialDate().shiftedBy(210840), file.getFrameEpoch());
+        Assert.assertEquals(file.getMissionReferenceDate().shiftedBy(210840), file.getMetaData().getFrameEpoch());
         Assert.assertEquals(6800e3, file.getA(), 1e-10);
         Assert.assertEquals(300, file.getMass(), 1e-10);
         Assert.assertEquals(5, file.getSolarRadArea(), 1e-10);
@@ -161,26 +151,51 @@ public class OMMParserTest {
         userDefinedParameters.put("USER_DEFINED_EARTH_MODEL", "WGS-84");
         Assert.assertEquals(userDefinedParameters,
                             file.getUserDefinedParameters());
-        Assert.assertTrue(file.getHasCovarianceMatrix());
+        Assert.assertTrue(file.hasCovarianceMatrix());
         ArrayList<String> headerComment = new ArrayList<String>();
         headerComment.add("this is a comment");
         headerComment.add("here is another one");
-        Assert.assertEquals(headerComment, file.getComment(ODMBlock.HEADER));
+        Assert.assertEquals(headerComment, file.getHeaderComment());
         ArrayList<String> metadataComment = new ArrayList<String>();
         metadataComment.add("this comment doesn't say much");
-        Assert.assertEquals(metadataComment, file.getComment(ODMBlock.METADATA));
-        ArrayList<String> dataMeanKeplerianElementsComment = new ArrayList<String>();
-        dataMeanKeplerianElementsComment.add("the following data is what we're looking for");
-        Assert.assertEquals(dataMeanKeplerianElementsComment, file.getComment(ODMBlock.DATA_MEAN_KEPLERIAN_ELEMENTS));
+        Assert.assertEquals(metadataComment, file.getMetaData().getComment());
+        ArrayList<String> epochComment = new ArrayList<String>();
+        epochComment.add("the following data is what we're looking for");
+        Assert.assertEquals(epochComment, file.getEpochComment());
         ArrayList<String> dataSpacecraftComment = new ArrayList<String>();
         dataSpacecraftComment.add("spacecraft data");
-        Assert.assertEquals(dataSpacecraftComment, file.getComment(ODMBlock.DATA_SPACECRAFT));
+        Assert.assertEquals(dataSpacecraftComment, file.getSpacecraftComment());
         ArrayList<String> dataCovarianceComment = new ArrayList<String>();
         dataCovarianceComment.add("Covariance matrix");
-        Assert.assertEquals(dataCovarianceComment, file.getComment(ODMBlock.DATA_COVARIANCE));
+        Assert.assertEquals(dataCovarianceComment, file.getCovarianceComment());
         file.generateSpacecraftState();
         file.generateKeplerianOrbit();
 
         
-    }   
+    }
+
+    @Test
+    public void testWrongODMType() {
+        try {
+            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/OEMExample.txt"));
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
+            Assert.assertEquals(1, oe.getParts()[0]);
+            Assert.assertEquals("CCSDS_OEM_VERS = 2.0", oe.getParts()[1]);
+        }
+    }
+
+    @Test
+    public void testNonExistentFile() throws URISyntaxException {
+        final String realName = getClass().getResource("/ccsds/OMMExample.txt").toURI().getPath();
+        final String wrongName = realName + "xxxxx";
+        try {
+            new OMMParser().parse(wrongName);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_FIND_FILE, oe.getSpecifier());
+            Assert.assertEquals(wrongName, oe.getParts()[0]);
+        }
+    }
+
 }

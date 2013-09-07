@@ -36,8 +36,7 @@ import org.orekit.utils.IERSConventions;
  * @author sports
  * @since 6.1
  */
-public abstract class ODMFile
-    implements OrbitFile {
+public abstract class ODMFile implements OrbitFile {
 
     /** CCSDS Format version. */
     private String formatVersion;
@@ -70,7 +69,7 @@ public abstract class ODMFile
     private double muUsed;
 
     /** Initial Date for MET or MRT time systems. */
-    private AbsoluteDate initialDate;
+    private AbsoluteDate missionReferenceDate;
 
     /** ODMFile constructor. */
     public ODMFile() {
@@ -173,36 +172,19 @@ public abstract class ODMFile
         this.conventions = conventions;
     }
 
-    /** Get initial date for MET and MRT TimeSystems.
-     * @return the initial date
+    /** Get reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     * @return the reference date
      */
-    public AbsoluteDate getInitialDate() {
-        return initialDate;
+    public AbsoluteDate getMissionReferenceDate() {
+        return missionReferenceDate;
     }
 
-    /** Set initial date for MET and MRT TimeSystems.
-     * @param initialDate the initial date to be set.
+    /** Set reference date for Mission Elapsed Time and Mission Relative Time time systems.
+     * @param missionReferenceDate reference date for Mission Elapsed Time and Mission Relative Time time systems.
      */
-    void setInitialDate(final AbsoluteDate initialDate) {
-        this.initialDate = initialDate;
+    void setMissionReferenceDate(final AbsoluteDate missionReferenceDate) {
+        this.missionReferenceDate = missionReferenceDate;
     }
-
-    /** Get the ODM File comment related to the given ODMBlock.
-     * @param odmBlock the ODMBlock associated with the comment
-     * @return the ODM File comment related to the given ODMBlock
-     * @exception OrekitException if odmBlock is not valid
-     */
-    public abstract List<String> getComment(final ODMBlock odmBlock)
-        throws OrekitException;
-
-    /** Set the ODM File comment related to the given ODMBlock.
-     * @param odmBlock the ODMBlock associated with the comment
-     * @param comment the comment to be set
-     * @throws OrekitException if odmBlock is not valid
-     */
-    abstract void setComment(final ODMBlock odmBlock,
-                                    final List<String> comment)
-        throws OrekitException;
 
     /** Get the CCSDS ODM (OPM, OMM or OEM) format version.
      * @return format version
@@ -276,12 +258,6 @@ public abstract class ODMFile
     public int getNumberOfEpochs() {
         // TODO Auto-generated method stub
         return 0;
-    }
-
-    @Override
-    public String getCoordinateSystem() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

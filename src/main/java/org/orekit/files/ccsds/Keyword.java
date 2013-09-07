@@ -165,7 +165,7 @@ public enum Keyword {
     MAN_DV_2,
     /** Third component of the velocity increment. */
     MAN_DV_3,
-    /** User defined parameter, where æxÆ is replaced by a variable length user specified character
+    /** User defined parameter, where X is replaced by a variable length user specified character
      *  string. Any number of user defined parameters may be included, if necessary to provide
      *  essential information that cannot be conveyed in COMMENT statements. */
     USER_DEFINED_X,
