@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -169,47 +168,38 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
             if (line.trim().length() == 0) {
                 continue;
             }
-            final Scanner sc = new Scanner(line);
-            pi.keywordTmp = sc.next();
-            if (pi.keywordTmp.matches("USER_DEFINED_.*")) {
-                pi.userDefinedKeyword = pi.keywordTmp;
-                pi.keyword = Keyword.USER_DEFINED_X;
-            } else {
-                pi.keyword = Keyword.valueOf(pi.keywordTmp);
+            pi.keyValue = new KeyValue(line);
+            if (pi.keyValue.getKeyword() == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
             }
-            if (pi.keyword != Keyword.COMMENT) {
-                sc.next(); // skip "="
-            }
-            pi.keyValue = sc.next();
-
-            switch (pi.keyword) {
+            switch (pi.keyValue.getKeyword()) {
 
             case CCSDS_OPM_VERS:
-                file.setFormatVersion(pi.keyValue);
+                file.setFormatVersion(pi.keyValue.getValue());
                 break;
 
             case X:
-                pi.x = Double.parseDouble(pi.keyValue) * 1000;
+                pi.x = Double.parseDouble(pi.keyValue.getValue()) * 1000;
                 break;
 
             case Y:
-                pi.y = Double.parseDouble(pi.keyValue) * 1000;
+                pi.y = Double.parseDouble(pi.keyValue.getValue()) * 1000;
                 break;
 
             case Z:
-                pi.z = Double.parseDouble(pi.keyValue) * 1000;
+                pi.z = Double.parseDouble(pi.keyValue.getValue()) * 1000;
                 break;
 
             case X_DOT:
-                pi.x_dot = Double.parseDouble(pi.keyValue) * 1000;
+                pi.x_dot = Double.parseDouble(pi.keyValue.getValue()) * 1000;
                 break;
 
             case Y_DOT:
-                pi.y_dot = Double.parseDouble(pi.keyValue) * 1000;
+                pi.y_dot = Double.parseDouble(pi.keyValue.getValue()) * 1000;
                 break;
 
             case Z_DOT:
-                pi.z_dot = Double.parseDouble(pi.keyValue) * 1000;
+                pi.z_dot = Double.parseDouble(pi.keyValue.getValue()) * 1000;
                 break;
 
             case MAN_EPOCH_IGNITION:
@@ -217,7 +207,7 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
                     file.addManeuver(pi.maneuver);
                 }
                 pi.maneuver = new OPMFile.Maneuver();
-                pi.maneuver.setEpochIgnition(parseDate(pi.keyValue, file.getTimeSystem()));
+                pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
                 if (!pi.commentTmp.isEmpty()) {
                     pi.maneuver.setComment(pi.commentTmp);
                     pi.commentTmp.clear();
@@ -225,15 +215,15 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
                 break;
 
             case MAN_DURATION:
-                pi.maneuver.setDuration(Double.parseDouble(pi.keyValue));
+                pi.maneuver.setDuration(Double.parseDouble(pi.keyValue.getValue()));
                 break;
 
             case MAN_DELTA_MASS:
-                pi.maneuver.setDeltaMass(Double.parseDouble(pi.keyValue));
+                pi.maneuver.setDeltaMass(Double.parseDouble(pi.keyValue.getValue()));
                 break;
 
             case MAN_REF_FRAME:
-                final CCSDSFrame manFrame = parseCCSDSFrame(pi.keyValue);
+                final CCSDSFrame manFrame = parseCCSDSFrame(pi.keyValue.getValue());
                 if (manFrame.isLof()) {
                     pi.maneuver.setRefLofType(manFrame.getLofType());
                 } else {
@@ -242,29 +232,29 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
                 break;
 
             case MAN_DV_1:
-                pi.maneuver.setdV(new Vector3D(Double.parseDouble(pi.keyValue) * 1000,
+                pi.maneuver.setdV(new Vector3D(Double.parseDouble(pi.keyValue.getValue()) * 1000,
                                                pi.maneuver.getDV().getY(),
                                                pi.maneuver.getDV().getZ()));
                 break;
 
             case MAN_DV_2:
                 pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                               Double.parseDouble(pi.keyValue) * 1000,
+                                               Double.parseDouble(pi.keyValue.getValue()) * 1000,
                                                pi.maneuver.getDV().getZ()));
                 break;
 
             case MAN_DV_3:
                 pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
                                                pi.maneuver.getDV().getY(),
-                                               Double.parseDouble(pi.keyValue) * 1000));
+                                               Double.parseDouble(pi.keyValue.getValue()) * 1000));
                 break;
 
             default:
                 boolean parsed = false;
-                parsed = parsed || parseComment(line, pi.keyword, pi.commentTmp);
-                parsed = parsed || parseHeaderEntry(pi.keyword, pi.keyValue, file, pi.commentTmp);
-                parsed = parsed || parseMetaDataEntry(line, pi.keyword, pi.keyValue, file.getMetaData(), pi.commentTmp);
-                parsed = parsed || parseGeneralStateDataEntry(line, pi.keyword, pi.keyValue, file, pi.commentTmp, pi.userDefinedKeyword);
+                parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
+                parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
                 if (!parsed) {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
                 }
@@ -292,14 +282,8 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
         /** Current line number. */
         private int lineNumber;
 
-        /** Stored keyword. */
-        private String keywordTmp;
-
-        /** Keyword of the line being read. */
-        private Keyword keyword;
-
         /** Key value of the line being read. */
-        private String keyValue;
+        private KeyValue keyValue;
 
         /** Stored comments. */
         private List<String> commentTmp;
@@ -324,9 +308,6 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
 
         /** Current maneuver. */
         private OPMFile.Maneuver maneuver;
-
-        /** Current user-defined keyword. */
-        private String userDefinedKeyword;
 
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {

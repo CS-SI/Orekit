@@ -109,14 +109,13 @@ public abstract class ODMParser {
     }
 
     /** Parse a comment line.
-     * @param line complete line entry
-     * @param keyword key part of the key = value entry
+     * @param keyValue key=value pair containing the comment
      * @param comment placeholder where the current comment line should be added
      * @return true if the line was a comment line and was parsed
      */
-    protected boolean parseComment(final String line, final Keyword keyword, final List<String> comment) {
-        if (keyword == Keyword.COMMENT) {
-            comment.add(line.split(" +", 2)[1]);
+    protected boolean parseComment(final KeyValue keyValue, final List<String> comment) {
+        if (keyValue.getKeyword() == Keyword.COMMENT) {
+            comment.add(keyValue.getValue());
             return true;
         } else {
             return false;
@@ -124,28 +123,27 @@ public abstract class ODMParser {
     }
 
     /** Parse an entry from the header.
-     * @param keyword key part of the key = value entry
-     * @param value value part of the key = value entry
+     * @param keyValue key = value pair
      * @param odmFile instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a header keyword and has been parsed
      * @exception OrekitException if UTC time scale cannot be retrieved to parse creation date
      */
-    protected boolean parseHeaderEntry(final Keyword keyword, final String value,
+    protected boolean parseHeaderEntry(final KeyValue keyValue,
                                        final ODMFile odmFile, final List<String> comment)
         throws OrekitException {
-        switch (keyword) {
+        switch (keyValue.getKeyword()) {
 
         case CREATION_DATE:
             if (!comment.isEmpty()) {
                 odmFile.setHeaderComment(comment);
                 comment.clear();
             }
-            odmFile.setCreationDate(new AbsoluteDate(value, TimeScalesFactory.getUTC()));
+            odmFile.setCreationDate(new AbsoluteDate(keyValue.getValue(), TimeScalesFactory.getUTC()));
             return true;
 
         case ORIGINATOR:
-            odmFile.setOriginator(value);
+            odmFile.setOriginator(keyValue.getValue());
             return true;
 
         default:
@@ -156,40 +154,38 @@ public abstract class ODMParser {
     }
 
     /** Parse a meta-data key = value entry.
-     * @param line complete line entry
-     * @param keyword key part of the key = value entry
-     * @param value value part of the key = value entry
+     * @param keyValue key = value pair
      * @param metaData instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
      * @return true if the keyword was a meta-data keyword and has been parsed
      * @exception OrekitException if center body or frame cannot be retrieved
      */
-    protected boolean parseMetaDataEntry(final String line, final Keyword keyword, final String value,
+    protected boolean parseMetaDataEntry(final KeyValue keyValue,
                                          final ODMMetaData metaData, final List<String> comment)
         throws OrekitException {
-        switch (keyword) {
+        switch (keyValue.getKeyword()) {
         case OBJECT_NAME:
             if (!comment.isEmpty()) {
                 metaData.setComment(comment);
                 comment.clear();
             }
-            metaData.setObjectName(line.split("=", 2)[1].trim());
+            metaData.setObjectName(keyValue.getValue());
             return true;
 
         case OBJECT_ID:
-            metaData.setObjectID(value);
+            metaData.setObjectID(keyValue.getValue());
             return true;
 
         case CENTER_NAME:
-            metaData.setCenterName(value);
+            metaData.setCenterName(keyValue.getValue());
             final String canonicalValue;
-            if (value.equals("SOLAR SYSTEM BARYCENTER") || value.equals("SSB")) {
+            if (keyValue.getValue().equals("SOLAR SYSTEM BARYCENTER") || keyValue.getValue().equals("SSB")) {
                 canonicalValue = "SOLAR_SYSTEM_BARYCENTER";
-            } else if (value.equals("EARTH MOON BARYCENTER") || value.equals("EARTH-MOON BARYCENTER") ||
-                       value.equals("EARTH BARYCENTER") || value.equals("EMB")) {
+            } else if (keyValue.getValue().equals("EARTH MOON BARYCENTER") || keyValue.getValue().equals("EARTH-MOON BARYCENTER") ||
+                       keyValue.getValue().equals("EARTH BARYCENTER") || keyValue.getValue().equals("EMB")) {
                 canonicalValue = "EARTH_MOON";
             } else {
-                canonicalValue = value;
+                canonicalValue = keyValue.getValue();
             }
             for (final CenterName c : CenterName.values()) {
                 if (c.name().equals(canonicalValue)) {
@@ -201,15 +197,15 @@ public abstract class ODMParser {
             return true;
 
         case REF_FRAME:
-            metaData.setRefFrame(parseCCSDSFrame(value).getFrame(getConventions()));
+            metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions()));
             return true;
 
         case REF_FRAME_EPOCH:
-            metaData.setFrameEpochString(value);
+            metaData.setFrameEpochString(keyValue.getValue());
             return true;
 
         case TIME_SYSTEM:
-            final OrbitFile.TimeSystem timeSystem = OrbitFile.TimeSystem.valueOf(value);
+            final OrbitFile.TimeSystem timeSystem = OrbitFile.TimeSystem.valueOf(keyValue.getValue());
             metaData.setTimeSystem(timeSystem);
             if (metaData.getFrameEpochString() != null) {
                 metaData.setFrameEpoch(parseDate(metaData.getFrameEpochString(), timeSystem));
@@ -222,103 +218,99 @@ public abstract class ODMParser {
     }
 
     /** Parse a general state data key = value entry.
-     * @param line complete line entry
-     * @param keyword key part of the key = value entry
-     * @param value value part of the key = value entry
+     * @param keyValue key = value pair
      * @param general instance to update with parsed entry
      * @param comment previous comment lines, will be emptied if used by the keyword
-     * @param userDefinedKeyword user defined keyword
      * @return true if the keyword was a meta-data keyword and has been parsed
      * @exception OrekitException if center body or frame cannot be retrieved
      */
-    protected boolean parseGeneralStateDataEntry(final String line, final Keyword keyword, final String value,
-                                                 final OGMFile general, final List<String> comment,
-                                                 final String userDefinedKeyword)
+    protected boolean parseGeneralStateDataEntry(final KeyValue keyValue,
+                                                 final OGMFile general, final List<String> comment)
         throws OrekitException {
-        switch (keyword) {
+        switch (keyValue.getKeyword()) {
 
         case EPOCH:
             general.setEpochComment(comment);
             comment.clear();
-            general.setEpoch(parseDate(value, general.getTimeSystem()));
+            general.setEpoch(parseDate(keyValue.getValue(), general.getTimeSystem()));
             return true;
 
         case SEMI_MAJOR_AXIS:
             general.setKeplerianElementsComment(comment);
             comment.clear();
-            general.setA(Double.parseDouble(value) * 1000);
+            general.setA(Double.parseDouble(keyValue.getValue()) * 1000);
             general.setHasKeplerianElements(true);
             return true;
 
         case ECCENTRICITY:
-            general.setE(Double.parseDouble(value));
+            general.setE(Double.parseDouble(keyValue.getValue()));
             return true;
 
         case INCLINATION:
-            general.setI(FastMath.toRadians(Double.parseDouble(value)));
+            general.setI(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
             return true;
 
         case RA_OF_ASC_NODE:
-            general.setRaan(FastMath.toRadians(Double.parseDouble(value)));
+            general.setRaan(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
             return true;
 
         case ARG_OF_PERICENTER:
-            general.setPa(FastMath.toRadians(Double.parseDouble(value)));
+            general.setPa(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
             return true;
 
         case TRUE_ANOMALY:
             general.setAnomalyType("TRUE");
-            general.setAnomaly(FastMath.toRadians(Double.parseDouble(value)));
+            general.setAnomaly(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
             return true;
 
         case MEAN_ANOMALY:
             general.setAnomalyType("MEAN");
-            general.setAnomaly(FastMath.toRadians(Double.parseDouble(value)));
+            general.setAnomaly(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
             return true;
 
         case GM:
-            general.setMuParsed(Double.parseDouble(value) * 1e9);
+            general.setMuParsed(Double.parseDouble(keyValue.getValue()) * 1e9);
             return true;
 
         case MASS:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setMass(Double.parseDouble(value));
+            general.setMass(Double.parseDouble(keyValue.getValue()));
             return true;
 
         case SOLAR_RAD_AREA:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setSolarRadArea(Double.parseDouble(value));
+            general.setSolarRadArea(Double.parseDouble(keyValue.getValue()));
             return true;
 
         case SOLAR_RAD_COEFF:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setSolarRadCoeff(Double.parseDouble(value));
+            general.setSolarRadCoeff(Double.parseDouble(keyValue.getValue()));
             return true;
 
         case DRAG_AREA:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setDragArea(Double.parseDouble(value));
+            general.setDragArea(Double.parseDouble(keyValue.getValue()));
             return true;
 
         case DRAG_COEFF:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setDragCoeff(Double.parseDouble(value));
+            general.setDragCoeff(Double.parseDouble(keyValue.getValue()));
             return true;
 
         case COV_REF_FRAME:
             general.setCovarianceComment(comment);
             comment.clear();
-            final CCSDSFrame covFrame = parseCCSDSFrame(value);
+            final CCSDSFrame covFrame = parseCCSDSFrame(keyValue.getValue());
             if (covFrame.isLof()) {
                 general.setCovRefLofType(covFrame.getLofType());
             } else {
@@ -328,91 +320,91 @@ public abstract class ODMParser {
 
         case CX_X:
             general.createCovarianceMatrix();
-            general.setCovarianceMatrixEntry(0, 0, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(0, 0, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CY_X:
-            general.setCovarianceMatrixEntry(0, 1, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(0, 1, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CY_Y:
-            general.setCovarianceMatrixEntry(1, 1, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(1, 1, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_X:
-            general.setCovarianceMatrixEntry(0, 2, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(0, 2, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_Y:
-            general.setCovarianceMatrixEntry(1, 2, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(1, 2, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_Z:
-            general.setCovarianceMatrixEntry(2, 2, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(2, 2, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CX_DOT_X:
-            general.setCovarianceMatrixEntry(0, 3, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(0, 3, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CX_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 3, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(1, 3, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CX_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 3, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(2, 3, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CX_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 3, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(3, 3, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CY_DOT_X:
-            general.setCovarianceMatrixEntry(0, 4, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(0, 4, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CY_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 4, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(1, 4, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CY_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 4, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(2, 4, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CY_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 4, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(3, 4, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CY_DOT_Y_DOT:
-            general.setCovarianceMatrixEntry(4, 4, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(4, 4, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_DOT_X:
-            general.setCovarianceMatrixEntry(0, 5, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(0, 5, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 5, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(1, 5, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 5, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(2, 5, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 5, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(3, 5, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_DOT_Y_DOT:
-            general.setCovarianceMatrixEntry(4, 5, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(4, 5, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case CZ_DOT_Z_DOT:
-            general.setCovarianceMatrixEntry(5, 5, Double.parseDouble(value));
+            general.setCovarianceMatrixEntry(5, 5, Double.parseDouble(keyValue.getValue()));
             return true;
 
         case USER_DEFINED_X:
-            general.setUserDefinedParameters(userDefinedKeyword, value);
+            general.setUserDefinedParameters(keyValue.getKey(), keyValue.getValue());
             return true;
 
         default:

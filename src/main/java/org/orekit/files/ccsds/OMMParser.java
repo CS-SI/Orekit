@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.util.FastMath;
@@ -212,79 +211,64 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
             if (line.trim().length() == 0) {
                 continue;
             }
-            final Scanner sc = new Scanner(line);
-            pi.keywordTmp = sc.next();
-            if (pi.keywordTmp.matches("USER_DEFINED_.*")) {
-                pi.userDefinedKeyword = pi.keywordTmp;
-                pi.keyword = Keyword.USER_DEFINED_X;
-            } else {
-                pi.keyword = Keyword.valueOf(pi.keywordTmp);
+            pi.keyValue = new KeyValue(line);
+            if (pi.keyValue.getKeyword() == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
             }
-
-            if (pi.keyword != Keyword.COMMENT) {
-                sc.next(); // skip "="
-            }
-            pi.keyValue = sc.next();
-
-            switch (pi.keyword) {
+            switch (pi.keyValue.getKeyword()) {
             case CCSDS_OMM_VERS:
-                file.setFormatVersion(pi.keyValue);
+                file.setFormatVersion(pi.keyValue.getValue());
                 break;
 
             case MEAN_ELEMENT_THEORY:
-                file.getMetaData().setMeanElementTheory(pi.keyValue);
+                file.getMetaData().setMeanElementTheory(pi.keyValue.getValue());
                 break;
 
             case MEAN_MOTION:
-                file.setMeanMotion(Double.parseDouble(pi.keyValue) * FastMath.PI / 43200.0);
+                file.setMeanMotion(Double.parseDouble(pi.keyValue.getValue()) * FastMath.PI / 43200.0);
                 break;
 
             case EPHEMERIS_TYPE:
                 file.setTLERelatedParametersComment(pi.commentTmp);
                 pi.commentTmp.clear();
-                file.setEphemerisType(Integer.parseInt(pi.keyValue));
+                file.setEphemerisType(Integer.parseInt(pi.keyValue.getValue()));
                 break;
 
             case CLASSIFICATION_TYPE:
-                file.setClassificationType(pi.keyValue.charAt(0));
+                file.setClassificationType(pi.keyValue.getValue().charAt(0));
                 break;
 
             case NORAD_CAT_ID:
-                file.setNoradID(Integer.parseInt(pi.keyValue));
+                file.setNoradID(Integer.parseInt(pi.keyValue.getValue()));
                 break;
 
             case ELEMENT_SET_NO:
-                file.setElementSetNo(pi.keyValue);
+                file.setElementSetNo(pi.keyValue.getValue());
                 break;
 
             case REV_AT_EPOCH:
-                file.setRevAtEpoch(Integer.parseInt(pi.keyValue));
+                file.setRevAtEpoch(Integer.parseInt(pi.keyValue.getValue()));
                 break;
 
             case BSTAR:
-                file.setbStar(Double.parseDouble(pi.keyValue));
+                file.setbStar(Double.parseDouble(pi.keyValue.getValue()));
                 break;
 
             case MEAN_MOTION_DOT:
-                file.setMeanMotionDot(Double.parseDouble(pi.keyValue) * FastMath.PI / 1.86624e9);
+                file.setMeanMotionDot(Double.parseDouble(pi.keyValue.getValue()) * FastMath.PI / 1.86624e9);
                 break;
 
             case MEAN_MOTION_DDOT:
-                file.setMeanMotionDotDot(Double.parseDouble(pi.keyValue) *
+                file.setMeanMotionDotDot(Double.parseDouble(pi.keyValue.getValue()) *
                                          FastMath.PI / 5.3747712e13);
-                break;
-
-            case USER_DEFINED_X:
-                file.setUserDefinedParameters(pi.userDefinedKeyword,
-                                              pi.keyValue);
                 break;
 
             default:
                 boolean parsed = false;
-                parsed = parsed || parseComment(line, pi.keyword, pi.commentTmp);
-                parsed = parsed || parseHeaderEntry(pi.keyword, pi.keyValue, file, pi.commentTmp);
-                parsed = parsed || parseMetaDataEntry(line, pi.keyword, pi.keyValue, file.getMetaData(), pi.commentTmp);
-                parsed = parsed || parseGeneralStateDataEntry(line, pi.keyword, pi.keyValue, file, pi.commentTmp, pi.userDefinedKeyword);
+                parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
+                parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
                 if (!parsed) {
                     throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
                 }
@@ -305,20 +289,11 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
         /** Current line number. */
         private int lineNumber;
 
-        /** Keyword of the line being read. */
-        private Keyword keyword;
-
         /** Key value of the line being read. */
-        private String keyValue;
-
-        /** Stored keyword. */
-        private String keywordTmp;
+        private KeyValue keyValue;
 
         /** Stored comments. */
         private List<String> commentTmp;
-
-        /** User defined keyword. */
-        private String userDefinedKeyword;
 
         /** Create a new {@link ParseInfo} object. */
         protected ParseInfo() {
