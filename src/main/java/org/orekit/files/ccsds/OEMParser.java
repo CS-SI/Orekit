@@ -122,13 +122,14 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
     }
 
     /** {@inheritDoc} */
-    public OEMFile parse(final InputStream stream) throws OrekitException {
+    public OEMFile parse(final InputStream stream, final String fileName) throws OrekitException {
 
         try {
 
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
+            pi.fileName = fileName;
             final OEMFile file = pi.file;
 
             // set the additional data that has been configured prior the parsing by the user.
@@ -141,9 +142,9 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                 if (line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(line);
+                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
+                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
                 switch (pi.keyValue.getKeyword()) {
                 case CCSDS_OEM_VERS:
@@ -202,7 +203,7 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                                                               pi.lastEphemeridesBlock.getMetaData(), pi.commentTmp);
                     }
                     if (!parsed) {
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                     }
                 }
             }
@@ -222,36 +223,41 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
      * @exception IOException if an error occurs while reading from the stream
      * @exception OrekitException if a date cannot be parsed
      */
-    private void parseEphemeridesDataLines(final BufferedReader reader,
-                                           final ParseInfo pi)
+    private void parseEphemeridesDataLines(final BufferedReader reader,  final ParseInfo pi)
         throws OrekitException, IOException {
 
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
             ++pi.lineNumber;
             if (line.trim().length() > 0) {
-                pi.keyValue = new KeyValue(line);
+                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    final Scanner sc = new Scanner(line);
-                    final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
-                    final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                           Double.parseDouble(sc.next()) * 1000,
-                                                           Double.parseDouble(sc.next()) * 1000);
-                    final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                           Double.parseDouble(sc.next()) * 1000,
-                                                           Double.parseDouble(sc.next()) * 1000);
-                    final CartesianOrbit orbit =
-                            new CartesianOrbit(new PVCoordinates(position, velocity), pi.lastEphemeridesBlock.getMetaData().getFrame(),
-                                               date, pi.file.getMuUsed());
-                    Vector3D acceleration = null;
-                    if (sc.hasNext()) {
-                        acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
-                                                    Double.parseDouble(sc.next()) * 1000,
-                                                    Double.parseDouble(sc.next()) * 1000);
+                    try {
+                        final Scanner sc = new Scanner(line);
+                        final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
+                        final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                                               Double.parseDouble(sc.next()) * 1000,
+                                                               Double.parseDouble(sc.next()) * 1000);
+                        final Vector3D velocity = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                                               Double.parseDouble(sc.next()) * 1000,
+                                                               Double.parseDouble(sc.next()) * 1000);
+                        final CartesianOrbit orbit =
+                                new CartesianOrbit(new PVCoordinates(position, velocity),
+                                                   pi.lastEphemeridesBlock.getMetaData().getFrame(),
+                                                   date, pi.file.getMuUsed());
+                        Vector3D acceleration = null;
+                        if (sc.hasNext()) {
+                            acceleration = new Vector3D(Double.parseDouble(sc.next()) * 1000,
+                                                        Double.parseDouble(sc.next()) * 1000,
+                                                        Double.parseDouble(sc.next()) * 1000);
+                        }
+                        final OEMFile.EphemeridesDataLine epDataLine =
+                                new OEMFile.EphemeridesDataLine(orbit, acceleration);
+                        pi.lastEphemeridesBlock.getEphemeridesDataLines().add(epDataLine);
+                    } catch (NumberFormatException nfe) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  pi.lineNumber, pi.fileName, line);
                     }
-                    final OEMFile.EphemeridesDataLine epDataLine =
-                            new OEMFile.EphemeridesDataLine(orbit, acceleration);
-                    pi.lastEphemeridesBlock.getEphemeridesDataLines().add(epDataLine);
                 } else {
                     switch (pi.keyValue.getKeyword()) {
                     case META_START:
@@ -270,7 +276,7 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                         pi.commentTmp.add(pi.keyValue.getValue());
                         break;
                     default :
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                     }
                 }
             }
@@ -297,11 +303,16 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
             if (line.trim().length() == 0) {
                 continue;
             }
-            pi.keyValue = new KeyValue(line);
+            pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
             if (pi.keyValue.getKeyword() == null) {
                 final Scanner sc = new Scanner(line);
                 for (int j = 0; j < i + 1; j++) {
-                    pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc.next()));
+                    try {
+                        pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc.next()));
+                    } catch (NumberFormatException nfe) {
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  pi.lineNumber, pi.fileName, line);
+                    }
                     if (j != i) {
                         pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
                     }
@@ -334,7 +345,7 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                 case COVARIANCE_STOP :
                     return;
                 default :
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
+                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
             }
         }
@@ -347,6 +358,9 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
 
         /** Ephemerides block being parsed. */
         private OEMFile.EphemeridesBlock lastEphemeridesBlock;
+
+        /** Name of the file. */
+        private String fileName;
 
         /** Current line number. */
         private int lineNumber;

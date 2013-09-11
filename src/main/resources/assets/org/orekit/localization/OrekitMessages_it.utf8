@@ -271,7 +271,7 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lunghezza non valida per il campo del tem
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia mancante nella data CCSDS
 
-# unexpected keyword in CCSDS ODM line number {0}: {1}
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = <MISSING TRANSLATION>
 
 # the central body gravitational coefficient cannot be retrieved from the OPM

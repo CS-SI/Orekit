@@ -59,7 +59,7 @@ public class OPMParserTest {
         
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
-        final OPMFile file = parser.parse(inEntry);
+        final OPMFile file = parser.parse(inEntry, "OPMExample.txt");
         final SatelliteTimeCoordinate coord = file.getSatelliteCoordinatesOPM();
 
         // Check Header Block;
@@ -123,7 +123,7 @@ public class OPMParserTest {
         final OPMParser parser = new OPMParser();
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
-        final OPMFile file = parser.parse(inEntry);
+        final OPMFile file = parser.parse(inEntry, "OPMExample2.txt");
         final SatelliteTimeCoordinate coord = file.getSatelliteCoordinatesOPM();
 
         // Check Header Block;
@@ -322,7 +322,7 @@ public class OPMParserTest {
     @Test
     public void testParseOPM3NoDesignator()
             throws OrekitException, URISyntaxException {
-        final String name = getClass().getResource("/ccsds/OPMExample3-no-designator.txt").toURI().getPath();
+        final String name = getClass().getResource("/ccsds/OPM-no-designator.txt").toURI().getPath();
         OPMParser parser =
                 new OPMParser().withConventions(IERSConventions.IERS_2010).withInternationalDesignator(2060, 666, "XYZ");
         final OPMFile file = parser.parse(name);
@@ -340,7 +340,7 @@ public class OPMParserTest {
         final String ex = "/ccsds/OPMExample4.txt";
         OPMParser parser = new OPMParser().withMissionReferenceDate(new AbsoluteDate());
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OPMFile file = parser.parse(inEntry);
+        final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
         file.getEpochInterval();
         file.getNumberOfEpochs();
         file.getCoordinateSystem();
@@ -375,11 +375,25 @@ public class OPMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OPMParser().parse(getClass().getResourceAsStream("/ccsds/OMMExample.txt"));
+            new OPMParser().parse(getClass().getResourceAsStream("/ccsds/OMMExample.txt"), "OMMExample.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
-            Assert.assertEquals("CCSDS_OMM_VERS = 2.0", oe.getParts()[1]);
+            Assert.assertEquals("OMMExample.txt", oe.getParts()[1]);
+            Assert.assertEquals("CCSDS_OMM_VERS = 2.0", oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testNumberFormatErrorType() {
+        try {
+            new OPMParser().parse(getClass().getResourceAsStream("/ccsds/OPM-number-format-error.txt"),
+                                                                 "OPM-number-format-error.txt");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(17, oe.getParts()[0]);
+            Assert.assertEquals("OPM-number-format-error.txt", oe.getParts()[1]);
+            Assert.assertEquals("SEMI_MAJOR_AXIS = this-is-not-a-number [km]", oe.getParts()[2]);
         }
     }
 

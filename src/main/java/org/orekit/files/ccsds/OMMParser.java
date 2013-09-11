@@ -119,7 +119,7 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
     }
 
     /** {@inheritDoc} */
-    public OMMFile parse(final InputStream stream) throws OrekitException {
+    public OMMFile parse(final InputStream stream, final String fileName) throws OrekitException {
 
         try {
 
@@ -128,6 +128,7 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
 
             // initialize internal data structures
             final ParseInfo pi = new ParseInfo();
+            pi.fileName = fileName;
             final OMMFile file = pi.file;
 
             // set the additional data that has been configured prior the parsing by the user.
@@ -143,9 +144,9 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
                 if (line.trim().length() == 0) {
                     continue;
                 }
-                pi.keyValue = new KeyValue(line);
+                pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
+                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                 }
                 switch (pi.keyValue.getKeyword()) {
                 case CCSDS_OMM_VERS:
@@ -202,7 +203,7 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
                     parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
                     parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
                     if (!parsed) {
-                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, pi.fileName, line);
                     }
                 }
             }
@@ -220,6 +221,9 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
 
         /** OMM file being read. */
         private OMMFile file;
+
+        /** Name of the file. */
+        private String fileName;
 
         /** Current line number. */
         private int lineNumber;

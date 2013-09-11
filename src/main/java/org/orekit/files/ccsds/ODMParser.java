@@ -184,7 +184,7 @@ public abstract class ODMParser {
 
         try {
             stream = new FileInputStream(fileName);
-            return parse(stream);
+            return parse(stream, fileName);
         } catch (FileNotFoundException e) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
         } finally {
@@ -204,7 +204,18 @@ public abstract class ODMParser {
      * @return parsed orbit
      * @exception OrekitException if orbit message cannot be parsed
      */
-    public abstract ODMFile parse(final InputStream stream)
+    public ODMFile parse(final InputStream stream)
+        throws OrekitException {
+        return parse(stream, "<unknown>");
+    }
+
+    /** Parse a CCSDS Orbit Data Message.
+     * @param stream stream containing message
+     * @param fileName name of the file containing the message (for error messages)
+     * @return parsed orbit
+     * @exception OrekitException if orbit message cannot be parsed
+     */
+    public abstract ODMFile parse(final InputStream stream, final String fileName)
         throws OrekitException;
 
     /** Parse a comment line.

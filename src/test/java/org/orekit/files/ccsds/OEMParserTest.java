@@ -55,7 +55,7 @@ public class OEMParserTest {
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
-        final OEMFile file = parser.parse(inEntry);
+        final OEMFile file = parser.parse(inEntry, "OEMExample.txt");
         Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
         Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
@@ -158,11 +158,40 @@ public class OEMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OEMParser().parse(getClass().getResourceAsStream("/ccsds/OPMExample.txt"));
+            new OEMParser().parse(getClass().getResourceAsStream("/ccsds/OPMExample.txt"), "OPMExample.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
-            Assert.assertEquals("CCSDS_OPM_VERS = 2.0", oe.getParts()[1]);
+            Assert.assertEquals("OPMExample.txt", oe.getParts()[1]);
+            Assert.assertEquals("CCSDS_OPM_VERS = 2.0", oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testEphemerisNumberFormatErrorType() {
+        try {
+            new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).
+            parse(getClass().getResourceAsStream("/ccsds/OEM-ephemeris-number-format-error.txt"),
+                                                 "OEM-ephemeris-number-format-error.txt");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(44, oe.getParts()[0]);
+            Assert.assertEquals("OEM-ephemeris-number-format-error.txt", oe.getParts()[1]);
+            Assert.assertEquals("1996-12-28T21:59:02.267 -2445.234 -878.141 this-is-not-a-number 1.86043 -3.421256 -0.996366", oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testCovarianceNumberFormatErrorType() {
+        try {
+            new OEMParser().withMu(CelestialBodyFactory.getMars().getGM()).
+            parse(getClass().getResourceAsStream("/ccsds/OEM-covariance-number-format-error.txt"),
+                                                 "OEM-covariance-number-format-error.txt");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(52, oe.getParts()[0]);
+            Assert.assertEquals("OEM-covariance-number-format-error.txt", oe.getParts()[1]);
+            Assert.assertEquals("4.6189273e-04 this-is-not-a-number", oe.getParts()[2]);
         }
     }
 

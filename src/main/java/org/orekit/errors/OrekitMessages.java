@@ -138,7 +138,7 @@ public enum OrekitMessages implements Localizable {
     CCSDS_DATE_INVALID_PREAMBLE_FIELD("invalid preamble field in CCSDS date: {0}"),
     CCSDS_DATE_INVALID_LENGTH_TIME_FIELD("invalid time field length in CCSDS date: {0}, expected {1}"),
     CCSDS_DATE_MISSING_AGENCY_EPOCH("missing agency epoch in CCSDS date"),
-    CCSDS_UNEXPECTED_KEYWORD("unexpected keyword in CCSDS ODM line number {0}: {1}"),
+    CCSDS_UNEXPECTED_KEYWORD("unexpected keyword in CCSDS line number {0} of file {1}:\n{2}"),
     CCSDS_UNKNOWN_GM("the central body gravitational coefficient cannot be retrieved from the OPM"),
     CCSDS_UNKNOWN_SPACECRAFT_MASS("there is no spacecraft mass associated with this ODM file"),
     CCSDS_UNKNOWN_CONVENTIONS("no IERS conventions have been set before parsing"),

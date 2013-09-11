@@ -56,7 +56,7 @@ public class OMMParserTest {
                 new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
         
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-        final OMMFile file = parser.parse(inEntry);
+        final OMMFile file = parser.parse(inEntry, "OMMExample.txt");
 
         // Check Header Block;
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
@@ -174,11 +174,25 @@ public class OMMParserTest {
     @Test
     public void testWrongODMType() {
         try {
-            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/OEMExample.txt"));
+            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/OEMExample.txt"), "OEMExample.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, oe.getSpecifier());
             Assert.assertEquals(1, oe.getParts()[0]);
-            Assert.assertEquals("CCSDS_OEM_VERS = 2.0", oe.getParts()[1]);
+            Assert.assertEquals("OEMExample.txt", oe.getParts()[1]);
+            Assert.assertEquals("CCSDS_OEM_VERS = 2.0", oe.getParts()[2]);
+        }
+    }
+
+    @Test
+    public void testNumberFormatErrorType() {
+        try {
+            new OMMParser().parse(getClass().getResourceAsStream("/ccsds/OMM-number-format-error.txt"),
+                                                                 "OMM-number-format-error.txt");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+            Assert.assertEquals(15, oe.getParts()[0]);
+            Assert.assertEquals("OMM-number-format-error.txt", oe.getParts()[1]);
+            Assert.assertEquals("ARG_OF_PERICENTER = this-is-not-a-number", oe.getParts()[2]);
         }
     }
 

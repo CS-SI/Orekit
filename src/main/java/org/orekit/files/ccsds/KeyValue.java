@@ -19,6 +19,9 @@ package org.orekit.files.ccsds;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
+
 /** Holder for key-value pair.
  * <p>
  * The syntax for key-value lines in CCSDS files is:
@@ -46,6 +49,15 @@ class KeyValue {
     private final Pattern USER_DEFINED_KEYWORDS =
             Pattern.compile("USER_DEFINED_[A-Z][A-Z_]*");
 
+    /** Line from which pair is extracted. */
+    private final String line;
+
+    /** Number of the line from which pair is extracted. */
+    private final int lineNumber;
+
+    /** Name of the file. */
+    private final String fileName;
+
     /** Keyword enum corresponding to parsed key. */
     private final Keyword keyword;
 
@@ -63,8 +75,15 @@ class KeyValue {
      * may be empty if not matched, and the keyword may be null.
      * </p>
      * @param line to split
+     * @param lineNumber number of the line in the CCSDS data message
+     * @param fileName name of the file
      */
-    public KeyValue(final String line) {
+    public KeyValue(final String line, final int lineNumber, final String fileName) {
+
+        this.line       = line;
+        this.lineNumber = lineNumber;
+        this.fileName   = fileName;
+
         final Matcher matcher = PATTERN.matcher(line);
         if (matcher.matches()) {
             key   = matcher.group(1);
@@ -111,9 +130,15 @@ class KeyValue {
 
     /** Get the value as a double number.
      * @return value
+     * @exception OrekitException if value is not a number
      */
-    public double getDoubleValue() {
-        return Double.parseDouble(value);
+    public double getDoubleValue() throws OrekitException {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException nfe) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                      lineNumber, fileName, line);
+        }
     }
 
 }
