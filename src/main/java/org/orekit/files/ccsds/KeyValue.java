@@ -109,4 +109,11 @@ class KeyValue {
         return value;
     }
 
+    /** Get the value as a double number.
+     * @return value
+     */
+    public double getDoubleValue() {
+        return Double.parseDouble(value);
+    }
+
 }

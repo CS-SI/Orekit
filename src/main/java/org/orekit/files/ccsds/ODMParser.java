@@ -16,10 +16,17 @@
  */
 package org.orekit.files.ccsds;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFile;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateTimeComponents;
@@ -43,6 +50,9 @@ import org.orekit.utils.IERSConventions;
  */
 public abstract class ODMParser {
 
+    /** Pattern for international designator. */
+    private static final Pattern INTERNATIONAL_DESIGNATOR = Pattern.compile("(\\p{Digit}{4})-(\\p{Digit}{3})(\\p{Upper}{1,3})");
+
     /** Reference date for Mission Elapsed Time or Mission Relative Time time systems. */
     private final AbsoluteDate missionReferenceDate;
 
@@ -52,15 +62,31 @@ public abstract class ODMParser {
     /** IERS Conventions. */
     private final  IERSConventions conventions;
 
+    /** Launch Year. */
+    private int launchYear;
+
+    /** Launch number. */
+    private int launchNumber;
+
+    /** Piece of launch (from "A" to "ZZZ"). */
+    private String launchPiece;
+
     /** Complete constructor.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
+     * @param launchYear launch year for TLEs
+     * @param launchNumber launch number for TLEs
+     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      */
-    protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu, final IERSConventions conventions) {
+    protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu, final IERSConventions conventions,
+                        final int launchYear, final int launchNumber, final String launchPiece) {
         this.missionReferenceDate = missionReferenceDate;
         this.mu                   = mu;
         this.conventions          = conventions;
+        this.launchYear           = launchYear;
+        this.launchNumber         = launchNumber;
+        this.launchPiece          = launchPiece;
     }
 
     /** Set initial date.
@@ -107,6 +133,79 @@ public abstract class ODMParser {
     public IERSConventions getConventions() {
         return conventions;
     }
+
+    /** Set international designator.
+     * <p>
+     * This method may be used to ensure the launch year number and pieces are
+     * correctly set if they are not present in the CCSDS file header in the
+     * OBJECT_ID in the form YYYY-NNN-P{PP}. If they are already in the header,
+     * they will be parsed automatically regardless of this method being called
+     * or not (i.e. header information override information set here).
+     * </p>
+     * @param newLaunchYear launch year
+     * @param newLaunchNumber launch number
+     * @param newLaunchPiece piece of launch (from "A" to "ZZZ")
+     * @return a new instance, with TLE settings replaced
+     */
+    public abstract ODMParser withInternationalDesignator(final int newLaunchYear,
+                                                          final int newLaunchNumber,
+                                                          final String newLaunchPiece);
+
+    /** Get the launch year.
+     * @return launch year
+     */
+    public int getLaunchYear() {
+        return launchYear;
+    }
+
+    /** Get the launch number.
+     * @return launch number
+     */
+    public int getLaunchNumber() {
+        return launchNumber;
+    }
+
+    /** Get the piece of launch.
+     * @return piece of launch
+     */
+    public String getLaunchPiece() {
+        return launchPiece;
+    }
+
+    /** Parse a CCSDS Orbit Data Message.
+     * @param fileName name of the file containing the message
+     * @return parsed orbit
+     * @exception OrekitException if orbit message cannot be parsed
+     */
+    public ODMFile parse(final String fileName)
+        throws OrekitException {
+
+        InputStream stream = null;
+
+        try {
+            stream = new FileInputStream(fileName);
+            return parse(stream);
+        } catch (FileNotFoundException e) {
+            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, fileName);
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException e) {
+                // ignore
+            }
+        }
+
+    }
+
+    /** Parse a CCSDS Orbit Data Message.
+     * @param stream stream containing message
+     * @return parsed orbit
+     * @exception OrekitException if orbit message cannot be parsed
+     */
+    public abstract ODMFile parse(final InputStream stream)
+        throws OrekitException;
 
     /** Parse a comment line.
      * @param keyValue key=value pair containing the comment
@@ -172,9 +271,16 @@ public abstract class ODMParser {
             metaData.setObjectName(keyValue.getValue());
             return true;
 
-        case OBJECT_ID:
+        case OBJECT_ID: {
             metaData.setObjectID(keyValue.getValue());
+            final Matcher matcher = INTERNATIONAL_DESIGNATOR.matcher(keyValue.getValue());
+            if (matcher.matches()) {
+                metaData.setLaunchYear(Integer.parseInt(matcher.group(1)));
+                metaData.setLaunchNumber(Integer.parseInt(matcher.group(2)));
+                metaData.setLaunchPiece(matcher.group(3));
+            }
             return true;
+        }
 
         case CENTER_NAME:
             metaData.setCenterName(keyValue.getValue());
@@ -238,73 +344,73 @@ public abstract class ODMParser {
         case SEMI_MAJOR_AXIS:
             general.setKeplerianElementsComment(comment);
             comment.clear();
-            general.setA(Double.parseDouble(keyValue.getValue()) * 1000);
+            general.setA(keyValue.getDoubleValue() * 1000);
             general.setHasKeplerianElements(true);
             return true;
 
         case ECCENTRICITY:
-            general.setE(Double.parseDouble(keyValue.getValue()));
+            general.setE(keyValue.getDoubleValue());
             return true;
 
         case INCLINATION:
-            general.setI(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
+            general.setI(FastMath.toRadians(keyValue.getDoubleValue()));
             return true;
 
         case RA_OF_ASC_NODE:
-            general.setRaan(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
+            general.setRaan(FastMath.toRadians(keyValue.getDoubleValue()));
             return true;
 
         case ARG_OF_PERICENTER:
-            general.setPa(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
+            general.setPa(FastMath.toRadians(keyValue.getDoubleValue()));
             return true;
 
         case TRUE_ANOMALY:
             general.setAnomalyType("TRUE");
-            general.setAnomaly(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
+            general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
             return true;
 
         case MEAN_ANOMALY:
             general.setAnomalyType("MEAN");
-            general.setAnomaly(FastMath.toRadians(Double.parseDouble(keyValue.getValue())));
+            general.setAnomaly(FastMath.toRadians(keyValue.getDoubleValue()));
             return true;
 
         case GM:
-            general.setMuParsed(Double.parseDouble(keyValue.getValue()) * 1e9);
+            general.setMuParsed(keyValue.getDoubleValue() * 1e9);
             return true;
 
         case MASS:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setMass(Double.parseDouble(keyValue.getValue()));
+            general.setMass(keyValue.getDoubleValue());
             return true;
 
         case SOLAR_RAD_AREA:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setSolarRadArea(Double.parseDouble(keyValue.getValue()));
+            general.setSolarRadArea(keyValue.getDoubleValue());
             return true;
 
         case SOLAR_RAD_COEFF:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setSolarRadCoeff(Double.parseDouble(keyValue.getValue()));
+            general.setSolarRadCoeff(keyValue.getDoubleValue());
             return true;
 
         case DRAG_AREA:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setDragArea(Double.parseDouble(keyValue.getValue()));
+            general.setDragArea(keyValue.getDoubleValue());
             return true;
 
         case DRAG_COEFF:
             comment.addAll(0, general.getSpacecraftComment());
             general.setSpacecraftComment(comment);
             comment.clear();
-            general.setDragCoeff(Double.parseDouble(keyValue.getValue()));
+            general.setDragCoeff(keyValue.getDoubleValue());
             return true;
 
         case COV_REF_FRAME:
@@ -320,87 +426,87 @@ public abstract class ODMParser {
 
         case CX_X:
             general.createCovarianceMatrix();
-            general.setCovarianceMatrixEntry(0, 0, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(0, 0, keyValue.getDoubleValue());
             return true;
 
         case CY_X:
-            general.setCovarianceMatrixEntry(0, 1, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(0, 1, keyValue.getDoubleValue());
             return true;
 
         case CY_Y:
-            general.setCovarianceMatrixEntry(1, 1, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(1, 1, keyValue.getDoubleValue());
             return true;
 
         case CZ_X:
-            general.setCovarianceMatrixEntry(0, 2, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(0, 2, keyValue.getDoubleValue());
             return true;
 
         case CZ_Y:
-            general.setCovarianceMatrixEntry(1, 2, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(1, 2, keyValue.getDoubleValue());
             return true;
 
         case CZ_Z:
-            general.setCovarianceMatrixEntry(2, 2, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(2, 2, keyValue.getDoubleValue());
             return true;
 
         case CX_DOT_X:
-            general.setCovarianceMatrixEntry(0, 3, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(0, 3, keyValue.getDoubleValue());
             return true;
 
         case CX_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 3, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(1, 3, keyValue.getDoubleValue());
             return true;
 
         case CX_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 3, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(2, 3, keyValue.getDoubleValue());
             return true;
 
         case CX_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 3, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(3, 3, keyValue.getDoubleValue());
             return true;
 
         case CY_DOT_X:
-            general.setCovarianceMatrixEntry(0, 4, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(0, 4, keyValue.getDoubleValue());
             return true;
 
         case CY_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 4, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(1, 4, keyValue.getDoubleValue());
             return true;
 
         case CY_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 4, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(2, 4, keyValue.getDoubleValue());
             return true;
 
         case CY_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 4, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(3, 4, keyValue.getDoubleValue());
             return true;
 
         case CY_DOT_Y_DOT:
-            general.setCovarianceMatrixEntry(4, 4, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(4, 4, keyValue.getDoubleValue());
             return true;
 
         case CZ_DOT_X:
-            general.setCovarianceMatrixEntry(0, 5, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(0, 5, keyValue.getDoubleValue());
             return true;
 
         case CZ_DOT_Y:
-            general.setCovarianceMatrixEntry(1, 5, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(1, 5, keyValue.getDoubleValue());
             return true;
 
         case CZ_DOT_Z:
-            general.setCovarianceMatrixEntry(2, 5, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(2, 5, keyValue.getDoubleValue());
             return true;
 
         case CZ_DOT_X_DOT:
-            general.setCovarianceMatrixEntry(3, 5, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(3, 5, keyValue.getDoubleValue());
             return true;
 
         case CZ_DOT_Y_DOT:
-            general.setCovarianceMatrixEntry(4, 5, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(4, 5, keyValue.getDoubleValue());
             return true;
 
         case CZ_DOT_Z_DOT:
-            general.setCovarianceMatrixEntry(5, 5, Double.parseDouble(keyValue.getValue()));
+            general.setCovarianceMatrixEntry(5, 5, keyValue.getDoubleValue());
             return true;
 
         case USER_DEFINED_X:

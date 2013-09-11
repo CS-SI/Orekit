@@ -39,7 +39,7 @@ import org.orekit.utils.IERSConventions;
 public abstract class ODMFile implements OrbitFile {
 
     /** CCSDS Format version. */
-    private String formatVersion;
+    private double formatVersion;
 
     /** Header comments. The list contains a string for each line of comment. */
     private List<String> headerComment;
@@ -189,14 +189,14 @@ public abstract class ODMFile implements OrbitFile {
     /** Get the CCSDS ODM (OPM, OMM or OEM) format version.
      * @return format version
      */
-    public String getFormatVersion() {
+    public double getFormatVersion() {
         return formatVersion;
     }
 
     /** Set the CCSDS ODM (OPM, OMM or OEM) format version.
      * @param formatVersion the format version to be set
      */
-    void setFormatVersion(final String formatVersion) {
+    void setFormatVersion(final double formatVersion) {
         this.formatVersion = formatVersion;
     }
 

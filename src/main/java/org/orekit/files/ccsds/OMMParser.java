@@ -17,8 +17,6 @@
 package org.orekit.files.ccsds;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,18 +36,6 @@ import org.orekit.utils.IERSConventions;
  * @since 6.1
  */
 public class OMMParser extends ODMParser implements OrbitFileParser {
-
-    /** Launch Year. Used for the OMMFile generateTLE method.
-     * Has to be configured by the user prior parsing. */
-    private int launchYear;
-
-    /** Launch number. Used for the OMMFile generateTLE method.
-     * Has to be configured by the user prior parsing. */
-    private int launchNumber;
-
-    /** Piece of launch (from "A" to "ZZZ"). Used for the OMMFile generateTLE method.
-     * Has to be configured by the user prior parsing. */
-    private String launchPiece;
 
     /** Simple constructor.
      * <p>
@@ -97,185 +83,134 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
      */
     private OMMParser(final AbsoluteDate missionReferenceDate, final double mu, final IERSConventions conventions,
                       final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions);
-        this.launchYear   = launchYear;
-        this.launchNumber = launchNumber;
-        this.launchPiece  = launchPiece;
+        super(missionReferenceDate, mu, conventions, launchYear, launchNumber, launchPiece);
     }
 
-    /** Set initial date.
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @return a new instance, with mission reference date replaced
-     * @see #getMissionReferenceDate()
-     */
+    /** {@inheritDoc} */
     public OMMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
         return new OMMParser(newMissionReferenceDate, getMu(), getConventions(),
-                             launchYear, launchNumber, launchPiece);
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
-    /** Set gravitational coefficient.
-     * @param newMu gravitational coefficient to use while parsing
-     * @return a new instance, with gravitational coefficient date replaced
-     * @see #getMu()
-     */
+    /** {@inheritDoc} */
     public OMMParser withMu(final double newMu) {
         return new OMMParser(getMissionReferenceDate(), newMu, getConventions(),
-                             launchYear, launchNumber, launchPiece);
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
-    /** Set IERS conventions.
-     * @param newConventions IERS conventions to use while parsing
-     * @return a new instance, with IERS conventions replaced
-     * @see #getConventions()
-     */
+    /** {@inheritDoc} */
     public OMMParser withConventions(final IERSConventions newConventions) {
         return new OMMParser(getMissionReferenceDate(), getMu(), newConventions,
-                             launchYear, launchNumber, launchPiece);
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
-    /** Set TLE settings.
-     * @param newLaunchYear launch year
-     * @param newLaunchNumber launch number
-     * @param newLaunchPiece piece of launch (from "A" to "ZZZ")
-     * @return a new instance, with TLE settings replaced
-     */
-    public OMMParser withTLESettings(final int newLaunchYear, final int newLaunchNumber,
-                                     final String newLaunchPiece) {
+    /** {@inheritDoc} */
+    public OMMParser withInternationalDesignator(final int newLaunchYear,
+                                                 final int newLaunchNumber,
+                                                 final String newLaunchPiece) {
         return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(),
                              newLaunchYear, newLaunchNumber, newLaunchPiece);
     }
 
     /** {@inheritDoc} */
-    public OMMFile parse(final String fileName)
-        throws OrekitException {
-
-        InputStream stream = null;
-
-        try {
-            stream = new FileInputStream(fileName);
-            return parse(stream);
-        } catch (FileNotFoundException e) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE,
-                                      fileName);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException e) {
-                // ignore
-            }
-        }
+    @Override
+    public OMMFile parse(final String fileName) throws OrekitException {
+        return (OMMFile) super.parse(fileName);
     }
 
     /** {@inheritDoc} */
-    public OMMFile parse(final InputStream stream)
-        throws OrekitException {
+    public OMMFile parse(final InputStream stream) throws OrekitException {
 
         try {
-            return parseInternal(stream);
-        } catch (IOException e) {
-            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
-        }
-    }
 
-    /**
-     * Parse the OMM file from the given {@link InputStream} and return a
-     * {@link OMMFile} object.
-     * @param stream the stream to be parsed
-     * @return the {@link OMMFile}
-     * @throws OrekitException if the file could not be parsed successfully
-     * @throws IOException if an error occurs while reading from the stream
-     */
-    private OMMFile parseInternal(final InputStream stream)
-        throws OrekitException, IOException {
+            final BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(stream, "UTF-8"));
 
-        final BufferedReader reader = new BufferedReader(
-                                                         new InputStreamReader(
-                                                                               stream,
-                                                                               "UTF-8"));
-        // initialize internal data structures
-        final ParseInfo pi = new ParseInfo();
-        final OMMFile file = pi.file;
+            // initialize internal data structures
+            final ParseInfo pi = new ParseInfo();
+            final OMMFile file = pi.file;
 
-        // set the additional data that has been configured prior the parsing by the user.
-        pi.file.setMissionReferenceDate(getMissionReferenceDate());
-        pi.file.setMuSet(getMu());
-        pi.file.setConventions(getConventions());
-        pi.file.setLaunchYear(launchYear);
-        pi.file.setLaunchNumber(launchNumber);
-        pi.file.setLaunchPiece(launchPiece);
+            // set the additional data that has been configured prior the parsing by the user.
+            pi.file.setMissionReferenceDate(getMissionReferenceDate());
+            pi.file.setMuSet(getMu());
+            pi.file.setConventions(getConventions());
+            pi.file.getMetaData().setLaunchYear(getLaunchYear());
+            pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
+            pi.file.getMetaData().setLaunchPiece(getLaunchPiece());
 
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++pi.lineNumber;
-            if (line.trim().length() == 0) {
-                continue;
-            }
-            pi.keyValue = new KeyValue(line);
-            if (pi.keyValue.getKeyword() == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
-            }
-            switch (pi.keyValue.getKeyword()) {
-            case CCSDS_OMM_VERS:
-                file.setFormatVersion(pi.keyValue.getValue());
-                break;
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                ++pi.lineNumber;
+                if (line.trim().length() == 0) {
+                    continue;
+                }
+                pi.keyValue = new KeyValue(line);
+                if (pi.keyValue.getKeyword() == null) {
+                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
+                }
+                switch (pi.keyValue.getKeyword()) {
+                case CCSDS_OMM_VERS:
+                    file.setFormatVersion(pi.keyValue.getDoubleValue());
+                    break;
 
-            case MEAN_ELEMENT_THEORY:
-                file.getMetaData().setMeanElementTheory(pi.keyValue.getValue());
-                break;
+                case MEAN_ELEMENT_THEORY:
+                    file.getMetaData().setMeanElementTheory(pi.keyValue.getValue());
+                    break;
 
-            case MEAN_MOTION:
-                file.setMeanMotion(Double.parseDouble(pi.keyValue.getValue()) * FastMath.PI / 43200.0);
-                break;
+                case MEAN_MOTION:
+                    file.setMeanMotion(pi.keyValue.getDoubleValue() * FastMath.PI / 43200.0);
+                    break;
 
-            case EPHEMERIS_TYPE:
-                file.setTLERelatedParametersComment(pi.commentTmp);
-                pi.commentTmp.clear();
-                file.setEphemerisType(Integer.parseInt(pi.keyValue.getValue()));
-                break;
+                case EPHEMERIS_TYPE:
+                    file.setTLERelatedParametersComment(pi.commentTmp);
+                    pi.commentTmp.clear();
+                    file.setEphemerisType(Integer.parseInt(pi.keyValue.getValue()));
+                    break;
 
-            case CLASSIFICATION_TYPE:
-                file.setClassificationType(pi.keyValue.getValue().charAt(0));
-                break;
+                case CLASSIFICATION_TYPE:
+                    file.setClassificationType(pi.keyValue.getValue().charAt(0));
+                    break;
 
-            case NORAD_CAT_ID:
-                file.setNoradID(Integer.parseInt(pi.keyValue.getValue()));
-                break;
+                case NORAD_CAT_ID:
+                    file.setNoradID(Integer.parseInt(pi.keyValue.getValue()));
+                    break;
 
-            case ELEMENT_SET_NO:
-                file.setElementSetNo(pi.keyValue.getValue());
-                break;
+                case ELEMENT_SET_NO:
+                    file.setElementSetNo(pi.keyValue.getValue());
+                    break;
 
-            case REV_AT_EPOCH:
-                file.setRevAtEpoch(Integer.parseInt(pi.keyValue.getValue()));
-                break;
+                case REV_AT_EPOCH:
+                    file.setRevAtEpoch(Integer.parseInt(pi.keyValue.getValue()));
+                    break;
 
-            case BSTAR:
-                file.setbStar(Double.parseDouble(pi.keyValue.getValue()));
-                break;
+                case BSTAR:
+                    file.setbStar(pi.keyValue.getDoubleValue());
+                    break;
 
-            case MEAN_MOTION_DOT:
-                file.setMeanMotionDot(Double.parseDouble(pi.keyValue.getValue()) * FastMath.PI / 1.86624e9);
-                break;
+                case MEAN_MOTION_DOT:
+                    file.setMeanMotionDot(pi.keyValue.getDoubleValue() * FastMath.PI / 1.86624e9);
+                    break;
 
-            case MEAN_MOTION_DDOT:
-                file.setMeanMotionDotDot(Double.parseDouble(pi.keyValue.getValue()) *
-                                         FastMath.PI / 5.3747712e13);
-                break;
+                case MEAN_MOTION_DDOT:
+                    file.setMeanMotionDotDot(pi.keyValue.getDoubleValue() *
+                                             FastMath.PI / 5.3747712e13);
+                    break;
 
-            default:
-                boolean parsed = false;
-                parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
-                parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
-                if (!parsed) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
+                default:
+                    boolean parsed = false;
+                    parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
+                    parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                    parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                    parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                    if (!parsed) {
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
+                    }
                 }
             }
+            reader.close();
+            return file;
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
-        reader.close();
-        return file;
     }
 
     /** Private class used to stock OMM parsing info.

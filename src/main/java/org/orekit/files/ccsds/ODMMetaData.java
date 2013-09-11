@@ -44,6 +44,15 @@ public class ODMMetaData {
     /** Object identifier of the object for which the orbit state is provided. */
     private String objectID;
 
+    /** Launch Year. */
+    private int launchYear;
+
+    /** Launch number. */
+    private int launchNumber;
+
+    /** Piece of launch (from "A" to "ZZZ"). */
+    private String launchPiece;
+
     /** Origin of reference frame. */
     private String centerName;
 
@@ -131,6 +140,48 @@ public class ODMMetaData {
      */
     void setObjectID(final String objectID) {
         this.objectID = objectID;
+    }
+
+    /** Set the launch year.
+     * @param launchYear launch year
+     */
+    void setLaunchYear(final int launchYear) {
+        this.launchYear = launchYear;
+    }
+
+    /** Get the launch year.
+     * @return launch year
+     */
+    public int getLaunchYear() {
+        return launchYear;
+    }
+
+    /** Set the launch number.
+     * @param launchNumber launch number
+     */
+    void setLaunchNumber(final int launchNumber) {
+        this.launchNumber = launchNumber;
+    }
+
+    /** Get the launch number.
+     * @return launch number
+     */
+    public int getLaunchNumber() {
+        return launchNumber;
+    }
+
+    /** Set the piece of launch.
+     * @param launchPiece piece of launch
+     */
+    void setLaunchPiece(final String launchPiece) {
+        this.launchPiece = launchPiece;
+    }
+
+    /** Get the piece of launch.
+     * @return piece of launch
+     */
+    public String getLaunchPiece() {
+        return launchPiece;
     }
 
     /** Get the origin of reference frame.

@@ -50,20 +50,20 @@ public class OMMParserTest {
         // data.
         final String ex = "/ccsds/OMMExample.txt";
 
+        // initialize parser with purposely wrong international designator
+        // (in order to check it is correctly overridden when parsing)
         final OMMParser parser =
-                new OMMParser().withMu(398600e9).withTLESettings(1998, 1, "a");
+                new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
         
         final InputStream inEntry = getClass().getResourceAsStream(ex);
-
         final OMMFile file = parser.parse(inEntry);
-//        final SatelliteTimeCoordinate coord = file.getSatelliteCoordinatesOMM();
 
         // Check Header Block;
-        Assert.assertEquals(file.getFormatVersion(), "2.0");
+        Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
         Assert.assertEquals(new AbsoluteDate(2007, 03, 06, 16, 00, 00,
-                                             TimeScalesFactory.getUTC()), file
-            .getCreationDate());        
-        Assert.assertEquals(file.getOriginator(), "NOAA/USA");
+                                             TimeScalesFactory.getUTC()),
+                                             file.getCreationDate());        
+        Assert.assertEquals("NOAA/USA", file.getOriginator());
         
         // Check Metadata Block;
         
@@ -108,15 +108,9 @@ public class OMMParserTest {
         Assert.assertEquals(file.getBStar(), 0.0001, 1e-10);
         Assert.assertEquals(file.getMeanMotionDot(), -0.00000113 * FastMath.PI / 1.86624e9, 1e-12);
         Assert.assertEquals(file.getMeanMotionDotDot(), 0.0 * FastMath.PI / 5.3747712e13, 1e-10);   
-        Assert.assertEquals(1998, file.getLaunchYear());
-        Assert.assertEquals(1, file.getLaunchNumber());
-        Assert.assertEquals("a", file.getLaunchPiece());
-//        TLE tleExpected = new TLE(23581, 'U', 2000, 1, "A", 0, 925, new AbsoluteDate("2007-064T10:34:41.4264",TimeScalesFactory.getUTC()), 1.00273272 * FastMath.PI / 43200.0, -0.00000113 * FastMath.PI / 1.86624e9, 0.0 *
-//                                  FastMath.PI / 5.3747712e13, 0.0005013, FastMath.toRadians(3.0539), FastMath.toRadians(249.2363), FastMath.toRadians(81.7939), FastMath.toRadians(150.1602), 4316, 0.0001);
-//        TLE tleActual = file.generateTLE();
-//        System.out.println(tleActual.getI());
-//        System.out.println(tleExpected.getI());
-//        Assert.assertEquals(tleExpected,tleActual);
+        Assert.assertEquals(1995, file.getMetaData().getLaunchYear());
+        Assert.assertEquals(25, file.getMetaData().getLaunchNumber());
+        Assert.assertEquals("A", file.getMetaData().getLaunchPiece());
         file.generateCartesianOrbit();
         file.generateKeplerianOrbit();
         try{
@@ -137,7 +131,7 @@ public class OMMParserTest {
         final OMMParser parser = new OMMParser().
                                  withMissionReferenceDate(new AbsoluteDate()).
                                  withConventions(IERSConventions.IERS_1996).
-                                 withTLESettings(1998, 1, "a");
+                                 withInternationalDesignator(1998, 1, "a");
 
         final OMMFile file = parser.parse(name);
         Assert.assertEquals(file.getMissionReferenceDate().shiftedBy(210840), file.getMetaData().getFrameEpoch());
@@ -168,6 +162,9 @@ public class OMMParserTest {
         ArrayList<String> dataCovarianceComment = new ArrayList<String>();
         dataCovarianceComment.add("Covariance matrix");
         Assert.assertEquals(dataCovarianceComment, file.getCovarianceComment());
+        Assert.assertEquals(1995, file.getMetaData().getLaunchYear());
+        Assert.assertEquals(25, file.getMetaData().getLaunchNumber());
+        Assert.assertEquals("A", file.getMetaData().getLaunchPiece());
         file.generateSpacecraftState();
         file.generateKeplerianOrbit();
 

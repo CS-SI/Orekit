@@ -17,8 +17,6 @@
 package org.orekit.files.ccsds;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -67,208 +65,180 @@ public class OPMParser extends ODMParser implements OrbitFileParser {
      * </p>
      */
     public OPMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null);
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, 0, 0, "");
     }
 
     /** Complete constructor.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
+     * @param launchYear launch year for TLEs
+     * @param launchNumber launch number for TLEs
+     * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      */
-    private OPMParser(final AbsoluteDate missionReferenceDate, final double mu,
-                      final IERSConventions conventions) {
-        super(missionReferenceDate, mu, conventions);
+    private OPMParser(final AbsoluteDate missionReferenceDate, final double mu, final IERSConventions conventions,
+                      final int launchYear, final int launchNumber, final String launchPiece) {
+        super(missionReferenceDate, mu, conventions, launchYear, launchNumber, launchPiece);
     }
 
-    /** Set initial date.
-     * @param newMissionReferenceDate mission reference date to use while parsing
-     * @return a new instance, with mission reference date replaced
-     * @see #getMissionReferenceDate()
-     */
+    /** {@inheritDoc} */
     public OPMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OPMParser(newMissionReferenceDate, getMu(), getConventions());
+        return new OPMParser(newMissionReferenceDate, getMu(), getConventions(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
-    /** Set gravitational coefficient.
-     * @param newMu gravitational coefficient to use while parsing
-     * @return a new instance, with gravitational coefficient date replaced
-     * @see #getMu()
-     */
+    /** {@inheritDoc} */
     public OPMParser withMu(final double newMu) {
-        return new OPMParser(getMissionReferenceDate(), newMu, getConventions());
+        return new OPMParser(getMissionReferenceDate(), newMu, getConventions(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
-    /** Set IERS conventions.
-     * @param newConventions IERS conventions to use while parsing
-     * @return a new instance, with IERS conventions replaced
-     * @see #getConventions()
-     */
+    /** {@inheritDoc} */
     public OPMParser withConventions(final IERSConventions newConventions) {
-        return new OPMParser(getMissionReferenceDate(), getMu(), newConventions);
+        return new OPMParser(getMissionReferenceDate(), getMu(), newConventions,
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
     /** {@inheritDoc} */
-    public OPMFile parse(final String fileName)
-        throws OrekitException {
-
-        InputStream stream = null;
-
-        try {
-            stream = new FileInputStream(fileName);
-            return parse(stream);
-        } catch (FileNotFoundException e) {
-            throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE,
-                                      fileName);
-        } finally {
-            try {
-                if (stream != null) {
-                    stream.close();
-                }
-            } catch (IOException e) {
-                // ignore
-            }
-        }
+    public OPMParser withInternationalDesignator(final int newLaunchYear,
+                                                 final int newLaunchNumber,
+                                                 final String newLaunchPiece) {
+        return new OPMParser(getMissionReferenceDate(), getMu(), getConventions(),
+                             newLaunchYear, newLaunchNumber, newLaunchPiece);
     }
 
     /** {@inheritDoc} */
-    public OPMFile parse(final InputStream stream)
-        throws OrekitException {
-
-        try {
-            return parseInternal(stream);
-        } catch (IOException e) {
-            throw new OrekitException(e, new DummyLocalizable(e.getMessage()));
-        }
+    @Override
+    public OPMFile parse(final String fileName) throws OrekitException {
+        return (OPMFile) super.parse(fileName);
     }
 
-    /**
-     * Parse the OPM file from the given {@link InputStream} and return a
-     * {@link OPMFile} object.
-     * @param stream the stream to be parsed
-     * @return the {@link OPMFile}
-     * @throws OrekitException if the file could not be parsed successfully
-     * @throws IOException if an error occurs while reading from the stream
-     */
-    private OPMFile parseInternal(final InputStream stream)
-        throws OrekitException, IOException {
+    /** {@inheritDoc} */
+    public OPMFile parse(final InputStream stream) throws OrekitException {
 
-        final BufferedReader reader =
-                new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-        // initialize internal data structures
-        final ParseInfo pi = new ParseInfo();
-        final OPMFile file = pi.file;
+        try {
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+            // initialize internal data structures
+            final ParseInfo pi = new ParseInfo();
+            final OPMFile file = pi.file;
 
-        // set the additional data that has been configured prior the parsing by the user.
-        pi.file.setMissionReferenceDate(getMissionReferenceDate());
-        pi.file.setMuSet(getMu());
-        pi.file.setConventions(getConventions());
+            // set the additional data that has been configured prior the parsing by the user.
+            pi.file.setMissionReferenceDate(getMissionReferenceDate());
+            pi.file.setMuSet(getMu());
+            pi.file.setConventions(getConventions());
+            pi.file.getMetaData().setLaunchYear(getLaunchYear());
+            pi.file.getMetaData().setLaunchNumber(getLaunchNumber());
+            pi.file.getMetaData().setLaunchPiece(getLaunchPiece());
 
-        for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            ++pi.lineNumber;
-            if (line.trim().length() == 0) {
-                continue;
-            }
-            pi.keyValue = new KeyValue(line);
-            if (pi.keyValue.getKeyword() == null) {
-                throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
-            }
-            switch (pi.keyValue.getKeyword()) {
-
-            case CCSDS_OPM_VERS:
-                file.setFormatVersion(pi.keyValue.getValue());
-                break;
-
-            case X:
-                pi.x = Double.parseDouble(pi.keyValue.getValue()) * 1000;
-                break;
-
-            case Y:
-                pi.y = Double.parseDouble(pi.keyValue.getValue()) * 1000;
-                break;
-
-            case Z:
-                pi.z = Double.parseDouble(pi.keyValue.getValue()) * 1000;
-                break;
-
-            case X_DOT:
-                pi.x_dot = Double.parseDouble(pi.keyValue.getValue()) * 1000;
-                break;
-
-            case Y_DOT:
-                pi.y_dot = Double.parseDouble(pi.keyValue.getValue()) * 1000;
-                break;
-
-            case Z_DOT:
-                pi.z_dot = Double.parseDouble(pi.keyValue.getValue()) * 1000;
-                break;
-
-            case MAN_EPOCH_IGNITION:
-                if (pi.maneuver != null) {
-                    file.addManeuver(pi.maneuver);
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                ++pi.lineNumber;
+                if (line.trim().length() == 0) {
+                    continue;
                 }
-                pi.maneuver = new OPMFile.Maneuver();
-                pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
-                if (!pi.commentTmp.isEmpty()) {
-                    pi.maneuver.setComment(pi.commentTmp);
-                    pi.commentTmp.clear();
+                pi.keyValue = new KeyValue(line);
+                if (pi.keyValue.getKeyword() == null) {
+                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.keyValue.getKey(), line);
                 }
-                break;
+                switch (pi.keyValue.getKeyword()) {
 
-            case MAN_DURATION:
-                pi.maneuver.setDuration(Double.parseDouble(pi.keyValue.getValue()));
-                break;
+                case CCSDS_OPM_VERS:
+                    file.setFormatVersion(pi.keyValue.getDoubleValue());
+                    break;
 
-            case MAN_DELTA_MASS:
-                pi.maneuver.setDeltaMass(Double.parseDouble(pi.keyValue.getValue()));
-                break;
+                case X:
+                    pi.x = pi.keyValue.getDoubleValue() * 1000;
+                    break;
 
-            case MAN_REF_FRAME:
-                final CCSDSFrame manFrame = parseCCSDSFrame(pi.keyValue.getValue());
-                if (manFrame.isLof()) {
-                    pi.maneuver.setRefLofType(manFrame.getLofType());
-                } else {
-                    pi.maneuver.setRefFrame(manFrame.getFrame(getConventions()));
+                case Y:
+                    pi.y = pi.keyValue.getDoubleValue() * 1000;
+                    break;
+
+                case Z:
+                    pi.z = pi.keyValue.getDoubleValue() * 1000;
+                    break;
+
+                case X_DOT:
+                    pi.x_dot = pi.keyValue.getDoubleValue() * 1000;
+                    break;
+
+                case Y_DOT:
+                    pi.y_dot = pi.keyValue.getDoubleValue() * 1000;
+                    break;
+
+                case Z_DOT:
+                    pi.z_dot = pi.keyValue.getDoubleValue() * 1000;
+                    break;
+
+                case MAN_EPOCH_IGNITION:
+                    if (pi.maneuver != null) {
+                        file.addManeuver(pi.maneuver);
+                    }
+                    pi.maneuver = new OPMFile.Maneuver();
+                    pi.maneuver.setEpochIgnition(parseDate(pi.keyValue.getValue(), file.getTimeSystem()));
+                    if (!pi.commentTmp.isEmpty()) {
+                        pi.maneuver.setComment(pi.commentTmp);
+                        pi.commentTmp.clear();
+                    }
+                    break;
+
+                case MAN_DURATION:
+                    pi.maneuver.setDuration(pi.keyValue.getDoubleValue());
+                    break;
+
+                case MAN_DELTA_MASS:
+                    pi.maneuver.setDeltaMass(pi.keyValue.getDoubleValue());
+                    break;
+
+                case MAN_REF_FRAME:
+                    final CCSDSFrame manFrame = parseCCSDSFrame(pi.keyValue.getValue());
+                    if (manFrame.isLof()) {
+                        pi.maneuver.setRefLofType(manFrame.getLofType());
+                    } else {
+                        pi.maneuver.setRefFrame(manFrame.getFrame(getConventions()));
+                    }
+                    break;
+
+                case MAN_DV_1:
+                    pi.maneuver.setdV(new Vector3D(pi.keyValue.getDoubleValue() * 1000,
+                                                   pi.maneuver.getDV().getY(),
+                                                   pi.maneuver.getDV().getZ()));
+                    break;
+
+                case MAN_DV_2:
+                    pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
+                                                   pi.keyValue.getDoubleValue() * 1000,
+                                                   pi.maneuver.getDV().getZ()));
+                    break;
+
+                case MAN_DV_3:
+                    pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
+                                                   pi.maneuver.getDV().getY(),
+                                                   pi.keyValue.getDoubleValue() * 1000));
+                    break;
+
+                default:
+                    boolean parsed = false;
+                    parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
+                    parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
+                    parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
+                    parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
+                    if (!parsed) {
+                        throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
+                    }
                 }
-                break;
 
-            case MAN_DV_1:
-                pi.maneuver.setdV(new Vector3D(Double.parseDouble(pi.keyValue.getValue()) * 1000,
-                                               pi.maneuver.getDV().getY(),
-                                               pi.maneuver.getDV().getZ()));
-                break;
-
-            case MAN_DV_2:
-                pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                               Double.parseDouble(pi.keyValue.getValue()) * 1000,
-                                               pi.maneuver.getDV().getZ()));
-                break;
-
-            case MAN_DV_3:
-                pi.maneuver.setdV(new Vector3D(pi.maneuver.getDV().getX(),
-                                               pi.maneuver.getDV().getY(),
-                                               Double.parseDouble(pi.keyValue.getValue()) * 1000));
-                break;
-
-            default:
-                boolean parsed = false;
-                parsed = parsed || parseComment(pi.keyValue, pi.commentTmp);
-                parsed = parsed || parseHeaderEntry(pi.keyValue, file, pi.commentTmp);
-                parsed = parsed || parseMetaDataEntry(pi.keyValue, file.getMetaData(), pi.commentTmp);
-                parsed = parsed || parseGeneralStateDataEntry(pi.keyValue, file, pi.commentTmp);
-                if (!parsed) {
-                    throw new OrekitException(OrekitMessages.CCSDS_UNEXPECTED_KEYWORD, pi.lineNumber, line);
-                }
             }
 
+            file.setPosition(new Vector3D(pi.x, pi.y, pi.z));
+            file.setVelocity(new Vector3D(pi.x_dot, pi.y_dot, pi.z_dot));
+            if (pi.maneuver != null) {
+                file.addManeuver(pi.maneuver);
+            }
+            reader.close();
+            return file;
+        } catch (IOException ioe) {
+            throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
         }
-
-        file.setPosition(new Vector3D(pi.x, pi.y, pi.z));
-        file.setVelocity(new Vector3D(pi.x_dot, pi.y_dot, pi.z_dot));
-        if (pi.maneuver != null) {
-            file.addManeuver(pi.maneuver);
-        }
-        reader.close();
-        return file;
     }
 
     /** Private class used to stock OPM parsing info.

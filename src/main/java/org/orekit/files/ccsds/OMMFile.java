@@ -56,15 +56,6 @@ public class OMMFile extends OGMFile {
      */
     private char classificationType;
 
-    /** Launch year. Not parsed but set manually in the OMMParser. */
-    private int launchYear;
-
-    /** Launch number. Not parsed but set manually in the OMMParser. */
-    private int launchNumber;
-
-    /** Piece of launch (from "A" to "ZZZ"). Not parsed but set manually in the OMMParser. */
-    private String launchPiece;
-
     /** NORAD Catalog Number ("Satellite Number"), an integer of up to nine digits. */
     private Integer noradID;
 
@@ -140,48 +131,6 @@ public class OMMFile extends OGMFile {
      */
     void setClassificationType(final char classificationType) {
         this.classificationType = classificationType;
-    }
-
-    /** Get the launch year.
-     * @return the launch year
-     */
-    public int getLaunchYear() {
-        return launchYear;
-    }
-
-    /** Set the launch year.
-     * @param launchYear the launch year to be set
-     */
-    void setLaunchYear(final int launchYear) {
-        this.launchYear = launchYear;
-    }
-
-    /** Get the launch number.
-     * @return the launch number
-     */
-    public int getLaunchNumber() {
-        return launchNumber;
-    }
-
-    /** Set the launch number.
-     * @param launchNumber the launch number to be set
-     */
-    void setLaunchNumber(final int launchNumber) {
-        this.launchNumber = launchNumber;
-    }
-
-    /** Get the launch piece.
-     * @return the launch piece
-     */
-    public String getLaunchPiece() {
-        return launchPiece;
-    }
-
-    /** Set the launch piece.
-     * @param launchPiece the launch piece to be set
-     */
-    void setLaunchPiece(final String launchPiece) {
-        this.launchPiece = launchPiece;
     }
 
     /** Get the NORAD Catalog Number ("Satellite Number").
@@ -335,8 +284,10 @@ public class OMMFile extends OGMFile {
      * @return the tle
      */
     public TLE generateTLE() {
-        return new TLE(noradID, classificationType, launchYear, launchNumber, launchPiece, ephemerisType,
-                       Integer.parseInt(elementSetNo), getEpoch(), meanMotion, meanMotionDot, meanMotionDotDot,
+        return new TLE(noradID, classificationType,
+                       metaData.getLaunchYear(), metaData.getLaunchNumber(), metaData.getLaunchPiece(),
+                       ephemerisType, Integer.parseInt(elementSetNo), getEpoch(),
+                       meanMotion, meanMotionDot, meanMotionDotDot,
                        getE(), getI(), getPa(), getRaan(), getAnomaly(), revAtEpoch, bStar);
     }
 

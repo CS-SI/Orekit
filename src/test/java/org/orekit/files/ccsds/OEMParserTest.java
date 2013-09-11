@@ -60,6 +60,9 @@ public class OEMParserTest {
         Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
         Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
         Assert.assertEquals("MARS BARYCENTER", file.getEphemeridesBlocks().get(0).getMetaData().getCenterName());
+        Assert.assertEquals(1996, file.getEphemeridesBlocks().get(0).getMetaData().getLaunchYear());
+        Assert.assertEquals(62, file.getEphemeridesBlocks().get(0).getMetaData().getLaunchNumber());
+        Assert.assertEquals("A", file.getEphemeridesBlocks().get(0).getMetaData().getLaunchPiece());
         Assert.assertFalse(file.getEphemeridesBlocks().get(0).getMetaData().getHasCreatableBody());
         Assert.assertNull(file.getEphemeridesBlocks().get(0).getMetaData().getCenterBody());
         Assert.assertEquals(new AbsoluteDate(1996, 12, 18, 12, 00, 0.331, TimeScalesFactory.getUTC()),
