@@ -63,8 +63,8 @@ public abstract class ODMFile implements OrbitFile {
     private IERSConventions conventions;
 
     /** Final gravitational coefficient (used for the public methods that need such a parameter, ex: generateCartesianOrbit).
-     * In order of decreasing priority, finalMU is equal to: the coefficient set by the user with the parser's method setMu,
-     * the coefficient parsed in the file, the coefficient created from the knowledge of the central body.
+     * In order of decreasing priority, finalMU is equal to: the coefficient parsed in the file, the coefficient set by the
+     * user with the parser's method setMu, the coefficient created from the knowledge of the central body.
      */
     private double muUsed;
 
@@ -137,15 +137,19 @@ public abstract class ODMFile implements OrbitFile {
 
     /**
      * Set the gravitational coefficient created from the knowledge of the central body.
-     * In order of decreasing priority, finalMU is set equal to: the coefficient set by the user with the parser's method setMu,
-     * the coefficient parsed in the file, the coefficient created from the knowledge of the central body.
+     * In order of decreasing priority, finalMU is set equal to:
+     * <ol>
+     *   <li>the coefficient parsed in the file,</li>
+     *   <li>the coefficient set by the user with the parser's method setMu,</li>
+     *   <li>the coefficient created from the knowledge of the central body.</li>
+     * </ol>
      * @throws OrekitException if no gravitational coefficient can be found
      */
     protected void setMuUsed() throws OrekitException {
-        if (!Double.isNaN(muSet)) {
-            muUsed = muSet;
-        } else if (!Double.isNaN(muParsed)) {
+        if (!Double.isNaN(muParsed)) {
             muUsed = muParsed;
+        } else if (!Double.isNaN(muSet)) {
+            muUsed = muSet;
         } else if (!Double.isNaN(muCreated)) {
             muUsed = muCreated;
         } else {
