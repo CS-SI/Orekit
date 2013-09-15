@@ -173,7 +173,7 @@ class TesseralContribution implements DSSTForceModel {
         TesseralContribution.newcomb  = new NewcombOperators();
 
         // Factorials computation
-        final int maxFact = maxDegree + provider.getMaxOrder() + 1;
+        final int maxFact = 2 * maxDegree + 1;
         this.fact = new double[maxFact];
         fact[0] = 1;
         for (int i = 1; i < maxFact; i++) {
