@@ -25,6 +25,7 @@ import org.orekit.data.BodiesElements;
 import org.orekit.data.DelaunayArguments;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
+import org.orekit.data.PoissonSeriesParser;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.data.PolynomialParser;
 import org.orekit.errors.OrekitException;
@@ -875,10 +876,10 @@ public enum IERSConventions {
         throws OrekitException {
 
         // get the table data
-        final InputStream stream = IERSConventions.class.getResourceAsStream(name);
-
-        return new PoissonSeries(stream, name, freeVariable, unit, nonPolyFactor,
-                                 totalColumns, firstDelaunay, firstPlanetary, sinCosCoeffs);
+        final PoissonSeriesParser parser =
+                new PoissonSeriesParser(freeVariable, unit, nonPolyFactor,
+                                        totalColumns, firstDelaunay, firstPlanetary, sinCosCoeffs);
+        return parser.parse(IERSConventions.class.getResourceAsStream(name), name);
 
     }
 

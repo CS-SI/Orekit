@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Separate parsing from using Poisson series.
+      </action>
       <action dev="luc" type="add" due-to="Steven Ports">
         Added support for parsing CCSDS ODM files (OPM, OMM and OEM).
       </action>
