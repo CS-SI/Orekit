@@ -47,7 +47,8 @@ import org.orekit.time.DateComponents;
  * suffix start from 1973-01-01, the file with the data suffix start
  * from 1992-01-01 and the files with the daily suffix.</p>
  * @author Romain Di Costanzo
- * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals2000A">file format description at USNO</a>
+ * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals2000A">finals2000A file format description at USNO</a>
+ * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals">finals file format description at USNO</a>
  */
 class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
 
