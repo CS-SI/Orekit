@@ -102,8 +102,9 @@ public class IERSConventionsTest {
         // the thresholds below have been set up large enough to have the test pass with
         // the default Orekit setting and the reference SOFA setting. There are implementation
         // differences between the two libraries, as the Delaunay parameters are not the
-        // same. If the content of the IERS-conventions/1996/nutation-arguments.txt file
-        // by Orekit is changed to match SOFA setting as follows:
+        // same (in Orekit, we are compliant with page 23 in chapter 5 of IERS conventions 1996.
+        // If the content of the IERS-conventions/1996/nutation-arguments.txt file by Orekit is
+        // changed to match SOFA setting instead of IERS conventions as follows:
         //
         //        # Mean Anomaly of the Moon
         //        F1 ≡ l = 485866.733″ + 1717915922.633″t + 31.310″t² + 0.064″t³

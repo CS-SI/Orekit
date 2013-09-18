@@ -20,12 +20,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
@@ -167,6 +169,15 @@ import org.orekit.errors.OrekitMessages;
  */
 public class PoissonSeriesParser {
 
+    /** Default pattern for fields with unknown type (non-space characters). */
+    private static final String  UNKNOWN_TYPE_PATTERN = "\\S+";
+
+    /** Pattern for fields with integer type. */
+    private static final String  INTEGER_TYPE_PATTERN = "[-+]?\\p{Digit}+";
+
+    /** Pattern for fields with real type. */
+    private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+
     /** Parser for the polynomial part. */
     private final PolynomialParser polynomialParser;
 
@@ -190,47 +201,137 @@ public class PoissonSeriesParser {
     private final double factor;
 
     /** Build a parser for a Poisson series from an IERS table file.
+     * @param polynomialParser polynomial parser to use
+     * @param factor multiplicative factor to use for non-polynomial coefficients
+     * @param fieldsPatterns patterns for fields
+     * @param firstDelaunay column of the first Delaunay multiplier
+     * @param firstPlanetary column of the first planetary multiplier
+     * @param sinCosColumns columns of the sine and cosine coefficients
+     */
+    private PoissonSeriesParser(final PolynomialParser polynomialParser,
+                                final double factor, final String[] fieldsPatterns,
+                                final int firstDelaunay, final int firstPlanetary,
+                                final int ... sinCosColumns) {
+        this.polynomialParser = polynomialParser;
+        this.fieldsPatterns   = fieldsPatterns;
+        this.firstDelaunay    = firstDelaunay;
+        this.firstPlanetary   = firstPlanetary;
+        this.sinCosColumns    = sinCosColumns;
+        this.factor           = factor;
+    }
+
+    /** Build a parser for a Poisson series from an IERS table file.
+     * @param totalColumns total number of columns in the non-polynomial sections
+     */
+    public PoissonSeriesParser(final int totalColumns) {
+        this(null, 1.0, createInitialFieldsPattern(totalColumns), -1, -1, new int[0]);
+    }
+
+    /** Create an array with only non-space fields patterns.
+     * @param totalColumns total number of columns
+     * @return a new fields pattern array
+     */
+    private static String[] createInitialFieldsPattern(final int totalColumns) {
+        final String[] patterns = new String[totalColumns];
+        setPatterns(patterns, 1, totalColumns, UNKNOWN_TYPE_PATTERN);
+        return patterns;
+    }
+
+    /** Set fields patterns.
+     * @param array fields pattern array to modify
+     * @param first first column to set (counting from 1), do nothing if non-positive
+     * @param count number of colums to set
+     * @param pattern pattern to use
+     */
+    private static void setPatterns(final String[] array, final int first, final int count, final String pattern) {
+        if (first > 0) {
+            Arrays.fill(array, first - 1, first - 1 + count, pattern);
+        }
+    }
+
+    /** Set up polynomial part parsing.
      * @param freeVariable name of the free variable in the polynomial part
      * @param unit default unit for polynomial, if not explicit within the file
-     * (may be null if the table has no polynomial part)
-     * @param factor multiplicative factor to use for non-polynomial coefficients
-     * @param totalColumns total number of columns in the non-polynomial sections
-     * @param firstDelaunay column of the first Delaunay multiplier (counting from 1)
-     * @param firstPlanetary column of the first planetary multiplier (counting from 1)
-     * @param sinCosColumns columns of the sine and cosine coefficients for successive
-     * degrees (i.e. sin, cos, t sin, t cos, t^2 sin, t^2 cos ...)
+     * @return a new parser, with polynomial parser updated
      */
-    public PoissonSeriesParser(final char freeVariable, final PolynomialParser.Unit unit,
-                               final double factor, final int totalColumns,
-                               final int firstDelaunay, final int firstPlanetary,
-                               final int ... sinCosColumns) {
+    public PoissonSeriesParser withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
+        return new PoissonSeriesParser(new PolynomialParser(freeVariable, unit), factor, fieldsPatterns,
+                                       firstDelaunay, firstPlanetary, sinCosColumns);
+    }
 
-        if (unit == null) {
-            // we don't expect any polynomial, we directly the the zero polynomial
-            polynomialParser = null;
-        } else {
-            // set up a parser that will later be used to fill in the polynomial
-            polynomialParser = new PolynomialParser(freeVariable, unit);
-        }
+    /** Set up multiplicative factor to use for non-polynomial coefficients.
+     * @param f multiplicative factor to use for non-polynomial coefficients
+     * @return a new parser, with updated columns settings
+     */
+    public PoissonSeriesParser withFactor(final double f) {
+        return new PoissonSeriesParser(polynomialParser, f, fieldsPatterns,
+                                       firstDelaunay, firstPlanetary, sinCosColumns);
+    }
 
-        // set the default pattern for all fields to real numbers
-        fieldsPatterns = new String[totalColumns];
-        for (int i = 0; i < fieldsPatterns.length; ++i) {
-            setRealNumberPattern(i);
-        }
+    /** Set up first column of Delaunay multiplier.
+     * @param firstColumn column of the first Delaunay multiplier (counting from 1)
+     * @return a new parser, with updated columns settings
+     */
+    public PoissonSeriesParser withFirstDelaunay(final int firstColumn) {
 
-        this.firstDelaunay  = firstDelaunay;
-        this.firstPlanetary = firstPlanetary;
-        this.factor         = factor;
-        this.sinCosColumns = sinCosColumns.clone();
+        // update the fields pattern to expect 5 integers at the right indices
+        final String[] newFieldsPatterns = fieldsPatterns.clone();
+        setPatterns(newFieldsPatterns, firstDelaunay, 5, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, firstColumn,   5, INTEGER_TYPE_PATTERN);
+
+        return new PoissonSeriesParser(polynomialParser, factor, newFieldsPatterns,
+                                       firstColumn, firstPlanetary, sinCosColumns);
 
     }
 
-    /** Set a column to real number pattern.
-     * @param i column index, counting from 0
+    /** Set up first column of planetary multiplier.
+     * @param firstColumn column of the first planetary multiplier (counting from 1)
+     * @return a new parser, with updated columns settings
      */
-    private void setRealNumberPattern(final int i) {
-        fieldsPatterns[i] = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
+    public PoissonSeriesParser withFirstPlanetary(final int firstColumn) {
+
+        // update the fields pattern to expect 9 integers at the right indices
+        final String[] newFieldsPatterns = fieldsPatterns.clone();
+        setPatterns(newFieldsPatterns, firstPlanetary, 9, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, firstColumn,    9, INTEGER_TYPE_PATTERN);
+
+        return new PoissonSeriesParser(polynomialParser, factor, newFieldsPatterns,
+                                       firstDelaunay, firstColumn, sinCosColumns);
+
+    }
+
+    /** Set up columns of the sine and cosine coefficients.
+     * @param degree degree to set up
+     * @param sin column of the sine coefficient for t<sup>degree</sup> counting from 1
+     * (may be -1 if there are no sine coefficients)
+     * @param cos column of the cosine coefficient for t<sup>degree</sup> counting from 1
+     * (may be -1 if there are no cosine coefficients)
+     * @return a new parser, with updated columns settings
+     */
+    public PoissonSeriesParser withSinCos(final int degree, final int sin, final int cos) {
+
+        // update the sin/cos columns array
+        final int maxDegree = FastMath.max(degree, sinCosColumns.length / 2 - 1);
+        final int[] newSinCosColumns = new int[2 * (maxDegree + 1)];
+        Arrays.fill(newSinCosColumns, -1);
+        System.arraycopy(sinCosColumns, 0, newSinCosColumns, 0, sinCosColumns.length);
+        newSinCosColumns[2 * degree]     = sin;
+        newSinCosColumns[2 * degree + 1] = cos;
+
+        // update the fields pattern to expect real numbers at the right indices
+        final String[] newFieldsPatterns = fieldsPatterns.clone();
+        if (2 * degree < sinCosColumns.length) {
+            setPatterns(newFieldsPatterns, sinCosColumns[2 * degree], 1, UNKNOWN_TYPE_PATTERN);
+        }
+        setPatterns(newFieldsPatterns, sin, 1, REAL_TYPE_PATTERN);
+        if (2 * degree  + 1 < sinCosColumns.length) {
+            setPatterns(newFieldsPatterns, sinCosColumns[2 * degree + 1], 1, UNKNOWN_TYPE_PATTERN);
+        }
+        setPatterns(newFieldsPatterns, cos, 1, REAL_TYPE_PATTERN);
+
+        return new PoissonSeriesParser(polynomialParser, factor, newFieldsPatterns,
+                                       firstDelaunay, firstPlanetary, newSinCosColumns);
+
     }
 
     /** Parse a stream.

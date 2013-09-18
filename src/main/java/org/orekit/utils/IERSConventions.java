@@ -60,7 +60,7 @@ public enum IERSConventions {
         /** {@inheritDoc} */
         @Override
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
-            return loadArguments(NUTATION_ARGUMENTS);
+            return new FundamentalNutationArguments(getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
@@ -92,10 +92,13 @@ public enum IERSConventions {
             final double fXSin2FDOm = 0.00016 * Constants.ARC_SECONDS_TO_RADIANS;
             final double sinEps0   = FastMath.sin(getEpsilon0());
 
-            final PoissonSeries xSum =
-                    loadPoissonSeries(X_Y_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
-                                      12, 1, -1, 7, -1, 8, 9);
+            final PoissonSeriesParser baseParser =
+                    new PoissonSeriesParser(12).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4).
+                        withFirstDelaunay(1);
+
+            final PoissonSeriesParser xParser = baseParser.withSinCos(0, 7, -1).withSinCos(1, 8, 9);
+            final PoissonSeries xSum = xParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
 
             // Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
             //     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
@@ -110,10 +113,8 @@ public enum IERSConventions {
             final double fYCosOm    = -0.00231 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fYCos2FDOm = -0.00014 * Constants.ARC_SECONDS_TO_RADIANS;
 
-            final PoissonSeries ySum =
-                    loadPoissonSeries(X_Y_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
-                                      12, 1, -1, -1, 10, 12, 11);
+            final PoissonSeriesParser yParser = baseParser.withSinCos(0, -1, 10).withSinCos(1, 12, 11);
+            final PoissonSeries ySum = yParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
 
             final PoissonSeries.CompiledSeries xySum = PoissonSeries.compile(xSum, ySum);
 
@@ -208,14 +209,17 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
-            final PoissonSeries psiSeries =
-                    loadPoissonSeries(PSI_EPSILON_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
-                                      10, 1, -1, 7, -1, 8, -1);
-            final PoissonSeries epsilonSeries =
-                    loadPoissonSeries(PSI_EPSILON_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4,
-                                      10, 1, -1, -1, 9, -1, 10);
+            final PoissonSeriesParser baseParser =
+                    new PoissonSeriesParser(10).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4).
+                        withFirstDelaunay(1);
+
+            final PoissonSeriesParser psiParser = baseParser.withSinCos(0, 7, -1).withSinCos(1, 8, -1);
+            final PoissonSeries psiSeries = psiParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
+
+            final PoissonSeriesParser epsilonParser = baseParser.withSinCos(0, -1, 9).withSinCos(1, -1, 10);
+            final PoissonSeries epsilonSeries = epsilonParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
+
             final PoissonSeries.CompiledSeries psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
@@ -318,7 +322,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
-            return loadArguments(NUTATION_ARGUMENTS);
+            return new FundamentalNutationArguments(getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
@@ -336,20 +340,18 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
-            final PoissonSeries xSeries = loadPoissonSeries(X_SERIES, 't',
-                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                                            17, 4, 9, 2, 3);
-            final PoissonSeries ySeries = loadPoissonSeries(Y_SERIES, 't',
-                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                                            17, 4, 9, 2, 3);
-            final PoissonSeries sSeries = loadPoissonSeries(S_SERIES, 't',
-                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                                            17, 4, 9, 2, 3);
-            final PoissonSeries.CompiledSeries xys =
-                    PoissonSeries.compile(xSeries, ySeries, sSeries);
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                        withPolynomialPart('t', PolynomialParser.Unit.MICRO_ARC_SECONDS).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, 3);
+
+            final PoissonSeries xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
+            final PoissonSeries ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
+            final PoissonSeries sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
+            final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -417,22 +419,31 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
+            final PoissonSeriesParser luniSolarParser =
+                    new PoissonSeriesParser(14).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
+                        withFirstDelaunay(1);
+            final PoissonSeriesParser luniSolarPsiParser =
+                    luniSolarParser.withSinCos(0, 7, 11).withSinCos(1, 8, 12);
             final PoissonSeries psiLuniSolarSeries =
-                    loadPoissonSeries(LUNI_SOLAR_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
-                                      14, 1, -1, 7, 11, 8, 12);
-            final PoissonSeries psiPlanetarySeries =
-                    loadPoissonSeries(PLANETARY_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
-                                      21, 2, 7, 17, 18);
+                    luniSolarPsiParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
+            final PoissonSeriesParser luniSolarEpsilonParser =
+                    luniSolarParser.withSinCos(0, 13, 9).withSinCos(1, 14, 10);
             final PoissonSeries epsilonLuniSolarSeries =
-                    loadPoissonSeries(LUNI_SOLAR_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
-                                      14, 1, -1, 13, 9, 14, 10);
+                    luniSolarEpsilonParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
+
+            final PoissonSeriesParser planetaryParser =
+                    new PoissonSeriesParser(21).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
+                        withFirstDelaunay(2).
+                        withFirstPlanetary(7);
+            final PoissonSeriesParser planetaryPsiParser = planetaryParser.withSinCos(0, 17, 18);
+            final PoissonSeries psiPlanetarySeries =
+                    planetaryPsiParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
+            final PoissonSeriesParser planetaryEpsilonParser = planetaryParser.withSinCos(0, 19, 20);
             final PoissonSeries epsilonPlanetarySeries =
-                    loadPoissonSeries(PLANETARY_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3,
-                                      21, 2, 7, 19, 20);
+                    planetaryEpsilonParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
+
             final PoissonSeries.CompiledSeries luniSolarSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, epsilonLuniSolarSeries);
             final PoissonSeries.CompiledSeries planetarySeries =
@@ -522,7 +533,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
-            return loadArguments(NUTATION_ARGUMENTS);
+            return new FundamentalNutationArguments(getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
@@ -540,20 +551,17 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
-            final PoissonSeries xSeries = loadPoissonSeries(X_SERIES, 't',
-                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                                            17, 4, 9, 2, 3);
-            final PoissonSeries ySeries = loadPoissonSeries(Y_SERIES, 't',
-                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                                            17, 4, 9, 2, 3);
-            final PoissonSeries sSeries = loadPoissonSeries(S_SERIES, 't',
-                                                            PolynomialParser.Unit.MICRO_ARC_SECONDS,
-                                                            Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                                            17, 4, 9, 2, 3);
-            final PoissonSeries.CompiledSeries xys =
-                    PoissonSeries.compile(xSeries, ySeries, sSeries);
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                        withPolynomialPart('t', PolynomialParser.Unit.MICRO_ARC_SECONDS).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, 3);
+            final PoissonSeries xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
+            final PoissonSeries ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
+            final PoissonSeries sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
+            final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -628,14 +636,14 @@ public enum IERSConventions {
             final FundamentalNutationArguments arguments = getNutationArguments();
 
             // set up Poisson series
-            final PoissonSeries psiSeries =
-                    loadPoissonSeries(PSI_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                      17, 4, 9, 2, 3);
-            final PoissonSeries epsilonSeries =
-                    loadPoissonSeries(EPSILON_SERIES, 't', null,
-                                      Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6,
-                                      17, 4, 9, 2, 3);
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, 3);
+            final PoissonSeries psiSeries     = parser.parse(getStream(PSI_SERIES), PSI_SERIES);
+            final PoissonSeries epsilonSeries = parser.parse(getStream(EPSILON_SERIES), EPSILON_SERIES);
             final PoissonSeries.CompiledSeries psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
 
@@ -854,48 +862,12 @@ public enum IERSConventions {
 
     }
 
-    /** Load a series development model.
-     * @param name file name of the series development
-     * @param freeVariable name of the free variable in the polynomial part
-     * @param unit default unit for polynomial, if not explicit within the file
-     * @param nonPolyFactor multiplicative factor to use for non-ploynomial coefficients
-     * @param totalColumns total number of columns in the non-polynomial sections
-     * @param firstDelaunay column of the first Delaunay multiplier (counting from 1)
-     * @param firstPlanetary column of the first planetary multiplier (counting from 1)
-     * @param sinCosCoeffs columns of the sine and cosine coefficients for successive
-     * degrees (i.e. sin, cos, t sin, t cos, t^2 sin, t^2 cos ...)
-     * @return series development model
-     * @exception OrekitException if table cannot be loaded
+    /** Get a data stream.
+     * @param name file name of the resource stream
+     * @return stream
      */
-    private static PoissonSeries loadPoissonSeries(final String name,
-                                                   final char freeVariable,
-                                                   final PolynomialParser.Unit unit,
-                                                   final double nonPolyFactor, final int totalColumns,
-                                                   final int firstDelaunay, final int firstPlanetary,
-                                                   final int ... sinCosCoeffs)
-        throws OrekitException {
-
-        // get the table data
-        final PoissonSeriesParser parser =
-                new PoissonSeriesParser(freeVariable, unit, nonPolyFactor,
-                                        totalColumns, firstDelaunay, firstPlanetary, sinCosCoeffs);
-        return parser.parse(IERSConventions.class.getResourceAsStream(name), name);
-
-    }
-
-    /** Load fundamental nutation arguments.
-     * @param name file name of the fundamental arguments expressions
-     * @return fundamental nutation arguments
-     * @exception OrekitException if table cannot be loaded
-     */
-    private static FundamentalNutationArguments loadArguments(final String name)
-        throws OrekitException {
-
-        // get the table data
-        final InputStream stream = IERSConventions.class.getResourceAsStream(name);
-
-        return new FundamentalNutationArguments(stream, name);
-
+    private static InputStream getStream(final String name) {
+        return IERSConventions.class.getResourceAsStream(name);
     }
 
     /** Correction to equation of equinoxes.
