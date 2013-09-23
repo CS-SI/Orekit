@@ -18,22 +18,19 @@ package org.orekit.frames;
 
 import java.util.Collection;
 
-/** This class holds Earth Orientation Parameters (IAU1980) data throughout a large time range.
- * @author Pascal Parraud
+import org.orekit.data.DataLoader;
+import org.orekit.errors.OrekitException;
+
+/** Interface for loading Earth Orientation Parameters history for Non-Rotating Origin paradigm.
+ * @author Luc Maisonobe
  */
-public class EOP1980History extends AbstractEOPHistory {
+public interface EOPHistoryNonRotatingOriginLoader extends DataLoader {
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 3003752420705950441L;
-
-    /**
-     * Simple constructor.
-     *
-     * @param data the {@link EOP1980Entry} data to include in this history.
-     * @see AbstractEOPHistory#AbstractEOPHistory(Collection)
+    /** Load celestial body.
+     * @param history history to fill up
+     * @throws OrekitException if the history cannot be loaded
      */
-    public EOP1980History(final Collection<? extends EOP1980Entry> data) {
-        super(data);
-    }
+    void fillHistoryNonRotatingOrigin(Collection<? super EOPEntryNonRotatingOrigin> history)
+        throws OrekitException;
 
 }

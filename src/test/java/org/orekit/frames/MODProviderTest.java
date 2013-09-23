@@ -17,11 +17,14 @@
 package org.orekit.frames;
 
 
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.data.FundamentalNutationArguments;
+import org.orekit.data.PolynomialNutation;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -33,6 +36,100 @@ import org.orekit.utils.PVCoordinates;
 
 
 public class MODProviderTest {
+
+    @Test
+    public void testEuler1976() throws OrekitException {
+
+        TransformProvider eulerBasedProvider = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            private final FundamentalNutationArguments arguments = IERSConventions.IERS_1996.getNutationArguments();
+            private final PolynomialNutation zetaA =
+                    new PolynomialNutation(0.0,
+                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.30188   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.017998  * Constants.ARC_SECONDS_TO_RADIANS);
+            private final PolynomialNutation thetaA =
+                    new PolynomialNutation(0.0,
+                                           2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
+                                           -0.041833 * Constants.ARC_SECONDS_TO_RADIANS);
+            private final PolynomialNutation zA =
+                    new PolynomialNutation(0.0,
+                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           1.09468   * Constants.ARC_SECONDS_TO_RADIANS,
+                                           0.018203  * Constants.ARC_SECONDS_TO_RADIANS);
+
+            public Transform getTransform(AbsoluteDate date) {
+                final double tc = arguments.evaluateTC(date);
+                final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc));
+                final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc));
+                final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc));
+                return new Transform(date, r1.applyTo(r2.applyTo(r3)));
+            }
+        };
+
+        MODProvider modProvider = new MODProvider(IERSConventions.IERS_1996);
+
+        for (double dt = -5 * Constants.JULIAN_YEAR; dt < 5 * Constants.JULIAN_YEAR; dt += 10 * Constants.JULIAN_DAY) {
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            Transform t = new Transform(date,
+                                        modProvider.getTransform(date).getInverse(),
+                                        eulerBasedProvider.getTransform(date));
+            Assert.assertEquals(0, t.getRotation().getAngle(), 1.01e-11);
+        }
+
+    }
+
+    @Test
+    public void testEuler2000() throws OrekitException {
+
+        // this alternate representation of the transform
+        // is from equation 33 in IERS conventions 2003
+        TransformProvider eulerBasedProvider = new TransformProvider() {
+            private static final long serialVersionUID = 1L;
+            private final FundamentalNutationArguments arguments = IERSConventions.IERS_2003.getNutationArguments();
+            private final PolynomialNutation zetaA =
+                    new PolynomialNutation(   2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
+                                              0.3019015 * Constants.ARC_SECONDS_TO_RADIANS,
+                                              0.0179663 * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0000327 * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0000002 * Constants.ARC_SECONDS_TO_RADIANS);
+            private final PolynomialNutation thetaA =
+                    new PolynomialNutation(0.0,
+                                           2004.1917476 * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.4269353 * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0418251 * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0000601 * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0000001 * Constants.ARC_SECONDS_TO_RADIANS);
+            private final PolynomialNutation zA =
+                    new PolynomialNutation(  -2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
+                                           2306.0803226 * Constants.ARC_SECONDS_TO_RADIANS,
+                                              1.0947790 * Constants.ARC_SECONDS_TO_RADIANS,
+                                              0.0182273 * Constants.ARC_SECONDS_TO_RADIANS,
+                                              0.0000470 * Constants.ARC_SECONDS_TO_RADIANS,
+                                             -0.0000003 * Constants.ARC_SECONDS_TO_RADIANS);
+
+            public Transform getTransform(AbsoluteDate date) {
+                final double tc = arguments.evaluateTC(date);
+                final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc));
+                final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc));
+                final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc));
+                return new Transform(date, r1.applyTo(r2.applyTo(r3)));
+            }
+        };
+
+        MODProvider modProvider = new MODProvider(IERSConventions.IERS_2003);
+
+        for (double dt = -Constants.JULIAN_CENTURY; dt < Constants.JULIAN_CENTURY; dt += 50 * Constants.JULIAN_DAY) {
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            Transform t = new Transform(date,
+                                        modProvider.getTransform(date).getInverse(),
+                                        eulerBasedProvider.getTransform(date));
+            Assert.assertEquals(0, t.getRotation().getAngle(), 6.6e-13);
+        }
+
+    }
 
     @Test
     public void testAASReferenceLEO() throws OrekitException {
@@ -50,12 +147,14 @@ public class MODProviderTest {
         PVCoordinates pvGCRFiau76 =
             new PVCoordinates(new Vector3D(5102508.9579, 6123011.4007, 6378136.9282),
                               new Vector3D(-4743.220157, 790.536497, 5533.755727));
+        double norm = pvGCRFiau76.getPosition().getNorm();
+
         //MOD iau76 w corr
         PVCoordinates pvMODiau76Wcorr =
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.6e-5, 7.2e-7);
+        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 9e-12 * norm, 7.3e-7);
 
         Transform tf = FramesFactory.getEME2000().getTransformTo(FramesFactory.getMOD(false), t0);
         //J2000 iau76
@@ -66,7 +165,7 @@ public class MODProviderTest {
         PVCoordinates pvMODiau76 =
             new PVCoordinates(new Vector3D(5094029.0167, 6127870.9363, 6380247.8885),
                               new Vector3D(-4746.262495, 786.014149, 5531.791025));
-        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 4.3e-5, 2.7e-7);
+        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 9e-12 * norm, 3.1e-7);
 
     }
 
@@ -86,11 +185,13 @@ public class MODProviderTest {
         PVCoordinates pvGCRFiau76 =
             new PVCoordinates(new Vector3D(-40588150.3649, -11462167.0282, 27143.2028),
                               new Vector3D(834.787457, -2958.305691, -1.172994));
+        double norm = pvGCRFiau76.getPosition().getNorm();
+
         //MOD iau76 w corr
         PVCoordinates pvMODiau76Wcorr =
             new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
                               new Vector3D(837.708020, -2957.480117, -0.814253));
-        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 2.5e-5, 6.9e-7);
+        checkPV(pvMODiau76Wcorr, tt.transformPVCoordinates(pvGCRFiau76), 9e-12 * norm, 6.9e-7);
 
         Transform tf = FramesFactory.getEME2000().getTransformTo(FramesFactory.getMOD(false), t0);
         //J2000 iau76
@@ -101,7 +202,7 @@ public class MODProviderTest {
         PVCoordinates pvMODiau76 =
             new PVCoordinates(new Vector3D(-40576822.6385, -11502231.5013, 9738.2304),
                               new Vector3D(837.708020, -2957.480118, -0.814275));
-        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 3.3e-5, 6.9e-7);
+        checkPV(pvMODiau76, tf.transformPVCoordinates(pvJ2000iau76), 9e-12 * norm, 6.9e-7);
 
     }
 
@@ -136,6 +237,15 @@ public class MODProviderTest {
         //            0.00092111268696944094067 0.99999957577560194544 -1.843419633938077413e-07
         //            0.00040025637336639019806 -1.8433935312187383064e-07 0.99999991989739756004
 
+        // the SOFA routine iauPmat76 uses the Euler angles zetaA, thetaA and zA, whereas
+        // Orekit uses the "canonical 4-rotation method" with angles epsilon0, psiA, omegaA
+        // and chiA. As seen in the thresholds of the test testEuler1976 above, the two methods
+        // drift with respect to each other at a rate about 2e-12 radians/year (i.e. about 0.42
+        // microarcseconds per year) on the time range around J2000.0). We see the same models
+        // difference in this test as in the testEuler1976 above.
+        // Note that the difference is much smaller for IERS 2003 (see another test below)
+        // because the Euler models for these conventions match much better the 4-rotation angles
+
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         Frame mod  = FramesFactory.getFrame(Predefined.MOD_CONVENTIONS_1996);
         Frame gcrf = FramesFactory.getFrame(Predefined.GCRF);
@@ -144,7 +254,7 @@ public class MODProviderTest {
             { 0.00092111268696944094067,  0.99999957577560194544,    -1.843419633938077413e-07  },
             { 0.00040025637336639019806, -1.8433935312187383064e-07,  0.99999991989739756004    }
 
-        }, gcrf.getTransformTo(mod, date), 1.0e-15);
+        }, gcrf.getTransformTo(mod, date), 9e-12);
 
     }
 
@@ -199,7 +309,7 @@ public class MODProviderTest {
             { 0.00092112856903123034591,  0.99999957576097886491,    -1.4614501776464880046e-07 },
             { 0.00040015201181019732432, -2.2244653837776004327e-07,  0.99999991993915571253    }
 
-        }, gcrf.getTransformTo(mod, date), 9.0e-15);
+        }, gcrf.getTransformTo(mod, date), 4.0e-16);
 
     }
 
@@ -254,7 +364,7 @@ public class MODProviderTest {
             { 0.00092112835526181411488,  0.9999995757611759295,     -1.4604312753574433259e-07 },
             { 0.00040015202176394668336, -2.2254835219115420841e-07,  0.99999991993915182675    }
 
-        }, gcrf.getTransformTo(mod, date), 1.0e-15);
+        }, gcrf.getTransformTo(mod, date), 1.1e-12);
 
     }
 
@@ -280,7 +390,7 @@ public class MODProviderTest {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
             double delta = mod2000.getTransformTo(mod2006, date).getRotation().getAngle();
             // MOD2006 and MOD2000 are similar to about 0.15 milli-arcseconds between 2000 and 2010
-            Assert.assertEquals(0.0, delta, 8.0e-10);
+            Assert.assertEquals(0.0, delta, 7.2e-10);
         }
     }
 
@@ -305,7 +415,6 @@ public class MODProviderTest {
         for (int i = 0; i < 3; ++i) {
             for (int j = 0; j < 3; ++j) {
                 Assert.assertEquals(reference[i][j], mat[i][j], epsilon);
-                
             }
         }
     }

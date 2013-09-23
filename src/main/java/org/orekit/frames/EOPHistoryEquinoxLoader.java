@@ -21,16 +21,16 @@ import java.util.Collection;
 import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
 
-/** Interface for loading Earth Orientation Parameters 2000 history.
+/** Interface for loading Earth Orientation Parameters history for equinox-based paradigm.
  * @author Luc Maisonobe
  */
-public interface EOP2000HistoryLoader extends DataLoader {
+public interface EOPHistoryEquinoxLoader extends DataLoader {
 
     /** Load celestial body.
      * @param history history to fill up
      * @throws OrekitException if the history cannot be loaded
      */
-    void fillHistory2000(Collection<? super EOP2000Entry> history)
+    void fillHistoryEquinox(Collection<? super EOPEntryEquinox> history)
         throws OrekitException;
 
 }

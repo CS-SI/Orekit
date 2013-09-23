@@ -16,19 +16,30 @@
  */
 package org.orekit;
 
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.JPLEphemeridesLoader;
 import org.orekit.data.DataProvidersManager;
+import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.frames.EOPEntryEquinox;
+import org.orekit.frames.EOPEntryNonRotatingOrigin;
+import org.orekit.frames.EOPHistoryEquinoxLoader;
+import org.orekit.frames.EOPHistoryNonRotatingOriginLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class Utils {
 
@@ -49,11 +60,10 @@ public class Utils {
 
     public static void setDataRoot(String root) {
         try {
-            Utils.clearFactory(CelestialBodyFactory.class);
+            Utils.clearFactoryMaps(CelestialBodyFactory.class);
             CelestialBodyFactory.clearCelestialBodyLoaders();
-            Utils.clearFactory(FramesFactory.class);
-            FramesFactory.clearEOP1980HistoryLoaders();
-            FramesFactory.clearEOP2000HistoryLoaders();
+            Utils.clearFactoryMaps(FramesFactory.class);
+            Utils.clearFactoryMaps(TimeScalesFactory.class);
             Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
             TimeScalesFactory.clearUTCTAILoaders();
             Utils.clearJPLEphemeridesConstants();
@@ -75,7 +85,7 @@ public class Utils {
         }
     }
 
-    private static void clearFactory(Class<?> factoryClass) {
+    private static void clearFactoryMaps(Class<?> factoryClass) {
         try {
             for (Field field : factoryClass.getDeclaredFields()) {
                 if (Modifier.isStatic(field.getModifiers()) &&
@@ -117,5 +127,67 @@ public class Utils {
         }
     }
 
+    public static List<EOPEntryEquinox> buildEquinox(double[][] data) throws OrekitException {
+        final List<EOPEntryEquinox> equinox = new ArrayList<EOPEntryEquinox>();
+        for (double[] row : data) {
+            equinox.add(new EOPEntryEquinox((int) row[0], row[1], row[2],
+                                            Constants.ARC_SECONDS_TO_RADIANS * row[3],
+                                            Constants.ARC_SECONDS_TO_RADIANS * row[4],
+                                            Constants.ARC_SECONDS_TO_RADIANS * row[5],
+                                            Constants.ARC_SECONDS_TO_RADIANS * row[6]));
+        }
+        return equinox;
+    }
+
+    public static List<EOPEntryNonRotatingOrigin> buildNRO(double[][] data) throws OrekitException {
+        final List<EOPEntryNonRotatingOrigin> nro = new ArrayList<EOPEntryNonRotatingOrigin>();
+        for (double[] row : data) {
+            nro.add(new EOPEntryNonRotatingOrigin((int) row[0], row[1], row[2],
+                                                  Constants.ARC_SECONDS_TO_RADIANS * row[3],
+                                                  Constants.ARC_SECONDS_TO_RADIANS * row[4],
+                                                  Constants.ARC_SECONDS_TO_RADIANS * row[5],
+                                                  Constants.ARC_SECONDS_TO_RADIANS * row[6]));
+        }
+        return nro;
+    }
+
+    public static void setLoaders(final IERSConventions conventions,
+                                  final List<EOPEntryEquinox> equinox,
+                                  final List<EOPEntryNonRotatingOrigin> nro) {
+
+        Utils.clearFactoryMaps(FramesFactory.class);
+        Utils.clearFactoryMaps(TimeScalesFactory.class);
+
+        if (equinox != null) {
+            FramesFactory.addEOPHistoryEquinoxLoader(conventions,
+                                                     new EOPHistoryEquinoxLoader() {
+                public boolean stillAcceptsData() {
+                    return true;
+                }
+                public void loadData(InputStream input, String name) {
+                }
+
+                public void fillHistoryEquinox(Collection<? super EOPEntryEquinox> history) {
+                    history.addAll(equinox);
+                }
+            });
+        }
+
+        if (nro != null) {
+            FramesFactory.addEOPHistoryNonRotatingOriginLoader(conventions,
+                                                               new EOPHistoryNonRotatingOriginLoader() {
+                public boolean stillAcceptsData() {
+                    return true;
+                }
+                public void loadData(InputStream input, String name) {
+                }
+
+                public void fillHistoryNonRotatingOrigin(Collection<? super EOPEntryNonRotatingOrigin> history) {
+                    history.addAll(nro);
+                }
+            });
+        }
+
+    }
 
 }

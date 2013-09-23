@@ -16,8 +16,6 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
-
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -25,6 +23,8 @@ import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
 /** Terrestrial Intermediate Reference Frame.
@@ -34,49 +34,47 @@ import org.orekit.utils.IERSConventions;
 class TIRFProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130801L;
+    private static final long serialVersionUID = 20130919L;
 
     /** Tidal correction (null if tidal effects are ignored). */
     private final TidalCorrection tidalCorrection;
 
     /** EOP history. */
-    private final EOPHistory eopHistory;
-
-    /** IERS conventions to apply. */
-    private final IERSConventions conventions;
+    private final EOPHistoryNonRotatingOrigin eopHistory;
 
     /** ERA function. */
     private final TimeFunction<DerivativeStructure> era;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
-     * @param ignoreTidalEffects if true, tidal effects are ignored
+     * @param eopHistory EOP history
+     * @param tidalCorrection model for tidal correction (may be null)
      * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRFProvider(final IERSConventions conventions, final boolean ignoreTidalEffects)
+    protected TIRFProvider(final IERSConventions conventions,
+                           final EOPHistoryNonRotatingOrigin eopHistory,
+                           final TidalCorrection tidalCorrection)
         throws OrekitException {
 
-        this.tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
-        this.eopHistory      = FramesFactory.getEOPHistory(conventions);
-        this.conventions     = conventions;
-        this.era             = conventions.getEarthOrientationAngleFunction();
+        final UT1Scale ut1   = TimeScalesFactory.getUT1(eopHistory);
+        this.tidalCorrection = tidalCorrection;
+        this.eopHistory      = eopHistory;
+        this.era             = conventions.getEarthOrientationAngleFunction(ut1);
 
     }
 
-    /** Get the pole correction.
-     * @param date date at which the correction is desired
-     * @return pole correction including both EOP values and tidal correction
-     * if they have been configured
+    /** Get the EOP history.
+     * @return EOP history
      */
-    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        final PoleCorrection eop = eopHistory.getPoleCorrection(date);
-        if (tidalCorrection == null) {
-            return eop;
-        } else {
-            final PoleCorrection tidal = tidalCorrection.getPoleCorrection(date);
-            return new PoleCorrection(eop.getXp() + tidal.getXp(),
-                                      eop.getYp() + tidal.getYp());
-        }
+    EOPHistoryNonRotatingOrigin getEOPHistory() {
+        return eopHistory;
+    }
+
+    /** Get the tidal correction model.
+     * @return tidal correction model (may be null)
+     */
+    TidalCorrection getTidalCorrection() {
+        return tidalCorrection;
     }
 
     /** Get the transform from CIRF 2000 at specified date.
@@ -115,51 +113,6 @@ class TIRFProvider implements TransformProvider {
       */
     private double correctERA(final AbsoluteDate date, final DerivativeStructure rawERA) {
         return (tidalCorrection == null) ? rawERA.getValue() : rawERA.taylor(tidalCorrection.getDUT1(date));
-    }
-
-    /** Replace the instance with a data transfer object for serialization.
-     * <p>
-     * This intermediate class serializes only the constructor parameters.
-     * </p>
-     * @return data transfer object that will be serialized
-     */
-    private Object writeReplace() {
-        return new DataTransferObject(conventions, tidalCorrection == null);
-    }
-
-    /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20130730L;
-
-        /** IERS conventions to apply. */
-        private final IERSConventions conventions;
-
-        /** Indicator for tidal effects. */
-        private final boolean ignoreTidalEffects;
-
-        /** Simple constructor.
-         * @param conventions IERS conventions to apply
-         * @param ignoreTidalEffects if true, tidal effects are ignored
-         */
-        protected DataTransferObject(final IERSConventions conventions, final boolean ignoreTidalEffects) {
-            this.conventions        = conventions;
-            this.ignoreTidalEffects = ignoreTidalEffects;
-        }
-
-        /** Replace the deserialized data transfer object with a {@link TIRFProvider}.
-         * @return replacement {@link TIRFProvider}
-         */
-        private Object readResolve() {
-            try {
-                // retrieve a managed frame
-                return new TIRFProvider(conventions, ignoreTidalEffects);
-            } catch (OrekitException oe) {
-                throw OrekitException.createInternalError(oe);
-            }
-        }
-
     }
 
 }

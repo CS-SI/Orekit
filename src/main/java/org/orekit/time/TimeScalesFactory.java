@@ -176,7 +176,7 @@ public class TimeScalesFactory implements Serializable {
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #getUTC()
-     * @see FramesFactory#getEOPHistory(IERSConventions)
+     * @see FramesFactory#getEOPHistoryEquinox(IERSConventions)
      * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions)}
      */
     public static UT1Scale getUT1() throws OrekitException {
@@ -187,23 +187,27 @@ public class TimeScalesFactory implements Serializable {
      * <p>
      * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
      * so this method loads these data sets. See the {@link #getUTC()
-     * TimeScalesFactory.getUTC()} and {@link FramesFactory#getEOPHistory(IERSConventions)
-     * FramesFactory.getEOPHistory(IERSConventions)} methods for an explanation of how the
-     * corresponding data loaders can be configured.
+     * TimeScalesFactory.getUTC()} and {@link FramesFactory#getEOPHistoryEquinox(IERSConventions)}
+     * or {@link FramesFactory#getEOPHistoryNonRotatingOrigin(IERSConventions)} methods
+     * for an explanation of how the corresponding data loaders can be configured.
      * </p>
      * @param conventions IERS conventions for which EOP parameters will provide dUT1
      * @return Universal Time 1 scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #getUTC()
-     * @see FramesFactory#getEOPHistory(IERSConventions)
+     * @see FramesFactory#getEOPHistoryEquinox(IERSConventions)
+     * @see FramesFactory#getEOPHistoryNonRotatingOrigin(IERSConventions)
      */
     public static UT1Scale getUT1(final IERSConventions conventions) throws OrekitException {
         synchronized (TimeScalesFactory.class) {
 
             UT1Scale ut1 = ut1Map.get(conventions);
             if (ut1 == null) {
-                ut1 = getUT1(FramesFactory.getEOPHistory(conventions));
+                final EOPHistory eop = (conventions == IERSConventions.IERS_1996) ?
+                                       FramesFactory.getEOPHistoryEquinox(conventions) :
+                                       FramesFactory.getEOPHistoryNonRotatingOrigin(conventions);
+                ut1 = getUT1(eop);
                 ut1Map.put(conventions, ut1);
             }
             return ut1;

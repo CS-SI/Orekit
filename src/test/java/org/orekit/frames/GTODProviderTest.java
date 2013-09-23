@@ -40,6 +40,18 @@ public class GTODProviderTest {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEquinox(new double[][] {
+                             { 53098, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53099, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53100, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53101, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53102, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53103, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 }
+                         }),
+                         null);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
@@ -54,12 +66,9 @@ public class GTODProviderTest {
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
 
-        // this test gives worse result than GTODFrameAlternateConfigurationTest because
-        // at 2004-04-06 there is a 0.471ms difference in dut1 and a 0.077ms difference
-        // in lod with the data used by Vallado to set up this test case
         Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996).
                 getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996), t0);
-        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.296, 1.71e-4);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.00939, 3.12e-5);
 
         // if we forget to apply lod and UT1 correction, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);
@@ -74,6 +83,18 @@ public class GTODProviderTest {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEquinox(new double[][] {
+                             { 53153, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53154, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53155, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53156, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53157, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53158, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 }
+                         }),
+                         null);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
@@ -91,7 +112,7 @@ public class GTODProviderTest {
             new PVCoordinates(new Vector3D(24796919.2956, -34115870.9001, 10293.2583),
                               new Vector3D(-0.979178, -1.476540, -0.928772));
 
-        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0129, 3.459e-4);
+        checkPV(pvGTOD, t.transformPVCoordinates(pvTOD), 0.0501, 3.61e-4);
 
         // if we forget to apply lod and UT1 correction, results are much worse, which is expected
         t = FramesFactory.getTOD(false).getTransformTo(FramesFactory.getGTOD(false), t0);

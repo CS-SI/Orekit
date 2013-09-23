@@ -60,9 +60,8 @@ public interface EOPHistory {
     /** Get the correction to the nutation parameters.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
-     * @return nutation correction ({@link NutationCorrection#NULL_CORRECTION
-     * NutationCorrection.NULL_CORRECTION} if date is outside covered range)
+     * @return nutation correction (zero if date is outside covered range)
      */
-    NutationCorrection getNutationCorrection(final AbsoluteDate date);
+    double[] getNutationCorrection(final AbsoluteDate date);
 
 }

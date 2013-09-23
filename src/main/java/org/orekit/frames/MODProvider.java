@@ -32,10 +32,13 @@ import org.orekit.utils.IERSConventions;
 class MODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130806L;
+    private static final long serialVersionUID = 20130920L;
 
     /** Function computing the precession angles. */
     private final TimeFunction<double[]> precessionFunction;
+
+    /** Constant rotation betwee ecliptic and equatoror poles at J2000.0. */
+    private final Rotation r4;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -43,6 +46,10 @@ class MODProvider implements TransformProvider {
      */
     public MODProvider(final IERSConventions conventions) throws OrekitException {
         this.precessionFunction = conventions.getPrecessionFunction();
+        final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
+        final AbsoluteDate date0 = conventions.getNutationArguments().getReferenceEpoch();
+        final double epsilon0 = epsilonAFunction.value(date0);
+        r4 = new Rotation(Vector3D.PLUS_I, -epsilon0);
     }
 
     /** Get the transfrom from parent frame.
@@ -52,34 +59,16 @@ class MODProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) {
 
-        // compute the precession angles
+        // compute the precession angles phiA, omegaA, chiA
         final double[] angles = precessionFunction.value(date);
 
-        final Rotation precession;
-        if (angles.length == 3) {
-            // the model provides the three classical angles zetaA, thetaA and zA
+        // elementary rotations for precession
+        final Rotation r1 = new Rotation(Vector3D.PLUS_K, -angles[2]);
+        final Rotation r2 = new Rotation(Vector3D.PLUS_I,  angles[1]);
+        final Rotation r3 = new Rotation(Vector3D.PLUS_K,  angles[0]);
 
-            // elementary rotations for precession
-            final Rotation r1 = new Rotation(Vector3D.PLUS_K,  angles[2]);
-            final Rotation r2 = new Rotation(Vector3D.PLUS_J, -angles[1]);
-            final Rotation r3 = new Rotation(Vector3D.PLUS_K,  angles[0]);
-
-            // complete precession
-            precession = r1.applyTo(r2.applyTo(r3));
-
-        } else {
-            // the model provides the four Fukushima-Williams angles gammaBar, phiBar, psiBar, epsilonBar
-
-            // elementary rotations for precession
-            final Rotation r1 = new Rotation(Vector3D.PLUS_I,  angles[3]);
-            final Rotation r2 = new Rotation(Vector3D.PLUS_K,  angles[2]);
-            final Rotation r3 = new Rotation(Vector3D.PLUS_I, -angles[1]);
-            final Rotation r4 = new Rotation(Vector3D.PLUS_K, -angles[0]);
-
-            // complete precession
-            precession = r1.applyTo(r2.applyTo(r3.applyTo(r4)));
-
-        }
+        // complete precession
+        final Rotation precession = r1.applyTo(r2.applyTo(r3.applyTo(r4)));
 
         // set up the transform from parent GCRF
         return new Transform(date, precession);

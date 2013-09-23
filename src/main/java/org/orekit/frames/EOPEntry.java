@@ -30,7 +30,7 @@ import org.orekit.time.TimeStamped;
 public class EOPEntry implements TimeStamped, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130728L;
+    private static final long serialVersionUID = 20130919L;
 
     /** Entry date (modified julian day, 00h00 UTC scale). */
     private final int mjd;
@@ -50,25 +50,16 @@ public class EOPEntry implements TimeStamped, Serializable {
     /** Y component of pole motion. */
     private final double y;
 
-    /** Correction for nutation in longitude. */
-    private final double ddPsi;
-
-    /** Correction for nutation in obliquity. */
-    private final double ddEps;
-
    /** Simple constructor.
     * @param mjd entry date (modified julian day, 00h00 UTC scale)
     * @param dt UT1-UTC in seconds
     * @param lod length of day
     * @param x X component of pole motion
     * @param y Y component of pole motion
-    * @param ddPsi correction for nutation in longitude
-    * @param ddEps correction for nutation in obliquity
     * @exception OrekitException if UTC time scale cannot be retrieved
     */
     public EOPEntry(final int mjd, final double dt, final double lod,
-                    final double x, final double y,
-                    final double ddPsi, final double ddEps)
+                    final double x, final double y)
         throws OrekitException {
 
         this.mjd = mjd;
@@ -81,8 +72,6 @@ public class EOPEntry implements TimeStamped, Serializable {
         this.lod   = lod;
         this.x     = x;
         this.y     = y;
-        this.ddPsi = ddPsi;
-        this.ddEps = ddEps;
 
     }
 
@@ -125,20 +114,6 @@ public class EOPEntry implements TimeStamped, Serializable {
      */
     public double getY() {
         return y;
-    }
-
-    /** Get the correction for nutation in longitude.
-     * @return correction for nutation in longitude
-     */
-    public double getDdPsi() {
-        return ddPsi;
-    }
-
-    /** Get the correction for nutation in obliquity.
-     * @return correction for nutation in obliquity
-     */
-    public double getDdEps() {
-        return ddEps;
     }
 
 }

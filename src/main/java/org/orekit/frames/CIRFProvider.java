@@ -43,18 +43,32 @@ class CIRFProvider implements TransformProvider {
     /** Function computing CIP/CIO components. */
     private final TimeFunction<double[]> xysPxy2Function;
 
+    /** EOP history. */
+    private final EOPHistoryNonRotatingOrigin eopHistory;
+
     /** Simple constructor.
      * @param conventions IERS conventions to apply
+     * @param eopHistory EOP history
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      * @see Frame
      */
-    public CIRFProvider(final IERSConventions conventions)
+    public CIRFProvider(final IERSConventions conventions, final EOPHistoryNonRotatingOrigin eopHistory)
         throws OrekitException {
 
         // load the nutation model
         xysPxy2Function = conventions.getXYSpXY2Function();
 
+        // store correction to the model
+        this.eopHistory = eopHistory;
+
+    }
+
+    /** Get the EOP history.
+     * @return EOP history
+     */
+    EOPHistoryNonRotatingOrigin getEOPHistory() {
+        return eopHistory;
     }
 
     /** Get the transform from GCRF to CIRF2000 at the specified date.
@@ -66,11 +80,12 @@ class CIRFProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
-        final double[] xys = xysPxy2Function.value(date);
+        final double[] xys  = xysPxy2Function.value(date);
+        final double[] dxdy = eopHistory.getNutationCorrection(date);
 
         // position of the Celestial Intermediate Pole (CIP)
-        final double xCurrent = xys[0];
-        final double yCurrent = xys[1];
+        final double xCurrent = xys[0] + dxdy[0];
+        final double yCurrent = xys[1] + dxdy[1];
 
         // position of the Celestial Intermediate Origin (CIO)
         final double sCurrent = xys[2] - xCurrent * yCurrent / 2;

@@ -38,26 +38,26 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     @Test
     public void testStartDateDaily1980() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory1980(history);
+        List<EOPEntryEquinox> history = new ArrayList<EOPEntryEquinox>();
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistoryEquinox(history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getStartDate());
+                            new EOPHistoryEquinox(history).getStartDate());
     }
 
     @Test
     public void testEndDateDaily1980() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory1980(history);
+        List<EOPEntryEquinox> history = new ArrayList<EOPEntryEquinox>();
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistoryEquinox(history);
         Assert.assertEquals(new AbsoluteDate(2010, 8, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getEndDate());
+                            new EOPHistoryEquinox(history).getEndDate());
     }
 
     @Test
     public void testStartDateDaily2000() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory2000(history);
+        final List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistoryNonRotatingOrigin(history);
         Assert.assertEquals(new AbsoluteDate(2010, 5, 11, TimeScalesFactory.getUTC()),
                             Collections.min(history, COMP).getDate());
     }
@@ -65,8 +65,8 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     @Test
     public void testEndDateDaily2000() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory2000(history);
+        final List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistoryNonRotatingOrigin(history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 24, TimeScalesFactory.getUTC()),
                             Collections.max(history, COMP).getDate());
     }
@@ -74,46 +74,46 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     @Test
     public void testStartDateFinals1980() throws OrekitException, ParseException {
         setRoot("compressed-data");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory1980(history);
+        List<EOPEntryEquinox> history = new ArrayList<EOPEntryEquinox>();
+        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistoryEquinox(history);
         Assert.assertEquals(new AbsoluteDate(1999, 1, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getStartDate());
+                            new EOPHistoryEquinox(history).getStartDate());
     }
 
     @Test
     public void testEndDateFinals1980() throws OrekitException, ParseException {
         setRoot("compressed-data");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory1980(history);
+        List<EOPEntryEquinox> history = new ArrayList<EOPEntryEquinox>();
+        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistoryEquinox(history);
         Assert.assertEquals(new AbsoluteDate(1999, 12, 31, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getEndDate());
+                            new EOPHistoryEquinox(history).getEndDate());
     }
 
     @Test
     public void testStartDateFinals2000() throws OrekitException, ParseException {
         setRoot("regular-data");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory2000(history);
+        final List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistoryNonRotatingOrigin(history);
         Assert.assertEquals(new AbsoluteDate(2002, 1, 1, TimeScalesFactory.getUTC()),
-                            new EOP2000History(history).getStartDate());
+                            new EOPHistoryNonRotatingOrigin(history).getStartDate());
     }
 
     @Test
     public void testEndDateFinals2000() throws OrekitException, ParseException {
         setRoot("regular-data");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory2000(history);
+        final List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistoryNonRotatingOrigin(history);
         Assert.assertEquals(new AbsoluteDate(2002, 12, 31, TimeScalesFactory.getUTC()),
-                            new EOP2000History(history).getEndDate());
+                            new EOPHistoryNonRotatingOrigin(history).getEndDate());
     }
 
     @Test
     public void testIssue139() throws OrekitException, ParseException {
         setRoot("zipped-data");
-        final List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory1980(history);
+        final List<EOPEntryEquinox> history = new ArrayList<EOPEntryEquinox>();
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistoryEquinox(history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getStartDate());
+                            new EOPHistoryEquinox(history).getStartDate());
     }
 
 }

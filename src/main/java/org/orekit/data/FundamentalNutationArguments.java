@@ -204,6 +204,13 @@ public class FundamentalNutationArguments implements Serializable {
         return value;
     }
 
+    /** Get the reference epoch.
+     * @return reference epoch
+     */
+    public AbsoluteDate getReferenceEpoch() {
+        return reference;
+    }
+
     /** Evaluate the date offset for the current date.
      * @param date current date
      * @return date offset in Julian centuries

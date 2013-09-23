@@ -50,7 +50,7 @@ import org.orekit.time.DateComponents;
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals2000A">finals2000A file format description at USNO</a>
  * @see <a href="http://maia.usno.navy.mil/ser7/readme.finals">finals file format description at USNO</a>
  */
-class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
+class RapidDataAndPredictionColumnsLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotatingOriginLoader {
 
     /** Conversion factor. */
     private static final double  ARC_SECONDS_TO_RADIANS       = 2 * Math.PI / 1296000;
@@ -118,11 +118,11 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
     /** Pattern to match the nutation part of the line. */
     private static final Pattern NUTATION_PATTERN = Pattern.compile(SEPARATOR + REAL_FIELD + REAL_FIELD + REAL_FIELD + REAL_FIELD);
 
-    /** History entries for IAU1980. */
-    private Collection<? super EOP1980Entry> history1980;
+    /** History entries for equinox-based paradigm. */
+    private Collection<? super EOPEntryEquinox> historyEquinox;
 
-    /** History entries for IAU2000. */
-    private Collection<? super EOP2000Entry> history2000;
+    /** History entries for Non-Rotating Origin paradigm. */
+    private Collection<? super EOPEntryNonRotatingOrigin> historyNRO;
 
     /** File supported name. */
     private String               supportedNames;
@@ -154,8 +154,8 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
         double y    = 0;
         double dtu1 = 0;
         double lod  = 0;
-        double dpsi = 0;
-        double deps = 0;
+        double nut0 = 0;
+        double nut1 = 0;
         int date    = 0;
         for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
@@ -226,25 +226,25 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
             // parse the nutation part
             if (nutationPart.trim().length() == 0) {
                 // nutation part is blank
-                dpsi = 0;
-                deps = 0;
+                nut0 = 0;
+                nut1 = 0;
             } else {
                 final Matcher nutationMatcher = NUTATION_PATTERN.matcher(nutationPart);
                 if (nutationMatcher.matches()) {
-                    dpsi = MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1));
-                    deps = MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3));
+                    nut0 = MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1));
+                    nut1 = MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3));
                 } else {
                     notifyUnexpectedErrorEncountered(name);
                 }
             }
 
             synchronized (this) {
-                if (history1980 != null) {
-                    history1980.add(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
+                if (historyEquinox != null) {
+                    historyEquinox.add(new EOPEntryEquinox(date, dtu1, lod, x, y, nut0, nut1));
                 }
 
-                if (history2000 != null) {
-                    history2000.add(new EOP2000Entry(date, dtu1, lod, x, y, dpsi, deps));
+                if (historyNRO != null) {
+                    historyNRO.add(new EOPEntryNonRotatingOrigin(date, dtu1, lod, x, y, nut0, nut1));
                 }
             }
 
@@ -252,19 +252,19 @@ class RapidDataAndPredictionColumnsLoader implements EOP1980HistoryLoader, EOP20
     }
 
     /** {@inheritDoc} */
-    public void fillHistory1980(final Collection<? super EOP1980Entry> history) throws OrekitException {
+    public void fillHistoryEquinox(final Collection<? super EOPEntryEquinox> history) throws OrekitException {
         synchronized (this) {
-            history1980 = history;
-            history2000 = null;
+            historyEquinox = history;
+            historyNRO     = null;
             DataProvidersManager.getInstance().feed(supportedNames, this);
         }
     }
 
     /** {@inheritDoc} */
-    public void fillHistory2000(final Collection<? super EOP2000Entry> history) throws OrekitException {
+    public void fillHistoryNonRotatingOrigin(final Collection<? super EOPEntryNonRotatingOrigin> history) throws OrekitException {
         synchronized (this) {
-            history1980 = null;
-            history2000 = history;
+            historyEquinox = null;
+            historyNRO     = history;
             DataProvidersManager.getInstance().feed(supportedNames, this);
         }
     }

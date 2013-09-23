@@ -29,12 +29,13 @@ import org.orekit.time.TimeStamped;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
+ * @param <T> the type of data
  * @author Pascal Parraud
  */
-public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
+public abstract class AbstractEOPHistory<T extends EOPEntry> implements Serializable, EOPHistory {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 5659073889129159070L;
+    private static final long serialVersionUID = 20130919L;
 
     /** Number of points to use in interpolation. */
     private static final int INTERPOLATION_POINTS = 4;
@@ -47,17 +48,17 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
     private final boolean hasData;
 
     /** EOP history entries. */
-    private final ImmutableTimeStampedCache<EOPEntry> cache;
+    private final ImmutableTimeStampedCache<T> cache;
 
     /**
      * Simple constructor.
      *
      * @param data the EOP data to use
      */
-    protected AbstractEOPHistory(final Collection<? extends EOPEntry> data) {
+    protected AbstractEOPHistory(final Collection<T> data) {
         if (data.size() >= INTERPOLATION_POINTS) {
             // enough data to interpolate
-            cache = new ImmutableTimeStampedCache<EOPEntry>(INTERPOLATION_POINTS, data);
+            cache = new ImmutableTimeStampedCache<T>(INTERPOLATION_POINTS, data);
             hasData = true;
         } else {
             // not enough data to interpolate -> always use null correction
@@ -85,7 +86,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
         }
         //we have EOP data -> interpolate offset
         try {
-            final List<EOPEntry> neighbors = getNeighbors(date);
+            final List<T> neighbors = getNeighbors(date);
             final HermiteInterpolator interpolator = new HermiteInterpolator();
             final double firstDUT = neighbors.get(0).getUT1MinusUTC();
             boolean beforeLeap = true;
@@ -123,7 +124,7 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
      * @return array of cached entries surrounding specified date
      * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
-    protected List<EOPEntry> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
+    protected List<T> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
         return cache.getNeighbors(central);
     }
 
@@ -174,30 +175,6 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
         }
     }
 
-    /** {@inheritDoc} */
-    public NutationCorrection getNutationCorrection(final AbsoluteDate date) {
-        // check if there is data for date
-        if (!this.hasDataFor(date)) {
-            // no EOP data available for this date, we use a default null correction
-            return NutationCorrection.NULL_CORRECTION;
-        }
-        //we have EOP data for date -> interpolate correction
-        try {
-            final HermiteInterpolator interpolator = new HermiteInterpolator();
-            for (final EOPEntry entry : getNeighbors(date)) {
-                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
-                                            new double[] {
-                                                entry.getDdEps(), entry.getDdPsi()
-                                            });
-            }
-            final double[] interpolated = interpolator.value(0);
-            return new NutationCorrection(interpolated[0], interpolated[1]);
-        } catch (TimeStampedCacheException tce) {
-            // this should not happen because of date check above
-            throw OrekitException.createInternalError(tce);
-        }
-    }
-
     /** Check Earth orientation parameters continuity.
      * @param maxGap maximal allowed gap between entries (in seconds)
      * @exception OrekitException if there are holes in the data sequence
@@ -233,6 +210,13 @@ public abstract class AbstractEOPHistory implements Serializable, EOPHistory {
          */
         return this.hasData && this.getStartDate().compareTo(date) <= 0 &&
                date.compareTo(this.getEndDate()) <= 0;
+    }
+
+    /** Get a non-modifiable view of the EOP entries.
+     * @return non-modifiable view of the EOP entries
+     */
+    List<T> getEntries() {
+        return cache.getAll();
     }
 
 }

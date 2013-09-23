@@ -152,7 +152,7 @@ public class Phasing {
 
     public Phasing() throws IOException, ParseException, OrekitException {
         IERSConventions conventions = IERSConventions.IERS_2010;
-        gmst         = conventions.getGMSTFunction();
+        gmst         = conventions.getGMSTFunction(TimeScalesFactory.getUT1(conventions));
         earth        = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                             Constants.WGS84_EARTH_FLATTENING,
                                             FramesFactory.getGTOD(conventions));

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.orekit.data.DataProvidersManager;
@@ -33,8 +34,8 @@ import org.orekit.utils.Constants;
  * <p>EOP 08 C04 files contain {@link EOPEntry
  * Earth Orientation Parameters} consistent with ITRF2008 for one year periods.</p>
  * <p>The EOP 08 C04 files are recognized thanks to their base names, which
- * must match one of the the patterns <code>eopc04_IAU2000.##</code> or
- * <code>eopc04.##</code> (or the same ending with <code>.gz</code> for
+ * must match one of the the patterns <code>eopc04_08_IAU2000.##</code> or
+ * <code>eopc04_08.##</code> (or the same ending with <code>.gz</code> for
  * gzip-compressed files) where # stands for a digit character.</p>
  * <p>Between 2002 and 2007, another series of Earth Orientation Parameters was
  * in use: EOPC04 (without the 08). These parameters were consistent with the
@@ -53,56 +54,55 @@ import org.orekit.utils.Constants;
  * href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">Index of /eoppc/eop/eopc04</a>.</p>
  * @author Luc Maisonobe
  */
-class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
+class EOP08C04FilesLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotatingOriginLoader {
 
-    /** Year field. */
-    private static final int YEAR_FIELD = 0;
-
-    /** Month field. */
-    private static final int MONTH_FIELD = 1;
-
-    /** Day field. */
-    private static final int DAY_FIELD = 2;
-
-    /** MJD field. */
-    private static final int MJD_FIELD = 3;
-
-    /** X component of pole motion field. */
-    private static final int POLE_X_FIELD = 4;
-
-    /** Y component of pole motion field. */
-    private static final int POLE_Y_FIELD = 5;
-
-    /** UT1-UTC field. */
-    private static final int UT1_UTC_FIELD = 6;
-
-    /** LoD field. */
-    private static final int LOD_FIELD = 7;
-
-    /** Correction for nutation in obliquity field. */
-    private static final int DDEPS_FIELD = 8;
-
-    /** Correction for nutation in longitude field. */
-    private static final int DDPSI_FIELD = 9;
-
-    /** Regular expression for supported files names. */
-    private final String supportedNames;
+    /** Pattern to match the columns header. */
+    private static final Pattern COLUMNS_HEADER_PATTERN;
 
     /** Pattern for data lines. */
-    private final Pattern linePattern;
+    private static final Pattern DATA_LINE_PATTERN;
 
-    /** History entries for IAU1980. */
-    private Collection<? super EOP1980Entry> history1980;
+    /** Year field. */
+    private static final int YEAR_FIELD;
 
-    /** History entries for IAU2000. */
-    private Collection<? super EOP2000Entry> history2000;
+    /** Month field. */
+    private static final int MONTH_FIELD;
 
-    /** Build a loader for IERS EOP 08 C04 files.
-     * @param supportedNames regular expression for supported files names
-     */
-    public EOP08C04FilesLoader(final String supportedNames) {
+    /** Day field. */
+    private static final int DAY_FIELD;
 
-        this.supportedNames = supportedNames;
+    /** MJD field. */
+    private static final int MJD_FIELD;
+
+    /** X component of pole motion field. */
+    private static final int POLE_X_FIELD;
+
+    /** Y component of pole motion field. */
+    private static final int POLE_Y_FIELD;
+
+    /** UT1-UTC field. */
+    private static final int UT1_UTC_FIELD;
+
+    /** LoD field. */
+    private static final int LOD_FIELD;
+
+    /** Correction for nutation first field (either dX or dPsi). */
+    private static final int NUT_0_FIELD;
+
+    /** Correction for nutation second field (either dY or dEps). */
+    private static final int NUT_1_FIELD;
+
+    static {
+        // Header have either the following form:
+        //       Date      MJD      x          y        UT1-UTC       LOD         dPsi      dEps       x Err     y Err   UT1-UTC Err  LOD Err    dPsi Err   dEpsilon Err
+        //                          "          "           s           s            "         "        "          "          s           s            "         "
+        //      (0h UTC)
+        // or the following form:
+        //       Date      MJD      x          y        UT1-UTC       LOD         dX        dY        x Err     y Err   UT1-UTC Err  LOD Err     dX Err       dY Err
+        //                          "          "           s           s          "         "           "          "          s         s            "           "
+        //      (0h UTC)
+        //
+        COLUMNS_HEADER_PATTERN = Pattern.compile("^ *Date +MJD +x +y +UT1-UTC +LOD +((?:dPsi +dEps)|(?:dX +dY)) .*");
 
         // The data lines in the EOP 08 C04 yearly data files have the following fixed form:
         // year month day MJD ...12 floating values fields in decimal format...
@@ -111,8 +111,35 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
         // 2000   1   3  51546   0.043623   0.377452   0.3538444   ...
         // the corresponding fortran format is:
         // 3(I4),I7,2(F11.6),2(F12.7),2(F12.6),2(F11.6),2(F12.7),2F12.6
-        linePattern = Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
+        DATA_LINE_PATTERN = Pattern.compile("^\\d+ +\\d+ +\\d+ +\\d+(?: +-?\\d+\\.\\d+){12}$");
 
+        YEAR_FIELD    = 0;
+        MONTH_FIELD   = 1;
+        DAY_FIELD     = 2;
+        MJD_FIELD     = 3;
+        POLE_X_FIELD  = 4;
+        POLE_Y_FIELD  = 5;
+        UT1_UTC_FIELD = 6;
+        LOD_FIELD     = 7;
+        NUT_0_FIELD   = 8;
+        NUT_1_FIELD   = 9;
+
+    }
+
+    /** Regular expression for supported files names. */
+    private final String supportedNames;
+
+    /** History entries for equinox-based paradigm. */
+    private Collection<? super EOPEntryEquinox> historyEquinox;
+
+    /** History entries for Non-Rotating Origin paradigm. */
+    private Collection<? super EOPEntryNonRotatingOrigin> historyNRO;
+
+    /** Build a loader for IERS EOP 08 C04 files.
+     * @param supportedNames regular expression for supported files names
+     */
+    public EOP08C04FilesLoader(final String supportedNames) {
+        this.supportedNames = supportedNames;
     }
 
     /** {@inheritDoc} */
@@ -127,7 +154,7 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
         // set up a reader for line-oriented bulletin B files
         final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
 
-        // read all file, ignoring header
+        // read all file
         synchronized (this) {
 
             int lineNumber = 0;
@@ -136,7 +163,17 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                 ++lineNumber;
                 boolean parsed = false;
 
-                if (linePattern.matcher(line).matches()) {
+                if (inHeader) {
+                    final Matcher matcher = COLUMNS_HEADER_PATTERN.matcher(line);
+                    if (matcher.matches()) {
+                        if (matcher.group(1).startsWith("dX") ^ (historyNRO != null)) {
+                            // the file content does not match what we expect
+                            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+                        }
+                    }
+                }
+
+                if (DATA_LINE_PATTERN.matcher(line).matches()) {
                     inHeader = false;
                     // this is a data line, build an entry from the extracted fields
                     final String[] fields = line.split(" +");
@@ -154,13 +191,13 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
                     final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
                     final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
                     final double lod  = Double.parseDouble(fields[LOD_FIELD]);
-                    final double dpsi = Double.parseDouble(fields[DDPSI_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    final double deps = Double.parseDouble(fields[DDEPS_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    if (history1980 != null) {
-                        history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    final double nut0 = Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                    final double nut1 = Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                    if (historyEquinox != null) {
+                        historyEquinox.add(new EOPEntryEquinox(mjd, dtu1, lod, x, y, nut0, nut1));
                     }
-                    if (history2000 != null) {
-                        history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    if (historyNRO != null) {
+                        historyNRO.add(new EOPEntryNonRotatingOrigin(mjd, dtu1, lod, x, y, nut0, nut1));
                     }
                     parsed = true;
 
@@ -181,21 +218,21 @@ class EOP08C04FilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader 
     }
 
     /** {@inheritDoc} */
-    public void fillHistory1980(final Collection<? super EOP1980Entry> history)
+    public void fillHistoryEquinox(final Collection<? super EOPEntryEquinox> history)
         throws OrekitException {
         synchronized (this) {
-            history1980 = history;
-            history2000 = null;
+            historyEquinox = history;
+            historyNRO     = null;
             DataProvidersManager.getInstance().feed(supportedNames, this);
         }
     }
 
     /** {@inheritDoc} */
-    public void fillHistory2000(final Collection<? super EOP2000Entry> history)
+    public void fillHistoryNonRotatingOrigin(final Collection<? super EOPEntryNonRotatingOrigin> history)
         throws OrekitException {
         synchronized (this) {
-            history1980 = null;
-            history2000 = history;
+            historyEquinox = null;
+            historyNRO     = history;
             DataProvidersManager.getInstance().feed(supportedNames, this);
         }
     }

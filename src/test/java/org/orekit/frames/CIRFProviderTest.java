@@ -17,6 +17,8 @@
 package org.orekit.frames;
 
 
+import java.util.ArrayList;
+
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,8 +35,10 @@ public class CIRFProviderTest {
 
     @Test
     public void testRotationRate() throws OrekitException {
+        EOPHistoryNonRotatingOrigin eopHistory =
+                FramesFactory.getEOPHistoryNonRotatingOrigin(IERSConventions.IERS_2010);
         TransformProvider provider =
-                new InterpolatingTransformProvider(new CIRFProvider(IERSConventions.IERS_2010), true, false,
+                new InterpolatingTransformProvider(new CIRFProvider(IERSConventions.IERS_2010, eopHistory), true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2009, 4, 7, 2, 56, 33.816, TimeScalesFactory.getUTC());
@@ -46,41 +50,42 @@ public class CIRFProviderTest {
     }
 
     @Test
-    public void testInterpolationAccuracy() throws OrekitException {
+    public void testInterpolationAccuracyWithEOP() throws OrekitException {
 
         // max interpolation error observed on a 2 months period with 60 seconds step
-        // all values between 3e-15 and 8e-15 are really equivalent: it is mostly numerical noise
+        // all values between 1e-12 and 5e-12. It mainy shows Runge phenomenon at EOP
+        // files sampling rate, and the error drops to about 5e-17 when EOP are ignored.
         //
         // number of sample points    time between sample points    max error
-        //        6                          86400s / 2 = 12h        2259.1e-15 rad
-        //        6                          86400s / 4 =  6h          35.6e-15 rad
-        //        6                          86400s / 6 =  4h           5.4e-15 rad
-        //        6                          86400s / 8 =  3h           3.6e-15 rad
-        //        8                          86400s / 2 = 12h         103.8e-15 rad
-        //        8                          86400s / 4 =  6h           4.8e-15 rad
-        //        8                          86400s / 6 =  4h           4.0e-15 rad
-        //        8                          86400s / 8 =  3h           4.2e-15 rad
-        //       10                          86400s / 2 = 12h           8.3e-15 rad
-        //       10                          86400s / 4 =  6h           5.3e-15 rad
-        //       10                          86400s / 6 =  4h           5.2e-15 rad
-        //       10                          86400s / 8 =  3h           6.1e-15 rad
-        //       12                          86400s / 2 = 12h           6.3e-15 rad
-        //       12                          86400s / 4 =  6h           7.8e-15 rad
-        //       12                          86400s / 6 =  4h           7.2e-15 rad
-        //       12                          86400s / 8 =  3h           6.9e-15 rad
-        //
-        // the two best settings are 6 points every 3 hours and 8 points every 4 hours
-        TransformProvider nonInterpolating = new CIRFProvider(IERSConventions.IERS_2010);
+        //         6                         86400s / 12 = 2h00    4.55e-12 rad
+        //         6                         86400s / 18 = 1h20    3.02e-12 rad
+        //         6                         86400s / 24 = 1h00    2.26e-12 rad
+        //         6                         86400s / 48 = 0h30    1.08e-12 rad
+        //         8                         86400s / 12 = 2h00    4.87e-12 rad
+        //         8                         86400s / 18 = 1h20    3.23e-12 rad
+        //         8                         86400s / 24 = 1h00    2.42e-12 rad
+        //         8                         86400s / 48 = 0h30    1.16e-12 rad
+        //        12                         86400s / 12 = 2h00    5.15e-12 rad
+        //        12                         86400s / 18 = 1h20    3.41e-12 rad
+        //        12                         86400s / 24 = 1h00    2.56e-12 rad
+        //        12                         86400s / 48 = 0h30    1.22e-12 rad
+        // as Runge phenomenon is the dimensioning part, the best settings are a small number
+        // of points and a small interval. Four points separated by one hour each
+        // implies an interpolation error of 1.89e-12 at peak of Runge oscillations,
+        // and about 2e-15 away from the singularity points
+        EOPHistoryNonRotatingOrigin eopHistory =
+                FramesFactory.getEOPHistoryNonRotatingOrigin(IERSConventions.IERS_2010);
+        TransformProvider nonInterpolating = new CIRFProvider(IERSConventions.IERS_2010, eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
-                                                   8, Constants.JULIAN_DAY / 6,
+                                                   6, Constants.JULIAN_DAY / 24,
                                                    OrekitConfiguration.getCacheSlotsNumber(),
                                                    Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
 
         // the following time range is located around the maximal observed error
-        AbsoluteDate start = new AbsoluteDate(2002, 10,  3, TimeScalesFactory.getTAI());
-        AbsoluteDate end   = new AbsoluteDate(2002, 10,  7, TimeScalesFactory.getTAI());
+        AbsoluteDate start = new AbsoluteDate(2002, 9, 12, TimeScalesFactory.getTAI());
+        AbsoluteDate end   = new AbsoluteDate(2002, 9, 14, TimeScalesFactory.getTAI());
         double maxError = 0.0;
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(300)) {
             final Transform transform =
@@ -90,7 +95,52 @@ public class CIRFProviderTest {
             final double error = transform.getRotation().getAngle();
             maxError = FastMath.max(maxError, error);
         }
-        Assert.assertTrue(maxError < 4.0e-15);
+        Assert.assertTrue(maxError < 3.0e-12);
+
+    }
+
+    @Test
+    public void testInterpolationAccuracyWithoutEOP() throws OrekitException {
+
+        // max interpolation error observed on a 2 months period with 60 seconds step
+        // all values between 4e-17 and 6e-17. It it essentially numerical noise, with a
+        // very slight Runge phenomenon for 6 points separated by 2 hours
+        //
+        // number of sample points    time between sample points    max error
+        //         6                         86400s / 12 = 2h00    6.04e-17 rad
+        //         6                         86400s / 18 = 1h20    4.69e-17 rad
+        //         6                         86400s / 24 = 1h00    5.09e-17 rad
+        //         6                         86400s / 48 = 0h30    4.79e-17 rad
+        //         8                         86400s / 12 = 2h00    5.02e-17 rad
+        //         8                         86400s / 18 = 1h20    4.74e-17 rad
+        //         8                         86400s / 24 = 1h00    5.10e-17 rad
+        //         8                         86400s / 48 = 0h30    4.83e-17 rad
+        //        12                         86400s / 12 = 2h00    5.06e-17 rad
+        //        12                         86400s / 18 = 1h20    4.79e-17 rad
+        //        12                         86400s / 24 = 1h00    5.09e-17 rad
+        //        12                         86400s / 48 = 0h30    4.86e-17 rad
+        EOPHistoryNonRotatingOrigin eopHistory = new EOPHistoryNonRotatingOrigin(new ArrayList<EOPEntryNonRotatingOrigin>());
+        TransformProvider nonInterpolating = new CIRFProvider(IERSConventions.IERS_2010, eopHistory);
+        final TransformProvider interpolating =
+                new InterpolatingTransformProvider(nonInterpolating, true, false,
+                                                   AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
+                                                   6, Constants.JULIAN_DAY / 24,
+                                                   OrekitConfiguration.getCacheSlotsNumber(),
+                                                   Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
+
+        // the following time range is located around the maximal observed error
+        AbsoluteDate start = new AbsoluteDate(2002, 9, 12, TimeScalesFactory.getTAI());
+        AbsoluteDate end   = new AbsoluteDate(2002, 9, 14, TimeScalesFactory.getTAI());
+        double maxError = 0.0;
+        for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(300)) {
+            final Transform transform =
+                    new Transform(date,
+                                  interpolating.getTransform(date),
+                                  nonInterpolating.getTransform(date).getInverse());
+            final double error = transform.getRotation().getAngle();
+            maxError = FastMath.max(maxError, error);
+        }
+        Assert.assertTrue(maxError < 6.0e-17);
 
     }
 

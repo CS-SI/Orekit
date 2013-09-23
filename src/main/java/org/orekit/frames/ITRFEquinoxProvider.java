@@ -20,7 +20,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.IERSConventions;
 
 
 /** International Terrestrial Reference Frame, based on old equinox conventions.
@@ -31,17 +30,17 @@ import org.orekit.utils.IERSConventions;
 class ITRFEquinoxProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130801L;
+    private static final long serialVersionUID = 20130922L;
 
     /** EOP history. */
-    private final EOPHistory eopHistory;
+    private final EOPHistoryEquinox eopHistory;
 
     /** Simple constructor.
-     * @param conventions conventions to apply
+     * @param eopHistory EOP history
      * @exception OrekitException if EOP parameters cannot be read
      */
-    protected ITRFEquinoxProvider(final IERSConventions conventions) throws OrekitException {
-        eopHistory = FramesFactory.getEOPHistory(conventions);
+    protected ITRFEquinoxProvider(final EOPHistoryEquinox eopHistory) throws OrekitException {
+        this.eopHistory = eopHistory;
     }
 
     /** Get the transform from GTOD at specified date.

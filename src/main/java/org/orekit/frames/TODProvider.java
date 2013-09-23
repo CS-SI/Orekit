@@ -33,23 +33,34 @@ import org.orekit.utils.IERSConventions;
 class TODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130806L;
+    private static final long serialVersionUID = 20130922L;
 
     /** EOP history. */
-    private final EOPHistory eopHistory;
+    private final EOPHistoryEquinox eopHistory;
+
+    /** Function computing the mean obliquity. */
+    private final TimeFunction<Double> obliquityFunction;
 
     /** Function computing the nutation angles. */
     private final TimeFunction<double[]> nutationFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
-     * @param applyEOPCorr if true, EOP correction is applied (here, pole correction and LOD)
+     * @param eopHistory EOP history
      * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public TODProvider(final IERSConventions conventions, final boolean applyEOPCorr)
+    public TODProvider(final IERSConventions conventions, final EOPHistoryEquinox eopHistory)
         throws OrekitException {
-        this.eopHistory        = applyEOPCorr ? FramesFactory.getEOPHistory(conventions) : null;
+        this.eopHistory        = eopHistory;
+        this.obliquityFunction = conventions.getMeanObliquityFunction();
         this.nutationFunction  = conventions.getNutationFunction();
+    }
+
+    /** Get the EOP history.
+     * @return EOP history
+     */
+    EOPHistoryEquinox getEOPHistory() {
+        return eopHistory;
     }
 
     /** Get the LoD (Length of Day) value.
@@ -85,15 +96,16 @@ class TODProvider implements TransformProvider {
         final double[] angles = nutationFunction.value(date);
 
         // compute the mean obliquity of the ecliptic
-        final double moe = angles[2];
+        final double moe = obliquityFunction.value(date);
 
-        // get the corrections for the nutation parameters
-        final NutationCorrection nutCorr = (eopHistory == null) ?
-                                           NutationCorrection.NULL_CORRECTION :
-                                           eopHistory.getNutationCorrection(date);
-
-        final double deps = angles[1] + nutCorr.getDdeps();
-        final double dpsi = angles[0] + nutCorr.getDdpsi();
+        double dpsi = angles[0];
+        double deps = angles[1];
+        if (eopHistory != null) {
+            // apply the corrections for the nutation parameters
+            final double[] correction = eopHistory.getNutationCorrection(date);
+            dpsi += correction[0];
+            deps += correction[1];
+        }
 
         // compute the true obliquity of the ecliptic
         final double toe = moe + deps;
@@ -126,13 +138,13 @@ class TODProvider implements TransformProvider {
         final double dPsi = angles[0];
 
         // mean obliquity of ecliptic
-        final double moe = angles[2];
+        final double moe = obliquityFunction.value(date);
 
         // original definition of equation of equinoxes
         final double eqe = dPsi * FastMath.cos(moe);
 
         // apply correction if needed
-        return eqe + angles[3];
+        return eqe + angles[2];
 
     }
 

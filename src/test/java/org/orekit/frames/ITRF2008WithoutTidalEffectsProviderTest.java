@@ -177,7 +177,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));
         checkPV(new PVCoordinates(new Vector3D(-23830592.685,  -9747073.881,  -6779831.010),
                                   new Vector3D( 1561.9646362, -1754.3454485, -3068.8504996)),
-                                  trans.transformPVCoordinates(pvWGS), 0.156, 2.4e-5);
+                                  trans.transformPVCoordinates(pvWGS), 0.146, 2.17e-5);
 
     }
 

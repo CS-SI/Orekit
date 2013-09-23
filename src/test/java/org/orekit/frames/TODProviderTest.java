@@ -40,7 +40,7 @@ public class TODProviderTest {
 
     @Test
     public void testEQESmallDiscontinuity() throws OrekitException {
-        TODProvider provider = new TODProvider(IERSConventions.IERS_1996, false);
+        TODProvider provider = new TODProvider(IERSConventions.IERS_1996, null);
         AbsoluteDate switchDate = new AbsoluteDate(1997, 2, 27, TimeScalesFactory.getUTC());
         double currentEQE = Double.NaN;
         double h = 0.01;
@@ -65,7 +65,7 @@ public class TODProviderTest {
     @Test
     public void testRotationRate() throws OrekitException {
         TransformProvider provider =
-                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, false), true, false,
+                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null), true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2035, 3, 2, 15, 58, 59, TimeScalesFactory.getUTC());
@@ -83,6 +83,18 @@ public class TODProviderTest {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEquinox(new double[][] {
+                             { 53098, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53099, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53100, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53101, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53102, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53103, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
+                             { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 }
+                         }),
+                         null);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
@@ -96,16 +108,16 @@ public class TODProviderTest {
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
         //MOD iau76
-        PVCoordinates pvMODiau76 =
+        PVCoordinates pvMODiau76WithoutNutCorr =
             new PVCoordinates(new Vector3D(5094029.0167, 6127870.9363, 6380247.8885),
                               new Vector3D(-4746.262495, 786.014149, 5531.791025));
-        //MOD iau76 w corr
-        PVCoordinates pvMODiau76Wcorr =
+        //MOD iau76
+        PVCoordinates pvMODiau76 =
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.79, 1.6e-3);
-        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 1.07e-3, 5.3e-5);
+        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 1.85, 1.12e-3);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76WithoutNutCorr), 1.07e-3, 5.3e-5);
 
     }
 
@@ -116,14 +128,23 @@ public class TODProviderTest {
         // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
-
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEquinox(new double[][] {
+                             { 53153, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53154, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53155, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53156, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53157, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53158, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
+                             { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 }
+                         }),
+                         null);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996).
-                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996), t0);
-        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform t = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
         PVCoordinates pvTODiau76 =
@@ -133,13 +154,8 @@ public class TODProviderTest {
         PVCoordinates pvMODiau76 =
             new PVCoordinates(new Vector3D(-40576822.6385, -11502231.5013, 9738.2304),
                               new Vector3D(837.708020, -2957.480118, -0.814275));
-        //MOD iau76 w corr
-        PVCoordinates pvMODiau76Wcorr =
-            new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
-                              new Vector3D(837.708020, -2957.480117, -0.814253));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76Wcorr), 1.40, 8.04e-4);
-        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76), 4.87e-4, 6.31e-5);
+        checkPV(pvTODiau76, t.transformPVCoordinates(pvMODiau76), 4.87e-4, 6.31e-5);
 
     }
 
@@ -172,7 +188,7 @@ public class TODProviderTest {
         //
         // looking at error behavior during along the sample show the max error is
         // a peak at 00h00 each day for all curves, which matches the EOP samples
-        // points used for correction (applyEOPCorr is set to true at construction here).
+        // points used for correction (eopHistoru is set to non null at construction here).
         // So looking only at max error does not allow to select an interpolation
         // setting as they all fall in a similar 6e-12 to 8e-12 range. Looking at
         // the error behavior between these peaks however shows that there is still
@@ -180,7 +196,8 @@ public class TODProviderTest {
         // in order to get only numerical noise, we have to go as far as 1h between
         // the points.
         // We finally select 6 interpolation points separated by 1 hour each
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, true);
+        EOPHistoryEquinox eopHistory = FramesFactory.getEOPHistoryEquinox(IERSConventions.IERS_1996);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
@@ -233,7 +250,7 @@ public class TODProviderTest {
         // sampling. All values between 3e-15 and 6e-15 are really equivalent: it is
         // mostly numerical noise. The best settings are 6 or 8 points every 2 or 3 hours.
         // We finally select 6 interpolation points separated by 3 hours each
-        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, false);
+        TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null);
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(nonInterpolating, true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,

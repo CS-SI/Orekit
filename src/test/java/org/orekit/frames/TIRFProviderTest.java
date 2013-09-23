@@ -50,7 +50,9 @@ public class TIRFProviderTest {
         throws OrekitException, InterruptedException, ExecutionException {
 
         // subject under test
-        final TIRFProvider tirf = new TIRFProvider(IERSConventions.IERS_2010, false);
+        final TIRFProvider tirf = new TIRFProvider(IERSConventions.IERS_2010,
+                                                   FramesFactory.getEOPHistoryNonRotatingOrigin(IERSConventions.IERS_2010),
+                                                   null);
         // arbitrary date
         final AbsoluteDate start = new AbsoluteDate("2009-09-19T23:59:45.000", TimeScalesFactory.getUTC());
         // in seconds = 15min

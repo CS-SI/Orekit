@@ -41,23 +41,32 @@ import org.orekit.utils.Constants;
  * which must match one of the the patterns <code>bulletinb_IAU2000-###.txt</code>,
  * <code>bulletinb_IAU2000.###</code>, <code>bulletinb-###.txt</code> or
  * <code>bulletinb.###</code> (or the same ending with <code>.gz</code>
- * for gzip-compressed files) where # stands for a digit character. The files
- * with IAU_2000 in their names correspond to the IAU-2000 precession-nutation model
- * wheareas the files without any identifier correspond to the IAU-1980
- * precession-nutation model.</p>
+ * for gzip-compressed files) where # stands for a digit character.</p>
  * <p>
- * Note that since early 2010, IERS has ceased publication of bulletin B for both
- * precession-nutation models from its <a
+ * Starting with bulletin B 252 published in February 2009, buletins B are
+ * written in a format containing nutation corrections for both the
+ * new IAU2000 nutation model as dx, dy entries in its section 1 and nutation
+ * corrections for the old IAU1976 nutation model as dPsi, dEpsilon entries in
+ * its sections 2. These buletins are available from IERS main site <a
  * href="http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html">
- * main site</a>. The files for IAU-1980 only are still available from <a
+ * Earth Orientation Parameters</a> section. They are also available with exactly the same content
+ * (but a different naming convention) from <a
  * href="http://hpiers.obspm.fr/eoppc/bul/bulb_new/">Paris-Meudon
- * observatory site</a> in a new format (but with the same name pattern
- * <code>bulletinb.###</code>). This class handles both the old and the new format
- * and takes care to use the new format only for the IAU-2000 precession-nutation model.
+ * observatory site</a>.
+ * </p>
+ * <p>
+ * Ending with bulletin B 263 published in January 2010, bulletins B were
+ * written in a format containing only one type of nutation corrections in its
+ * section 1, either for new IAU2000 nutation model as dx, dy entries or the old
+ * IAU1976 nutation model as dPsi, dEpsilon entries, depending on the file (a pair of
+ * files with different name was published each month between March 2003 and January 2010).
+ * </p>
+ * <p>
+ * This class handles both the old and the new format.
  * </p>
  * @author Luc Maisonobe
  */
-class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
+class BulletinBFilesLoader implements EOPHistoryNonRotatingOriginLoader, EOPHistoryEquinoxLoader {
 
     /** Conversion factor. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000;
@@ -68,8 +77,14 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     /** Section 1 header pattern. */
     private static final Pattern SECTION_1_HEADER;
 
-    /** Section 2 header pattern. */
-    private static final Pattern SECTION_2_HEADER;
+    /** Section 2 header pattern for old format and equinox-based paradigm. */
+    private static final Pattern SECTION_2_HEADER_OLD_EQUINOX;
+
+    /** Section 2 header pattern for old format and Non-Rotating Origin paradigm. */
+    private static final Pattern SECTION_2_HEADER_OLD_NRO;
+
+    /** Section 2 header pattern for new format. */
+    private static final Pattern SECTION_2_HEADER_NEW;
 
     /** Section 3 header pattern. */
     private static final Pattern SECTION_3_HEADER;
@@ -101,7 +116,10 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         // the following form (the indentation discrepancy for section 6 is really
         // present in the available files):
         // 1 - EARTH ORIENTATION PARAMETERS (IERS evaluation).
+        // either
         // 2 - SMOOTHED VALUES OF x, y, UT1, D, DPSI, DEPSILON (IERS EVALUATION)
+        // or
+        // 2 - SMOOTHED VALUES OF x, y, UT1, D, dX, dY (IERS EVALUATION)
         // 3 - NORMAL VALUES OF THE EARTH ORIENTATION PARAMETERS AT FIVE-DAY INTERVALS
         // 4 - DURATION OF THE DAY AND ANGULAR VELOCITY OF THE EARTH (IERS evaluation).
         // 5 - INFORMATION ON TIME SCALES
@@ -114,9 +132,11 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         // 3 - EARTH ANGULAR VELOCITY : DAILY FINAL VALUES OF LOD, OMEGA AT 0hUTC
         // 4 - INFORMATION ON TIME SCALES
         // 5 - SUMMARY OF CONTRIBUTED EARTH ORIENTATION PARAMETERS SERIES
-        SECTION_1_HEADER = Pattern.compile("^ +1 - (\\p{Upper}+) \\p{Upper}+ \\p{Upper}+.*");
-        SECTION_2_HEADER = Pattern.compile("^ +2 - \\p{Upper}+ \\p{Upper}+ \\p{Upper}+.*");
-        SECTION_3_HEADER = Pattern.compile("^ +3 - \\p{Upper}+ \\p{Upper}+ \\p{Upper}+.*");
+        SECTION_1_HEADER             = Pattern.compile("^ +1 - (\\p{Upper}+) \\p{Upper}+ \\p{Upper}+.*");
+        SECTION_2_HEADER_OLD_EQUINOX = Pattern.compile("^ +2 - SMOOTHED \\p{Upper}+ \\p{Upper}+.*DPSI, DEPSILON.*");
+        SECTION_2_HEADER_OLD_NRO     = Pattern.compile("^ +2 - SMOOTHED \\p{Upper}+ \\p{Upper}+.*dX, dY.*");
+        SECTION_2_HEADER_NEW         = Pattern.compile("^ +2 - DAILY \\p{Upper}+ \\p{Upper}+.*");
+        SECTION_3_HEADER             = Pattern.compile("^ +3 - \\p{Upper}+ \\p{Upper}+ \\p{Upper}+.*");
 
         // the markers bracketing the final values in section 1 in the old bulletin B
         // monthly data files have the following form:
@@ -188,7 +208,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                                                     finalBlanks);
         SECTION_1_DATA_NEW_FORMAT = Pattern.compile(storedIntegerField + storedIntegerField + storedIntegerField + mjdField +
                                                     storedRealField + storedRealField + storedRealField +
-                                                    ignoredRealField + ignoredRealField + ignoredRealField + ignoredRealField +
+                                                    storedRealField + storedRealField + ignoredRealField + ignoredRealField +
                                                     ignoredRealField + ignoredRealField + ignoredRealField +
                                                     finalBlanks);
         SECTION_2_DATA_NEW_FORMAT = Pattern.compile(ignoredIntegerField + ignoredIntegerField + ignoredIntegerField + mjdField +
@@ -216,11 +236,11 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     /** End of final data. */
     private int mjdMax;
 
-    /** History entries for IAU1980. */
-    private Collection<? super EOP1980Entry> history1980;
+    /** History entries for equinox-based paradigm. */
+    private Collection<? super EOPEntryEquinox> historyEquinox;
 
-    /** History entries for IAU2000. */
-    private Collection<? super EOP2000Entry> history2000;
+    /** History entries for Non-Rotating Origin paradigm. */
+    private Collection<? super EOPEntryNonRotatingOrigin> historyNRO;
 
     /** Build a loader for IERS bulletins B files.
     * @param supportedNames regular expression for supported files names
@@ -245,7 +265,7 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
 
         synchronized (this) {
 
-            // skip header up to section 1 and check if we are parsing an lod or new format file
+            // skip header up to section 1 and check if we are parsing an old or new format file
             final Matcher section1Matcher = seekToLine(SECTION_1_HEADER, reader, name);
             final boolean isOldFormat = "EARTH".equals(section1Matcher.group(1));
 
@@ -254,32 +274,36 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                 // extract MJD bounds for final data from section 1
                 loadMJDBoundsOldFormat(reader, name);
 
-                // skip to section 2
-                seekToLine(SECTION_2_HEADER, reader, name);
+                if (historyEquinox != null) {
+                    // skip to section 2
+                    seekToLine(SECTION_2_HEADER_OLD_EQUINOX, reader, name);
 
-                // extract EOP data from section 2
-                loadEOPOldFormat(reader, name);
+                    // extract EOP data from section 2
+                    loadEOPEquinoxOldFormat(reader, name);
+                } else {
+                    // skip to section 2
+                    seekToLine(SECTION_2_HEADER_OLD_NRO, reader, name);
+
+                    // extract EOP data from section 2
+                    loadEOPNonRotatingOriginOldFormat(reader, name);
+                }
 
             } else {
 
-                if (history1980 == null) {
-                    // the file contains data for the IAU-1980 precession-nutation model
-                    // but we don't want to save this kind of data, don't bother to read the file
-                    return;
-                }
-
                 final Map<Integer, double[]> fieldsMap = new HashMap<Integer, double[]>();
 
-                // extract x, y, UT1-UTC from section 1
-                loadXYDTNewFormat(fieldsMap, reader, name);
+                // extract x, y, UT1-UTC, dx, dy from section 1
+                loadXYDTDxDyNewFormat(fieldsMap, reader, name);
 
-                // skip to section 2
-                seekToLine(SECTION_2_HEADER, reader, name);
+                if (historyEquinox != null) {
+                    // skip to section 2
+                    seekToLine(SECTION_2_HEADER_NEW, reader, name);
 
-                // extract dPsi and dEps data from section 2
-                loadDpsiDepsNewFormat(fieldsMap, reader, name);
+                    // extract dPsi and dEps data from section 2
+                    loadDpsiDepsNewFormat(fieldsMap, reader, name);
+                }
 
-                // skip to section 2
+                // skip to section 3
                 seekToLine(SECTION_3_HEADER, reader, name);
 
                 // extract LOD data from section 3
@@ -294,7 +318,14 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                         Double.isNaN(array[4]) || Double.isNaN(array[5])) {
                         notifyUnexpectedErrorEncountered(name);
                     }
-                    history1980.add(new EOP1980Entry(mjd, array[0], array[1], array[2], array[3], array[4], array[5]));
+                    if (historyEquinox != null) {
+                        if (Double.isNaN(array[6]) || Double.isNaN(array[7])) {
+                            notifyUnexpectedErrorEncountered(name);
+                        }
+                        historyEquinox.add(new EOPEntryEquinox(mjd, array[0], array[1], array[2], array[3], array[6], array[7]));
+                    } else {
+                        historyNRO.add(new EOPEntryNonRotatingOrigin(mjd, array[0], array[1], array[2], array[3], array[4], array[5]));
+                    }
                 }
 
             }
@@ -372,7 +403,41 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
      * @exception IOException if data can't be read
      * @exception OrekitException if some data is missing or if some loader specific error occurs
      */
-    private void loadEOPOldFormat(final BufferedReader reader, final String name)
+    private void loadEOPEquinoxOldFormat(final BufferedReader reader, final String name)
+        throws OrekitException, IOException {
+
+        // read the data lines in the final values part inside section 2
+        for (line = reader.readLine(); line != null; line = reader.readLine()) {
+            lineNumber++;
+            final Matcher matcher = SECTION_2_DATA_OLD_FORMAT.matcher(line);
+            if (matcher.matches()) {
+                // this is a data line, build an entry from the extracted fields
+                final int    date  = Integer.parseInt(matcher.group(1));
+                final double x     = Double.parseDouble(matcher.group(2)) * Constants.ARC_SECONDS_TO_RADIANS;
+                final double y     = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
+                final double dtu1  = Double.parseDouble(matcher.group(4));
+                final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
+                final double ddPsi = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                final double ddEps = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                if (date >= mjdMin) {
+                    historyEquinox.add(new EOPEntryEquinox(date, dtu1, lod, x, y, ddPsi, ddEps));
+                    if (date >= mjdMax) {
+                        // don't bother reading the rest of the file
+                        return;
+                    }
+                }
+            }
+        }
+
+    }
+
+    /** Read EOP data from section 2 in the old bulletin B format.
+     * @param reader reader from where file content is obtained
+     * @param name name of the file (or zip entry)
+     * @exception IOException if data can't be read
+     * @exception OrekitException if some data is missing or if some loader specific error occurs
+     */
+    private void loadEOPNonRotatingOriginOldFormat(final BufferedReader reader, final String name)
         throws OrekitException, IOException {
 
         // read the data lines in the final values part inside section 2
@@ -386,15 +451,10 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                 final double y    = Double.parseDouble(matcher.group(3)) * Constants.ARC_SECONDS_TO_RADIANS;
                 final double dtu1 = Double.parseDouble(matcher.group(4));
                 final double lod  = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
-                final double dpsi = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                final double deps = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                final double dx   = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                final double dy   = Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS;
                 if (date >= mjdMin) {
-                    if (history1980 != null) {
-                        history1980.add(new EOP1980Entry(date, dtu1, lod, x, y, dpsi, deps));
-                    }
-                    if (history2000 != null) {
-                        history2000.add(new EOP2000Entry(date, dtu1, lod, x, y, dpsi, deps));
-                    }
+                    historyNRO.add(new EOPEntryNonRotatingOrigin(date, dtu1, lod, x, y, dx, dy));
                     if (date >= mjdMax) {
                         // don't bother reading the rest of the file
                         return;
@@ -405,14 +465,14 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
 
     }
 
-    /** Read UT1-UTC from section 1 in the new bulletin B format.
+    /** Read X, Y, UT1-UTC, dx, dy from section 1 in the new bulletin B format.
      * @param fieldsMap map to fill with the UT1-UTC entries
      * @param reader reader from where file content is obtained
      * @param name name of the file (or zip entry)
      * @exception IOException if data can't be read
      * @exception OrekitException if some data is missing or if some loader specific error occurs
      */
-    private void loadXYDTNewFormat(final Map<Integer, double[]> fieldsMap, final BufferedReader reader, final String name)
+    private void loadXYDTDxDyNewFormat(final Map<Integer, double[]> fieldsMap, final BufferedReader reader, final String name)
         throws OrekitException, IOException {
 
         mjdMin = Integer.MAX_VALUE;
@@ -441,7 +501,9 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                     final double x    = Double.parseDouble(matcher.group(5)) * MILLI_ARC_SECONDS_TO_RADIANS;
                     final double y    = Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS;
                     final double dtu1 = Double.parseDouble(matcher.group(7)) * MILLI_SECONDS_TO_SECONDS;
-                    fieldsMap.put(mjd, new double[] {dtu1, Double.NaN, x, y, Double.NaN, Double.NaN});
+                    final double dx   = Double.parseDouble(matcher.group(8)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                    final double dy   = Double.parseDouble(matcher.group(9)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                    fieldsMap.put(mjd, new double[] {dtu1, Double.NaN, x, y, dx, dy, Double.NaN, Double.NaN});
                 } else {
                     matcher = FINAL_VALUES_END.matcher(line);
                     if (matcher.matches()) {
@@ -453,8 +515,8 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         }
     }
 
-    /** Read dPsi and dEps from section 2 in the new bulletin B format.
-     * @param fieldsMap map to fill with the dPsi and dEps entries
+    /** Read &delta;&Delta;&Psi; and &delta;&Delta;&epsilon; from section 2 in the new bulletin B format.
+     * @param fieldsMap map to fill with the &delta;&Delta;&Psi; and &delta;&Delta;&epsilon; entries
      * @param reader reader from where file content is obtained
      * @param name name of the file (or zip entry)
      * @exception IOException if data can't be read
@@ -470,14 +532,14 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
                 // this is a data line, build an entry from the extracted fields
                 final int    mjd  = Integer.parseInt(matcher.group(1));
                 if (mjd >= mjdMin) {
-                    final double dpsi = Double.parseDouble(matcher.group(2)) * MILLI_ARC_SECONDS_TO_RADIANS;
-                    final double deps = Double.parseDouble(matcher.group(3)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                    final double ddPsi = Double.parseDouble(matcher.group(2)) * MILLI_ARC_SECONDS_TO_RADIANS;
+                    final double ddEps = Double.parseDouble(matcher.group(3)) * MILLI_ARC_SECONDS_TO_RADIANS;
                     final double[] array = fieldsMap.get(mjd);
                     if (array == null) {
                         notifyUnexpectedErrorEncountered(name);
                     }
-                    array[4] = dpsi;
-                    array[5] = deps;
+                    array[6] = ddPsi;
+                    array[7] = ddEps;
                     if (mjd >= mjdMax) {
                         // don't bother reading the rest of the file
                         return;
@@ -519,21 +581,21 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
     }
 
     /** {@inheritDoc} */
-    public void fillHistory1980(final Collection<? super EOP1980Entry> history)
+    public void fillHistoryEquinox(final Collection<? super EOPEntryEquinox> history)
         throws OrekitException {
         synchronized (this) {
-            history1980 = history;
-            history2000 = null;
+            historyEquinox = history;
+            historyNRO     = null;
             DataProvidersManager.getInstance().feed(supportedNames, this);
         }
     }
 
     /** {@inheritDoc} */
-    public void fillHistory2000(final Collection<? super EOP2000Entry> history)
+    public void fillHistoryNonRotatingOrigin(final Collection<? super EOPEntryNonRotatingOrigin> history)
         throws OrekitException {
         synchronized (this) {
-            history1980 = null;
-            history2000 = history;
+            historyEquinox = null;
+            historyNRO     = history;
             DataProvidersManager.getInstance().feed(supportedNames, this);
         }
     }
@@ -549,4 +611,5 @@ class BulletinBFilesLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader
         throw new OrekitException(OrekitMessages.UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER,
                                   name, loaderName);
     }
+
 }

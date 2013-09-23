@@ -22,6 +22,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -36,13 +38,13 @@ import org.orekit.utils.IERSConventions;
 public class GTODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130807L;
+    private static final long serialVersionUID = 20130922L;
 
     /** Angular velocity of the Earth, in rad/s. */
     private static final double AVE = 7.292115146706979e-5;
 
     /** EOP history. */
-    private final EOPHistory eopHistory;
+    private final EOPHistoryEquinox eopHistory;
 
     /** GMST function. */
     private final TimeFunction<DerivativeStructure> gmstFunction;
@@ -52,14 +54,22 @@ public class GTODProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param conventions conventions to apply
-     * @param applyEOPCorr if true, EOP correction is applied (here, LOD)
+     * @param eopHistory EOP history
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected GTODProvider(final IERSConventions conventions, final boolean applyEOPCorr)
+    protected GTODProvider(final IERSConventions conventions, final EOPHistoryEquinox eopHistory)
         throws OrekitException {
-        this.eopHistory   = applyEOPCorr ? FramesFactory.getEOPHistory(conventions) : null;
-        this.gmstFunction = conventions.getGMSTFunction(eopHistory);
-        this.gastFunction = conventions.getGASTFunction(eopHistory);
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
+        this.eopHistory    = eopHistory;
+        this.gmstFunction  = conventions.getGMSTFunction(ut1);
+        this.gastFunction  = conventions.getGASTFunction(ut1);
+    }
+
+    /** Get the EOP history.
+     * @return EOP history
+     */
+    EOPHistoryEquinox getEOPHistory() {
+        return eopHistory;
     }
 
     /** Get the transform from TOD at specified date.

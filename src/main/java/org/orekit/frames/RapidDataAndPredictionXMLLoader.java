@@ -49,7 +49,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * href="http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html">Earth orientation data</a>.</p>
  * @author Luc Maisonobe
  */
-class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
+class RapidDataAndPredictionXMLLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotatingOriginLoader {
 
     /** Conversion factor for milli-arc seconds entries. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
@@ -61,10 +61,10 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     private final String supportedNames;
 
     /** History entries for IAU1980. */
-    private Collection<? super EOP1980Entry> history1980;
+    private Collection<? super EOPEntryEquinox> history1980;
 
     /** History entries for IAU2000. */
-    private Collection<? super EOP2000Entry> history2000;
+    private Collection<? super EOPEntryNonRotatingOrigin> history2000;
 
     /** Build a loader for IERS XML EOP files.
      * @param supportedNames regular expression for supported files names
@@ -102,7 +102,7 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     }
 
     /** {@inheritDoc} */
-    public void fillHistory1980(final Collection<? super EOP1980Entry> history)
+    public void fillHistoryEquinox(final Collection<? super EOPEntryEquinox> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = history;
@@ -112,7 +112,7 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     }
 
     /** {@inheritDoc} */
-    public void fillHistory2000(final Collection<? super EOP2000Entry> history)
+    public void fillHistoryNonRotatingOrigin(final Collection<? super EOPEntryNonRotatingOrigin> history)
         throws OrekitException {
         synchronized (this) {
             history1980 = null;
@@ -317,12 +317,12 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
                     (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    history1980.add(new EOPEntryEquinox(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    history2000.add(new EOPEntryNonRotatingOrigin(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
             }
         }
@@ -361,12 +361,12 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
                     (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    history1980.add(new EOPEntryEquinox(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
                 if ((history2000 != null) &&
                     (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
                     (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y, dpsi, deps));
+                    history2000.add(new EOPEntryNonRotatingOrigin(mjd, dtu1, lod, x, y, dpsi, deps));
                 }
             }
         }
