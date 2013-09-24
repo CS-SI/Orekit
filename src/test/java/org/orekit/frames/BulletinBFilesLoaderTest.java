@@ -18,16 +18,18 @@ package org.orekit.frames;
 
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 
 public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
@@ -35,36 +37,44 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(converter, history);
         Assert.assertTrue(getMaxGap(history) > 5);
     }
 
     @Test
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2005, 12, 5, TimeScalesFactory.getUTC()),
-                            new EOPHistoryNonRotatingOrigin(history).getStartDate());
+                            new EOPHistory(history).getStartDate());
     }
 
     @Test
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(converter, history);
         Assert.assertTrue(getMaxGap(history) < 5);
         Assert.assertEquals(new AbsoluteDate(2006, 3, 5, TimeScalesFactory.getUTC()),
-                            new EOPHistoryNonRotatingOrigin(history).getEndDate());
+                            new EOPHistory(history).getEndDate());
     }
 
     @Test
     public void testNewFormatNominal() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        List<EOPEntryNonRotatingOrigin> data = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader("bulletinb.270").fillHistoryNonRotatingOrigin(data);
-        EOPHistoryNonRotatingOrigin history = new EOPHistoryNonRotatingOrigin(data);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader("bulletinb.270").fillHistory(converter, data);
+        EOPHistory history = new EOPHistory(data);
         Assert.assertEquals(new AbsoluteDate(2010, 6, 2, TimeScalesFactory.getUTC()),
                             history.getStartDate());
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
@@ -74,9 +84,11 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testOldFormatContent() throws OrekitException, ParseException {
         setRoot("regular-data");
-        List<EOPEntryNonRotatingOrigin> data = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistoryNonRotatingOrigin(data);
-        EOPHistoryNonRotatingOrigin history = new EOPHistoryNonRotatingOrigin(data);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader(FramesFactory.BULLETINB_2000_FILENAME).fillHistory(converter, data);
+        EOPHistory history = new EOPHistory(data);
         AbsoluteDate date = new AbsoluteDate(2006, 1, 11, 12, 0, 0, TimeScalesFactory.getUTC());
         Assert.assertEquals(msToS(  (-3 * 0.073    + 27 * -0.130   + 27 * -0.244   - 3 * -0.264)   / 48), history.getLOD(date), 1.0e-10);
         Assert.assertEquals(        (-3 * 0.333275 + 27 * 0.333310 + 27 * 0.333506 - 3 * 0.333768) / 48,  history.getUT1MinusUTC(date), 1.0e-10);
@@ -87,16 +99,18 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testNewFormatContent() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        List<EOPEntryNonRotatingOrigin> data = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader("bulletinb.270").fillHistoryNonRotatingOrigin(data);
-        EOPHistoryNonRotatingOrigin history = new EOPHistoryNonRotatingOrigin(data);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader("bulletinb.270").fillHistory(converter, data);
+        EOPHistory history = new EOPHistory(data);
         AbsoluteDate date = new AbsoluteDate(2010, 6, 12, 12, 0, 0, TimeScalesFactory.getUTC());
         Assert.assertEquals(msToS((   -3 *   0.1202 + 27 *   0.0294 + 27 *   0.0682 - 3 *   0.1531) / 48), history.getLOD(date), 1.0e-10);
         Assert.assertEquals(msToS((   -3 * -57.1711 + 27 * -57.2523 + 27 * -57.3103 - 3 * -57.4101) / 48), history.getUT1MinusUTC(date), 1.0e-10);
         Assert.assertEquals(masToRad((-3 *  -1.216  + 27 *   1.658  + 27 *   4.926  - 3 *   7.789)  / 48), history.getPoleCorrection(date).getXp(), 1.0e-10);
         Assert.assertEquals(masToRad((-3 * 467.780  + 27 * 469.330  + 27 * 470.931  - 3 * 472.388)  / 48), history.getPoleCorrection(date).getYp(), 1.0e-10);
-        Assert.assertEquals(masToRad((-3 *   0.097  + 27 *   0.089  + 27 *   0.050  - 3 *  -0.007)  / 48), history.getNutationCorrection(date)[0],  1.0e-10);
-        Assert.assertEquals(masToRad((-3 *   0.071  + 27 *   0.066  + 27 *   0.090  - 3 *   0.111)  / 48), history.getNutationCorrection(date)[1],  1.0e-10);
+        Assert.assertEquals(masToRad((-3 *   0.097  + 27 *   0.089  + 27 *   0.050  - 3 *  -0.007)  / 48), history.getNonRotatinOriginNutationCorrection(date)[0],  1.0e-10);
+        Assert.assertEquals(masToRad((-3 *   0.071  + 27 *   0.066  + 27 *   0.090  - 3 *   0.111)  / 48), history.getNonRotatinOriginNutationCorrection(date)[1],  1.0e-10);
     }
 
     private double msToS(double ms) {
@@ -114,15 +128,19 @@ public class BulletinBFilesLoaderTest extends AbstractFilesLoaderTest {
     @Test(expected=OrekitException.class)
     public void testNewFormatTruncated() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader("bulletinb-truncated.270").fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+       SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader("bulletinb-truncated.270").fillHistory(converter, history);
     }
 
     @Test(expected=OrekitException.class)
     public void testNewFormatInconsistent() throws OrekitException, ParseException {
         setRoot("new-bulletinB");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new BulletinBFilesLoader("bulletinb-inconsistent.270").fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+       SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new BulletinBFilesLoader("bulletinb-inconsistent.270").fillHistory(converter, history);
     }
 
 }

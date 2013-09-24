@@ -84,17 +84,16 @@ public class TODProviderTest {
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEquinox(new double[][] {
-                             { 53098, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
-                             { 53099, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
-                             { 53100, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
-                             { 53101, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
-                             { 53102, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
-                             { 53103, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
-                             { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 },
-                             { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875 }
-                         }),
-                         null);
+                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                             { 53098, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53099, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53100, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53101, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53102, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53103, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53104, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53105, -0.4399619, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN }
+                         }));
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 04, 06),
                                            new TimeComponents(07, 51, 28.386009),
                                            TimeScalesFactory.getUTC());
@@ -129,17 +128,16 @@ public class TODProviderTest {
         // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
         // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
         Utils.setLoaders(IERSConventions.IERS_1996,
-                         Utils.buildEquinox(new double[][] {
-                             { 53153, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
-                             { 53154, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
-                             { 53155, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
-                             { 53156, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
-                             { 53157, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
-                             { 53158, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
-                             { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 },
-                             { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494 }
-                         }),
-                         null);
+                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                             { 53153, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53154, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53155, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53156, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53157, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53158, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53159, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN },
+                             { 53160, -0.4709050,  0.0000000, -0.083853,  0.467217, -0.053614, -0.004494, Double.NaN, Double.NaN }
+                         }));
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2004, 06, 01),
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
@@ -196,7 +194,7 @@ public class TODProviderTest {
         // in order to get only numerical noise, we have to go as far as 1h between
         // the points.
         // We finally select 6 interpolation points separated by 1 hour each
-        EOPHistoryEquinox eopHistory = FramesFactory.getEOPHistoryEquinox(IERSConventions.IERS_1996);
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996);
         TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,

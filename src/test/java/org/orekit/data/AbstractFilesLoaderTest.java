@@ -16,13 +16,11 @@
  */
 package org.orekit.data;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.SortedSet;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
-import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.Constants;
 
@@ -32,8 +30,7 @@ public abstract class AbstractFilesLoaderTest {
         Utils.setDataRoot(directoryName);
     }
 
-    protected int getMaxGap(List<? extends TimeStamped> history) {
-        Collections.sort(history, new ChronologicalComparator());
+    protected int getMaxGap(SortedSet<? extends TimeStamped> history) {
         double maxGap = 0;
         TimeStamped previous = null;
         for (final TimeStamped current : history) {

@@ -16,12 +16,11 @@
  */
 package org.orekit.frames;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.orekit.bodies.CelestialBodyFactory;
@@ -112,12 +111,12 @@ import org.orekit.utils.OrekitConfiguration;
  * The Earth Orientation Parameters (EOP) needed for accurate transformations
  * between inertial and Earth fixed frames are loaded from the
  * {@link org.orekit.data.DataProvidersManager}. When EOP should be applied,
- * but EOP data are not available, then an null (0.0) correction is used. This
+ * but EOP data are not available, then a null (0.0) correction is used. This
  * can occur when no EOP data is loaded, or when the requested date is beyond
  * the time span of the loaded EOP data. Using a null correction can result in
  * coarse accuracy. To check the time span covered by EOP data use
- * {@link #getEOP2000History()}, {@link EOPHistory#getStartDate()}, and
- * {@link EOPHistory#getEndDate()}.
+ * {@link #getEOPHistory(IERSConventions)}, {@link EOPHistory#getStartDate()},
+ * and {@link EOPHistory#getEndDate()}.
  * <p>
  * For more on configuring the EOP data Orekit uses see
  * <a href="https://www.orekit.org/forge/projects/orekit/wiki/Configuration">
@@ -160,7 +159,7 @@ import org.orekit.utils.OrekitConfiguration;
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
-public class FramesFactory implements Serializable {
+public class FramesFactory {
 
     /** Default regular expression for the Rapid Data and Prediction EOP columns files (IAU1980 compatibles). */
     public static final String RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME = "^finals\\.[^.]*$";
@@ -186,20 +185,13 @@ public class FramesFactory implements Serializable {
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
     public static final String BULLETINB_2000_FILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
-    /** Serializable UID. */
-    private static final long serialVersionUID = 20130922L;
-
     /** Predefined frames. */
     private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
         new HashMap<Predefined, FactoryManagedFrame>();
 
-    /** Loaders for equinox-based EOP. */
-    private static final Map<IERSConventions, List<EOPHistoryEquinoxLoader>> EOP_HISTORY_EQUINOX_LOADERS =
-        new HashMap<IERSConventions, List<EOPHistoryEquinoxLoader>>();
-
-    /** Loaders for Non-Rotating Origin EOP. */
-    private static final Map<IERSConventions, List<EOPHistoryNonRotatingOriginLoader>> EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS =
-        new HashMap<IERSConventions, List<EOPHistoryNonRotatingOriginLoader>>();
+    /** Loaders for Earth Orientation parameters. */
+    private static final Map<IERSConventions, List<EOPHistoryLoader>> EOP_HISTORY_LOADERS =
+        new HashMap<IERSConventions, List<EOPHistoryLoader>>();
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -212,8 +204,7 @@ public class FramesFactory implements Serializable {
     /** Add the default loaders EOP history (IAU 1980 precession/nutation).
      * <p>
      * The default loaders look for IERS EOP 08 C04 and bulletins B files. They
-     * correspond to {@link EOPHistoryEquinoxLoader equinox-based EOP history loaders}
-     * and {@link IERSConventions#IERS_1996 IERS 1996} conventions.
+     * correspond to {@link IERSConventions#IERS_1996 IERS 1996} conventions.
      * </p>
      * @param rapidDataColumnsSupportedNames regular expression for supported
      * rapid data columns EOP files names
@@ -226,8 +217,8 @@ public class FramesFactory implements Serializable {
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
-     * @see #addEOPHistoryEquinoxLoader(IERSConventions, EOPHistoryEquinoxLoader)
-     * @see #clearEOPHistoryEquinoxLoaders()
+     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
      */
     public static void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
@@ -235,28 +226,29 @@ public class FramesFactory implements Serializable {
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
         final String rapidColNames =
-                (rapidDataColumnsSupportedNames == null) ? RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME : rapidDataColumnsSupportedNames;
-        addEOPHistoryEquinoxLoader(IERSConventions.IERS_1996,
-                                   new RapidDataAndPredictionColumnsLoader(rapidColNames));
+                (rapidDataColumnsSupportedNames == null) ?
+                RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME : rapidDataColumnsSupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_1996,
+                            new RapidDataAndPredictionColumnsLoader(false, rapidColNames));
         final String rapidXmlNames =
-                (rapidDataXMLSupportedNames == null) ? RAPID_DATA_PREDICTION_XML_1980_FILENAME : rapidDataXMLSupportedNames;
-        addEOPHistoryEquinoxLoader(IERSConventions.IERS_1996,
-                                   new RapidDataAndPredictionXMLLoader(rapidXmlNames));
+                (rapidDataXMLSupportedNames == null) ?
+                RAPID_DATA_PREDICTION_XML_1980_FILENAME : rapidDataXMLSupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_1996,
+                            new RapidDataAndPredictionXMLLoader(rapidXmlNames));
         final String eopcNames =
                 (eopC04SupportedNames == null) ? EOPC04_1980_FILENAME : eopC04SupportedNames;
-        addEOPHistoryEquinoxLoader(IERSConventions.IERS_1996,
-                                   new EOP08C04FilesLoader(eopcNames));
+        addEOPHistoryLoader(IERSConventions.IERS_1996,
+                            new EOP08C04FilesLoader(eopcNames));
         final String bulBNames =
             (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
-        addEOPHistoryEquinoxLoader(IERSConventions.IERS_1996,
-                                   new BulletinBFilesLoader(bulBNames));
+        addEOPHistoryLoader(IERSConventions.IERS_1996,
+                            new BulletinBFilesLoader(bulBNames));
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
      * <p>
      * The default loaders look for IERS EOP 08 C04 and bulletins B files. They
-     * correspond to {@link EOPHistoryNonRotatingOriginLoader Non-Rotating Origin EOP
-     * history loaders} and both {@link IERSConventions#IERS_2003 IERS 2003} and {@link
+     * correspond to both {@link IERSConventions#IERS_2003 IERS 2003} and {@link
      * IERSConventions#IERS_2010 IERS 2010} conventions.
      * </p>
      * @param rapidDataColumnsSupportedNames regular expression for supported
@@ -270,8 +262,8 @@ public class FramesFactory implements Serializable {
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
-     * @see #addEOPHistoryNonRotatingOriginLoader(IERSConventions, EOPHistoryNonRotatingOriginLoader)
-     * @see #clearEOPHistoryNonRotatingOriginLoaders()
+     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
+     * @see #clearEOPHistoryLoaders()
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
      */
     public static void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
@@ -279,228 +271,106 @@ public class FramesFactory implements Serializable {
                                                        final String eopC04SupportedNames,
                                                        final String bulletinBSupportedNames) {
         final String rapidColNames =
-                (rapidDataColumnsSupportedNames == null) ? RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME : rapidDataColumnsSupportedNames;
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2003,
-                                             new RapidDataAndPredictionColumnsLoader(rapidColNames));
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2010,
-                                             new RapidDataAndPredictionColumnsLoader(rapidColNames));
+                (rapidDataColumnsSupportedNames == null) ?
+                RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME : rapidDataColumnsSupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_2003,
+                            new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
+        addEOPHistoryLoader(IERSConventions.IERS_2010,
+                            new RapidDataAndPredictionColumnsLoader(true, rapidColNames));
         final String rapidXmlNames =
-            (rapidDataXMLSupportedNames == null) ? RAPID_DATA_PREDICITON_XML_2000_FILENAME : rapidDataXMLSupportedNames;
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2003,
-                                             new RapidDataAndPredictionXMLLoader(rapidXmlNames));
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2010,
-                                             new RapidDataAndPredictionXMLLoader(rapidXmlNames));
+            (rapidDataXMLSupportedNames == null) ?
+            RAPID_DATA_PREDICITON_XML_2000_FILENAME : rapidDataXMLSupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_2003,
+                            new RapidDataAndPredictionXMLLoader(rapidXmlNames));
+        addEOPHistoryLoader(IERSConventions.IERS_2010,
+                            new RapidDataAndPredictionXMLLoader(rapidXmlNames));
         final String eopcNames =
             (eopC04SupportedNames == null) ? EOPC04_2000_FILENAME : eopC04SupportedNames;
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2003,
-                                             new EOP08C04FilesLoader(eopcNames));
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2010,
-                                             new EOP08C04FilesLoader(eopcNames));
+        addEOPHistoryLoader(IERSConventions.IERS_2003,
+                            new EOP08C04FilesLoader(eopcNames));
+        addEOPHistoryLoader(IERSConventions.IERS_2010,
+                            new EOP08C04FilesLoader(eopcNames));
         final String bulBNames =
             (bulletinBSupportedNames == null) ? BULLETINB_2000_FILENAME : bulletinBSupportedNames;
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2003,
-                                             new BulletinBFilesLoader(bulBNames));
-        addEOPHistoryNonRotatingOriginLoader(IERSConventions.IERS_2010,
-                                             new BulletinBFilesLoader(bulBNames));
+        addEOPHistoryLoader(IERSConventions.IERS_2003,
+                            new BulletinBFilesLoader(bulBNames));
+        addEOPHistoryLoader(IERSConventions.IERS_2010,
+                            new BulletinBFilesLoader(bulBNames));
     }
 
-    /** Add a loader for equinox-based EOP history.
+    /** Add a loader for Earth Orientation Parameters history.
      * @param conventions IERS conventions to which EOP history applies
      * @param loader custom loader to add for the EOP history
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
-     * @see #clearEOPHistoryEquinoxLoaders()
-     * @see #addEOPHistoryNonRotatingOriginLoader(IERSConventions, EOPHistoryNonRotatingOriginLoader)
+     * @see #clearEOPHistoryLoaders()
      */
-    public static void addEOPHistoryEquinoxLoader(final IERSConventions conventions,
-                                                  final EOPHistoryEquinoxLoader loader) {
-        synchronized (EOP_HISTORY_EQUINOX_LOADERS) {
-            if (!EOP_HISTORY_EQUINOX_LOADERS.containsKey(conventions)) {
-                EOP_HISTORY_EQUINOX_LOADERS.put(conventions, new ArrayList<EOPHistoryEquinoxLoader>());
+    public static void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
+        synchronized (EOP_HISTORY_LOADERS) {
+            if (!EOP_HISTORY_LOADERS.containsKey(conventions)) {
+                EOP_HISTORY_LOADERS.put(conventions, new ArrayList<EOPHistoryLoader>());
             }
-            EOP_HISTORY_EQUINOX_LOADERS.get(conventions).add(loader);
+            EOP_HISTORY_LOADERS.get(conventions).add(loader);
         }
     }
 
-    /** Clear loaders for equinox-based EOP history.
-     * @see #addEOPHistoryEquinoxLoader(EOPHistoryEquinoxLoader)
+    /** Clear loaders for Earth Orientation Parameters history.
+     * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
-     * @see #clearEOPHistoryNonRotatingOriginLoaders()
      */
-    public static void clearEOPHistoryEquinoxLoaders() {
-        synchronized (EOP_HISTORY_EQUINOX_LOADERS) {
-            EOP_HISTORY_EQUINOX_LOADERS.clear();
+    public static void clearEOPHistoryLoaders() {
+        synchronized (EOP_HISTORY_LOADERS) {
+            EOP_HISTORY_LOADERS.clear();
         }
     }
 
-    /** Get Earth Orientation Parameters history data for equinox-based paradigm.
+    /** Get Earth Orientation Parameters history.
      * <p>
-     * If no {@link EOPHistoryEquinoxLoader} has been added by calling {@link
-     * #addEOPHistoryEquinoxLoader(IERSConventions, EOPHistoryEquinoxLoader)
-     * addEOPHistoryEquinoxLoader} or if {@link #clearEOPHistoryEquinoxLoaders()
-     * clearEOPHistoryEquinoxLoaders} has been called afterwards,
-     * the {@link #addDefaultEOP1980HistoryLoaders(String, String, String, String)} method
-     * will be called automatically with supported file names parameters all set to null.
+     * If no {@link EOPHistoryLoader} has been added by calling {@link
+     * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
+     * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
+     * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
+     * String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String, String,
+     * String, String)} methods will be called automatically with supported file names
+     * parameters all set to null, in order to get the default loaders configuration.
      * </p>
      * @param conventions conventions for which EOP history is requested
      * @return Earth Orientation Parameters history
      * @exception OrekitException if the data cannot be loaded
      */
-    public static EOPHistoryEquinox getEOPHistoryEquinox(final IERSConventions conventions)
-        throws OrekitException {
-        return getEOPHistoryEquinox(conventions, true);
-    }
-
-    /** Get Earth Orientation Parameters history data for equinox-based paradigm.
-     * @param conventions conventions for which EOP history is requested
-     * @param fallbackToConversion if true and if no canonical data can be loaded,
-     * fall back to load Non-Rotating Origin EOP and convert it to equinox-based EOP
-     * @return Earth Orientation Parameters history
-     * @exception OrekitException if the data cannot be loaded
-     */
-    private static EOPHistoryEquinox getEOPHistoryEquinox(final IERSConventions conventions,
-                                                          final boolean fallbackToConversion)
+    public static EOPHistory getEOPHistory(final IERSConventions conventions)
         throws OrekitException {
 
-        //TimeStamped based set needed to remove duplicates
-        if (EOP_HISTORY_EQUINOX_LOADERS.isEmpty()) {
-            addDefaultEOP1980HistoryLoaders(null, null, null, null);
-        }
+        synchronized (EOP_HISTORY_LOADERS) {
 
-        OrekitException pendingException = null;
-        final Collection<EOPEntryEquinox> data = new TreeSet<EOPEntryEquinox>(new ChronologicalComparator());
+            //TimeStamped based set needed to remove duplicates
+            if (EOP_HISTORY_LOADERS.isEmpty()) {
+                addDefaultEOP2000HistoryLoaders(null, null, null, null);
+                addDefaultEOP1980HistoryLoaders(null, null, null, null);
+            }
 
-        // try to load canonical data if available
-        if (EOP_HISTORY_EQUINOX_LOADERS.containsKey(conventions)) {
-            for (final EOPHistoryEquinoxLoader loader : EOP_HISTORY_EQUINOX_LOADERS.get(conventions)) {
-                try {
-                    loader.fillHistoryEquinox(data);
-                } catch (OrekitException oe) {
-                    pendingException = oe;
+            OrekitException pendingException = null;
+            final SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+
+            // try to load canonical data if available
+            if (EOP_HISTORY_LOADERS.containsKey(conventions)) {
+                for (final EOPHistoryLoader loader : EOP_HISTORY_LOADERS.get(conventions)) {
+                    try {
+                        loader.fillHistory(conventions.getNutationCorrectionConverter(), data);
+                    } catch (OrekitException oe) {
+                        pendingException = oe;
+                    }
                 }
             }
-        }
 
-        if (data.isEmpty() && fallbackToConversion) {
-            // no data was available, we fall back to convert equinox EOP
-            // (taking care of avoiding infinite recursion if this also fails)
-            try {
-                final EOPHistoryNonRotatingOrigin nro = getEOPHistoryNonRotatingOrigin(conventions, false);
-                data.addAll(conventions.toEquinox(nro.getEntries()));
-            } catch (OrekitException oe) {
-                if (pendingException == null) {
-                    pendingException = oe;
-                }
+            if (data.isEmpty() && pendingException != null) {
+                throw pendingException;
             }
+
+            final EOPHistory history = new EOPHistory(data);
+            history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
+            return history;
+
         }
-
-        if (data.isEmpty() && pendingException != null) {
-            throw pendingException;
-        }
-
-        final EOPHistoryEquinox history = new EOPHistoryEquinox(data);
-        history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
-        return history;
-
-    }
-
-    /** Add a loader for Non-Rotatin Origin EOP history.
-     * @param conventions IERS conventions to which EOP history applies
-     * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
-     * @see #clearEOPHistoryNonRotatingOriginLoaders()
-     * @see #addEOPHistoryEquinoxLoader(IERSConventions, EOPHistoryEquinoxLoader)
-     */
-    public static void addEOPHistoryNonRotatingOriginLoader(final IERSConventions conventions,
-                                                            final EOPHistoryNonRotatingOriginLoader loader) {
-        synchronized (EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS) {
-            if (!EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS.containsKey(conventions)) {
-                EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS.put(conventions, new ArrayList<EOPHistoryNonRotatingOriginLoader>());
-            }
-            EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS.get(conventions).add(loader);
-        }
-    }
-
-    /** Clear loaders for Non-Rotating Origin EOP history.
-     * @see #addEOPHistoryNonRotatingOriginLoader(IERSConventions, EOPHistoryNonRotatingOriginLoader)
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
-     * @see #clearEOPHistoryEquinoxLoaders()
-     */
-    public static void clearEOPHistoryNonRotatingOriginLoaders() {
-        synchronized (EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS) {
-            EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS.clear();
-        }
-    }
-
-    /** Get Earth Orientation Parameters history data for Non-Rotating Origin paradigm.
-     * <p>
-     * If no {@link EOPHistoryNonRotatingOriginLoader} has been added by calling {@link
-     * #addEOP2000HistoryLoader(EOPHistoryNonRotatingOriginLoader) addEOP2000HistoryLoader}
-     * or if {@link #clearEOP2000HistoryLoaders() clearEOP2000HistoryLoaders}
-     * has been called afterwards,
-     * the {@link #addDefaultEOP2000HistoryLoaders(String, String, String, String)} method
-     * will be called automatically with two null parameters (supported file names).
-     * </p>
-     * @param conventions IERS conventions with respect to which EOP are retrieved
-     * @return Earth Orientation Parameters history
-     * @exception OrekitException if the data cannot be loaded
-     * @since 6.1
-     */
-    public static EOPHistoryNonRotatingOrigin getEOPHistoryNonRotatingOrigin(final IERSConventions conventions)
-        throws OrekitException {
-        return getEOPHistoryNonRotatingOrigin(conventions, true);
-    }
-
-    /** Get Earth Orientation Parameters history data for Non-Rotating Origin paradigm.
-     * @param conventions IERS conventions with respect to which EOP are retrieved
-     * @param fallbackToConversion if true and if no canonical data can be loaded,
-     * fall back to load equinox-based EOP and convert it to Non-Rotating Origin EOP
-     * @return Earth Orientation Parameters history
-     * @exception OrekitException if the data cannot be loaded
-     * @since 6.1
-     */
-    private static EOPHistoryNonRotatingOrigin getEOPHistoryNonRotatingOrigin(final IERSConventions conventions,
-                                                                              final boolean fallbackToConversion)
-        throws OrekitException {
-
-        //TimeStamped based set needed to remove duplicates
-        if (EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS.isEmpty()) {
-            addDefaultEOP2000HistoryLoaders(null, null, null, null);
-        }
-
-        OrekitException pendingException = null;
-        final Collection<EOPEntryNonRotatingOrigin> data = new TreeSet<EOPEntryNonRotatingOrigin>(new ChronologicalComparator());
-
-        // try to load canonical data if available
-        if (EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS.containsKey(conventions)) {
-            for (final EOPHistoryNonRotatingOriginLoader loader : EOP_HISTORY_NON_ROTATING_ORIGIN_LOADERS.get(conventions)) {
-                try {
-                    loader.fillHistoryNonRotatingOrigin(data);
-                } catch (OrekitException oe) {
-                    pendingException = oe;
-                }
-            }
-        }
-
-        if (data.isEmpty() && fallbackToConversion) {
-            // no data was available, we fall back to convert equinox EOP
-            // (taking care of avoiding infinite recursion if this also fails)
-            try {
-                final EOPHistoryEquinox equinox = getEOPHistoryEquinox(conventions, false);
-                data.addAll(conventions.toNonRotating(equinox.getEntries()));
-            } catch (OrekitException oe) {
-                if (pendingException == null) {
-                    pendingException = oe;
-                }
-            }
-        }
-
-        if (data.isEmpty() && pendingException != null) {
-            throw pendingException;
-        }
-
-        final EOPHistoryNonRotatingOrigin history = new EOPHistoryNonRotatingOrigin(data);
-        history.checkEOPContinuity(5 * Constants.JULIAN_DAY);
-        return history;
 
     }
 
@@ -1045,7 +915,7 @@ public class FramesFactory implements Serializable {
                 final InterpolatingTransformProvider cirfInterpolating =
                         (InterpolatingTransformProvider) cirf.getTransformProvider();
                 final CIRFProvider cirfRaw = (CIRFProvider) cirfInterpolating.getRawProvider();
-                final EOPHistoryNonRotatingOrigin eopHistory = cirfRaw.getEOPHistory();
+                final EOPHistory eopHistory = cirfRaw.getEOPHistory();
                 final TidalCorrection tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
                 frame = new FactoryManagedFrame(cirf,
                                                 new TIRFProvider(conventions, eopHistory, tidalCorrection),
@@ -1099,7 +969,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final EOPHistoryNonRotatingOrigin eopHistory = FramesFactory.getEOPHistoryNonRotatingOrigin(conventions);
+                final EOPHistory eopHistory = FramesFactory.getEOPHistory(conventions);
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(new CIRFProvider(conventions, eopHistory), true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
@@ -1180,8 +1050,8 @@ public class FramesFactory implements Serializable {
                 final Frame gtod = getGTOD(conventions, true);
                 final InterpolatingTransformProvider gtodInterpolating =
                         (InterpolatingTransformProvider) gtod.getTransformProvider();
-                final GTODProvider      gtodRaw    = (GTODProvider) gtodInterpolating.getRawProvider();
-                final EOPHistoryEquinox eopHistory = gtodRaw.getEOPHistory();
+                final GTODProvider gtodRaw    = (GTODProvider) gtodInterpolating.getRawProvider();
+                final EOPHistory   eopHistory = gtodRaw.getEOPHistory();
                 frame = new FactoryManagedFrame(getGTOD(conventions, true),
                                                 new ITRFEquinoxProvider(eopHistory), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
@@ -1269,7 +1139,7 @@ public class FramesFactory implements Serializable {
                 final InterpolatingTransformProvider todInterpolating =
                         (InterpolatingTransformProvider) tod.getTransformProvider();
                 final TODProvider       todRaw     = (TODProvider) todInterpolating.getRawProvider();
-                final EOPHistoryEquinox eopHistory = todRaw.getEOPHistory();
+                final EOPHistory        eopHistory = todRaw.getEOPHistory();
                 final GTODProvider      gtodRaw    = new GTODProvider(conventions, eopHistory);
                 final TransformProvider gtodInterpolating =
                         new InterpolatingTransformProvider(gtodRaw, true, false,
@@ -1386,7 +1256,7 @@ public class FramesFactory implements Serializable {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final EOPHistoryEquinox eopHistory = applyEOPCorr ? getEOPHistoryEquinox(conventions) : null;
+                final EOPHistory eopHistory = applyEOPCorr ? getEOPHistory(conventions) : null;
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(new TODProvider(conventions, eopHistory),
                                                            true, false,

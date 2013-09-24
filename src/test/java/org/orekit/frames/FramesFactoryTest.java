@@ -22,8 +22,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
@@ -167,41 +169,32 @@ public class FramesFactoryTest {
     @Test
     public void testEOPConversionSymetry1980() throws OrekitException {
         Utils.setDataRoot("rapid-data-columns");
-        List<EOPEntryEquinox> equinox1 = new ArrayList<EOPEntryEquinox>();
-        new RapidDataAndPredictionColumnsLoader("^finals\\.daily$").fillHistoryEquinox(equinox1);
-        List<EOPEntryNonRotatingOrigin> nro1     = IERSConventions.IERS_1996.toNonRotating(equinox1);
-        List<EOPEntryEquinox>           equinox2 = IERSConventions.IERS_1996.toEquinox(nro1);
-        List<EOPEntryNonRotatingOrigin> nro2     = IERSConventions.IERS_1996.toNonRotating(equinox2);
-        Assert.assertEquals(181, equinox1.size());
-        Assert.assertEquals(181, nro1.size());
-        Assert.assertEquals(181, equinox2.size());
-        Assert.assertEquals(181, nro2.size());
-        for (int i = 0; i < equinox1.size(); ++i) {
-            checkEOP(equinox1.get(i), nro1.get(i));
-            checkEOP(equinox1.get(i), equinox2.get(i));
-            checkEOP(equinox1.get(i), nro2.get(i));
-            checkEOPEq(equinox1.get(i), equinox2.get(i));
-            checkEOPNRO(nro1.get(i), nro2.get(i));
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> rawEquinox = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$").fillHistory(converter, rawEquinox);
+        Assert.assertEquals(181, rawEquinox.size());
+        for (final EOPEntry entry : rawEquinox) {
+            final double[] rebuiltEquinox = converter.toEquinox(entry.getDate(),
+                                                                entry.getDx(), entry.getDy());
+            Assert.assertEquals(entry.getDdPsi(), rebuiltEquinox[0], 2.0e-22);
+            Assert.assertEquals(entry.getDdEps(), rebuiltEquinox[1], 2.0e-23);
         }
     }
 
     @Test
     public void testEOPConversionSymetry2003() throws OrekitException {
         Utils.setDataRoot("rapid-data-columns");
-        final List<EOPEntryNonRotatingOrigin> nro1 = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new RapidDataAndPredictionColumnsLoader("^finals2000A\\.daily$").fillHistoryNonRotatingOrigin(nro1);
-        List<EOPEntryEquinox>           equinox1 = IERSConventions.IERS_2003.toEquinox(nro1);
-        List<EOPEntryNonRotatingOrigin> nro2     = IERSConventions.IERS_2003.toNonRotating(equinox1);
-        List<EOPEntryEquinox>           equinox2 = IERSConventions.IERS_2003.toEquinox(nro2);
-        Assert.assertEquals(181, equinox1.size());
-        Assert.assertEquals(181, nro1.size());
-        Assert.assertEquals(181, equinox2.size());
-        Assert.assertEquals(181, nro2.size());
-        for (int i = 0; i < equinox1.size(); ++i) {
-            checkEOP(equinox1.get(i), nro1.get(i));
-            checkEOP(equinox1.get(i), nro2.get(i));
-            checkEOPEq(equinox1.get(i), equinox2.get(i));
-            checkEOPNRO(nro1.get(i), nro2.get(i));
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2003.getNutationCorrectionConverter();
+        final SortedSet<EOPEntry> rawNRO = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$").fillHistory(converter, rawNRO);
+        Assert.assertEquals(181, rawNRO.size());
+        for (final EOPEntry entry : rawNRO) {
+            final double[] rebuiltNRO = converter.toNonRotating(entry.getDate(),
+                                                                entry.getDdPsi(), entry.getDdEps());
+            Assert.assertEquals(entry.getDx(), rebuiltNRO[0], 6.0e-23);
+            Assert.assertEquals(entry.getDy(), rebuiltNRO[1], 2.0e-23);
         }
     }
 
@@ -216,7 +209,7 @@ public class FramesFactoryTest {
     }
 
     private void testCIP(IERSConventions conventions, double threshold) throws OrekitException {
-        Utils.setLoaders(conventions, new ArrayList<EOPEntryEquinox>(), new ArrayList<EOPEntryNonRotatingOrigin>());
+        Utils.setLoaders(conventions, new ArrayList<EOPEntry>());
         Frame cirf = FramesFactory.getCIRF(conventions);
         Frame tod  = FramesFactory.getTOD(conventions);
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 06, 21), TimeComponents.H00,
@@ -234,32 +227,33 @@ public class FramesFactoryTest {
     public void testEOPConversion() throws OrekitException {
 
         // real data from buletinb-298.txt
-        final List<EOPEntryNonRotatingOrigin> nro = Utils.buildNRO(new double[][] {
-            { 56202, 0.3726886, 0.0008843, 0.168556, 0.332869,  -0.000118,  0.000091 },
-            { 56203, 0.3719108, 0.0007204, 0.168261, 0.331527,  -0.000140,  0.000111 },
-            { 56204, 0.3712561, 0.0006217, 0.168218, 0.330668,  -0.000165,  0.000148 },
-            { 56205, 0.3706736, 0.0005530, 0.167775, 0.329688,  -0.000188,  0.000189 },
-            { 56206, 0.3701593, 0.0005139, 0.166829, 0.328457,  -0.000180,  0.000203 }
-        });
 
         // first use case: don't propagate the dx, dy correction to TOD, set dPsi, dEpsilon to 0.0
-        final List<EOPEntryEquinox> equinox0 = Utils.buildEquinox(new double[][] {
-            { 56202, 0.3726886, 0.0008843, 0.168556, 0.332869,  0.0, 0.0 },
-            { 56203, 0.3719108, 0.0007204, 0.168261, 0.331527,  0.0, 0.0 },
-            { 56204, 0.3712561, 0.0006217, 0.168218, 0.330668,  0.0, 0.0 },
-            { 56205, 0.3706736, 0.0005530, 0.167775, 0.329688,  0.0, 0.0 },
-            { 56206, 0.3701593, 0.0005139, 0.166829, 0.328457,  0.0, 0.0 }
+        final List<EOPEntry> forced = Utils.buildEOPList(IERSConventions.IERS_2010, new double[][] {
+            { 56202, 0.3726886, 0.0008843, 0.168556, 0.332869, 0.0, 0.0, -0.000118, 0.000091 },
+            { 56203, 0.3719108, 0.0007204, 0.168261, 0.331527, 0.0, 0.0, -0.000140, 0.000111 },
+            { 56204, 0.3712561, 0.0006217, 0.168218, 0.330668, 0.0, 0.0, -0.000165, 0.000148 },
+            { 56205, 0.3706736, 0.0005530, 0.167775, 0.329688, 0.0, 0.0, -0.000188, 0.000189 },
+            { 56206, 0.3701593, 0.0005139, 0.166829, 0.328457, 0.0, 0.0, -0.000180, 0.000203 }
         });
-        Utils.setLoaders(IERSConventions.IERS_2010, equinox0, nro);
+
+        Utils.setLoaders(IERSConventions.IERS_2010, forced);
         Frame cirf            = FramesFactory.getCIRF(IERSConventions.IERS_2010);
         Frame todNoCorrection = FramesFactory.getTOD(IERSConventions.IERS_2010);
 
         // second use case: convert dx, dy data into dDPsi, dDEpsilon
-        Utils.setLoaders(IERSConventions.IERS_2010, IERSConventions.IERS_2010.toEquinox(nro), nro);
+        final List<EOPEntry> converted = Utils.buildEOPList(IERSConventions.IERS_2010, new double[][] {
+            { 56202, 0.3726886, 0.0008843, 0.168556, 0.332869, Double.NaN, Double.NaN, -0.000118, 0.000091 },
+            { 56203, 0.3719108, 0.0007204, 0.168261, 0.331527, Double.NaN, Double.NaN, -0.000140, 0.000111 },
+            { 56204, 0.3712561, 0.0006217, 0.168218, 0.330668, Double.NaN, Double.NaN, -0.000165, 0.000148 },
+            { 56205, 0.3706736, 0.0005530, 0.167775, 0.329688, Double.NaN, Double.NaN, -0.000188, 0.000189 },
+            { 56206, 0.3701593, 0.0005139, 0.166829, 0.328457, Double.NaN, Double.NaN, -0.000180, 0.000203 }
+        });
+        Utils.setLoaders(IERSConventions.IERS_2010, converted);
         Frame todConvertedCorrection  = FramesFactory.getTOD(IERSConventions.IERS_2010);
 
-        for (AbsoluteDate date = nro.get(0).getDate();
-             date.compareTo(nro.get(nro.size() - 1).getDate()) < 0;
+        for (AbsoluteDate date = forced.get(0).getDate();
+             date.compareTo(forced.get(forced.size() - 1).getDate()) < 0;
              date = date.shiftedBy(3600)) {
             Transform tNoCorrection =
                     FramesFactory.getNonInterpolatingTransform(todNoCorrection, cirf, date);
@@ -305,54 +299,28 @@ public class FramesFactoryTest {
         //     dPsi =  -0.18810999708158463      dEpsilon =  -0.18906891450729962
         //     dx =   -7.5000002980232239E-002 dy =  -0.18899999558925629
 
-        EOPEntryNonRotatingOrigin nro1 =
-                new EOPEntryNonRotatingOrigin(53049, -0.4093475, 0.4676,
-                                              Constants.ARC_SECONDS_TO_RADIANS * -0.076804,
-                                              Constants.ARC_SECONDS_TO_RADIANS *  0.204671,
-                                              Constants.ARC_SECONDS_TO_RADIANS * -0.075,
-                                              Constants.ARC_SECONDS_TO_RADIANS * -0.189);
-        EOPEntryEquinox e1 =
-                IERSConventions.IERS_2003.toEquinox(Arrays.asList(nro1)).get(0);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2003.getNutationCorrectionConverter();
+        int    mjd = 53049;
+        double dx  = Constants.ARC_SECONDS_TO_RADIANS * -0.075;
+        double dy  = Constants.ARC_SECONDS_TO_RADIANS * -0.189;
+        double[] equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), dx, dy);
 
         // The code from uai2000.package uses sin(epsilon0), cos(epsilon0) in the
         // formula, whereas IERS conventions use sin(epsilonA), cos(epsilon0), i.e.
-        // the sine is computed on current date instead of epoch. This implies that
+        // the sine is computed on current date instead of epoch. This explains why
         // the following threshold had to be raised to 2e-11.
         // We still decided to stick with sin(epsilonA) in our implementation, in
-        // oreder to remain consistent with IERS conventions
+        // order to remain consistent with IERS conventions
         Assert.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.18810999708158463,
-                            e1.getDdPsi(), 2.0e-11);
+                            equinox[0], 2.0e-11);
 
         Assert.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.18906891450729962,
-                            e1.getDdEps(), 2.2e-14);
-        EOPEntryNonRotatingOrigin nro2 =
-                IERSConventions.IERS_2003.toNonRotating(Arrays.asList(e1)).get(0);
-        Assert.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.075,
-                            nro2.getDx(), 1.0e-20);
-        Assert.assertEquals(Constants.ARC_SECONDS_TO_RADIANS * -0.189,
-                            nro2.getDy(), 1.0e-20);
+                            equinox[1], 2.2e-14);
+        double[] nro = converter.toNonRotating(EOPEntry.mjdToDate(mjd), equinox[0], equinox[1]);
+        Assert.assertEquals(dx, nro[0], 1.0e-20);
+        Assert.assertEquals(dy, nro[1], 1.0e-20);
 
-    }
-
-    private void checkEOP(EOPEntry eA, EOPEntry eB) {
-        Assert.assertEquals(eA.getDate(),        eB.getDate());
-        Assert.assertEquals(eA.getMjd(),         eB.getMjd());
-        Assert.assertEquals(eA.getUT1MinusUTC(), eB.getUT1MinusUTC(), 1.0e-15);
-        Assert.assertEquals(eA.getLOD(),         eB.getLOD(), 1.0e-15);
-        Assert.assertEquals(eA.getX(),           eB.getX(), 1.0e-15);
-        Assert.assertEquals(eA.getY(),           eB.getY(), 1.0e-15);
-    }
-
-    private void checkEOPEq(EOPEntryEquinox eA, EOPEntryEquinox eB) {
-        checkEOP(eA, eB);
-        Assert.assertEquals(eA.getDdPsi(), eB.getDdPsi(), 2.0e-22);
-        Assert.assertEquals(eA.getDdEps(), eB.getDdEps(), 2.0e-23);
-    }
-
-    private void checkEOPNRO(EOPEntryNonRotatingOrigin eA, EOPEntryNonRotatingOrigin eB) {
-        checkEOP(eA, eB);
-        Assert.assertEquals(eA.getDx(), eB.getDx(), 6.0e-23);
-        Assert.assertEquals(eA.getDy(), eB.getDy(), 2.0e-23);
     }
 
     @Before

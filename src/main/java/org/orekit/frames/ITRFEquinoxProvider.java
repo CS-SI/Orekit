@@ -33,13 +33,13 @@ class ITRFEquinoxProvider implements TransformProvider {
     private static final long serialVersionUID = 20130922L;
 
     /** EOP history. */
-    private final EOPHistoryEquinox eopHistory;
+    private final EOPHistory eopHistory;
 
     /** Simple constructor.
      * @param eopHistory EOP history
      * @exception OrekitException if EOP parameters cannot be read
      */
-    protected ITRFEquinoxProvider(final EOPHistoryEquinox eopHistory) throws OrekitException {
+    protected ITRFEquinoxProvider(final EOPHistory eopHistory) throws OrekitException {
         this.eopHistory = eopHistory;
     }
 

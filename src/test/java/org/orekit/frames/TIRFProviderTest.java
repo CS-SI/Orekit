@@ -51,7 +51,7 @@ public class TIRFProviderTest {
 
         // subject under test
         final TIRFProvider tirf = new TIRFProvider(IERSConventions.IERS_2010,
-                                                   FramesFactory.getEOPHistoryNonRotatingOrigin(IERSConventions.IERS_2010),
+                                                   FramesFactory.getEOPHistory(IERSConventions.IERS_2010),
                                                    null);
         // arbitrary date
         final AbsoluteDate start = new AbsoluteDate("2009-09-19T23:59:45.000", TimeScalesFactory.getUTC());

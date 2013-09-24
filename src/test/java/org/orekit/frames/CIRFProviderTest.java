@@ -35,8 +35,7 @@ public class CIRFProviderTest {
 
     @Test
     public void testRotationRate() throws OrekitException {
-        EOPHistoryNonRotatingOrigin eopHistory =
-                FramesFactory.getEOPHistoryNonRotatingOrigin(IERSConventions.IERS_2010);
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010);
         TransformProvider provider =
                 new InterpolatingTransformProvider(new CIRFProvider(IERSConventions.IERS_2010, eopHistory), true, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
@@ -73,8 +72,7 @@ public class CIRFProviderTest {
         // of points and a small interval. Four points separated by one hour each
         // implies an interpolation error of 1.89e-12 at peak of Runge oscillations,
         // and about 2e-15 away from the singularity points
-        EOPHistoryNonRotatingOrigin eopHistory =
-                FramesFactory.getEOPHistoryNonRotatingOrigin(IERSConventions.IERS_2010);
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010);
         TransformProvider nonInterpolating = new CIRFProvider(IERSConventions.IERS_2010, eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
@@ -119,7 +117,7 @@ public class CIRFProviderTest {
         //        12                         86400s / 18 = 1h20    4.79e-17 rad
         //        12                         86400s / 24 = 1h00    5.09e-17 rad
         //        12                         86400s / 48 = 0h30    4.86e-17 rad
-        EOPHistoryNonRotatingOrigin eopHistory = new EOPHistoryNonRotatingOrigin(new ArrayList<EOPEntryNonRotatingOrigin>());
+        EOPHistory eopHistory = new EOPHistory(new ArrayList<EOPEntry>());
         TransformProvider nonInterpolating = new CIRFProvider(IERSConventions.IERS_2010, eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,

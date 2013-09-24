@@ -16,38 +16,151 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.List;
+
+import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
+import org.orekit.utils.ImmutableTimeStampedCache;
 
-/** Interface for retrieving Earth Orientation Parameters history throughout a large time range.
- * @author Luc Maisonobe
+/** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
+ * @author Pascal Parraud
  */
-public interface EOPHistory {
+public class EOPHistory implements Serializable {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20130924L;
+
+    /** Number of points to use in interpolation. */
+    private static final int INTERPOLATION_POINTS = 4;
+
+    /**
+     * If this history has any EOP data.
+     *
+     * @see #hasDataFor(AbsoluteDate)
+     */
+    private final boolean hasData;
+
+    /** EOP history entries. */
+    private final ImmutableTimeStampedCache<EOPEntry> cache;
+
+    /**
+     * Simple constructor.
+     *
+     * @param data the EOP data to use
+     */
+    protected EOPHistory(final Collection<EOPEntry> data) {
+        if (data.size() >= INTERPOLATION_POINTS) {
+            // enough data to interpolate
+            cache = new ImmutableTimeStampedCache<EOPEntry>(INTERPOLATION_POINTS, data);
+            hasData = true;
+        } else {
+            // not enough data to interpolate -> always use null correction
+            cache = ImmutableTimeStampedCache.emptyCache();
+            hasData = false;
+        }
+    }
 
     /** Get the date of the first available Earth Orientation Parameters.
      * @return the start date of the available data
      */
-    AbsoluteDate getStartDate();
+    public AbsoluteDate getStartDate() {
+        return this.cache.getEarliest().getDate();
+    }
 
     /** Get the date of the last available Earth Orientation Parameters.
      * @return the end date of the available data
      */
-    AbsoluteDate getEndDate();
+    public AbsoluteDate getEndDate() {
+        return this.cache.getLatest().getDate();
+    }
 
     /** Get the UT1-UTC value.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the value is desired
      * @return UT1-UTC in seconds (0 if date is outside covered range)
      */
-    double getUT1MinusUTC(final AbsoluteDate date);
+    public double getUT1MinusUTC(final AbsoluteDate date) {
+        //check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default 0.0 offset
+            return 0.0;
+        }
+        //we have EOP data -> interpolate offset
+        try {
+            final List<EOPEntry> neighbors = getNeighbors(date);
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            final double firstDUT = neighbors.get(0).getUT1MinusUTC();
+            boolean beforeLeap = true;
+            for (final EOPEntry neighbor : neighbors) {
+                final double dut;
+                if (neighbor.getUT1MinusUTC() - firstDUT > 0.9) {
+                    // there was a leap second between the entries
+                    dut = neighbor.getUT1MinusUTC() - 1.0;
+                    if (neighbor.getDate().compareTo(date) <= 0) {
+                        beforeLeap = false;
+                    }
+                } else {
+                    dut = neighbor.getUT1MinusUTC();
+                }
+                interpolator.addSamplePoint(neighbor.getDate().durationFrom(date),
+                                            new double[] {
+                                                dut
+                                            });
+            }
+            final double interpolated = interpolator.value(0)[0];
+            return beforeLeap ? interpolated : interpolated + 1.0;
+        } catch (TimeStampedCacheException tce) {
+            //this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
+        }
+    }
+
+    /**
+     * Get the entries surrounding a central date.
+     * <p>
+     * See {@link #hasDataFor(AbsoluteDate)} to determine if the cache has data
+     * for {@code central} without throwing an exception.
+     *
+     * @param central central date
+     * @return array of cached entries surrounding specified date
+     * @exception TimeStampedCacheException if EOP data cannot be retrieved
+     */
+    protected List<EOPEntry> getNeighbors(final AbsoluteDate central) throws TimeStampedCacheException {
+        return cache.getNeighbors(central);
+    }
 
     /** Get the LoD (Length of Day) value.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the value is desired
      * @return LoD in seconds (0 if date is outside covered range)
-     * @exception TimeStampedCacheException if EOP data cannot be retrieved
      */
-    double getLOD(final AbsoluteDate date) throws TimeStampedCacheException;
+    public double getLOD(final AbsoluteDate date) {
+        //check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return 0.0;
+        }
+        //we have EOP data for date -> interpolate correction
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                                                entry.getLOD()
+                                            });
+            }
+            return interpolator.value(0)[0];
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
+        }
+    }
 
     /** Get the pole IERS Reference Pole correction.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
@@ -55,13 +168,127 @@ public interface EOPHistory {
      * @return pole correction ({@link PoleCorrection#NULL_CORRECTION
      * PoleCorrection.NULL_CORRECTION} if date is outside covered range)
      */
-    PoleCorrection getPoleCorrection(final AbsoluteDate date);
+    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return PoleCorrection.NULL_CORRECTION;
+        }
+        //we have EOP data for date -> interpolate correction
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                                                entry.getX(), entry.getY()
+                                            });
+            }
+            final double[] interpolated = interpolator.value(0);
+            return new PoleCorrection(interpolated[0], interpolated[1]);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
+        }
+    }
 
-    /** Get the correction to the nutation parameters.
+    /** Get the correction to the nutation parameters for equinox-based paradigm.
      * <p>The data provided comes from the IERS files. It is smoothed data.</p>
      * @param date date at which the correction is desired
-     * @return nutation correction (zero if date is outside covered range)
+     * @return nutation correction in longitude &Delta;&Psi; and in obliquity &Delta;&epsilon;
+     * (zero if date is outside covered range)
      */
-    double[] getNutationCorrection(final AbsoluteDate date);
+    public double[] getEquinoxNutationCorrection(final AbsoluteDate date) {
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return new double[2];
+        }
+        //we have EOP data for date -> interpolate correction
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                                                entry.getDdPsi(), entry.getDdEps()
+                                            });
+            }
+            return interpolator.value(0);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
+        }
+    }
+
+    /** Get the correction to the nutation parameters for Non-Rotating Origin paradigm.
+     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
+     * @param date date at which the correction is desired
+     * @return nutation correction in Celestial Intermediat Pole coordinates
+     * &delta;X and &delta;Y (zero if date is outside covered range)
+     */
+    public double[] getNonRotatinOriginNutationCorrection(final AbsoluteDate date) {
+        // check if there is data for date
+        if (!this.hasDataFor(date)) {
+            // no EOP data available for this date, we use a default null correction
+            return new double[2];
+        }
+        //we have EOP data for date -> interpolate correction
+        try {
+            final HermiteInterpolator interpolator = new HermiteInterpolator();
+            for (final EOPEntry entry : getNeighbors(date)) {
+                interpolator.addSamplePoint(entry.getDate().durationFrom(date),
+                                            new double[] {
+                                                entry.getDx(), entry.getDy()
+                                            });
+            }
+            return interpolator.value(0);
+        } catch (TimeStampedCacheException tce) {
+            // this should not happen because of date check above
+            throw OrekitException.createInternalError(tce);
+        }
+    }
+
+    /** Check Earth orientation parameters continuity.
+     * @param maxGap maximal allowed gap between entries (in seconds)
+     * @exception OrekitException if there are holes in the data sequence
+     */
+    public void checkEOPContinuity(final double maxGap) throws OrekitException {
+        TimeStamped preceding = null;
+        for (final TimeStamped current : this.cache.getAll()) {
+
+            // compare the dates of preceding and current entries
+            if ((preceding != null) && ((current.getDate().durationFrom(preceding.getDate())) > maxGap)) {
+                throw new OrekitException(OrekitMessages.MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES,
+                                          preceding.getDate(), current.getDate());
+            }
+
+            // prepare next iteration
+            preceding = current;
+
+        }
+    }
+
+    /**
+     * Check if the cache has data for the given date using
+     * {@link #getStartDate()} and {@link #getEndDate()}.
+     *
+     * @param date the requested date
+     * @return true if the {@link #cache} has data for the requested date, false
+     *         otherwise.
+     */
+    protected boolean hasDataFor(final AbsoluteDate date) {
+        /*
+         * when there is no EOP data, short circuit getStartDate, which will
+         * throw an exception
+         */
+        return this.hasData && this.getStartDate().compareTo(date) <= 0 &&
+               date.compareTo(this.getEndDate()) <= 0;
+    }
+
+    /** Get a non-modifiable view of the EOP entries.
+     * @return non-modifiable view of the EOP entries
+     */
+    List<EOPEntry> getEntries() {
+        return cache.getAll();
+    }
 
 }

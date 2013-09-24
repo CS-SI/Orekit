@@ -17,8 +17,6 @@
 package org.orekit.utils;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.util.FastMath;
@@ -31,8 +29,6 @@ import org.orekit.data.PoissonSeriesParser;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.data.PolynomialParser;
 import org.orekit.errors.OrekitException;
-import org.orekit.frames.EOPEntryEquinox;
-import org.orekit.frames.EOPEntryNonRotatingOrigin;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -780,8 +776,11 @@ public enum IERSConventions {
      * <p>
      * The function returned computes the three precession angles
      * &psi;<sub>A</sub> (around Z axis), &omega;<sub>A</sub> (around X axis)
-     * and &chi;<sub>A</sub> (around Z axis). The constance angle &epsilon;<sub>0</sub>
-     * for the fourth rotation (around X axis) can be retrieved by calling {@link #getEpsilon0()}.
+     * and &chi;<sub>A</sub> (around Z axis). The constant angle &epsilon;<sub>0</sub>
+     * for the fourth rotation (around X axis) can be retrieved by evaluating the
+     * function returned by {@link #getMeanObliquityFunction()} at fundamental
+     * nutation argument {@link FundamentalNutationArguments#getReferenceEpoch()
+     * reference epoch}.
      * </p>
      * @return function computing the precession angle
      * @exception OrekitException if table cannot be loaded
@@ -850,62 +849,50 @@ public enum IERSConventions {
 
     }
 
-    /** Convert EOP entries from equinox-based paradigm to Non-Rotating Origin paradigm.
-     * @param equinoxEntries EOP entries to convert
-     * @return converted entries
-     * @exception OrekitException if some convention table cannot be loaded
-     * @see #toEquinox(List)
+    /** Interface for functions converting nutation corrections between
+     * &delta;&Delta;&psi;/&delta;&Delta;&epsilon; to &delta;X/&delta;Y.
+     * <ul>
+     * <li>&delta;&Delta;&psi;/&delta;&Delta;&epsilon; nutation corrections are used with the equinox-based paradigm.</li>
+     * <li>&delta;X/&delta;Y nutation corrections are used with the Non-Rotating Origin paradigm.</li>
+     * </ul>
      * @since 6.1
      */
-    public List<EOPEntryNonRotatingOrigin> toNonRotating(final List<EOPEntryEquinox> equinoxEntries)
-        throws OrekitException {
+    public interface NutationCorrectionConverter {
 
-        final List<EOPEntryNonRotatingOrigin> nroEntries =
-                new ArrayList<EOPEntryNonRotatingOrigin>(equinoxEntries.size());
+        /** Convert nutation corrections.
+         * @param date current date
+         * @param ddPsi &delta;&Delta;&psi; part of the nutation correction
+         * @param ddEpsilon &delta;&Delta;&epsilon; part of the nutation correction
+         * @return array containing &delta;X and &delta;Y
+         * @exception OrekitException if correction cannot be converted
+         */
+        double[] toNonRotating(AbsoluteDate date, double ddPsi, double ddEpsilon)
+            throws OrekitException;
 
-        // get models parameters
-        final TimeFunction<double[]> precessionFunction = getPrecessionFunction();
-        final TimeFunction<Double> epsilonAFunction = getMeanObliquityFunction();
-        final AbsoluteDate date0 = getNutationArguments().getReferenceEpoch();
-        final double cosE0 = FastMath.cos(epsilonAFunction.value(date0));
-
-        for (final EOPEntryEquinox entry : equinoxEntries) {
-
-            // compute precession angles psiA, omegaA and chiA
-            final AbsoluteDate date = entry.getDate();
-            final double[] angles   = precessionFunction.value(date);
-
-            // conversion coefficients
-            final double sinEA = FastMath.sin(epsilonAFunction.value(date));
-            final double c     = angles[0] * cosE0 - angles[2];
-
-            // convert nutation corrections (equation 23/IERS-2003 or 5.25/IERS-2010)
-            final double dx = sinEA * entry.getDdPsi() + c * entry.getDdEps();
-            final double dy = entry.getDdEps() - c * sinEA * entry.getDdPsi();
-
-            // create converted entry
-            nroEntries.add(new EOPEntryNonRotatingOrigin(entry.getMjd(), entry.getUT1MinusUTC(),
-                                                         entry.getLOD(), entry.getX(), entry.getY(),
-                                                         dx, dy));
-
-        }
-
-        return nroEntries;
+        /** Convert nutation corrections.
+         * @param date current date
+         * @param dX &delta;X part of the nutation correction
+         * @param dY &delta;Y part of the nutation correction
+         * @return array containing &delta;&Delta;&psi; and &delta;&Delta;&epsilon;
+         * @exception OrekitException if correction cannot be converted
+         */
+        double[] toEquinox(AbsoluteDate date, double dX, double dY)
+            throws OrekitException;
 
     }
 
-    /** Convert EOP entries from Non-Rotating Origin paradigm to equinox-based paradigm.
-     * @param nroEntries EOP entries to convert
-     * @return converted entries
+    /** Create a function converting nutation corrections between
+     * &delta;X/&delta;Y and &delta;&Delta;&psi;/&delta;&Delta;&epsilon;.
+     * <ul>
+     * <li>&delta;X/&delta;Y nutation corrections are used with the Non-Rotating Origin paradigm.</li>
+     * <li>&delta;&Delta;&psi;/&delta;&Delta;&epsilon; nutation corrections are used with the equinox-based paradigm.</li>
+     * </ul>
+     * @return a new converter
      * @exception OrekitException if some convention table cannot be loaded
-     * @see #toNonRotating(List)
      * @since 6.1
      */
-    public List<EOPEntryEquinox> toEquinox(final List<EOPEntryNonRotatingOrigin> nroEntries)
+    public NutationCorrectionConverter getNutationCorrectionConverter()
         throws OrekitException {
-
-        final List<EOPEntryEquinox> equinoxEntries =
-                new ArrayList<EOPEntryEquinox>(nroEntries.size());
 
         // get models parameters
         final TimeFunction<double[]> precessionFunction = getPrecessionFunction();
@@ -913,29 +900,49 @@ public enum IERSConventions {
         final AbsoluteDate date0 = getNutationArguments().getReferenceEpoch();
         final double cosE0 = FastMath.cos(epsilonAFunction.value(date0));
 
-        for (final EOPEntryNonRotatingOrigin entry : nroEntries) {
+        return new NutationCorrectionConverter() {
 
-            // compute precession angles psiA, omegaA and chiA
-            final AbsoluteDate date = entry.getDate();
-            final double[] angles   = precessionFunction.value(date);
+            /** {@inheritDoc} */
+            @Override
+            public double[] toNonRotating(final AbsoluteDate date,
+                                          final double ddPsi, final double ddEpsilon)
+                throws OrekitException {
+                // compute precession angles psiA, omegaA and chiA
+                final double[] angles = precessionFunction.value(date);
 
-            // conversion coefficients
-            final double sinEA = FastMath.sin(epsilonAFunction.value(date));
-            final double c     = angles[0] * cosE0 - angles[2];
-            final double opC2  = 1 + c * c;
+                // conversion coefficients
+                final double sinEA = FastMath.sin(epsilonAFunction.value(date));
+                final double c     = angles[0] * cosE0 - angles[2];
 
-            // convert nutation corrections (inverse of equation 23/IERS-2003 or 5.25/IERS-2010)
-            final double ddPsi = (entry.getDx() - c * entry.getDy()) / (sinEA * opC2);
-            final double ddEps = (entry.getDy() + c * entry.getDx()) / opC2;
+                // convert nutation corrections (equation 23/IERS-2003 or 5.25/IERS-2010)
+                return new double[] {
+                    sinEA * ddPsi + c * ddEpsilon,
+                    ddEpsilon - c * sinEA * ddPsi
+                };
 
-            // create converted entry
-            equinoxEntries.add(new EOPEntryEquinox(entry.getMjd(), entry.getUT1MinusUTC(),
-                                                   entry.getLOD(), entry.getX(), entry.getY(),
-                                                   ddPsi, ddEps));
+            }
 
-        }
+            /** {@inheritDoc} */
+            @Override
+            public double[] toEquinox(final AbsoluteDate date,
+                                      final double dX, final double dY)
+                throws OrekitException {
+                // compute precession angles psiA, omegaA and chiA
+                final double[] angles   = precessionFunction.value(date);
 
-        return equinoxEntries;
+                // conversion coefficients
+                final double sinEA = FastMath.sin(epsilonAFunction.value(date));
+                final double c     = angles[0] * cosE0 - angles[2];
+                final double opC2  = 1 + c * c;
+
+                // convert nutation corrections (inverse of equation 23/IERS-2003 or 5.25/IERS-2010)
+                return new double[] {
+                    (dX - c * dY) / (sinEA * opC2),
+                    (dY + c * dX) / opC2
+                };
+            }
+
+        };
 
     }
 

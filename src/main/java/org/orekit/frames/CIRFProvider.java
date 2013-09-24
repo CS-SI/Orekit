@@ -44,7 +44,7 @@ class CIRFProvider implements TransformProvider {
     private final TimeFunction<double[]> xysPxy2Function;
 
     /** EOP history. */
-    private final EOPHistoryNonRotatingOrigin eopHistory;
+    private final EOPHistory eopHistory;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -53,7 +53,7 @@ class CIRFProvider implements TransformProvider {
      * library cannot be read.
      * @see Frame
      */
-    public CIRFProvider(final IERSConventions conventions, final EOPHistoryNonRotatingOrigin eopHistory)
+    public CIRFProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
 
         // load the nutation model
@@ -67,7 +67,7 @@ class CIRFProvider implements TransformProvider {
     /** Get the EOP history.
      * @return EOP history
      */
-    EOPHistoryNonRotatingOrigin getEOPHistory() {
+    EOPHistory getEOPHistory() {
         return eopHistory;
     }
 
@@ -81,7 +81,7 @@ class CIRFProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         final double[] xys  = xysPxy2Function.value(date);
-        final double[] dxdy = eopHistory.getNutationCorrection(date);
+        final double[] dxdy = eopHistory.getNonRotatinOriginNutationCorrection(date);
 
         // position of the Celestial Intermediate Pole (CIP)
         final double xCurrent = xys[0] + dxdy[0];

@@ -20,15 +20,19 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.DateComponents;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 /** Loader for EOP 08 C04 files.
  * <p>EOP 08 C04 files contain {@link EOPEntry
@@ -52,9 +56,12 @@ import org.orekit.utils.Constants;
  * <p>Files containing old data (back to 1962) have been regenerated in the new file
  * format and are available at IERS web site: <a
  * href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">Index of /eoppc/eop/eopc04</a>.</p>
+ * <p>
+ * This class is immutable and hence thread-safe
+ * </p>
  * @author Luc Maisonobe
  */
-class EOP08C04FilesLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotatingOriginLoader {
+class EOP08C04FilesLoader implements EOPHistoryLoader {
 
     /** Pattern to match the columns header. */
     private static final Pattern COLUMNS_HEADER_PATTERN;
@@ -129,12 +136,6 @@ class EOP08C04FilesLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotat
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** History entries for equinox-based paradigm. */
-    private Collection<? super EOPEntryEquinox> historyEquinox;
-
-    /** History entries for Non-Rotating Origin paradigm. */
-    private Collection<? super EOPEntryNonRotatingOrigin> historyNRO;
-
     /** Build a loader for IERS EOP 08 C04 files.
      * @param supportedNames regular expression for supported files names
      */
@@ -143,32 +144,73 @@ class EOP08C04FilesLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotat
     }
 
     /** {@inheritDoc} */
-    public boolean stillAcceptsData() {
-        return true;
+    public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
+                            final SortedSet<EOPEntry> history)
+        throws OrekitException {
+        final Parser parser = new Parser(converter);
+        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        history.addAll(parser.history);
     }
 
-    /** {@inheritDoc} */
-    public void loadData(final InputStream input, final String name)
-        throws IOException, OrekitException {
+    /** Internal class performing the parsing. */
+    private static class Parser implements DataLoader {
 
-        // set up a reader for line-oriented bulletin B files
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+        /** Converter for nutation corrections. */
+        private final IERSConventions.NutationCorrectionConverter converter;
 
-        // read all file
-        synchronized (this) {
+        /** History entries. */
+        private final List<EOPEntry> history;
 
-            int lineNumber = 0;
-            boolean inHeader = true;
-            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+        /** Current line number. */
+        private int lineNumber;
+
+        /** Current line. */
+        private String line;
+
+        /** Indicator for header parsing. */
+        private boolean inHeader;
+
+        /** Indicator for Non-Rotating Origin. */
+        private boolean isNonRotatingOrigin;
+
+        /** Simple constructor.
+         * @param converter converter to use
+         */
+        public Parser(final IERSConventions.NutationCorrectionConverter converter) {
+            this.converter           = converter;
+            this.history             = new ArrayList<EOPEntry>();
+            this.lineNumber          = 0;
+            this.inHeader            = true;
+            this.isNonRotatingOrigin = false;
+        }
+
+        /** {@inheritDoc} */
+        public boolean stillAcceptsData() {
+            return true;
+        }
+
+        /** {@inheritDoc} */
+        public void loadData(final InputStream input, final String name)
+            throws IOException, OrekitException {
+
+            // set up a reader for line-oriented bulletin B files
+            final BufferedReader reader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
+
+            // reset parse info to start new file (do not clear history!)
+            lineNumber          = 0;
+            inHeader            = true;
+            isNonRotatingOrigin = false;
+
+            // read all file
+            for (line = reader.readLine(); line != null; line = reader.readLine()) {
                 ++lineNumber;
                 boolean parsed = false;
 
                 if (inHeader) {
                     final Matcher matcher = COLUMNS_HEADER_PATTERN.matcher(line);
                     if (matcher.matches()) {
-                        if (matcher.group(1).startsWith("dX") ^ (historyNRO != null)) {
-                            // the file content does not match what we expect
-                            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
+                        if (matcher.group(1).startsWith("dX")) {
+                            isNonRotatingOrigin = true;
                         }
                     }
                 }
@@ -187,18 +229,26 @@ class EOP08C04FilesLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotat
                     }
 
                     // the first six fields are consistent with the expected format
-                    final double x    = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    final double y    = Double.parseDouble(fields[POLE_Y_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    final double dtu1 = Double.parseDouble(fields[UT1_UTC_FIELD]);
-                    final double lod  = Double.parseDouble(fields[LOD_FIELD]);
-                    final double nut0 = Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    final double nut1 = Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
-                    if (historyEquinox != null) {
-                        historyEquinox.add(new EOPEntryEquinox(mjd, dtu1, lod, x, y, nut0, nut1));
+                    final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                    final double y     = Double.parseDouble(fields[POLE_Y_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
+                    final double dtu1  = Double.parseDouble(fields[UT1_UTC_FIELD]);
+                    final double lod   = Double.parseDouble(fields[LOD_FIELD]);
+                    final double[] equinox;
+                    final double[] nro;
+                    if (isNonRotatingOrigin) {
+                        nro = new double[] {
+                            Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
+                            Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
+                        };
+                        equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), nro[0], nro[1]);
+                    } else {
+                        equinox = new double[] {
+                            Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
+                            Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
+                        };
+                        nro = converter.toNonRotating(EOPEntry.mjdToDate(mjd), equinox[0], equinox[1]);
                     }
-                    if (historyNRO != null) {
-                        historyNRO.add(new EOPEntryNonRotatingOrigin(mjd, dtu1, lod, x, y, nut0, nut1));
-                    }
+                    history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
                     parsed = true;
 
                 }
@@ -216,26 +266,5 @@ class EOP08C04FilesLoader implements EOPHistoryEquinoxLoader, EOPHistoryNonRotat
         }
 
     }
-
-    /** {@inheritDoc} */
-    public void fillHistoryEquinox(final Collection<? super EOPEntryEquinox> history)
-        throws OrekitException {
-        synchronized (this) {
-            historyEquinox = history;
-            historyNRO     = null;
-            DataProvidersManager.getInstance().feed(supportedNames, this);
-        }
-    }
-
-    /** {@inheritDoc} */
-    public void fillHistoryNonRotatingOrigin(final Collection<? super EOPEntryNonRotatingOrigin> history)
-        throws OrekitException {
-        synchronized (this) {
-            historyEquinox = null;
-            historyNRO     = history;
-            DataProvidersManager.getInstance().feed(supportedNames, this);
-        }
-    }
-
 
 }

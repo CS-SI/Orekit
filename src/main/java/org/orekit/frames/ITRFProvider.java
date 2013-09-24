@@ -42,14 +42,13 @@ class ITRFProvider implements TransformProvider {
     private final TidalCorrection tidalCorrection;
 
     /** EOP history. */
-    private final EOPHistoryNonRotatingOrigin eopHistory;
+    private final EOPHistory eopHistory;
 
     /** Simple constructor.
      * @param eopHistory EOP history
      * @param tidalCorrection model for tidal correction (may be null)
      */
-    public ITRFProvider(final EOPHistoryNonRotatingOrigin eopHistory,
-                        final TidalCorrection tidalCorrection) {
+    public ITRFProvider(final EOPHistory eopHistory, final TidalCorrection tidalCorrection) {
         this.tidalCorrection = tidalCorrection;
         this.eopHistory      = eopHistory;
     }

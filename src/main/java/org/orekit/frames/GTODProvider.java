@@ -44,7 +44,7 @@ public class GTODProvider implements TransformProvider {
     private static final double AVE = 7.292115146706979e-5;
 
     /** EOP history. */
-    private final EOPHistoryEquinox eopHistory;
+    private final EOPHistory eopHistory;
 
     /** GMST function. */
     private final TimeFunction<DerivativeStructure> gmstFunction;
@@ -57,7 +57,7 @@ public class GTODProvider implements TransformProvider {
      * @param eopHistory EOP history
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
-    protected GTODProvider(final IERSConventions conventions, final EOPHistoryEquinox eopHistory)
+    protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
         final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
         this.eopHistory    = eopHistory;
@@ -68,7 +68,7 @@ public class GTODProvider implements TransformProvider {
     /** Get the EOP history.
      * @return EOP history
      */
-    EOPHistoryEquinox getEOPHistory() {
+    EOPHistory getEOPHistory() {
         return eopHistory;
     }
 
@@ -98,7 +98,7 @@ public class GTODProvider implements TransformProvider {
      * @param date current date
      * @return Greenwich mean sidereal time, in radians
      * @exception OrekitException if UT1 time scale cannot be retrieved
-     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGMSTFunction()}
+     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGMSTFunction(UT1Scale)}
      */
     @Deprecated
     public double getGMST(final AbsoluteDate date) throws OrekitException {
@@ -109,7 +109,7 @@ public class GTODProvider implements TransformProvider {
      * @param date current date
      * @return Greenwich apparent sidereal time, in radians
      * @exception OrekitException if UT1 time scale cannot be retrieved
-     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGASTFunction()}
+     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGASTFunction(UT1Scale)}
      */
     public double getGAST(final AbsoluteDate date) throws OrekitException {
         return gastFunction.value(date).getValue();

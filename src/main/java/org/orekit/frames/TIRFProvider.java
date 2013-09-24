@@ -40,7 +40,7 @@ class TIRFProvider implements TransformProvider {
     private final TidalCorrection tidalCorrection;
 
     /** EOP history. */
-    private final EOPHistoryNonRotatingOrigin eopHistory;
+    private final EOPHistory eopHistory;
 
     /** ERA function. */
     private final TimeFunction<DerivativeStructure> era;
@@ -52,7 +52,7 @@ class TIRFProvider implements TransformProvider {
      * @exception OrekitException if nutation cannot be computed
      */
     protected TIRFProvider(final IERSConventions conventions,
-                           final EOPHistoryNonRotatingOrigin eopHistory,
+                           final EOPHistory eopHistory,
                            final TidalCorrection tidalCorrection)
         throws OrekitException {
 
@@ -66,7 +66,7 @@ class TIRFProvider implements TransformProvider {
     /** Get the EOP history.
      * @return EOP history
      */
-    EOPHistoryNonRotatingOrigin getEOPHistory() {
+    EOPHistory getEOPHistory() {
         return eopHistory;
     }
 

@@ -18,16 +18,18 @@ package org.orekit.frames;
 
 
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.data.AbstractFilesLoaderTest;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 
 public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
@@ -35,35 +37,43 @@ public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
     @Test
     public void testMissingMonths() throws OrekitException {
         setRoot("missing-months");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(converter, history);
         Assert.assertTrue(getMaxGap(history) > 5);
     }
 
     @Test
     public void testStartDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
-                            new EOPHistoryNonRotatingOrigin(history).getStartDate());
+                            new EOPHistory(history).getStartDate());
     }
 
     @Test
     public void testEndDate() throws OrekitException, ParseException {
         setRoot("regular-data");
-        List<EOPEntryNonRotatingOrigin> history = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistoryNonRotatingOrigin(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
-                            new EOPHistoryNonRotatingOrigin(history).getEndDate());
+                            new EOPHistory(history).getEndDate());
     }
 
     @Test
     public void testContent() throws OrekitException, ParseException {
         setRoot("regular-data");
-        List<EOPEntryNonRotatingOrigin> data = new ArrayList<EOPEntryNonRotatingOrigin>();
-        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistoryNonRotatingOrigin(data);
-        EOPHistoryNonRotatingOrigin history = new EOPHistoryNonRotatingOrigin(data);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2010.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(converter, data);
+        EOPHistory history = new EOPHistory(data);
         AbsoluteDate date = new AbsoluteDate(2003, 1, 7, 12, 0, 0, TimeScalesFactory.getUTC());
         Assert.assertEquals(        (9 * ( 0.0007777 +  0.0008565) - ( 0.0005883 +  0.0008758)) / 16,  history.getLOD(date), 1.0e-10);
         Assert.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);
@@ -71,8 +81,8 @@ public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
         Assert.assertEquals(asToRad((9 * ( 0.201451  +  0.203596)  - ( 0.199545  +  0.205660))  / 16), history.getPoleCorrection(date).getYp(), 1.0e-10);
     }
 
-    private double asToRad(double mas) {
-        return mas * Constants.ARC_SECONDS_TO_RADIANS;
+    private double asToRad(double as) {
+        return as * Constants.ARC_SECONDS_TO_RADIANS;
     }
 
 }

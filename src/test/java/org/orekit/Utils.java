@@ -16,14 +16,13 @@
  */
 package org.orekit;
 
-import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.junit.Assert;
 import org.orekit.bodies.CelestialBodyFactory;
@@ -31,10 +30,8 @@ import org.orekit.bodies.JPLEphemeridesLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
-import org.orekit.frames.EOPEntryEquinox;
-import org.orekit.frames.EOPEntryNonRotatingOrigin;
-import org.orekit.frames.EOPHistoryEquinoxLoader;
-import org.orekit.frames.EOPHistoryNonRotatingOriginLoader;
+import org.orekit.frames.EOPEntry;
+import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -127,66 +124,58 @@ public class Utils {
         }
     }
 
-    public static List<EOPEntryEquinox> buildEquinox(double[][] data) throws OrekitException {
-        final List<EOPEntryEquinox> equinox = new ArrayList<EOPEntryEquinox>();
+    public static List<EOPEntry> buildEOPList(IERSConventions conventions,
+                                              double[][] data) throws OrekitException {
+        IERSConventions.NutationCorrectionConverter converter =
+                conventions.getNutationCorrectionConverter();
+        final List<EOPEntry> list = new ArrayList<EOPEntry>();
         for (double[] row : data) {
-            equinox.add(new EOPEntryEquinox((int) row[0], row[1], row[2],
-                                            Constants.ARC_SECONDS_TO_RADIANS * row[3],
-                                            Constants.ARC_SECONDS_TO_RADIANS * row[4],
-                                            Constants.ARC_SECONDS_TO_RADIANS * row[5],
-                                            Constants.ARC_SECONDS_TO_RADIANS * row[6]));
+            final double[] nro;
+            final double[] equinox;
+            if (Double.isNaN(row[7])) {
+                equinox = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[5],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[6]
+                };
+                nro     = converter.toNonRotating(EOPEntry.mjdToDate((int) row[0]),
+                                                  equinox[0], equinox[1]);
+            } else if (Double.isNaN(row[5])) {
+                nro     = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[7],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[8]
+                };
+                equinox = converter.toEquinox(EOPEntry.mjdToDate((int) row[0]),
+                                              nro[0], nro[1]);
+            } else {
+                equinox = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[5],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[6]
+                };
+                nro     = new double[] {
+                    Constants.ARC_SECONDS_TO_RADIANS * row[7],
+                    Constants.ARC_SECONDS_TO_RADIANS * row[8]
+                };
+            }
+            list.add(new EOPEntry((int) row[0], row[1], row[2],
+                                  Constants.ARC_SECONDS_TO_RADIANS * row[3],
+                                  Constants.ARC_SECONDS_TO_RADIANS * row[4],
+                                  equinox[0], equinox[1],
+                                  nro[0], nro[1]));
         }
-        return equinox;
+        return list;
     }
 
-    public static List<EOPEntryNonRotatingOrigin> buildNRO(double[][] data) throws OrekitException {
-        final List<EOPEntryNonRotatingOrigin> nro = new ArrayList<EOPEntryNonRotatingOrigin>();
-        for (double[] row : data) {
-            nro.add(new EOPEntryNonRotatingOrigin((int) row[0], row[1], row[2],
-                                                  Constants.ARC_SECONDS_TO_RADIANS * row[3],
-                                                  Constants.ARC_SECONDS_TO_RADIANS * row[4],
-                                                  Constants.ARC_SECONDS_TO_RADIANS * row[5],
-                                                  Constants.ARC_SECONDS_TO_RADIANS * row[6]));
-        }
-        return nro;
-    }
-
-    public static void setLoaders(final IERSConventions conventions,
-                                  final List<EOPEntryEquinox> equinox,
-                                  final List<EOPEntryNonRotatingOrigin> nro) {
+    public static void setLoaders(final IERSConventions conventions, final List<EOPEntry> eop) {
 
         Utils.clearFactoryMaps(FramesFactory.class);
         Utils.clearFactoryMaps(TimeScalesFactory.class);
 
-        if (equinox != null) {
-            FramesFactory.addEOPHistoryEquinoxLoader(conventions,
-                                                     new EOPHistoryEquinoxLoader() {
-                public boolean stillAcceptsData() {
-                    return true;
-                }
-                public void loadData(InputStream input, String name) {
-                }
-
-                public void fillHistoryEquinox(Collection<? super EOPEntryEquinox> history) {
-                    history.addAll(equinox);
-                }
-            });
-        }
-
-        if (nro != null) {
-            FramesFactory.addEOPHistoryNonRotatingOriginLoader(conventions,
-                                                               new EOPHistoryNonRotatingOriginLoader() {
-                public boolean stillAcceptsData() {
-                    return true;
-                }
-                public void loadData(InputStream input, String name) {
-                }
-
-                public void fillHistoryNonRotatingOrigin(Collection<? super EOPEntryNonRotatingOrigin> history) {
-                    history.addAll(nro);
-                }
-            });
-        }
+        FramesFactory.addEOPHistoryLoader(conventions, new EOPHistoryLoader() {
+            public void fillHistory(IERSConventions.NutationCorrectionConverter converter,
+                                    SortedSet<EOPEntry> history) {
+                history.addAll(eop);
+            }
+        });
 
     }
 

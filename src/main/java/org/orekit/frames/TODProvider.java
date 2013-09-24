@@ -36,7 +36,7 @@ class TODProvider implements TransformProvider {
     private static final long serialVersionUID = 20130922L;
 
     /** EOP history. */
-    private final EOPHistoryEquinox eopHistory;
+    private final EOPHistory eopHistory;
 
     /** Function computing the mean obliquity. */
     private final TimeFunction<Double> obliquityFunction;
@@ -49,7 +49,7 @@ class TODProvider implements TransformProvider {
      * @param eopHistory EOP history
      * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public TODProvider(final IERSConventions conventions, final EOPHistoryEquinox eopHistory)
+    public TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
@@ -59,7 +59,7 @@ class TODProvider implements TransformProvider {
     /** Get the EOP history.
      * @return EOP history
      */
-    EOPHistoryEquinox getEOPHistory() {
+    EOPHistory getEOPHistory() {
         return eopHistory;
     }
 
@@ -102,7 +102,7 @@ class TODProvider implements TransformProvider {
         double deps = angles[1];
         if (eopHistory != null) {
             // apply the corrections for the nutation parameters
-            final double[] correction = eopHistory.getNutationCorrection(date);
+            final double[] correction = eopHistory.getEquinoxNutationCorrection(date);
             dpsi += correction[0];
             deps += correction[1];
         }

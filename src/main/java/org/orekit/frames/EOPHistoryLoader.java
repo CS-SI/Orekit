@@ -16,21 +16,24 @@
  */
 package org.orekit.frames;
 
-import java.util.Collection;
+import java.util.SortedSet;
 
-import org.orekit.data.DataLoader;
 import org.orekit.errors.OrekitException;
+import org.orekit.utils.IERSConventions;
 
-/** Interface for loading Earth Orientation Parameters history for equinox-based paradigm.
+/** Interface for loading Earth Orientation Parameters history.
  * @author Luc Maisonobe
+ * @since 6.1
  */
-public interface EOPHistoryEquinoxLoader extends DataLoader {
+public interface EOPHistoryLoader {
 
     /** Load celestial body.
+     * @param converter converter to use for nutation corrections
      * @param history history to fill up
      * @throws OrekitException if the history cannot be loaded
      */
-    void fillHistoryEquinox(Collection<? super EOPEntryEquinox> history)
+    void fillHistory(IERSConventions.NutationCorrectionConverter converter,
+                     SortedSet<EOPEntry> history)
         throws OrekitException;
 
 }
