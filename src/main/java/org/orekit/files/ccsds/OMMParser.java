@@ -64,9 +64,9 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
      * parsing by calling {@link #withConventions(IERSConventions)}.
      * </p>
      * <p>
-     * The TLE parameters (launch year, launch number and launche piece) are not set here.
-     * If they are needed in order to parse some TLEs, they must be initialized before
-     * parsing by calling {@link #withTLESettings(int,int,String)}.
+     * The international designator parameters (launch year, launch number and
+     * launch piece) are not set here. If they are needed, they must be initialized before
+     * parsing by calling {@link #withInternationalDesignator(int, int, String)}
      * </p>
      */
     public OMMParser() {
