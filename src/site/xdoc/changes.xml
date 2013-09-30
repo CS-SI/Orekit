@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed overflow problem in TimeComponents.
+        Fixes issue #148.
+      </action>
       <action dev="luc" type="update">
         Separate parsing from using Poisson series.
       </action>
