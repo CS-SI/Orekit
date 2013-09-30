@@ -611,6 +611,20 @@ public class AbsoluteDateTest {
                             components.getTime().getSecond(), 1.0e-15);
     }
 
+    @Test
+    public void testIssue149() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t0 = new AbsoluteDate(2012, 6, 30, 23, 59, 59, utc);
+        DateTimeComponents components = t0.shiftedBy(1.0 - Precision.EPSILON).getComponents(utc);
+        Assert.assertEquals(2012, components.getDate().getYear());
+        Assert.assertEquals(   6, components.getDate().getMonth());
+        Assert.assertEquals(  30, components.getDate().getDay());
+        Assert.assertEquals(  23, components.getTime().getHour());
+        Assert.assertEquals(  59, components.getTime().getMinute());
+        Assert.assertEquals(  60 - Precision.EPSILON,
+                            components.getTime().getSecond(), 1.0e-15);
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
