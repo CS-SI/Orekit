@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added new definition of astronomical unit from IAU-2012 resolution B2.
+      </action>
       <action dev="luc" type="fix">
         Fixed Date/Time split problem when date is a few femto-seconds before the end of the day.
         Fixes issue #149.
