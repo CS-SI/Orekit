@@ -61,20 +61,41 @@ public enum Predefined {
     /** ITRF93 with tidal effects. */
     ITRF_93_WITH_TIDAL_EFFECTS("ITRF93 with tides"),
 
-    /** Equinox-based ITRF, IERS 1996 conventions. */
-    ITRF_EQUINOX_CONV_2010("Equinox/2010-based ITRF"),
+    /** Equinox-based ITRF, IERS 2010 conventions without tidal effects.
+     * @since 6.1
+     */
+    ITRF_EQUINOX_CONV_2010_WITHOUT_TIDAL_EFFECTS("Equinox/2010-based ITRF without tides"),
 
-    /** Equinox-based ITRF, IERS 1996 conventions. */
-    ITRF_EQUINOX_CONV_2003("Equinox/2003-based ITRF"),
+    /** Equinox-based ITRF, IERS 2010 conventions with tidal effects.
+     * @since 6.1
+     */
+    ITRF_EQUINOX_CONV_2010_WITH_TIDAL_EFFECTS("Equinox/2010-based ITRF with tides"),
+
+    /** Equinox-based ITRF, IERS 2003 conventions without tidal effects.
+     * @since 6.1
+     */
+    ITRF_EQUINOX_CONV_2003_WITHOUT_TIDAL_EFFECTS("Equinox/2003-based ITRF without tides"),
+
+    /** Equinox-based ITRF, IERS 2003 conventions with tidal effects.
+     * @since 6.1
+     */
+    ITRF_EQUINOX_CONV_2003_WITH_TIDAL_EFFECTS("Equinox/2003-based ITRF with tides"),
 
     /** Equinox-based ITRF.
-     * @deprecated as of 6.1 replaced with {@link #ITRF_EQUINOX_CONVENTIONS_1996}
+     * @deprecated as of 6.1 replaced with {@link #ITRF_EQUINOX_CONV_1996_WITHOUT_TIDAL_EFFECTS}
      */
     @Deprecated
     ITRF_EQUINOX("Equinox-based ITRF"),
 
-    /** Equinox-based ITRF, IERS 1996 conventions. */
-    ITRF_EQUINOX_CONVENTIONS_1996("Equinox/1996-based ITRF"),
+    /** Equinox-based ITRF, IERS 1996 conventions without tidal effects.
+     * @since 6.1
+     */
+    ITRF_EQUINOX_CONV_1996_WITHOUT_TIDAL_EFFECTS("Equinox/1996-based ITRF without tides"),
+
+    /** Equinox-based ITRF, IERS 1996 conventions with tidal effects.
+     * @since 6.1
+     */
+    ITRF_EQUINOX_CONV_1996_WITH_TIDAL_EFFECTS("Equinox/1996-based ITRF with tides"),
 
     /** TIRF2000, IERS 2010 conventions, without tidal effects.
      * @deprecated as of 6.1 replaced with {@link #TIRF_CONVENTIONS_2010_WITHOUT_TIDAL_EFFECTS}

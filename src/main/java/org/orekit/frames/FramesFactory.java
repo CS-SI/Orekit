@@ -409,13 +409,19 @@ public class FramesFactory {
             return getITRF93(true);
         case ITRF_93_WITH_TIDAL_EFFECTS :
             return getITRF93(false);
-        case ITRF_EQUINOX_CONV_2010 :
-            return getITRFEquinox(IERSConventions.IERS_2010);
-        case ITRF_EQUINOX_CONV_2003 :
-            return getITRFEquinox(IERSConventions.IERS_2003);
+        case ITRF_EQUINOX_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+            return getITRFEquinox(IERSConventions.IERS_2010, true);
+        case ITRF_EQUINOX_CONV_2010_WITH_TIDAL_EFFECTS :
+            return getITRFEquinox(IERSConventions.IERS_2010, false);
+        case ITRF_EQUINOX_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+            return getITRFEquinox(IERSConventions.IERS_2003, true);
+        case ITRF_EQUINOX_CONV_2003_WITH_TIDAL_EFFECTS :
+            return getITRFEquinox(IERSConventions.IERS_2003, false);
         case ITRF_EQUINOX :
-        case ITRF_EQUINOX_CONVENTIONS_1996 :
-            return getITRFEquinox(IERSConventions.IERS_1996);
+        case ITRF_EQUINOX_CONV_1996_WITHOUT_TIDAL_EFFECTS :
+            return getITRFEquinox(IERSConventions.IERS_1996, true);
+        case ITRF_EQUINOX_CONV_1996_WITH_TIDAL_EFFECTS :
+            return getITRFEquinox(IERSConventions.IERS_1996, false);
         case TIRF_2000_CONV_2010_WITHOUT_TIDAL_EFFECTS :
         case TIRF_CONVENTIONS_2010_WITHOUT_TIDAL_EFFECTS :
             return getTIRF(IERSConventions.IERS_2010, true);
@@ -1012,32 +1018,42 @@ public class FramesFactory {
     /** Get the equinox-based ITRF reference frame.
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
-     * @deprecated since 6.1 replaced with {@link #getITRFEquinox(IERSConventions)}
+     * @deprecated since 6.1 replaced with {@link #getITRFEquinox(IERSConventions, boolean)}
      */
     @Deprecated
     public static FactoryManagedFrame getITRFEquinox() throws OrekitException {
-        return getITRFEquinox(IERSConventions.IERS_1996);
+        return getITRFEquinox(IERSConventions.IERS_1996, true);
     }
 
     /** Get the equinox-based ITRF reference frame.
      * @param conventions IERS conventions to apply
+     * @param ignoreTidalEffects if true, tidal effects are ignored
      * @return the selected reference frame singleton.
      * @exception OrekitException if data embedded in the library cannot be read
+     * @since 6.1
      */
-    public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions) throws OrekitException {
+    public static FactoryManagedFrame getITRFEquinox(final IERSConventions conventions,
+                                                     final boolean ignoreTidalEffects)
+        throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
             final Predefined factoryKey;
             switch (conventions) {
             case IERS_1996 :
-                factoryKey = Predefined.ITRF_EQUINOX_CONVENTIONS_1996;
+                factoryKey = ignoreTidalEffects ?
+                             Predefined.ITRF_EQUINOX_CONV_1996_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.ITRF_EQUINOX_CONV_1996_WITH_TIDAL_EFFECTS;
                 break;
             case IERS_2003 :
-                factoryKey = Predefined.ITRF_EQUINOX_CONV_2003;
+                factoryKey = ignoreTidalEffects ?
+                             Predefined.ITRF_EQUINOX_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.ITRF_EQUINOX_CONV_2003_WITH_TIDAL_EFFECTS;
                 break;
             case IERS_2010 :
-                factoryKey = Predefined.ITRF_EQUINOX_CONV_2010;
+                factoryKey = ignoreTidalEffects ?
+                             Predefined.ITRF_EQUINOX_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.ITRF_EQUINOX_CONV_2010_WITH_TIDAL_EFFECTS;
                 break;
             default :
                 // this should never happen
@@ -1052,8 +1068,9 @@ public class FramesFactory {
                         (InterpolatingTransformProvider) gtod.getTransformProvider();
                 final GTODProvider gtodRaw    = (GTODProvider) gtodInterpolating.getRawProvider();
                 final EOPHistory   eopHistory = gtodRaw.getEOPHistory();
+                final TidalCorrection tidalCorrection = ignoreTidalEffects ? null : new TidalCorrection();
                 frame = new FactoryManagedFrame(getGTOD(conventions, true),
-                                                new ITRFEquinoxProvider(eopHistory), false, factoryKey);
+                                                new ITRFProvider(eopHistory, tidalCorrection), false, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

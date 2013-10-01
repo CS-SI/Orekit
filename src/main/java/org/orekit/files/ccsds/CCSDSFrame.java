@@ -63,7 +63,7 @@ public enum CCSDSFrame {
             if (conventions == null) {
                 throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
             }
-            return FramesFactory.getITRFEquinox(conventions);
+            return FramesFactory.getITRFEquinox(conventions, false);
         }
 
     },

@@ -62,7 +62,7 @@ public class GTODProvider implements TransformProvider {
         final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
         this.eopHistory    = eopHistory;
         this.gmstFunction  = conventions.getGMSTFunction(ut1);
-        this.gastFunction  = conventions.getGASTFunction(ut1);
+        this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory);
     }
 
     /** Get the EOP history.
@@ -111,6 +111,7 @@ public class GTODProvider implements TransformProvider {
      * @exception OrekitException if UT1 time scale cannot be retrieved
      * @deprecated as of 6.1, replaced by {@link IERSConventions#getGASTFunction(UT1Scale)}
      */
+    @Deprecated
     public double getGAST(final AbsoluteDate date) throws OrekitException {
         return gastFunction.value(date).getValue();
     }

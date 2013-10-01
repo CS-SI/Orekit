@@ -264,14 +264,14 @@ public class OneAxisEllipsoidTest {
     public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
         OneAxisEllipsoid original = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                          Constants.WGS84_EARTH_FLATTENING,
-                                                         FramesFactory.getITRFEquinox(IERSConventions.IERS_1996));
+                                                         FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true));
         original.setAngularThreshold(1.0e-3);
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(original);
         Assert.assertTrue(bos.size() > 250);
-        Assert.assertTrue(bos.size() < 300);
+        Assert.assertTrue(bos.size() < 350);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

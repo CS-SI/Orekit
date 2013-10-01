@@ -25,6 +25,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
 /** Terrestrial Intermediate Reference Frame.
@@ -35,6 +36,9 @@ class TIRFProvider implements TransformProvider {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130919L;
+
+    /** Angular velocity of the Earth, in rad/s. */
+    private static final double AVE = 7.292115146706979e-5;
 
     /** Tidal correction (null if tidal effects are ignored). */
     private final TidalCorrection tidalCorrection;
@@ -90,9 +94,13 @@ class TIRFProvider implements TransformProvider {
         final DerivativeStructure rawERA = era.value(date);
         final double correctedERA = correctERA(date, rawERA);
 
+        // compute true angular rotation of Earth, in rad/s
+        final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
+        final double omp = AVE * (1 - lod / Constants.JULIAN_DAY);
+        final Vector3D rotationRate = new Vector3D(omp, Vector3D.PLUS_K);
+
         // set up the transform from parent CIRF2000
         final Rotation rotation     = new Rotation(Vector3D.PLUS_K, -correctedERA);
-        final Vector3D rotationRate = new Vector3D(rawERA.getPartialDerivative(1), Vector3D.PLUS_K);
         return new Transform(date, rotation, rotationRate);
 
     }

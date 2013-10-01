@@ -116,10 +116,10 @@ class TODProvider implements TransformProvider {
         final Rotation r3 = new Rotation(Vector3D.PLUS_I, -moe);
 
         // complete nutation
-        final Rotation precession = r1.applyTo(r2.applyTo(r3));
+        final Rotation nutation = r1.applyTo(r2.applyTo(r3));
 
         // set up the transform from parent MOD
-        return new Transform(date, precession);
+        return new Transform(date, nutation);
 
     }
 
