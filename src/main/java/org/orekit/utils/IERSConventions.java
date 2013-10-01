@@ -29,6 +29,7 @@ import org.orekit.data.PoissonSeriesParser;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.data.PolynomialParser;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.EOPHistory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -813,12 +814,14 @@ public enum IERSConventions {
 
     /** Get the function computing Greenwich apparent sidereal time, in radians.
      * @param ut1 UT1 time scale
+     * @param eopHistory EOP history
      * @return function computing Greenwich apparent sidereal time,
      * the return value containing both the angle and its first time derivative
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1)
+    public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+                                                             final EOPHistory eopHistory)
         throws OrekitException {
 
         // obliquity
@@ -838,7 +841,11 @@ public enum IERSConventions {
 
                 // compute equation of equinoxes
                 final double[] angles = nutation.value(date);
-                final double eqe = angles[0]  * FastMath.cos(epsilonA.value(date)) + angles[2];
+                double deltaPsi = angles[0];
+                if (eopHistory != null) {
+                    deltaPsi += eopHistory.getEquinoxNutationCorrection(date)[0];
+                }
+                final double eqe = deltaPsi  * FastMath.cos(epsilonA.value(date)) + angles[2];
 
                 // add mean sidereal time and equation of equinoxes
                 return gmst.value(date).add(eqe);

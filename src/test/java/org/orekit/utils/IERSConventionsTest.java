@@ -27,6 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.EOPHistory;
+import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScalesFactory;
@@ -303,7 +305,9 @@ public class IERSConventionsTest {
 
     @Test
     public void testGST94Derivative() throws OrekitException {
-        checkDerivative(IERSConventions.IERS_1996.getGASTFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_1996)),
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996);
+        checkDerivative(IERSConventions.IERS_1996.getGASTFunction(TimeScalesFactory.getUT1(eopHistory),
+                                                                  eopHistory),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
                         0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
     }
@@ -335,8 +339,30 @@ public class IERSConventionsTest {
         //        --> 2.5021490909193064844
         //      iaugst94(2453064.5, -4.8330127314815448519e-06)
         //        --> 2.7601901473152641309
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                             { 53047, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53048, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53049, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53050, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53051, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53052, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53053, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53054, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             // ...
+                             { 53059, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53060, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53061, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53062, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53063, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53064, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53065, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53066, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 }
+                         }));
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996);
         final TimeFunction<DerivativeStructure> gst94 =
-                IERSConventions.IERS_1996.getGASTFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_1996));
+                IERSConventions.IERS_1996.getGASTFunction(TimeScalesFactory.getUT1(eopHistory),
+                                                          eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst94.value(date).getValue(), 0.0);
         Assert.assertEquals(2.5021490909193064844, gst, 2.0e-10);
@@ -348,7 +374,8 @@ public class IERSConventionsTest {
 
     @Test
     public void testGST00ADerivative() throws OrekitException {
-        checkDerivative(IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_2003)),
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003);
+        checkDerivative(IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
                         0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
     }
@@ -387,8 +414,29 @@ public class IERSConventionsTest {
         //      iaugst00a(2453064.5, -4.8330127314815448519e-06, 2453064.5, 0.00074287037037037029902)
         //        --> 2.7601901615614221619
 
+        Utils.setLoaders(IERSConventions.IERS_2003,
+                         Utils.buildEOPList(IERSConventions.IERS_2003, new double[][] {
+                             { 53047, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53048, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53049, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53050, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53051, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53052, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53053, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53054, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             // ...
+                             { 53059, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53060, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53061, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53062, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53063, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53064, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53065, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53066, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 }
+                         }));
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003);
         final TimeFunction<DerivativeStructure> gst00a =
-                IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_2003));
+                IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst00a.value(date).getValue(), 0.0);
         Assert.assertEquals(2.5021491024360624778, gst, 5.0e-11);
@@ -400,7 +448,8 @@ public class IERSConventionsTest {
 
     @Test
     public void testGST06Derivative() throws OrekitException {
-        checkDerivative(IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_2010)),
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010);
+        checkDerivative(IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
                         0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
     }
@@ -439,8 +488,29 @@ public class IERSConventionsTest {
         //      iaugst06a(2453064.5, -4.8330127314815448519e-06, 2453064.5, 0.00074287037037037029902)
         //        --> 2.7601901613234058885
 
+        Utils.setLoaders(IERSConventions.IERS_2010,
+                         Utils.buildEOPList(IERSConventions.IERS_2010, new double[][] {
+                             { 53047, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53048, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53049, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53050, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53051, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53052, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53053, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53054, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             // ...
+                             { 53059, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53060, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53061, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53062, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53063, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53064, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53065, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
+                             { 53066, -0.4175723, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 }
+                         }));
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010);
         final TimeFunction<DerivativeStructure> gst06 =
-                IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_2010));
+                IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst06.value(date).getValue(), 0.0);
         Assert.assertEquals(2.5021491022006503435, gst, 5.0e-11);
