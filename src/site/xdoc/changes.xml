@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix">
+        Fixed rate for TCB time scale.
+      </action>
       <action dev="luc" type="add">
         Added new definition of astronomical unit from IAU-2012 resolution B2.
       </action>

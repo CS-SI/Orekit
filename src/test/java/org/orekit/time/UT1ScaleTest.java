@@ -105,6 +105,36 @@ public class UT1ScaleTest {
         }
     }
 
+    @Test
+    public void testAAS06134() throws OrekitException {
+
+        // this reference test has been extracted from the following paper:
+        // Implementation Issues Surrounding the New IAU Reference Systems for Astrodynamics
+        // David A. Vallado, John H. Seago, P. Kenneth Seidelmann
+        // http://www.centerforspace.com/downloads/files/pubs/AAS-06-134.pdf
+        // Note that the dUT1 here is -0.439962, whereas it is -0.4399619 in the book
+        Utils.setLoaders(IERSConventions.IERS_1996,
+                         Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
+                             { 53098, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53099, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53100, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53101, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53102, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53103, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53104, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN },
+                             { 53105, -0.439962, 0.0015563, -0.140682, 0.333309, -0.052195, -0.003875, Double.NaN, Double.NaN }
+                         }));
+        AbsoluteDate date =
+                new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
+        DateTimeComponents components = date.getComponents(TimeScalesFactory.getUT1(IERSConventions.IERS_1996));
+        Assert.assertEquals(2004,        components.getDate().getYear());
+        Assert.assertEquals(   4,        components.getDate().getMonth());
+        Assert.assertEquals(   6,        components.getDate().getDay());
+        Assert.assertEquals(   7,        components.getTime().getHour());
+        Assert.assertEquals(  51,        components.getTime().getMinute());
+        Assert.assertEquals(  27.946047, components.getTime().getSecond(), 1.0e-10);
+    }
+
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
