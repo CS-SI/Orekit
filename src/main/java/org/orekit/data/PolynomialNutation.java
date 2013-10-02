@@ -72,8 +72,10 @@ public class PolynomialNutation implements Serializable {
             p    = p    * tc +     coefficients[i];
             pDot = pDot * tc + i * coefficients[i];
         }
-        p     = p * tc + coefficients[0];
-        pDot /= Constants.JULIAN_CENTURY;
+        if (coefficients.length > 0) {
+            p     = p * tc + coefficients[0];
+            pDot /= Constants.JULIAN_CENTURY;
+        }
 
         return new DerivativeStructure(1, 1, p, pDot);
 

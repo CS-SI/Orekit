@@ -19,6 +19,7 @@ package org.orekit.frames;
 
 import java.io.FileNotFoundException;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
@@ -115,7 +116,15 @@ public class TODProviderTest {
             new PVCoordinates(new Vector3D(5094028.3745, 6127870.8164, 6380248.5164),
                               new Vector3D(-4746.263052, 786.014045, 5531.790562));
 
-        checkPV(pvTODiau76, tt.transformPVCoordinates(pvMODiau76), 1.85, 1.12e-3);
+        // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
+        // was not taken into account in the reference paper, so we fix it here for the test
+        final double dDeltaPsi =
+                FramesFactory.getEOPHistory(IERSConventions.IERS_1996).getEquinoxNutationCorrection(t0)[0];
+        final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
+        final Transform fix =
+                new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
+
+        checkPV(pvTODiau76, fix.transformPVCoordinates(tt.transformPVCoordinates(pvMODiau76)), 1.13e-3, 5.3e-5);
         checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76WithoutNutCorr), 1.07e-3, 5.3e-5);
 
     }
@@ -142,18 +151,35 @@ public class TODProviderTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
+        Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996).
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996), t0);
+        Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
-        //TOD iau76
+        // TOD iau76
         PVCoordinates pvTODiau76 =
             new PVCoordinates(new Vector3D(-40577427.7501, -11500096.1306, 10293.2583),
                               new Vector3D(837.552338, -2957.524176, -0.928772));
-        //MOD iau76
-        PVCoordinates pvMODiau76 =
+        // MOD iau76
+        PVCoordinates pvMODiau76WithoutNutCorr =
             new PVCoordinates(new Vector3D(-40576822.6385, -11502231.5013, 9738.2304),
                               new Vector3D(837.708020, -2957.480118, -0.814275));
 
-        checkPV(pvTODiau76, t.transformPVCoordinates(pvMODiau76), 4.87e-4, 6.31e-5);
+        // MOD iau76
+        PVCoordinates pvMODiau76 =
+            new PVCoordinates(new Vector3D(-40576822.6395, -11502231.5015, 9733.7842),
+                              new Vector3D(837.708020, -2957.480117, -0.814253));
+          
+
+        // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
+        // was not taken into account in the reference paper, so we fix it here for the test
+        final double dDeltaPsi =
+                FramesFactory.getEOPHistory(IERSConventions.IERS_1996).getEquinoxNutationCorrection(t0)[0];
+        final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
+        final Transform fix =
+                new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
+
+        checkPV(pvTODiau76, fix.transformPVCoordinates(tt.transformPVCoordinates(pvMODiau76)), 4.86e-4, 6.2e-5);
+        checkPV(pvTODiau76, ff.transformPVCoordinates(pvMODiau76WithoutNutCorr), 4.87e-4, 6.31e-5);
 
     }
 

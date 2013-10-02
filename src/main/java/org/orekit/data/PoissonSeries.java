@@ -50,6 +50,13 @@ public class PoissonSeries {
         this.series     = series;
     }
 
+    /** Get the polynomial part of the series.
+     * @return polynomial part of the series.
+     */
+    public PolynomialNutation getPolynomial() {
+        return polynomial;
+    }
+
     /** Evaluate the value of the series.
      * @param elements bodies elements for nutation
      * @return value of the series

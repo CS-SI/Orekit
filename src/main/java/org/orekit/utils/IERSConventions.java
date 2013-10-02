@@ -28,6 +28,7 @@ import org.orekit.data.PoissonSeries;
 import org.orekit.data.PoissonSeriesParser;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.data.PolynomialParser;
+import org.orekit.data.PolynomialParser.Unit;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.EOPHistory;
 import org.orekit.time.AbsoluteDate;
@@ -310,6 +311,44 @@ public enum IERSConventions {
 
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+                                                                 final EOPHistory eopHistory)
+            throws OrekitException {
+
+            // obliquity
+            final TimeFunction<Double> epsilonA = getMeanObliquityFunction();
+
+            // nutation function
+            final TimeFunction<double[]> nutation = getNutationFunction();
+
+            // GMST function
+            final TimeFunction<DerivativeStructure> gmst = getGMSTFunction(ut1);
+
+            return new TimeFunction<DerivativeStructure>() {
+
+                /** {@inheritDoc} */
+                @Override
+                public DerivativeStructure value(final AbsoluteDate date) {
+
+                    // compute equation of equinoxes
+                    final double[] angles = nutation.value(date);
+                    double deltaPsi = angles[0];
+                    if (eopHistory != null) {
+                        deltaPsi += eopHistory.getEquinoxNutationCorrection(date)[0];
+                    }
+                    final double eqe = deltaPsi  * FastMath.cos(epsilonA.value(date)) + angles[2];
+
+                    // add mean sidereal time and equation of equinoxes
+                    return gmst.value(date).add(eqe);
+
+                }
+
+            };
+
+        }
+
     },
 
     /** Constant for IERS 2003 conventions. */
@@ -332,6 +371,9 @@ public enum IERSConventions {
 
         /** Planetary series resources. */
         private static final String PLANETARY_SERIES   = IERS_BASE + "2003/tab5.3b.txt";
+
+        /** Greenwhich sidereal time series resources. */
+        private static final String GST_SERIES         = IERS_BASE + "2003/tab5.4.txt";
 
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
@@ -504,13 +546,15 @@ public enum IERSConventions {
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
 
             // Polynomial part of the apparent sidereal time series
-            // (we don't need the complete series here, so we don't load a table)
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, 3).
+                        withPolynomialPart('t', Unit.ARC_SECONDS);
             final PolynomialNutation gstPolynomial =
-                    new PolynomialNutation(   0.014506   * Constants.ARC_SECONDS_TO_RADIANS,
-                                           4612.15739966 * Constants.ARC_SECONDS_TO_RADIANS,
-                                              1.39667721 * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.00009344 * Constants.ARC_SECONDS_TO_RADIANS,
-                                              0.00001882 * Constants.ARC_SECONDS_TO_RADIANS);
+                    parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
             return new TimeFunction<DerivativeStructure>() {
@@ -520,6 +564,74 @@ public enum IERSConventions {
                 public DerivativeStructure value(final AbsoluteDate date) {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     return era.value(date).add(gstPolynomial.valueDS(elements.getTC()));
+                }
+
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+                                                                 final EOPHistory eopHistory)
+            throws OrekitException {
+
+            // set up nutation arguments
+            final FundamentalNutationArguments arguments = getNutationArguments();
+
+            // mean obliquity function
+            final TimeFunction<Double> epsilon = getMeanObliquityFunction();
+
+            // set up Poisson series
+            final PoissonSeriesParser luniSolarPsiParser =
+                    new PoissonSeriesParser(14).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
+                        withFirstDelaunay(1).
+                        withSinCos(0, 7, 11).
+                        withSinCos(1, 8, 12);
+            final PoissonSeries psiLuniSolarSeries =
+                    luniSolarPsiParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
+
+            final PoissonSeriesParser planetaryPsiParser =
+                    new PoissonSeriesParser(21).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
+                        withFirstDelaunay(2).
+                        withFirstPlanetary(7).
+                        withSinCos(0, 17, 18);
+            final PoissonSeries psiPlanetarySeries =
+                    planetaryPsiParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
+
+            final PoissonSeriesParser gstParser =
+                    new PoissonSeriesParser(17).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, 3).
+                        withPolynomialPart('t', Unit.ARC_SECONDS);
+            final PoissonSeries gstSeries = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
+            final PoissonSeries.CompiledSeries psiGstSeries =
+                    PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
+
+            // ERA function
+            final TimeFunction<DerivativeStructure> era = getEarthOrientationAngleFunction(ut1);
+
+            return new TimeFunction<DerivativeStructure>() {
+
+                /** {@inheritDoc} */
+                @Override
+                public DerivativeStructure value(final AbsoluteDate date) {
+
+                    // evaluate equation of origins
+                    final BodiesElements elements = arguments.evaluateAll(date);
+                    final double[] angles = psiGstSeries.value(elements);
+                    final double ddPsi    = (eopHistory == null) ? 0 : eopHistory.getEquinoxNutationCorrection(date)[0];
+                    final double deltaPsi = angles[0] + angles[1] + ddPsi;
+                    final double epsilonA = epsilon.value(date);
+
+                    // subtract equation of origin from EA
+                    // (hence add the series above which have the sign included)
+                    return era.value(date).add(deltaPsi * FastMath.cos(epsilonA) + angles[2]);
+
                 }
 
             };
@@ -548,6 +660,9 @@ public enum IERSConventions {
 
         /** Epsilon series resources. */
         private static final String EPSILON_SERIES     = IERS_BASE + "2010/tab5.3b.txt";
+
+        /** Greenwhich sidereal time series resources. */
+        private static final String GST_SERIES         = IERS_BASE + "2010/tab5.2e.txt";
 
         /** {@inheritDoc} */
         public FundamentalNutationArguments getNutationArguments() throws OrekitException {
@@ -704,14 +819,15 @@ public enum IERSConventions {
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
 
             // Polynomial part of the apparent sidereal time series
-            // (we don't need the complete series here, so we don't load a table)
+            final PoissonSeriesParser parser =
+                    new PoissonSeriesParser(17).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, 3).
+                        withPolynomialPart('t', Unit.ARC_SECONDS);
             final PolynomialNutation gstPolynomial =
-                    new PolynomialNutation(   0.014506     * Constants.ARC_SECONDS_TO_RADIANS,
-                                           4612.156534     * Constants.ARC_SECONDS_TO_RADIANS,
-                                              1.3915817    * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.00000044   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              0.000029956  * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -0.0000000368 * Constants.ARC_SECONDS_TO_RADIANS);
+                    parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
             return new TimeFunction<DerivativeStructure>() {
@@ -721,6 +837,57 @@ public enum IERSConventions {
                 public DerivativeStructure value(final AbsoluteDate date) {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     return era.value(date).add(gstPolynomial.valueDS(elements.getTC()));
+                }
+
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+                                                                 final EOPHistory eopHistory)
+            throws OrekitException {
+
+            // set up nutation arguments
+            final FundamentalNutationArguments arguments = getNutationArguments();
+
+            // mean obliquity function
+            final TimeFunction<Double> epsilon = getMeanObliquityFunction();
+
+            // set up Poisson series
+            final PoissonSeriesParser baseParser =
+                    new PoissonSeriesParser(17).
+                        withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                        withFirstDelaunay(4).
+                        withFirstPlanetary(9).
+                        withSinCos(0, 2, 3);
+            final PoissonSeriesParser gstParser  = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
+            final PoissonSeries psiSeries        = baseParser.parse(getStream(PSI_SERIES), PSI_SERIES);
+            final PoissonSeries gstSeries        = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
+            final PoissonSeries.CompiledSeries psiGstSeries =
+                    PoissonSeries.compile(psiSeries, gstSeries);
+
+            // ERA function
+            final TimeFunction<DerivativeStructure> era = getEarthOrientationAngleFunction(ut1);
+
+            return new TimeFunction<DerivativeStructure>() {
+
+                /** {@inheritDoc} */
+                @Override
+                public DerivativeStructure value(final AbsoluteDate date) {
+
+                    // evaluate equation of origins
+                    final BodiesElements elements = arguments.evaluateAll(date);
+                    final double[] angles = psiGstSeries.value(elements);
+                    final double ddPsi    = (eopHistory == null) ? 0 : eopHistory.getEquinoxNutationCorrection(date)[0];
+                    final double deltaPsi = angles[0] + ddPsi;
+                    final double epsilonA = epsilon.value(date);
+
+                    // subtract equation of origin from EA
+                    // (hence add the series above which have the sign included)
+                    return era.value(date).add(deltaPsi * FastMath.cos(epsilonA) + angles[1]);
+
                 }
 
             };
@@ -748,7 +915,7 @@ public enum IERSConventions {
 
     /** Get the function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components.
      * <p>
-     * The returned function computes the two X, Y commponents of CIP and the S+XY/2 component of the non-rotating CIO.
+     * The returned function computes the two X, Y components of CIP and the S+XY/2 component of the non-rotating CIO.
      * </p>
      * @return function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components
      * @exception OrekitException if table cannot be loaded
@@ -820,41 +987,9 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
-                                                             final EOPHistory eopHistory)
-        throws OrekitException {
-
-        // obliquity
-        final TimeFunction<Double> epsilonA = getMeanObliquityFunction();
-
-        // nutation function
-        final TimeFunction<double[]> nutation = getNutationFunction();
-
-        // GMST function
-        final TimeFunction<DerivativeStructure> gmst = getGMSTFunction(ut1);
-
-        return new TimeFunction<DerivativeStructure>() {
-
-            /** {@inheritDoc} */
-            @Override
-            public DerivativeStructure value(final AbsoluteDate date) {
-
-                // compute equation of equinoxes
-                final double[] angles = nutation.value(date);
-                double deltaPsi = angles[0];
-                if (eopHistory != null) {
-                    deltaPsi += eopHistory.getEquinoxNutationCorrection(date)[0];
-                }
-                final double eqe = deltaPsi  * FastMath.cos(epsilonA.value(date)) + angles[2];
-
-                // add mean sidereal time and equation of equinoxes
-                return gmst.value(date).add(eqe);
-
-            }
-
-        };
-
-    }
+    public abstract TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+                                                                      final EOPHistory eopHistory)
+        throws OrekitException;
 
     /** Interface for functions converting nutation corrections between
      * &delta;&Delta;&psi;/&delta;&Delta;&epsilon; to &delta;X/&delta;Y.

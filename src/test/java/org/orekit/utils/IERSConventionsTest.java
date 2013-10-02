@@ -145,10 +145,10 @@ public class IERSConventionsTest {
                 IERSConventions.IERS_1996.getGMSTFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_1996));
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gmst = MathUtils.normalizeAngle(gmst82.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.5021977627453466653, gmst, 1.0e-12);
+        Assert.assertEquals(2.5021977627453466653, gmst, 2.0e-13);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gmst = MathUtils.normalizeAngle(gmst82.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.7602390405411441066, gmst, 1.0e-12);
+        Assert.assertEquals(2.7602390405411441066, gmst, 4.0e-13);
 
     }
 
@@ -296,10 +296,10 @@ public class IERSConventionsTest {
                 IERSConventions.IERS_2003.getEarthOrientationAngleFunction(TimeScalesFactory.getUT1(IERSConventions.IERS_2003));
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double era  = MathUtils.normalizeAngle(era00.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.5012766511308228701, era, 1.0e-12);
+        Assert.assertEquals(2.5012766511308228701, era, 1.0e-15);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         era  = MathUtils.normalizeAngle(era00.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.7593087452455264952, era, 1.0e-12);
+        Assert.assertEquals(2.7593087452455264952, era, 1.0e-15);
 
     }
 
@@ -318,27 +318,80 @@ public class IERSConventionsTest {
         // the reference value has been computed using the March 2012 version of the SOFA library
         // http://www.iausofa.org/2012_0301_C.html, with the following code
         //
-        //        double utc1, utc2, ut11, ut12, gst;
+        //        double utc1, utc2, ut11, ut12, tai1, tai2, tt1, tt2, gmst82, eqeq94;
         //
         //        // 2004-02-14:00:00:00Z, MJD = 53049, UT1-UTC = -0.4093509
         //        utc1  = DJM0 + 53049.0;
         //        utc2  = 0.0;
         //        iauUtcut1(utc1, utc2, -0.4093509, &ut11, &ut12);
-        //        gst = iauGst94(ut11, ut12);
-        //        printf("iaugst94(%.20g, %.20g)\n  --> %.20g\n", ut11, ut12, gst);
+        //        iauUtctai(utc1, utc2, &tai1, &tai2);
+        //        iauTaitt(tai1, tai2, &tt1, &tt2);
+        //        gmst82 = iauGmst82(ut11, ut12);
+        //        eqeq94 = iauEqeq94(tt1, tt2);
+        //        printf("iauGmst82(%.20g, %.20g)\n  --> %.20g\n", ut11, ut12, gmst82);
+        //        printf("iauEqeq94(%.20g, %.20g)\n  --> %.20g\n", tt1, tt2, eqeq94);
+        //        printf(" gmst82 + eqeq94  --> %.20g\n", gmst82 + eqeq94);
         //
         //        // 2004-02-29:00:00:00Z, MJD = 53064, UT1-UTC = -0.4175723
         //        utc1 = DJM0 + 53064.0;
         //        utc2 = 0.0;
         //        iauUtcut1(utc1, utc2, -0.4175723, &ut11, &ut12);
-        //        gst = iauGst94(ut11, ut12);
-        //        printf("iaugst94(%.20g, %.20g)\n  --> %.20g\n", ut11, ut12, gst);
+        //        iauUtctai(utc1, utc2, &tai1, &tai2);
+        //        iauTaitt(tai1, tai2, &tt1, &tt2);
+        //        gmst82 = iauGmst82(ut11, ut12);
+        //        eqeq94 = iauEqeq94(tt1, tt2);
+        //        printf("iauGmst82(%.20g, %.20g)\n  --> %.20g\n", ut11, ut12, gmst82);
+        //        printf("iauEqeq94(%.20g, %.20g)\n  --> %.20g\n", tt1, tt2, eqeq94);
+        //        printf(" gmst82 + eqeq94  --> %.20g\n", gmst82 + eqeq94);
         //
         // the output of this test reads:
-        //      iaugst94(2453049.5, -4.7378576388888813016e-06)
-        //        --> 2.5021490909193064844
-        //      iaugst94(2453064.5, -4.8330127314815448519e-06)
-        //        --> 2.7601901473152641309
+        //      iauGmst82(2453049.5, -4.7378576388888813016e-06)
+        //        --> 2.5021977627453466653
+        //      iauEqeq94(2453049.5, 0.00074287037037037029902)
+        //        --> -4.8671604682267536886e-05
+        //       gmst82 + eqeq94  --> 2.5021490911406645274
+        //      iauGmst82(2453064.5, -4.8330127314815448519e-06)
+        //        --> 2.7602390405411441066
+        //      iauEqeq94(2453064.5, 0.00074287037037037029902)
+        //        --> -4.8893054690771762302e-05
+        //       gmst82 + eqeq94  --> 2.7601901474864534158
+
+        // As can be seen in the code above, we didn't call iauGst94, because as
+        // stated in the function header comment in SOFA source files:
+        //        "accuracy has been compromised for the sake of
+        //         convenience in that UT is used instead of TDB (or TT) to compute
+        //         the equation of the equinoxes."
+        // So we rather performed the date conversion and then called ourselves iauGmst82
+        // with a date in UTC and eqe94 with a date in TT, restoring full accuracy in the
+        // SOFA computation for this test.
+
+        // The thresholds below have been set up large enough to have the test pass with
+        // the default Orekit setting and the reference SOFA setting. There are implementation
+        // differences between the two libraries, as the Delaunay parameters are not the
+        // same (in Orekit, we are compliant with page 23 in chapter 5 of IERS conventions 1996.
+        // If the content of the IERS-conventions/1996/nutation-arguments.txt file by Orekit is
+        // changed to match SOFA setting instead of IERS conventions as follows:
+        //
+        //        # Mean Anomaly of the Moon
+        //        F1 ≡ l = 485866.733″ + 1717915922.633″t + 31.310″t² + 0.064″t³
+        //
+        //       # Mean Anomaly of the Sun
+        //        F2 ≡ l' = 1287099.804″ + 129596581.224″t − 0.577″t² − 0.012t³
+        //
+        //       # L − Ω
+        //        F3 ≡ F = 335778.877″ + 1739527263.137″t − 13.257″t² + 0.011″t³
+        //
+        //       # Mean Elongation of the Moon from the Sun
+        //        F4 ≡ D = 1072261.307″ + 1602961601.328″t − 6.891″t² + 0.019″t³
+        //
+        //       # Mean Longitude of the Ascending Node of the Moon
+        //        F5 ≡ Ω = 450160.280″ − 6962890.539″t + 7.455″t² + 0.008″t³
+        //
+        // then the thresholds for the test can be reduced to 4.2e-13 for the first test,
+        // and 4.7e-13 for the second test.
+        // We decided to stick with IERS published reference values for the default Orekit setting.
+        // The differences are nevertheless quite small (9e-11 radians is sub-millimeter level
+        // in low Earth orbit).
         Utils.setLoaders(IERSConventions.IERS_1996,
                          Utils.buildEOPList(IERSConventions.IERS_1996, new double[][] {
                              { 53047, -0.4093509, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 },
@@ -365,10 +418,10 @@ public class IERSConventionsTest {
                                                           eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst94.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.5021490909193064844, gst, 2.0e-10);
+        Assert.assertEquals(2.5021490911406645274, gst, 4.4e-11); // 4.2e-13 with SOFA values
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gst = MathUtils.normalizeAngle(gst94.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.7601901473152641309, gst, 9.0e-11);
+        Assert.assertEquals(2.7601901474864534158, gst, 9.0e-11); // 4.7e-13 with SOFA values
 
     }
 
@@ -377,7 +430,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2003);
         checkDerivative(IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 1.0e-11);
     }
 
     @Test
@@ -439,10 +492,10 @@ public class IERSConventionsTest {
                 IERSConventions.IERS_2003.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst00a.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.5021491024360624778, gst, 5.0e-11);
+        Assert.assertEquals(2.5021491024360624778, gst, 2.0e-13);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gst = MathUtils.normalizeAngle(gst00a.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.7601901615614221619, gst, 5.0e-11);
+        Assert.assertEquals(2.7601901615614221619, gst, 3.0e-13);
 
     }
 
@@ -451,7 +504,7 @@ public class IERSConventionsTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010);
         checkDerivative(IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory),
                         AbsoluteDate.J2000_EPOCH.shiftedBy(-0.4 * Constants.JULIAN_DAY),
-                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 2.0e-12);
+                        0.8 * Constants.JULIAN_DAY, 1800.0, 10.0, 1.0e-11);
     }
 
     @Test
@@ -513,10 +566,10 @@ public class IERSConventionsTest {
                 IERSConventions.IERS_2010.getGASTFunction(TimeScalesFactory.getUT1(eopHistory), eopHistory);
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
         double gst = MathUtils.normalizeAngle(gst06.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.5021491022006503435, gst, 5.0e-11);
+        Assert.assertEquals(2.5021491022006503435, gst, 1.3e-12);
         date = new AbsoluteDate(2004, 2, 29, TimeScalesFactory.getUTC());
         gst = MathUtils.normalizeAngle(gst06.value(date).getValue(), 0.0);
-        Assert.assertEquals(2.7601901613234058885, gst, 4.0e-11);
+        Assert.assertEquals(2.7601901613234058885, gst, 1.2e-12);
 
     }
 

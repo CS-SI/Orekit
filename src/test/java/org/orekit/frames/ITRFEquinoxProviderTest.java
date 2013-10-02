@@ -219,12 +219,12 @@ public class ITRFEquinoxProviderTest {
         Frame itrfNRO = FramesFactory.getITRF2008(true);
         Frame itrfEqu = FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true);
         AbsoluteDate t0 = new AbsoluteDate(2005, 5, 30, TimeScalesFactory.getUTC());
-        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += Constants.JULIAN_DAY / 2) {
+        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
             AbsoluteDate date = t0.shiftedBy(dt);
             Transform t = FramesFactory.getNonInterpolatingTransform(itrfNRO, itrfEqu, date);
             Vector3D a = t.getRotation().getAxis();
             double delta = FastMath.copySign(radToMicroAS(t.getRotation().getAngle()), a.getZ());
-            Assert.assertEquals(0.0, delta, 26.0);
+            Assert.assertEquals(0.0, delta, 1.7);
         }
     }
 
@@ -234,12 +234,12 @@ public class ITRFEquinoxProviderTest {
         Frame itrfNRO = FramesFactory.getITRF2008(true);
         Frame itrfEqu = FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true);
         AbsoluteDate t0 = new AbsoluteDate(2005, 5, 30, TimeScalesFactory.getUTC());
-        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += Constants.JULIAN_DAY / 2) {
+        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
             AbsoluteDate date = t0.shiftedBy(dt);
             Transform t = FramesFactory.getNonInterpolatingTransform(itrfNRO, itrfEqu, date);
             Vector3D a = t.getRotation().getAxis();
             double delta = FastMath.copySign(radToMicroAS(t.getRotation().getAngle()), a.getZ());
-            Assert.assertEquals(0.0, delta, 26.0);
+            Assert.assertEquals(0.0, delta, 1.7);
         }
     }
 

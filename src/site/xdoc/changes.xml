@@ -21,6 +21,12 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="update">
+        Greatly improved accuracy of celestial/terrestrial frames transforms.
+        We are now at sub-micro arcsecond level for IERS 2003/2010, both with
+        equinox based and Non-Rotating Origin, and at a few micro arcseconds
+        for IERS 1996.
+      </action>
       <action dev="luc" type="fix">
         Fixed missing nutation correction in Equation Of Equinoxes.
         Fixes issue #150.
