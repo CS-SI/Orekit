@@ -27,7 +27,6 @@ import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
-import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
@@ -50,20 +49,15 @@ import org.orekit.utils.OrekitConfiguration;
  * </ul>
  * <h5> Reference Frames </h5>
  * <p>
- * The user can retrieve those reference frames using various static methods
- * ({@link FramesFactory#getFrame(Predefined)},
- * {@link #getGCRF()}, {@link #getCIRF(IERSConventions)}
- * {@link #getTIRF(IERSConventions, boolean)}, {@link #getTIRF(IERSConventions)},
- * {@link #getITRF93(boolean)}, {@link #getITRF93()},
- * {@link #getITRF97(boolean)}, {@link #getITRF97()},
- * {@link #getITRF2000(boolean)}, {@link #getITRF2000()},
- * {@link #getITRF2005(boolean)}, {@link #getITRF2005()},
- * {@link #getITRF2008(boolean)}, {@link #getITRF2008()},
- * {@link #getEME2000()}, {@link #getMOD(IERSConventions)}, {@link #getTOD(IERSConventions)},
+ * The user can retrieve those reference frames using various static methods, the most
+ * important ones being: {@link #getFrame(Predefined)}, {@link #getGCRF()},
+ * {@link #getCIRF(IERSConventions)} {@link #getTIRF(IERSConventions, boolean)},
+ * {@link #getITRF(IERSConventions, boolean)}, {@link #getEME2000()},
+ * {@link #getMOD(IERSConventions)}, {@link #getTOD(IERSConventions)},
  * {@link #getGTOD(IERSConventions)}, {@link #getITRFEquinox(IERSConventions)}, {@link #getTEME()}
- * and {@link #getVeis1950()}).
+ * and {@link #getVeis1950()}.
  * </p>
- * <h5> International Terrestrial Reference Frame 2008 </h5>
+ * <h5> International Terrestrial Reference Frame</h5>
  * <p>
  * This frame is the current (as of 2013) reference realization of
  * the International Terrestrial Reference System produced by IERS.
@@ -82,39 +76,44 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link HelmertTransformation Helmert transformations}. Parameters for all
  * ITRS realizations since 1988 are available from the ITRF site <a
  * href="ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP"> ftp://itrf.ensg.ign.fr/pub/itrf/ITRF.TP</a>).
- * Orekit provides only a few of them: ITRF93, ITRF97, ITRF2000, ITRF2005 and
- * ITRF2008. The three first ones are mandatory to support CCSDS Orbit Data Messages,
- * and the two last ones correspond to the more up to date ones used by recent IERS
- * conventions. Other realizations can be added by users if they build themselves the
- * {@link HelmertTransformation Helmert transformations}.
+ * Orekit provides a {@link HelmertTransformation.Predefined#createTransformedITRF(Frame,
+ * String) utility} method to build simply several of them and link them together.
  * </p>
  * <p>
- * OREKIT proposes all the intermediate frames used to build this specific frame.
- * This implementation follows the new non-rotating origin paradigm
- * mandated by IAU 2000 resolution B1.8. It is therefore based on
- * Celestial Ephemeris Origin (CEO-based) and Earth Rotating Angle. I is based on the
- * 2010 conventions.
+ * ITRF can be built using the new non-rotating origin paradigm
+ * mandated by IAU 2000 resolution B1.8 and any supported {@link IERSConventions
+ * IERS conventions} (even IERS 1996 can be used with non-rotating origin paradigm,
+ * despite the resolution was not yet adopted at conventions publication time.
+ * </p>
+ * <p><font color="red">
+ * BEWARE THAT AS OF 2013-10-02, NON-ROTATING ORIGIN AND IERS 1996 CONVENTION IS REALLY
+ * INACCURATE. IT HAS A 26.8 ARC SECONDS BIAS.</font>
  * </p>
  * <p>
- * Orekit also provides frames corresponding to IERS 2003 conventions (from GCRF to
- * TIRF 2000, but <em>not</em> ITRF (which are linked to 2010 conventions now). The
- * reason for this is that IERS does not provide Earth Orientation Data anymore for
- * these older conventions, they provide data only for the new conventions.
+ * ITRF can also be built using the classical equinox paradigm used prior to IAU 2000
+ * resolution B1.8 and any supported {@link IERSConventions IERS conventions} (even
+ * IERS 2003 and 2010 can be used with equinox paradigm, despite the resolution is
+ * in effect now). The choice of paradigm (non-rotating origin or equinox) and the
+ * choice of IERS conventions (i.e. the choice of precession/nutation models) can
+ * be made independently by user, Orekit provides all alternatives.
  * </p>
- * <h5> Classical paradigm: equinox-based transformations </h5>
+ * <h5>Intermediate frames</h5>
  * <p>
- * The classical paradigm used prior to IERS conventions 2010 (and 2003) is equinox based and
- * uses more intermediate frames. Only some of these frames are supported in Orekit.
+ * Orekit also provides all the intermediate frames that are needed to transform
+ * between GCRF and ITRF, along the two paths: ITRF/TIRF/CIRF/GCRF for the
+ * non-rotating origin paradigm and ITRF/GTOD/TOD/MOD/EME2000/GCRF for the equinox
+ * paradigm.
  * </p>
  * <h5> Earth Orientation Parameters </h5>
  * <p>
- * The Earth Orientation Parameters (EOP) needed for accurate transformations
- * between inertial and Earth fixed frames are loaded from the
- * {@link org.orekit.data.DataProvidersManager}. When EOP should be applied,
- * but EOP data are not available, then a null (0.0) correction is used. This
- * can occur when no EOP data is loaded, or when the requested date is beyond
- * the time span of the loaded EOP data. Using a null correction can result in
- * coarse accuracy. To check the time span covered by EOP data use
+ * This factory also handles loading of Earth Orientation Parameters (EOP) needed
+ * for accurate transformations between inertial and Earth fixed frames, using
+ * {@link org.orekit.data.DataProvidersManager} features. EOP are IERS conventions
+ * dependent, because they correspond to correction to the precession/nutation
+ * models. When EOP should be applied, but EOP data are not available, then a null
+ * (0.0) correction is used. This can occur when no EOP data is loaded, or when the
+ * requested date is beyond the time span of the loaded EOP data. Using a null
+ * correction can result in coarse accuracy. To check the time span covered by EOP data use
  * {@link #getEOPHistory(IERSConventions)}, {@link EOPHistory#getStartDate()},
  * and {@link EOPHistory#getEndDate()}.
  * <p>
@@ -390,9 +389,19 @@ public class FramesFactory {
         case EME2000 :
             return getEME2000();
         case ITRF_2008_WITHOUT_TIDAL_EFFECTS :
-            return getITRF2008(true);
+        case ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+            return getITRF(IERSConventions.IERS_2010, true);
         case ITRF_2008_WITH_TIDAL_EFFECTS :
-            return getITRF2008(false);
+        case ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS :
+            return getITRF(IERSConventions.IERS_2010, false);
+        case ITRF_CIO_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+            return getITRF(IERSConventions.IERS_2003, true);
+        case ITRF_CIO_CONV_2003_WITH_TIDAL_EFFECTS :
+            return getITRF(IERSConventions.IERS_2003, false);
+        case ITRF_CIO_CONV_1996_WITHOUT_TIDAL_EFFECTS :
+            return getITRF(IERSConventions.IERS_1996, true);
+        case ITRF_CIO_CONV_1996_WITH_TIDAL_EFFECTS :
+            return getITRF(IERSConventions.IERS_1996, false);
         case ITRF_2005_WITHOUT_TIDAL_EFFECTS :
             return getITRF2005(true);
         case ITRF_2005_WITH_TIDAL_EFFECTS :
@@ -522,33 +531,45 @@ public class FramesFactory {
         }
     }
 
-    /** Get the ITRF2008 reference frame, using IERS 2010 conventions and ignoring tidal effects.
-     * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
-     */
-    public static FactoryManagedFrame getITRF2008() throws OrekitException {
-        return getITRF2008(true);
-    }
-
     /** Get the ITRF2008 reference frame, using IERS 2010 conventions.
+     * @param conventions IERS conventions to apply
      * @param ignoreTidalEffects if true, tidal effects are ignored
      * @return the selected reference frame singleton.
-     * @exception OrekitException if the precession-nutation model data embedded in the
-     * library cannot be read.
+     * @exception OrekitException if data embedded in the library cannot be read
+     * @since 6.1
      */
-    public static FactoryManagedFrame getITRF2008(final boolean ignoreTidalEffects) throws OrekitException {
+    public static FactoryManagedFrame getITRF(final IERSConventions conventions,
+                                              final boolean ignoreTidalEffects)
+        throws OrekitException {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Predefined factoryKey = ignoreTidalEffects ?
-                                          Predefined.ITRF_2008_WITHOUT_TIDAL_EFFECTS :
-                                          Predefined.ITRF_2008_WITH_TIDAL_EFFECTS;
+            final Predefined factoryKey;
+            switch (conventions) {
+            case IERS_1996 :
+                factoryKey = ignoreTidalEffects ?
+                             Predefined.ITRF_CIO_CONV_1996_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.ITRF_CIO_CONV_1996_WITH_TIDAL_EFFECTS;
+                break;
+            case IERS_2003 :
+                factoryKey = ignoreTidalEffects ?
+                             Predefined.ITRF_CIO_CONV_2003_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.ITRF_CIO_CONV_2003_WITH_TIDAL_EFFECTS;
+                break;
+            case IERS_2010 :
+                factoryKey = ignoreTidalEffects ?
+                             Predefined.ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS :
+                             Predefined.ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS;
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
+            }
             FactoryManagedFrame frame = FRAMES.get(factoryKey);
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-                final Frame tirfFrame = getTIRF(IERSConventions.IERS_2010, ignoreTidalEffects);
+                final Frame tirfFrame = getTIRF(conventions, ignoreTidalEffects);
                 final TIRFProvider tirfProvider = (TIRFProvider) tirfFrame.getTransformProvider();
                 frame = new FactoryManagedFrame(tirfFrame,
                                                 new ITRFProvider(tirfProvider.getEOPHistory(),
@@ -562,11 +583,37 @@ public class FramesFactory {
         }
     }
 
+    /** Get the ITRF2008 reference frame, using IERS 2010 conventions and ignoring tidal effects.
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     * @deprecated as of 6.1, replaced with {@link #getITRF(IERSConventions, boolean)}
+     */
+    @Deprecated
+    public static FactoryManagedFrame getITRF2008() throws OrekitException {
+        return getITRF2008(true);
+    }
+
+    /** Get the ITRF2008 reference frame, using IERS 2010 conventions.
+     * @param ignoreTidalEffects if true, tidal effects are ignored
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if the precession-nutation model data embedded in the
+     * library cannot be read.
+     * @deprecated as of 6.1, replaced with {@link #getITRF(IERSConventions, boolean)}
+     */
+    @Deprecated
+    public static FactoryManagedFrame getITRF2008(final boolean ignoreTidalEffects) throws OrekitException {
+        return getITRF(IERSConventions.IERS_2010, ignoreTidalEffects);
+    }
+
     /** Get the ITRF2005 reference frame, using IERS 2010 conventions and ignoring tidal effects.
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF2005() throws OrekitException {
         return getITRF2005(true);
     }
@@ -576,47 +623,18 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF2005(final boolean ignoreTidalEffects) throws OrekitException {
 
         final Predefined factoryKey = ignoreTidalEffects ?
                                       Predefined.ITRF_2005_WITHOUT_TIDAL_EFFECTS :
                                       Predefined.ITRF_2005_WITH_TIDAL_EFFECTS;
 
-        // Helmert transformation between ITRF2005 and ITRF 2008
-        // see http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt
-        // SOLUTION         Tx       Ty       Tz        D        Rx        Ry        Rz      EPOCH
-        // UNITS----------> mm       mm       mm       ppb       .001"     .001"     .001"
-        //                         .        .        .         .        .         .         .
-        //        RATES     Tx       Ty       Tz        D        Rx        Ry        Rz
-        // UNITS----------> mm/y     mm/y     mm/y     ppb/y    .001"/y   .001"/y   .001"/y
-        // -----------------------------------------------------------------------------------------
-        //   ITRF2005       -2.0     -0.9     -4.7      0.94      0.00      0.00      0.00    2000.0
-        //        rates      0.3      0.0      0.0      0.00      0.00      0.00      0.00
-        //   ITRF2000       -1.9     -1.7    -10.5      1.34      0.00      0.00      0.00    2000.0
-        //        rates      0.1      0.1     -1.8      0.08      0.00      0.00      0.00
-        //   ITRF97          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF96          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF94          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF93        -24.0      2.4    -38.6      3.41     -1.71     -1.48     -0.30    2000.0
-        //        rates     -2.8     -0.1     -2.4      0.09     -0.11     -0.19      0.07
-        //   ITRF92         12.8      4.6    -41.2      2.21      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF91         24.8     18.6    -47.2      3.61      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF90         22.8     14.6    -63.2      3.91      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF89         27.8     38.6   -101.2      7.31      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF88         22.8      2.6   -125.2     10.41      0.10      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        // _________________________________________________________________________________________
-        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects), 2000,
-                                  -2.0, -0.9, -4.7, 0.000, 0.000, 0.000,
-                                   0.3,  0.0,  0.0, 0.000, 0.000, 0.000);
+        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects),
+                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2005);
 
     }
 
@@ -624,7 +642,10 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF2000() throws OrekitException {
         return getITRF2000(true);
     }
@@ -634,47 +655,18 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF2000(final boolean ignoreTidalEffects) throws OrekitException {
 
         final Predefined factoryKey = ignoreTidalEffects ?
                                       Predefined.ITRF_2000_WITHOUT_TIDAL_EFFECTS :
                                       Predefined.ITRF_2000_WITH_TIDAL_EFFECTS;
 
-        // Helmert transformation between ITRF2000 and ITRF 2008
-        // see http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt
-        // SOLUTION         Tx       Ty       Tz        D        Rx        Ry        Rz      EPOCH
-        // UNITS----------> mm       mm       mm       ppb       .001"     .001"     .001"
-        //                         .        .        .         .        .         .         .
-        //        RATES     Tx       Ty       Tz        D        Rx        Ry        Rz
-        // UNITS----------> mm/y     mm/y     mm/y     ppb/y    .001"/y   .001"/y   .001"/y
-        // -----------------------------------------------------------------------------------------
-        //   ITRF2005       -2.0     -0.9     -4.7      0.94      0.00      0.00      0.00    2000.0
-        //        rates      0.3      0.0      0.0      0.00      0.00      0.00      0.00
-        //   ITRF2000       -1.9     -1.7    -10.5      1.34      0.00      0.00      0.00    2000.0
-        //        rates      0.1      0.1     -1.8      0.08      0.00      0.00      0.00
-        //   ITRF97          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF96          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF94          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF93        -24.0      2.4    -38.6      3.41     -1.71     -1.48     -0.30    2000.0
-        //        rates     -2.8     -0.1     -2.4      0.09     -0.11     -0.19      0.07
-        //   ITRF92         12.8      4.6    -41.2      2.21      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF91         24.8     18.6    -47.2      3.61      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF90         22.8     14.6    -63.2      3.91      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF89         27.8     38.6   -101.2      7.31      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF88         22.8      2.6   -125.2     10.41      0.10      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        // _________________________________________________________________________________________
-        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects), 2000,
-                                 -1.9, -1.7, -10.5, 0.000, 0.000, 0.000,
-                                  0.1,  0.1,  -1.8, 0.000, 0.000, 0.000);
+        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects),
+                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000);
 
     }
 
@@ -682,7 +674,10 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF97() throws OrekitException {
         return getITRF97(true);
     }
@@ -692,47 +687,18 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF97(final boolean ignoreTidalEffects) throws OrekitException {
 
         final Predefined factoryKey = ignoreTidalEffects ?
                                       Predefined.ITRF_97_WITHOUT_TIDAL_EFFECTS :
                                       Predefined.ITRF_97_WITH_TIDAL_EFFECTS;
 
-        // Helmert transformation between ITRF97 and ITRF 2008
-        // see http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt
-        // SOLUTION         Tx       Ty       Tz        D        Rx        Ry        Rz      EPOCH
-        // UNITS----------> mm       mm       mm       ppb       .001"     .001"     .001"
-        //                         .        .        .         .        .         .         .
-        //        RATES     Tx       Ty       Tz        D        Rx        Ry        Rz
-        // UNITS----------> mm/y     mm/y     mm/y     ppb/y    .001"/y   .001"/y   .001"/y
-        // -----------------------------------------------------------------------------------------
-        //   ITRF2005       -2.0     -0.9     -4.7      0.94      0.00      0.00      0.00    2000.0
-        //        rates      0.3      0.0      0.0      0.00      0.00      0.00      0.00
-        //   ITRF2000       -1.9     -1.7    -10.5      1.34      0.00      0.00      0.00    2000.0
-        //        rates      0.1      0.1     -1.8      0.08      0.00      0.00      0.00
-        //   ITRF97          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF96          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF94          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF93        -24.0      2.4    -38.6      3.41     -1.71     -1.48     -0.30    2000.0
-        //        rates     -2.8     -0.1     -2.4      0.09     -0.11     -0.19      0.07
-        //   ITRF92         12.8      4.6    -41.2      2.21      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF91         24.8     18.6    -47.2      3.61      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF90         22.8     14.6    -63.2      3.91      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF89         27.8     38.6   -101.2      7.31      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF88         22.8      2.6   -125.2     10.41      0.10      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        // _________________________________________________________________________________________
-        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects), 2000,
-                                  4.8,  2.6, -33.2, 0.00, 0.00, 0.00,
-                                  0.1, -0.5,  -3.2, 0.00, 0.00, 0.002);
+        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects),
+                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_97);
 
     }
 
@@ -740,7 +706,10 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF93() throws OrekitException {
         return getITRF93(true);
     }
@@ -750,47 +719,18 @@ public class FramesFactory {
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
+     * @deprecated as of 6.1, replaced by {@link #getITRF(IERSConventions, boolean)} and
+     * {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
      */
+    @Deprecated
     public static FactoryManagedFrame getITRF93(final boolean ignoreTidalEffects) throws OrekitException {
 
         final Predefined factoryKey = ignoreTidalEffects ?
                                       Predefined.ITRF_93_WITHOUT_TIDAL_EFFECTS :
                                       Predefined.ITRF_93_WITH_TIDAL_EFFECTS;
 
-        // Helmert transformation between ITRF93 and ITRF 2008
-        // see http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt
-        // SOLUTION         Tx       Ty       Tz        D        Rx        Ry        Rz      EPOCH
-        // UNITS----------> mm       mm       mm       ppb       .001"     .001"     .001"
-        //                         .        .        .         .        .         .         .
-        //        RATES     Tx       Ty       Tz        D        Rx        Ry        Rz
-        // UNITS----------> mm/y     mm/y     mm/y     ppb/y    .001"/y   .001"/y   .001"/y
-        // -----------------------------------------------------------------------------------------
-        //   ITRF2005       -2.0     -0.9     -4.7      0.94      0.00      0.00      0.00    2000.0
-        //        rates      0.3      0.0      0.0      0.00      0.00      0.00      0.00
-        //   ITRF2000       -1.9     -1.7    -10.5      1.34      0.00      0.00      0.00    2000.0
-        //        rates      0.1      0.1     -1.8      0.08      0.00      0.00      0.00
-        //   ITRF97          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF96          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF94          4.8      2.6    -33.2      2.92      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF93        -24.0      2.4    -38.6      3.41     -1.71     -1.48     -0.30    2000.0
-        //        rates     -2.8     -0.1     -2.4      0.09     -0.11     -0.19      0.07
-        //   ITRF92         12.8      4.6    -41.2      2.21      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF91         24.8     18.6    -47.2      3.61      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF90         22.8     14.6    -63.2      3.91      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF89         27.8     38.6   -101.2      7.31      0.00      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        //   ITRF88         22.8      2.6   -125.2     10.41      0.10      0.00      0.06    2000.0
-        //        rates      0.1     -0.5     -3.2      0.09      0.00      0.00      0.02
-        // _________________________________________________________________________________________
-        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects), 2000,
-                                 -24.0,  2.4, -38.6, -1.71, -1.48, -0.30,
-                                  -2.8, -0.1,  -2.4, -0.11, -0.19,  0.07);
+        return getITRSRealization(factoryKey, getITRF2008(ignoreTidalEffects),
+                                  HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_93);
 
     }
 
@@ -798,28 +738,13 @@ public class FramesFactory {
      * @param factoryKey key of the frame within the factory
      * @param parent parent frame to which the Helmert transformation should be applied
      * to define the desired realization
-     * @param refYear reference year for the epoch of the transform
-     * @param t1 translation parameter along X axis (BEWARE, this is in mm)
-     * @param t2 translation parameter along Y axis (BEWARE, this is in mm)
-     * @param t3 translation parameter along Z axis (BEWARE, this is in mm)
-     * @param r1 rotation parameter around X axis (BEWARE, this is in mas)
-     * @param r2 rotation parameter around Y axis (BEWARE, this is in mas)
-     * @param r3 rotation parameter around Z axis (BEWARE, this is in mas)
-     * @param t1Dot rate of translation parameter along X axis (BEWARE, this is in mm/y)
-     * @param t2Dot rate of translation parameter along Y axis (BEWARE, this is in mm/y)
-     * @param t3Dot rate of translation parameter along Z axis (BEWARE, this is in mm/y)
-     * @param r1Dot rate of rotation parameter around X axis (BEWARE, this is in mas/y)
-     * @param r2Dot rate of rotation parameter around Y axis (BEWARE, this is in mas/y)
-     * @param r3Dot rate of rotation parameter around Z axis (BEWARE, this is in mas/y)
+     * @param predefined predefined transformation between parent frame and created frame
      * @return the selected reference frame singleton.
      * @exception OrekitException if the precession-nutation model data embedded in the
      * library cannot be read.
      */
-    private static FactoryManagedFrame getITRSRealization(final Predefined factoryKey, final Frame parent, final int refYear,
-                                                          final double t1, final double t2, final double t3,
-                                                          final double r1, final double r2, final double r3,
-                                                          final double t1Dot, final double t2Dot, final double t3Dot,
-                                                          final double r1Dot, final double r2Dot, final double r3Dot)
+    private static FactoryManagedFrame getITRSRealization(final Predefined factoryKey, final Frame parent,
+                                                          final HelmertTransformation.Predefined predefined)
         throws OrekitException {
         synchronized (FramesFactory.class) {
 
@@ -828,12 +753,9 @@ public class FramesFactory {
 
             if (frame == null) {
                 // it's the first time we need this frame, build it and store it
-
-                final HelmertTransformation helmertTransformation =
-                    new HelmertTransformation(new AbsoluteDate(refYear, 1, 1, 12, 0, 0, TimeScalesFactory.getTT()),
-                                              t1, t2, t3, r1, r2, r3, t1Dot, t2Dot, t3Dot, r1Dot, r2Dot, r3Dot);
-                frame = new FactoryManagedFrame(parent, helmertTransformation, false, factoryKey);
-
+                final Frame nonFactoryManaged = predefined.createTransformedITRF(parent, factoryKey.getName());
+                final TransformProvider provider = nonFactoryManaged.getTransformProvider();
+                frame = new FactoryManagedFrame(parent, provider, false, factoryKey);
                 FRAMES.put(factoryKey, frame);
 
             }
@@ -956,15 +878,19 @@ public class FramesFactory {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
+            final Frame parent;
             final Predefined factoryKey;
             switch (conventions) {
             case IERS_1996 :
+                parent     = getEME2000();
                 factoryKey = Predefined.CIRF_CONVENTIONS_1996;
                 break;
             case IERS_2003 :
+                parent     = getGCRF();
                 factoryKey = Predefined.CIRF_CONVENTIONS_2003;
                 break;
             case IERS_2010 :
+                parent     = getGCRF();
                 factoryKey = Predefined.CIRF_CONVENTIONS_2010;
                 break;
             default :
@@ -982,7 +908,7 @@ public class FramesFactory {
                                                            6, Constants.JULIAN_DAY / 24,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
                                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(getGCRF(), interpolating, true, factoryKey);
+                frame = new FactoryManagedFrame(parent, interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

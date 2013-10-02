@@ -48,6 +48,7 @@ import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -288,7 +289,7 @@ public class EarthObservation_day_night_switch_with_fixed_transitions {
                 private PVCoordinatesProvider sun  = CelestialBodyFactory.getSun();
                 private PVCoordinatesProvider moon = CelestialBodyFactory.getMoon();
                 private Frame eme2000 = FramesFactory.getEME2000();
-                private Frame itrf2005 = FramesFactory.getITRF2005();
+                private Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
                 private String printVector3D(final String name, final Vector3D v) {
                     return name + " " + f2.format(v);
                 }

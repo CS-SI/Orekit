@@ -30,6 +30,7 @@ import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
 public class DTM2000Test {
@@ -37,7 +38,7 @@ public class DTM2000Test {
     @Test
     public void testWithOriginalTestsCases() throws OrekitException, ParseException {
 
-        Frame itrf = FramesFactory.getITRF2005(true);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1.0 / 298.257222101, itrf);
         SolarInputs97to05 in = SolarInputs97to05.getInstance();

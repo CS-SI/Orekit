@@ -39,6 +39,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class GroundMaskElevationDetectorTest {
@@ -67,7 +68,7 @@ public class GroundMaskElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
         BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
@@ -109,7 +110,7 @@ public class GroundMaskElevationDetectorTest {
         // Earth and frame
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
-                                               FramesFactory.getITRF2005());
+                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "");
         double [][] masque = {{FastMath.toRadians(  0),FastMath.toRadians(5)},
                               {FastMath.toRadians(180),FastMath.toRadians(3)},
@@ -128,7 +129,7 @@ public class GroundMaskElevationDetectorTest {
         // Earth and frame
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
-                                               FramesFactory.getITRF2005());
+                                               FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         TopocentricFrame topo = new TopocentricFrame(earth, new GeodeticPoint(0.0, 0.0, 0.0), "");
         double [][] masque = {{FastMath.toRadians(   0),FastMath.toRadians(5)},
                               {FastMath.toRadians( 360),FastMath.toRadians(4)}};

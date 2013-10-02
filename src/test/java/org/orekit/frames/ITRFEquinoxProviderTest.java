@@ -25,6 +25,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -45,7 +46,7 @@ public class ITRFEquinoxProviderTest {
     @Test
     public void testEquinoxVersusCIO() throws OrekitException {
         Frame itrfEquinox  = FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true);
-        Frame itrfCIO      = FramesFactory.getITRF2005();
+        Frame itrfCIO      = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         AbsoluteDate start = new AbsoluteDate(2011, 4, 10, TimeScalesFactory.getUTC());
         AbsoluteDate end   = new AbsoluteDate(2011, 7,  4, TimeScalesFactory.getUTC());
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(10000)) {
@@ -216,30 +217,45 @@ public class ITRFEquinoxProviderTest {
     @Test
     public void testNROvsEquinoxRealEOP() throws OrekitException {
         Utils.setDataRoot("regular-data");
-        Frame itrfNRO = FramesFactory.getITRF2008(true);
-        Frame itrfEqu = FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true);
-        AbsoluteDate t0 = new AbsoluteDate(2005, 5, 30, TimeScalesFactory.getUTC());
-        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
-            AbsoluteDate date = t0.shiftedBy(dt);
-            Transform t = FramesFactory.getNonInterpolatingTransform(itrfNRO, itrfEqu, date);
-            Vector3D a = t.getRotation().getAxis();
-            double delta = FastMath.copySign(radToMicroAS(t.getRotation().getAngle()), a.getZ());
-            Assert.assertEquals(0.0, delta, 1.7);
-        }
+        checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                    FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true),
+                    1.7);
     }
 
     @Test
-    public void testNROvsEquinox0EOP() throws OrekitException {
+    public void testNROvsEquinoxNoEOP2010() throws OrekitException {
         Utils.setLoaders(IERSConventions.IERS_2010, new ArrayList<EOPEntry>());
-        Frame itrfNRO = FramesFactory.getITRF2008(true);
-        Frame itrfEqu = FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true);
+        checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
+                    FramesFactory.getITRFEquinox(IERSConventions.IERS_2010, true),
+                    1.7);
+    }
+
+    @Test
+    public void testNROvsEquinoxNoEOP2003() throws OrekitException {
+        Utils.setLoaders(IERSConventions.IERS_2003, new ArrayList<EOPEntry>());
+        checkFrames(FramesFactory.getITRF(IERSConventions.IERS_2003, true),
+                    FramesFactory.getITRFEquinox(IERSConventions.IERS_2003, true),
+                    1.9);
+    }
+
+    @Test
+    @Ignore  // TODO: for now CIO-based ITRF for IERS 1996 is bad (it has a 26.8'' bias)
+    public void testNROvsEquinoxNoEOP1996() throws OrekitException {
+        Utils.setLoaders(IERSConventions.IERS_1996, new ArrayList<EOPEntry>());
+        checkFrames(FramesFactory.getITRF(IERSConventions.IERS_1996, true),
+                    FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true),
+                    27e6);
+    }
+
+    private void checkFrames(Frame frame1, Frame frame2, double toleranceMicroAS)
+        throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate(2005, 5, 30, TimeScalesFactory.getUTC());
         for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
             AbsoluteDate date = t0.shiftedBy(dt);
-            Transform t = FramesFactory.getNonInterpolatingTransform(itrfNRO, itrfEqu, date);
+            Transform t = FramesFactory.getNonInterpolatingTransform(frame1, frame2, date);
             Vector3D a = t.getRotation().getAxis();
             double delta = FastMath.copySign(radToMicroAS(t.getRotation().getAngle()), a.getZ());
-            Assert.assertEquals(0.0, delta, 1.7);
+            Assert.assertEquals(0.0, delta, toleranceMicroAS);
         }
     }
 

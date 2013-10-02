@@ -36,6 +36,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 import fr.cs.examples.Autoconfiguration;
 import fr.cs.examples.KeyValueFileParser;
@@ -132,7 +133,7 @@ public class VisibilityCircle {
         // define Earth shape, using WGS84 model
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
-                                               FramesFactory.getITRF2008());
+                                               FramesFactory.getITRF(IERSConventions.IERS_2010, false));
 
         // define an array of ground stations
         TopocentricFrame station =

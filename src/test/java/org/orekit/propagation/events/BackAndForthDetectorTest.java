@@ -36,6 +36,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 public class BackAndForthDetectorTest {
 
@@ -66,7 +67,7 @@ public class BackAndForthDetectorTest {
         final GeodeticPoint stationPosition = new GeodeticPoint(Math.toRadians(0.), Math.toRadians(100.), 110.);
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                      Constants.WGS84_EARTH_FLATTENING,
-                                                     FramesFactory.getITRF2005());
+                                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame stationFrame = new TopocentricFrame(earth, stationPosition, "");
 
         // Detector

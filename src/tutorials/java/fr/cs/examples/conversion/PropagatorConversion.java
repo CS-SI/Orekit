@@ -48,6 +48,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 import fr.cs.examples.Autoconfiguration;
 
@@ -106,7 +107,7 @@ public class PropagatorConversion {
 
             // Force Models:
             // 1 - Perturbing gravity field (only J2 is considered here)
-            ForceModel gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
+            ForceModel gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
 
             // Add force models to the propagator
             numProp.addForceModel(gravity);

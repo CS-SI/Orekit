@@ -111,7 +111,7 @@ public class OneAxisEllipsoidTest {
                                              -3944945.7282234835,
                                               4874931.946956173);
         OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101,
-                                                           FramesFactory.getITRF2008());
+                                                           FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         GeodeticPoint gp = earthShape.transform(surfacePoint, earthShape.getBodyFrame(),
                                                    AbsoluteDate.J2000_EPOCH);
         Vector3D rebuilt = earthShape.transform(gp);
@@ -143,7 +143,7 @@ public class OneAxisEllipsoidTest {
     public void testGeoCar() throws OrekitException {
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101,
-                                 FramesFactory.getITRF2005());
+                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         GeodeticPoint nsp =
             new GeodeticPoint(0.852479154923577, 0.0423149994747243, 111.6);
         Vector3D p = model.transform(nsp);
@@ -155,7 +155,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005();
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point         = new Vector3D(0.0, 93.7139699, 3.5930796);
@@ -204,7 +204,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testNoLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005(true);
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(100.0, 0.9, frame);
         Vector3D point     = new Vector3D(0.0, 93.7139699, 3.5930796);
         Vector3D direction = new Vector3D(0.0, 9.0, -2.0);
@@ -215,7 +215,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testNegativeZ() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005(true);
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
         Vector3D point     = new Vector3D(140.0, 0.0, -30.0);
         GeodeticPoint gp = model.transform(point, frame, date);
@@ -226,7 +226,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testEquatorialInside() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005(true);
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
         for (double rho = 0; rho < model.getEquatorialRadius(); rho += 0.01) {
             Vector3D point     = new Vector3D(rho, 0.0, 0.0);
@@ -239,7 +239,7 @@ public class OneAxisEllipsoidTest {
     @Test
     public void testFarPoint() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005(true);
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(90.0, 5.0 / 9.0, frame);
         Vector3D point     = new Vector3D(1.0e15, 2.0e15, -1.0e12);
         GeodeticPoint gp = model.transform(point, frame, date);
@@ -287,7 +287,7 @@ public class OneAxisEllipsoidTest {
                                              TimeComponents.H12,
                                              TimeScalesFactory.getUTC());
 
-        Frame frame = FramesFactory.getITRF2005();
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid earth = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frame);
 
         // Satellite on polar position
@@ -418,7 +418,7 @@ public class OneAxisEllipsoidTest {
         throws OrekitException {
 
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
-        Frame frame = FramesFactory.getITRF2005(true);
+        Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         OneAxisEllipsoid model = new OneAxisEllipsoid(ae, f, frame);
         GeodeticPoint gp = model.transform(new Vector3D(x, y, z), frame, date);
         Assert.assertEquals(longitude, MathUtils.normalizeAngle(gp.getLongitude(), longitude), 1.0e-10);

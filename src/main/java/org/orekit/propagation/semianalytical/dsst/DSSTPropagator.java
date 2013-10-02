@@ -61,6 +61,7 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPress
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 
 /**
  * This class propagates {@link org.orekit.orbits.Orbit orbits} using the DSST theory.
@@ -462,7 +463,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                     // Central body
                     final UnnormalizedSphericalHarmonicsProvider provider = ((DSSTCentralBody) force).getProvider();
                     final ForceModel holmesFeatherstone =
-                            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+                            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                                   GravityFieldFactory.getNormalizedProvider(provider));
                     propagator.addForceModel(holmesFeatherstone);
                 } else if (force instanceof DSSTThirdBody) {

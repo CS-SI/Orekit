@@ -60,6 +60,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class PartialDerivativesTest {
@@ -69,7 +70,7 @@ public class PartialDerivativesTest {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
-            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
         Orbit initialOrbit =
                 new KeplerianOrbit(8000000.0, 0.01, 0.1, 0.7, 0, 1.2, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH,
@@ -136,7 +137,7 @@ public class PartialDerivativesTest {
 
         NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(5, 5);
         ForceModel gravityField =
-            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
         Orbit initialOrbit =
                 new KeplerianOrbit(new PVCoordinates(new Vector3D(-1551946.0, 708899.0, 6788204.0),
                                                      new Vector3D(-9875.0, -3941.0, -1845.0)),

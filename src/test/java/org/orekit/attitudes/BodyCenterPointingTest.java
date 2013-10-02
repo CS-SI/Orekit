@@ -41,6 +41,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -159,7 +160,7 @@ public class BodyCenterPointingTest {
 
 
             // Reference frame = ITRF 2008
-            itrf = FramesFactory.getITRF2008(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Transform from EME2000 to ITRF2008
             eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);

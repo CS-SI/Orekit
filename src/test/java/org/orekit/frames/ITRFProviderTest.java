@@ -37,13 +37,13 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
-public class ITRF2008FrameTest {
+public class ITRFProviderTest {
 
     @Test
     public void testTidalEffects() throws OrekitException {
 
-        final Frame itrfWith    = FramesFactory.getITRF2008(false);
-        final Frame itrfWithout = FramesFactory.getITRF2008(true);
+        final Frame itrfWith    = FramesFactory.getITRF(IERSConventions.IERS_2010, false);
+        final Frame itrfWithout = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         final AbsoluteDate date0 = new AbsoluteDate(2007, 10, 20, TimeScalesFactory.getUTC());
 
         double minCorrection = Double.POSITIVE_INFINITY;
@@ -86,7 +86,7 @@ public class ITRF2008FrameTest {
                                            TimeScalesFactory.getUTC());
 
         // Positions LEO
-        Frame itrfA = FramesFactory.getITRF2008(true);
+        Frame itrfA = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(-1033479.3830, 7901295.2754, 6380356.5958),
                               new Vector3D(-3225.636520, -2872.451450, 5531.924446));
@@ -132,7 +132,7 @@ public class ITRF2008FrameTest {
                                            TimeScalesFactory.getUTC());
 
         //  Positions GEO
-        Frame itrfA = FramesFactory.getITRF2008(true);
+        Frame itrfA = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(24796919.2915, -34115870.9234, 10226.0621),
                               new Vector3D(-0.979178, -1.476538, -0.928776));
@@ -177,7 +177,7 @@ public class ITRF2008FrameTest {
                                            TimeScalesFactory.getUTC());
 
         //  Positions GEO
-        Frame itrfA = FramesFactory.getITRF2008(true);
+        Frame itrfA = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(24796919.2915, -34115870.9234, 10226.0621),
                               new Vector3D(-0.979178, -1.476538, -0.928776));
@@ -231,7 +231,7 @@ public class ITRF2008FrameTest {
         TTScale tt    = TimeScalesFactory.getTT();
         UT1Scale ut1  = TimeScalesFactory.getUT1(eopHistory);
         Frame gcrf    = FramesFactory.getGCRF();
-        Frame itrf    = FramesFactory.getITRF2008(true);
+        Frame itrf    = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame gtod    = itrf.getParent();
         Frame tod     = gtod.getParent();
 

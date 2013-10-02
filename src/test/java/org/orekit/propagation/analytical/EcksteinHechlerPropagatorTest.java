@@ -58,6 +58,7 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -573,12 +574,12 @@ public class EcksteinHechlerPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
-        NodeDetector detector = new NodeDetector(orbit, FramesFactory.getITRF2005());
-        Assert.assertTrue(FramesFactory.getITRF2005() == detector.getFrame());
+        NodeDetector detector = new NodeDetector(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+        Assert.assertTrue(FramesFactory.getITRF(IERSConventions.IERS_2010, true) == detector.getFrame());
         propagator.addEventDetector(detector);
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
+        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         Assert.assertEquals(0, pv.getPosition().getZ(), 1.0e-6);
@@ -596,7 +597,7 @@ public class EcksteinHechlerPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
-        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2005()) {
+        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)) {
             private static final long serialVersionUID = 8805264185199866748L;
             public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
                 return Action.CONTINUE;
@@ -617,7 +618,7 @@ public class EcksteinHechlerPropagatorTest {
         propagator.addEventDetector(new ApsideDetector(orbit));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2005());
+        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
         Assert.assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 400);
@@ -669,7 +670,7 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         final OneAxisEllipsoid earthShape =
-            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF2005());
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         ElevationDetector detector = new ElevationDetector(60, 1.0e-9, 0.09, topo);

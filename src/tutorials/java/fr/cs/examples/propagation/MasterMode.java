@@ -36,6 +36,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 import fr.cs.examples.Autoconfiguration;
 
@@ -95,7 +96,7 @@ public class MasterMode {
 
             // Force Model (reduced to perturbing gravity field)
             final NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
-            ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
+            ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider);
 
             // Add force model to the propagator
             propagator.addForceModel(holmesFeatherstone);

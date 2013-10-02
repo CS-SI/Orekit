@@ -42,6 +42,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.IERSConventions;
 
 
 public class LofOffsetPointingTest {
@@ -53,7 +54,7 @@ public class LofOffsetPointingTest {
     private double mu;
 
     // Reference frame = ITRF 2005C
-    private Frame frameItrf2005;
+    private Frame frameItrf;
 
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -161,12 +162,12 @@ public class LofOffsetPointingTest {
             // Body mu
             mu = 3.9860047e14;
 
-            // Reference frame = ITRF 2005
-            frameItrf2005 = FramesFactory.getITRF2005(true);
+            // Reference frame = ITRF
+            frameItrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape
             earthSpheric =
-                new OneAxisEllipsoid(6378136.460, 0., frameItrf2005);
+                new OneAxisEllipsoid(6378136.460, 0., frameItrf);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
@@ -177,7 +178,7 @@ public class LofOffsetPointingTest {
     @After
     public void tearDown() {
         date = null;
-        frameItrf2005 = null;
+        frameItrf = null;
         earthSpheric = null;
     }
 }

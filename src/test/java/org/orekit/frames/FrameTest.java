@@ -31,6 +31,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class FrameTest {
@@ -185,7 +186,7 @@ public class FrameTest {
     @Test
     public void testH0m9() throws OrekitException {
         AbsoluteDate h0         = new AbsoluteDate("2010-07-01T10:42:09", TimeScalesFactory.getUTC());
-        Frame itrf              = FramesFactory.getITRF2005();
+        Frame itrf              = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame rotatingPadFrame  = new TopocentricFrame(new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                                             Constants.WGS84_EARTH_FLATTENING,
                                                                             itrf),

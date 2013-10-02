@@ -35,6 +35,7 @@ import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -69,7 +70,7 @@ public class VisibilityCheck {
             // Earth and frame
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
-            Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+            Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
             BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 
             // Station

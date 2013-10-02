@@ -21,11 +21,16 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added a way to select IERS conventions for non-rotating origin
+        based ITRF.
+      </action>
       <action dev="luc" type="update">
         Greatly improved accuracy of celestial/terrestrial frames transforms.
         We are now at sub-micro arcsecond level for IERS 2003/2010, both with
         equinox based and Non-Rotating Origin, and at a few micro arcseconds
-        for IERS 1996.
+        for IERS 1996 for equinox. BEWARE THAT FOR NOW NON ROTATING ORIGIN
+        AND IERS 1996 USED TOGETHER IS STILL INACCURATE (26.8 ARCS SECONDS BIAS)!
       </action>
       <action dev="luc" type="fix">
         Fixed missing nutation correction in Equation Of Equinoxes.

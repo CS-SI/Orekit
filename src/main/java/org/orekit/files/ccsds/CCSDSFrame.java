@@ -21,6 +21,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
+import org.orekit.frames.HelmertTransformation;
 import org.orekit.frames.LOFType;
 import org.orekit.utils.IERSConventions;
 
@@ -87,7 +88,13 @@ public enum CCSDSFrame {
         @Override
         public Frame getFrame(final IERSConventions conventions)
             throws OrekitException {
-            return FramesFactory.getITRF2000();
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            final Frame itrf2008 = FramesFactory.getITRF(conventions, false);
+            final HelmertTransformation.Predefined predefinedHT =
+                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_2000;
+            return predefinedHT.createTransformedITRF(itrf2008, toString());
         }
 
     },
@@ -99,7 +106,13 @@ public enum CCSDSFrame {
         @Override
         public Frame getFrame(final IERSConventions conventions)
             throws OrekitException {
-            return FramesFactory.getITRF93();
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            final Frame itrf2008 = FramesFactory.getITRF(conventions, false);
+            final HelmertTransformation.Predefined predefinedHT =
+                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_93;
+            return predefinedHT.createTransformedITRF(itrf2008, toString());
         }
 
     },
@@ -111,7 +124,13 @@ public enum CCSDSFrame {
         @Override
         public Frame getFrame(final IERSConventions conventions)
             throws OrekitException {
-            return FramesFactory.getITRF97();
+            if (conventions == null) {
+                throw new OrekitException(OrekitMessages.CCSDS_UNKNOWN_CONVENTIONS);
+            }
+            final Frame itrf2008 = FramesFactory.getITRF(conventions, false);
+            final HelmertTransformation.Predefined predefinedHT =
+                    HelmertTransformation.Predefined.ITRF_2008_TO_ITRF_97;
+            return predefinedHT.createTransformedITRF(itrf2008, toString());
         }
 
     },

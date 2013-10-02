@@ -33,7 +33,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
-public class ITRF2008WithoutTidalEffectsProviderTest {
+public class ITRFProviderWithoutTidalEffectsTest {
 
     @Test
     public void testRoughRotation() throws OrekitException {
@@ -41,7 +41,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
         AbsoluteDate date1 = new AbsoluteDate(new DateComponents(2006, 02, 24),
                                               new TimeComponents(15, 38, 00),
                                               TimeScalesFactory.getUTC());
-        Frame itrf2008 = FramesFactory.getITRF2008();
+        Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Transform t0 = itrf2008.getTransformTo(FramesFactory.getEME2000(), date1);
 
         double dt = 10.0;
@@ -62,7 +62,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
     public void testRoughOrientation() throws OrekitException {
 
         AbsoluteDate date = new AbsoluteDate(2001, 03, 21, 0, 4, 0, TimeScalesFactory.getUTC());
-        Frame itrf2008 = FramesFactory.getITRF2008();
+        Frame itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         Vector3D u = itrf2008.getTransformTo(FramesFactory.getEME2000(), date).transformVector(Vector3D.PLUS_I);
         Assert.assertTrue(Vector3D.angle(u, Vector3D.MINUS_I) < FastMath.toRadians(0.5));
@@ -123,7 +123,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(2003, 10, 14),
                                            new TimeComponents(02, 00, 00),
                                            TimeScalesFactory.getUTC());
-        Frame itrf = FramesFactory.getITRF2008();
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Transform trans = FramesFactory.getEME2000().getTransformTo(itrf, t0);
 
         // Coordinates in EME2000
@@ -171,7 +171,7 @@ public class ITRF2008WithoutTidalEffectsProviderTest {
     public void testMontenbruck() throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate(new DateComponents(1999, 3, 4), TimeComponents.H00,
                                            TimeScalesFactory.getGPS());
-        Transform trans = FramesFactory.getITRF2008().getTransformTo(FramesFactory.getGCRF(), t0);
+        Transform trans = FramesFactory.getITRF(IERSConventions.IERS_2010, true).getTransformTo(FramesFactory.getGCRF(), t0);
         PVCoordinates pvWGS =
             new PVCoordinates(new Vector3D(19440953.805,16881609.273,-6777115.092),
                               new Vector3D(-811.1827456,-257.3799137,-3068.9508125));

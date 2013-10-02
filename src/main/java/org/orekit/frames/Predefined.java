@@ -31,34 +31,102 @@ public enum Predefined {
     /** EME2000 frame.*/
     EME2000("EME2000"),
 
-    /** ITRF2008 without tidal effects. */
+    /** CIO-based ITRF, IERS 2010 conventions without tidal effects.
+     * @since 6.1
+     */
+    ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS("CIO/2010-based ITRF without tides"),
+
+    /** CIO-based ITRF, IERS 2010 conventions with tidal effects.
+     * @since 6.1
+     */
+    ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS("CIO/2010-based ITRF with tides"),
+
+    /** CIO-based ITRF, IERS 2003 conventions without tidal effects.
+     * @since 6.1
+     */
+    ITRF_CIO_CONV_2003_WITHOUT_TIDAL_EFFECTS("CIO/2003-based ITRF without tides"),
+
+    /** CIO-based ITRF, IERS 2003 conventions with tidal effects.
+     * @since 6.1
+     */
+    ITRF_CIO_CONV_2003_WITH_TIDAL_EFFECTS("CIO/2003-based ITRF with tides"),
+
+    /** CIO-based ITRF, IERS 1996 conventions without tidal effects.
+     * @since 6.1
+     */
+    ITRF_CIO_CONV_1996_WITHOUT_TIDAL_EFFECTS("CIO/1996-based ITRF without tides"),
+
+    /** CIO-based ITRF, IERS 1996 conventions with tidal effects.
+     * @since 6.1
+     */
+    ITRF_CIO_CONV_1996_WITH_TIDAL_EFFECTS("CIO/1996-based ITRF with tides"),
+
+    /** ITRF2008 without tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS}
+     */
+    @Deprecated
     ITRF_2008_WITHOUT_TIDAL_EFFECTS("ITRF2008 without tides"),
 
-    /** ITRF2008 with tidal effects. */
+    /** ITRF2008 with tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS}
+     */
+    @Deprecated
     ITRF_2008_WITH_TIDAL_EFFECTS("ITRF2008 with tides"),
 
-    /** ITRF2005 without tidal effects. */
+    /** ITRF2005 without tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
+     */
+    @Deprecated
     ITRF_2005_WITHOUT_TIDAL_EFFECTS("ITRF2005 without tides"),
 
-    /** ITRF2005 with tidal effects. */
+    /** ITRF2005 with tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2005}
+     */
+    @Deprecated
     ITRF_2005_WITH_TIDAL_EFFECTS("ITRF2005 with tides"),
 
-    /** ITRF2000 without tidal effects. */
+    /** ITRF2000 without tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
+     */
+    @Deprecated
     ITRF_2000_WITHOUT_TIDAL_EFFECTS("ITRF2000 without tides"),
 
-    /** ITRF2000 with tidal effects. */
+    /** ITRF2000 with tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_2000}
+     */
+    @Deprecated
     ITRF_2000_WITH_TIDAL_EFFECTS("ITRF2000 with tides"),
 
-    /** ITRF97 without tidal effects. */
+    /** ITRF97 without tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
+     */
+    @Deprecated
     ITRF_97_WITHOUT_TIDAL_EFFECTS("ITRF97 without tides"),
 
-    /** ITRF97 with tidal effects. */
+    /** ITRF97 with tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_97}
+     */
+    @Deprecated
     ITRF_97_WITH_TIDAL_EFFECTS("ITRF97 with tides"),
 
-    /** ITRF93 without tidal effects. */
+    /** ITRF93 without tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITHOUT_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
+     */
+    @Deprecated
     ITRF_93_WITHOUT_TIDAL_EFFECTS("ITRF93 without tides"),
 
-    /** ITRF93 with tidal effects. */
+    /** ITRF93 with tidal effects.
+     * @deprecated as of 6.1, replaced with {@link #ITRF_CIO_CONV_2010_WITH_TIDAL_EFFECTS}
+     * and {@link HelmertTransformation.Predefined#ITRF_2008_TO_ITRF_93}
+     */
+    @Deprecated
     ITRF_93_WITH_TIDAL_EFFECTS("ITRF93 with tides"),
 
     /** Equinox-based ITRF, IERS 2010 conventions without tidal effects.

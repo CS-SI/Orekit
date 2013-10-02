@@ -48,6 +48,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
 import fr.cs.examples.Autoconfiguration;
@@ -95,7 +96,7 @@ public class Frames3 {
             // Earth
             double ae =  6378137.0; // equatorial radius in meter
             double f  =  1.0 / 298.257223563; // flattening
-            Frame itrf2005 = FramesFactory.getITRF2005(true); // terrestrial frame at an arbitrary date
+            Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
             BodyShape earth = new OneAxisEllipsoid(ae, f, itrf2005);
 
             // Target pointing attitude provider over satellite nadir at date, without yaw compensation

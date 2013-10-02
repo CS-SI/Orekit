@@ -44,6 +44,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -53,7 +54,7 @@ public class TopocentricFrameTest {
     private AbsoluteDate date;
 
     // Reference frame = ITRF 2005
-    private Frame frameITRF2005;
+    private Frame itrf;
 
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -295,7 +296,7 @@ public class TopocentricFrameTest {
 
         // Elliptic earth shape
         final OneAxisEllipsoid earthElliptic =
-            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Satellite point
         // Caution !!! Sat point target shall be the same whatever earth shape chosen !!
@@ -400,7 +401,7 @@ public class TopocentricFrameTest {
         RandomGenerator random = new Well1024a(0xa1e6bd5cd0578779l);
         final OneAxisEllipsoid earth =
             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
-                                 frameITRF2005);
+                                 itrf);
         final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
 
         for (int i = 0; i < 20; ++i) {
@@ -429,7 +430,7 @@ public class TopocentricFrameTest {
 
     @Test
     public void testIssue145() throws OrekitException {
-        Frame itrf2005 = FramesFactory.getITRF2005();
+        Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                Constants.WGS84_EARTH_FLATTENING,
                                                itrf2005);
@@ -449,10 +450,10 @@ public class TopocentricFrameTest {
             Utils.setDataRoot("regular-data");
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape
-            earthSpheric = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
+            earthSpheric = new OneAxisEllipsoid(6378136.460, 0., itrf);
 
             // Reference date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
@@ -473,7 +474,7 @@ public class TopocentricFrameTest {
         // a few random from International Laser Ranging Service
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                      Constants.WGS84_EARTH_FLATTENING,
-                                                     FramesFactory.getITRF2008());
+                                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame[] ilrs = {
             new TopocentricFrame(earth,
                                  new GeodeticPoint(FastMath.toRadians(52.3800), FastMath.toRadians(3.0649), 133.745),
@@ -504,7 +505,7 @@ public class TopocentricFrameTest {
     @After
     public void tearDown() {
         date = null;
-        frameITRF2005 = null;
+        itrf = null;
         earthSpheric = null;
     }
 

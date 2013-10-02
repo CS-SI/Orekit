@@ -59,6 +59,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -74,7 +75,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
         HolmesFeatherstoneAttractionModel model =
-                new HolmesFeatherstoneAttractionModel(ITRF2005, provider);
+                new HolmesFeatherstoneAttractionModel(itrf, provider);
 
         // Note that despite it uses adjustable high accuracy, the reference model
         // uses unstable formulas and hence loses lots of digits near poles.
@@ -104,7 +105,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
         HolmesFeatherstoneAttractionModel model =
-                new HolmesFeatherstoneAttractionModel(ITRF2005, provider);
+                new HolmesFeatherstoneAttractionModel(itrf, provider);
 
         double r = 1.25;
         for (double lambda = 0; lambda < 2 * FastMath.PI; lambda += 0.5) {
@@ -127,7 +128,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
         HolmesFeatherstoneAttractionModel model =
-                new HolmesFeatherstoneAttractionModel(ITRF2005, provider);
+                new HolmesFeatherstoneAttractionModel(itrf, provider);
 
         double r = 1.25;
         for (double lambda = 0; lambda < 2 * FastMath.PI; lambda += 0.5) {
@@ -157,7 +158,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         int max = 50;
         NormalizedSphericalHarmonicsProvider provider = new GleasonProvider(max, max);
         HolmesFeatherstoneAttractionModel model =
-                new HolmesFeatherstoneAttractionModel(ITRF2005, provider);
+                new HolmesFeatherstoneAttractionModel(itrf, provider);
 
         double r = 1.25;
         for (double lambda = 0; lambda < 2 * FastMath.PI; lambda += 0.5) {
@@ -317,7 +318,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         AbsoluteDate date = new AbsoluteDate(new DateComponents(1970, 07, 01),
                                              new TimeComponents(13, 59, 27.816),
                                              TimeScalesFactory.getUTC());
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
+        Transform itrfToEME2000 = itrf.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
@@ -332,7 +333,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         c[0][0] = 0.0;
         c[2][0] = normalizedC20;
         double[][] s = new double[3][1];
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005,
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf,
                                                                        GravityFieldFactory.getNormalizedProvider(6378136.460, mu,
                                                                                                                  TideSystem.UNKNOWN,
                                                                                                                  c, s)));
@@ -387,7 +388,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         Vector3D position = new Vector3D(3220103., 69623., 6449822.);
         Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
 
-        Transform itrfToEME2000 = ITRF2005.getTransformTo(FramesFactory.getEME2000(), date);
+        Transform itrfToEME2000 = itrf.getTransformTo(FramesFactory.getEME2000(), date);
         Vector3D pole           = itrfToEME2000.transformVector(Vector3D.PLUS_K);
         Frame poleAligned       = new Frame(FramesFactory.getEME2000(),
                                             new Transform(date, new Rotation(pole, Vector3D.PLUS_K)),
@@ -396,7 +397,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         Orbit initialOrbit = new EquinoctialOrbit(new PVCoordinates(position, velocity),
                                                 poleAligned, date, mu);
 
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005,
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf,
                                                                        GravityFieldFactory.getNormalizedProvider(ae, mu,
                                                                                                                  TideSystem.UNKNOWN,
                                                                        new double[][] {
@@ -476,7 +477,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                          0, PositionAngle.MEAN, FramesFactory.getEME2000(), date, mu);
 
         propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(1000));
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005,
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf,
                                                                        GravityFieldFactory.getNormalizedProvider(ae, mu,
                                                                                                                  TideSystem.UNKNOWN,
                                                                        new double[][] {
@@ -493,7 +494,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         propagator.removeForceModels();
 
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+        propagator.addForceModel(new CunninghamAttractionModel(itrf,
                                                                GravityFieldFactory.getUnnormalizedProvider(ae, mu,
                                                                                                            TideSystem.UNKNOWN,
                                                                new double[][] {
@@ -535,7 +536,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         propagator = new NumericalPropagator(new DormandPrince853Integrator(1.0e-3, 120,
                                                                             tolerances[0], tolerances[1]));
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(ITRF2005,
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(itrf,
                                                                        GravityFieldFactory.getNormalizedProvider(69, 69)));
 
         propagator.setInitialState(new SpacecraftState(orbit));
@@ -543,14 +544,14 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         propagator.removeForceModels();
 
-        propagator.addForceModel(new CunninghamAttractionModel(ITRF2005,
+        propagator.addForceModel(new CunninghamAttractionModel(itrf,
                                                                GravityFieldFactory.getUnnormalizedProvider(69, 69)));
 
         propagator.setInitialState(new SpacecraftState(orbit));
         SpacecraftState cOrb = propagator.propagate(targetDate);
 
         Vector3D dif = hfOrb.getPVCoordinates().getPosition().subtract(cOrb.getPVCoordinates().getPosition());
-        Assert.assertEquals(0, dif.getNorm(), 3e-5);
+        Assert.assertEquals(0, dif.getNorm(), 4e-5);
     }
 
     @Test
@@ -570,10 +571,10 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         for (int i = 2; i <= 69; i++) {
             final ForceModel holmesFeatherstoneModel =
-                    new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2008(),
+                    new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                           GravityFieldFactory.getNormalizedProvider(i, i));
             final ForceModel cunninghamModel =
-                    new CunninghamAttractionModel(FramesFactory.getITRF2008(),
+                    new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                   GravityFieldFactory.getUnnormalizedProvider(i, i));
             double relativeError = accelerationRelativeError(holmesFeatherstoneModel, cunninghamModel, state);
             Assert.assertEquals(0.0, relativeError, 8.0e-15);
@@ -597,7 +598,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                        GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
 
         final HolmesFeatherstoneAttractionModel holmesFeatherstoneModel =
-                new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2008(),
+                new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                       GravityFieldFactory.getNormalizedProvider(20, 20));
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
@@ -676,7 +677,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setEphemerisMode();
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2008(), provider));
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider));
         propagator.setInitialState(initialState);
         propagator.propagate(initialState.getDate().shiftedBy(duration));
         return propagator.getGeneratedEphemeris();
@@ -705,7 +706,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
                                                                             tolerances[0], tolerances[1]));
         propagator.setOrbitType(integrationType);
         HolmesFeatherstoneAttractionModel hfModel =
-                new HolmesFeatherstoneAttractionModel(ITRF2005, GravityFieldFactory.getNormalizedProvider(50, 50));
+                new HolmesFeatherstoneAttractionModel(itrf, GravityFieldFactory.getNormalizedProvider(50, 50));
         Assert.assertEquals(TideSystem.UNKNOWN, hfModel.getTideSystem());
         propagator.addForceModel(hfModel);
         SpacecraftState state0 = new SpacecraftState(orbit);
@@ -717,7 +718,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
     @Before
     public void setUp() {
-        ITRF2005   = null;
+        itrf   = null;
         propagator = null;
         Utils.setDataRoot("regular-data");
         try {
@@ -735,7 +736,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
             unnormalizedC50 = FastMath.sqrt(11) * normalizedC50;
             unnormalizedC60 = FastMath.sqrt(13) * normalizedC60;
 
-            ITRF2005 = FramesFactory.getITRF2005();
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
             };
@@ -753,7 +754,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
     @After
     public void tearDown() {
-        ITRF2005   = null;
+        itrf       = null;
         propagator = null;
     }
 
@@ -770,7 +771,7 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
     private double mu;
     private double ae;
 
-    private Frame   ITRF2005;
+    private Frame   itrf;
     private NumericalPropagator propagator;
 
 }

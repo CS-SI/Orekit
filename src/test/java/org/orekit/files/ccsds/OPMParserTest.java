@@ -55,7 +55,7 @@ public class OPMParserTest {
         // data.
         final String ex = "/ccsds/OPMExample.txt";
 
-        final OPMParser parser = new OPMParser().withMu(398600e9);
+        final OPMParser parser = new OPMParser().withMu(398600e9).withConventions(IERSConventions.IERS_2010);
         
         final InputStream inEntry = getClass().getResourceAsStream(ex);
 
@@ -79,7 +79,7 @@ public class OPMParserTest {
         Assert.assertEquals("EARTH", file.getMetaData().getCenterName());
         Assert.assertTrue(file.getMetaData().getHasCreatableBody());
         Assert.assertEquals(CelestialBodyFactory.getEarth(), file.getMetaData().getCenterBody());
-        Assert.assertEquals(FramesFactory.getITRF97(), file.getMetaData().getFrame());
+        Assert.assertEquals(CCSDSFrame.ITRF97.toString(), file.getMetaData().getFrame().getName());
         Assert.assertEquals(TimeSystem.TAI, file.getTimeSystem());
         
         // Check State Vector data Block;
@@ -338,7 +338,10 @@ public class OPMParserTest {
         throws OrekitException {
         // 
         final String ex = "/ccsds/OPMExample4.txt";
-        OPMParser parser = new OPMParser().withMissionReferenceDate(new AbsoluteDate());
+        OPMParser parser =
+                new OPMParser().
+                withMissionReferenceDate(new AbsoluteDate()).
+                withConventions(IERSConventions.IERS_2010);
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
         file.getEpochInterval();
@@ -387,8 +390,9 @@ public class OPMParserTest {
     @Test
     public void testNumberFormatErrorType() {
         try {
-            new OPMParser().parse(getClass().getResourceAsStream("/ccsds/OPM-number-format-error.txt"),
-                                                                 "OPM-number-format-error.txt");
+            OPMParser parser = new OPMParser().withConventions(IERSConventions.IERS_2010);
+            parser.parse(getClass().getResourceAsStream("/ccsds/OPM-number-format-error.txt"),
+                         "OPM-number-format-error.txt");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
             Assert.assertEquals(17, oe.getParts()[0]);

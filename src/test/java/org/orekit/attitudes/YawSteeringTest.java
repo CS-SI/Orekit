@@ -42,6 +42,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
 
@@ -51,7 +52,7 @@ public class YawSteeringTest {
     private AbsoluteDate date;
 
     // Reference frame = ITRF 2005C
-    private Frame frameITRF2005;
+    private Frame itrf;
 
     // Satellite position
     CircularOrbit circOrbit;
@@ -74,10 +75,10 @@ public class YawSteeringTest {
         //  Check observed ground point
         // *****************************
         // without yaw compensation
-        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, date, frameITRF2005);
+        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, date, itrf);
 
         // with yaw compensation
-        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, date, frameITRF2005);
+        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, date, itrf);
 
         // Check difference
         Vector3D observedDiff = noYawObserved.subtract(yawObserved);
@@ -192,7 +193,7 @@ public class YawSteeringTest {
             final double mu = 3.9860047e14;
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             //  Satellite position
             circOrbit =
@@ -202,7 +203,7 @@ public class YawSteeringTest {
 
             // Elliptic earth shape */
             earthShape =
-                new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+                new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
@@ -213,7 +214,7 @@ public class YawSteeringTest {
     @After
     public void tearDown() {
         date = null;
-        frameITRF2005 = null;
+        itrf = null;
         circOrbit = null;
         earthShape = null;
     }

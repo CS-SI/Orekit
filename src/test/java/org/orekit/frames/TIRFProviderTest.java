@@ -69,7 +69,7 @@ public class TIRFProviderTest {
                                            TimeScalesFactory.getUTC());
 
         // Positions LEO
-        Frame itrfA = FramesFactory.getITRF2008(true);
+        Frame itrfA = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(-1033479.3830, 7901295.2754, 6380356.5958),
                               new Vector3D(-3225.636520, -2872.451450, 5531.924446));
@@ -117,7 +117,7 @@ public class TIRFProviderTest {
                                            TimeScalesFactory.getUTC());
 
         //  Positions GEO
-        Frame itrfA = FramesFactory.getITRF2008(true);
+        Frame itrfA = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvITRF =
             new PVCoordinates(new Vector3D(24796919.2915, -34115870.9234, 10226.0621),
                               new Vector3D(-0.979178, -1.476538, -0.928776));
