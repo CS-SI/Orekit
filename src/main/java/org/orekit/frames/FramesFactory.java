@@ -85,10 +85,6 @@ import org.orekit.utils.OrekitConfiguration;
  * IERS conventions} (even IERS 1996 can be used with non-rotating origin paradigm,
  * despite the resolution was not yet adopted at conventions publication time.
  * </p>
- * <p><font color="red">
- * BEWARE THAT AS OF 2013-10-02, NON-ROTATING ORIGIN AND IERS 1996 CONVENTION IS REALLY
- * INACCURATE. IT HAS A 26.8 ARC SECONDS BIAS.</font>
- * </p>
  * <p>
  * ITRF can also be built using the classical equinox paradigm used prior to IAU 2000
  * resolution B1.8 and any supported {@link IERSConventions IERS conventions} (even
@@ -878,19 +874,15 @@ public class FramesFactory {
         synchronized (FramesFactory.class) {
 
             // try to find an already built frame
-            final Frame parent;
             final Predefined factoryKey;
             switch (conventions) {
             case IERS_1996 :
-                parent     = getEME2000();
                 factoryKey = Predefined.CIRF_CONVENTIONS_1996;
                 break;
             case IERS_2003 :
-                parent     = getGCRF();
                 factoryKey = Predefined.CIRF_CONVENTIONS_2003;
                 break;
             case IERS_2010 :
-                parent     = getGCRF();
                 factoryKey = Predefined.CIRF_CONVENTIONS_2010;
                 break;
             default :
@@ -908,7 +900,7 @@ public class FramesFactory {
                                                            6, Constants.JULIAN_DAY / 24,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
                                                            Constants.JULIAN_YEAR, 30 * Constants.JULIAN_DAY);
-                frame = new FactoryManagedFrame(parent, interpolating, true, factoryKey);
+                frame = new FactoryManagedFrame(getGCRF(), interpolating, true, factoryKey);
                 FRAMES.put(factoryKey, frame);
             }
 

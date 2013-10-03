@@ -123,7 +123,7 @@ public enum IERSConventions {
             //     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
             //    - 0.00231″t² cos Ω − 0.00014″t² cos 2(F - D + Ω)
             final PolynomialNutation yPolynomial =
-                    new PolynomialNutation(-0.00013,
+                    new PolynomialNutation(-0.00013  * Constants.ARC_SECONDS_TO_RADIANS,
                                            0.0,
                                            -22.40992 * Constants.ARC_SECONDS_TO_RADIANS,
                                            0.001836  * Constants.ARC_SECONDS_TO_RADIANS,

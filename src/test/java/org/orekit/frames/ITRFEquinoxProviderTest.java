@@ -25,7 +25,6 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
@@ -239,18 +238,17 @@ public class ITRFEquinoxProviderTest {
     }
 
     @Test
-    @Ignore  // TODO: for now CIO-based ITRF for IERS 1996 is bad (it has a 26.8'' bias)
     public void testNROvsEquinoxNoEOP1996() throws OrekitException {
         Utils.setLoaders(IERSConventions.IERS_1996, new ArrayList<EOPEntry>());
         checkFrames(FramesFactory.getITRF(IERSConventions.IERS_1996, true),
                     FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true),
-                    27e6);
+                    100);
     }
 
     private void checkFrames(Frame frame1, Frame frame2, double toleranceMicroAS)
         throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate(2005, 5, 30, TimeScalesFactory.getUTC());
-        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += 3600) {
+        for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += Constants.JULIAN_DAY / 4) {
             AbsoluteDate date = t0.shiftedBy(dt);
             Transform t = FramesFactory.getNonInterpolatingTransform(frame1, frame2, date);
             Vector3D a = t.getRotation().getAxis();
