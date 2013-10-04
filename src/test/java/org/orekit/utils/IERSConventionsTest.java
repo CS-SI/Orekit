@@ -607,6 +607,23 @@ public class IERSConventionsTest {
         }
     }
 
+    @Test
+    public void testIAU1994ResolutionC7Discontinuity() throws OrekitException {
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996);
+        TimeFunction<double[]> nutation = IERSConventions.IERS_1996.getNutationFunction(ut1);
+        AbsoluteDate switchDate = new AbsoluteDate(1997, 2, 27, TimeScalesFactory.getUTC());
+        double h = 0.01;
+        for (double dt = -1.0 - h / 2; dt <= 1.0 + h /2; dt += h) {
+            AbsoluteDate d = switchDate.shiftedBy(dt);
+            final double currentCorr = nutation.value(d)[2];
+                if (dt < 0) {
+                    Assert.assertEquals(0.0, currentCorr, 1.0e-20);
+                } else {
+                    Assert.assertEquals(-7.87098e-12, currentCorr, 1.0e-15);
+                }
+        }
+    }
+
     private void checkDerivative(final TimeFunction<DerivativeStructure> function,
                                  final AbsoluteDate date, final double span, final double sampleStep,
                                  final double h, final double tolerance) {

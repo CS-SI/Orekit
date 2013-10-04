@@ -1340,8 +1340,7 @@ public class FramesFactory {
                 final Frame tod = getTOD(IERSConventions.IERS_1996, false);
                 final InterpolatingTransformProvider todInterpolating =
                         (InterpolatingTransformProvider) tod.getTransformProvider();
-                final TODProvider  todRaw  = (TODProvider) todInterpolating.getRawProvider();
-                final TEMEProvider temeRaw = new TEMEProvider(todRaw);
+                final TEMEProvider temeRaw = new TEMEProvider(IERSConventions.IERS_1996, null);
                 final TransformProvider temeInterpolating =
                         new InterpolatingTransformProvider(temeRaw, true, false,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,

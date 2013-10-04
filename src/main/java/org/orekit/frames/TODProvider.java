@@ -18,7 +18,6 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
@@ -123,31 +122,6 @@ class TODProvider implements TransformProvider {
 
         // set up the transform from parent MOD
         return new Transform(date, nutation);
-
-    }
-
-    /** Get the Equation of the Equinoxes at the current date.
-     * @param  date the date
-     * @return equation of the equinoxes
-     * @exception OrekitException if nutation model cannot be computed
-     */
-    public double getEquationOfEquinoxes(final AbsoluteDate date)
-        throws OrekitException {
-
-        // compute nutation angles
-        final double[] angles = nutationFunction.value(date);
-
-        // nutation in longitude
-        final double dPsi = angles[0];
-
-        // mean obliquity of ecliptic
-        final double moe = obliquityFunction.value(date);
-
-        // original definition of equation of equinoxes
-        final double eqe = dPsi * FastMath.cos(moe);
-
-        // apply correction if needed
-        return eqe + angles[2];
 
     }
 

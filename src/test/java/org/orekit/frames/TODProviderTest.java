@@ -40,30 +40,6 @@ import org.orekit.utils.PVCoordinates;
 public class TODProviderTest {
 
     @Test
-    public void testEQESmallDiscontinuity() throws OrekitException {
-        TODProvider provider = new TODProvider(IERSConventions.IERS_1996, null);
-        AbsoluteDate switchDate = new AbsoluteDate(1997, 2, 27, TimeScalesFactory.getUTC());
-        double currentEQE = Double.NaN;
-        double h = 0.01;
-        for (double dt = -1.0 - h / 2; dt <= 1.0 + h /2; dt += h) {
-            AbsoluteDate d = switchDate.shiftedBy(dt);
-            double previousEQE = currentEQE;
-            currentEQE = provider.getEquationOfEquinoxes(d);
-            if (!Double.isNaN(previousEQE)) {
-                double deltaMicroAS = 3.6e9 * FastMath.toDegrees(currentEQE - previousEQE);
-                if ((dt - h) * dt > 0) {
-                    // away from switch date, equation of equinox should decrease at
-                    // about 1.06 micro arcsecond per second
-                    Assert.assertEquals(-1.06 * h, deltaMicroAS, 0.0003 * h);
-                } else {
-                    // around switch date, there should be a -1.63 micro arcsecond discontinuity
-                    Assert.assertEquals(-1.63, deltaMicroAS, 0.01);
-                }
-            }
-        }
-    }
-
-    @Test
     public void testRotationRate() throws OrekitException {
         TransformProvider provider =
                 new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null), true, false,

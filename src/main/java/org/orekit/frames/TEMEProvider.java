@@ -18,8 +18,13 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
+import org.orekit.utils.IERSConventions;
 
 /** True Equator Mean Equinox Frame.
  * <p>This frame is used for the SGP4 model in TLE propagation. This frame has <em>no</em>
@@ -32,28 +37,71 @@ import org.orekit.time.AbsoluteDate;
 class TEMEProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130606L;
+    private static final long serialVersionUID = 20131004L;
 
-    /** Provider for the parent ToD frame. */
-    private final TODProvider todProvider;
+    /** EOP history. */
+    private final EOPHistory eopHistory;
+
+    /** Function computing the mean obliquity. */
+    private final TimeFunction<Double> obliquityFunction;
+
+    /** Function computing the nutation angles. */
+    private final TimeFunction<double[]> nutationFunction;
 
     /** Simple constructor.
-     * @param todProvider provider for the parent ToD frame
+     * @param conventions IERS conventions to apply
+     * @param eopHistory EOP history
+     * @exception OrekitException if the nutation model data embedded in the
+     * library cannot be read
      */
-    public TEMEProvider(final TODProvider todProvider) {
-        this.todProvider = todProvider;
+    public TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
+        throws OrekitException {
+        final UT1Scale ut1     = TimeScalesFactory.getUT1(eopHistory);
+        this.eopHistory        = eopHistory;
+        this.obliquityFunction = conventions.getMeanObliquityFunction();
+        this.nutationFunction  = conventions.getNutationFunction(ut1);
     }
 
     /** Get the transform from True Of Date date.
-     * <p>The update considers the earth rotation from IERS data.</p>
      * @param date new value of the date
      * @return transform at the specified date
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read
      */
     public synchronized Transform getTransform(final AbsoluteDate date) throws OrekitException {
-        final double eqe = todProvider.getEquationOfEquinoxes(date);
+        final double eqe = getEquationOfEquinoxes(date);
         return new Transform(date, new Rotation(Vector3D.PLUS_K, -eqe));
+    }
+
+    /** Get the Equation of the Equinoxes at the current date.
+     * @param  date the date
+     * @return equation of the equinoxes
+     * @exception OrekitException if nutation model cannot be computed
+     */
+    private double getEquationOfEquinoxes(final AbsoluteDate date)
+        throws OrekitException {
+
+        // compute nutation angles
+        final double[] angles = nutationFunction.value(date);
+
+        // nutation in longitude
+        double dPsi = angles[0];
+
+        if (eopHistory != null) {
+            // apply the corrections for the nutation parameters
+            final double[] correction = eopHistory.getEquinoxNutationCorrection(date);
+            dPsi += correction[0];
+        }
+
+        // mean obliquity of ecliptic
+        final double moe = obliquityFunction.value(date);
+
+        // original definition of equation of equinoxes
+        final double eqe = dPsi * FastMath.cos(moe);
+
+        // apply correction if needed
+        return eqe + angles[2];
+
     }
 
 }
