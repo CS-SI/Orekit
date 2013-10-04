@@ -26,6 +26,8 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -432,7 +434,8 @@ public class PoissonSeriesParserTest {
         PoissonSeries sSeries = parser.parse(zStream, "2010/tab5.2d.txt");
         PoissonSeries.CompiledSeries xysSeries =
                 PoissonSeries.compile(xSeries, ySeries, sSeries);
-        FundamentalNutationArguments arguments = IERSConventions.IERS_2010.getNutationArguments();
+        UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010);
+        FundamentalNutationArguments arguments = IERSConventions.IERS_2010.getNutationArguments(ut1);
 
         for (double dt = 0; dt < Constants.JULIAN_YEAR; dt += Constants.JULIAN_DAY) {
             AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);

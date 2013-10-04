@@ -22,6 +22,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
 /** Celestial Intermediate Reference Frame 2000.
@@ -57,7 +59,8 @@ class CIRFProvider implements TransformProvider {
         throws OrekitException {
 
         // load the nutation model
-        xysPxy2Function = conventions.getXYSpXY2Function();
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
+        xysPxy2Function = conventions.getXYSpXY2Function(ut1);
 
         // store correction to the model
         this.eopHistory = eopHistory;

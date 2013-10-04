@@ -23,6 +23,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
 /** Provider for True of Date (ToD) frame.
@@ -51,9 +53,10 @@ class TODProvider implements TransformProvider {
      */
     public TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
+        final UT1Scale ut1     = TimeScalesFactory.getUT1(eopHistory);
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
-        this.nutationFunction  = conventions.getNutationFunction();
+        this.nutationFunction  = conventions.getNutationFunction(ut1);
     }
 
     /** Get the EOP history.

@@ -35,10 +35,6 @@
 # are nevertheless quite small (about 4.8e-11 radians, which is sub-millimeter
 # level for low Earth orbits).
 
-# Extract from IERS conventions 1996 (page 23)
-
-reference = 2000-01-01T12:00:00 TT
-
 # Mean Anomaly of the Moon
  F1 ≡ l = 134.96340251° + 1717915923.2178″t + 31.8792″t² + 0.051635″t³ − 0.00024470″t⁴
 

@@ -47,7 +47,7 @@ class MODProvider implements TransformProvider {
     public MODProvider(final IERSConventions conventions) throws OrekitException {
         this.precessionFunction = conventions.getPrecessionFunction();
         final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
-        final AbsoluteDate date0 = conventions.getNutationArguments().getReferenceEpoch();
+        final AbsoluteDate date0 = conventions.getNutationReferenceEpoch();
         final double epsilon0 = epsilonAFunction.value(date0);
         r4 = new Rotation(Vector3D.PLUS_I, -epsilon0);
     }

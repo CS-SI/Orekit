@@ -26,12 +26,15 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.utils.Constants;
+import org.orekit.time.TimeFunction;
+import org.orekit.time.UT1Scale;
+import org.orekit.utils.IERSConventions;
 
 /**
  * Class computing the fundamental arguments for nutation and tides.
@@ -51,10 +54,13 @@ import org.orekit.utils.Constants;
 public class FundamentalNutationArguments implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130815L;
+    private static final long serialVersionUID = 20131004L;
 
-    /** Reference epoch.*/
-    private final AbsoluteDate reference;
+    /** IERS conventions to use. */
+    private final IERSConventions conventions;
+
+    /** Function computing Greenwich Mean Sidereal Time. */
+    private final TimeFunction<DerivativeStructure> gmstFunction;
 
     // luni-solar Delaunay arguments
 
@@ -103,12 +109,19 @@ public class FundamentalNutationArguments implements Serializable {
     private final double[] paCoefficients;
 
     /** Build a model of fundamental arguments from an IERS table file.
+     * @param conventions IERS conventions to use
+     * @param ut1 UT1 time scale
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public FundamentalNutationArguments(final InputStream stream, final String name)
+    public FundamentalNutationArguments(final IERSConventions conventions,
+                                        final UT1Scale ut1,
+                                        final InputStream stream, final String name)
         throws OrekitException {
+
+        this.conventions  = conventions;
+        this.gmstFunction = conventions.getGMSTFunction(ut1);
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -116,7 +129,6 @@ public class FundamentalNutationArguments implements Serializable {
 
         try {
 
-            final DateParser dateParser             = new DateParser();
             final DefinitionParser definitionParser = new DefinitionParser();
 
             // setup the reader
@@ -127,15 +139,12 @@ public class FundamentalNutationArguments implements Serializable {
             final Map<FundamentalName, double[]> polynomials = new HashMap<FundamentalName, double[]>(14);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
-                if (!dateParser.parse(line)) {
-                    if (definitionParser.parseDefinition(line, lineNumber, name)) {
-                        polynomials.put(definitionParser.getParsedName(),
-                                        definitionParser.getParsedPolynomial());
-                    }
+                if (definitionParser.parseDefinition(line, lineNumber, name)) {
+                    polynomials.put(definitionParser.getParsedName(),
+                                    definitionParser.getParsedPolynomial());
                 }
             }
 
-            reference          = dateParser.getParsedDate(name);
             lCoefficients      = getCoefficients(FundamentalName.L,       polynomials, name);
             lPrimeCoefficients = getCoefficients(FundamentalName.L_PRIME, polynomials, name);
             fCoefficients      = getCoefficients(FundamentalName.F,       polynomials, name);
@@ -204,31 +213,16 @@ public class FundamentalNutationArguments implements Serializable {
         return value;
     }
 
-    /** Get the reference epoch.
-     * @return reference epoch
-     */
-    public AbsoluteDate getReferenceEpoch() {
-        return reference;
-    }
-
-    /** Evaluate the date offset for the current date.
-     * @param date current date
-     * @return date offset in Julian centuries
-     */
-    public double evaluateTC(final AbsoluteDate date) {
-        return date.durationFrom(reference) / Constants.JULIAN_CENTURY;
-    }
-
     /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary).
      * @param date current date
      * @return all fundamental arguments for the current date (Delaunay plus planetary)
      */
     public BodiesElements evaluateAll(final AbsoluteDate date) {
 
-        // offset in julian centuries
-        final double tc =  evaluateTC(date);
+        final double tc = conventions.evaluateTC(date);
 
         return new BodiesElements(date, tc,
+                                  gmstFunction.value(date).getValue() + FastMath.PI,
                                   value(tc, lCoefficients),      // mean anomaly of the Moon
                                   value(tc, lPrimeCoefficients), // mean anomaly of the Sun
                                   value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
@@ -365,56 +359,6 @@ public class FundamentalNutationArguments implements Serializable {
          * @return fundamental name
          */
         public abstract String getArgumentName();
-
-    }
-
-    /** Local parser for dates. */
-    private static class DateParser {
-
-        /** Regular expression pattern for date lines. */
-        private final Pattern pattern;
-
-        /** Last parsed date. */
-        private AbsoluteDate parsedDate;
-
-        /** Simple constructor.
-         */
-        public DateParser() {
-            // the reference date should read something like:
-            // reference = 2000-01-01T12:00:00 TT
-            pattern = Pattern.compile("\\p{Space}*reference\\p{Space}*=\\p{Space}*" +
-                                      "(\\p{Digit}{4}-\\p{Digit}{2}-\\p{Digit}{2}" +
-                                      'T' +
-                                      "\\p{Digit}{2}:\\p{Digit}{2}:\\p{Digit}{2}(?:\\.\\p{Digit}*)?)" +
-                                      "\\p{Space}*TT");
-        }
-
-        /** Parse a reference date.
-         * @param line line to parse
-         * @return true if a date has been parsed
-         */
-        public boolean parse(final String line) {
-            final Matcher matcher = pattern.matcher(line);
-            if (matcher.matches()) {
-                parsedDate = new AbsoluteDate(matcher.group(1), TimeScalesFactory.getTT());
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        /** Get last parsed date.
-         * @param name name of the file parsed
-         * @return last parsed date
-         * @exception OrekitException if no date has been parsed
-         */
-        public AbsoluteDate getParsedDate(final String name) throws OrekitException {
-            if (parsedDate == null) {
-                // this should never happen with files embedded within Orekit
-                throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, name);
-            }
-            return parsedDate;
-        }
 
     }
 

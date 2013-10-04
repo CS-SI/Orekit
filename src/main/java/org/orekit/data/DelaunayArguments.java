@@ -38,6 +38,9 @@ public class DelaunayArguments implements TimeStamped, Serializable {
     /** Offset in Julian centuries. */
     private final double tc;
 
+    /** Tide parameter γ = GMST + π. */
+    private final double gamma;
+
     /** Mean anomaly of the Moon. */
     private final double l;
 
@@ -56,17 +59,19 @@ public class DelaunayArguments implements TimeStamped, Serializable {
     /** Simple constructor.
      * @param date current date
      * @param tc offset in Julian centuries
+     * @param gamma tide parameter γ = GMST + π
      * @param l mean anomaly of the Moon
      * @param lPrime mean anomaly of the Sun
      * @param f L - &Omega; where L is the mean longitude of the Moon
      * @param d mean elongation of the Moon from the Sun
      * @param omega mean longitude of the ascending node of the Moon
      */
-    public DelaunayArguments(final AbsoluteDate date, final double tc,
+    public DelaunayArguments(final AbsoluteDate date, final double tc, final double gamma,
                              final double l, final double lPrime,
                              final double f, final double d, final double omega) {
         this.date   = date;
         this.tc     = tc;
+        this.gamma  = gamma;
         this.l      = l;
         this.lPrime = lPrime;
         this.f      = f;
@@ -84,6 +89,13 @@ public class DelaunayArguments implements TimeStamped, Serializable {
      */
     public double getTC() {
         return tc;
+    }
+
+    /** Get the tide parameter γ = GMST + π.
+     * @return tide parameter γ = GMST + π
+     */
+    public double getGamma() {
+        return gamma;
     }
 
     /** Get the mean anomaly of the Moon.

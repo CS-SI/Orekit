@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
-import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
@@ -42,7 +41,6 @@ public class MODProviderTest {
 
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
-            private final FundamentalNutationArguments arguments = IERSConventions.IERS_1996.getNutationArguments();
             private final PolynomialNutation zetaA =
                     new PolynomialNutation(0.0,
                                            2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -60,7 +58,7 @@ public class MODProviderTest {
                                            0.018203  * Constants.ARC_SECONDS_TO_RADIANS);
 
             public Transform getTransform(AbsoluteDate date) {
-                final double tc = arguments.evaluateTC(date);
+                final double tc = IERSConventions.IERS_1996.evaluateTC(date);
                 final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc));
                 final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc));
                 final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc));
@@ -87,7 +85,6 @@ public class MODProviderTest {
         // is from equation 33 in IERS conventions 2003
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
-            private final FundamentalNutationArguments arguments = IERSConventions.IERS_2003.getNutationArguments();
             private final PolynomialNutation zetaA =
                     new PolynomialNutation(   2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
                                            2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
@@ -111,7 +108,7 @@ public class MODProviderTest {
                                              -0.0000003 * Constants.ARC_SECONDS_TO_RADIANS);
 
             public Transform getTransform(AbsoluteDate date) {
-                final double tc = arguments.evaluateTC(date);
+                final double tc = IERSConventions.IERS_2003.evaluateTC(date);
                 final Rotation r1 = new Rotation(Vector3D.PLUS_K,  zA.value(tc));
                 final Rotation r2 = new Rotation(Vector3D.PLUS_J, -thetaA.value(tc));
                 final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zetaA.value(tc));

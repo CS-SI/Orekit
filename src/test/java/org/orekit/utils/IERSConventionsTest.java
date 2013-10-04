@@ -97,7 +97,8 @@ public class IERSConventionsTest {
         // The differences are nevertheless quite small (4.8e-11 radians is sub-millimeter level
         // in low Earth orbit).
         AbsoluteDate date = new AbsoluteDate(2004, 2, 14, TimeScalesFactory.getUTC());
-        double[] angles= IERSConventions.IERS_1996.getNutationFunction().value(date);
+        UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_1996);
+        double[] angles= IERSConventions.IERS_1996.getNutationFunction(ut1).value(date);
         Assert.assertEquals(-5.3059154211478291722e-05, angles[0], 4.8e-11); // 3e-13 with SOFA values
         Assert.assertEquals(3.2051803135750973851e-05,  angles[1], 1.3e-11); // 7e-14 with SOFA values
 

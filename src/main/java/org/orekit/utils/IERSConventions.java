@@ -60,15 +60,15 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public FundamentalNutationArguments getNutationArguments() throws OrekitException {
-            return new FundamentalNutationArguments(getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
+        public FundamentalNutationArguments getNutationArguments(final UT1Scale ut1)
+            throws OrekitException {
+            return new FundamentalNutationArguments(this, ut1,
+                                                    getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
         @Override
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
-
-            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // value from chapter 5, page 22
             final PolynomialNutation epsilonA =
@@ -82,7 +82,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public Double value(final AbsoluteDate date) {
-                    return epsilonA.value(arguments.evaluateTC(date));
+                    return epsilonA.value(evaluateTC(date));
                 }
 
             };
@@ -91,10 +91,10 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function() throws OrekitException {
+        public TimeFunction<double[]> getXYSpXY2Function(final UT1Scale ut1) throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
             //     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
@@ -109,7 +109,7 @@ public enum IERSConventions {
             final double fXCosOm    = 0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fXSinOm    = 0.00204 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fXSin2FDOm = 0.00016 * Constants.ARC_SECONDS_TO_RADIANS;
-            final double sinEps0   = FastMath.sin(getMeanObliquityFunction().value(arguments.getReferenceEpoch()));
+            final double sinEps0   = FastMath.sin(getMeanObliquityFunction().value(getNutationReferenceEpoch()));
 
             final PoissonSeriesParser baseParser =
                     new PoissonSeriesParser(12).
@@ -153,7 +153,7 @@ public enum IERSConventions {
                 public double[] value(final AbsoluteDate date) {
 
                     final BodiesElements elements = arguments.evaluateAll(date);
-                    final double[] xy = xySum.value(elements);
+                    final double[] xy             = xySum.value(elements);
 
                     final double omega     = elements.getOmega();
                     final double f         = elements.getF();
@@ -187,9 +187,6 @@ public enum IERSConventions {
         @Override
         public TimeFunction<double[]> getPrecessionFunction() throws OrekitException {
 
-            // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
-
             // set up the conventional polynomials
             // the following values are from Lieske et al. paper:
             // Expressions for the precession quantities based upon the IAU(1976) system of astronomical constants
@@ -201,7 +198,7 @@ public enum IERSConventions {
                                               -1.07259   * Constants.ARC_SECONDS_TO_RADIANS,
                                               -0.001147  * Constants.ARC_SECONDS_TO_RADIANS);
             final PolynomialNutation omegaA =
-                    new PolynomialNutation(getMeanObliquityFunction().value(arguments.getReferenceEpoch()),
+                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
                                                0.0,
                                                0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
                                               -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
@@ -215,7 +212,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final double tc = arguments.evaluateTC(date);
+                    final double tc = evaluateTC(date);
                     return new double[] {
                         psiA.value(tc), omegaA.value(tc), chiA.value(tc)
                     };
@@ -226,10 +223,10 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction() throws OrekitException {
+        public TimeFunction<double[]> getNutationFunction(final UT1Scale ut1) throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser baseParser =
@@ -321,7 +318,7 @@ public enum IERSConventions {
             final TimeFunction<Double> epsilonA = getMeanObliquityFunction();
 
             // nutation function
-            final TimeFunction<double[]> nutation = getNutationFunction();
+            final TimeFunction<double[]> nutation = getNutationFunction(ut1);
 
             // GMST function
             final TimeFunction<DerivativeStructure> gmst = getGMSTFunction(ut1);
@@ -338,7 +335,8 @@ public enum IERSConventions {
                     if (eopHistory != null) {
                         deltaPsi += eopHistory.getEquinoxNutationCorrection(date)[0];
                     }
-                    final double eqe = deltaPsi  * FastMath.cos(epsilonA.value(date)) + angles[2];
+                    final double ea = epsilonA.value(date);
+                    final double eqe = deltaPsi  * FastMath.cos(ea) + angles[2];
 
                     // add mean sidereal time and equation of equinoxes
                     return gmst.value(date).add(eqe);
@@ -376,15 +374,15 @@ public enum IERSConventions {
         private static final String GST_SERIES         = IERS_BASE + "2003/tab5.4.txt";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments() throws OrekitException {
-            return new FundamentalNutationArguments(getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
+        public FundamentalNutationArguments getNutationArguments(final UT1Scale ut1)
+            throws OrekitException {
+            return new FundamentalNutationArguments(this, ut1,
+                                                    getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
         @Override
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
-
-            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // epsilon 0 value from chapter 5, page 41, other terms from equation 32 page 45
             final PolynomialNutation epsilonA =
@@ -398,7 +396,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public Double value(final AbsoluteDate date) {
-                    return epsilonA.value(arguments.evaluateTC(date));
+                    return epsilonA.value(evaluateTC(date));
                 }
 
             };
@@ -407,10 +405,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function() throws OrekitException {
+        public TimeFunction<double[]> getXYSpXY2Function(final UT1Scale ut1)
+            throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser parser =
@@ -444,9 +443,6 @@ public enum IERSConventions {
         @Override
         public TimeFunction<double[]> getPrecessionFunction() throws OrekitException {
 
-            // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
-
             // set up the conventional polynomials
             // the following values are from equation 32 in IERS 2003 conventions
             final PolynomialNutation psiA =
@@ -455,7 +451,7 @@ public enum IERSConventions {
                                               -1.07259   * Constants.ARC_SECONDS_TO_RADIANS,
                                               -0.001147  * Constants.ARC_SECONDS_TO_RADIANS);
             final PolynomialNutation omegaA =
-                    new PolynomialNutation(getMeanObliquityFunction().value(arguments.getReferenceEpoch()),
+                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
                                               -0.02524   * Constants.ARC_SECONDS_TO_RADIANS,
                                                0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
                                               -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
@@ -469,7 +465,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final double tc = arguments.evaluateTC(date);
+                    final double tc = evaluateTC(date);
                     return new double[] {
                         psiA.value(tc), omegaA.value(tc), chiA.value(tc)
                     };
@@ -480,10 +476,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction() throws OrekitException {
+        public TimeFunction<double[]> getNutationFunction(final UT1Scale ut1)
+            throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser luniSolarParser =
@@ -539,9 +536,6 @@ public enum IERSConventions {
         public TimeFunction<DerivativeStructure> getGMSTFunction(final UT1Scale ut1)
             throws OrekitException {
 
-            // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
-
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
 
@@ -562,8 +556,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public DerivativeStructure value(final AbsoluteDate date) {
-                    final BodiesElements elements = arguments.evaluateAll(date);
-                    return era.value(date).add(gstPolynomial.valueDS(elements.getTC()));
+                    return era.value(date).add(gstPolynomial.valueDS(evaluateTC(date)));
                 }
 
             };
@@ -577,7 +570,7 @@ public enum IERSConventions {
             throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // mean obliquity function
             final TimeFunction<Double> epsilon = getMeanObliquityFunction();
@@ -665,15 +658,15 @@ public enum IERSConventions {
         private static final String GST_SERIES         = IERS_BASE + "2010/tab5.2e.txt";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments() throws OrekitException {
-            return new FundamentalNutationArguments(getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
+        public FundamentalNutationArguments getNutationArguments(final UT1Scale ut1)
+            throws OrekitException {
+            return new FundamentalNutationArguments(this, ut1,
+                                                    getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
         /** {@inheritDoc} */
         @Override
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
-
-            final FundamentalNutationArguments arguments = getNutationArguments();
 
             // epsilon 0 value from chapter 5, page 56, other terms from equation 5.40 page 65
             final PolynomialNutation epsilonA =
@@ -689,7 +682,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public Double value(final AbsoluteDate date) {
-                    return epsilonA.value(arguments.evaluateTC(date));
+                    return epsilonA.value(evaluateTC(date));
                 }
 
             };
@@ -698,10 +691,11 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function() throws OrekitException {
+        public TimeFunction<double[]> getXYSpXY2Function(final UT1Scale ut1)
+            throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser parser =
@@ -733,9 +727,6 @@ public enum IERSConventions {
         @Override
         public TimeFunction<double[]> getPrecessionFunction() throws OrekitException {
 
-            // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
-
             // set up the conventional polynomials
             // the following values are from equation 5.40 in IERS 2010 conventions
             final PolynomialNutation psiA =
@@ -746,7 +737,7 @@ public enum IERSConventions {
                                                0.000132851  * Constants.ARC_SECONDS_TO_RADIANS,
                                               -0.0000000951 * Constants.ARC_SECONDS_TO_RADIANS);
             final PolynomialNutation omegaA =
-                    new PolynomialNutation(getMeanObliquityFunction().value(arguments.getReferenceEpoch()),
+                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
                                               -0.025754     * Constants.ARC_SECONDS_TO_RADIANS,
                                                0.0512623    * Constants.ARC_SECONDS_TO_RADIANS,
                                               -0.00772503   * Constants.ARC_SECONDS_TO_RADIANS,
@@ -764,7 +755,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public double[] value(final AbsoluteDate date) {
-                    final double tc = arguments.evaluateTC(date);
+                    final double tc = evaluateTC(date);
                     return new double[] {
                         psiA.value(tc), omegaA.value(tc), chiA.value(tc)
                     };
@@ -775,10 +766,11 @@ public enum IERSConventions {
 
          /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction() throws OrekitException {
+        public TimeFunction<double[]> getNutationFunction(final UT1Scale ut1)
+            throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser parser =
@@ -812,9 +804,6 @@ public enum IERSConventions {
         @Override
         public TimeFunction<DerivativeStructure> getGMSTFunction(final UT1Scale ut1) throws OrekitException {
 
-            // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
-
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
 
@@ -835,8 +824,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public DerivativeStructure value(final AbsoluteDate date) {
-                    final BodiesElements elements = arguments.evaluateAll(date);
-                    return era.value(date).add(gstPolynomial.valueDS(elements.getTC()));
+                    return era.value(date).add(gstPolynomial.valueDS(evaluateTC(date)));
                 }
 
             };
@@ -850,7 +838,7 @@ public enum IERSConventions {
             throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments();
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // mean obliquity function
             final TimeFunction<Double> epsilon = getMeanObliquityFunction();
@@ -899,12 +887,31 @@ public enum IERSConventions {
     /** IERS conventions resources base directory. */
     private static final String IERS_BASE = "/assets/org/orekit/IERS-conventions/";
 
+    /** Get the reference epoch for fundamental nutation arguments.
+     * @return reference epoch for fundamental nutation arguments
+     * @since 6.1
+     */
+    public AbsoluteDate getNutationReferenceEpoch() {
+        // IERS 1996, IERS 2003 and IERS 2010 use the same J2000.0 reference date
+        return AbsoluteDate.J2000_EPOCH;
+    }
+
+    /** Evaluate the date offset between the current date and the {@link #getNutationReferenceEpoch() reference date}.
+     * @param date current date
+     * @return date offset in Julian centuries
+     * @since 6.1
+     */
+    public double evaluateTC(final AbsoluteDate date) {
+        return date.durationFrom(getNutationReferenceEpoch()) / Constants.JULIAN_CENTURY;
+    }
+
     /** Get the fundamental nutation arguments.
+     * @param ut1 UT1 time scale
      * @return fundamental nutation arguments
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      * @since 6.1
      */
-    public abstract FundamentalNutationArguments getNutationArguments() throws OrekitException;
+    public abstract FundamentalNutationArguments getNutationArguments(UT1Scale ut1) throws OrekitException;
 
     /** Get the function computing mean obliquity of the ecliptic.
      * @return function computing mean obliquity of the ecliptic
@@ -917,11 +924,12 @@ public enum IERSConventions {
      * <p>
      * The returned function computes the two X, Y components of CIP and the S+XY/2 component of the non-rotating CIO.
      * </p>
+     * @param ut1 UT1 time scale
      * @return function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getXYSpXY2Function() throws OrekitException;
+    public abstract TimeFunction<double[]> getXYSpXY2Function(UT1Scale ut1) throws OrekitException;
 
     /** Get the function computing the raw Earth Orientation Angle.
      * <p>
@@ -962,12 +970,13 @@ public enum IERSConventions {
      * and the correction to the equation of equinoxes introduced since 1997-02-27 by IAU 1994
      * resolution C7 (the correction is forced to 0 before this date)
      * </p>
+     * @param ut1 UT1 time scale
      * @return function computing the nutation in longitude &Delta;&Psi; and &Delta;&epsilon;
      * and the correction of equation of equinoxes
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getNutationFunction() throws OrekitException;
+    public abstract TimeFunction<double[]> getNutationFunction(UT1Scale ut1) throws OrekitException;
 
     /** Get the function computing Greenwich mean sidereal time, in radians.
      * @param ut1 UT1 time scale
@@ -1039,7 +1048,7 @@ public enum IERSConventions {
         // get models parameters
         final TimeFunction<double[]> precessionFunction = getPrecessionFunction();
         final TimeFunction<Double> epsilonAFunction = getMeanObliquityFunction();
-        final AbsoluteDate date0 = getNutationArguments().getReferenceEpoch();
+        final AbsoluteDate date0 = getNutationReferenceEpoch();
         final double cosE0 = FastMath.cos(epsilonAFunction.value(date0));
 
         return new NutationCorrectionConverter() {
