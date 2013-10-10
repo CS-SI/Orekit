@@ -93,7 +93,8 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     }
 
     /** Build a time from the second number within the day.
-     * @param secondInDay second number from 0.0 to {@link Constants#JULIAN_DAY} (excluded)
+     * @param secondInDay second number from 0.0 to {@link
+     * org.orekit.utils.Constants#JULIAN_DAY} (excluded)
      * @exception IllegalArgumentException if seconds number is out of range
      */
     public TimeComponents(final double secondInDay) {
@@ -103,8 +104,9 @@ public class TimeComponents implements Serializable, Comparable<TimeComponents> 
     /** Build a time from the second number within the day.
      * <p>
      * The second number is defined here as the sum
-     * {@code secondInDayA + secondInDayB} from 0.0 to {@link Constants#JULIAN_DAY}
-     * (excluded). The two parameters are used for increased accuracy.
+     * {@code secondInDayA + secondInDayB} from 0.0 to {@link
+     * org.orekit.utils.Constants#JULIAN_DAY} (excluded). The two parameters
+     * are used for increased accuracy.
      * </p>
      * @param secondInDayA first part of the second number
      * @param secondInDayB last part of the second number

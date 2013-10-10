@@ -54,8 +54,8 @@ import org.orekit.utils.OrekitConfiguration;
  * {@link #getCIRF(IERSConventions)} {@link #getTIRF(IERSConventions, boolean)},
  * {@link #getITRF(IERSConventions, boolean)}, {@link #getEME2000()},
  * {@link #getMOD(IERSConventions)}, {@link #getTOD(IERSConventions)},
- * {@link #getGTOD(IERSConventions)}, {@link #getITRFEquinox(IERSConventions)}, {@link #getTEME()}
- * and {@link #getVeis1950()}.
+ * {@link #getGTOD(IERSConventions)}, {@link #getITRFEquinox(IERSConventions, boolean)},
+ * {@link #getTEME()} and {@link #getVeis1950()}.
  * </p>
  * <h5> International Terrestrial Reference Frame</h5>
  * <p>

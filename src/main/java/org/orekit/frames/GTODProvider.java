@@ -98,7 +98,7 @@ public class GTODProvider implements TransformProvider {
      * @param date current date
      * @return Greenwich mean sidereal time, in radians
      * @exception OrekitException if UT1 time scale cannot be retrieved
-     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGMSTFunction(UT1Scale)}
+     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGMSTFunction(org.orekit.time.TimeScale)}
      */
     @Deprecated
     public double getGMST(final AbsoluteDate date) throws OrekitException {
@@ -109,7 +109,7 @@ public class GTODProvider implements TransformProvider {
      * @param date current date
      * @return Greenwich apparent sidereal time, in radians
      * @exception OrekitException if UT1 time scale cannot be retrieved
-     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGASTFunction(UT1Scale)}
+     * @deprecated as of 6.1, replaced by {@link IERSConventions#getGASTFunction(org.orekit.time.TimeScale, EOPHistory)}
      */
     @Deprecated
     public double getGAST(final AbsoluteDate date) throws OrekitException {
