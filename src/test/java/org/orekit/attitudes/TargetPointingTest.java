@@ -45,6 +45,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -57,7 +58,7 @@ public class TargetPointingTest {
     private double mu;
 
     // Reference frame = ITRF 2005C
-    private Frame frameITRF2005;
+    private Frame itrf;
 
     // Transform from EME2000 to ITRF2005C
     private Transform eme2000ToItrf;
@@ -77,7 +78,7 @@ public class TargetPointingTest {
         //  Attitude laws
         // ***************
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Target definition as a geodetic point AND as a position/velocity vector
         GeodeticPoint geoTargetITRF2005C = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
@@ -87,7 +88,7 @@ public class TargetPointingTest {
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005C, earthShape);
 
         //  Attitude law definition from position/velocity target
-        TargetPointing pvTargetAttitudeLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
+        TargetPointing pvTargetAttitudeLaw = new TargetPointing(itrf, pTargetITRF2005C);
 
         // Check that both attitude are the same
         // Get satellite rotation for target pointing law
@@ -119,7 +120,7 @@ public class TargetPointingTest {
         // **************
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Target definition as a geodetic point
         GeodeticPoint geoTargetITRF2005 = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
@@ -144,7 +145,7 @@ public class TargetPointingTest {
     public void testNadirTarget() throws OrekitException {
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Satellite on any position
         CircularOrbit circOrbit =
@@ -159,8 +160,8 @@ public class TargetPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Check nadir target
-        Vector3D pNadirTarget  = nadirAttitudeLaw.getTargetPoint(circOrbit, date, frameITRF2005);
-        GeodeticPoint geoNadirTarget = earthShape.transform(pNadirTarget, frameITRF2005, date);
+        Vector3D pNadirTarget  = nadirAttitudeLaw.getTargetPoint(circOrbit, date, itrf);
+        GeodeticPoint geoNadirTarget = earthShape.transform(pNadirTarget, itrf, date);
 
         // Create target attitude provider
         TargetPointing targetAttitudeLaw = new TargetPointing(geoNadirTarget, earthShape);
@@ -216,10 +217,10 @@ public class TargetPointingTest {
                                              TimeScalesFactory.getUTC());
 
         // Reference frame = ITRF 2005
-        Frame frameITRF2005 = FramesFactory.getITRF2005(true);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create target pointing attitude provider
         GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
@@ -262,7 +263,7 @@ public class TargetPointingTest {
     public void testSlewedTarget() throws OrekitException {
 
         // Spheric earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 0., itrf);
 
         //  Satellite position
         // ********************
@@ -280,11 +281,11 @@ public class TargetPointingTest {
         Vector3D pNadirObservedEME2000 = nadirAttitudeLaw.getTargetPoint(circ, date, FramesFactory.getEME2000());
         Vector3D pNadirObservedITRF2005 = eme2000ToItrf.transformPosition(pNadirObservedEME2000);
 
-        GeodeticPoint geoNadirObserved = earthShape.transform(pNadirObservedITRF2005, frameITRF2005, date);
+        GeodeticPoint geoNadirObserved = earthShape.transform(pNadirObservedITRF2005, itrf, date);
 
         // Create target pointing attitude provider with target equal to nadir target
         // *********************************************************************
-        TargetPointing targetLawRef = new TargetPointing(frameITRF2005, pNadirObservedITRF2005);
+        TargetPointing targetLawRef = new TargetPointing(itrf, pNadirObservedITRF2005);
 
         // Get attitude rotation in EME2000
         Rotation rotSatRefEME2000 = targetLawRef.getAttitude(circ, date, circ.getFrame()).getRotation();
@@ -294,7 +295,7 @@ public class TargetPointingTest {
         GeodeticPoint geoTarget = new GeodeticPoint(geoNadirObserved.getLatitude(),
                                                     geoNadirObserved.getLongitude() - FastMath.toRadians(5), geoNadirObserved.getAltitude());
         Vector3D pTargetITRF2005C = earthShape.transform(geoTarget);
-        TargetPointing targetLaw = new TargetPointing(frameITRF2005, pTargetITRF2005C);
+        TargetPointing targetLaw = new TargetPointing(itrf, pTargetITRF2005C);
 
         // Get attitude rotation
         Rotation rotSatEME2000 = targetLaw.getAttitude(circ, date, circ.getFrame()).getRotation();
@@ -316,10 +317,10 @@ public class TargetPointingTest {
     @Test
     public void testSpin() throws OrekitException {
 
-        Frame frameITRF2005 = FramesFactory.getITRF2005(true);
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
         // Elliptic earth shape
-        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Create target pointing attitude provider
         GeodeticPoint geoTarget = new GeodeticPoint(FastMath.toRadians(43.36), FastMath.toRadians(1.26), 600.);
@@ -373,10 +374,10 @@ public class TargetPointingTest {
             mu = 3.9860047e14;
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Transform from EME2000 to ITRF2005
-            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(frameITRF2005, date);
+            eme2000ToItrf = FramesFactory.getEME2000().getTransformTo(itrf, date);
 
         } catch (OrekitException oe) {
             Assert.fail(oe.getMessage());
@@ -387,7 +388,7 @@ public class TargetPointingTest {
     @After
     public void tearDown() {
         date = null;
-        frameITRF2005 = null;
+        itrf = null;
         eme2000ToItrf = null;
     }
 

@@ -52,6 +52,7 @@ import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -371,10 +372,10 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2008()));
+        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2008());
+        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3500.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 4000.0);
         Assert.assertEquals(0, pv.getPosition().getZ(), 2.0e-6);
@@ -387,7 +388,7 @@ public class KeplerianPropagatorTest {
             new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
-        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF2008()) {
+        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)) {
             private static final long serialVersionUID = -1486037976198573520L;
             public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
                 return Action.CONTINUE;
@@ -407,7 +408,7 @@ public class KeplerianPropagatorTest {
         propagator.addEventDetector(new ApsideDetector(orbit));
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
-        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF2008());
+        PVCoordinates pv = propagated.getPVCoordinates(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 3000.0);
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 3500.0);
         Assert.assertEquals(orbit.getA() * (1.0 - orbit.getE()), pv.getPosition().getNorm(), 1.0e-6);
@@ -420,7 +421,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         BodyShape bodyShape =
-            new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, FramesFactory.getITRF2008());
+            new OneAxisEllipsoid(6378137.0, 1.0 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         AltitudeDetector detector =
             new AltitudeDetector(0.05 * orbit.getKeplerianPeriod(),
                                  1500000, bodyShape);
@@ -455,7 +456,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         final OneAxisEllipsoid earthShape =
-            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF2008());
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
         propagator.addEventDetector(new ElevationDetector(60, 0.09, topo));

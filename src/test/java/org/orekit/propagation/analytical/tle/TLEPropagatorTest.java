@@ -37,6 +37,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -112,7 +113,7 @@ public class TLEPropagatorTest {
     @Test
     public void testBodyCenterInPointingDirection() throws OrekitException {
 
-        final Frame itrf = FramesFactory.getITRF2008(true);
+        final Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         DistanceChecker checker = new DistanceChecker(itrf);
 
         // with Earth pointing attitude, distance should be small

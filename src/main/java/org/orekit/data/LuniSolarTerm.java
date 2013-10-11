@@ -16,13 +16,13 @@
  */
 package org.orekit.data;
 
+import org.apache.commons.math3.RealFieldElement;
+
 /** Class for luni-solar only terms.
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class LuniSolarTerm extends SeriesTerm {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -461066685792014379L;
+class LuniSolarTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -40,17 +40,13 @@ class LuniSolarTerm extends SeriesTerm {
     private final int cOmega;
 
     /** Build a luni-solar term for nutation series.
-     * @param sinCoeff coefficient for the sine of the argument
-     * @param cosCoeff coefficient for the cosine of the argument
      * @param cL coefficient for mean anomaly of the Moon
      * @param cLPrime coefficient for mean anomaly of the Sun
      * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
      * @param cD coefficient for mean elongation of the Moon from the Sun
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      */
-    public LuniSolarTerm(final double sinCoeff, final double cosCoeff,
-                         final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
-        super(sinCoeff, cosCoeff);
+    public LuniSolarTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
         this.cL      = cL;
         this.cLPrime = cLPrime;
         this.cF      = cF;
@@ -62,6 +58,16 @@ class LuniSolarTerm extends SeriesTerm {
     protected double argument(final BodiesElements elements) {
         return cL * elements.getL() + cLPrime * elements.getLPrime() + cF * elements.getF() +
                cD * elements.getD() + cOmega * elements.getOmega();
+    }
+
+    /** {@inheritDoc} */
+    protected T argument(final FieldBodiesElements<T> elements) {
+        return elements.getL().multiply(cL).
+                add(elements.getLPrime().multiply(cLPrime)).
+                add(elements.getF().multiply(cF)).
+                add(elements.getD().multiply(cD)).
+                add(elements.getOmega().multiply(cOmega));
+
     }
 
 }

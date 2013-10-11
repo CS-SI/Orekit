@@ -46,6 +46,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class NumericalConverterTest {
@@ -218,12 +219,12 @@ public class NumericalConverterTest {
         propagator.setInitialState(new SpacecraftState(orbit));
         propagator.setOrbitType(OrbitType.CARTESIAN);
 
-        gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+        gravity = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                         GravityFieldFactory.getNormalizedProvider(2, 0));
 
         final OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                             Constants.WGS84_EARTH_FLATTENING,
-                                                            FramesFactory.getITRF2005());
+                                                            FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         earth.setAngularThreshold(1.e-7);
         final Atmosphere atmosphere = new SimpleExponentialAtmosphere(earth, 0.0004, 42000.0, 7500.0);
         final double dragCoef = 2.0;

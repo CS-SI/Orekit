@@ -19,6 +19,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -87,7 +88,7 @@ public class CircularFieldOfViewDetectorTest {
 
 
             // Reference frame = ITRF 2005
-            itrf = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Create earth center pointing attitude provider */
             earthCenterAttitudeLaw = new BodyCenterPointing(itrf);

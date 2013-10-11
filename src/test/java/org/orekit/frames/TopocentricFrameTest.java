@@ -22,7 +22,10 @@ import java.io.IOException;
 
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well1024a;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -41,6 +44,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -50,7 +54,7 @@ public class TopocentricFrameTest {
     private AbsoluteDate date;
 
     // Reference frame = ITRF 2005
-    private Frame frameITRF2005;
+    private Frame itrf;
 
     // Earth shape
     OneAxisEllipsoid earthSpheric;
@@ -292,7 +296,7 @@ public class TopocentricFrameTest {
 
         // Elliptic earth shape
         final OneAxisEllipsoid earthElliptic =
-            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, frameITRF2005);
+            new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
 
         // Satellite point
         // Caution !!! Sat point target shall be the same whatever earth shape chosen !!
@@ -391,6 +395,54 @@ public class TopocentricFrameTest {
 
     }
 
+    @Test
+    public void testPointAtDistance() throws OrekitException {
+
+        RandomGenerator random = new Well1024a(0xa1e6bd5cd0578779l);
+        final OneAxisEllipsoid earth =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_FLATTENING,
+                                 itrf);
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+
+        for (int i = 0; i < 20; ++i) {
+            // we don't need uniform point on the sphere, just a few different test configurations
+            double latitude  = FastMath.PI * (0.5 - random.nextDouble());
+            double longitude = 2 * FastMath.PI * random.nextDouble();
+            TopocentricFrame topo = new TopocentricFrame(earth,
+                                                         new GeodeticPoint(latitude, longitude, 0.0),
+                                                         "topo");
+            Transform transform = earth.getBodyFrame().getTransformTo(topo, date);
+            for (int j = 0; j < 20; ++j) {
+                double elevation      = FastMath.PI * (0.5 - random.nextDouble());
+                double azimuth        = 2 * FastMath.PI * random.nextDouble();
+                double range          = 500000.0 * (1.0 + random.nextDouble());
+                Vector3D absolutePoint = earth.transform(topo.pointAtDistance(azimuth, elevation, range));
+                Vector3D relativePoint = transform.transformPosition(absolutePoint);
+                double rebuiltElevation = topo.getElevation(relativePoint, topo, AbsoluteDate.J2000_EPOCH);
+                double rebuiltAzimuth   = topo.getAzimuth(relativePoint, topo, AbsoluteDate.J2000_EPOCH);
+                double rebuiltRange     = topo.getRange(relativePoint, topo, AbsoluteDate.J2000_EPOCH);
+                Assert.assertEquals(elevation, rebuiltElevation, 1.0e-12);
+                Assert.assertEquals(azimuth, MathUtils.normalizeAngle(rebuiltAzimuth, azimuth), 1.0e-12);
+                Assert.assertEquals(range, rebuiltRange, 1.0e-12 * range);
+            }
+        }
+    }
+
+    @Test
+    public void testIssue145() throws OrekitException {
+        Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                               Constants.WGS84_EARTH_FLATTENING,
+                                               itrf2005);
+        TopocentricFrame staFrame = new TopocentricFrame(earth, new GeodeticPoint(0.0,0.0,0.0), "test");
+        GeodeticPoint gp = staFrame.computeLimitVisibilityPoint(Constants.WGS84_EARTH_EQUATORIAL_RADIUS+600000,
+                                                                0.0, FastMath.toRadians(5.0));
+        Assert.assertEquals(0.0, gp.getLongitude(), 1.0e-15);
+        Assert.assertTrue(gp.getLatitude() > 0);
+        Assert.assertEquals(0.0, staFrame.getNorth().distance(Vector3D.PLUS_K), 1.0e-15);
+
+    }
+
     @Before
     public void setUp() {
         try {
@@ -398,10 +450,10 @@ public class TopocentricFrameTest {
             Utils.setDataRoot("regular-data");
 
             // Reference frame = ITRF 2005
-            frameITRF2005 = FramesFactory.getITRF2005(true);
+            itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
 
             // Elliptic earth shape
-            earthSpheric = new OneAxisEllipsoid(6378136.460, 0., frameITRF2005);
+            earthSpheric = new OneAxisEllipsoid(6378136.460, 0., itrf);
 
             // Reference date
             date = new AbsoluteDate(new DateComponents(2008, 04, 07),
@@ -422,7 +474,7 @@ public class TopocentricFrameTest {
         // a few random from International Laser Ranging Service
         final BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                                      Constants.WGS84_EARTH_FLATTENING,
-                                                     FramesFactory.getITRF2008());
+                                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame[] ilrs = {
             new TopocentricFrame(earth,
                                  new GeodeticPoint(FastMath.toRadians(52.3800), FastMath.toRadians(3.0649), 133.745),
@@ -453,7 +505,7 @@ public class TopocentricFrameTest {
     @After
     public void tearDown() {
         date = null;
-        frameITRF2005 = null;
+        itrf = null;
         earthSpheric = null;
     }
 

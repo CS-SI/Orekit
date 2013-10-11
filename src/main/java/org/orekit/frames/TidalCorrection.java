@@ -37,7 +37,9 @@ import org.orekit.utils.TimeStampedGenerator;
  * found at ftp://tai.bipm.org/iers/conv2003/chapter8/ortho_eop.f.</p>
  * @author Pascal Parraud
  * @author Evan Ward
+ * @deprecated as of 6.1 replaced by {@link org.orekit.utils.IERSConventions#getEOPTidalCorrection()}
  */
+@Deprecated
 public class TidalCorrection {
 
     /** pi;/2. */

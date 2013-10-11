@@ -136,9 +136,14 @@ public class AbsoluteDate
     public static final AbsoluteDate J2000_EPOCH =
         new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTT());
 
-    /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate (which is considered equal to TAI earlier than 1972). */
+    /** Java Reference epoch: 1970-01-01T00:00:00 Universal Time Coordinate.
+     * <p>
+     * Between 1968-02-01 and 1972-01-01, UTC-TAI = 4.213 170 0s + (MJD - 39 126) x 0.002 592s.
+     * As on 1970-01-01 MJD = 40587, UTC-TAI = 8.000082s
+     * </p>
+     */
     public static final AbsoluteDate JAVA_EPOCH =
-        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeComponents.H00, TimeScalesFactory.getTAI());
+        new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeScalesFactory.getTAI()).shiftedBy(8.000082);
 
     /** Dummy date at infinity in the past direction. */
     public static final AbsoluteDate PAST_INFINITY = JAVA_EPOCH.shiftedBy(Double.NEGATIVE_INFINITY);
@@ -759,11 +764,29 @@ public class AbsoluteDate
      */
     public DateTimeComponents getComponents(final TimeScale timeScale) {
 
-        // compute offset from 2000-01-01T00:00:00 in specified time scale
-        final double offsetInTS  = offset + timeScale.offsetFromTAI(this);
-        final long   carry       = (long) FastMath.floor(offsetInTS);
-        final double offset2000B = offsetInTS - carry;
-        final long   offset2000A = epoch + carry + 43200l;
+        // compute offset from 2000-01-01T00:00:00 in specified time scale exactly,
+        // using Møller-Knuth TwoSum algorithm without branching
+        // the following statements must NOT be simplified, they rely on floating point
+        // arithmetic properties (rounding and representable numbers)
+        // at the end, the EXACT result of addition offset + timeScale.offsetFromTAI(this)
+        // is sum + residual, where sum is the closest representable number to the exact
+        // result and residual is the missing part that does not fit in the first number
+        final double taiOffset = timeScale.offsetFromTAI(this);
+        final double sum       = offset + taiOffset;
+        final double oPrime    = sum - taiOffset;
+        final double dPrime    = sum - oPrime;
+        final double deltaO    = offset - oPrime;
+        final double deltaD    = taiOffset - dPrime;
+        final double residual  = deltaO + deltaD;
+
+        // split date and time
+        final long   carry = (long) FastMath.floor(sum);
+        double offset2000B = (sum - carry) + residual;
+        long   offset2000A = epoch + carry + 43200l;
+        if (offset2000B < 0) {
+            offset2000A -= 1;
+            offset2000B += 1;
+        }
         long time = offset2000A % 86400l;
         if (time < 0l) {
             time += 86400l;

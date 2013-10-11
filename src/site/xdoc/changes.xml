@@ -21,6 +21,90 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added a way to select IERS conventions for non-rotating origin
+        based ITRF.
+      </action>
+      <action dev="luc" type="update">
+        Greatly improved accuracy of celestial/terrestrial frames transforms.
+        We are now at sub-micro arcsecond level for IERS 2003/2010, both with
+        equinox based and Non-Rotating Origin, at a sub-milli arcseconds
+        for IERS 1996, both with equinox based and Non-Rotating Origin.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed missing nutation correction in Equation Of Equinoxes.
+        Fixes issue #150.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed rate for TCB time scale.
+      </action>
+      <action dev="luc" type="add">
+        Added new definition of astronomical unit from IAU-2012 resolution B2.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed Date/Time split problem when date is a few femto-seconds before the end of the day.
+        Fixes issue #149.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed overflow problem in TimeComponents.
+        Fixes issue #148.
+      </action>
+      <action dev="luc" type="update">
+        Separate parsing from using Poisson series.
+      </action>
+      <action dev="luc" type="add" due-to="Steven Ports">
+        Added support for parsing CCSDS ODM files (OPM, OMM and OEM).
+      </action>
+      <action dev="luc" type="update">
+        Flattened ITRF frames tree so all supported ITRF realizations (2005, 2000, 97, 93) share the same
+        parent ITRF2008. Previously, the tree was 2008 &lt;- 2005 &lt;- 2000 &lt;- {93,97} and the reference dates
+        for Helmert transforms were all different. We now use the parameters provided at epoch 2000.0 and
+        with respect to ITRF2008 at http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2008_ITRFs.txt.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed azimuth parameter in the TopocentricFrame.pointAtDistance method.
+        Fixes issue #145.
+      </action>
+      <action dev="luc" type="fix"  due-to="Matt Edwards">
+        Fixed location of JAVA_EPOCH. As we now take the linear models between UTC and TAI
+        that were used between 1961 and 1972, we have to consider the offset that was in
+        effect on 1970-01-01 and which was precisely 8.000082s. Fixes issue #142.
+      </action>
+      <action dev="luc" type="update" >
+        Vastly improved performances for Poisson series computations. Poisson series are often
+        evaluated several components together (x/y/s in new non-rotating paradigm, ∆ψ/∆ε in old
+        equinox paradigm for example). As the components are built from a common model, they
+        share many nutation terms. We now evaluate these shared terms only once, as we evaluate
+        the components in parallel thanks to a preliminary "compilation" phase performed when
+        the Poisson series are set up. This dramatically improves speed: on a test case based
+        on x/y/s evaluations over a one year time span without any caching,  we noticed a
+        more than two-fold speedup: mean computation time reduced from 6.75 seconds (standard
+        deviation 0.49s) to 3.07 seconds (standard deviation 0.04s), so it was a 54.5% reduction
+        in mean computation time. At the same time, accuracy was also improved thanks to the
+        Møller-Knuth TwoSum algorithm without branching now used for summing all series terms.
+      </action>
+      <action dev="luc" type="fix" >
+        When UT1 time scale is used, it is now possible to choose which Earth Orientation
+        Parameters history to use (formerly, only EOP compatible with IAU-2000/2006 was
+        used, even for systems relying only on older conventions).
+      </action>
+      <action dev="luc" type="add" >
+        Added Greenwich Mean Sidereal Time and Greenwich Apparent Sidereal Time
+        to all supported IERS conventions (i.e. IERS 1996, IERS 2003 and IERS 2010).
+      </action>
+      <action dev="luc" type="add" >
+        Classical equinox-based paradigm and new non-rotating origin paradigm for
+        inertial and terrestrial frames are now supported with all IERS conventions.
+        This means it is now possible to use MOD/TOD/GTOD with the recent precession/nutation
+        models from recent conventions, and it is also possible to use CIRF/TIRF/ITRF with
+        the older precession nutation models from ancient conventions. Of course, all these
+        conventions and frames can be used at the same time, which is very important to
+        support legacy systems and to convert coordinates between older and newer reference
+        systems.
+      </action>
+      <action dev="luc" type="add" >
+        Added IERS 1996 in the list of supported IERS conventions.
+      </action>
       <action dev="luc" type="add" >
         Added factory methods to compute arbitrary Julian Epochs (J1900.0, J2000.0 ...)
         and Besselian Epochs (B1900.0, B1950.0 ...) that are used as reference dates

@@ -16,13 +16,13 @@
  */
 package org.orekit.data;
 
+import org.apache.commons.math3.RealFieldElement;
+
 /** Class for terms that do not depend on far planets and some other elements.
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class NoFarPlanetsTerm extends SeriesTerm {
-
-    /** Serializable UID. */
-    private static final long serialVersionUID = -6466886528892169861L;
+class NoFarPlanetsTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -55,8 +55,6 @@ class NoFarPlanetsTerm extends SeriesTerm {
     private final int cSa;
 
     /** Build a planetary term for nutation series.
-     * @param sinCoeff coefficient for the sine of the argument
-     * @param cosCoeff coefficient for the cosine of the argument
      * @param cL coefficient for mean anomaly of the Moon
      * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
      * @param cD coefficient for mean elongation of the Moon from the Sun
@@ -68,11 +66,9 @@ class NoFarPlanetsTerm extends SeriesTerm {
      * @param cJu coefficient for mean Jupiter longitude
      * @param cSa coefficient for mean Saturn longitude
      */
-    public NoFarPlanetsTerm(final double sinCoeff, final double cosCoeff,
-                            final int cL, final int cF, final int cD, final int cOmega,
+    public NoFarPlanetsTerm(final int cL, final int cF, final int cD, final int cOmega,
                             final int cMe, final int cVe, final int cE, final int cMa,
                             final int cJu, final int cSa) {
-        super(sinCoeff, cosCoeff);
         this.cL     = cL;
         this.cF     = cF;
         this.cD     = cD;
@@ -91,6 +87,21 @@ class NoFarPlanetsTerm extends SeriesTerm {
                cD * elements.getD() + cOmega * elements.getOmega() +
                cMe * elements.getLMe() + cVe * elements.getLVe() + cE  * elements.getLE() +
                cMa * elements.getLMa() + cJu * elements.getLJu() + cSa * elements.getLSa();
+
+    }
+
+    /** {@inheritDoc} */
+    protected T argument(final FieldBodiesElements<T> elements) {
+        return elements.getL().multiply(cL).
+                add(elements.getF().multiply(cF)).
+                add(elements.getD().multiply(cD)).
+                add(elements.getOmega().multiply(cOmega)).
+                add(elements.getLMe().multiply(cMe)).
+                add(elements.getLVe().multiply(cVe)).
+                add(elements.getLE().multiply(cE)).
+                add(elements.getLMa().multiply(cMa)).
+                add(elements.getLJu().multiply(cJu)).
+                add(elements.getLSa().multiply(cSa));
 
     }
 

@@ -48,6 +48,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -267,7 +268,7 @@ public class SpacecraftStateTest {
                                                  TimeScalesFactory.getUTC());
         orbit = new KeplerianOrbit(a, e, i, omega, OMEGA, lv, PositionAngle.TRUE,
                                    FramesFactory.getEME2000(), date, mu);
-        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF2008());
+        attitudeLaw = new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         propagator =
             new EcksteinHechlerPropagator(orbit, attitudeLaw, mass,
                                           ae, mu, c20, c30, c40, c50, c60);

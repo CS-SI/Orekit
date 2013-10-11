@@ -53,6 +53,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -251,7 +252,7 @@ public class TrackCorridor {
             // set up Earth model
             earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                          Constants.WGS84_EARTH_FLATTENING,
-                                         FramesFactory.getITRF2008());
+                                         FramesFactory.getITRF(IERSConventions.IERS_2010, false));
 
             // set up position offsets, using Earth radius as an arbitrary distance
             deltaR = Constants.WGS84_EARTH_EQUATORIAL_RADIUS * FastMath.cos(angle);

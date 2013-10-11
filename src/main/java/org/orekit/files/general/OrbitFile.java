@@ -28,6 +28,8 @@ public interface OrbitFile {
 
     /** Time system used throughout this orbit file. */
     public enum TimeSystem {
+        /** Greenwich Mean Sidereal Time. */
+        GMST,
         /** Global Positioning System. */
         GPS,
         /** GLONASS. */
@@ -38,8 +40,22 @@ public interface OrbitFile {
         TAI,
         /** Coordinated Universal Time. */
         UTC,
+        /** Universal Time 1. */
+        UT1,
+        /** Terrestrial Time. */
+        TT,
+        /** Geocentric Coordinate Time. */
+        TCG,
+        /** Barycentric Dynamic Time. */
+        TDB,
+        /** Barycentric Coordinate Time. */
+        TCB,
         /** Quasi-Zenith System. */
-        QZS
+        QZS,
+        /** Mission Elapsed Time. */
+        MET,
+        /** Mission Relative Time. */
+        MRT;
     }
 
     /** Returns the start epoch of the orbit file.

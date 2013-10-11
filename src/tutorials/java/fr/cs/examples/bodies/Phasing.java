@@ -29,6 +29,7 @@ import java.text.ParseException;
 import java.util.Locale;
 
 import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.solvers.BaseUnivariateSolver;
 import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
 import org.apache.commons.math3.analysis.solvers.UnivariateSolverUtils;
@@ -49,8 +50,6 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
-import org.orekit.frames.GTODProvider;
-import org.orekit.frames.InterpolatingTransformProvider;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
@@ -59,9 +58,11 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.SecularAndHarmonic;
 
@@ -73,8 +74,8 @@ import fr.cs.examples.KeyValueFileParser;
  */
 public class Phasing {
 
-    /** GTOD frame for mean solar time computation. */
-    private final GTODProvider gtod;
+    /** GMST function. */
+    private final TimeFunction<DerivativeStructure> gmst;
 
     /** Gravity field. */
     private NormalizedSphericalHarmonicsProvider gravityField;
@@ -150,11 +151,12 @@ public class Phasing {
     }
 
     public Phasing() throws IOException, ParseException, OrekitException {
-        Frame gtodFrame = FramesFactory.getGTOD(false);
-        gtod         = (GTODProvider) (((InterpolatingTransformProvider) gtodFrame.getTransformProvider()).getRawProvider());
+        IERSConventions conventions = IERSConventions.IERS_2010;
+        boolean         simpleEOP   = false;
+        gmst         = conventions.getGMSTFunction(TimeScalesFactory.getUT1(conventions, simpleEOP));
         earth        = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                             Constants.WGS84_EARTH_FLATTENING,
-                                            gtodFrame);
+                                            FramesFactory.getGTOD(conventions, simpleEOP));
     }
 
     private void run(final File input)
@@ -208,7 +210,8 @@ public class Phasing {
                                                tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-2 * orbit.getKeplerianPeriod());
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(false), gravityField));
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(IERSConventions.IERS_2010, true),
+                                                                       gravityField));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 
@@ -564,8 +567,8 @@ public class Phasing {
         // compute angle between Sun and spacecraft in the equatorial plane
         final Vector3D position = orbit.getPVCoordinates().getPosition();
         final double time       = orbit.getDate().getComponents(TimeScalesFactory.getUTC()).getTime().getSecondsInDay();
-        final double gmst       = gtod.getGMST(orbit.getDate());
-        final double sunAlpha   = gmst + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));
+        final double theta      = gmst.value(orbit.getDate()).getValue();
+        final double sunAlpha   = theta + FastMath.PI * (1 - time / (Constants.JULIAN_DAY * 0.5));
         final double dAlpha     = MathUtils.normalizeAngle(position.getAlpha() - sunAlpha, 0);
 
         // convert the angle to solar time

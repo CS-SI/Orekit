@@ -33,6 +33,7 @@ import org.orekit.frames.UpdatableFrame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 import fr.cs.examples.Autoconfiguration;
@@ -88,18 +89,18 @@ public class Frames2 {
             // applying the rotation first because the position/velocity vector are given in
             // ITRF frame not in GPS antenna frame:
             Transform measuredTranslation = new Transform(date, position, velocity);
-            Transform formerTransform     = gpsFrame.getTransformTo(FramesFactory.getITRF2005(true), date);
+            Transform formerTransform     = gpsFrame.getTransformTo(FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
             Transform preservedRotation   = new Transform(date,
                                                           formerTransform.getRotation(),
                                                           formerTransform.getRotationRate());
             Transform gpsToItrf           = new Transform(date, preservedRotation, measuredTranslation);
 
             // So we can update the transform from EME2000 to CoG frame
-            cogFrame.updateTransform(gpsFrame, FramesFactory.getITRF2005(true), gpsToItrf, date);
+            cogFrame.updateTransform(gpsFrame, FramesFactory.getITRF(IERSConventions.IERS_2010, true), gpsToItrf, date);
 
             // And we can get the position and velocity of satellite CoG in EME2000 frame
             PVCoordinates origin  = PVCoordinates.ZERO;
-            Transform cogToItrf   = cogFrame.getTransformTo(FramesFactory.getITRF2005(true), date);
+            Transform cogToItrf   = cogFrame.getTransformTo(FramesFactory.getITRF(IERSConventions.IERS_2010, true), date);
             PVCoordinates satItrf = cogToItrf.transformPVCoordinates(origin);
             System.out.println("Satellite position in ITRF2005: " + v3.format(satItrf.getPosition()));
             System.out.println("Satellite velocity in ITRF2005: " + v7.format(satItrf.getVelocity()));

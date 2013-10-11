@@ -20,6 +20,7 @@ package org.orekit.time;
 import java.util.Date;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +60,7 @@ public class AbsoluteDateTest {
         Assert.assertEquals("2000-01-01T12:00:00.000",
                      AbsoluteDate.J2000_EPOCH.toString(TimeScalesFactory.getTT()));
         Assert.assertEquals("1970-01-01T00:00:00.000",
-                     AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getTAI()));
+                     AbsoluteDate.JAVA_EPOCH.toString(TimeScalesFactory.getUTC()));
     }
 
     @Test
@@ -130,6 +131,15 @@ public class AbsoluteDateTest {
                             new AbsoluteDate("1950-01-01", TimeScalesFactory.getTT()));
         Assert.assertEquals(AbsoluteDate.CCSDS_EPOCH,
                             new AbsoluteDate("1958-001", TimeScalesFactory.getTAI()));
+    }
+
+    @Test
+    public void testParseLeap() throws OrekitException {
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate beforeLeap = new AbsoluteDate("2012-06-30T23:59:59.8", utc);
+        AbsoluteDate inLeap     = new AbsoluteDate("2012-06-30T23:59:60.5", utc);
+        Assert.assertEquals(0.7, inLeap.durationFrom(beforeLeap), 1.0e-12);
+        Assert.assertEquals("2012-06-30T23:59:60.500", inLeap.toString(utc));
     }
 
     @Test
@@ -568,7 +578,54 @@ public class AbsoluteDateTest {
         Assert.assertEquals(expectedMean, mean, meanTolerance);
     }
 
-   @Before
+    @Test
+    public void testIssue142() throws OrekitException {
+
+        final AbsoluteDate epoch = AbsoluteDate.JAVA_EPOCH;
+        final TimeScale utc = TimeScalesFactory.getUTC();
+
+        Assert.assertEquals("1970-01-01T00:00:00.000", epoch.toString(utc));
+        Assert.assertEquals(0.0, epoch.durationFrom(new AbsoluteDate(1970, 1, 1, utc)), 1.0e-15);
+        Assert.assertEquals(8.000082,
+                            epoch.durationFrom(new AbsoluteDate(DateComponents.JAVA_EPOCH, TimeScalesFactory.getTAI())),
+                            1.0e-15);
+
+        //Milliseconds - April 1, 2006, in UTC
+        long msOffset = 1143849600000l;
+        final AbsoluteDate ad = new AbsoluteDate(epoch, msOffset/1000, TimeScalesFactory.getUTC());
+        Assert.assertEquals("2006-04-01T00:00:00.000", ad.toString(utc));
+
+    }
+
+    @Test
+    public void testIssue148() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t0 = new AbsoluteDate(2012, 6, 30, 23, 59, 50.0, utc);
+        DateTimeComponents components = t0.shiftedBy(11.0 - 200 * Precision.EPSILON).getComponents(utc);
+        Assert.assertEquals(2012, components.getDate().getYear());
+        Assert.assertEquals(   6, components.getDate().getMonth());
+        Assert.assertEquals(  30, components.getDate().getDay());
+        Assert.assertEquals(  23, components.getTime().getHour());
+        Assert.assertEquals(  59, components.getTime().getMinute());
+        Assert.assertEquals(  61 - 200 * Precision.EPSILON,
+                            components.getTime().getSecond(), 1.0e-15);
+    }
+
+    @Test
+    public void testIssue149() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate t0 = new AbsoluteDate(2012, 6, 30, 23, 59, 59, utc);
+        DateTimeComponents components = t0.shiftedBy(1.0 - Precision.EPSILON).getComponents(utc);
+        Assert.assertEquals(2012, components.getDate().getYear());
+        Assert.assertEquals(   6, components.getDate().getMonth());
+        Assert.assertEquals(  30, components.getDate().getDay());
+        Assert.assertEquals(  23, components.getTime().getHour());
+        Assert.assertEquals(  59, components.getTime().getMinute());
+        Assert.assertEquals(  60 - Precision.EPSILON,
+                            components.getTime().getSecond(), 1.0e-15);
+    }
+
+    @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
         utc = TimeScalesFactory.getUTC();

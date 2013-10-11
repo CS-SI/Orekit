@@ -89,6 +89,12 @@
         +double G0_STANDARD_GRAVITY
       }
 
+      enum IERSConventions {
+        +IERS_1996
+        +IERS_2003
+        +IERS_2010
+      }
+
     end package
 
     package frames #DDEBD8

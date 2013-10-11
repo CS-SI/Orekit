@@ -28,6 +28,10 @@ public interface Constants {
     /** Speed of light: 299792458.0 m/s. */
     double SPEED_OF_LIGHT = 299792458.0;
 
+    /** Astronomical unit as a conventional unit of length since IAU 2012 resolution B2: 149597870700.0 m.
+     * @see <a href="http://www.iau.org/static/resolutions/IAU2012_English.pdf">IAU 2012 resolution</a>
+     */
+    double IAU_2012_ASTRONOMICAL_UNIT = 149597870700.0;
 
     /** Duration of a mean solar day: 86400.0 s. */
     double JULIAN_DAY = 86400.0;

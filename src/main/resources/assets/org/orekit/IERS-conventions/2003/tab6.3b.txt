@@ -3,10 +3,10 @@
 Scale   δkf  1.0
 Scale   Amp  1.0e-12
 
-Corrections for frequency dependence of k20(0) of the zonal tides due to anelasticity.
-Units: 10−12 . The nominal value k20 for the zonal tides is taken as 0.30190. The real
+Corrections for frequency dependence of k₂₀⁽⁰⁾ of the zonal tides due to anelasticity.
+Units: 10−12 . The nominal value k₂₀ for the zonal tides is taken as 0.30190. The real
 and imaginary parts δkfR and δkfI of δkf are listed, along with the corresponding in-
-phase (ip) amplitude (A0 Hf δkfR) and out-of-phase (op) amplitude (−A0 Hf δkfI) to be
+phase (ip) amplitude (A₀ Hf δkfR) and out-of-phase (op) amplitude (−A₀ Hf δkfI) to be
 used in equation (5a).
 
 Name   Doodson  deg/hr  τ s  h  p N' ps  l l'  F  D  Ω    δkfR  Amp.    δkfI   Amp.

@@ -36,7 +36,7 @@ public class UT1Scale implements TimeScale {
     private final EOPHistory eopHistory;
 
     /** Package private constructor for the factory.
-     * @param eopHistory user supplied EOP history
+     * @param eopHistory user supplied EOP history (may be null)
      * @param utc UTC time scale
      */
     UT1Scale(final EOPHistory eopHistory, final UTCScale utc) {
@@ -46,7 +46,7 @@ public class UT1Scale implements TimeScale {
 
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
-        final double dtu1        = eopHistory.getUT1MinusUTC(date);
+        final double dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);
         final double utcMinusTai = utc.offsetFromTAI(date);
         return utcMinusTai + dtu1;
     }

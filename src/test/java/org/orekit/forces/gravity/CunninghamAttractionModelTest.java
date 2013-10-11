@@ -66,6 +66,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -294,10 +295,10 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         for (int i = 2; i <= 69; i++) {
             // perturbing force (ITRF2008 central body frame)
             final ForceModel cunModel =
-                    new CunninghamAttractionModel(FramesFactory.getITRF2008(),
+                    new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                   GravityFieldFactory.getUnnormalizedProvider(i, i));
             final ForceModel droModel =
-                    new DrozinerAttractionModel(FramesFactory.getITRF2008(),
+                    new DrozinerAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                 GravityFieldFactory.getUnnormalizedProvider(i, i));
 
             /**
@@ -369,7 +370,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
         NumericalPropagator propagator = new NumericalPropagator(integrator);
         propagator.setEphemerisMode();
         propagator.setOrbitType(OrbitType.CARTESIAN);
-        propagator.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF2008(), provider));
+        propagator.addForceModel(new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true), provider));
         propagator.setInitialState(initialState);
         propagator.propagate(initialState.getDate().shiftedBy(duration));
         return propagator.getGeneratedEphemeris();
@@ -391,7 +392,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
                                                        GravityFieldFactory.getUnnormalizedProvider(1, 1).getMu()));
 
         final CunninghamAttractionModel cunninghamModel =
-                new CunninghamAttractionModel(FramesFactory.getITRF2008(),
+                new CunninghamAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                               GravityFieldFactory.getUnnormalizedProvider(20, 20));
 
         final String name = NewtonianAttraction.CENTRAL_ATTRACTION_COEFFICIENT;
@@ -472,7 +473,7 @@ public class CunninghamAttractionModelTest extends AbstractForceModelTest {
             c50 =  2.27888264414e-7;
             c60 = -5.40618601332e-7;
 
-            itrf2008 = FramesFactory.getITRF2008();
+            itrf2008 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
             double[] absTolerance = {
                 0.001, 1.0e-9, 1.0e-9, 1.0e-6, 1.0e-6, 1.0e-6, 0.001
             };

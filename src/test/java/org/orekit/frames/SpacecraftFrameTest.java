@@ -38,6 +38,7 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 @Deprecated
@@ -87,7 +88,7 @@ public class SpacecraftFrameTest {
             // Target pointing attitude provider over satellite nadir at date with yaw compensation
             double ae =  6378137.0;
             double f  =  1.0 / 298.257223563;
-            Frame itrf2005 = FramesFactory.getITRF2005(true);
+            Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
             BodyShape earth = new OneAxisEllipsoid(ae, f, itrf2005);
             sun = CelestialBodyFactory.getSun();
 

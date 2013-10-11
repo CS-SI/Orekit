@@ -27,7 +27,7 @@ package org.orekit.time;
 public class TCBScale implements TimeScale {
 
     /** LG rate. */
-    private static final double LB_RATE = 1.550505e-8;
+    private static final double LB_RATE = 1.550519768e-8;
 
     /** Reference date for TCB.
      * <p>The reference date is such that the four following instants are equal:</p>

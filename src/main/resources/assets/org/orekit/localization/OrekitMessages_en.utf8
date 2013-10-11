@@ -271,6 +271,24 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = invalid time field length in CCSDS date: 
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = missing agency epoch in CCSDS date
 
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+
+# the central body gravitational coefficient cannot be retrieved from the OPM
+CCSDS_UNKNOWN_GM = the central body gravitational coefficient cannot be retrieved from the OPM
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = there is no spacecraft mass associated with this ODM file
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = no IERS conventions have been set before parsing
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = frame {0} is not valid in this ODM file context
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = name "{0}" is already used for an additional state
 

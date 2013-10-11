@@ -227,7 +227,7 @@ OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = date hors du domaine de validité des éph�
 OUT_OF_RANGE_EPHEMERIDES_DATE = date hors du domaine de validité des éphémérides : {0}, [{1}, {2}]
 
 # unexpected two elevation values: {0} and {1}, for one azimuth: {2}
-UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = données inattendues, deux valeurs d''éeléevation : {0} et {1}, pour un azimuth : {2}
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = données inattendues, deux valeurs de site : {0} et {1}, pour un azimut : {2}
 
 # unsupported parameter name {0}, supported names: {1}
 UNSUPPORTED_PARAMETER_NAME = paramètre {0} inconnu, paramètres connus : {1}
@@ -271,8 +271,26 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = longueur invalide pour le champ date dans
 # missing agency epoch in CCSDS date
 CCSDS_DATE_MISSING_AGENCY_EPOCH = époque de référence spécifique agence manquante dans une date CCSDS
 
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = mot-clef inattendu à la ligne {0} du fichier CCSDS {1} :\n{2}
+
+# the central body gravitational coefficient cannot be retrieved from the OPM
+CCSDS_UNKNOWN_GM = le coefficient d''atraction gravifique ne peut être récupéré dans l''OMM
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = il n''y a pas de masse pour le véhicule spatial dans ce fichier ODM
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = les conventions IERS n''ont pas été initialisées avant la lecture
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = le repère {0} est invalide dans ce contexte de fichier ODM
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = systèmes temporels incohérents dans des blocs d''éphémérides : {0} ≠ {1}
+
 # name "{0}" is already used for an additional state
-ADDITIONAL_STATE_NAME_ALREADY_IN_USE = le nom "{0}" est dçjç utilisç pour un çtat additionnel
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = le nom "{0}" est déjà utilisé pour un état additionnel
 
 # reset state not allowed
 NON_RESETABLE_STATE = réinitialisation de l''état non autorisée

@@ -53,6 +53,16 @@ public class TimeComponentsTest {
         new TimeComponents(10, 10, 61);
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeG() throws IllegalArgumentException {
+        new TimeComponents(86399, 4.5);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testOutOfRangeH() throws IllegalArgumentException {
+        new TimeComponents(0, -1.0);
+    }
+
     @Test
     public void testInRange() {
 

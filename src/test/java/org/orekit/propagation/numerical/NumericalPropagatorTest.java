@@ -58,6 +58,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -156,7 +157,7 @@ public class NumericalPropagatorTest {
     public void testPropagationTypesElliptical() throws OrekitException, ParseException, IOException {
 
         ForceModel gravityField =
-            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                   GravityFieldFactory.getNormalizedProvider(5, 5));
         propagator.addForceModel(gravityField);
 
@@ -218,7 +219,7 @@ public class NumericalPropagatorTest {
                                                    mu));
 
         ForceModel gravityField =
-            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(),
+            new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                                   GravityFieldFactory.getNormalizedProvider(5, 5));
         propagator.addForceModel(gravityField);
 

@@ -1,0 +1,18 @@
+The following table has been slightly edited from the original IERS document.
+The change is that the columns with extended precision and already taking the
+phase (either ±90 or 0 degrees) have been added.
+
+ Table 8.3.  Diurnal and subdiurnal zonal tide terms.
+             The units are 10⁻⁴ s for UT, 10⁻⁵ s for Δ, and 10⁻ⁱ⁴ rad/s for ω.
+ 
+ Tide     l   l'   F   D   Ω  θ   phase   period     UT1-UT1D         Δ-ΔD         ω-ωD         UT1-UT1D
+                                                                Coefficients of               phase-fixed
+                                 (deg.)  (hours)     Sin   Cos      Cos  Sin     Cos   Sin     Sin    Cos
+  Q₁     -1   0   -2   0  -2  1   -90     26.868    0.02  0.05     -1.4  2.8     1.2  -2.4   0.0503 -0.0245
+  O₁      0   0   -2   0  -2  1   -90     25.819    0.12  0.16     -7.1  9.4     6.0  -7.9   0.1605 -0.1210
+  P₁      0   0   -2   2  -2  1   -90     24.066    0.03  0.05     -1.8  3.2     1.5  -2.7   0.0516 -0.0286
+  K₁      0   0    0   0   0  1    90     23.935    0.09  0.18     -5.4 11.2     4.6  -9.4  -0.1771  0.0864
+  N₂     -1   0   -2   0  -2  2     0     12.658   -0.04 -0.02      4.5 -1.8    -3.8   1.6  -0.0380 -0.0154
+  M₂      0   0   -2   0  -2  2     0     12.421   -0.16 -0.07     19.6 -8.7   -16.6   7.4  -0.1617 -0.0720
+  S₂      0   0   -2   2  -2  2     0     12.000   -0.08  0.00      9.5 -0.5    -8.1   0.4  -0.0759 -0.0004
+  K₂      0   0    0   0   0  2     0     11.967   -0.02  0.00      2.5 -0.5    -2.1   0.4  -0.0196 -0.0038

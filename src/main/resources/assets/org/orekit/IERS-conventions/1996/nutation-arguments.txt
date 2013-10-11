@@ -1,0 +1,51 @@
+# Readers may note that the linear rate for the mean longitude of the
+# ascending node of the moon above (6962890.2665″ per Julian century)
+# is different from the rate in later conventions (at 2003 and 2010),
+# where it is 6962890.5431″ per Julian century. This is the only Delaunay
+# argument that changes between 1996, 2003 and 2010 conventions.
+
+# The planetary nutation arguments (mean longitudes for Mercury, Venus, Earth, Mars,
+# Jupiter, Saturne, Uranus and Neptune longitudes and general accumulated precession)
+# are NOT present in IERS 1996 conventions. Initial values excluding Mercury, Uranus
+# and Neptune were provided as part of a specific IERS 1996 precession-nutation theory,
+# but this theory was not used for generation of EOP products. The conventions reads:
+#      These coefficients are meant to be used for prediction purposes
+#      and by those requiring accurate a priori estimates of nutation.
+#      They are not meant to replace the IAU Theory.
+
+# The values below correspond to IERS published reference. They are not the same
+# as the values used by the SOFA library, March 2012 version, which would read:
+#
+#  # Mean Anomaly of the Moon
+#   F1 ≡ l = 485866.733″ + 1717915922.633″t + 31.310″t² + 0.064″t³
+#
+#  # Mean Anomaly of the Sun
+#   F2 ≡ l' = 1287099.804″ + 129596581.224″t − 0.577″t² − 0.012t³
+#
+#  # L − Ω
+#   F3 ≡ F = 335778.877″ + 1739527263.137″t − 13.257″t² + 0.011″t³
+#
+#  # Mean Elongation of the Moon from the Sun
+#   F4 ≡ D = 1072261.307″ + 1602961601.328″t − 6.891″t² + 0.019″t³
+#
+#  # Mean Longitude of the Ascending Node of the Moon
+#   F5 ≡ Ω = 450160.280″ − 6962890.539″t + 7.455″t² + 0.008″t³
+#
+# In Orekit, we decided to stick with IERS published values. The differences
+# are nevertheless quite small (about 4.8e-11 radians, which is sub-millimeter
+# level for low Earth orbits).
+
+# Mean Anomaly of the Moon
+ F1 ≡ l = 134.96340251° + 1717915923.2178″t + 31.8792″t² + 0.051635″t³ − 0.00024470″t⁴
+
+# Mean Anomaly of the Sun
+ F2 ≡ l' = 357.52910918° + 129596581.0481″t − 0.5532″t² + 0.000136″t³ − 0.00001149″t⁴
+
+# L − Ω
+ F3 ≡ F = 93.27209062° + 1739527262.8478″t − 12.7512″t² − 0.001037″t³ + 0.00000417″t⁴
+
+# Mean Elongation of the Moon from the Sun
+ F4 ≡ D = 297.85019547° + 1602961601.2090″t − 6.3706″t² + 0.006593″t³ − 0.00003169″t⁴
+
+# Mean Longitude of the Ascending Node of the Moon
+ F5 ≡ Ω = 125.04455501° − 6962890.2665″t + 7.4722″t² + 0.007702″t³ − 0.00005939″t⁴

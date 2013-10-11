@@ -18,11 +18,13 @@ package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.Constants;
+import org.orekit.time.TimeFunction;
+import org.orekit.utils.IERSConventions;
 
 /** Mean Equator, Mean Equinox Frame.
- * <p>This frame handles precession effects according to the IAU-76 model (Lieske).</p>
+ * <p>This frame handles precession effects according to to selected IERS conventions.</p>
  * <p>Its parent frame is the GCRF frame.<p>
  * <p>It is sometimes called Mean of Date (MoD) frame.<p>
  * @author Pascal Parraud
@@ -30,32 +32,24 @@ import org.orekit.utils.Constants;
 class MODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 8795437689936129851L;
+    private static final long serialVersionUID = 20130920L;
 
-    /** 1st coefficient for ZETA precession angle. */
-    private static final double ZETA_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 2nd coefficient for ZETA precession angle. */
-    private static final double ZETA_2 =    0.30188  * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 3rd coefficient for ZETA precession angle. */
-    private static final double ZETA_3 =    0.017998 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Function computing the precession angles. */
+    private final TimeFunction<double[]> precessionFunction;
 
-    /** 1st coefficient for THETA precession angle. */
-    private static final double THETA_1 = 2004.3109   * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 2nd coefficient for THETA precession angle. */
-    private static final double THETA_2 =   -0.42665  * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 3rd coefficient for THETA precession angle. */
-    private static final double THETA_3 =   -0.041833 * Constants.ARC_SECONDS_TO_RADIANS;
-
-    /** 1st coefficient for Z precession angle. */
-    private static final double Z_1 = 2306.2181   * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 2nd coefficient for Z precession angle. */
-    private static final double Z_2 =    1.09468  * Constants.ARC_SECONDS_TO_RADIANS;
-    /** 3rd coefficient for Z precession angle. */
-    private static final double Z_3 =    0.018203 * Constants.ARC_SECONDS_TO_RADIANS;
+    /** Constant rotation betwee ecliptic and equatoror poles at J2000.0. */
+    private final Rotation r4;
 
     /** Simple constructor.
+     * @param conventions IERS conventions to apply
+     * @exception OrekitException if IERS conventions tables cannot be read
      */
-    public MODProvider() {
+    public MODProvider(final IERSConventions conventions) throws OrekitException {
+        this.precessionFunction = conventions.getPrecessionFunction();
+        final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
+        final AbsoluteDate date0 = conventions.getNutationReferenceEpoch();
+        final double epsilon0 = epsilonAFunction.value(date0);
+        r4 = new Rotation(Vector3D.PLUS_I, -epsilon0);
     }
 
     /** Get the transfrom from parent frame.
@@ -65,26 +59,16 @@ class MODProvider implements TransformProvider {
      */
     public Transform getTransform(final AbsoluteDate date) {
 
-        // offset from J2000 epoch in julian centuries
-        final double tts = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-        final double ttc = tts / Constants.JULIAN_CENTURY;
-
-        // compute the zeta precession angle
-        final double zeta = ((ZETA_3 * ttc + ZETA_2) * ttc + ZETA_1) * ttc;
-
-        // compute the theta precession angle
-        final double theta = ((THETA_3 * ttc + THETA_2) * ttc + THETA_1) * ttc;
-
-        // compute the z precession angle
-        final double z = ((Z_3 * ttc + Z_2) * ttc + Z_1) * ttc;
+        // compute the precession angles phiA, omegaA, chiA
+        final double[] angles = precessionFunction.value(date);
 
         // elementary rotations for precession
-        final Rotation r1 = new Rotation(Vector3D.PLUS_K,  z);
-        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -theta);
-        final Rotation r3 = new Rotation(Vector3D.PLUS_K,  zeta);
+        final Rotation r1 = new Rotation(Vector3D.PLUS_K, -angles[2]);
+        final Rotation r2 = new Rotation(Vector3D.PLUS_I,  angles[1]);
+        final Rotation r3 = new Rotation(Vector3D.PLUS_K,  angles[0]);
 
         // complete precession
-        final Rotation precession = r1.applyTo(r2.applyTo(r3));
+        final Rotation precession = r1.applyTo(r2.applyTo(r3.applyTo(r4)));
 
         // set up the transform from parent GCRF
         return new Transform(date, precession);

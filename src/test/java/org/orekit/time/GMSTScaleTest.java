@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 
 
 public class GMSTScaleTest {
@@ -32,7 +33,8 @@ public class GMSTScaleTest {
     // reference: http://www.astro.umd.edu/~jph/GST_eqn.pdf
     public void testReference() throws OrekitException {
         Assert.assertEquals("GMST", gmst.toString());
-        AbsoluteDate date = new AbsoluteDate(2001, 10, 3, 6, 30, 0.0, TimeScalesFactory.getUT1());
+        AbsoluteDate date = new AbsoluteDate(2001, 10, 3, 6, 30, 0.0,
+                                             TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true));
         DateTimeComponents gmstComponents = date.getComponents(gmst);
         Assert.assertEquals(2001,  gmstComponents.getDate().getYear());
         Assert.assertEquals( 10,   gmstComponents.getDate().getMonth());

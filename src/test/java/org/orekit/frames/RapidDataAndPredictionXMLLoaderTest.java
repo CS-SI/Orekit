@@ -18,9 +18,9 @@ package org.orekit.frames;
 
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.ChronologicalComparator;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.IERSConventions;
 
 
 public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest {
@@ -38,26 +39,32 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     @Test
     public void testStartDateDaily1980() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory1980(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
     }
 
     @Test
     public void testEndDateDaily1980() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory1980(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2010, 8, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_1996, history, true).getEndDate());
     }
 
     @Test
     public void testStartDateDaily2000() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory2000(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2003.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2010, 5, 11, TimeScalesFactory.getUTC()),
                             Collections.min(history, COMP).getDate());
     }
@@ -65,8 +72,10 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     @Test
     public void testEndDateDaily2000() throws OrekitException, ParseException {
         setRoot("rapid-data-xml");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory2000(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2003.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.daily\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 24, TimeScalesFactory.getUTC()),
                             Collections.max(history, COMP).getDate());
     }
@@ -74,46 +83,56 @@ public class RapidDataAndPredictionXMLLoaderTest extends AbstractFilesLoaderTest
     @Test
     public void testStartDateFinals1980() throws OrekitException, ParseException {
         setRoot("compressed-data");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory1980(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(1999, 1, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
     }
 
     @Test
     public void testEndDateFinals1980() throws OrekitException, ParseException {
         setRoot("compressed-data");
-        List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory1980(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals\\.1999\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(1999, 12, 31, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_1996, history, true).getEndDate());
     }
 
     @Test
     public void testStartDateFinals2000() throws OrekitException, ParseException {
         setRoot("regular-data");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory2000(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2003.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2002, 1, 1, TimeScalesFactory.getUTC()),
-                            new EOP2000History(history).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_2003, history, true).getStartDate());
     }
 
     @Test
     public void testEndDateFinals2000() throws OrekitException, ParseException {
         setRoot("regular-data");
-        final List<EOP2000Entry> history = new ArrayList<EOP2000Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory2000(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_2003.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals2000A\\.2002\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2002, 12, 31, TimeScalesFactory.getUTC()),
-                            new EOP2000History(history).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_2003, history, true).getEndDate());
     }
 
     @Test
     public void testIssue139() throws OrekitException, ParseException {
         setRoot("zipped-data");
-        final List<EOP1980Entry> history = new ArrayList<EOP1980Entry>();
-        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory1980(history);
+        IERSConventions.NutationCorrectionConverter converter =
+                IERSConventions.IERS_1996.getNutationCorrectionConverter();
+        SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
+        new RapidDataAndPredictionXMLLoader("^finals\\.daily\\.xml$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2010, 7, 1, TimeScalesFactory.getUTC()),
-                            new EOP1980History(history).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
     }
 
 }

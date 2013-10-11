@@ -19,17 +19,23 @@ package org.orekit.frames;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.SortedSet;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -47,9 +53,12 @@ import org.xml.sax.helpers.DefaultHandler;
  * or "data".</p>
  * <p>Files containing data (back to 1973) are available at IERS web site: <a
  * href="http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html">Earth orientation data</a>.</p>
+ * <p>
+ * This class is immutable and hence thread-safe
+ * </p>
  * @author Luc Maisonobe
  */
-class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000HistoryLoader {
+class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
 
     /** Conversion factor for milli-arc seconds entries. */
     private static final double MILLI_ARC_SECONDS_TO_RADIANS = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
@@ -60,12 +69,6 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
-    /** History entries for IAU1980. */
-    private Collection<? super EOP1980Entry> history1980;
-
-    /** History entries for IAU2000. */
-    private Collection<? super EOP2000Entry> history2000;
-
     /** Build a loader for IERS XML EOP files.
      * @param supportedNames regular expression for supported files names
      */
@@ -74,344 +77,380 @@ class RapidDataAndPredictionXMLLoader implements EOP1980HistoryLoader, EOP2000Hi
     }
 
     /** {@inheritDoc} */
-    public boolean stillAcceptsData() {
-        return true;
-    }
-
-    /** {@inheritDoc} */
-    public void loadData(final InputStream input, final String name)
-        throws IOException, OrekitException {
-        try {
-            // set up a reader for line-oriented bulletin B files
-            final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
-            reader.setContentHandler(new EOPContentHandler(name));
-
-            // read all file, ignoring header
-            synchronized (this) {
-                reader.parse(new InputSource(new InputStreamReader(input, "UTF-8")));
-            }
-
-        } catch (SAXException se) {
-            if ((se.getCause() != null) && (se.getCause() instanceof OrekitException)) {
-                throw (OrekitException) se.getCause();
-            }
-            throw new OrekitException(se, LocalizedFormats.SIMPLE_MESSAGE, se.getMessage());
-        } catch (ParserConfigurationException pce) {
-            throw new OrekitException(pce, LocalizedFormats.SIMPLE_MESSAGE, pce.getMessage());
-        }
-    }
-
-    /** {@inheritDoc} */
-    public void fillHistory1980(final Collection<? super EOP1980Entry> history)
+    public void fillHistory(final IERSConventions.NutationCorrectionConverter converter,
+                            final SortedSet<EOPEntry> history)
         throws OrekitException {
-        synchronized (this) {
-            history1980 = history;
-            history2000 = null;
-            DataProvidersManager.getInstance().feed(supportedNames, this);
-        }
+        final Parser parser = new Parser(converter);
+        DataProvidersManager.getInstance().feed(supportedNames, parser);
+        history.addAll(parser.history);
     }
 
-    /** {@inheritDoc} */
-    public void fillHistory2000(final Collection<? super EOP2000Entry> history)
-        throws OrekitException {
-        synchronized (this) {
-            history1980 = null;
-            history2000 = history;
-            DataProvidersManager.getInstance().feed(supportedNames, this);
-        }
-    }
+    /** Internal class performing the parsing. */
+    private static class Parser implements DataLoader {
 
-    /** Local content handler for XML EOP files. */
-    private class EOPContentHandler extends DefaultHandler {
+        /** Converter for nutation corrections. */
+        private final IERSConventions.NutationCorrectionConverter converter;
 
-        // CHECKSTYLE: stop JavadocVariable check
-
-        // elements and attributes used in both daily and finals data files
-        private static final String MJD_ELT           = "MJD";
-        private static final String LOD_ELT           = "LOD";
-        private static final String X_ELT             = "X";
-        private static final String Y_ELT             = "Y";
-        private static final String DPSI_ELT          = "dPsi";
-        private static final String DEPSILON_ELT      = "dEpsilon";
-
-        // elements and attributes specific to daily data files
-        private static final String DATA_EOP_ELT      = "dataEOP";
-        private static final String TIME_SERIES_ELT   = "timeSeries";
-        private static final String DATE_YEAR_ELT     = "dateYear";
-        private static final String DATE_MONTH_ELT    = "dateMonth";
-        private static final String DATE_DAY_ELT      = "dateDay";
-        private static final String POLE_ELT          = "pole";
-        private static final String UT_ELT            = "UT";
-        private static final String UT1_U_UTC_ELT     = "UT1_UTC";
-        private static final String NUTATION_ELT      = "nutation";
-        private static final String SOURCE_ATTR       = "source";
-        private static final String BULLETIN_A_SOURCE = "BulletinA";
-
-        // elements and attributes specific to finals data files
-        private static final String FINALS_ELT        = "Finals";
-        private static final String DATE_ELT          = "date";
-        private static final String EOP_SET_ELT       = "EOPSet";
-        private static final String BULLETIN_A_ELT    = "bulletinA";
-        private static final String UT1_M_UTC_ELT     = "UT1-UTC";
-
-        private boolean inBulletinA;
-        private int     year;
-        private int     month;
-        private int     day;
-        private int     mjd;
-        private double  dtu1;
-        private double  lod;
-        private double  x;
-        private double  y;
-        private double  dpsi;
-        private double  deps;
-
-        // CHECKSTYLE: resume JavadocVariable check
-
-        /** File name. */
-        private final String name;
-
-        /** Buffer for read characters. */
-        private final StringBuffer buffer;
-
-        /** Indicator for daily data XML format or final data XML format. */
-        private DataFileContent content;
+        /** History entries. */
+        private final List<EOPEntry> history;
 
         /** Simple constructor.
-         * @param name file name
+         * @param converter converter to use
          */
-        public EOPContentHandler(final String name) {
-            this.name = name;
-            buffer  = new StringBuffer();
+        public Parser(final IERSConventions.NutationCorrectionConverter converter) {
+            this.converter = converter;
+            this.history   = new ArrayList<EOPEntry>();
         }
 
         /** {@inheritDoc} */
-        @Override
-        public void startDocument() {
-            content = DataFileContent.UNKNOWN;
+        public boolean stillAcceptsData() {
+            return true;
         }
 
         /** {@inheritDoc} */
-        @Override
-        public void characters(final char[] ch, final int start, final int length) {
-            buffer.append(ch, start, length);
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void startElement(final String uri, final String localName,
-                                 final String qName, final Attributes atts) {
-
-            // reset the buffer to empty
-            buffer.delete(0, buffer.length());
-
-            if (content == DataFileContent.UNKNOWN) {
-                // try to identify file content
-                if (qName.equals(TIME_SERIES_ELT)) {
-                    // the file contains final data
-                    content = DataFileContent.DAILY;
-                } else if (qName.equals(FINALS_ELT)) {
-                    // the file contains final data
-                    content = DataFileContent.FINAL;
-                }
-            }
-
-            if (content == DataFileContent.DAILY) {
-                startDailyElement(qName, atts);
-            } else if (content == DataFileContent.FINAL) {
-                startFinalElement(qName, atts);
-            }
-
-        }
-
-        /** Handle end of an element in a daily data file.
-         * @param qName name of the element
-         * @param atts element attributes
-         */
-        private void startDailyElement(final String qName, final Attributes atts) {
-            if (qName.equals(TIME_SERIES_ELT)) {
-                // reset EOP data
-                resetEOPData();
-            } else if (qName.equals(POLE_ELT) || qName.equals(UT_ELT) || qName.equals(NUTATION_ELT)) {
-                final String source = atts.getValue(SOURCE_ATTR);
-                if (source != null) {
-                    inBulletinA = source.equals(BULLETIN_A_SOURCE);
-                }
-            }
-        }
-
-        /** Handle end of an element in a final data file.
-         * @param qName name of the element
-         * @param atts element attributes
-         */
-        private void startFinalElement(final String qName, final Attributes atts) {
-            if (qName.equals(EOP_SET_ELT)) {
-                // reset EOP data
-                resetEOPData();
-            } else if (qName.equals(BULLETIN_A_ELT)) {
-                inBulletinA = true;
-            }
-        }
-
-        /** Reset EOP data.
-         */
-        private void resetEOPData() {
-            inBulletinA = false;
-            year        = -1;
-            month       = -1;
-            day         = -1;
-            mjd         = -1;
-            dtu1        = Double.NaN;
-            lod         = Double.NaN;
-            x           = Double.NaN;
-            y           = Double.NaN;
-            dpsi        = Double.NaN;
-            deps        = Double.NaN;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void endElement(final String uri, final String localName, final String qName)
-            throws SAXException {
+        public void loadData(final InputStream input, final String name)
+            throws IOException, OrekitException {
             try {
+                // set up a reader for line-oriented bulletin B files
+                final XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+                reader.setContentHandler(new EOPContentHandler(name));
+
+                // read all file, ignoring header
+                reader.parse(new InputSource(new InputStreamReader(input, "UTF-8")));
+
+            } catch (SAXException se) {
+                if ((se.getCause() != null) && (se.getCause() instanceof OrekitException)) {
+                    throw (OrekitException) se.getCause();
+                }
+                throw new OrekitException(se, LocalizedFormats.SIMPLE_MESSAGE, se.getMessage());
+            } catch (ParserConfigurationException pce) {
+                throw new OrekitException(pce, LocalizedFormats.SIMPLE_MESSAGE, pce.getMessage());
+            }
+        }
+
+        /** Local content handler for XML EOP files. */
+        private class EOPContentHandler extends DefaultHandler {
+
+            // CHECKSTYLE: stop JavadocVariable check
+
+            // elements and attributes used in both daily and finals data files
+            private static final String MJD_ELT           = "MJD";
+            private static final String LOD_ELT           = "LOD";
+            private static final String X_ELT             = "X";
+            private static final String Y_ELT             = "Y";
+            private static final String DPSI_ELT          = "dPsi";
+            private static final String DEPSILON_ELT      = "dEpsilon";
+            private static final String DX_ELT            = "dX";
+            private static final String DY_ELT            = "dY";
+
+            // elements and attributes specific to daily data files
+            private static final String DATA_EOP_ELT      = "dataEOP";
+            private static final String TIME_SERIES_ELT   = "timeSeries";
+            private static final String DATE_YEAR_ELT     = "dateYear";
+            private static final String DATE_MONTH_ELT    = "dateMonth";
+            private static final String DATE_DAY_ELT      = "dateDay";
+            private static final String POLE_ELT          = "pole";
+            private static final String UT_ELT            = "UT";
+            private static final String UT1_U_UTC_ELT     = "UT1_UTC";
+            private static final String NUTATION_ELT      = "nutation";
+            private static final String SOURCE_ATTR       = "source";
+            private static final String BULLETIN_A_SOURCE = "BulletinA";
+
+            // elements and attributes specific to finals data files
+            private static final String FINALS_ELT        = "Finals";
+            private static final String DATE_ELT          = "date";
+            private static final String EOP_SET_ELT       = "EOPSet";
+            private static final String BULLETIN_A_ELT    = "bulletinA";
+            private static final String UT1_M_UTC_ELT     = "UT1-UTC";
+
+            private boolean inBulletinA;
+            private int     year;
+            private int     month;
+            private int     day;
+            private int     mjd;
+            private AbsoluteDate mjdDate;
+            private double  dtu1;
+            private double  lod;
+            private double  x;
+            private double  y;
+            private double  dpsi;
+            private double  deps;
+            private double  dx;
+            private double  dy;
+
+            // CHECKSTYLE: resume JavadocVariable check
+
+            /** File name. */
+            private final String name;
+
+            /** Buffer for read characters. */
+            private final StringBuffer buffer;
+
+            /** Indicator for daily data XML format or final data XML format. */
+            private DataFileContent content;
+
+            /** Simple constructor.
+             * @param name file name
+             */
+            public EOPContentHandler(final String name) {
+                this.name = name;
+                buffer  = new StringBuffer();
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void startDocument() {
+                content = DataFileContent.UNKNOWN;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void characters(final char[] ch, final int start, final int length) {
+                buffer.append(ch, start, length);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void startElement(final String uri, final String localName,
+                                     final String qName, final Attributes atts) {
+
+                // reset the buffer to empty
+                buffer.delete(0, buffer.length());
+
+                if (content == DataFileContent.UNKNOWN) {
+                    // try to identify file content
+                    if (qName.equals(TIME_SERIES_ELT)) {
+                        // the file contains final data
+                        content = DataFileContent.DAILY;
+                    } else if (qName.equals(FINALS_ELT)) {
+                        // the file contains final data
+                        content = DataFileContent.FINAL;
+                    }
+                }
+
                 if (content == DataFileContent.DAILY) {
-                    endDailyElement(qName);
+                    startDailyElement(qName, atts);
                 } else if (content == DataFileContent.FINAL) {
-                    endFinalElement(qName);
+                    startFinalElement(qName, atts);
                 }
-            } catch (OrekitException oe) {
-                throw new SAXException(oe);
-            }
-        }
 
-        /** Handle end of an element in a daily data file.
-         * @param qName name of the element
-         * @exception OrekitException if an EOP element cannot be built
-         */
-        private void endDailyElement(final String qName) throws OrekitException {
-            if (qName.equals(DATE_YEAR_ELT) && (buffer.length() > 0)) {
-                year = Integer.parseInt(buffer.toString());
-            } else if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
-                month = Integer.parseInt(buffer.toString());
-            } else if (qName.equals(DATE_DAY_ELT) && (buffer.length() > 0)) {
-                day = Integer.parseInt(buffer.toString());
-            } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
-                mjd = Integer.parseInt(buffer.toString());
-            } else if (qName.equals(UT1_M_UTC_ELT)) {
-                dtu1 = overwrite(dtu1, 1.0);
-            } else if (qName.equals(LOD_ELT)) {
-                lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
-            } else if (qName.equals(X_ELT)) {
-                x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(Y_ELT)) {
-                y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(DPSI_ELT)) {
-                dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(DEPSILON_ELT)) {
-                deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(POLE_ELT) || qName.equals(UT_ELT) || qName.equals(NUTATION_ELT)) {
+            }
+
+            /** Handle end of an element in a daily data file.
+             * @param qName name of the element
+             * @param atts element attributes
+             */
+            private void startDailyElement(final String qName, final Attributes atts) {
+                if (qName.equals(TIME_SERIES_ELT)) {
+                    // reset EOP data
+                    resetEOPData();
+                } else if (qName.equals(POLE_ELT) || qName.equals(UT_ELT) || qName.equals(NUTATION_ELT)) {
+                    final String source = atts.getValue(SOURCE_ATTR);
+                    if (source != null) {
+                        inBulletinA = source.equals(BULLETIN_A_SOURCE);
+                    }
+                }
+            }
+
+            /** Handle end of an element in a final data file.
+             * @param qName name of the element
+             * @param atts element attributes
+             */
+            private void startFinalElement(final String qName, final Attributes atts) {
+                if (qName.equals(EOP_SET_ELT)) {
+                    // reset EOP data
+                    resetEOPData();
+                } else if (qName.equals(BULLETIN_A_ELT)) {
+                    inBulletinA = true;
+                }
+            }
+
+            /** Reset EOP data.
+             */
+            private void resetEOPData() {
                 inBulletinA = false;
-            } else if (qName.equals(DATA_EOP_ELT)) {
-                checkDates();
-                if ((history1980 != null) &&
-                    (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
-                    (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
-                    (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
-                }
-                if ((history2000 != null) &&
-                    (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
-                    (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
+                year        = -1;
+                month       = -1;
+                day         = -1;
+                mjd         = -1;
+                mjdDate     = null;
+                dtu1        = Double.NaN;
+                lod         = Double.NaN;
+                x           = Double.NaN;
+                y           = Double.NaN;
+                dpsi        = Double.NaN;
+                deps        = Double.NaN;
+                dx          = Double.NaN;
+                dy          = Double.NaN;
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void endElement(final String uri, final String localName, final String qName)
+                throws SAXException {
+                try {
+                    if (content == DataFileContent.DAILY) {
+                        endDailyElement(qName);
+                    } else if (content == DataFileContent.FINAL) {
+                        endFinalElement(qName);
+                    }
+                } catch (OrekitException oe) {
+                    throw new SAXException(oe);
                 }
             }
-        }
 
-        /** Handle end of an element in a final data file.
-         * @param qName name of the element
-         * @exception OrekitException if an EOP element cannot be built
-         */
-        private void endFinalElement(final String qName) throws OrekitException {
-            if (qName.equals(DATE_ELT) && (buffer.length() > 0)) {
-                final String[] fields = buffer.toString().split("-");
-                if (fields.length == 3) {
-                    year  = Integer.parseInt(fields[0]);
-                    month = Integer.parseInt(fields[1]);
-                    day   = Integer.parseInt(fields[2]);
-                }
-            } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
-                mjd = Integer.parseInt(buffer.toString());
-            } else if (qName.equals(UT1_U_UTC_ELT)) {
-                dtu1 = overwrite(dtu1, 1.0);
-            } else if (qName.equals(LOD_ELT)) {
-                lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
-            } else if (qName.equals(X_ELT)) {
-                x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(Y_ELT)) {
-                y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(DPSI_ELT)) {
-                dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(DEPSILON_ELT)) {
-                deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
-            } else if (qName.equals(BULLETIN_A_ELT)) {
-                inBulletinA = false;
-            } else if (qName.equals(EOP_SET_ELT)) {
-                checkDates();
-                if ((history1980 != null) &&
-                    (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
-                    (!Double.isNaN(x)) && (!Double.isNaN(y)) &&
-                    (!Double.isNaN(dpsi)) && (!Double.isNaN(deps))) {
-                    history1980.add(new EOP1980Entry(mjd, dtu1, lod, x, y, dpsi, deps));
-                }
-                if ((history2000 != null) &&
-                    (!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) &&
-                    (!Double.isNaN(x)) && (!Double.isNaN(y))) {
-                    history2000.add(new EOP2000Entry(mjd, dtu1, lod, x, y));
+            /** Handle end of an element in a daily data file.
+             * @param qName name of the element
+             * @exception OrekitException if an EOP element cannot be built
+             */
+            private void endDailyElement(final String qName) throws OrekitException {
+                if (qName.equals(DATE_YEAR_ELT) && (buffer.length() > 0)) {
+                    year = Integer.parseInt(buffer.toString());
+                } else if (qName.equals(DATE_MONTH_ELT) && (buffer.length() > 0)) {
+                    month = Integer.parseInt(buffer.toString());
+                } else if (qName.equals(DATE_DAY_ELT) && (buffer.length() > 0)) {
+                    day = Integer.parseInt(buffer.toString());
+                } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
+                    mjd     = Integer.parseInt(buffer.toString());
+                    mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                               TimeScalesFactory.getUTC());
+                } else if (qName.equals(UT1_M_UTC_ELT)) {
+                    dtu1 = overwrite(dtu1, 1.0);
+                } else if (qName.equals(LOD_ELT)) {
+                    lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
+                } else if (qName.equals(X_ELT)) {
+                    x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(Y_ELT)) {
+                    y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DPSI_ELT)) {
+                    dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DEPSILON_ELT)) {
+                    deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DX_ELT)) {
+                    dx   = overwrite(dx, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DY_ELT)) {
+                    dy   = overwrite(dy, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(POLE_ELT) || qName.equals(UT_ELT) || qName.equals(NUTATION_ELT)) {
+                    inBulletinA = false;
+                } else if (qName.equals(DATA_EOP_ELT)) {
+                    checkDates();
+                    if ((!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) && (!Double.isNaN(x)) && (!Double.isNaN(y))) {
+                        final double[] equinox;
+                        final double[] nro;
+                        if (Double.isNaN(dpsi)) {
+                            nro = new double[] {
+                                dx, dy
+                            };
+                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                        } else {
+                            equinox = new double[] {
+                                dpsi, deps
+                            };
+                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                    }
                 }
             }
-        }
 
-        /** Overwrite a value if it is not set or if we are in a bulletinB.
-         * @param oldValue old value to overwrite (may be NaN)
-         * @param factor multiplicative factor to apply to raw read data
-         * @return a new value
-         */
-        private double overwrite(final double oldValue, final double factor) {
-            if (buffer.length() == 0) {
-                // there is nothing to overwrite with
-                return oldValue;
-            } else if (inBulletinA && (!Double.isNaN(oldValue))) {
-                // the value is already set and bulletin A values have a low priority
-                return oldValue;
-            } else {
-                // either the value is not set or it is a high priority bulletin B value
-                return Double.parseDouble(buffer.toString()) * factor;
+            /** Handle end of an element in a final data file.
+             * @param qName name of the element
+             * @exception OrekitException if an EOP element cannot be built
+             */
+            private void endFinalElement(final String qName) throws OrekitException {
+                if (qName.equals(DATE_ELT) && (buffer.length() > 0)) {
+                    final String[] fields = buffer.toString().split("-");
+                    if (fields.length == 3) {
+                        year  = Integer.parseInt(fields[0]);
+                        month = Integer.parseInt(fields[1]);
+                        day   = Integer.parseInt(fields[2]);
+                    }
+                } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
+                    mjd     = Integer.parseInt(buffer.toString());
+                    mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                               TimeScalesFactory.getUTC());
+                } else if (qName.equals(UT1_U_UTC_ELT)) {
+                    dtu1 = overwrite(dtu1, 1.0);
+                } else if (qName.equals(LOD_ELT)) {
+                    lod = overwrite(lod, MILLI_SECONDS_TO_SECONDS);
+                } else if (qName.equals(X_ELT)) {
+                    x = overwrite(x, Constants.ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(Y_ELT)) {
+                    y = overwrite(y, Constants.ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DPSI_ELT)) {
+                    dpsi = overwrite(dpsi, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DEPSILON_ELT)) {
+                    deps = overwrite(deps, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DX_ELT)) {
+                    dx   = overwrite(dx, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(DY_ELT)) {
+                    dy   = overwrite(dy, MILLI_ARC_SECONDS_TO_RADIANS);
+                } else if (qName.equals(BULLETIN_A_ELT)) {
+                    inBulletinA = false;
+                } else if (qName.equals(EOP_SET_ELT)) {
+                    checkDates();
+                    if ((!Double.isNaN(dtu1)) && (!Double.isNaN(lod)) && (!Double.isNaN(x)) && (!Double.isNaN(y))) {
+                        final double[] equinox;
+                        final double[] nro;
+                        if (Double.isNaN(dpsi)) {
+                            nro = new double[] {
+                                dx, dy
+                            };
+                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
+                        } else {
+                            equinox = new double[] {
+                                dpsi, deps
+                            };
+                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
+                        }
+                        history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
+                    }
+                }
             }
-        }
 
-        /** Check if the year, month, day date and MJD date are consistent.
-         * @exception OrekitException if dates are not consistent
-         */
-        private void checkDates() throws OrekitException {
-            if (new DateComponents(year, month, day).getMJD() != mjd) {
-                throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
-                                          name, year, month, day, mjd);
+            /** Overwrite a value if it is not set or if we are in a bulletinB.
+             * @param oldValue old value to overwrite (may be NaN)
+             * @param factor multiplicative factor to apply to raw read data
+             * @return a new value
+             */
+            private double overwrite(final double oldValue, final double factor) {
+                if (buffer.length() == 0) {
+                    // there is nothing to overwrite with
+                    return oldValue;
+                } else if (inBulletinA && (!Double.isNaN(oldValue))) {
+                    // the value is already set and bulletin A values have a low priority
+                    return oldValue;
+                } else {
+                    // either the value is not set or it is a high priority bulletin B value
+                    return Double.parseDouble(buffer.toString()) * factor;
+                }
             }
+
+            /** Check if the year, month, day date and MJD date are consistent.
+             * @exception OrekitException if dates are not consistent
+             */
+            private void checkDates() throws OrekitException {
+                if (new DateComponents(year, month, day).getMJD() != mjd) {
+                    throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
+                                              name, year, month, day, mjd);
+                }
+            }
+
         }
 
-    }
+        /** Enumerate for data file content. */
+        private static enum DataFileContent {
 
-    /** Enumerate for data file content. */
-    private static enum DataFileContent {
+            /** Unknown content. */
+            UNKNOWN,
 
-        /** Unknown content. */
-        UNKNOWN,
+            /** Daily data. */
+            DAILY,
 
-        /** Daily data. */
-        DAILY,
+            /** Final data. */
+            FINAL;
 
-        /** Final data. */
-        FINAL;
+        }
 
     }
 

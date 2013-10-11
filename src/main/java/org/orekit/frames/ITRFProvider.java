@@ -24,28 +24,28 @@ import org.orekit.utils.Constants;
 
 
 /** International Terrestrial Reference Frame.
- * <p> Handles pole motion effects and depends on {@link TIRF2000Provider}, its
+ * <p> Handles pole motion effects and depends on {@link TIRFProvider}, its
  * parent frame.</p>
  * @author Luc Maisonobe
  */
 class ITRFProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8320047148885526349L;
+    private static final long serialVersionUID = 20130922L;
 
     /** S' rate in radians per julian century.
      * Approximately -47 microarcsecond per julian century (Lambert and Bizouard, 2002)
      */
     private static final double S_PRIME_RATE = -47e-6 * Constants.ARC_SECONDS_TO_RADIANS;
 
-    /** TIRF provider. */
-    private final TIRF2000Provider tirf;
+    /** EOP history. */
+    private final EOPHistory eopHistory;
 
     /** Simple constructor.
-     * @param tirf TIRF 2000 provider
+     * @param eopHistory EOP history
      */
-    public ITRFProvider(final TIRF2000Provider tirf) {
-        this.tirf = tirf;
+    public ITRFProvider(final EOPHistory eopHistory) {
+        this.eopHistory = eopHistory;
     }
 
     /** Get the transform from TIRF 2000 at specified date.
@@ -62,12 +62,11 @@ class ITRFProvider implements TransformProvider {
         final double ttc =  tts / Constants.JULIAN_CENTURY;
 
         // pole correction parameters
-        final PoleCorrection pCorr = tirf.getPoleCorrection(date);
-        final PoleCorrection nCorr = nutationCorrection(date);
+        final PoleCorrection eop = eopHistory.getPoleCorrection(date);
 
         // elementary rotations due to pole motion in terrestrial frame
-        final Rotation r1 = new Rotation(Vector3D.PLUS_I, -(pCorr.getYp() + nCorr.getYp()));
-        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -(pCorr.getXp() + nCorr.getXp()));
+        final Rotation r1 = new Rotation(Vector3D.PLUS_I, -eop.getYp());
+        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -eop.getXp());
         final Rotation r3 = new Rotation(Vector3D.PLUS_K, S_PRIME_RATE * ttc);
 
         // complete pole motion in terrestrial frame
@@ -79,19 +78,6 @@ class ITRFProvider implements TransformProvider {
         // set up the transform from parent TIRF
         return new Transform(date, combined, Vector3D.ZERO);
 
-    }
-
-    /** Compute nutation correction due to tidal gravity.
-     * @param date current date
-     * @return nutation correction
-     */
-    private PoleCorrection nutationCorrection(final AbsoluteDate date) {
-        // this factor seems to be of order of magnitude a few tens of
-        // micro arcseconds. It is computed from the classical approach
-        // (not the new one used here) and hence requires computation
-        // of GST, IAU2000A nutation, equations of equinox ...
-        // For now, this term is ignored
-        return PoleCorrection.NULL_CORRECTION;
     }
 
 }

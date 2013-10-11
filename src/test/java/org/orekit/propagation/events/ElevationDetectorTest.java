@@ -45,6 +45,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
 public class ElevationDetectorTest {
@@ -73,7 +74,7 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
         BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
         GeodeticPoint point = new GeodeticPoint(FastMath.toRadians(48.833),
                                                 FastMath.toRadians(2.333),
@@ -148,7 +149,7 @@ public class ElevationDetectorTest {
         // Earth and frame
         double ae =  6378137.0; // equatorial radius in meter
         double f  =  1.0 / 298.257223563; // flattening
-        Frame ITRF2005 = FramesFactory.getITRF2005(); // terrestrial frame at an arbitrary date
+        Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
         BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
 
         // Station
@@ -203,7 +204,7 @@ public class ElevationDetectorTest {
         // earth shape
         final OneAxisEllipsoid earthShape = new OneAxisEllipsoid(
                 Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF2005());
+                Constants.WGS84_EARTH_FLATTENING, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         // Ground station
         final GeodeticPoint stat = new GeodeticPoint(FastMath.toRadians(35.),
                 FastMath.toRadians(149.8), 0.);
