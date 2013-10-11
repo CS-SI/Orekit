@@ -5,7 +5,7 @@ Scale   Amp  1.0e-12
 
 Amplitudes (A₂ δkf Hf) of the corrections for frequency dependence of k₂₂⁽⁰⁾, taking the
 nominal value k₂₂ for the sectorial tides as 0.29801 for the elastic case, and (0.30102 − i 0.00130) for
-the anelastic case. Units: 10−12. The corrections are only to the real part, and are the same in both
+the anelastic case. Units: 10⁻¹². The corrections are only to the real part, and are the same in both
 the elastic and the anelastic cases.
 
 Name  Doodson No.   deg/hr  τ  s h p N' ps l l' F D Ω    δkfR    Amp.
