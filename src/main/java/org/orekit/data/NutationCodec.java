@@ -31,14 +31,13 @@ import org.orekit.errors.OrekitException;
  * 0 for least significant bit to 63 for most significant bit:
  * </p>
  * <ul>
- *   <li>bits  0 to 13: mask for the 14 coefficients</li>
- *   <li>bit 14: unused</li>
+ *   <li>bits  0 to 14: mask for the 15 coefficients</li>
  *   <li>bits 15 to 63: split into 7 slots each 7 bits long and
  *   each encoding a coefficient ci + 64, where ci is the i-th
  *   non-zero coefficient</li>
  * </ul>
  * <p>
- * This scheme allows to encode 7 non-zero integers between -64 to +63 among 14.
+ * This scheme allows to encode 7 non-zero integers between -64 to +63 among 15.
  * As the current Poisson series used in Orekit have at most 6 non-zero coefficients
  * and all the coefficients are between -21 and +20, we have some extension margin.
  * </p>
@@ -112,7 +111,7 @@ class NutationCodec {
 
     }
 
-    /** Encode all Delaunay and planetary multipliers into one key.
+    /** Encode all tide, Delaunay and planetary multipliers into one key.
      * @param multipliers multipliers to encode
      * @return a key merging all multipliers as one long integer
      */
@@ -124,13 +123,13 @@ class NutationCodec {
         return encoder.getKey();
     }
 
-    /** Decode a key into all Delaunay and planetary multipliers.
+    /** Decode a key into all tide, Delaunay and planetary multipliers.
      * @param key key merging all multipliers as one long integer
-     * @return all Delaunay and planetary multiplers, in the order
-     * cL, cLPrime, cF, cD, cOmega, cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa
+     * @return all tide, Delaunay and planetary multiplers, in the order
+     * cGamma, cL, cLPrime, cF, cD, cOmega, cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa
      */
     public static int[] decode(final long key) {
-        final int[] multipliers = new int[14];
+        final int[] multipliers = new int[15];
         final NutationCodec decoder = new NutationCodec(key);
         for (int i = 0; i < multipliers.length; ++i) {
             multipliers[i] = decoder.nextMultiplier();

@@ -16,10 +16,13 @@
  */
 package org.orekit.data;
 
+import org.apache.commons.math3.RealFieldElement;
+
 /** Class for general terms.
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class GeneralTerm extends SeriesTerm {
+class GeneralTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -106,6 +109,25 @@ class GeneralTerm extends SeriesTerm {
                cMa * elements.getLMa() + cJu * elements.getLJu() +
                cSa * elements.getLSa() + cUr * elements.getLUr() +
                cNe * elements.getLNe() + cPa * elements.getPa();
+
+    }
+
+    /** {@inheritDoc} */
+    protected T argument(final FieldBodiesElements<T> elements) {
+        return elements.getL().multiply(cL).
+                add(elements.getLPrime().multiply(cLPrime)).
+                add(elements.getF().multiply(cF)).
+                add(elements.getD().multiply(cD)).
+                add(elements.getOmega().multiply(cOmega)).
+                add(elements.getLMe().multiply(cMe)).
+                add(elements.getLVe().multiply(cVe)).
+                add(elements.getLE().multiply(cE)).
+                add(elements.getLMa().multiply(cMa)).
+                add(elements.getLJu().multiply(cJu)).
+                add(elements.getLSa().multiply(cSa)).
+                add(elements.getLUr().multiply(cUr)).
+                add(elements.getLNe().multiply(cNe)).
+                add(elements.getPa().multiply(cPa));
 
     }
 

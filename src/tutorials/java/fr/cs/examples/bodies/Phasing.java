@@ -152,10 +152,11 @@ public class Phasing {
 
     public Phasing() throws IOException, ParseException, OrekitException {
         IERSConventions conventions = IERSConventions.IERS_2010;
-        gmst         = conventions.getGMSTFunction(TimeScalesFactory.getUT1(conventions));
+        boolean         simpleEOP   = false;
+        gmst         = conventions.getGMSTFunction(TimeScalesFactory.getUT1(conventions, simpleEOP));
         earth        = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                             Constants.WGS84_EARTH_FLATTENING,
-                                            FramesFactory.getGTOD(conventions));
+                                            FramesFactory.getGTOD(conventions, simpleEOP));
     }
 
     private void run(final File input)
@@ -209,7 +210,8 @@ public class Phasing {
                                                tolerances[0], tolerances[1]);
         integrator.setInitialStepSize(1.0e-2 * orbit.getKeplerianPeriod());
         NumericalPropagator propagator = new NumericalPropagator(integrator);
-        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(IERSConventions.IERS_2010), gravityField));
+        propagator.addForceModel(new HolmesFeatherstoneAttractionModel(FramesFactory.getGTOD(IERSConventions.IERS_2010, true),
+                                                                       gravityField));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getSun()));
         propagator.addForceModel(new ThirdBodyAttraction(CelestialBodyFactory.getMoon()));
 

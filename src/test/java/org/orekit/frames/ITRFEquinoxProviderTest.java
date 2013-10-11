@@ -87,7 +87,7 @@ public class ITRFEquinoxProviderTest {
             new PVCoordinates(new Vector3D(-1033475.0313, 7901305.5856, 6380344.5328),
                               new Vector3D(-3225.632747, -2872.442511, 5531.931288));
 
-        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996).
+        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996, true).
                 getTransformTo(FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true), t0);
         checkPV(pvITRF, t.transformPVCoordinates(pvGTOD), 8.08e-5, 3.78e-7);
 
@@ -115,7 +115,7 @@ public class ITRFEquinoxProviderTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996).
+        Transform t = FramesFactory.getGTOD(IERSConventions.IERS_1996, true).
                 getTransformTo(FramesFactory.getITRFEquinox(IERSConventions.IERS_1996, true), t0);
 
         // GTOD
@@ -159,7 +159,7 @@ public class ITRFEquinoxProviderTest {
                              { 54199, -0.072073685,  1.4020, 0.0349282, 0.4833163, -0.0550666, -0.0063580, Double.NaN, Double.NaN }
                          }));
 
-        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996);
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true);
 
         TimeScale utc = TimeScalesFactory.getUTC();
         TTScale tt    = TimeScalesFactory.getTT();

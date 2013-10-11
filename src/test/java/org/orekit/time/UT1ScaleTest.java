@@ -126,7 +126,7 @@ public class UT1ScaleTest {
                          }));
         AbsoluteDate date =
                 new AbsoluteDate(2004, 4, 6, 7, 51, 28.386009, TimeScalesFactory.getUTC());
-        DateTimeComponents components = date.getComponents(TimeScalesFactory.getUT1(IERSConventions.IERS_1996));
+        DateTimeComponents components = date.getComponents(TimeScalesFactory.getUT1(IERSConventions.IERS_1996, true));
         Assert.assertEquals(2004,        components.getDate().getYear());
         Assert.assertEquals(   4,        components.getDate().getMonth());
         Assert.assertEquals(   6,        components.getDate().getDay());
@@ -138,7 +138,7 @@ public class UT1ScaleTest {
     @Before
     public void setUp() throws OrekitException {
         Utils.setDataRoot("regular-data");
-        ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010);
+        ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
     }
 
     @After

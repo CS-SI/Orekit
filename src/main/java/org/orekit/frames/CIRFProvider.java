@@ -22,9 +22,6 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
-import org.orekit.utils.IERSConventions;
 
 /** Celestial Intermediate Reference Frame 2000.
  * <p>This provider includes precession effects according to either the IAU 2006 precession
@@ -49,18 +46,16 @@ class CIRFProvider implements TransformProvider {
     private final EOPHistory eopHistory;
 
     /** Simple constructor.
-     * @param conventions IERS conventions to apply
      * @param eopHistory EOP history
      * @exception OrekitException if the nutation model data embedded in the
      * library cannot be read.
      * @see Frame
      */
-    public CIRFProvider(final IERSConventions conventions, final EOPHistory eopHistory)
+    public CIRFProvider(final EOPHistory eopHistory)
         throws OrekitException {
 
         // load the nutation model
-        final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
-        xysPxy2Function = conventions.getXYSpXY2Function(ut1);
+        xysPxy2Function = eopHistory.getConventions().getXYSpXY2Function();
 
         // store correction to the model
         this.eopHistory = eopHistory;

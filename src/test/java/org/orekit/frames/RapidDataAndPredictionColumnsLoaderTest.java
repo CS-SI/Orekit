@@ -43,7 +43,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
-                            new EOPHistory(history).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_1996, history, true).getStartDate());
     }
 
     @Test
@@ -54,7 +54,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
-                            new EOPHistory(history).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_1996, history, true).getEndDate());
     }
 
     @Test
@@ -65,7 +65,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals\\.daily$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2011, 4, 9, TimeScalesFactory.getUTC()),
-                            new EOPHistory(history).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_2003, history, true).getStartDate());
     }
 
     @Test
@@ -75,7 +75,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
                 IERSConventions.IERS_1996.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(false, "^finals\\.daily$").fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(data);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_1996, data, true);
 
         // after 2011-06-01, the example daily file has no columns for Bulletin B data
         // we don't see anything since we ignore the columns from Bulletin B
@@ -123,7 +123,7 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
                 IERSConventions.IERS_2003.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$").fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(data);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2003, data, true);
 
         // after 2011-06-01, the example daily file has no columns for Bulletin B data
         // we don't see anything since we ignore the columns from Bulletin B
@@ -160,6 +160,6 @@ public class RapidDataAndPredictionColumnsLoaderTest extends AbstractFilesLoader
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
          new RapidDataAndPredictionColumnsLoader(true, "^finals2000A\\.daily$").fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2011, 10, 6, TimeScalesFactory.getUTC()),
-                            new EOPHistory(history).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_2003, history, true).getEndDate());
     }
 }

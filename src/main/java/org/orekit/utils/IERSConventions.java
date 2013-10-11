@@ -23,6 +23,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.data.BodiesElements;
 import org.orekit.data.DelaunayArguments;
+import org.orekit.data.FieldBodiesElements;
 import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PoissonSeriesParser;
@@ -37,7 +38,6 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
 
 
 /** Supported IERS conventions.
@@ -58,11 +58,17 @@ public enum IERSConventions {
         /** Psi series resources. */
         private static final String PSI_EPSILON_SERIES = IERS_BASE + "1996/tab5.1.txt";
 
+        /** Tidal correction for xp, yp series resources. */
+        private static final String TIDAL_CORRECTION_XP_YP_SERIES = IERS_BASE + "1996/tab8.4.txt";
+
+        /** Tidal correction for UT1 resources. */
+        private static final String TIDAL_CORRECTION_UT1_SERIES = IERS_BASE + "1996/tab8.3.txt";
+
         /** {@inheritDoc} */
         @Override
-        public FundamentalNutationArguments getNutationArguments(final UT1Scale ut1)
+        protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
             throws OrekitException {
-            return new FundamentalNutationArguments(this, ut1,
+            return new FundamentalNutationArguments(this, gmstFunction,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
@@ -71,11 +77,11 @@ public enum IERSConventions {
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
 
             // value from chapter 5, page 22
-            final PolynomialNutation epsilonA =
-                    new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -46.8150   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> epsilonA =
+                    new PolynomialNutation<DerivativeStructure>(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -46.8150   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                    0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<Double>() {
 
@@ -91,51 +97,54 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function(final UT1Scale ut1) throws OrekitException {
+        public TimeFunction<double[]> getXYSpXY2Function()
+            throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // X = 2004.3109″t - 0.42665″t² - 0.198656″t³ + 0.0000140″t⁴
             //     + 0.00006″t² cos Ω + sin ε0 { Σ [(Ai + Ai' t) sin(ARGUMENT) + Ai'' t cos(ARGUMENT)]}
             //     + 0.00204″t² sin Ω + 0.00016″t² sin 2(F - D + Ω),
-            final PolynomialNutation xPolynomial =
-                    new PolynomialNutation(0,
-                                           2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
-                                           -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
-                                           -0.198656 * Constants.ARC_SECONDS_TO_RADIANS,
-                                           0.0000140 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> xPolynomial =
+                    new PolynomialNutation<DerivativeStructure>(0,
+                                                                2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.198656 * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                0.0000140 * Constants.ARC_SECONDS_TO_RADIANS);
 
             final double fXCosOm    = 0.00006 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fXSinOm    = 0.00204 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fXSin2FDOm = 0.00016 * Constants.ARC_SECONDS_TO_RADIANS;
             final double sinEps0   = FastMath.sin(getMeanObliquityFunction().value(getNutationReferenceEpoch()));
 
-            final PoissonSeriesParser baseParser =
-                    new PoissonSeriesParser(12).
+            final PoissonSeriesParser<DerivativeStructure> baseParser =
+                    new PoissonSeriesParser<DerivativeStructure>(12).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4).
                         withFirstDelaunay(1);
 
-            final PoissonSeriesParser xParser = baseParser.withSinCos(0, 7, -1).withSinCos(1, 8, 9);
-            final PoissonSeries xSum = xParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
+            final PoissonSeriesParser<DerivativeStructure> xParser = baseParser.withSinCos(0, 7, -1).withSinCos(1, 8, 9);
+            final PoissonSeries<DerivativeStructure> xSum = xParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
 
             // Y = -0.00013″ - 22.40992″t² + 0.001836″t³ + 0.0011130″t⁴
             //     + Σ [(Bi + Bi' t) cos(ARGUMENT) + Bi'' t sin(ARGUMENT)]
             //    - 0.00231″t² cos Ω − 0.00014″t² cos 2(F - D + Ω)
-            final PolynomialNutation yPolynomial =
-                    new PolynomialNutation(-0.00013  * Constants.ARC_SECONDS_TO_RADIANS,
-                                           0.0,
-                                           -22.40992 * Constants.ARC_SECONDS_TO_RADIANS,
-                                           0.001836  * Constants.ARC_SECONDS_TO_RADIANS,
-                                           0.0011130 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> yPolynomial =
+                    new PolynomialNutation<DerivativeStructure>(-0.00013  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                0.0,
+                                                                -22.40992 * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                0.001836  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                0.0011130 * Constants.ARC_SECONDS_TO_RADIANS);
 
             final double fYCosOm    = -0.00231 * Constants.ARC_SECONDS_TO_RADIANS;
             final double fYCos2FDOm = -0.00014 * Constants.ARC_SECONDS_TO_RADIANS;
 
-            final PoissonSeriesParser yParser = baseParser.withSinCos(0, -1, 10).withSinCos(1, 12, 11);
-            final PoissonSeries ySum = yParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
+            final PoissonSeriesParser<DerivativeStructure> yParser = baseParser.withSinCos(0, -1, 10).withSinCos(1, 12, 11);
+            final PoissonSeries<DerivativeStructure> ySum = yParser.parse(getStream(X_Y_SERIES), X_Y_SERIES);
 
-            final PoissonSeries.CompiledSeries xySum = PoissonSeries.compile(xSum, ySum);
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> xySum =
+                    PoissonSeries.compile(xSum, ySum);
 
             // s = -XY/2 + 0.00385″t - 0.07259″t³ - 0.00264″ sin Ω - 0.00006″ sin 2Ω
             //     + 0.00074″t² sin Ω + 0.00006″t² sin 2(F - D + Ω)
@@ -192,21 +201,21 @@ public enum IERSConventions {
             // Expressions for the precession quantities based upon the IAU(1976) system of astronomical constants
             // http://articles.adsabs.harvard.edu/full/1977A%26A....58....1L
             // also available as equation 30 in IERS 2003 conventions
-            final PolynomialNutation psiA =
-                    new PolynomialNutation(    0.0,
-                                            5038.7784   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -1.07259   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.001147  * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation omegaA =
-                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
-                                               0.0,
-                                               0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation chiA =
-                    new PolynomialNutation(    0.0,
-                                              10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> psiA =
+                    new PolynomialNutation<DerivativeStructure>(   0.0,
+                                                                5038.7784   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -1.07259  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -0.001147 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> omegaA =
+                    new PolynomialNutation<DerivativeStructure>(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
+                                                                 0.0,
+                                                                 0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> chiA =
+                    new PolynomialNutation<DerivativeStructure>( 0.0,
+                                                                10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -223,27 +232,27 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction(final UT1Scale ut1) throws OrekitException {
+        public TimeFunction<double[]> getNutationFunction()
+            throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // set up Poisson series
-            final PoissonSeriesParser baseParser =
-                    new PoissonSeriesParser(10).
+            final PoissonSeriesParser<DerivativeStructure> baseParser =
+                    new PoissonSeriesParser<DerivativeStructure>(10).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-4).
                         withFirstDelaunay(1);
 
-            final PoissonSeriesParser psiParser = baseParser.withSinCos(0, 7, -1).withSinCos(1, 8, -1);
-            final PoissonSeries psiSeries = psiParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
+            final PoissonSeriesParser<DerivativeStructure> psiParser = baseParser.withSinCos(0, 7, -1).withSinCos(1, 8, -1);
+            final PoissonSeries<DerivativeStructure> psiSeries = psiParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
 
-            final PoissonSeriesParser epsilonParser = baseParser.withSinCos(0, -1, 9).withSinCos(1, -1, 10);
-            final PoissonSeries epsilonSeries = epsilonParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
+            final PoissonSeriesParser<DerivativeStructure> epsilonParser = baseParser.withSinCos(0, -1, 9).withSinCos(1, -1, 10);
+            final PoissonSeries<DerivativeStructure> epsilonSeries = epsilonParser.parse(getStream(PSI_EPSILON_SERIES), PSI_EPSILON_SERIES);
 
-            final PoissonSeries.CompiledSeries psiEpsilonSeries =
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
-
-            final IAU1994ResolutionC7 eqeCorrectionFunction = new IAU1994ResolutionC7();
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -252,7 +261,7 @@ public enum IERSConventions {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     final double[] psiEpsilon = psiEpsilonSeries.value(elements);
                     return new double[] {
-                        psiEpsilon[0], psiEpsilon[1], eqeCorrectionFunction.value(elements)
+                        psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements)
                     };
                 }
             };
@@ -261,7 +270,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGMSTFunction(final UT1Scale ut1)
+        public TimeFunction<DerivativeStructure> getGMSTFunction(final TimeScale ut1)
             throws OrekitException {
 
             // Radians per second of time
@@ -276,10 +285,6 @@ public enum IERSConventions {
             final double gmst2 = 0.093104;
             final double gmst3 = -6.2e-6;
 
-            final double gmstDot0 =     gmst1 / Constants.JULIAN_CENTURY;
-            final double gmstDot1 = 2 * gmst2 / Constants.JULIAN_CENTURY;
-            final double gmstDot2 = 3 * gmst3 / Constants.JULIAN_CENTURY;
-
             return new TimeFunction<DerivativeStructure>() {
 
                 /** {@inheritDoc} */
@@ -288,19 +293,16 @@ public enum IERSConventions {
 
                     // offset in Julian centuries from J2000 epoch (UT1 scale)
                     final double dtai = date.durationFrom(gmstReference);
-                    final double tut1 = dtai + ut1.offsetFromTAI(date);
-                    final double tt   = tut1 / Constants.JULIAN_CENTURY;
+                    final DerivativeStructure tut1 =
+                            new DerivativeStructure(1, 1, dtai + ut1.offsetFromTAI(date), 1.0);
+                    final DerivativeStructure tt = tut1.divide(Constants.JULIAN_CENTURY);
 
                     // Seconds in the day, adjusted by 12 hours because the
                     // UT1 is supplied as a Julian date beginning at noon.
-                    final double sd = (tut1 + Constants.JULIAN_DAY / 2.) % Constants.JULIAN_DAY;
+                    final DerivativeStructure sd = tut1.add(Constants.JULIAN_DAY / 2).remainder(Constants.JULIAN_DAY);
 
                     // compute Greenwich mean sidereal time, in radians
-                    final double theta =
-                            (((gmst3 * tt + gmst2) * tt + gmst1) * tt + gmst0 + sd) * radiansPerSecond;
-                    final double thetaDot =
-                            ((gmstDot2 * tt + gmstDot1) * tt + gmstDot0 + 1.0) * radiansPerSecond;
-                    return new DerivativeStructure(1, 1, theta, thetaDot);
+                    return tt.multiply(gmst3).add(gmst2).multiply(tt).add(gmst1).multiply(tt).add(gmst0).add(sd).multiply(radiansPerSecond);
 
                 }
 
@@ -310,18 +312,18 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+        public TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
                                                                  final EOPHistory eopHistory)
             throws OrekitException {
 
             // obliquity
             final TimeFunction<Double> epsilonA = getMeanObliquityFunction();
 
-            // nutation function
-            final TimeFunction<double[]> nutation = getNutationFunction(ut1);
-
             // GMST function
             final TimeFunction<DerivativeStructure> gmst = getGMSTFunction(ut1);
+
+            // nutation function
+            final TimeFunction<double[]> nutation = getNutationFunction();
 
             return new TimeFunction<DerivativeStructure>() {
 
@@ -335,14 +337,70 @@ public enum IERSConventions {
                     if (eopHistory != null) {
                         deltaPsi += eopHistory.getEquinoxNutationCorrection(date)[0];
                     }
-                    final double ea = epsilonA.value(date);
-                    final double eqe = deltaPsi  * FastMath.cos(ea) + angles[2];
+                    final double eqe = deltaPsi  * FastMath.cos(epsilonA.value(date)) + angles[2];
 
                     // add mean sidereal time and equation of equinoxes
                     return gmst.value(date).add(eqe);
 
                 }
 
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getEOPTidalCorrection()
+            throws OrekitException {
+
+            // set up nutation arguments
+            // BEWARE! Using TT as the time scale here and not UT1 is intentional!
+            // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
+            // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
+            // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
+            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(TimeScalesFactory.getTT());
+            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+
+            // set up Poisson series
+            final PoissonSeriesParser<DerivativeStructure> xyParser = new PoissonSeriesParser<DerivativeStructure>(17).
+                    withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
+                    withOptionalColumn(1).
+                    withGamma(7).
+                    withFirstDelaunay(2);
+            final PoissonSeries<DerivativeStructure> xSeries =
+                    xyParser.withSinCos(0, 14, 15).parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES),
+                                                         TIDAL_CORRECTION_XP_YP_SERIES);
+            final PoissonSeries<DerivativeStructure> ySeries =
+                    xyParser.withSinCos(0, 16, 17).parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES),
+                                                         TIDAL_CORRECTION_XP_YP_SERIES);
+
+            final PoissonSeriesParser<DerivativeStructure> ut1Parser = new PoissonSeriesParser<DerivativeStructure>(17).
+                    withFactor(1.0e-4).
+                    withOptionalColumn(1).
+                    withGamma(7).
+                    withFirstDelaunay(2).
+                    withSinCos(0, 16, 17);
+            final PoissonSeries<DerivativeStructure> ut1Series =
+                    ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
+
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
+                PoissonSeries.compile(xSeries, ySeries, ut1Series);
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+                    final FieldBodiesElements<DerivativeStructure> elements =
+                            arguments.evaluateDerivative(date);
+                    final DerivativeStructure[] correction = correctionSeries.value(elements);
+                    return new double[] {
+                        correction[0].getValue(),
+                        correction[1].getValue(),
+                        correction[2].getValue(),
+                        -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
+                    };
+                }
             };
 
         }
@@ -373,10 +431,16 @@ public enum IERSConventions {
         /** Greenwhich sidereal time series resources. */
         private static final String GST_SERIES         = IERS_BASE + "2003/tab5.4.txt";
 
+        /** Tidal correction for xp, yp series resources. */
+        private static final String TIDAL_CORRECTION_XP_YP_SERIES = IERS_BASE + "2003/tab8.2ab.txt";
+
+        /** Tidal correction for UT1 resources. */
+        private static final String TIDAL_CORRECTION_UT1_SERIES = IERS_BASE + "2003/tab8.3ab.txt";
+
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final UT1Scale ut1)
+        protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
             throws OrekitException {
-            return new FundamentalNutationArguments(this, ut1,
+            return new FundamentalNutationArguments(this, gmstFunction,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
@@ -385,11 +449,11 @@ public enum IERSConventions {
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
 
             // epsilon 0 value from chapter 5, page 41, other terms from equation 32 page 45
-            final PolynomialNutation epsilonA =
-                    new PolynomialNutation(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -46.84024  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> epsilonA =
+                    new PolynomialNutation<DerivativeStructure>(84381.448    * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -46.84024  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   -0.00059  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                    0.001813 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<Double>() {
 
@@ -405,25 +469,26 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function(final UT1Scale ut1)
+        public TimeFunction<double[]> getXYSpXY2Function()
             throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // set up Poisson series
-            final PoissonSeriesParser parser =
-                    new PoissonSeriesParser(17).
+            final PoissonSeriesParser<DerivativeStructure> parser =
+                    new PoissonSeriesParser<DerivativeStructure>(17).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
                         withPolynomialPart('t', PolynomialParser.Unit.MICRO_ARC_SECONDS).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, 3);
 
-            final PoissonSeries xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
-            final PoissonSeries ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
-            final PoissonSeries sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
-            final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
+            final PoissonSeries<DerivativeStructure> xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
+            final PoissonSeries<DerivativeStructure> ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
+            final PoissonSeries<DerivativeStructure> sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -445,21 +510,21 @@ public enum IERSConventions {
 
             // set up the conventional polynomials
             // the following values are from equation 32 in IERS 2003 conventions
-            final PolynomialNutation psiA =
-                    new PolynomialNutation(    0.0,
-                                            5038.47875   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -1.07259   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.001147  * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation omegaA =
-                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
-                                              -0.02524   * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation chiA =
-                    new PolynomialNutation(    0.0,
-                                              10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> psiA =
+                    new PolynomialNutation<DerivativeStructure>(    0.0,
+                                                                 5038.47875   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   -1.07259   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   -0.001147  * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> omegaA =
+                    new PolynomialNutation<DerivativeStructure>(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
+                                                                -0.02524   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                 0.05127   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.007726  * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> chiA =
+                    new PolynomialNutation<DerivativeStructure>( 0.0,
+                                                                10.5526   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -2.38064  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.001125 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -476,44 +541,44 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction(final UT1Scale ut1)
+        public TimeFunction<double[]> getNutationFunction()
             throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // set up Poisson series
-            final PoissonSeriesParser luniSolarParser =
-                    new PoissonSeriesParser(14).
+            final PoissonSeriesParser<DerivativeStructure> luniSolarParser =
+                    new PoissonSeriesParser<DerivativeStructure>(14).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
                         withFirstDelaunay(1);
-            final PoissonSeriesParser luniSolarPsiParser =
+            final PoissonSeriesParser<DerivativeStructure> luniSolarPsiParser =
                     luniSolarParser.withSinCos(0, 7, 11).withSinCos(1, 8, 12);
-            final PoissonSeries psiLuniSolarSeries =
+            final PoissonSeries<DerivativeStructure> psiLuniSolarSeries =
                     luniSolarPsiParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
-            final PoissonSeriesParser luniSolarEpsilonParser =
+            final PoissonSeriesParser<DerivativeStructure> luniSolarEpsilonParser =
                     luniSolarParser.withSinCos(0, 13, 9).withSinCos(1, 14, 10);
-            final PoissonSeries epsilonLuniSolarSeries =
+            final PoissonSeries<DerivativeStructure> epsilonLuniSolarSeries =
                     luniSolarEpsilonParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
 
-            final PoissonSeriesParser planetaryParser =
-                    new PoissonSeriesParser(21).
+            final PoissonSeriesParser<DerivativeStructure> planetaryParser =
+                    new PoissonSeriesParser<DerivativeStructure>(21).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
                         withFirstDelaunay(2).
                         withFirstPlanetary(7);
-            final PoissonSeriesParser planetaryPsiParser = planetaryParser.withSinCos(0, 17, 18);
-            final PoissonSeries psiPlanetarySeries =
+            final PoissonSeriesParser<DerivativeStructure> planetaryPsiParser = planetaryParser.withSinCos(0, 17, 18);
+            final PoissonSeries<DerivativeStructure> psiPlanetarySeries =
                     planetaryPsiParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
-            final PoissonSeriesParser planetaryEpsilonParser = planetaryParser.withSinCos(0, 19, 20);
-            final PoissonSeries epsilonPlanetarySeries =
+            final PoissonSeriesParser<DerivativeStructure> planetaryEpsilonParser = planetaryParser.withSinCos(0, 19, 20);
+            final PoissonSeries<DerivativeStructure> epsilonPlanetarySeries =
                     planetaryEpsilonParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
 
-            final PoissonSeries.CompiledSeries luniSolarSeries =
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> luniSolarSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, epsilonLuniSolarSeries);
-            final PoissonSeries.CompiledSeries planetarySeries =
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> planetarySeries =
                     PoissonSeries.compile(psiPlanetarySeries, epsilonPlanetarySeries);
-
-            final IAU1994ResolutionC7 eqeCorrectionFunction = new IAU1994ResolutionC7();
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -524,7 +589,7 @@ public enum IERSConventions {
                     final double[] planetary = planetarySeries.value(elements);
                     return new double[] {
                         luniSolar[0] + planetary[0], luniSolar[1] + planetary[1],
-                        eqeCorrectionFunction.value(elements)
+                        IAU1994ResolutionC7.value(elements)
                     };
                 }
             };
@@ -533,21 +598,22 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGMSTFunction(final UT1Scale ut1)
+        public TimeFunction<DerivativeStructure> getGMSTFunction(final TimeScale ut1)
             throws OrekitException {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
 
             // Polynomial part of the apparent sidereal time series
-            final PoissonSeriesParser parser =
-                    new PoissonSeriesParser(17).
+            // which is the opposite of Equation of Origins (EO)
+            final PoissonSeriesParser<DerivativeStructure> parser =
+                    new PoissonSeriesParser<DerivativeStructure>(17).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, 3).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation gstPolynomial =
+            final PolynomialNutation<DerivativeStructure> minusEO =
                     parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
@@ -556,7 +622,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public DerivativeStructure value(final AbsoluteDate date) {
-                    return era.value(date).add(gstPolynomial.valueDS(evaluateTC(date)));
+                    return era.value(date).add(minusEO.value(dsEvaluateTC(date)));
                 }
 
             };
@@ -565,44 +631,45 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+        public TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
                                                                  final EOPHistory eopHistory)
             throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // mean obliquity function
             final TimeFunction<Double> epsilon = getMeanObliquityFunction();
 
             // set up Poisson series
-            final PoissonSeriesParser luniSolarPsiParser =
-                    new PoissonSeriesParser(14).
+            final PoissonSeriesParser<DerivativeStructure> luniSolarPsiParser =
+                    new PoissonSeriesParser<DerivativeStructure>(14).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
                         withFirstDelaunay(1).
                         withSinCos(0, 7, 11).
                         withSinCos(1, 8, 12);
-            final PoissonSeries psiLuniSolarSeries =
+            final PoissonSeries<DerivativeStructure> psiLuniSolarSeries =
                     luniSolarPsiParser.parse(getStream(LUNI_SOLAR_SERIES), LUNI_SOLAR_SERIES);
 
-            final PoissonSeriesParser planetaryPsiParser =
-                    new PoissonSeriesParser(21).
+            final PoissonSeriesParser<DerivativeStructure> planetaryPsiParser =
+                    new PoissonSeriesParser<DerivativeStructure>(21).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3).
                         withFirstDelaunay(2).
                         withFirstPlanetary(7).
                         withSinCos(0, 17, 18);
-            final PoissonSeries psiPlanetarySeries =
+            final PoissonSeries<DerivativeStructure> psiPlanetarySeries =
                     planetaryPsiParser.parse(getStream(PLANETARY_SERIES), PLANETARY_SERIES);
 
-            final PoissonSeriesParser gstParser =
-                    new PoissonSeriesParser(17).
+            final PoissonSeriesParser<DerivativeStructure> gstParser =
+                    new PoissonSeriesParser<DerivativeStructure>(17).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, 3).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PoissonSeries gstSeries = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
-            final PoissonSeries.CompiledSeries psiGstSeries =
+            final PoissonSeries<DerivativeStructure> gstSeries = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> psiGstSeries =
                     PoissonSeries.compile(psiLuniSolarSeries, psiPlanetarySeries, gstSeries);
 
             // ERA function
@@ -627,6 +694,63 @@ public enum IERSConventions {
 
                 }
 
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getEOPTidalCorrection()
+            throws OrekitException {
+
+            // set up nutation arguments
+            // BEWARE! Using TT as the time scale here and not UT1 is intentional!
+            // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
+            // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
+            // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
+            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(TimeScalesFactory.getTT());
+            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+
+            // set up Poisson series
+            final PoissonSeriesParser<DerivativeStructure> xyParser = new PoissonSeriesParser<DerivativeStructure>(13).
+                    withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                    withOptionalColumn(1).
+                    withGamma(2).
+                    withFirstDelaunay(3);
+            final PoissonSeries<DerivativeStructure> xSeries =
+                    xyParser.withSinCos(0, 10, 11).parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES),
+                                                         TIDAL_CORRECTION_XP_YP_SERIES);
+            final PoissonSeries<DerivativeStructure> ySeries =
+                    xyParser.withSinCos(0, 12, 13).parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES),
+                                                         TIDAL_CORRECTION_XP_YP_SERIES);
+
+            final PoissonSeriesParser<DerivativeStructure> ut1Parser = new PoissonSeriesParser<DerivativeStructure>(11).
+                    withFactor(1.0e-6).
+                    withOptionalColumn(1).
+                    withGamma(2).
+                    withFirstDelaunay(3).
+                    withSinCos(0, 10, 11);
+            final PoissonSeries<DerivativeStructure> ut1Series =
+                    ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
+
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
+                PoissonSeries.compile(xSeries, ySeries, ut1Series);
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+                    final FieldBodiesElements<DerivativeStructure> elements =
+                            arguments.evaluateDerivative(date);
+                    final DerivativeStructure[] correction = correctionSeries.value(elements);
+                    return new double[] {
+                        correction[0].getValue(),
+                        correction[1].getValue(),
+                        correction[2].getValue(),
+                        -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
+                    };
+                }
             };
 
         }
@@ -657,10 +781,16 @@ public enum IERSConventions {
         /** Greenwhich sidereal time series resources. */
         private static final String GST_SERIES         = IERS_BASE + "2010/tab5.2e.txt";
 
+        /** Tidal correction for xp, yp series resources. */
+        private static final String TIDAL_CORRECTION_XP_YP_SERIES = IERS_BASE + "2010/tab8.2ab.txt";
+
+        /** Tidal correction for UT1 resources. */
+        private static final String TIDAL_CORRECTION_UT1_SERIES = IERS_BASE + "2010/tab8.3ab.txt";
+
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final UT1Scale ut1)
+        protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
             throws OrekitException {
-            return new FundamentalNutationArguments(this, ut1,
+            return new FundamentalNutationArguments(this, gmstFunction,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
@@ -669,13 +799,13 @@ public enum IERSConventions {
         public TimeFunction<Double> getMeanObliquityFunction() throws OrekitException {
 
             // epsilon 0 value from chapter 5, page 56, other terms from equation 5.40 page 65
-            final PolynomialNutation epsilonA =
-                    new PolynomialNutation(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
-                                             -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> epsilonA =
+                    new PolynomialNutation<DerivativeStructure>(84381.406        * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -46.836769     * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   -0.0001831    * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                    0.00200340   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   -0.000000576  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   -0.0000000434 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<Double>() {
 
@@ -691,24 +821,24 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getXYSpXY2Function(final UT1Scale ut1)
-            throws OrekitException {
+        public TimeFunction<double[]> getXYSpXY2Function() throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // set up Poisson series
-            final PoissonSeriesParser parser =
-                    new PoissonSeriesParser(17).
+            final PoissonSeriesParser<DerivativeStructure> parser =
+                    new PoissonSeriesParser<DerivativeStructure>(17).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
                         withPolynomialPart('t', PolynomialParser.Unit.MICRO_ARC_SECONDS).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, 3);
-            final PoissonSeries xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
-            final PoissonSeries ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
-            final PoissonSeries sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
-            final PoissonSeries.CompiledSeries xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
+            final PoissonSeries<DerivativeStructure> xSeries = parser.parse(getStream(X_SERIES), X_SERIES);
+            final PoissonSeries<DerivativeStructure> ySeries = parser.parse(getStream(Y_SERIES), Y_SERIES);
+            final PoissonSeries<DerivativeStructure> sSeries = parser.parse(getStream(S_SERIES), S_SERIES);
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> xys = PoissonSeries.compile(xSeries, ySeries, sSeries);
 
             // create a function evaluating the series
             return new TimeFunction<double[]>() {
@@ -729,27 +859,27 @@ public enum IERSConventions {
 
             // set up the conventional polynomials
             // the following values are from equation 5.40 in IERS 2010 conventions
-            final PolynomialNutation psiA =
-                    new PolynomialNutation(    0.0,
-                                            5038.481507     * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -1.0790069    * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.00114045   * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.000132851  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.0000000951 * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation omegaA =
-                    new PolynomialNutation(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
-                                              -0.025754     * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.0512623    * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.00772503   * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.000000467  * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.0000003337 * Constants.ARC_SECONDS_TO_RADIANS);
-            final PolynomialNutation chiA =
-                    new PolynomialNutation(    0.0,
-                                              10.556403     * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -2.3814292    * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.00121197   * Constants.ARC_SECONDS_TO_RADIANS,
-                                               0.000170663  * Constants.ARC_SECONDS_TO_RADIANS,
-                                              -0.0000000560 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> psiA =
+                    new PolynomialNutation<DerivativeStructure>(   0.0,
+                                                                5038.481507     * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -1.0790069    * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -0.00114045   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                   0.000132851  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                  -0.0000000951 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> omegaA =
+                    new PolynomialNutation<DerivativeStructure>(getMeanObliquityFunction().value(getNutationReferenceEpoch()),
+                                                                -0.025754     * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                 0.0512623    * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.00772503   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.000000467  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                 0.0000003337 * Constants.ARC_SECONDS_TO_RADIANS);
+            final PolynomialNutation<DerivativeStructure> chiA =
+                    new PolynomialNutation<DerivativeStructure>( 0.0,
+                                                                10.556403     * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -2.3814292    * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.00121197   * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                 0.000170663  * Constants.ARC_SECONDS_TO_RADIANS,
+                                                                -0.0000000560 * Constants.ARC_SECONDS_TO_RADIANS);
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -766,25 +896,24 @@ public enum IERSConventions {
 
          /** {@inheritDoc} */
         @Override
-        public TimeFunction<double[]> getNutationFunction(final UT1Scale ut1)
+        public TimeFunction<double[]> getNutationFunction()
             throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // set up Poisson series
-            final PoissonSeriesParser parser =
-                    new PoissonSeriesParser(17).
+            final PoissonSeriesParser<DerivativeStructure> parser =
+                    new PoissonSeriesParser<DerivativeStructure>(17).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, 3);
-            final PoissonSeries psiSeries     = parser.parse(getStream(PSI_SERIES), PSI_SERIES);
-            final PoissonSeries epsilonSeries = parser.parse(getStream(EPSILON_SERIES), EPSILON_SERIES);
-            final PoissonSeries.CompiledSeries psiEpsilonSeries =
+            final PoissonSeries<DerivativeStructure> psiSeries     = parser.parse(getStream(PSI_SERIES), PSI_SERIES);
+            final PoissonSeries<DerivativeStructure> epsilonSeries = parser.parse(getStream(EPSILON_SERIES), EPSILON_SERIES);
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> psiEpsilonSeries =
                     PoissonSeries.compile(psiSeries, epsilonSeries);
-
-            final IAU1994ResolutionC7 eqeCorrectionFunction = new IAU1994ResolutionC7();
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -793,7 +922,7 @@ public enum IERSConventions {
                     final BodiesElements elements = arguments.evaluateAll(date);
                     final double[] psiEpsilon = psiEpsilonSeries.value(elements);
                     return new double[] {
-                        psiEpsilon[0], psiEpsilon[1], eqeCorrectionFunction.value(elements)
+                        psiEpsilon[0], psiEpsilon[1], IAU1994ResolutionC7.value(elements)
                     };
                 }
             };
@@ -802,20 +931,21 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGMSTFunction(final UT1Scale ut1) throws OrekitException {
+        public TimeFunction<DerivativeStructure> getGMSTFunction(final TimeScale ut1) throws OrekitException {
 
             // Earth Rotation Angle
             final StellarAngleCapitaine era = new StellarAngleCapitaine(ut1);
 
             // Polynomial part of the apparent sidereal time series
-            final PoissonSeriesParser parser =
-                    new PoissonSeriesParser(17).
+            // which is the opposite of Equation of Origins (EO)
+            final PoissonSeriesParser<DerivativeStructure> parser =
+                    new PoissonSeriesParser<DerivativeStructure>(17).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, 3).
                         withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PolynomialNutation gstPolynomial =
+            final PolynomialNutation<DerivativeStructure> minusEO =
                     parser.parse(getStream(GST_SERIES), GST_SERIES).getPolynomial();
 
             // create a function evaluating the series
@@ -824,7 +954,7 @@ public enum IERSConventions {
                 /** {@inheritDoc} */
                 @Override
                 public DerivativeStructure value(final AbsoluteDate date) {
-                    return era.value(date).add(gstPolynomial.valueDS(evaluateTC(date)));
+                    return era.value(date).add(minusEO.value(dsEvaluateTC(date)));
                 }
 
             };
@@ -833,27 +963,28 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+        public TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
                                                                  final EOPHistory eopHistory)
             throws OrekitException {
 
             // set up nutation arguments
-            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
+            final FundamentalNutationArguments arguments = getNutationArguments(null);
 
             // mean obliquity function
             final TimeFunction<Double> epsilon = getMeanObliquityFunction();
 
             // set up Poisson series
-            final PoissonSeriesParser baseParser =
-                    new PoissonSeriesParser(17).
+            final PoissonSeriesParser<DerivativeStructure> baseParser =
+                    new PoissonSeriesParser<DerivativeStructure>(17).
                         withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
                         withFirstDelaunay(4).
                         withFirstPlanetary(9).
                         withSinCos(0, 2, 3);
-            final PoissonSeriesParser gstParser  = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
-            final PoissonSeries psiSeries        = baseParser.parse(getStream(PSI_SERIES), PSI_SERIES);
-            final PoissonSeries gstSeries        = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
-            final PoissonSeries.CompiledSeries psiGstSeries =
+            final PoissonSeriesParser<DerivativeStructure> gstParser  = baseParser.withPolynomialPart('t', Unit.ARC_SECONDS);
+            final PoissonSeries<DerivativeStructure> psiSeries        = baseParser.parse(getStream(PSI_SERIES), PSI_SERIES);
+            final PoissonSeries<DerivativeStructure> gstSeries        = gstParser.parse(getStream(GST_SERIES), GST_SERIES);
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> psiGstSeries =
                     PoissonSeries.compile(psiSeries, gstSeries);
 
             // ERA function
@@ -882,6 +1013,63 @@ public enum IERSConventions {
 
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getEOPTidalCorrection()
+            throws OrekitException {
+
+            // set up nutation arguments
+            // BEWARE! Using TT as the time scale here and not UT1 is intentional!
+            // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
+            // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
+            // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
+            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(TimeScalesFactory.getTT());
+            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+
+            // set up Poisson series
+            final PoissonSeriesParser<DerivativeStructure> xyParser = new PoissonSeriesParser<DerivativeStructure>(13).
+                    withFactor(Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6).
+                    withOptionalColumn(1).
+                    withGamma(2).
+                    withFirstDelaunay(3);
+            final PoissonSeries<DerivativeStructure> xSeries =
+                    xyParser.withSinCos(0, 10, 11).parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES),
+                                                         TIDAL_CORRECTION_XP_YP_SERIES);
+            final PoissonSeries<DerivativeStructure> ySeries =
+                    xyParser.withSinCos(0, 12, 13).parse(getStream(TIDAL_CORRECTION_XP_YP_SERIES),
+                                                         TIDAL_CORRECTION_XP_YP_SERIES);
+
+            final PoissonSeriesParser<DerivativeStructure> ut1Parser = new PoissonSeriesParser<DerivativeStructure>(11).
+                    withFactor(1.0e-6).
+                    withOptionalColumn(1).
+                    withGamma(2).
+                    withFirstDelaunay(3).
+                    withSinCos(0, 10, 11);
+            final PoissonSeries<DerivativeStructure> ut1Series =
+                    ut1Parser.parse(getStream(TIDAL_CORRECTION_UT1_SERIES), TIDAL_CORRECTION_UT1_SERIES);
+
+            @SuppressWarnings("unchecked")
+            final PoissonSeries.CompiledSeries<DerivativeStructure> correctionSeries =
+                    PoissonSeries.compile(xSeries, ySeries, ut1Series);
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+                    final FieldBodiesElements<DerivativeStructure> elements =
+                            arguments.evaluateDerivative(date);
+                    final DerivativeStructure[] correction = correctionSeries.value(elements);
+                    return new double[] {
+                        correction[0].getValue(),
+                        correction[1].getValue(),
+                        correction[2].getValue(),
+                        -correction[2].getPartialDerivative(1) * Constants.JULIAN_DAY
+                    };
+                }
+            };
+
+        }
+
     };
 
     /** IERS conventions resources base directory. */
@@ -905,13 +1093,23 @@ public enum IERSConventions {
         return date.durationFrom(getNutationReferenceEpoch()) / Constants.JULIAN_CENTURY;
     }
 
+    /** Evaluate the date offset between the current date and the {@link #getNutationReferenceEpoch() reference date}.
+     * @param date current date
+     * @return date offset in Julian centuries
+     * @since 6.1
+     */
+    public DerivativeStructure dsEvaluateTC(final AbsoluteDate date) {
+        return new DerivativeStructure(1, 1, evaluateTC(date), 1.0 / Constants.JULIAN_CENTURY);
+    }
+
     /** Get the fundamental nutation arguments.
-     * @param ut1 UT1 time scale
+     * @param gmstFunction function computing Greenwich Mean Sidereal Time
      * @return fundamental nutation arguments
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      * @since 6.1
      */
-    public abstract FundamentalNutationArguments getNutationArguments(UT1Scale ut1) throws OrekitException;
+    protected abstract FundamentalNutationArguments getNutationArguments(TimeFunction<DerivativeStructure> gmstFunction)
+        throws OrekitException;
 
     /** Get the function computing mean obliquity of the ecliptic.
      * @return function computing mean obliquity of the ecliptic
@@ -924,12 +1122,12 @@ public enum IERSConventions {
      * <p>
      * The returned function computes the two X, Y components of CIP and the S+XY/2 component of the non-rotating CIO.
      * </p>
-     * @param ut1 UT1 time scale
      * @return function computing the Celestial Intermediate Pole and Celestial Intermediate Origin components
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getXYSpXY2Function(UT1Scale ut1) throws OrekitException;
+    public abstract TimeFunction<double[]> getXYSpXY2Function()
+        throws OrekitException;
 
     /** Get the function computing the raw Earth Orientation Angle.
      * <p>
@@ -943,7 +1141,7 @@ public enum IERSConventions {
      * the return value containing both the angle and its first time derivative
      * @since 6.1
      */
-    public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction(final UT1Scale ut1) {
+    public TimeFunction<DerivativeStructure> getEarthOrientationAngleFunction(final TimeScale ut1) {
         return new StellarAngleCapitaine(ut1);
     }
 
@@ -954,9 +1152,8 @@ public enum IERSConventions {
      * &psi;<sub>A</sub> (around Z axis), &omega;<sub>A</sub> (around X axis)
      * and &chi;<sub>A</sub> (around Z axis). The constant angle &epsilon;<sub>0</sub>
      * for the fourth rotation (around X axis) can be retrieved by evaluating the
-     * function returned by {@link #getMeanObliquityFunction()} at fundamental
-     * nutation argument {@link FundamentalNutationArguments#getReferenceEpoch()
-     * reference epoch}.
+     * function returned by {@link #getMeanObliquityFunction()} at {@link
+     * #getNutationReferenceEpoch() nutation reference epoch}.
      * </p>
      * @return function computing the precession angle
      * @exception OrekitException if table cannot be loaded
@@ -970,13 +1167,13 @@ public enum IERSConventions {
      * and the correction to the equation of equinoxes introduced since 1997-02-27 by IAU 1994
      * resolution C7 (the correction is forced to 0 before this date)
      * </p>
-     * @param ut1 UT1 time scale
      * @return function computing the nutation in longitude &Delta;&Psi; and &Delta;&epsilon;
      * and the correction of equation of equinoxes
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getNutationFunction(UT1Scale ut1) throws OrekitException;
+    public abstract TimeFunction<double[]> getNutationFunction()
+        throws OrekitException;
 
     /** Get the function computing Greenwich mean sidereal time, in radians.
      * @param ut1 UT1 time scale
@@ -985,7 +1182,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<DerivativeStructure> getGMSTFunction(UT1Scale ut1)
+    public abstract TimeFunction<DerivativeStructure> getGMSTFunction(TimeScale ut1)
         throws OrekitException;
 
     /** Get the function computing Greenwich apparent sidereal time, in radians.
@@ -996,8 +1193,17 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<DerivativeStructure> getGASTFunction(final UT1Scale ut1,
+    public abstract TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
                                                                       final EOPHistory eopHistory)
+        throws OrekitException;
+
+    /** Get the function computing tidal corrections for Earth Orientation Parameters.
+     * @return function computing tidal corrections for Earth Orientation Parameters,
+     * for xp, yp, ut1 and lod respectively
+     * @exception OrekitException if table cannot be loaded
+     * @since 6.1
+     */
+    public abstract TimeFunction<double[]> getEOPTidalCorrection()
         throws OrekitException;
 
     /** Interface for functions converting nutation corrections between
@@ -1113,23 +1319,23 @@ public enum IERSConventions {
     private static class IAU1994ResolutionC7 {
 
         /** First Moon correction term for the Equation of the Equinoxes. */
-        private final double eqe1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
+        private static final double EQE1 =     0.00264  * Constants.ARC_SECONDS_TO_RADIANS;
 
         /** Second Moon correction term for the Equation of the Equinoxes. */
-        private final double eqe2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
+        private static final double EQE2 =     0.000063 * Constants.ARC_SECONDS_TO_RADIANS;
 
         /** Start date for applying Moon corrections to the equation of the equinoxes.
          * This date corresponds to 1997-02-27T00:00:00 UTC, hence the 30s offset from TAI.
          */
-        private final AbsoluteDate newEQEModelStart =
+        private static final AbsoluteDate MODEL_START =
             new AbsoluteDate(1997, 2, 27, 0, 0, 30, TimeScalesFactory.getTAI());
 
         /** Evaluate the correction.
          * @param arguments Delaunay for nutation
          * @return correction value (0 before 1997-02-27)
          */
-        public double value(final DelaunayArguments arguments) {
-            if (arguments.getDate().compareTo(newEQEModelStart) >= 0) {
+        public static double value(final DelaunayArguments arguments) {
+            if (arguments.getDate().compareTo(MODEL_START) >= 0) {
 
                 // IAU 1994 resolution C7 added two terms to the equation of equinoxes
                 // taking effect since 1997-02-27 for continuity
@@ -1138,7 +1344,7 @@ public enum IERSConventions {
                 final double om = arguments.getOmega();
 
                 // add the two correction terms
-                return eqe1 * FastMath.sin(om) + eqe2 * FastMath.sin(om + om);
+                return EQE1 * FastMath.sin(om) + EQE2 * FastMath.sin(om + om);
 
             } else {
                 return 0.0;
@@ -1165,21 +1371,23 @@ public enum IERSConventions {
     private static class StellarAngleCapitaine implements TimeFunction<DerivativeStructure> {
 
         /** Reference date of Capitaine's Earth Rotation Angle model. */
-        private final AbsoluteDate eraReference;
+        private static final AbsoluteDate REFERENCE_DATE = new AbsoluteDate(DateComponents.J2000_EPOCH,
+                                                                            TimeComponents.H12,
+                                                                            TimeScalesFactory.getTAI());
 
         /** Constant term of Capitaine's Earth Rotation Angle model. */
-        private final double era0;
+        private static final double ERA_0   = MathUtils.TWO_PI * 0.7790572732640;
 
         /** Rate term of Capitaine's Earth Rotation Angle model.
          * (radians per day, main part) */
-        private final double era1A;
+        private static final double ERA_1A  = MathUtils.TWO_PI / Constants.JULIAN_DAY;
 
         /** Rate term of Capitaine's Earth Rotation Angle model.
          * (radians per day, fractional part) */
-        private final double era1B;
+        private static final double ERA_1B  = ERA_1A * 0.00273781191135448;
 
         /** Total rate term of Capitaine's Earth Rotation Angle model. */
-        private final double era1AB;
+        private static final double ERA_1AB = ERA_1A + ERA_1B;
 
         /** UT1 time scale. */
         private final TimeScale ut1;
@@ -1187,20 +1395,8 @@ public enum IERSConventions {
         /** Simple constructor.
          * @param ut1 UT1 time scale
          */
-        public StellarAngleCapitaine(final UT1Scale ut1) {
-
-            // constants for Capitaine's Earth Rotation Angle model
-            eraReference =
-                    new AbsoluteDate(DateComponents.J2000_EPOCH, TimeComponents.H12, TimeScalesFactory.getTAI());
-            era0   = MathUtils.TWO_PI * 0.7790572732640;
-            era1A  = MathUtils.TWO_PI / Constants.JULIAN_DAY;
-            era1B  = era1A * 0.00273781191135448;
-
-            // store the toal rate to avoid computing the same addition over and over
-            era1AB = era1A + era1B;
-
+        public StellarAngleCapitaine(final TimeScale ut1) {
             this.ut1 = ut1;
-
         }
 
         /** {@inheritDoc} */
@@ -1209,14 +1405,14 @@ public enum IERSConventions {
 
             // split the date offset as a full number of days plus a smaller part
             final int secondsInDay = 86400;
-            final double dt  = date.durationFrom(eraReference);
+            final double dt  = date.durationFrom(REFERENCE_DATE);
             final long days  = ((long) dt) / secondsInDay;
             final double dtA = secondsInDay * days;
             final double dtB = (dt - dtA) + ut1.offsetFromTAI(date);
 
             return new DerivativeStructure(1, 1,
-                                           era0 + era1A * dtB + era1B * (dtA + dtB),
-                                           era1AB);
+                                           ERA_0 + ERA_1A * dtB + ERA_1B * (dtA + dtB),
+                                           ERA_1AB);
 
         }
 

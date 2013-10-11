@@ -83,7 +83,7 @@ public class TIRFProviderTest {
                 itrfA.getTransformTo(tirf, t0).transformPVCoordinates(pvITRF),
                 6.379e-5, 3.78e-7);
 
-        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010);
+        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvCIRF =
             new PVCoordinates(new Vector3D(5100018.4047, 6122786.3648, 6380344.5328),
                               new Vector3D(-4745.380330, 790.341453, 5531.931288));
@@ -130,7 +130,7 @@ public class TIRFProviderTest {
                 itrfA.getTransformTo(tirf, t0).transformPVCoordinates(pvITRF),
                 5.697e-5, 4.69e-7);
 
-        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010);
+        Frame cirf = FramesFactory.getCIRF(IERSConventions.IERS_2010, true);
         PVCoordinates pvCIRF =
             new PVCoordinates(new Vector3D(-40588158.1236, -11462167.0709, 10293.2583),
                               new Vector3D(834.787843, -2958.305669, -0.928772));
@@ -148,9 +148,7 @@ public class TIRFProviderTest {
         throws OrekitException, InterruptedException, ExecutionException {
 
         // subject under test
-        final TIRFProvider tirf = new TIRFProvider(IERSConventions.IERS_2010,
-                                                   FramesFactory.getEOPHistory(IERSConventions.IERS_2010),
-                                                   null);
+        final TIRFProvider tirf = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, false));
         // arbitrary date
         final AbsoluteDate start = new AbsoluteDate("2009-09-19T23:59:45.000", TimeScalesFactory.getUTC());
         // in seconds = 15min

@@ -70,37 +70,45 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
      * </p>
      */
     public OMMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, 0, 0, "");
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "");
     }
 
     /** Complete constructor.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      */
-    private OMMParser(final AbsoluteDate missionReferenceDate, final double mu, final IERSConventions conventions,
+    private OMMParser(final AbsoluteDate missionReferenceDate, final double mu,
+                      final IERSConventions conventions, final boolean simpleEOP,
                       final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions, launchYear, launchNumber, launchPiece);
+        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece);
     }
 
     /** {@inheritDoc} */
     public OMMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OMMParser(newMissionReferenceDate, getMu(), getConventions(),
+        return new OMMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
     /** {@inheritDoc} */
     public OMMParser withMu(final double newMu) {
-        return new OMMParser(getMissionReferenceDate(), newMu, getConventions(),
+        return new OMMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
     /** {@inheritDoc} */
     public OMMParser withConventions(final IERSConventions newConventions) {
-        return new OMMParser(getMissionReferenceDate(), getMu(), newConventions,
+        return new OMMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+    }
+
+    /** {@inheritDoc} */
+    public OMMParser withSimpleEOP(final boolean newSimpleEOP) {
+        return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
@@ -108,7 +116,7 @@ public class OMMParser extends ODMParser implements OrbitFileParser {
     public OMMParser withInternationalDesignator(final int newLaunchYear,
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
-        return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(),
+        return new OMMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
                              newLaunchYear, newLaunchNumber, newLaunchPiece);
     }
 

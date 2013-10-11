@@ -22,8 +22,6 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
-import org.orekit.time.TimeScalesFactory;
-import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
 /** True Equator Mean Equinox Frame.
@@ -56,10 +54,9 @@ class TEMEProvider implements TransformProvider {
      */
     public TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
-        final UT1Scale ut1     = TimeScalesFactory.getUT1(eopHistory);
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
-        this.nutationFunction  = conventions.getNutationFunction(ut1);
+        this.nutationFunction  = conventions.getNutationFunction();
     }
 
     /** Get the transform from True Of Date date.

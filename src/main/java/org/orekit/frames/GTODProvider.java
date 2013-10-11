@@ -53,8 +53,8 @@ public class GTODProvider implements TransformProvider {
     private final TimeFunction<DerivativeStructure> gastFunction;
 
     /** Simple constructor.
-     * @param conventions conventions to apply
-     * @param eopHistory EOP history
+     * @param conventions IERS conventions to use
+     * @param eopHistory EOP history (may be null)
      * @exception OrekitException if EOP parameters are desired but cannot be read
      */
     protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory)

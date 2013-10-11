@@ -30,7 +30,9 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 
 /** Loader for IERS rapid data and prediction files in columns format (finals file).
@@ -285,19 +287,22 @@ class RapidDataAndPredictionColumnsLoader implements EOPHistoryLoader {
                     equinox = new double[2];
                 } else {
                     final Matcher nutationMatcher = NUTATION_PATTERN.matcher(nutationPart);
+                    final AbsoluteDate mjdDate =
+                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                             TimeScalesFactory.getUTC());
                     if (nutationMatcher.matches()) {
                         if (isNonRotatingOrigin) {
                             nro = new double[] {
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
                             };
-                            equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), nro[0], nro[1]);
+                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(1)),
                                 MILLI_ARC_SECONDS_TO_RADIANS * Double.parseDouble(nutationMatcher.group(3))
                             };
-                            nro = converter.toNonRotating(EOPEntry.mjdToDate(mjd), equinox[0], equinox[1]);
+                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                     } else {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,

@@ -48,8 +48,11 @@ public class TimeScalesFactory implements Serializable {
     /** Universal Time Coordinate scale. */
     private static UTCScale utc = null;
 
-    /** Universal Time 1 scale. */
-    private static Map<IERSConventions, UT1Scale> ut1Map = new HashMap<IERSConventions, UT1Scale>();
+    /** Universal Time 1 scale (tidal effects ignored). */
+    private static Map<IERSConventions, UT1Scale> ut1MapSimpleEOP = new HashMap<IERSConventions, UT1Scale>();
+
+    /** Universal Time 1 scale (tidal effects considered). */
+    private static Map<IERSConventions, UT1Scale> ut1MapCompleteEOP = new HashMap<IERSConventions, UT1Scale>();
 
     /** Terrestrial Time scale. */
     private static TTScale tt = null;
@@ -176,11 +179,11 @@ public class TimeScalesFactory implements Serializable {
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #getUTC()
-     * @see FramesFactory#getEOPHistory(IERSConventions)
-     * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions)}
+     * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
+     * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions, boolean)}
      */
     public static UT1Scale getUT1() throws OrekitException {
-        return getUT1(IERSConventions.IERS_2010);
+        return getUT1(IERSConventions.IERS_2010, false);
     }
 
     /** Get the Universal Time 1 scale.
@@ -192,22 +195,25 @@ public class TimeScalesFactory implements Serializable {
      * for an explanation of how the corresponding data loaders can be configured.
      * </p>
      * @param conventions IERS conventions for which EOP parameters will provide dUT1
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @return Universal Time 1 scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
      * @see #getUTC()
-     * @see FramesFactory#getEOPHistory(IERSConventions)
+     * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
      */
-    public static UT1Scale getUT1(final IERSConventions conventions) throws OrekitException {
+    public static UT1Scale getUT1(final IERSConventions conventions, final boolean simpleEOP)
+        throws OrekitException {
         synchronized (TimeScalesFactory.class) {
 
-            UT1Scale ut1 = ut1Map.get(conventions);
+            final Map<IERSConventions, UT1Scale> map =
+                    simpleEOP ? ut1MapSimpleEOP : ut1MapCompleteEOP;
+            UT1Scale ut1 = map.get(conventions);
             if (ut1 == null) {
-                ut1 = getUT1(FramesFactory.getEOPHistory(conventions));
-                ut1Map.put(conventions, ut1);
+                ut1 = getUT1(FramesFactory.getEOPHistory(conventions, simpleEOP));
+                map.put(conventions, ut1);
             }
             return ut1;
-
         }
     }
 

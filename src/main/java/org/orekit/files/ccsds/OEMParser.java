@@ -73,37 +73,45 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
      * </p>
      */
     public OEMParser() {
-        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, 0, 0, "");
+        this(AbsoluteDate.FUTURE_INFINITY, Double.NaN, null, true, 0, 0, "");
     }
 
     /** Complete constructor.
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      */
-    private OEMParser(final AbsoluteDate missionReferenceDate, final double mu, final IERSConventions conventions,
+    private OEMParser(final AbsoluteDate missionReferenceDate, final double mu,
+                      final IERSConventions conventions, final boolean simpleEOP,
                       final int launchYear, final int launchNumber, final String launchPiece) {
-        super(missionReferenceDate, mu, conventions, launchYear, launchNumber, launchPiece);
+        super(missionReferenceDate, mu, conventions, simpleEOP, launchYear, launchNumber, launchPiece);
     }
 
     /** {@inheritDoc} */
     public OEMParser withMissionReferenceDate(final AbsoluteDate newMissionReferenceDate) {
-        return new OEMParser(newMissionReferenceDate, getMu(), getConventions(),
+        return new OEMParser(newMissionReferenceDate, getMu(), getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
     /** {@inheritDoc} */
     public OEMParser withMu(final double newMu) {
-        return new OEMParser(getMissionReferenceDate(), newMu, getConventions(),
+        return new OEMParser(getMissionReferenceDate(), newMu, getConventions(), isSimpleEOP(),
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
     /** {@inheritDoc} */
     public OEMParser withConventions(final IERSConventions newConventions) {
-        return new OEMParser(getMissionReferenceDate(), getMu(), newConventions,
+        return new OEMParser(getMissionReferenceDate(), getMu(), newConventions, isSimpleEOP(),
+                             getLaunchYear(), getLaunchNumber(), getLaunchPiece());
+    }
+
+    /** {@inheritDoc} */
+    public OEMParser withSimpleEOP(final boolean newSimpleEOP) {
+        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), newSimpleEOP,
                              getLaunchYear(), getLaunchNumber(), getLaunchPiece());
     }
 
@@ -111,7 +119,7 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
     public OEMParser withInternationalDesignator(final int newLaunchYear,
                                                  final int newLaunchNumber,
                                                  final String newLaunchPiece) {
-        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(),
+        return new OEMParser(getMissionReferenceDate(), getMu(), getConventions(), isSimpleEOP(),
                              newLaunchYear, newLaunchNumber, newLaunchPiece);
     }
 
@@ -339,7 +347,7 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                         pi.covRefFrame   = null;
                     } else {
                         pi.covRefLofType = null;
-                        pi.covRefFrame   = frame.getFrame(getConventions());
+                        pi.covRefFrame   = frame.getFrame(getConventions(), isSimpleEOP());
                     }
                     break;
                 case COVARIANCE_STOP :

@@ -33,8 +33,10 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.Month;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -320,7 +322,10 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                             Double.isNaN(array[4]) || Double.isNaN(array[5])) {
                         throw notifyUnexpectedErrorEncountered(name);
                     }
-                    final double[] equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), array[4], array[5]);
+                    final AbsoluteDate mjdDate =
+                            new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                             TimeScalesFactory.getUTC());
+                    final double[] equinox = converter.toEquinox(mjdDate, array[4], array[5]);
                     history.add(new EOPEntry(mjd, array[0], array[1], array[2], array[3],
                                              equinox[0], equinox[1], array[4], array[5]));
                 }
@@ -415,6 +420,9 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                     final double dtu1  = Double.parseDouble(matcher.group(4));
                     final double lod   = Double.parseDouble(matcher.group(5)) * MILLI_SECONDS_TO_SECONDS;
                     if (mjd >= mjdMin) {
+                        final AbsoluteDate mjdDate =
+                                new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                                 TimeScalesFactory.getUTC());
                         final double[] equinox;
                         final double[] nro;
                         if (isNonRotatingOrigin) {
@@ -422,13 +430,13 @@ class BulletinBFilesLoader implements EOPHistoryLoader {
                                 Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
                                 Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
                             };
-                            equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), nro[0], nro[1]);
+                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 Double.parseDouble(matcher.group(6)) * MILLI_ARC_SECONDS_TO_RADIANS,
                                 Double.parseDouble(matcher.group(7)) * MILLI_ARC_SECONDS_TO_RADIANS
                             };
-                            nro = converter.toNonRotating(EOPEntry.mjdToDate(mjd), equinox[0], equinox[1]);
+                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
                         if (mjd >= mjdMax) {

@@ -17,10 +17,10 @@
 package org.orekit.frames;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.TimeStamped;
 
@@ -81,7 +81,8 @@ public class EOPEntry implements TimeStamped, Serializable {
         throws OrekitException {
 
         this.mjd   = mjd;
-        this.date  = mjdToDate(mjd);
+        this.date  = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                      TimeScalesFactory.getUTC());
         this.dt    = dt;
         this.lod   = lod;
         this.x     = x;
@@ -160,17 +161,6 @@ public class EOPEntry implements TimeStamped, Serializable {
      */
     public double getDy() {
         return dy;
-    }
-
-    /** Convert mjd date at 00h00 UTC to absolute date.
-     * @param mjd Modified Julian Day
-     * @return date at 00h00 UTC
-     * @exception OrekitException if UTC scale cannot be retrieved
-     */
-    public static AbsoluteDate mjdToDate(final int mjd)
-        throws OrekitException {
-        final long javaTime = (mjd - 40587) * 86400000l;
-        return new AbsoluteDate(new Date(javaTime), TimeScalesFactory.getUTC());
     }
 
 }

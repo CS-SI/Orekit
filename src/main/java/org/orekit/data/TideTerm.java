@@ -18,11 +18,14 @@ package org.orekit.data;
 
 import org.apache.commons.math3.RealFieldElement;
 
-/** Class for luni-solar only terms.
+/** Class for tide terms.
  * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class LuniSolarTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+class TideTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
+
+    /** Coefficient for γ = GMST + π tide parameter. */
+    private final int cGamma;
 
     /** Coefficient for mean anomaly of the Moon. */
     private final int cL;
@@ -39,14 +42,17 @@ class LuniSolarTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
     /** Coefficient for mean longitude of the ascending node of the Moon. */
     private final int cOmega;
 
-    /** Build a luni-solar term for nutation series.
+    /** Build a tide term for nutation series.
+     * @param cGamma coefficient for γ = GMST + π tide parameter
      * @param cL coefficient for mean anomaly of the Moon
      * @param cLPrime coefficient for mean anomaly of the Sun
      * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
      * @param cD coefficient for mean elongation of the Moon from the Sun
      * @param cOmega coefficient for mean longitude of the ascending node of the Moon
      */
-    public LuniSolarTerm(final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
+    public TideTerm(final int cGamma,
+                    final int cL, final int cLPrime, final int cF, final int cD, final int cOmega) {
+        this.cGamma  = cGamma;
         this.cL      = cL;
         this.cLPrime = cLPrime;
         this.cF      = cF;
@@ -56,13 +62,15 @@ class LuniSolarTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
 
     /** {@inheritDoc} */
     protected double argument(final BodiesElements elements) {
-        return cL * elements.getL() + cLPrime * elements.getLPrime() + cF * elements.getF() +
+        return cGamma * elements.getGamma() +
+               cL * elements.getL() + cLPrime * elements.getLPrime() + cF * elements.getF() +
                cD * elements.getD() + cOmega * elements.getOmega();
     }
 
     /** {@inheritDoc} */
     protected T argument(final FieldBodiesElements<T> elements) {
-        return elements.getL().multiply(cL).
+        return elements.getGamma().multiply(cGamma).
+                add(elements.getL().multiply(cL)).
                 add(elements.getLPrime().multiply(cLPrime)).
                 add(elements.getF().multiply(cF)).
                 add(elements.getD().multiply(cD)).

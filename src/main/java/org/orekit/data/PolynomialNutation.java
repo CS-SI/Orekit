@@ -18,19 +18,19 @@ package org.orekit.data;
 
 import java.io.Serializable;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.orekit.utils.Constants;
+import org.apache.commons.math3.RealFieldElement;
 
 /**
  * Polynomial nutation function.
  *
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  * @see PoissonSeries
  */
-public class PolynomialNutation implements Serializable {
+public class PolynomialNutation<T extends RealFieldElement<T>> implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130728L;
+    private static final long serialVersionUID = 20131007L;
 
     /** Coefficients of the polynomial part. */
     private double[] coefficients;
@@ -58,26 +58,17 @@ public class PolynomialNutation implements Serializable {
     }
 
     /** Evaluate the value of the polynomial.
-     * <p>
-     * The returned value contains both the value and its first time derivative
-     * </p>
      * @param tc date offset in Julian centuries
      * @return value of the polynomial
      */
-    public DerivativeStructure valueDS(final double tc) {
+    public T value(final T tc) {
 
-        double p    = 0;
-        double pDot = 0;
-        for (int i = coefficients.length - 1; i > 0; --i) {
-            p    = p    * tc +     coefficients[i];
-            pDot = pDot * tc + i * coefficients[i];
-        }
-        if (coefficients.length > 0) {
-            p     = p * tc + coefficients[0];
-            pDot /= Constants.JULIAN_CENTURY;
+        T p = tc.getField().getZero();
+        for (int i = coefficients.length - 1; i >= 0; --i) {
+            p = p.multiply(tc).add(coefficients[i]);
         }
 
-        return new DerivativeStructure(1, 1, p, pDot);
+        return p;
 
     }
 

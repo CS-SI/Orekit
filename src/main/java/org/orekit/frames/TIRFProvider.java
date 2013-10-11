@@ -26,7 +26,6 @@ import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
-import org.orekit.utils.IERSConventions;
 
 /** Terrestrial Intermediate Reference Frame.
  * <p> The pole motion is not considered : Pseudo Earth Fixed Frame. It handles
@@ -40,9 +39,6 @@ class TIRFProvider implements TransformProvider {
     /** Angular velocity of the Earth, in rad/s. */
     private static final double AVE = 7.292115146706979e-5;
 
-    /** Tidal correction (null if tidal effects are ignored). */
-    private final TidalCorrection tidalCorrection;
-
     /** EOP history. */
     private final EOPHistory eopHistory;
 
@@ -50,20 +46,15 @@ class TIRFProvider implements TransformProvider {
     private final TimeFunction<DerivativeStructure> era;
 
     /** Simple constructor.
-     * @param conventions IERS conventions to apply
      * @param eopHistory EOP history
-     * @param tidalCorrection model for tidal correction (may be null)
      * @exception OrekitException if nutation cannot be computed
      */
-    protected TIRFProvider(final IERSConventions conventions,
-                           final EOPHistory eopHistory,
-                           final TidalCorrection tidalCorrection)
+    protected TIRFProvider(final EOPHistory eopHistory)
         throws OrekitException {
 
         final UT1Scale ut1   = TimeScalesFactory.getUT1(eopHistory);
-        this.tidalCorrection = tidalCorrection;
         this.eopHistory      = eopHistory;
-        this.era             = conventions.getEarthOrientationAngleFunction(ut1);
+        this.era             = eopHistory.getConventions().getEarthOrientationAngleFunction(ut1);
 
     }
 
@@ -72,13 +63,6 @@ class TIRFProvider implements TransformProvider {
      */
     EOPHistory getEOPHistory() {
         return eopHistory;
-    }
-
-    /** Get the tidal correction model.
-     * @return tidal correction model (may be null)
-     */
-    TidalCorrection getTidalCorrection() {
-        return tidalCorrection;
     }
 
     /** Get the transform from CIRF 2000 at specified date.
@@ -91,8 +75,7 @@ class TIRFProvider implements TransformProvider {
     public Transform getTransform(final AbsoluteDate date) throws OrekitException {
 
         // compute proper rotation
-        final DerivativeStructure rawERA = era.value(date);
-        final double correctedERA = correctERA(date, rawERA);
+        final double correctedERA = era.value(date).getValue();
 
         // compute true angular rotation of Earth, in rad/s
         final double lod = (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
@@ -111,16 +94,7 @@ class TIRFProvider implements TransformProvider {
      * @exception OrekitException if nutation model cannot be computed
      */
     public double getEarthRotationAngle(final AbsoluteDate date) throws OrekitException {
-        return MathUtils.normalizeAngle(correctERA(date, era.value(date)), 0);
-    }
-
-    /** Apply corrections to the Earth Rotation Angle.
-     * @param date date
-     * @param  rawERA raw value of ERA
-     * @return corrected value of the ERA
-      */
-    private double correctERA(final AbsoluteDate date, final DerivativeStructure rawERA) {
-        return (tidalCorrection == null) ? rawERA.getValue() : rawERA.taylor(tidalCorrection.getDUT1(date));
+        return MathUtils.normalizeAngle(era.value(date).getValue(), 0);
     }
 
 }

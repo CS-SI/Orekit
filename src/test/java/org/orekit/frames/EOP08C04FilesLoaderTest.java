@@ -52,7 +52,7 @@ public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2003, 1, 1, TimeScalesFactory.getUTC()),
-                            new EOPHistory(history).getStartDate());
+                            new EOPHistory(IERSConventions.IERS_2010, history, true).getStartDate());
     }
 
     @Test
@@ -63,7 +63,7 @@ public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
         SortedSet<EOPEntry> history = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(converter, history);
         Assert.assertEquals(new AbsoluteDate(2005, 12, 31, TimeScalesFactory.getUTC()),
-                            new EOPHistory(history).getEndDate());
+                            new EOPHistory(IERSConventions.IERS_2010, history, true).getEndDate());
     }
 
     @Test
@@ -73,7 +73,7 @@ public class EOP08C04FilesLoaderTest extends AbstractFilesLoaderTest {
                 IERSConventions.IERS_2010.getNutationCorrectionConverter();
         SortedSet<EOPEntry> data = new TreeSet<EOPEntry>(new ChronologicalComparator());
         new EOP08C04FilesLoader(FramesFactory.EOPC04_2000_FILENAME).fillHistory(converter, data);
-        EOPHistory history = new EOPHistory(data);
+        EOPHistory history = new EOPHistory(IERSConventions.IERS_2010, data, true);
         AbsoluteDate date = new AbsoluteDate(2003, 1, 7, 12, 0, 0, TimeScalesFactory.getUTC());
         Assert.assertEquals(        (9 * ( 0.0007777 +  0.0008565) - ( 0.0005883 +  0.0008758)) / 16,  history.getLOD(date), 1.0e-10);
         Assert.assertEquals(        (9 * (-0.2920264 + -0.2928461) - (-0.2913281 + -0.2937305)) / 16,  history.getUT1MinusUTC(date), 1.0e-10);

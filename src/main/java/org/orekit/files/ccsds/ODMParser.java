@@ -62,6 +62,9 @@ public abstract class ODMParser {
     /** IERS Conventions. */
     private final  IERSConventions conventions;
 
+    /** Indicator for simple or accurate EOP interpolation. */
+    private final  boolean simpleEOP;
+
     /** Launch Year. */
     private int launchYear;
 
@@ -75,15 +78,18 @@ public abstract class ODMParser {
      * @param missionReferenceDate reference date for Mission Elapsed Time or Mission Relative Time time systems
      * @param mu gravitational coefficient
      * @param conventions IERS Conventions
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
      * @param launchYear launch year for TLEs
      * @param launchNumber launch number for TLEs
      * @param launchPiece piece of launch (from "A" to "ZZZ") for TLEs
      */
-    protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu, final IERSConventions conventions,
+    protected ODMParser(final AbsoluteDate missionReferenceDate, final double mu,
+                        final IERSConventions conventions, final boolean simpleEOP,
                         final int launchYear, final int launchNumber, final String launchPiece) {
         this.missionReferenceDate = missionReferenceDate;
         this.mu                   = mu;
         this.conventions          = conventions;
+        this.simpleEOP            = simpleEOP;
         this.launchYear           = launchYear;
         this.launchNumber         = launchNumber;
         this.launchPiece          = launchPiece;
@@ -132,6 +138,21 @@ public abstract class ODMParser {
      */
     public IERSConventions getConventions() {
         return conventions;
+    }
+
+    /** Set EOP interpolation method.
+     * @param newSimpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @return a new instance, with EOP interpolation method replaced
+     * @see #isSimpleEOP()
+     */
+    public abstract ODMParser withSimpleEOP(final boolean newSimpleEOP);
+
+    /** Get EOP interpolation method.
+     * @return true if tidal effects are ignored when interpolating EOP
+     * @see #withSimpleEOP(boolean)
+     */
+    public boolean isSimpleEOP() {
+        return simpleEOP;
     }
 
     /** Set international designator.
@@ -314,7 +335,7 @@ public abstract class ODMParser {
             return true;
 
         case REF_FRAME:
-            metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions()));
+            metaData.setRefFrame(parseCCSDSFrame(keyValue.getValue()).getFrame(getConventions(), isSimpleEOP()));
             return true;
 
         case REF_FRAME_EPOCH:
@@ -431,7 +452,7 @@ public abstract class ODMParser {
             if (covFrame.isLof()) {
                 general.setCovRefLofType(covFrame.getLofType());
             } else {
-                general.setCovRefFrame(covFrame.getFrame(getConventions()));
+                general.setCovRefFrame(covFrame.getFrame(getConventions(), isSimpleEOP()));
             }
             return true;
 
@@ -561,7 +582,7 @@ public abstract class ODMParser {
         case TT:
             return new AbsoluteDate(date, TimeScalesFactory.getTT());
         case UT1:
-            return new AbsoluteDate(date, TimeScalesFactory.getUT1(conventions));
+            return new AbsoluteDate(date, TimeScalesFactory.getUT1(conventions, false));
         case UTC:
             return new AbsoluteDate(date, TimeScalesFactory.getUTC());
         case MET: {

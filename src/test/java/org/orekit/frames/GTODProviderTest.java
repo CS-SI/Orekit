@@ -65,7 +65,7 @@ public class GTODProviderTest {
         // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
         // was not taken into account in the reference paper, so we fix it here for the test
         final double dDeltaPsi =
-                FramesFactory.getEOPHistory(IERSConventions.IERS_1996).getEquinoxNutationCorrection(t0)[0];
+                FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
                 new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
@@ -75,8 +75,8 @@ public class GTODProviderTest {
             new PVCoordinates(new Vector3D(5094514.7804, 6127366.4612, 6380344.5328),
                               new Vector3D(-4746.088567, 786.077222, 5531.931288));
 
-        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996).
-                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996), t0);
+        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
         checkPV(fix.transformPVCoordinates(pvPEF), t.transformPVCoordinates(pvTOD), 0.00942, 3.12e-5);
 
         // if we forget to apply nutation corrections, results are much worse, which is expected
@@ -107,9 +107,8 @@ public class GTODProviderTest {
                                            TimeComponents.H00,
                                            TimeScalesFactory.getUTC());
 
-        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996).
-                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996), t0);
-
+        Transform t = FramesFactory.getTOD(IERSConventions.IERS_1996, true).
+                getTransformTo(FramesFactory.getGTOD(IERSConventions.IERS_1996, true), t0);
         // TOD iau76
         PVCoordinates pvTOD =
             new PVCoordinates(new Vector3D(-40577427.7501, -11500096.1306, 10293.2583),
@@ -123,7 +122,7 @@ public class GTODProviderTest {
         // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
         // was not taken into account in the reference paper, so we fix it here for the test
         final double dDeltaPsi =
-                FramesFactory.getEOPHistory(IERSConventions.IERS_1996).getEquinoxNutationCorrection(t0)[0];
+                FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
                 new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));

@@ -33,6 +33,8 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -130,6 +132,9 @@ public class Utils {
                 conventions.getNutationCorrectionConverter();
         final List<EOPEntry> list = new ArrayList<EOPEntry>();
         for (double[] row : data) {
+            final AbsoluteDate date =
+                    new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, (int) row[0]),
+                                     TimeScalesFactory.getUTC());
             final double[] nro;
             final double[] equinox;
             if (Double.isNaN(row[7])) {
@@ -137,15 +142,13 @@ public class Utils {
                     Constants.ARC_SECONDS_TO_RADIANS * row[5],
                     Constants.ARC_SECONDS_TO_RADIANS * row[6]
                 };
-                nro     = converter.toNonRotating(EOPEntry.mjdToDate((int) row[0]),
-                                                  equinox[0], equinox[1]);
+                nro     = converter.toNonRotating(date, equinox[0], equinox[1]);
             } else if (Double.isNaN(row[5])) {
                 nro     = new double[] {
                     Constants.ARC_SECONDS_TO_RADIANS * row[7],
                     Constants.ARC_SECONDS_TO_RADIANS * row[8]
                 };
-                equinox = converter.toEquinox(EOPEntry.mjdToDate((int) row[0]),
-                                              nro[0], nro[1]);
+                equinox = converter.toEquinox(date, nro[0], nro[1]);
             } else {
                 equinox = new double[] {
                     Constants.ARC_SECONDS_TO_RADIANS * row[5],

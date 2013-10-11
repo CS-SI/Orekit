@@ -25,7 +25,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.IERSConventions;
 import org.orekit.utils.ImmutableTimeStampedCache;
 
 /** This class loads any kind of Earth Orientation Parameter data throughout a large time range.
@@ -34,7 +36,7 @@ import org.orekit.utils.ImmutableTimeStampedCache;
 public class EOPHistory implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130924L;
+    private static final long serialVersionUID = 20131010L;
 
     /** Number of points to use in interpolation. */
     private static final int INTERPOLATION_POINTS = 4;
@@ -49,12 +51,24 @@ public class EOPHistory implements Serializable {
     /** EOP history entries. */
     private final ImmutableTimeStampedCache<EOPEntry> cache;
 
-    /**
-     * Simple constructor.
-     *
+    /** IERS conventions to which EOP refers. */
+    private final IERSConventions conventions;
+
+    /** Correction to apply to EOP (may be null). */
+    private final transient TimeFunction<double[]> tidalCorrection;
+
+    /** Simple constructor.
+     * @param conventions IERS conventions to which EOP refers
      * @param data the EOP data to use
+     * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+     * @exception OrekitException if tidal correction model cannot be loaded
      */
-    protected EOPHistory(final Collection<EOPEntry> data) {
+    protected EOPHistory(final IERSConventions conventions,
+                         final Collection<EOPEntry> data,
+                         final boolean simpleEOP)
+        throws OrekitException {
+        this.conventions = conventions;
+        tidalCorrection = simpleEOP ? null : conventions.getEOPTidalCorrection();
         if (data.size() >= INTERPOLATION_POINTS) {
             // enough data to interpolate
             cache = new ImmutableTimeStampedCache<EOPEntry>(INTERPOLATION_POINTS, data);
@@ -64,6 +78,13 @@ public class EOPHistory implements Serializable {
             cache = ImmutableTimeStampedCache.emptyCache();
             hasData = false;
         }
+    }
+
+    /** Get the IERS conventions to which these EOP apply.
+     * @return IERS conventions to which these EOP apply
+     */
+    public IERSConventions getConventions() {
+        return conventions;
     }
 
     /** Get the date of the first available Earth Orientation Parameters.
@@ -89,7 +110,7 @@ public class EOPHistory implements Serializable {
         //check if there is data for date
         if (!this.hasDataFor(date)) {
             // no EOP data available for this date, we use a default 0.0 offset
-            return 0.0;
+            return (tidalCorrection == null) ? 0.0 : tidalCorrection.value(date)[2];
         }
         //we have EOP data -> interpolate offset
         try {
@@ -113,7 +134,10 @@ public class EOPHistory implements Serializable {
                                                 dut
                                             });
             }
-            final double interpolated = interpolator.value(0)[0];
+            double interpolated = interpolator.value(0)[0];
+            if (tidalCorrection != null) {
+                interpolated += tidalCorrection.value(date)[2];
+            }
             return beforeLeap ? interpolated : interpolated + 1.0;
         } catch (TimeStampedCacheException tce) {
             //this should not happen because of date check above
@@ -144,7 +168,7 @@ public class EOPHistory implements Serializable {
         //check if there is data for date
         if (!this.hasDataFor(date)) {
             // no EOP data available for this date, we use a default null correction
-            return 0.0;
+            return (tidalCorrection == null) ? 0.0 : tidalCorrection.value(date)[3];
         }
         //we have EOP data for date -> interpolate correction
         try {
@@ -155,7 +179,11 @@ public class EOPHistory implements Serializable {
                                                 entry.getLOD()
                                             });
             }
-            return interpolator.value(0)[0];
+            double interpolated = interpolator.value(0)[0];
+            if (tidalCorrection != null) {
+                interpolated += tidalCorrection.value(date)[3];
+            }
+            return interpolated;
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
             throw OrekitException.createInternalError(tce);
@@ -172,7 +200,12 @@ public class EOPHistory implements Serializable {
         // check if there is data for date
         if (!this.hasDataFor(date)) {
             // no EOP data available for this date, we use a default null correction
-            return PoleCorrection.NULL_CORRECTION;
+            if (tidalCorrection == null) {
+                return PoleCorrection.NULL_CORRECTION;
+            } else {
+                final double[] correction = tidalCorrection.value(date);
+                return new PoleCorrection(correction[0], correction[1]);
+            }
         }
         //we have EOP data for date -> interpolate correction
         try {
@@ -184,6 +217,11 @@ public class EOPHistory implements Serializable {
                                             });
             }
             final double[] interpolated = interpolator.value(0);
+            if (tidalCorrection != null) {
+                final double[] correction = tidalCorrection.value(date);
+                interpolated[0] += correction[0];
+                interpolated[1] += correction[1];
+            }
             return new PoleCorrection(interpolated[0], interpolated[1]);
         } catch (TimeStampedCacheException tce) {
             // this should not happen because of date check above
@@ -289,6 +327,58 @@ public class EOPHistory implements Serializable {
      */
     List<EOPEntry> getEntries() {
         return cache.getAll();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(conventions, getEntries(), tidalCorrection == null);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131010L;
+
+        /** IERS conventions. */
+        private final IERSConventions conventions;
+
+        /** EOP entries. */
+        private final List<EOPEntry> entries;
+
+        /** Indicator for simple interpolation without tidal effects. */
+        private final boolean simpleEOP;
+
+        /** Simple constructor.
+         * @param conventions IERS conventions to which EOP refers
+         * @param entries the EOP data to use
+         * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
+         */
+        public DataTransferObject(final IERSConventions conventions,
+                                  final List<EOPEntry> entries,
+                                  final boolean simpleEOP) {
+            this.conventions = conventions;
+            this.entries     = entries;
+            this.simpleEOP   = simpleEOP;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link EOPHistory}.
+         * @return replacement {@link EOPHistory}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new EOPHistory(conventions, entries, simpleEOP);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
+
     }
 
 }

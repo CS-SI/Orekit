@@ -38,19 +38,14 @@ class ITRFProvider implements TransformProvider {
      */
     private static final double S_PRIME_RATE = -47e-6 * Constants.ARC_SECONDS_TO_RADIANS;
 
-    /** Tidal correction (null if tidal effects are ignored). */
-    private final TidalCorrection tidalCorrection;
-
     /** EOP history. */
     private final EOPHistory eopHistory;
 
     /** Simple constructor.
      * @param eopHistory EOP history
-     * @param tidalCorrection model for tidal correction (may be null)
      */
-    public ITRFProvider(final EOPHistory eopHistory, final TidalCorrection tidalCorrection) {
-        this.tidalCorrection = tidalCorrection;
-        this.eopHistory      = eopHistory;
+    public ITRFProvider(final EOPHistory eopHistory) {
+        this.eopHistory = eopHistory;
     }
 
     /** Get the transform from TIRF 2000 at specified date.
@@ -67,12 +62,11 @@ class ITRFProvider implements TransformProvider {
         final double ttc =  tts / Constants.JULIAN_CENTURY;
 
         // pole correction parameters
-        final PoleCorrection pCorr = getPoleCorrection(date);
-        final PoleCorrection nCorr = nutationCorrection(date);
+        final PoleCorrection eop = eopHistory.getPoleCorrection(date);
 
         // elementary rotations due to pole motion in terrestrial frame
-        final Rotation r1 = new Rotation(Vector3D.PLUS_I, -(pCorr.getYp() + nCorr.getYp()));
-        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -(pCorr.getXp() + nCorr.getXp()));
+        final Rotation r1 = new Rotation(Vector3D.PLUS_I, -eop.getYp());
+        final Rotation r2 = new Rotation(Vector3D.PLUS_J, -eop.getXp());
         final Rotation r3 = new Rotation(Vector3D.PLUS_K, S_PRIME_RATE * ttc);
 
         // complete pole motion in terrestrial frame
@@ -84,35 +78,6 @@ class ITRFProvider implements TransformProvider {
         // set up the transform from parent TIRF
         return new Transform(date, combined, Vector3D.ZERO);
 
-    }
-
-    /** Get the pole correction.
-     * @param date date at which the correction is desired
-     * @return pole correction including both EOP values and tidal correction
-     * if they have been configured
-     */
-    public PoleCorrection getPoleCorrection(final AbsoluteDate date) {
-        final PoleCorrection eop = eopHistory.getPoleCorrection(date);
-        if (tidalCorrection == null) {
-            return eop;
-        } else {
-            final PoleCorrection tidal = tidalCorrection.getPoleCorrection(date);
-            return new PoleCorrection(eop.getXp() + tidal.getXp(),
-                                      eop.getYp() + tidal.getYp());
-        }
-    }
-
-    /** Compute nutation correction due to tidal gravity.
-     * @param date current date
-     * @return nutation correction
-     */
-    private PoleCorrection nutationCorrection(final AbsoluteDate date) {
-        // this factor seems to be of order of magnitude a few tens of
-        // micro arcseconds. It is computed from the classical approach
-        // (not the new one used here) and hence requires computation
-        // of GST, IAU2000A nutation, equations of equinox ...
-        // For now, this term is ignored
-        return PoleCorrection.NULL_CORRECTION;
     }
 
 }

@@ -33,7 +33,6 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
-import org.orekit.time.UT1Scale;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -110,18 +109,19 @@ public class FundamentalNutationArguments implements Serializable {
 
     /** Build a model of fundamental arguments from an IERS table file.
      * @param conventions IERS conventions to use
-     * @param ut1 UT1 time scale
+     * @param gmstFunction function computing Greenwich Mean Sidereal Time
+     * (may be null if tide parameter γ = GMST + π is not needed)
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
     public FundamentalNutationArguments(final IERSConventions conventions,
-                                        final UT1Scale ut1,
+                                        final TimeFunction<DerivativeStructure> gmstFunction,
                                         final InputStream stream, final String name)
         throws OrekitException {
 
         this.conventions  = conventions;
-        this.gmstFunction = conventions.getGMSTFunction(ut1);
+        this.gmstFunction = gmstFunction;
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -220,9 +220,10 @@ public class FundamentalNutationArguments implements Serializable {
     public BodiesElements evaluateAll(final AbsoluteDate date) {
 
         final double tc = conventions.evaluateTC(date);
+        final double gamma = gmstFunction == null ?
+                             Double.NaN : gmstFunction.value(date).getValue() + FastMath.PI;
 
-        return new BodiesElements(date, tc,
-                                  gmstFunction.value(date).getValue() + FastMath.PI,
+        return new BodiesElements(date, tc, gamma,
                                   value(tc, lCoefficients),      // mean anomaly of the Moon
                                   value(tc, lPrimeCoefficients), // mean anomaly of the Sun
                                   value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
@@ -237,6 +238,48 @@ public class FundamentalNutationArguments implements Serializable {
                                   value(tc, lUCoefficients),     // mean Uranus longitude
                                   value(tc, lNeCoefficients),    // mean Neptune longitude
                                   value(tc, paCoefficients));    // general accumulated precession in longitude
+
+    }
+
+    /** Evaluate a polynomial.
+     * @param tc offset in Julian centuries
+     * @param coefficients polynomial coefficients (ordered from low degrees to high degrees)
+     * @return value of the polynomial
+     */
+    private DerivativeStructure value(final DerivativeStructure tc, final double[] coefficients) {
+        DerivativeStructure value = tc.getField().getZero();
+        for (int i = coefficients.length - 1; i >= 0; --i) {
+            value = value.multiply(tc).add(coefficients[i]);
+        }
+        return value;
+    }
+
+    /** Evaluate all fundamental arguments for the current date (Delaunay plus planetary),
+     * including the first time derivative.
+     * @param date current date
+     * @return all fundamental arguments for the current date (Delaunay plus planetary),
+     * including the first time derivative
+     */
+    public FieldBodiesElements<DerivativeStructure> evaluateDerivative(final AbsoluteDate date) {
+
+        final DerivativeStructure tc = conventions.dsEvaluateTC(date);
+
+        return new FieldBodiesElements<DerivativeStructure>(date, tc,
+                                                            gmstFunction.value(date).add(FastMath.PI),
+                                                            value(tc, lCoefficients),      // mean anomaly of the Moon
+                                                            value(tc, lPrimeCoefficients), // mean anomaly of the Sun
+                                                            value(tc, fCoefficients),      // L - &Omega; where L is the mean longitude of the Moon
+                                                            value(tc, dCoefficients),      // mean elongation of the Moon from the Sun
+                                                            value(tc, omegaCoefficients),  // mean longitude of the ascending node of the Moon
+                                                            value(tc, lMeCoefficients),    // mean Mercury longitude
+                                                            value(tc, lVeCoefficients),    // mean Venus longitude
+                                                            value(tc, lECoefficients),     // mean Earth longitude
+                                                            value(tc, lMaCoefficients),    // mean Mars longitude
+                                                            value(tc, lJCoefficients),     // mean Jupiter longitude
+                                                            value(tc, lSaCoefficients),    // mean Saturn longitude
+                                                            value(tc, lUCoefficients),     // mean Uranus longitude
+                                                            value(tc, lNeCoefficients),    // mean Neptune longitude
+                                                            value(tc, paCoefficients));    // general accumulated precession in longitude
 
     }
 

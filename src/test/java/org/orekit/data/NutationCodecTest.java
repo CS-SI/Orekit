@@ -31,12 +31,12 @@ public class NutationCodecTest {
     public void testKeySymmetry() {
 
         RandomGenerator random = new Well1024a(0x8fef7f6f99ad5d56l);
-        int[] multipliers = new int[14];
+        int[] multipliers = new int[15];
         for (int i = 0; i < 100000; ++i) {
             Arrays.fill(multipliers, 0);
             int nb = 1 + random.nextInt(7);
             for (int k = 0; k < nb; ++k) {
-                int index = random.nextInt(14);
+                int index = random.nextInt(15);
                 while (multipliers[index] == 0) {
                     multipliers[index] = random.nextInt(128) - 64;
                 }

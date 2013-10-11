@@ -16,10 +16,13 @@
  */
 package org.orekit.data;
 
+import org.apache.commons.math3.RealFieldElement;
+
 /** Class for planetary only terms.
+ * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
-class PlanetaryTerm extends SeriesTerm {
+class PlanetaryTerm<T extends RealFieldElement<T>> extends SeriesTerm<T> {
 
     /** Coefficient for mean Mercury longitude. */
     private final int cMe;
@@ -78,6 +81,20 @@ class PlanetaryTerm extends SeriesTerm {
                cMa * elements.getLMa() + cJu * elements.getLJu() +
                cSa * elements.getLSa() + cUr * elements.getLUr() +
                cNe * elements.getLNe() + cPa * elements.getPa();
+    }
+
+    /** {@inheritDoc} */
+    protected T argument(final FieldBodiesElements<T> elements) {
+        return elements.getLMe().multiply(cMe).
+                add(elements.getLVe().multiply(cVe)).
+                add(elements.getLE().multiply(cE)).
+                add(elements.getLMa().multiply(cMa)).
+                add(elements.getLJu().multiply(cJu)).
+                add(elements.getLSa().multiply(cSa)).
+                add(elements.getLUr().multiply(cUr)).
+                add(elements.getLNe().multiply(cNe)).
+                add(elements.getPa().multiply(cPa));
+
     }
 
 }

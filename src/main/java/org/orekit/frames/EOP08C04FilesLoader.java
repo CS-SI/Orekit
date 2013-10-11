@@ -30,7 +30,9 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -219,14 +221,15 @@ class EOP08C04FilesLoader implements EOPHistoryLoader {
                     inHeader = false;
                     // this is a data line, build an entry from the extracted fields
                     final String[] fields = line.split(" +");
-                    final int    year  = Integer.parseInt(fields[YEAR_FIELD]);
-                    final int    month = Integer.parseInt(fields[MONTH_FIELD]);
-                    final int    day   = Integer.parseInt(fields[DAY_FIELD]);
+                    final DateComponents dc = new DateComponents(Integer.parseInt(fields[YEAR_FIELD]),
+                                                                 Integer.parseInt(fields[MONTH_FIELD]),
+                                                                 Integer.parseInt(fields[DAY_FIELD]));
                     final int    mjd   = Integer.parseInt(fields[MJD_FIELD]);
-                    if (new DateComponents(year, month, day).getMJD() != mjd) {
+                    if (dc.getMJD() != mjd) {
                         throw new OrekitException(OrekitMessages.INCONSISTENT_DATES_IN_IERS_FILE,
-                                                  name, year, month, day, mjd);
+                                                  name, dc.getYear(), dc.getMonth(), dc.getDay(), mjd);
                     }
+                    final AbsoluteDate date = new AbsoluteDate(dc, TimeScalesFactory.getUTC());
 
                     // the first six fields are consistent with the expected format
                     final double x     = Double.parseDouble(fields[POLE_X_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS;
@@ -240,13 +243,13 @@ class EOP08C04FilesLoader implements EOPHistoryLoader {
                             Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
                             Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
                         };
-                        equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), nro[0], nro[1]);
+                        equinox = converter.toEquinox(date, nro[0], nro[1]);
                     } else {
                         equinox = new double[] {
                             Double.parseDouble(fields[NUT_0_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS,
                             Double.parseDouble(fields[NUT_1_FIELD]) * Constants.ARC_SECONDS_TO_RADIANS
                         };
-                        nro = converter.toNonRotating(EOPEntry.mjdToDate(mjd), equinox[0], equinox[1]);
+                        nro = converter.toNonRotating(date, equinox[0], equinox[1]);
                     }
                     history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
                     parsed = true;

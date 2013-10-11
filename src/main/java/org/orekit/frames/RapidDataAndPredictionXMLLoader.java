@@ -31,7 +31,9 @@ import org.orekit.data.DataLoader;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.xml.sax.Attributes;
@@ -166,6 +168,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
             private int     month;
             private int     day;
             private int     mjd;
+            private AbsoluteDate mjdDate;
             private double  dtu1;
             private double  lod;
             private double  x;
@@ -270,6 +273,7 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 month       = -1;
                 day         = -1;
                 mjd         = -1;
+                mjdDate     = null;
                 dtu1        = Double.NaN;
                 lod         = Double.NaN;
                 x           = Double.NaN;
@@ -307,7 +311,9 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                 } else if (qName.equals(DATE_DAY_ELT) && (buffer.length() > 0)) {
                     day = Integer.parseInt(buffer.toString());
                 } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
-                    mjd = Integer.parseInt(buffer.toString());
+                    mjd     = Integer.parseInt(buffer.toString());
+                    mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                               TimeScalesFactory.getUTC());
                 } else if (qName.equals(UT1_M_UTC_ELT)) {
                     dtu1 = overwrite(dtu1, 1.0);
                 } else if (qName.equals(LOD_ELT)) {
@@ -335,12 +341,12 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), nro[0], nro[1]);
+                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = converter.toNonRotating(EOPEntry.mjdToDate(mjd), equinox[0], equinox[1]);
+                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
                     }
@@ -360,7 +366,9 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                         day   = Integer.parseInt(fields[2]);
                     }
                 } else if (qName.equals(MJD_ELT) && (buffer.length() > 0)) {
-                    mjd = Integer.parseInt(buffer.toString());
+                    mjd     = Integer.parseInt(buffer.toString());
+                    mjdDate = new AbsoluteDate(new DateComponents(DateComponents.MODIFIED_JULIAN_EPOCH, mjd),
+                                               TimeScalesFactory.getUTC());
                 } else if (qName.equals(UT1_U_UTC_ELT)) {
                     dtu1 = overwrite(dtu1, 1.0);
                 } else if (qName.equals(LOD_ELT)) {
@@ -388,12 +396,12 @@ class RapidDataAndPredictionXMLLoader implements EOPHistoryLoader {
                             nro = new double[] {
                                 dx, dy
                             };
-                            equinox = converter.toEquinox(EOPEntry.mjdToDate(mjd), nro[0], nro[1]);
+                            equinox = converter.toEquinox(mjdDate, nro[0], nro[1]);
                         } else {
                             equinox = new double[] {
                                 dpsi, deps
                             };
-                            nro = converter.toNonRotating(EOPEntry.mjdToDate(mjd), equinox[0], equinox[1]);
+                            nro = converter.toNonRotating(mjdDate, equinox[0], equinox[1]);
                         }
                         history.add(new EOPEntry(mjd, dtu1, lod, x, y, equinox[0], equinox[1], nro[0], nro[1]));
                     }

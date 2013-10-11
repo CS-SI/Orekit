@@ -76,7 +76,7 @@ public class TODProviderTest {
                                            TimeScalesFactory.getUTC());
 
         Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996).
-                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996), t0);
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
         Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         //TOD iau76
@@ -95,7 +95,7 @@ public class TODProviderTest {
         // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
         // was not taken into account in the reference paper, so we fix it here for the test
         final double dDeltaPsi =
-                FramesFactory.getEOPHistory(IERSConventions.IERS_1996).getEquinoxNutationCorrection(t0)[0];
+                FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
                 new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
@@ -128,7 +128,7 @@ public class TODProviderTest {
                                            TimeScalesFactory.getUTC());
 
         Transform tt = FramesFactory.getMOD(IERSConventions.IERS_1996).
-                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996), t0);
+                getTransformTo(FramesFactory.getTOD(IERSConventions.IERS_1996, true), t0);
         Transform ff = FramesFactory.getMOD(false).getTransformTo(FramesFactory.getTOD(false), t0);
 
         // TOD iau76
@@ -149,7 +149,7 @@ public class TODProviderTest {
         // it seems the induced effect of pole nutation correction δΔψ on the equation of the equinoxes
         // was not taken into account in the reference paper, so we fix it here for the test
         final double dDeltaPsi =
-                FramesFactory.getEOPHistory(IERSConventions.IERS_1996).getEquinoxNutationCorrection(t0)[0];
+                FramesFactory.getEOPHistory(IERSConventions.IERS_1996, true).getEquinoxNutationCorrection(t0)[0];
         final double epsilonA = IERSConventions.IERS_1996.getMeanObliquityFunction().value(t0);
         final Transform fix =
                 new Transform(t0, new Rotation(Vector3D.PLUS_K, -dDeltaPsi * FastMath.cos(epsilonA)));
@@ -196,7 +196,7 @@ public class TODProviderTest {
         // in order to get only numerical noise, we have to go as far as 1h between
         // the points.
         // We finally select 6 interpolation points separated by 1 hour each
-        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996);
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, false);
         TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory);
         final TransformProvider interpolating =
                 new InterpolatingTransformProvider(nonInterpolating, true, false,
@@ -333,8 +333,8 @@ public class TODProviderTest {
     @Test
     public void testTOD1976vs2006() throws OrekitException {
 
-        final Frame tod1976 = FramesFactory.getTOD(IERSConventions.IERS_1996);
-        final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010);
+        final Frame tod1976 = FramesFactory.getTOD(IERSConventions.IERS_1996, true);
+        final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
         for (double dt = 0; dt < 2 * Constants.JULIAN_YEAR; dt += 100 * Constants.JULIAN_DAY) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
             double delta = tod1976.getTransformTo(tod2006, date).getRotation().getAngle();
@@ -348,8 +348,8 @@ public class TODProviderTest {
     @Test
     public void testTOD2000vs2006() throws OrekitException {
 
-        final Frame tod2000 = FramesFactory.getTOD(IERSConventions.IERS_2003);
-        final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010);
+        final Frame tod2000 = FramesFactory.getTOD(IERSConventions.IERS_2003, true);
+        final Frame tod2006 = FramesFactory.getTOD(IERSConventions.IERS_2010, true);
         for (double dt = 0; dt < 2 * Constants.JULIAN_YEAR; dt += 100 * Constants.JULIAN_DAY) {
             AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, dt);
             double delta = tod2000.getTransformTo(tod2006, date).getRotation().getAngle();

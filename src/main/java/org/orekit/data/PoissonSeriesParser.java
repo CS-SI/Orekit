@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.math3.RealFieldElement;
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
@@ -81,20 +82,22 @@ import org.orekit.errors.OrekitMessages;
  * following settings should be used:
  * </p>
  * <ul>
- *   <li>totalColumns   = 10</li>
- *   <li>firstDelaunay  =  1</li>
- *   <li>firstPlanetary = -1 (there are no planetary columns in this table)</li>
- *   <li>sinCosColumns  =  7, -1, 8, -1 (we read only coefficients Ai and A'i here)</li>
+ *   <li>totalColumns   = 10 (see {@link #PoissonSeriesParser(int)})</li>
+ *   <li>firstDelaunay  =  1 (see {@link #withFirstDelaunay(int)})</li>
+ *   <li>no calls to {@link #withFirstPlanetary(int)} as there are no planetary columns in this table</li>
+ *   <li>sinCosColumns  =  7, -1 for degree 0 for Ai (see {@link #withSinCos(int, int, int)})</li>
+ *   <li>sinCosColumns  =  8, -1 for degree 0 for A'i (see {@link #withSinCos(int, int, int)})</li>
  * </ul>
  * <p>
  * In order to parse the nutation in obliquity from the previous table, the
  * following settings should be used:
  * </p>
  * <ul>
- *   <li>totalColumns   = 10</li>
- *   <li>firstDelaunay  =  1</li>
- *   <li>firstPlanetary = -1 (there are no planetary columns in this table)</li>
- *   <li>sinCosColumns  =  -1, 9, -1, 10 (we read only coefficients Bi and B'i here)</li>
+ *   <li>totalColumns   = 10 (see {@link #PoissonSeriesParser(int)})</li>
+ *   <li>firstDelaunay  =  1 (see {@link #withFirstDelaunay(int)})</li>
+ *   <li>no calls to {@link #withFirstPlanetary(int)} as there are no planetary columns in this table</li>
+ *   <li>sinCosColumns  =  -1, 9 for degree 0 for Bi (see {@link #withSinCos(int, int, int)})</li>
+ *   <li>sinCosColumns  =  -1, 10 for degree 0 for B'i (see {@link #withSinCos(int, int, int)})</li>
  * </ul>
  * <p>
  * A file from a recent convention, like table 5.3a in IERS conventions 2010, uses
@@ -147,11 +150,12 @@ import org.orekit.errors.OrekitMessages;
  * following settings should be used:
  * </p>
  * <ul>
- *   <li>totalColumns   = 17</li>
- *   <li>firstDelaunay  =  4</li>
- *   <li>firstPlanetary =  9</li>
- *   <li>sinCosColumns  =  2, 3 (we specify only degree 0, so when we read section j = 0
- *       we read degree 0, when we read section j = 1 we read degree 1 ...)</li>
+ *   <li>totalColumns   = 17 (see {@link #PoissonSeriesParser(int)})</li>
+ *   <li>firstDelaunay  =  4 (see {@link #withFirstDelaunay(int)})</li>
+ *   <li>firstPlanetary =  9 (see {@link #withFirstPlanetary(int)})</li>
+ *   <li>sinCosColumns  =  2,3 (we specify only degree 0, so when we read
+ *       section j = 0 we read degree 0, when we read section j = 1 we read
+ *       degree 1, see {@link #withSinCos(int, int, int)} ...)</li>
  * </ul>
  * <p>
  * Our parsing algorithm involves adding the section degree from the "j = 0, 1, 2 ..." header
@@ -161,16 +165,20 @@ import org.orekit.errors.OrekitMessages;
  * is not expected to be encountered in practice. The real files use either several columns
  * <em>or</em> several sections, but not both at the same time.
  * </p>
+ * @param <T> the type of the field elements
  *
  * @author Luc Maisonobe
  * @see SeriesTerm
  * @see PolynomialNutation
  * @since 6.1
  */
-public class PoissonSeriesParser {
+public class PoissonSeriesParser<T extends RealFieldElement<T>> {
 
     /** Default pattern for fields with unknown type (non-space characters). */
     private static final String  UNKNOWN_TYPE_PATTERN = "\\S+";
+
+    /** Pattern for optional fields (either nothing or non-space characters). */
+    private static final String  OPTIONAL_FIELD_PATTERN = "\\S*";
 
     /** Pattern for fields with integer type. */
     private static final String  INTEGER_TYPE_PATTERN = "[-+]?\\p{Digit}+";
@@ -183,6 +191,12 @@ public class PoissonSeriesParser {
 
     /** Fields patterns. */
     private final String[] fieldsPatterns;
+
+    /** Optional column (counting from 1). */
+    private final int optional;
+
+    /** Column of the GMST tide multiplier (counting from 1). */
+    private final int gamma;
 
     /** Column of the first Delaunay multiplier (counting from 1). */
     private final int firstDelaunay;
@@ -204,16 +218,21 @@ public class PoissonSeriesParser {
      * @param polynomialParser polynomial parser to use
      * @param factor multiplicative factor to use for non-polynomial coefficients
      * @param fieldsPatterns patterns for fields
+     * @param optional optional column
+     * @param gamma column of the GMST tide multiplier
      * @param firstDelaunay column of the first Delaunay multiplier
      * @param firstPlanetary column of the first planetary multiplier
      * @param sinCosColumns columns of the sine and cosine coefficients
      */
     private PoissonSeriesParser(final PolynomialParser polynomialParser,
                                 final double factor, final String[] fieldsPatterns,
+                                final int optional, final int gamma,
                                 final int firstDelaunay, final int firstPlanetary,
                                 final int ... sinCosColumns) {
         this.polynomialParser = polynomialParser;
         this.fieldsPatterns   = fieldsPatterns;
+        this.optional         = optional;
+        this.gamma            = gamma;
         this.firstDelaunay    = firstDelaunay;
         this.firstPlanetary   = firstPlanetary;
         this.sinCosColumns    = sinCosColumns;
@@ -224,7 +243,7 @@ public class PoissonSeriesParser {
      * @param totalColumns total number of columns in the non-polynomial sections
      */
     public PoissonSeriesParser(final int totalColumns) {
-        this(null, 1.0, createInitialFieldsPattern(totalColumns), -1, -1, new int[0]);
+        this(null, 1.0, createInitialFieldsPattern(totalColumns), -1, -1, -1, -1, new int[0]);
     }
 
     /** Create an array with only non-space fields patterns.
@@ -254,33 +273,73 @@ public class PoissonSeriesParser {
      * @param unit default unit for polynomial, if not explicit within the file
      * @return a new parser, with polynomial parser updated
      */
-    public PoissonSeriesParser withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
-        return new PoissonSeriesParser(new PolynomialParser(freeVariable, unit), factor, fieldsPatterns,
-                                       firstDelaunay, firstPlanetary, sinCosColumns);
+    public PoissonSeriesParser<T> withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
+        return new PoissonSeriesParser<T>(new PolynomialParser(freeVariable, unit), factor, fieldsPatterns,
+                                          optional, gamma, firstDelaunay, firstPlanetary, sinCosColumns);
     }
 
     /** Set up multiplicative factor to use for non-polynomial coefficients.
      * @param f multiplicative factor to use for non-polynomial coefficients
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser withFactor(final double f) {
-        return new PoissonSeriesParser(polynomialParser, f, fieldsPatterns,
-                                       firstDelaunay, firstPlanetary, sinCosColumns);
+    public PoissonSeriesParser<T> withFactor(final double f) {
+        return new PoissonSeriesParser<T>(polynomialParser, f, fieldsPatterns,
+                                          optional, gamma, firstDelaunay, firstPlanetary, sinCosColumns);
+    }
+
+    /** Set up optional column.
+     * <p>
+     * Optional columns typically appears in tides-related files, as some waves have
+     * specific names (χ₁, M₂, ...) and other waves don't have names and hence are
+     * replaced by spaces in the corresponding file line.
+     * </p>
+     * <p>
+     * At most one column may be optional.
+     * </p>
+     * @param column column of the GMST tide multiplier (counting from 1)
+     * @return a new parser, with updated columns settings
+     */
+    public PoissonSeriesParser<T> withOptionalColumn(final int column) {
+
+        // update the fields pattern to expect 1 optional field at the right index
+        final String[] newFieldsPatterns = fieldsPatterns.clone();
+        setPatterns(newFieldsPatterns, optional, 1, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, column,   1, OPTIONAL_FIELD_PATTERN);
+
+        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
+                                          column, gamma, firstDelaunay, firstPlanetary, sinCosColumns);
+
+    }
+
+    /** Set up column of GMST tide multiplier.
+     * @param column column of the GMST tide multiplier (counting from 1)
+     * @return a new parser, with updated columns settings
+     */
+    public PoissonSeriesParser<T> withGamma(final int column) {
+
+        // update the fields pattern to expect 1 integer at the right index
+        final String[] newFieldsPatterns = fieldsPatterns.clone();
+        setPatterns(newFieldsPatterns, gamma,  1, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, column, 1, INTEGER_TYPE_PATTERN);
+
+        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
+                                          optional, column, firstDelaunay, firstPlanetary, sinCosColumns);
+
     }
 
     /** Set up first column of Delaunay multiplier.
      * @param firstColumn column of the first Delaunay multiplier (counting from 1)
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser withFirstDelaunay(final int firstColumn) {
+    public PoissonSeriesParser<T> withFirstDelaunay(final int firstColumn) {
 
         // update the fields pattern to expect 5 integers at the right indices
         final String[] newFieldsPatterns = fieldsPatterns.clone();
         setPatterns(newFieldsPatterns, firstDelaunay, 5, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, firstColumn,   5, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser(polynomialParser, factor, newFieldsPatterns,
-                                       firstColumn, firstPlanetary, sinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
+                                          optional, gamma, firstColumn, firstPlanetary, sinCosColumns);
 
     }
 
@@ -288,15 +347,15 @@ public class PoissonSeriesParser {
      * @param firstColumn column of the first planetary multiplier (counting from 1)
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser withFirstPlanetary(final int firstColumn) {
+    public PoissonSeriesParser<T> withFirstPlanetary(final int firstColumn) {
 
         // update the fields pattern to expect 9 integers at the right indices
         final String[] newFieldsPatterns = fieldsPatterns.clone();
         setPatterns(newFieldsPatterns, firstPlanetary, 9, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, firstColumn,    9, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser(polynomialParser, factor, newFieldsPatterns,
-                                       firstDelaunay, firstColumn, sinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
+                                          optional, gamma, firstDelaunay, firstColumn, sinCosColumns);
 
     }
 
@@ -308,7 +367,7 @@ public class PoissonSeriesParser {
      * (may be -1 if there are no cosine coefficients)
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser withSinCos(final int degree, final int sin, final int cos) {
+    public PoissonSeriesParser<T> withSinCos(final int degree, final int sin, final int cos) {
 
         // update the sin/cos columns array
         final int maxDegree = FastMath.max(degree, sinCosColumns.length / 2 - 1);
@@ -329,8 +388,8 @@ public class PoissonSeriesParser {
         }
         setPatterns(newFieldsPatterns, cos, 1, REAL_TYPE_PATTERN);
 
-        return new PoissonSeriesParser(polynomialParser, factor, newFieldsPatterns,
-                                       firstDelaunay, firstPlanetary, newSinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
+                                          optional, gamma, firstDelaunay, firstPlanetary, newSinCosColumns);
 
     }
 
@@ -340,7 +399,7 @@ public class PoissonSeriesParser {
      * @return parsed Poisson series
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
-    public PoissonSeries parse(final InputStream stream, final String name) throws OrekitException {
+    public PoissonSeries<T> parse(final InputStream stream, final String name) throws OrekitException {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -376,15 +435,15 @@ public class PoissonSeriesParser {
             int degree        =  0;
 
             // prepare the container for the parsed data
-            PolynomialNutation polynomial;
+            PolynomialNutation<T> polynomial;
             if (polynomialParser == null) {
                 // we don't expect any polynomial, we directly the the zero polynomial
-                polynomial = new PolynomialNutation(new double[0]);
+                polynomial = new PolynomialNutation<T>(new double[0]);
             } else {
                 // the dedicated parser will fill in the polynomial later
                 polynomial = null;
             }
-            final Map<Long, SeriesTerm> series = new HashMap<Long, SeriesTerm>();
+            final Map<Long, SeriesTerm<T>> series = new HashMap<Long, SeriesTerm<T>>();
 
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
 
@@ -405,32 +464,33 @@ public class PoissonSeriesParser {
                         }
                     }
 
-                    // get the Delaunay and planetary multipliers
+                    // get the tide, Delaunay and planetary multipliers
+                    final int cGamma  = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));
                     final int cL      = Integer.parseInt(regularMatcher.group(firstDelaunay));
                     final int cLPrime = Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
                     final int cF      = Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
                     final int cD      = Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
                     final int cOmega  = Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
-                    final int cMe = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary));
-                    final int cVe = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 1));
-                    final int cE  = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 2));
-                    final int cMa = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 3));
-                    final int cJu = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 4));
-                    final int cSa = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 5));
-                    final int cUr = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 6));
-                    final int cNe = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 7));
-                    final int cPa = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 8));
-                    final long key = NutationCodec.encode(cL, cLPrime, cF, cD, cOmega,
-                                                          cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+                    final int cMe     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary));
+                    final int cVe     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 1));
+                    final int cE      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 2));
+                    final int cMa     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 3));
+                    final int cJu     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 4));
+                    final int cSa     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 5));
+                    final int cUr     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 6));
+                    final int cNe     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 7));
+                    final int cPa     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 8));
+                    final long key    = NutationCodec.encode(cGamma, cL, cLPrime, cF, cD, cOmega,
+                                                             cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
 
-                    // retrived the term, or build it if it's the first time it is encountered in the file
-                    final SeriesTerm term;
+                    // retrieved the term, or build it if it's the first time it is encountered in the file
+                    final SeriesTerm<T> term;
                     if (series.containsKey(key)) {
                         // the term was already known, from another degree
                         term = series.get(key);
                     } else {
                         // the term is a new one
-                        term = SeriesTerm.buildTerm(cL, cLPrime, cF, cD, cOmega,
+                        term = SeriesTerm.buildTerm(cGamma, cL, cLPrime, cF, cD, cOmega,
                                                     cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
                     }
 
@@ -486,7 +546,7 @@ public class PoissonSeriesParser {
                         // look for the polynomial part
                         final double[] coefficients = polynomialParser.parse(line);
                         if (coefficients != null) {
-                            polynomial = new PolynomialNutation(coefficients);
+                            polynomial = new PolynomialNutation<T>(coefficients);
                         }
                     }
 
@@ -504,7 +564,7 @@ public class PoissonSeriesParser {
             }
 
             // build the series
-            return new PoissonSeries(polynomial, series);
+            return new PoissonSeries<T>(polynomial, series);
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));

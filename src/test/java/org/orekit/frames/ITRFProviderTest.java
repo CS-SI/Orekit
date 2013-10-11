@@ -225,7 +225,7 @@ public class ITRFProviderTest {
                              { 54199, -0.072073685,  1.4020, 0.0349282, 0.4833163, -Double.NaN, Double.NaN, 0.0001750, -0.0002259 }
                          }));
 
-        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010);
+        EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
 
         TimeScale utc = TimeScalesFactory.getUTC();
         TTScale tt    = TimeScalesFactory.getTT();
