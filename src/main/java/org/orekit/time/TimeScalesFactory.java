@@ -182,8 +182,9 @@ public class TimeScalesFactory implements Serializable {
      * @see FramesFactory#getEOPHistory(IERSConventions, boolean)
      * @deprecated as of 6.1 replaced with {@link #getUT1(IERSConventions, boolean)}
      */
+    @Deprecated
     public static UT1Scale getUT1() throws OrekitException {
-        return getUT1(IERSConventions.IERS_2010, false);
+        return getUT1(IERSConventions.IERS_2010, true);
     }
 
     /** Get the Universal Time 1 scale.
@@ -191,7 +192,7 @@ public class TimeScalesFactory implements Serializable {
      * UT1 scale depends on both UTC scale and Earth Orientation Parameters,
      * so this method loads these data sets. See the {@link #getUTC()
      * TimeScalesFactory.getUTC()} and {@link
-     * FramesFactory#getEOPHistory(IERSConventions)} methods
+     * FramesFactory#getEOPHistory(IERSConventions, boolean)} methods
      * for an explanation of how the corresponding data loaders can be configured.
      * </p>
      * @param conventions IERS conventions for which EOP parameters will provide dUT1
