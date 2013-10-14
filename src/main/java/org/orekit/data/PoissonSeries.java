@@ -62,6 +62,13 @@ public class PoissonSeries<T extends RealFieldElement<T>> {
         return polynomial;
     }
 
+    /** Get the number of different terms in the non-polynomial part.
+     * @return number of different terms in the non-polynomial part
+     */
+    public int getNonPolynomialSize() {
+        return series.size();
+    }
+
     /** Evaluate the value of the series.
      * @param elements bodies elements for nutation
      * @return value of the series

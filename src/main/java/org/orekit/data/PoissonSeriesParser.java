@@ -186,6 +186,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     /** Pattern for fields with real type. */
     private static final String  REAL_TYPE_PATTERN = "[-+]?(?:(?:\\p{Digit}+(?:\\.\\p{Digit}*)?)|(?:\\.\\p{Digit}+))(?:[eE][-+]?\\p{Digit}+)?";
 
+    /** Pattern for fields with Doodson number. */
+    private static final String  DOODSON_TYPE_PATTERN = "\\p{Digit}{2,3}[.,]\\p{Digit}{3}";
+
     /** Parser for the polynomial part. */
     private final PolynomialParser polynomialParser;
 
@@ -197,6 +200,12 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
 
     /** Column of the GMST tide multiplier (counting from 1). */
     private final int gamma;
+
+    /** Column of the Doodson number (counting from 1). */
+    private final int doodson;
+
+    /** Column of the first Doodson multiplier (counting from 1). */
+    private final int firstDoodson;
 
     /** Column of the first Delaunay multiplier (counting from 1). */
     private final int firstDelaunay;
@@ -220,6 +229,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param fieldsPatterns patterns for fields
      * @param optional optional column
      * @param gamma column of the GMST tide multiplier
+     * @param doodson column of the Doodson number
+     * @param firstDoodson column of the first Doodson multiplier
      * @param firstDelaunay column of the first Delaunay multiplier
      * @param firstPlanetary column of the first planetary multiplier
      * @param sinCosColumns columns of the sine and cosine coefficients
@@ -227,12 +238,15 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     private PoissonSeriesParser(final PolynomialParser polynomialParser,
                                 final double factor, final String[] fieldsPatterns,
                                 final int optional, final int gamma,
+                                final int doodson, final int firstDoodson,
                                 final int firstDelaunay, final int firstPlanetary,
                                 final int ... sinCosColumns) {
         this.polynomialParser = polynomialParser;
         this.fieldsPatterns   = fieldsPatterns;
         this.optional         = optional;
         this.gamma            = gamma;
+        this.doodson          = doodson;
+        this.firstDoodson     = firstDoodson;
         this.firstDelaunay    = firstDelaunay;
         this.firstPlanetary   = firstPlanetary;
         this.sinCosColumns    = sinCosColumns;
@@ -243,7 +257,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param totalColumns total number of columns in the non-polynomial sections
      */
     public PoissonSeriesParser(final int totalColumns) {
-        this(null, 1.0, createInitialFieldsPattern(totalColumns), -1, -1, -1, -1, new int[0]);
+        this(null, 1.0, createInitialFieldsPattern(totalColumns), -1, -1, -1, -1, -1, -1, new int[0]);
     }
 
     /** Create an array with only non-space fields patterns.
@@ -275,7 +289,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      */
     public PoissonSeriesParser<T> withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
         return new PoissonSeriesParser<T>(new PolynomialParser(freeVariable, unit), factor, fieldsPatterns,
-                                          optional, gamma, firstDelaunay, firstPlanetary, sinCosColumns);
+                                          optional, gamma, doodson, firstDoodson,
+                                          firstDelaunay, firstPlanetary, sinCosColumns);
     }
 
     /** Set up multiplicative factor to use for non-polynomial coefficients.
@@ -284,7 +299,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      */
     public PoissonSeriesParser<T> withFactor(final double f) {
         return new PoissonSeriesParser<T>(polynomialParser, f, fieldsPatterns,
-                                          optional, gamma, firstDelaunay, firstPlanetary, sinCosColumns);
+                                          optional, gamma, doodson, firstDoodson,
+                                          firstDelaunay, firstPlanetary, sinCosColumns);
     }
 
     /** Set up optional column.
@@ -307,7 +323,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, column,   1, OPTIONAL_FIELD_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          column, gamma, firstDelaunay, firstPlanetary, sinCosColumns);
+                                          column, gamma, doodson, firstDoodson,
+                                          firstDelaunay, firstPlanetary, sinCosColumns);
 
     }
 
@@ -323,7 +340,30 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, column, 1, INTEGER_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, column, firstDelaunay, firstPlanetary, sinCosColumns);
+                                          optional, column, doodson, firstDoodson,
+                                          firstDelaunay, firstPlanetary, sinCosColumns);
+
+    }
+
+    /** Set up column of Doodson number.
+     * @param firstMultiplierColumn column of the first Doodson multiplier (counting from 1)
+     * @param numberColumn column of the Doodson number (counting from 1)
+     * @return a new parser, with updated columns settings
+     */
+    public PoissonSeriesParser<T> withDoodson(final int firstMultiplierColumn, final int numberColumn) {
+
+        // update the fields pattern to expect 1 Doodson number at the right index
+        final String[] newFieldsPatterns = fieldsPatterns.clone();
+        setPatterns(newFieldsPatterns, doodson,      1, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, numberColumn, 1, DOODSON_TYPE_PATTERN);
+
+        // update the fields pattern to expect 5 integers at the right indices
+        setPatterns(newFieldsPatterns, firstDoodson,          5, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, firstMultiplierColumn, 5, INTEGER_TYPE_PATTERN);
+
+        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
+                                          optional, gamma, numberColumn, firstMultiplierColumn,
+                                          firstDelaunay, firstPlanetary, sinCosColumns);
 
     }
 
@@ -339,7 +379,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, firstColumn,   5, INTEGER_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, firstColumn, firstPlanetary, sinCosColumns);
+                                          optional, gamma, doodson, firstDoodson,
+                                          firstColumn, firstPlanetary, sinCosColumns);
 
     }
 
@@ -355,7 +396,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, firstColumn,    9, INTEGER_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, firstDelaunay, firstColumn, sinCosColumns);
+                                          optional, gamma, doodson, firstDoodson,
+                                          firstDelaunay, firstColumn, sinCosColumns);
 
     }
 
@@ -389,7 +431,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, cos, 1, REAL_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, firstDelaunay, firstPlanetary, newSinCosColumns);
+                                          optional, gamma, doodson, firstDoodson,
+                                          firstDelaunay, firstPlanetary, newSinCosColumns);
 
     }
 
@@ -464,24 +507,46 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                         }
                     }
 
-                    // get the tide, Delaunay and planetary multipliers
-                    final int cGamma  = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));
-                    final int cL      = Integer.parseInt(regularMatcher.group(firstDelaunay));
-                    final int cLPrime = Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
-                    final int cF      = Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
-                    final int cD      = Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
-                    final int cOmega  = Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
-                    final int cMe     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary));
-                    final int cVe     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 1));
-                    final int cE      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 2));
-                    final int cMa     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 3));
-                    final int cJu     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 4));
-                    final int cSa     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 5));
-                    final int cUr     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 6));
-                    final int cNe     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 7));
-                    final int cPa     = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 8));
-                    final long key    = NutationCodec.encode(cGamma, cL, cLPrime, cF, cD, cOmega,
-                                                             cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+                    // get the tide multipler
+                    final int cGamma   = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));
+
+                    // get the Doodson multipliers as well as the Doodson number
+                    final int cTau     = cGamma;
+                    final int cS       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson));
+                    final int cH       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 1));
+                    final int cP       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 2));
+                    final int cNprime  = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 3));
+                    final int cPs      = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 4));
+                    final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(regularMatcher.group(doodson).replaceAll("[.,]", ""));
+
+                    // get the Delaunay multipliers
+                    final int cL       = Integer.parseInt(regularMatcher.group(firstDelaunay));
+                    final int cLPrime  = Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
+                    final int cF       = Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
+                    final int cD       = Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
+                    final int cOmega   = Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
+
+                    // get the planetary multipliers
+                    final int cMe      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary));
+                    final int cVe      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 1));
+                    final int cE       = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 2));
+                    final int cMa      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 3));
+                    final int cJu      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 4));
+                    final int cSa      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 5));
+                    final int cUr      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 6));
+                    final int cNe      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 7));
+                    final int cPa      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 8));
+                    final long key     = NutationCodec.encode(cGamma, cL, cLPrime, cF, cD, cOmega,
+                                                              cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
+
+                    if (nDoodson > 0) {
+                        // check Doodson number, Doodson multiplers and Delaunay multipliers consistency
+                        if (nDoodson != doodsonToDoodsonNumber(cTau, cS, cH, cP, cNprime, cPs) ||
+                            nDoodson != delaunayToDoodsonNumber(cGamma, cL, cLPrime, cF, cD, cOmega)) {
+                            throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                      lineNumber, name, regularMatcher.group());
+                        }
+                    }
 
                     // retrieved the term, or build it if it's the first time it is encountered in the file
                     final SeriesTerm<T> term;
@@ -584,6 +649,48 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         } else {
             return scale * Double.parseDouble(matcher.group(group));
         }
+    }
+
+    /** Compute Doodson number from Delaunay multipliers.
+     * @param cGamma coefficient for γ = GMST + π tide parameter
+     * @param cL coefficient for mean anomaly of the Moon
+     * @param cLPrime coefficient for mean anomaly of the Sun
+     * @param cF coefficient for L - &Omega; where L is the mean longitude of the Moon
+     * @param cD coefficient for mean elongation of the Moon from the Sun
+     * @param cOmega coefficient for mean longitude of the ascending node of the Moon
+     * @return computed Doodson number
+     */
+    private int delaunayToDoodsonNumber(final int cGamma,
+                                        final int cL, final int cLPrime, final int cF,
+                                        final int cD, final int cOmega) {
+
+        // reconstruct Doodson multipliers from gamma and Delaunay multipliers
+        final int cTau    = cGamma;
+        final int cS      = cGamma - (cL + cF + cD);
+        final int cH      = cD - cLPrime;
+        final int cP      = cL;
+        final int cNprime = cOmega - cF;
+        final int cPs     = cLPrime;
+
+        return doodsonToDoodsonNumber(cTau, cS, cH, cP, cNprime, cPs);
+
+    }
+
+    /** Compute Doodson number from Doodson multipliers.
+     * @param cTau coefficient for mean lunar time
+     * @param cS coefficient for mean longitude of the Moon
+     * @param cH coefficient for mean longitude of the Sun
+     * @param cP coefficient for longitude of Moon mean perigee
+     * @param cNprime negative of the longitude of the Moon's mean ascending node on the ecliptic
+     * @param cPs coefficient for longitude of Sun mean perigee
+     * @return computed Doodson number
+     */
+    private int doodsonToDoodsonNumber(final int cTau,
+                                       final int cS, final int cH, final int cP,
+                                       final int cNprime, final int cPs) {
+
+        return ((((cTau * 10 + (cS + 5)) * 10 + (cH + 5)) * 10 + (cP + 5)) * 10 + (cNprime + 5)) * 10 + (cPs + 5);
+
     }
 
 }

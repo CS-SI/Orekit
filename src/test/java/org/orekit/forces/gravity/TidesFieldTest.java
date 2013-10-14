@@ -17,19 +17,20 @@
 package org.orekit.forces.gravity;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
+import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.FramesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.LoveNumbers;
 
 
 public class TidesFieldTest {
@@ -38,58 +39,48 @@ public class TidesFieldTest {
     public void testConventions2003() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
         TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2003.getLoveNumbersModel(),
-                               IERSConventions.IERS_2003.getK20FrequencyDependenceModel(),
-                               IERSConventions.IERS_2003.getK21FrequencyDependenceModel(),
-                               IERSConventions.IERS_2003.getK22FrequencyDependenceModel(),
-                               FramesFactory.getITRF2008(),
+                new TidesField(IERSConventions.IERS_2003.getLoveNumbers(),
+                               IERSConventions.IERS_2003.getTideFrequencyDependenceModel(),
+                               FramesFactory.getITRF(IERSConventions.IERS_2003, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
 
-        Field fieldReal = tidesField.getClass().getDeclaredField("loveReal");
+        Field fieldReal = tidesField.getClass().getDeclaredField("love");
         fieldReal.setAccessible(true);
-        double[][] loveReal = (double[][]) fieldReal.get(tidesField);
-        Assert.assertEquals(0.30190, loveReal[2][0], 1.0e-10);
-        Assert.assertEquals(0.29830, loveReal[2][1], 1.0e-10);
-        Assert.assertEquals(0.30102, loveReal[2][2], 1.0e-10);
-        Assert.assertEquals(0.093,   loveReal[3][0], 1.0e-10);
-        Assert.assertEquals(0.093,   loveReal[3][1], 1.0e-10);
-        Assert.assertEquals(0.093,   loveReal[3][2], 1.0e-10);
-        Assert.assertEquals(0.094,   loveReal[3][3], 1.0e-10);
+        LoveNumbers love = (LoveNumbers) fieldReal.get(tidesField);
 
-        Field fieldImaginary = tidesField.getClass().getDeclaredField("loveImaginary");
-        fieldImaginary.setAccessible(true);
-        double[][] loveImaginary = (double[][]) fieldImaginary.get(tidesField);
-        Assert.assertEquals(-0.00000, loveImaginary[2][0], 1.0e-10);
-        Assert.assertEquals(-0.00144, loveImaginary[2][1], 1.0e-10);
-        Assert.assertEquals(-0.00130, loveImaginary[2][2], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][0], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][1], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][2], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][3], 1.0e-10);
+        Assert.assertEquals(0.30190, love.getReal(2, 0), 1.0e-10);
+        Assert.assertEquals(0.29830, love.getReal(2, 1), 1.0e-10);
+        Assert.assertEquals(0.30102, love.getReal(2, 2), 1.0e-10);
+        Assert.assertEquals(0.093,   love.getReal(3, 0), 1.0e-10);
+        Assert.assertEquals(0.093,   love.getReal(3, 1), 1.0e-10);
+        Assert.assertEquals(0.093,   love.getReal(3, 2), 1.0e-10);
+        Assert.assertEquals(0.094,   love.getReal(3, 3), 1.0e-10);
 
-        Field fieldPlus = tidesField.getClass().getDeclaredField("lovePlus");
-        fieldPlus.setAccessible(true);
-        double[][] lovePlus = (double[][]) fieldPlus.get(tidesField);
-        Assert.assertEquals(-0.00089, lovePlus[2][0], 1.0e-10);
-        Assert.assertEquals(-0.00080, lovePlus[2][1], 1.0e-10);
-        Assert.assertEquals(-0.00057, lovePlus[2][2], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][0], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][1], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][2], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][3], 1.0e-10);
+        Assert.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
+        Assert.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
+        Assert.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
 
-        Field field20 = tidesField.getClass().getDeclaredField("frequencyDependenceK20");
-        field20.setAccessible(true);
-        Assert.assertEquals(21, ((List<?>) field20.get(tidesField)).size());
+        Assert.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
+        Assert.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
+        Assert.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
 
-        Field field21 = tidesField.getClass().getDeclaredField("frequencyDependenceK21");
-        field21.setAccessible(true);
-        Assert.assertEquals(48, ((List<?>) field21.get(tidesField)).size());
-
-        Field field22 = tidesField.getClass().getDeclaredField("frequencyDependenceK22");
-        field22.setAccessible(true);
-        Assert.assertEquals(2, ((List<?>) field22.get(tidesField)).size());
+        Field fieldKSeries = tidesField.getClass().getDeclaredField("kSeries");
+        fieldKSeries.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        PoissonSeries<DerivativeStructure>[] kSeries =
+                (PoissonSeries<DerivativeStructure>[]) fieldKSeries.get(tidesField);
+        Assert.assertEquals(21, kSeries[0].getNonPolynomialSize());
+        Assert.assertEquals(48, kSeries[1].getNonPolynomialSize());
+        Assert.assertEquals( 2, kSeries[2].getNonPolynomialSize());
 
     }
 
@@ -97,110 +88,42 @@ public class TidesFieldTest {
     public void testConventions2010() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
         TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2010.getLoveNumbersModel(),
-                               IERSConventions.IERS_2010.getK20FrequencyDependenceModel(),
-                               IERSConventions.IERS_2010.getK21FrequencyDependenceModel(),
-                               IERSConventions.IERS_2010.getK22FrequencyDependenceModel(),
-                               FramesFactory.getITRF2008(),
+                new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
+                               IERSConventions.IERS_2010.getTideFrequencyDependenceModel(),
+                               FramesFactory.getITRF(IERSConventions.IERS_2003, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
 
-        Field fieldImaginary = tidesField.getClass().getDeclaredField("loveImaginary");
-        fieldImaginary.setAccessible(true);
-        double[][] loveImaginary = (double[][]) fieldImaginary.get(tidesField);
-        Assert.assertEquals(-0.00000, loveImaginary[2][0], 1.0e-10);
-        Assert.assertEquals(-0.00144, loveImaginary[2][1], 1.0e-10);
-        Assert.assertEquals(-0.00130, loveImaginary[2][2], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][0], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][1], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][2], 1.0e-10);
-        Assert.assertEquals(0.0,      loveImaginary[3][3], 1.0e-10);
+        Field fieldReal = tidesField.getClass().getDeclaredField("love");
+        fieldReal.setAccessible(true);
+        LoveNumbers love = (LoveNumbers) fieldReal.get(tidesField);
 
-        Field fieldPlus = tidesField.getClass().getDeclaredField("lovePlus");
-        fieldPlus.setAccessible(true);
-        double[][] lovePlus = (double[][]) fieldPlus.get(tidesField);
-        Assert.assertEquals(-0.00089, lovePlus[2][0], 1.0e-10);
-        Assert.assertEquals(-0.00080, lovePlus[2][1], 1.0e-10);
-        Assert.assertEquals(-0.00057, lovePlus[2][2], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][0], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][1], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][2], 1.0e-10);
-        Assert.assertEquals(0.0,      lovePlus[3][3], 1.0e-10);
+        Assert.assertEquals(-0.00000, love.getImaginary(2, 0), 1.0e-10);
+        Assert.assertEquals(-0.00144, love.getImaginary(2, 1), 1.0e-10);
+        Assert.assertEquals(-0.00130, love.getImaginary(2, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 0), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 1), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getImaginary(3, 3), 1.0e-10);
 
-        Field field20 = tidesField.getClass().getDeclaredField("frequencyDependenceK20");
-        field20.setAccessible(true);
-        Assert.assertEquals(21, ((List<?>) field20.get(tidesField)).size());
 
-        Field field21 = tidesField.getClass().getDeclaredField("frequencyDependenceK21");
-        field21.setAccessible(true);
-        Assert.assertEquals(48, ((List<?>) field21.get(tidesField)).size());
+        Assert.assertEquals(-0.00089, love.getPlus(2, 0), 1.0e-10);
+        Assert.assertEquals(-0.00080, love.getPlus(2, 1), 1.0e-10);
+        Assert.assertEquals(-0.00057, love.getPlus(2, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 0), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
+        Assert.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
 
-        Field field22 = tidesField.getClass().getDeclaredField("frequencyDependenceK22");
-        field22.setAccessible(true);
-        Assert.assertEquals(2, ((List<?>) field22.get(tidesField)).size());
+        Field fieldKSeries = tidesField.getClass().getDeclaredField("kSeries");
+        fieldKSeries.setAccessible(true);
+        @SuppressWarnings("unchecked")
+        PoissonSeries<DerivativeStructure>[] kSeries =
+                (PoissonSeries<DerivativeStructure>[]) fieldKSeries.get(tidesField);
+        Assert.assertEquals(21, kSeries[0].getNonPolynomialSize());
+        Assert.assertEquals(48, kSeries[1].getNonPolynomialSize());
+        Assert.assertEquals( 2, kSeries[2].getNonPolynomialSize());
 
-    }
-
-    @Test
-    public void testCorruptedLDelaunayMultiplier() {
-        checkCorrupted("/tides/tab6.5a-corrupted-l-Delaunay-multiplier.txt", "σ1");
-    }
-
-    @Test
-    public void testCorruptedLPrimeDelaunayMultiplier() {
-        checkCorrupted("/tides/tab6.5a-corrupted-lPrime-Delaunay-multiplier.txt", "Q1");
-    }
-
-    @Test
-    public void testCorruptedFDelaunayMultiplier() {
-        checkCorrupted("/tides/tab6.5a-corrupted-F-Delaunay-multiplier.txt", "Nτ1");
-    }
-
-    @Test
-    public void testCorruptedDDelaunayMultiplier() {
-        checkCorrupted("/tides/tab6.5a-corrupted-D-Delaunay-multiplier.txt", "2Q1");
-    }
-
-    @Test
-    public void testCorruptedOmegaDelaunayMultiplier() {
-        checkCorrupted("/tides/tab6.5a-corrupted-Omega-Delaunay-multiplier.txt", "τ1");
-    }
-
-    @Test
-    public void testCorruptedDoodsonMultiplier() {
-        checkCorrupted("/tides/tab6.5a-corrupted-Doodson-multiplier.txt", "Lk1");
-    }
-
-    @Test
-    public void testCorruptedDoodsonNumber() {
-        checkCorrupted("/tides/tab6.5a-corrupted-Doodson-number.txt", "No1");
-    }
-
-    @Test
-    public void testMissingAmplitudeScale() {
-        checkCorrupted("/tides/tab6.5a-missing-amplitude-scale.txt", null);
-    }
-
-    private void checkCorrupted(String resourceName, String lineStart) {
-        try {
-            new TidesField(IERSConventions.IERS_2010.getLoveNumbersModel(),
-                           IERSConventions.IERS_2010.getK20FrequencyDependenceModel(),
-                           resourceName,
-                           IERSConventions.IERS_2010.getK22FrequencyDependenceModel(),
-                           FramesFactory.getITRF2008(),
-                           Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
-                           TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            if (lineStart == null) {
-                Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
-            } else {
-                Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
-                Assert.assertTrue(((String) oe.getParts()[2]).trim().startsWith(lineStart));
-            }
-        } catch (Exception e) {
-            Assert.fail("wrong exception caught: " + e);
-        }
     }
 
     @Before

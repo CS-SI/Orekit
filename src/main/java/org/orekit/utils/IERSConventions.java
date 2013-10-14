@@ -16,7 +16,11 @@
  */
 package org.orekit.utils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.util.FastMath;
@@ -31,6 +35,7 @@ import org.orekit.data.PolynomialNutation;
 import org.orekit.data.PolynomialParser;
 import org.orekit.data.PolynomialParser.Unit;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.EOPHistory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -63,6 +68,18 @@ public enum IERSConventions {
 
         /** Tidal correction for UT1 resources. */
         private static final String TIDAL_CORRECTION_UT1_SERIES = IERS_BASE + "1996/tab8.3.txt";
+
+        /** Love numbers resources. */
+        private static final String LOVE_NUMBERS = IERS_BASE + "1996/tab6.1.txt";
+
+        /** Frequency dependence model for k₂₀. */
+        private static final String K20_FREQUENCY_DEPENDENCE = IERS_BASE + "1996/tab6.2b.txt";
+
+        /** Frequency dependence model for k₂₁. */
+        private static final String K21_FREQUENCY_DEPENDENCE = IERS_BASE + "1996/tab6.2a.txt";
+
+        /** Frequency dependence model for k₂₂. */
+        private static final String K22_FREQUENCY_DEPENDENCE = IERS_BASE + "1996/tab6.2c.txt";
 
         /** {@inheritDoc} */
         @Override
@@ -406,27 +423,51 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public String getLoveNumbersModel() {
-            return IERS_BASE + "1996/tab6.1.txt";
+        public LoveNumbers getLoveNumbers() throws OrekitException {
+            return loadLoveNumbers(LOVE_NUMBERS);
         }
 
         /** {@inheritDoc} */
-        public String getK20FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "1996/tab6.2b.txt";
+        public PoissonSeries<DerivativeStructure>[] getTideFrequencyDependenceModel()
+            throws OrekitException {
+
+            final PoissonSeriesParser<DerivativeStructure> k20Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(18).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 2).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 16, 18);
+            final PoissonSeriesParser<DerivativeStructure> k21Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(18).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 3).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 17, 18);
+            final PoissonSeriesParser<DerivativeStructure> k22Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(16).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 2).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 16, -1);
+
+
+            @SuppressWarnings("unchecked")
+            final PoissonSeries<DerivativeStructure>[] kSeries =
+                    (PoissonSeries<DerivativeStructure>[]) Array.newInstance(PoissonSeries.class, 3);
+            kSeries[0] = k20Parser.parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
+            kSeries[1] = k21Parser.parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
+            kSeries[2] = k22Parser.parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
+
+            return kSeries;
+
         }
 
-        /** {@inheritDoc} */
-        public String getK21FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "1996/tab6.2a.txt";
-        }
-
-        /** {@inheritDoc} */
-        public String getK22FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "1996/tab6.2c.txt";
-        }
 
     },
 
@@ -459,6 +500,18 @@ public enum IERSConventions {
 
         /** Tidal correction for UT1 resources. */
         private static final String TIDAL_CORRECTION_UT1_SERIES = IERS_BASE + "2003/tab8.3ab.txt";
+
+        /** Love numbers resources. */
+        private static final String LOVE_NUMBERS = IERS_BASE + "2003/tab6.1.txt";
+
+        /** Frequency dependence model for k₂₀. */
+        private static final String K20_FREQUENCY_DEPENDENCE = IERS_BASE + "2003/tab6.3b.txt";
+
+        /** Frequency dependence model for k₂₁. */
+        private static final String K21_FREQUENCY_DEPENDENCE = IERS_BASE + "2003/tab6.3a.txt";
+
+        /** Frequency dependence model for k₂₂. */
+        private static final String K22_FREQUENCY_DEPENDENCE = IERS_BASE + "2003/tab6.3c.txt";
 
         /** {@inheritDoc} */
         protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
@@ -779,27 +832,50 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public String getLoveNumbersModel() {
-            return IERS_BASE + "2003/tab6.1.txt";
+        public LoveNumbers getLoveNumbers() throws OrekitException {
+            return loadLoveNumbers(LOVE_NUMBERS);
         }
 
         /** {@inheritDoc} */
-        public String getK20FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "2003/tab6.3b.txt";
+        public PoissonSeries<DerivativeStructure>[] getTideFrequencyDependenceModel()
+            throws OrekitException {
+
+            final PoissonSeriesParser<DerivativeStructure> k20Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(18).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 2).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 16, 18);
+            final PoissonSeriesParser<DerivativeStructure> k21Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(18).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 3).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 17, 18);
+            final PoissonSeriesParser<DerivativeStructure> k22Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(16).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 2).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 16, -1);
+
+            @SuppressWarnings("unchecked")
+            final PoissonSeries<DerivativeStructure>[] kSeries =
+                    (PoissonSeries<DerivativeStructure>[]) Array.newInstance(PoissonSeries.class, 3);
+            kSeries[0] = k20Parser.parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
+            kSeries[1] = k21Parser.parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
+            kSeries[2] = k22Parser.parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
+
+            return kSeries;
+
         }
 
-        /** {@inheritDoc} */
-        public String getK21FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "2003/tab6.3a.txt";
-        }
-
-        /** {@inheritDoc} */
-        public String getK22FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "2003/tab6.3c.txt";
-        }
 
     },
 
@@ -832,6 +908,18 @@ public enum IERSConventions {
 
         /** Tidal correction for UT1 resources. */
         private static final String TIDAL_CORRECTION_UT1_SERIES = IERS_BASE + "2010/tab8.3ab.txt";
+
+        /** Love numbers resources. */
+        private static final String LOVE_NUMBERS = IERS_BASE + "2010/tab6.3.txt";
+
+        /** Frequency dependence model for k₂₀. */
+        private static final String K20_FREQUENCY_DEPENDENCE = IERS_BASE + "2010/tab6.5b.txt";
+
+        /** Frequency dependence model for k₂₁. */
+        private static final String K21_FREQUENCY_DEPENDENCE = IERS_BASE + "2010/tab6.5a.txt";
+
+        /** Frequency dependence model for k₂₂. */
+        private static final String K22_FREQUENCY_DEPENDENCE = IERS_BASE + "2010/tab6.5c.txt";
 
         /** {@inheritDoc} */
         protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
@@ -900,26 +988,48 @@ public enum IERSConventions {
         }
 
         /** {@inheritDoc} */
-        public String getLoveNumbersModel() {
-            return IERS_BASE + "2010/tab6.3.txt";
+        public LoveNumbers getLoveNumbers() throws OrekitException {
+            return loadLoveNumbers(LOVE_NUMBERS);
         }
 
         /** {@inheritDoc} */
-        public String getK20FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "2010/tab6.5b.txt";
-        }
+        public PoissonSeries<DerivativeStructure>[] getTideFrequencyDependenceModel()
+            throws OrekitException {
 
-        /** {@inheritDoc} */
-        public String getK21FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "2010/tab6.5a.txt";
-        }
+            final PoissonSeriesParser<DerivativeStructure> k20Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(18).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 2).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 16, 18);
+            final PoissonSeriesParser<DerivativeStructure> k21Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(18).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 3).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 17, 18);
+            final PoissonSeriesParser<DerivativeStructure> k22Parser =
+                    new PoissonSeriesParser<DerivativeStructure>(16).
+                        withFactor(1.0e-12).
+                        withOptionalColumn(1).
+                        withGamma(4).
+                        withDoodson(5, 2).
+                        withFirstDelaunay(10).
+                        withSinCos(0, 16, -1);
 
-        /** {@inheritDoc} */
-        public String getK22FrequencyDependenceModel() {
-            // beware that in the conventions, the tables are given in the order k21, k20, k22
-            return IERS_BASE + "2010/tab6.5c.txt";
+            @SuppressWarnings("unchecked")
+            final PoissonSeries<DerivativeStructure>[] kSeries =
+                    (PoissonSeries<DerivativeStructure>[]) Array.newInstance(PoissonSeries.class, 3);
+            kSeries[0] = k20Parser.parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
+            kSeries[1] = k21Parser.parse(getStream(K21_FREQUENCY_DEPENDENCE), K21_FREQUENCY_DEPENDENCE);
+            kSeries[2] = k22Parser.parse(getStream(K22_FREQUENCY_DEPENDENCE), K22_FREQUENCY_DEPENDENCE);
+
+            return kSeries;
+
         }
 
         /** {@inheritDoc} */
@@ -1275,6 +1385,22 @@ public enum IERSConventions {
     public abstract TimeFunction<double[]> getEOPTidalCorrection()
         throws OrekitException;
 
+    /** Get the Love numbers.
+     * @return Love numbers
+     * @exception OrekitException if table cannot be loaded
+     * @since 6.1
+     */
+    public abstract LoveNumbers getLoveNumbers()
+        throws OrekitException;
+
+    /** Get the frequency dependence model for tides computation (k₂₀, k₂₁, k₂₂).
+     * @return frequency dependence model for tides computation (k₂₀, k₂₁, k₂₂).
+     * @exception OrekitException if table cannot be loaded
+     * @since 6.1
+     */
+    public abstract PoissonSeries<DerivativeStructure>[] getTideFrequencyDependenceModel()
+        throws OrekitException;
+
     /** Interface for functions converting nutation corrections between
      * &delta;&Delta;&psi;/&delta;&Delta;&epsilon; to &delta;X/&delta;Y.
      * <ul>
@@ -1370,6 +1496,86 @@ public enum IERSConventions {
 
         };
 
+    }
+
+    /** Load the Love numbers.
+     * @param nameLove name of the Love number resource
+     * @return Love numbers
+     * @exception OrekitException if the Love numbers embedded in the
+     * library cannot be read
+     */
+    protected LoveNumbers loadLoveNumbers(final String nameLove) throws OrekitException {
+        InputStream stream = null;
+        BufferedReader reader = null;
+        try {
+
+            // allocate the three triangular arrays for real, imaginary and time-dependent numbers
+            final double[][] real      = new double[4][];
+            final double[][] imaginary = new double[4][];
+            final double[][] plus      = new double[4][];
+            for (int i = 0; i < real.length; ++i) {
+                real[i]      = new double[i + 1];
+                imaginary[i] = new double[i + 1];
+                plus[i]      = new double[i + 1];
+            }
+
+            stream = IERSConventions.class.getResourceAsStream(nameLove);
+            if (stream == null) {
+                throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, nameLove);
+            }
+
+            // setup the reader
+            reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+
+            String line = reader.readLine();
+            int lineNumber = 1;
+
+            // look for the Love numbers
+            while (line != null) {
+
+                line = line.trim();
+                if (!(line.isEmpty() || line.startsWith("#"))) {
+                    final String[] fields = line.split("\\p{Space}+");
+                    if (fields.length != 5) {
+                        // this should never happen with files embedded within Orekit
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, nameLove, line);
+                    }
+                    final int n = Integer.parseInt(fields[0]);
+                    final int m = Integer.parseInt(fields[1]);
+                    if ((n < 2) || (n > 3) || (m < 0) || (m > n)) {
+                        // this should never happen with files embedded within Orekit
+                        throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
+                                                  lineNumber, nameLove, line);
+
+                    }
+                    real[n][m]      = Double.parseDouble(fields[2]);
+                    imaginary[n][m] = Double.parseDouble(fields[3]);
+                    plus[n][m]      = Double.parseDouble(fields[4]);
+                }
+
+                // next line
+                lineNumber++;
+                line = reader.readLine();
+
+            }
+
+            return new LoveNumbers(real, imaginary, plus);
+
+        } catch (IOException ioe) {
+            throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, nameLove);
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException ioe) {
+                // ignored here
+            }
+        }
     }
 
     /** Get a data stream.
@@ -1486,25 +1692,5 @@ public enum IERSConventions {
         }
 
     }
-
-    /** Get the table resource name for the Love numbers.
-     * @return table resource name for the Love numbers
-     */
-    public abstract String getLoveNumbersModel();
-
-    /** Get the table resource name for the k20 frequency dependence in tides computation.
-     * @return table resource name for the k20 frequency dependence in tides computation.
-     */
-    public abstract String getK20FrequencyDependenceModel();
-
-    /** Get the table resource name for the k21 frequency dependence in tides computation.
-     * @return table resource name for the k21 frequency dependence in tides computation.
-     */
-    public abstract String getK21FrequencyDependenceModel();
-
-    /** Get the table resource name for the k22 frequency dependence in tides computation.
-     * @return table resource name for the k22 frequency dependence in tides computation.
-     */
-    public abstract String getK22FrequencyDependenceModel();
 
 }

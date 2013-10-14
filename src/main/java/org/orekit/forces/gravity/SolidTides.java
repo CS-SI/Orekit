@@ -56,10 +56,8 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
                       final CelestialBody ... bodies)
         throws OrekitException {
         final TidesField tidesField =
-                new TidesField(conventions.getLoveNumbersModel(),
-                               conventions.getK20FrequencyDependenceModel(),
-                               conventions.getK21FrequencyDependenceModel(),
-                               conventions.getK22FrequencyDependenceModel(),
+                new TidesField(conventions.getLoveNumbers(),
+                               conventions.getTideFrequencyDependenceModel(),
                                centralBodyFrame, ae, mu, centralTideSystem, bodies);
         attractionModel = new HolmesFeatherstoneAttractionModel(centralBodyFrame, tidesField);
     }

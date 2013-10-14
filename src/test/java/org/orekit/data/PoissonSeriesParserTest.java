@@ -420,6 +420,65 @@ public class PoissonSeriesParserTest {
     }
 
     @Test
+    public void testCorruptedLDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-l-Delaunay-multiplier.txt", "σ₁");
+    }
+
+    @Test
+    public void testCorruptedLPrimeDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-lPrime-Delaunay-multiplier.txt", "Q₁");
+    }
+
+    @Test
+    public void testCorruptedFDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-F-Delaunay-multiplier.txt", "Nτ₁");
+    }
+
+    @Test
+    public void testCorruptedDDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-D-Delaunay-multiplier.txt", "2Q₁");
+    }
+
+    @Test
+    public void testCorruptedOmegaDelaunayMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-Omega-Delaunay-multiplier.txt", "τ₁");
+    }
+
+    @Test
+    public void testCorruptedDoodsonMultiplier() {
+        checkCorrupted("/tides/tab6.5a-corrupted-Doodson-multiplier.txt", "Lk₁");
+    }
+
+    @Test
+    public void testCorruptedDoodsonNumber() {
+        checkCorrupted("/tides/tab6.5a-corrupted-Doodson-number.txt", "No₁");
+    }
+
+    private void checkCorrupted(String resourceName, String lineStart) {
+        try {
+            PoissonSeriesParser<DerivativeStructure> parser =
+                    new PoissonSeriesParser<DerivativeStructure>(18).
+                    withFactor(1.0e-12).
+                    withOptionalColumn(1).
+                    withGamma(4).
+                    withDoodson(5, 3).
+                    withFirstDelaunay(10).
+                    withSinCos(0, 17, 18);
+            parser.parse(getClass().getResourceAsStream(resourceName), resourceName);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            if (lineStart == null) {
+                Assert.assertEquals(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, oe.getSpecifier());
+            } else {
+                Assert.assertEquals(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, oe.getSpecifier());
+                Assert.assertTrue(((String) oe.getParts()[2]).trim().startsWith(lineStart));
+            }
+        } catch (Exception e) {
+            Assert.fail("wrong exception caught: " + e);
+        }
+    }
+
+    @Test
     public void testCompile() throws OrekitException, SecurityException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser<DerivativeStructure> parser =
