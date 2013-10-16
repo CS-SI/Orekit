@@ -72,7 +72,7 @@ public class PoissonSeriesParserTest {
             withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
             withFirstDelaunay(4).
             withFirstPlanetary(9).
-            withSinCos(0, 2, 3).
+            withSinCos(0, 2, 1.0, 3, 1.0).
             parse(stream, "missing");
     }
 
@@ -91,7 +91,7 @@ public class PoissonSeriesParserTest {
                 withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
-                withSinCos(0, 2, 3).
+                withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -117,7 +117,7 @@ public class PoissonSeriesParserTest {
                 withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
-                withSinCos(0, 2, 3).
+                withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -135,7 +135,7 @@ public class PoissonSeriesParserTest {
                                withPolynomialPart('x', PolynomialParser.Unit.NO_UNITS).
                                withFirstDelaunay(4).
                                withFirstPlanetary(9).
-                               withSinCos(0, 2, 3).
+                               withSinCos(0, 2, 1.0, 3, 1.0).
                                parse(new ByteArrayInputStream(data.getBytes()), "");
         Assert.assertEquals(1, nd.getNonPolynomialSize());
     }
@@ -148,9 +148,9 @@ public class PoissonSeriesParserTest {
             + "1 1.0 0.0 0 0 0 0 1 0 0 0 0 0 0 0 0 0\n";
         PoissonSeries<DerivativeStructure> nd = new PoissonSeriesParser<DerivativeStructure>(17).
                                withFirstPlanetary(9).
-                               withSinCos(0, 2, 3).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
+                               withSinCos(0, 2, 1.0, 3, 1.0).
+                               withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                                withFirstDelaunay(4).
-                               withFactor(1.0).
                                parse(new ByteArrayInputStream(data.getBytes()), "");
         Assert.assertEquals(1, nd.getNonPolynomialSize());
     }
@@ -224,7 +224,7 @@ public class PoissonSeriesParserTest {
                              withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                              withFirstDelaunay(4).
                              withFirstPlanetary(9).
-                             withSinCos(0, 2, 3).
+                             withSinCos(0, 2, 1.0, 3, 1.0).
                              parse(new ByteArrayInputStream(data.getBytes()), "dummy").getNonPolynomialSize());
     }
 
@@ -293,7 +293,7 @@ public class PoissonSeriesParserTest {
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
-                withSinCos(0, 2, 3).
+                withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "dummy");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -353,7 +353,7 @@ public class PoissonSeriesParserTest {
                 withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                 withFirstDelaunay(4).
                 withFirstPlanetary(9).
-                withSinCos(0, 2, 3).
+                withSinCos(0, 2, 1.0, 3, 1.0).
                 parse(new ByteArrayInputStream(data.getBytes()), "dummy");
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -367,13 +367,13 @@ public class PoissonSeriesParserTest {
         PoissonSeriesParser<DerivativeStructure> parser =
                 new PoissonSeriesParser<DerivativeStructure>(10).
                     withFirstDelaunay(1).
-                    withSinCos(0, 7, -1).
-                    withSinCos(1, 8, -1);
+                    withSinCos(0, 7, 1.0, -1, 1.0).
+                    withSinCos(1, 8, 1.0, -1, 1.0);
         InputStream psiStream =
             getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
         Assert.assertEquals(106,
                             parser.parse(psiStream, "1996/tab5.1.txt").getNonPolynomialSize());
-        parser = parser.withSinCos(0, -1, 9).withSinCos(1, -1, 10);
+        parser = parser.withSinCos(0, -1, 1.0, 9, 1.0).withSinCos(1, -1, 1.0, 10, 1.0);
         InputStream epsilonStream =
             getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
         Assert.assertNotNull(parser.parse(epsilonStream, "1996/tab5.1.txt"));
@@ -384,7 +384,7 @@ public class PoissonSeriesParserTest {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser<DerivativeStructure> parser =
                 new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
-                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 3);
+                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2003/tab5.2a.txt");
         Assert.assertNotNull(parser.parse(xStream, "2003/tab5.2a.txt"));
@@ -401,7 +401,7 @@ public class PoissonSeriesParserTest {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser<DerivativeStructure> parser =
                 new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
-                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 3);
+                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
         Assert.assertNotNull(parser.parse(xStream, "2010/tab5.2a.txt"));
@@ -413,11 +413,11 @@ public class PoissonSeriesParserTest {
         Assert.assertNotNull(parser.parse(zStream, "2010/tab5.2d.txt"));
 
         PoissonSeriesParser<DerivativeStructure> correctionParser =
-                new PoissonSeriesParser<DerivativeStructure>(14).withFirstDelaunay(4).withSinCos(0, 11, 12);
+                new PoissonSeriesParser<DerivativeStructure>(14).withFirstDelaunay(4).withSinCos(0, 11, 1.0, 12, 1.0);
         InputStream xCorrectionStream =
                 getClass().getResourceAsStream(directory + "2010/tab5.1a.txt");
         Assert.assertNotNull(correctionParser.parse(xCorrectionStream, "2010/tab5.1a.txt"));
-        correctionParser = correctionParser.withSinCos(0, 13, 14);
+        correctionParser = correctionParser.withSinCos(0, 13, 1.0, 14, 1.0);
         InputStream yCorrectionStream =
                 getClass().getResourceAsStream(directory + "2010/tab5.1a.txt");
         Assert.assertNotNull(correctionParser.parse(yCorrectionStream, "2010/tab5.1a.txt"));
@@ -464,11 +464,10 @@ public class PoissonSeriesParserTest {
         try {
             PoissonSeriesParser<DerivativeStructure> parser =
                     new PoissonSeriesParser<DerivativeStructure>(18).
-                    withFactor(1.0e-12).
                     withOptionalColumn(1).
                     withDoodson(4, 3).
                     withFirstDelaunay(10).
-                    withSinCos(0, 17, 18);
+                    withSinCos(0, 18, 1.0e-12, 17, 1.0e-12);
             parser.parse(getClass().getResourceAsStream(resourceName), resourceName);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
@@ -508,7 +507,7 @@ public class PoissonSeriesParserTest {
         String directory = "/assets/org/orekit/IERS-conventions/";
         PoissonSeriesParser<DerivativeStructure> parser =
                 new PoissonSeriesParser<DerivativeStructure>(17).withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
-                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 3);
+                    withFirstDelaunay(4).withFirstPlanetary(9).withSinCos(0, 2, 1.0, 3, 1.0);
         InputStream xStream =
             getClass().getResourceAsStream(directory + "2010/tab5.2a.txt");
         PoissonSeries<DerivativeStructure> xSeries = parser.parse(xStream, "2010/tab5.2a.txt");

@@ -85,8 +85,8 @@ import org.orekit.errors.OrekitMessages;
  *   <li>totalColumns   = 10 (see {@link #PoissonSeriesParser(int)})</li>
  *   <li>firstDelaunay  =  1 (see {@link #withFirstDelaunay(int)})</li>
  *   <li>no calls to {@link #withFirstPlanetary(int)} as there are no planetary columns in this table</li>
- *   <li>sinCosColumns  =  7, -1 for degree 0 for Ai (see {@link #withSinCos(int, int, int)})</li>
- *   <li>sinCosColumns  =  8, -1 for degree 1 for A'i (see {@link #withSinCos(int, int, int)})</li>
+ *   <li>sinCosColumns  =  7, -1 for degree 0 for Ai (see {@link #withSinCos(int, int, double, int, double)})</li>
+ *   <li>sinCosColumns  =  8, -1 for degree 1 for A'i (see {@link #withSinCos(int, int, double, int, double)})</li>
  * </ul>
  * <p>
  * In order to parse the nutation in obliquity from the previous table, the
@@ -96,8 +96,8 @@ import org.orekit.errors.OrekitMessages;
  *   <li>totalColumns   = 10 (see {@link #PoissonSeriesParser(int)})</li>
  *   <li>firstDelaunay  =  1 (see {@link #withFirstDelaunay(int)})</li>
  *   <li>no calls to {@link #withFirstPlanetary(int)} as there are no planetary columns in this table</li>
- *   <li>sinCosColumns  =  -1, 9 for degree 0 for Bi (see {@link #withSinCos(int, int, int)})</li>
- *   <li>sinCosColumns  =  -1, 10 for degree 1 for B'i (see {@link #withSinCos(int, int, int)})</li>
+ *   <li>sinCosColumns  =  -1, 9 for degree 0 for Bi (see {@link #withSinCos(int, int, double, int, double)})</li>
+ *   <li>sinCosColumns  =  -1, 10 for degree 1 for B'i (see {@link #withSinCos(int, int, double, int, double)})</li>
  * </ul>
  * <p>
  * A file from a recent convention, like table 5.3a in IERS conventions 2010, uses
@@ -155,7 +155,7 @@ import org.orekit.errors.OrekitMessages;
  *   <li>firstPlanetary =  9 (see {@link #withFirstPlanetary(int)})</li>
  *   <li>sinCosColumns  =  2,3 (we specify only degree 0, so when we read
  *       section j = 0 we read degree 0, when we read section j = 1 we read
- *       degree 1, see {@link #withSinCos(int, int, int)} ...)</li>
+ *       degree 1, see {@link #withSinCos(int, int, double, int, double)} ...)</li>
  * </ul>
  * <p>
  * A file from a recent convention, like table 6.5a in IERS conventions 2010, contains
@@ -171,9 +171,9 @@ import org.orekit.errors.OrekitMessages;
  * for τ by calling {@link #withDoodson(int, int)} and to also add a configuration for γ by
  * calling {@link #withGamma(int)} triggers an exception.
  * </p>
- * <p>The table 6.5a file also contains a column for the waves names which may be empty, so
- * it must be identified explicitly by calling {@link #withOptionalColumn(int)}. The 6.5a
- * table reads as follows:
+ * <p>The table 6.5a file also contains a column for the waves names (the Darwin's symbol)
+ * which may be empty, so it must be identified explicitly by calling {@link
+ * #withOptionalColumn(int)}. The 6.5a table reads as follows:
  * </p>
  * <pre>
  * The in-phase (ip) amplitudes (A₁ δkfR Hf) and the out-of-phase (op) amplitudes (A₁ δkfI Hf)
@@ -193,11 +193,10 @@ import org.orekit.errors.OrekitMessages;
  * </pre>
  * <ul>
  *   <li>totalColumns   = 18 (see {@link #PoissonSeriesParser(int)})</li>
- *   <li>factor         =  1.0e-12 (see {@link #withFactor(double)})</li>
  *   <li>optionalColumn =  1 (see {@link #withOptionalColumn(int)})</li>
  *   <li>firstDoodson, Doodson number = 4, 3 (see {@link #withDoodson(int, int)})</li>
  *   <li>firstDelaunay  =  10 (see {@link #withFirstDelaunay(int)})</li>
- *   <li>sinCosColumns  =  17, 18, see {@link #withSinCos(int, int, int)} ...)</li>
+ *   <li>sinCosColumns  =  17, 18, see {@link #withSinCos(int, int, double, int, double)} ...)</li>
  * </ul>
  * <p>
  * Our parsing algorithm involves adding the section degree from the "j = 0, 1, 2 ..." header
@@ -262,12 +261,11 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      */
     private final int[] sinCosColumns;
 
-    /** Multiplicative factor to use for non-polynomial coefficients. */
-    private final double factor;
+    /** Multiplicative factors to use for various columns. */
+    private final double[] sinCosFactors;
 
     /** Build a parser for a Poisson series from an IERS table file.
      * @param polynomialParser polynomial parser to use
-     * @param factor multiplicative factor to use for non-polynomial coefficients
      * @param fieldsPatterns patterns for fields
      * @param optional optional column
      * @param gamma column of the GMST tide multiplier
@@ -276,13 +274,14 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param firstDelaunay column of the first Delaunay multiplier
      * @param firstPlanetary column of the first planetary multiplier
      * @param sinCosColumns columns of the sine and cosine coefficients
+     * @param factors multiplicative factors to use for various columns
      */
     private PoissonSeriesParser(final PolynomialParser polynomialParser,
-                                final double factor, final String[] fieldsPatterns,
-                                final int optional, final int gamma,
-                                final int firstDoodson, final int doodson,
-                                final int firstDelaunay, final int firstPlanetary,
-                                final int ... sinCosColumns) {
+                                final String[] fieldsPatterns, final int optional,
+                                final int gamma, final int firstDoodson,
+                                final int doodson, final int firstDelaunay,
+                                final int firstPlanetary, final int[] sinCosColumns,
+                                final double[] factors) {
         this.polynomialParser = polynomialParser;
         this.fieldsPatterns   = fieldsPatterns;
         this.optional         = optional;
@@ -292,14 +291,15 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         this.firstDelaunay    = firstDelaunay;
         this.firstPlanetary   = firstPlanetary;
         this.sinCosColumns    = sinCosColumns;
-        this.factor           = factor;
+        this.sinCosFactors    = factors;
     }
 
     /** Build a parser for a Poisson series from an IERS table file.
      * @param totalColumns total number of columns in the non-polynomial sections
      */
     public PoissonSeriesParser(final int totalColumns) {
-        this(null, 1.0, createInitialFieldsPattern(totalColumns), -1, -1, -1, -1, -1, -1, new int[0]);
+        this(null, createInitialFieldsPattern(totalColumns), -1,
+             -1, -1, -1, -1, -1, new int[0], new double[0]);
     }
 
     /** Create an array with only non-space fields patterns.
@@ -318,7 +318,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param count number of colums to set
      * @param pattern pattern to use
      */
-    private static void setPatterns(final String[] array, final int first, final int count, final String pattern) {
+    private static void setPatterns(final String[] array, final int first, final int count,
+                                    final String pattern) {
         if (first > 0) {
             Arrays.fill(array, first - 1, first - 1 + count, pattern);
         }
@@ -330,19 +331,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @return a new parser, with polynomial parser updated
      */
     public PoissonSeriesParser<T> withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
-        return new PoissonSeriesParser<T>(new PolynomialParser(freeVariable, unit), factor, fieldsPatterns,
-                                          optional, gamma, firstDoodson, doodson,
-                                          firstDelaunay, firstPlanetary, sinCosColumns);
-    }
-
-    /** Set up multiplicative factor to use for non-polynomial coefficients.
-     * @param f multiplicative factor to use for non-polynomial coefficients
-     * @return a new parser, with updated columns settings
-     */
-    public PoissonSeriesParser<T> withFactor(final double f) {
-        return new PoissonSeriesParser<T>(polynomialParser, f, fieldsPatterns,
-                                          optional, gamma, firstDoodson, doodson,
-                                          firstDelaunay, firstPlanetary, sinCosColumns);
+        return new PoissonSeriesParser<T>(new PolynomialParser(freeVariable, unit), fieldsPatterns, optional,
+                                          gamma, firstDoodson, doodson, firstDelaunay,
+                                          firstPlanetary, sinCosColumns, sinCosFactors);
     }
 
     /** Set up optional column.
@@ -364,9 +355,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, optional, 1, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, column,   1, OPTIONAL_FIELD_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          column, gamma, firstDoodson, doodson,
-                                          firstDelaunay, firstPlanetary, sinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, column,
+                                          gamma, firstDoodson, doodson, firstDelaunay,
+                                          firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -389,9 +380,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, gamma,  1, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, column, 1, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, column, firstDoodson, doodson,
-                                          firstDelaunay, firstPlanetary, sinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
+                                          column, firstDoodson, doodson, firstDelaunay,
+                                          firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -423,9 +414,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, doodson,      1, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, numberColumn, 1, DOODSON_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, firstMultiplierColumn, numberColumn,
-                                          firstDelaunay, firstPlanetary, sinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
+                                          gamma, firstMultiplierColumn, numberColumn, firstDelaunay,
+                                          firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -440,9 +431,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, firstDelaunay, 5, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, firstColumn,   5, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, firstDoodson, doodson,
-                                          firstColumn, firstPlanetary, sinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
+                                          gamma, firstDoodson, doodson, firstColumn,
+                                          firstPlanetary, sinCosColumns, sinCosFactors);
 
     }
 
@@ -457,44 +448,54 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, firstPlanetary, 9, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, firstColumn,    9, INTEGER_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, firstDoodson, doodson,
-                                          firstDelaunay, firstColumn, sinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
+                                          gamma, firstDoodson, doodson, firstDelaunay,
+                                          firstColumn, sinCosColumns, sinCosFactors);
 
     }
 
     /** Set up columns of the sine and cosine coefficients.
      * @param degree degree to set up
-     * @param sin column of the sine coefficient for t<sup>degree</sup> counting from 1
+     * @param sinColumn column of the sine coefficient for t<sup>degree</sup> counting from 1
      * (may be -1 if there are no sine coefficients)
-     * @param cos column of the cosine coefficient for t<sup>degree</sup> counting from 1
+     * @param sinFactor multiplicative factor for the sine coefficient
+     * @param cosColumn column of the cosine coefficient for t<sup>degree</sup> counting from 1
      * (may be -1 if there are no cosine coefficients)
+     * @param cosFactor multiplicative factor for the cosine coefficient
      * @return a new parser, with updated columns settings
      */
-    public PoissonSeriesParser<T> withSinCos(final int degree, final int sin, final int cos) {
+    public PoissonSeriesParser<T> withSinCos(final int degree,
+                                             final int sinColumn, final double sinFactor,
+                                             final int cosColumn, final double cosFactor) {
 
         // update the sin/cos columns array
-        final int maxDegree = FastMath.max(degree, sinCosColumns.length / 2 - 1);
-        final int[] newSinCosColumns = new int[2 * (maxDegree + 1)];
+        final int      maxDegree        = FastMath.max(degree, sinCosColumns.length / 2 - 1);
+        final int[]    newSinCosColumns = new int[2 * (maxDegree + 1)];
         Arrays.fill(newSinCosColumns, -1);
         System.arraycopy(sinCosColumns, 0, newSinCosColumns, 0, sinCosColumns.length);
-        newSinCosColumns[2 * degree]     = sin;
-        newSinCosColumns[2 * degree + 1] = cos;
+        newSinCosColumns[2 * degree]     = sinColumn;
+        newSinCosColumns[2 * degree + 1] = cosColumn;
+
+        final double[] newSinCosFactors = new double[2 * (maxDegree + 1)];
+        Arrays.fill(newSinCosFactors, Double.NaN);
+        System.arraycopy(sinCosFactors, 0, newSinCosFactors, 0, sinCosFactors.length);
+        newSinCosFactors[2 * degree]     = sinFactor;
+        newSinCosFactors[2 * degree + 1] = cosFactor;
 
         // update the fields pattern to expect real numbers at the right indices
         final String[] newFieldsPatterns = fieldsPatterns.clone();
         if (2 * degree < sinCosColumns.length) {
             setPatterns(newFieldsPatterns, sinCosColumns[2 * degree], 1, UNKNOWN_TYPE_PATTERN);
         }
-        setPatterns(newFieldsPatterns, sin, 1, REAL_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, sinColumn, 1, REAL_TYPE_PATTERN);
         if (2 * degree  + 1 < sinCosColumns.length) {
             setPatterns(newFieldsPatterns, sinCosColumns[2 * degree + 1], 1, UNKNOWN_TYPE_PATTERN);
         }
-        setPatterns(newFieldsPatterns, cos, 1, REAL_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, cosColumn, 1, REAL_TYPE_PATTERN);
 
-        return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, firstDoodson, doodson,
-                                          firstDelaunay, firstPlanetary, newSinCosColumns);
+        return new PoissonSeriesParser<T>(polynomialParser, newFieldsPatterns, optional,
+                                          gamma, firstDoodson, doodson, firstDelaunay,
+                                          firstPlanetary, newSinCosColumns, newSinCosFactors);
 
     }
 
@@ -632,8 +633,10 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
 
                     boolean nonZero = false;
                     for (int d = 0; d < sinCosColumns.length / 2; ++d) {
-                        final double sinCoeff = parseCoefficient(regularMatcher, sinCosColumns[2 * d],     factor);
-                        final double cosCoeff = parseCoefficient(regularMatcher, sinCosColumns[2 * d + 1], factor);
+                        final double sinCoeff =
+                                parseCoefficient(regularMatcher, sinCosColumns[2 * d],     sinCosFactors[2 * d]);
+                        final double cosCoeff =
+                                parseCoefficient(regularMatcher, sinCosColumns[2 * d + 1], sinCosFactors[2 * d + 1]);
                         if (!Precision.equals(sinCoeff, 0.0, 1) || !Precision.equals(cosCoeff, 0.0, 1)) {
                             nonZero = true;
                             term.add(0, degree + d, sinCoeff, cosCoeff);

@@ -18,16 +18,16 @@ package org.orekit.forces.gravity;
 
 import java.lang.reflect.Field;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
-import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.FramesFactory;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.LoveNumbers;
@@ -38,9 +38,11 @@ public class TidesFieldTest {
     @Test
     public void testConventions2003() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
+        TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
         TidesField tidesField =
                 new TidesField(IERSConventions.IERS_2003.getLoveNumbers(),
-                               IERSConventions.IERS_2003.getTideFrequencyDependenceModel(),
+                               IERSConventions.IERS_2003.getTideFrequencyDependenceFunction(ut1),
+                               IERSConventions.IERS_2010.getPermanentTide(),
                                FramesFactory.getITRF(IERSConventions.IERS_2003, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
@@ -73,23 +75,16 @@ public class TidesFieldTest {
         Assert.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
         Assert.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
 
-        Field fieldKSeries = tidesField.getClass().getDeclaredField("kSeries");
-        fieldKSeries.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        PoissonSeries<DerivativeStructure>[] kSeries =
-                (PoissonSeries<DerivativeStructure>[]) fieldKSeries.get(tidesField);
-        Assert.assertEquals(21, kSeries[0].getNonPolynomialSize());
-        Assert.assertEquals(48, kSeries[1].getNonPolynomialSize());
-        Assert.assertEquals( 2, kSeries[2].getNonPolynomialSize());
-
     }
 
     @Test
     public void testConventions2010() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
+        TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         TidesField tidesField =
                 new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
-                               IERSConventions.IERS_2010.getTideFrequencyDependenceModel(),
+                               IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
+                               IERSConventions.IERS_2010.getPermanentTide(),
                                FramesFactory.getITRF(IERSConventions.IERS_2003, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
@@ -114,15 +109,6 @@ public class TidesFieldTest {
         Assert.assertEquals(0.0,      love.getPlus(3, 1), 1.0e-10);
         Assert.assertEquals(0.0,      love.getPlus(3, 2), 1.0e-10);
         Assert.assertEquals(0.0,      love.getPlus(3, 3), 1.0e-10);
-
-        Field fieldKSeries = tidesField.getClass().getDeclaredField("kSeries");
-        fieldKSeries.setAccessible(true);
-        @SuppressWarnings("unchecked")
-        PoissonSeries<DerivativeStructure>[] kSeries =
-                (PoissonSeries<DerivativeStructure>[]) fieldKSeries.get(tidesField);
-        Assert.assertEquals(21, kSeries[0].getNonPolynomialSize());
-        Assert.assertEquals(48, kSeries[1].getNonPolynomialSize());
-        Assert.assertEquals( 2, kSeries[2].getNonPolynomialSize());
 
     }
 

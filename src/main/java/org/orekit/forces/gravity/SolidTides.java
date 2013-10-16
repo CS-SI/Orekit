@@ -30,6 +30,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 
 /** Solid tides force model.
@@ -47,17 +48,20 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
      * @param mu central body attraction coefficient
      * @param centralTideSystem tide system used in the central attraction model
      * @param conventions IERS conventions used for loading Love numbers
+     * @param ut1 UT1 time scale
      * @param bodies tide generating bodies (typically Sun and Moon)
      * @exception OrekitException if the Love numbers embedded in the
      * library cannot be read
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
-                      final TideSystem centralTideSystem, final IERSConventions conventions,
+                      final TideSystem centralTideSystem,
+                      final IERSConventions conventions, final TimeScale ut1,
                       final CelestialBody ... bodies)
         throws OrekitException {
         final TidesField tidesField =
                 new TidesField(conventions.getLoveNumbers(),
-                               conventions.getTideFrequencyDependenceModel(),
+                               conventions.getTideFrequencyDependenceFunction(ut1),
+                               conventions.getPermanentTide(),
                                centralBodyFrame, ae, mu, centralTideSystem, bodies);
         attractionModel = new HolmesFeatherstoneAttractionModel(centralBodyFrame, tidesField);
     }

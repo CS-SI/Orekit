@@ -18,17 +18,16 @@ package org.orekit.forces.gravity;
 
 import java.util.Arrays;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.CelestialBody;
-import org.orekit.data.PoissonSeries;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeFunction;
 import org.orekit.utils.LoveNumbers;
 
 /** Gravity field corresponding to tides.
@@ -38,7 +37,7 @@ import org.orekit.utils.LoveNumbers;
  * IERS conventions (2010)</a>, chapter 6, section 6.2.
  * </p>
  * <p>
- * The computation of the spherical harmonics part is done using the algorithm implemented
+ * The computation of the spherical harmonics part is done using the algorithm
  * designed by S. A. Holmes and W. E. Featherstone from Department of Spatial Sciences,
  * Curtin University of Technology, Perth, Australia and described in their 2002 paper:
  * <a href="http://cct.gfy.ku.dk/publ_others/ccta1870.pdf">A unified approach to
@@ -57,8 +56,11 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     /** Love numbers. */
     private final LoveNumbers love;
 
-    /** Poisson series for frequency dependent terms (k₂₀, k₂₁, k₂₂). */
-    private final PoissonSeries<DerivativeStructure>[] kSeries;
+    /** Function computing frequency dependent terms (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂). */
+    private final TimeFunction<double []> deltaCSFunction;
+
+    /** Permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used. */
+    private final double deltaC20PermanentTide;
 
     /** Rotating body frame. */
     private final Frame centralBodyFrame;
@@ -98,7 +100,8 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** Simple constructor.
      * @param love Love numbers
-     * @param kSeries Poisson series for frequency dependent terms (k₂₀, k₂₁, k₂₂)
+     * @param deltaCSFunction function computing frequency dependent terms (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂)
+     * @param deltaC20PermanentTide permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used
      * @param centralBodyFrame rotating body frame
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
@@ -107,11 +110,10 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      * @exception OrekitException if the Love numbers embedded in the
      * library cannot be read
      */
-    public TidesField(final LoveNumbers love,
-                      final PoissonSeries<DerivativeStructure>[] kSeries,
-                      final Frame centralBodyFrame,
-                      final double ae, final double mu, final TideSystem centralTideSystem,
-                      final CelestialBody ... bodies)
+    public TidesField(final LoveNumbers love, final TimeFunction<double []> deltaCSFunction,
+                      final double deltaC20PermanentTide,
+                      final Frame centralBodyFrame, final double ae, final double mu,
+                      final TideSystem centralTideSystem, final CelestialBody ... bodies)
         throws OrekitException {
 
         // store mode parameters
@@ -136,8 +138,11 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         // Love numbers
         this.love = love;
 
-        // Frequency dependent terms
-        this.kSeries = kSeries.clone();
+        // frequency dependent terms
+        this.deltaCSFunction = deltaCSFunction;
+
+        // permanent tide
+        this.deltaC20PermanentTide = deltaC20PermanentTide;
 
     }
 
@@ -247,7 +252,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         }
 
         // step 2: frequency dependent corrections
-        frequencyDependentPart();
+        frequencyDependentPart(date);
 
         if (centralTideSystem == TideSystem.ZERO_TIDE) {
             // step 3: remove permanent tide which is already considered
@@ -323,17 +328,22 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             for (int n = m; n < love.getSize(); ++n) {
                 fNPlus1 *= rRatio;
                 final double coeff = (fNPlus1 / (2 * n + 1)) * pnm[n][m];
+                final double cCos  = coeff * cosMLambda;
+                final double cSin  = coeff * sinMLambda;
 
                 // direct effect of degree n tides on degree n coefficients
                 // equation 6.6 from IERS conventions (2010)
-                cachedCnm[n][m] += coeff * (love.getReal(n, m) * cosMLambda + love.getImaginary(n, m) * sinMLambda);
-                cachedSnm[n][m] += coeff * (love.getReal(n, m) * sinMLambda - love.getImaginary(n, m) * cosMLambda);
+                final double kR = love.getReal(n, m);
+                final double kI = love.getImaginary(n, m);
+                cachedCnm[n][m] += kR * cCos + kI * cSin;
+                cachedSnm[n][m] += kR * cSin - kI * cCos;
 
                 if (n == 2) {
                     // indirect effect of degree 2 tides on degree 4 coefficients
                     // equation 6.7 from IERS conventions (2010)
-                    cachedCnm[4][m] += coeff * love.getPlus(n, m) * cosMLambda;
-                    cachedSnm[4][m] += coeff * love.getPlus(n, m) * sinMLambda;
+                    final double kP = love.getPlus(n, m);
+                    cachedCnm[4][m] += kP * cCos;
+                    cachedSnm[4][m] += kP * cSin;
                 }
 
             }
@@ -349,15 +359,21 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     }
 
     /** Update coefficients applying frequency dependent step.
+     * @param date current date
      */
-    private void frequencyDependentPart() {
-        // TODO implement equations 6.8a and 6.8b in IERS conventions 2010
+    private void frequencyDependentPart(final AbsoluteDate date) {
+        final double[] deltaCS = deltaCSFunction.value(date);
+        cachedCnm[2][0] += deltaCS[0]; // ΔC₂₀
+        cachedCnm[2][1] += deltaCS[1]; // ΔC₂₁
+        cachedSnm[2][1] += deltaCS[2]; // ΔS₂₁
+        cachedCnm[2][2] += deltaCS[3]; // ΔC₂₂
+        cachedSnm[2][2] += deltaCS[4]; // ΔS₂₂
     }
 
     /** Remove the permanent tide already counted in zero-tide central gravity fields.
      */
     private void removePermanentTide() {
-        // TODO implement equations 6.13 and 6.14 in IERS conventions 2010
+        cachedCnm[2][0] -= deltaC20PermanentTide;
     }
 
     /** Create a triangular array.
