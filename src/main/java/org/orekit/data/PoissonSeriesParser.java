@@ -161,15 +161,19 @@ import org.orekit.errors.OrekitMessages;
  * A file from a recent convention, like table 6.5a in IERS conventions 2010, contains
  * both Doodson arguments (τ, s, h, p, N', ps), Doodson numbers and Delaunay parameters.
  * In this case, the coefficients for the Delaunay parameters must be <em>subtracted</em>
- * from the γ = GMST + π tide parameter, so the signs in the files must be reversed
+ * from the τ = GMST + π tide parameter, so the signs in the files must be reversed
  * in order to match the Doodson arguments and Doodson numbers. This is done automatically
  * (and consistency is checked) only when the {@link #withDoodson(int, int)} method is
- * called at parser configuration time. When only {@link #withGamma(int)} and {@link
- * #withFirstDelaunay(int)} are called, no sign reversal is performed, which is the proper
- * way to parse some other tides related files like the ones used for EOP interpolation
- * accurate modeling (tables 8.2a, 8.2b, 8.3a and 8.3b in 2010 conventions). The file also
- * contains a column for the waves names which may be empty, so it must be identified
- * explicitly by calling {@link #withOptionalColumn(int)}. The 6.5a table reads as follows:
+ * called at parser configuration time. Some other files use the γ = GMST + π tide parameter
+ * rather than Doodson τ argument and the coefficients for the Delaunay parameters must be
+ * <em>added</em> to the γ parameter, so no sign reversal is performed. In order to avoid
+ * ambiguity as the two cases are incompatible with each other, trying to add a configuration
+ * for τ by calling {@link #withDoodson(int, int)} and to also add a configuration for γ by
+ * calling {@link #withGamma(int)} triggers an exception.
+ * </p>
+ * <p>The table 6.5a file also contains a column for the waves names which may be empty, so
+ * it must be identified explicitly by calling {@link #withOptionalColumn(int)}. The 6.5a
+ * table reads as follows:
  * </p>
  * <pre>
  * The in-phase (ip) amplitudes (A₁ δkfR Hf) and the out-of-phase (op) amplitudes (A₁ δkfI Hf)
@@ -191,8 +195,7 @@ import org.orekit.errors.OrekitMessages;
  *   <li>totalColumns   = 18 (see {@link #PoissonSeriesParser(int)})</li>
  *   <li>factor         =  1.0e-12 (see {@link #withFactor(double)})</li>
  *   <li>optionalColumn =  1 (see {@link #withOptionalColumn(int)})</li>
- *   <li>gamma          =  1 (see {@link #withGamma(int)})</li>
- *   <li>firstDoodson, Doodson number = 5, 3 (see {@link #withDoodson(int, int)})</li>
+ *   <li>firstDoodson, Doodson number = 4, 3 (see {@link #withDoodson(int, int)})</li>
  *   <li>firstDelaunay  =  10 (see {@link #withFirstDelaunay(int)})</li>
  *   <li>sinCosColumns  =  17, 18, see {@link #withSinCos(int, int, int)} ...)</li>
  * </ul>
@@ -237,7 +240,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     /** Optional column (counting from 1). */
     private final int optional;
 
-    /** Column of the GMST tide multiplier (counting from 1). */
+    /** Column of the γ = GMST + π tide multiplier (counting from 1). */
     private final int gamma;
 
     /** Column of the first Doodson multiplier (counting from 1). */
@@ -370,10 +373,16 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     /** Set up column of GMST tide multiplier.
      * @param column column of the GMST tide multiplier (counting from 1)
      * @return a new parser, with updated columns settings
+     * @exception OrekitException if τ has been configured by a previous call
+     * to {@link #withDoodson(int, int)}
      * @see #withDoodson(int, int)
-     * @see #withFirstDelaunay(int)
      */
-    public PoissonSeriesParser<T> withGamma(final int column) {
+    public PoissonSeriesParser<T> withGamma(final int column) throws OrekitException {
+
+        // check we don't try to have both τ and γ configured at the same time
+        if (firstDoodson > 0 && column > 0) {
+            throw new OrekitException(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA);
+        }
 
         // update the fields pattern to expect 1 integer at the right index
         final String[] newFieldsPatterns = fieldsPatterns.clone();
@@ -387,30 +396,28 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     }
 
     /** Set up columns for Doodson multiplers and Doodson number.
-     * <p>
-     * Some files contain both Doodson arguments (τ, s, h, p, N', ps), Doodson numbers and
-     * Delaunay parameters. The coefficients for the Delaunay parameters in these files
-     * must be <em>subtracted</em> from the γ = GMST + π tide parameter, so the signs in the
-     * files must be reversed in order to match the Doodson arguments and Doodson numbers.
-     * This is done automatically (and consistency is checked) only when the this method is
-     * called at parser configuration time. When only {@link #withGamma(int)} and {@link
-     * #withFirstDelaunay(int)} are called, no sign reversal is performed, which is the proper
-     * way to parse some other tides related files like the ones used for EOP interpolation
-     * accurate modeling (tables 8.2a, 8.2b, 8.3a and 8.3b in 2010 conventions).
-     * </p>
-     * @param firstMultiplierColumn column of the first Doodson multiplier (counting from 1)
+     * @param firstMultiplierColumn column of the first Doodson multiplier which
+     * corresponds to τ (counting from 1)
      * @param numberColumn column of the Doodson number (counting from 1)
      * @return a new parser, with updated columns settings
+     * @exception OrekitException if γ has been configured by a previous call
+     * to {@link #withGamma(int)}
      * @see #withGamma(int)
      * @see #withFirstDelaunay(int)
      */
-    public PoissonSeriesParser<T> withDoodson(final int firstMultiplierColumn, final int numberColumn) {
+    public PoissonSeriesParser<T> withDoodson(final int firstMultiplierColumn, final int numberColumn)
+        throws OrekitException {
+
+        // check we don't try to have both τ and γ configured at the same time
+        if (gamma > 0 && firstMultiplierColumn > 0) {
+            throw new OrekitException(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA);
+        }
 
         final String[] newFieldsPatterns = fieldsPatterns.clone();
 
-        // update the fields pattern to expect 5 integers at the right indices
-        setPatterns(newFieldsPatterns, firstDoodson,          5, UNKNOWN_TYPE_PATTERN);
-        setPatterns(newFieldsPatterns, firstMultiplierColumn, 5, INTEGER_TYPE_PATTERN);
+        // update the fields pattern to expect 6 integers at the right indices
+        setPatterns(newFieldsPatterns, firstDoodson,          6, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, firstMultiplierColumn, 6, INTEGER_TYPE_PATTERN);
 
         // update the fields pattern to expect 1 Doodson number at the right index
         setPatterns(newFieldsPatterns, doodson,      1, UNKNOWN_TYPE_PATTERN);
@@ -531,9 +538,6 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
             int count         =  0;
             int degree        =  0;
 
-            // when Doodson numbers are present, the Delaunay coefficients are reversed
-            final int dSign   = (firstDoodson < 0) ? 1 : -1;
-
             // prepare the container for the parsed data
             PolynomialNutation<T> polynomial;
             if (polynomialParser == null) {
@@ -564,24 +568,24 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                         }
                     }
 
-                    // get the tide multipler
-                    final int cGamma   = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));
-
                     // get the Doodson multipliers as well as the Doodson number
-                    final int cTau     = cGamma;
-                    final int cS       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson));
-                    final int cH       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 1));
-                    final int cP       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 2));
-                    final int cNprime  = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 3));
-                    final int cPs      = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 4));
+                    final int cTau     = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson));
+                    final int cS       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 1));
+                    final int cH       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 2));
+                    final int cP       = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 3));
+                    final int cNprime  = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 4));
+                    final int cPs      = (firstDoodson < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstDoodson + 5));
                     final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(regularMatcher.group(doodson).replaceAll("[.,]", ""));
 
+                    // get the tide multipler
+                    int cGamma   = (gamma < 0) ? 0 : Integer.parseInt(regularMatcher.group(gamma));
+
                     // get the Delaunay multipliers
-                    final int cL       = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay));
-                    final int cLPrime  = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
-                    final int cF       = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
-                    final int cD       = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
-                    final int cOmega   = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
+                    int cL       = Integer.parseInt(regularMatcher.group(firstDelaunay));
+                    int cLPrime  = Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
+                    int cF       = Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
+                    int cD       = Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
+                    int cOmega   = Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
 
                     // get the planetary multipliers
                     final int cMe      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary));
@@ -597,12 +601,22 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                                                               cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
 
                     if (nDoodson > 0) {
+
+                        // set up the traditional parameters corresponding to the Doodson arguments
+                        cGamma  = cTau;
+                        cL      = -cL;
+                        cLPrime = -cLPrime;
+                        cF      = -cF;
+                        cD      = -cD;
+                        cOmega  = -cOmega;
+
                         // check Doodson number, Doodson multiplers and Delaunay multipliers consistency
                         if (nDoodson != doodsonToDoodsonNumber(cTau, cS, cH, cP, cNprime, cPs) ||
                             nDoodson != delaunayToDoodsonNumber(cGamma, cL, cLPrime, cF, cD, cOmega)) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                       lineNumber, name, regularMatcher.group());
                         }
+
                     }
 
                     // retrieved the term, or build it if it's the first time it is encountered in the file

@@ -79,6 +79,9 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  ingen data funnet i IERS UTC-TAI hist
 # missing serie j = {0} in file {1} (line {2})
 MISSING_SERIE_J_IN_FILE = rekke j = {0} mangler i filen {1} (linje {2})
 
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = <MISSING TRANSLATION>
+
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = uventet slutt på filen {0} (etter linje {1})
 

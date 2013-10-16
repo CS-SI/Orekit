@@ -79,6 +79,9 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  nessun dato trovato nel file storico 
 # missing serie j = {0} in file {1} (line {2})
 MISSING_SERIE_J_IN_FILE = serie j = {0} mancante nel file {1} (linea {2})
 
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = <MISSING TRANSLATION>
+
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = fine inattesa del file {0} (dopo la linea {1})
 

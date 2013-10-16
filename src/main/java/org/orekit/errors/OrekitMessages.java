@@ -74,6 +74,7 @@ public enum OrekitMessages implements Localizable {
     NO_IERS_UTC_TAI_HISTORY_DATA_LOADED("no IERS UTC-TAI history data loaded"),
     NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE("no entries found in IERS UTC-TAI history file {0}"),
     MISSING_SERIE_J_IN_FILE("missing serie j = {0} in file {1} (line {2})"),
+    CANNOT_PARSE_BOTH_TAU_AND_GAMMA("cannot parse both \u03c4 and \u03b3 from the same Poissons series file"),
     UNEXPECTED_END_OF_FILE_AFTER_LINE("unexpected end of file {0} (after line {1})"),
     UNABLE_TO_PARSE_LINE_IN_FILE("unable to parse line {0} of file {1}:\n{2}"),
     UNABLE_TO_FIND_FILE("unable to find file {0}"),

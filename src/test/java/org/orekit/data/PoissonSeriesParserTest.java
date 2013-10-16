@@ -466,8 +466,7 @@ public class PoissonSeriesParserTest {
                     new PoissonSeriesParser<DerivativeStructure>(18).
                     withFactor(1.0e-12).
                     withOptionalColumn(1).
-                    withGamma(4).
-                    withDoodson(5, 3).
+                    withDoodson(4, 3).
                     withFirstDelaunay(10).
                     withSinCos(0, 17, 18);
             parser.parse(getClass().getResourceAsStream(resourceName), resourceName);
@@ -481,6 +480,26 @@ public class PoissonSeriesParserTest {
             }
         } catch (Exception e) {
             Assert.fail("wrong exception caught: " + e);
+        }
+    }
+
+    @Test
+    public void testGammaTauForbidden() throws OrekitException {
+        try {
+            new PoissonSeriesParser<DerivativeStructure>(18).withGamma(4).withDoodson(4, 3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
+        }
+    }
+
+    @Test
+    public void testTauGammaForbidden() throws OrekitException {
+        try {
+            new PoissonSeriesParser<DerivativeStructure>(18).withDoodson(4, 3).withGamma(4);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.CANNOT_PARSE_BOTH_TAU_AND_GAMMA, oe.getSpecifier());
         }
     }
 

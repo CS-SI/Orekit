@@ -435,24 +435,21 @@ public enum IERSConventions {
                     new PoissonSeriesParser<DerivativeStructure>(18).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 2).
+                        withDoodson(4, 2).
                         withFirstDelaunay(10).
                         withSinCos(0, 16, 18);
             final PoissonSeriesParser<DerivativeStructure> k21Parser =
                     new PoissonSeriesParser<DerivativeStructure>(18).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 3).
+                        withDoodson(4, 3).
                         withFirstDelaunay(10).
                         withSinCos(0, 17, 18);
             final PoissonSeriesParser<DerivativeStructure> k22Parser =
                     new PoissonSeriesParser<DerivativeStructure>(16).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 2).
+                        withDoodson(4, 2).
                         withFirstDelaunay(10).
                         withSinCos(0, 16, -1);
 
@@ -844,24 +841,21 @@ public enum IERSConventions {
                     new PoissonSeriesParser<DerivativeStructure>(18).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 2).
+                        withDoodson(4, 2).
                         withFirstDelaunay(10).
                         withSinCos(0, 16, 18);
             final PoissonSeriesParser<DerivativeStructure> k21Parser =
                     new PoissonSeriesParser<DerivativeStructure>(18).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 3).
+                        withDoodson(4, 3).
                         withFirstDelaunay(10).
                         withSinCos(0, 17, 18);
             final PoissonSeriesParser<DerivativeStructure> k22Parser =
                     new PoissonSeriesParser<DerivativeStructure>(16).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 2).
+                        withDoodson(4, 2).
                         withFirstDelaunay(10).
                         withSinCos(0, 16, -1);
 
@@ -1000,24 +994,21 @@ public enum IERSConventions {
                     new PoissonSeriesParser<DerivativeStructure>(18).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 2).
+                        withDoodson(4, 2).
                         withFirstDelaunay(10).
                         withSinCos(0, 16, 18);
             final PoissonSeriesParser<DerivativeStructure> k21Parser =
                     new PoissonSeriesParser<DerivativeStructure>(18).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 3).
+                        withDoodson(4, 3).
                         withFirstDelaunay(10).
                         withSinCos(0, 17, 18);
             final PoissonSeriesParser<DerivativeStructure> k22Parser =
                     new PoissonSeriesParser<DerivativeStructure>(16).
                         withFactor(1.0e-12).
                         withOptionalColumn(1).
-                        withGamma(4).
-                        withDoodson(5, 2).
+                        withDoodson(4, 2).
                         withFirstDelaunay(10).
                         withSinCos(0, 16, -1);
 
