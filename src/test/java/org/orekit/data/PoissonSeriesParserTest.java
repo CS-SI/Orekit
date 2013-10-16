@@ -137,7 +137,7 @@ public class PoissonSeriesParserTest {
                                withFirstPlanetary(9).
                                withSinCos(0, 2, 3).
                                parse(new ByteArrayInputStream(data.getBytes()), "");
-        Assert.assertNotNull(nd);
+        Assert.assertEquals(1, nd.getNonPolynomialSize());
     }
 
     @Test
@@ -152,7 +152,7 @@ public class PoissonSeriesParserTest {
                                withFirstDelaunay(4).
                                withFactor(1.0).
                                parse(new ByteArrayInputStream(data.getBytes()), "");
-        Assert.assertNotNull(nd);
+        Assert.assertEquals(1, nd.getNonPolynomialSize());
     }
 
     @Test
@@ -215,12 +215,17 @@ public class PoissonSeriesParserTest {
             + " j = 4  Nb of terms = 1\n"
             + "       \n"
             + "   9          -0.10          -0.02    0    0    0    0    1    0    0    0    0    0    0    0    0    0\n";
-        Assert.assertNotNull(new PoissonSeriesParser<DerivativeStructure>(17).
+        // despite there are 9 data lines above, there are only 5 different terms,
+        // as some terms share the same Delaunay and planetary coefficients and are
+        // therefore grouped together. The Delaunay arguments for the 5 terms are:
+        // Ω, 4(F-D+Ω), l-l'-2(F+D)-Ω, l-2(F+D)-Ω and 2Ω
+        Assert.assertEquals(5,
+                            new PoissonSeriesParser<DerivativeStructure>(17).
                              withPolynomialPart('t', PolynomialParser.Unit.NO_UNITS).
                              withFirstDelaunay(4).
                              withFirstPlanetary(9).
                              withSinCos(0, 2, 3).
-                             parse(new ByteArrayInputStream(data.getBytes()), "dummy"));
+                             parse(new ByteArrayInputStream(data.getBytes()), "dummy").getNonPolynomialSize());
     }
 
     @Test
@@ -366,7 +371,8 @@ public class PoissonSeriesParserTest {
                     withSinCos(1, 8, -1);
         InputStream psiStream =
             getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
-        Assert.assertNotNull(parser.parse(psiStream, "1996/tab5.1.txt"));
+        Assert.assertEquals(106,
+                            parser.parse(psiStream, "1996/tab5.1.txt").getNonPolynomialSize());
         parser = parser.withSinCos(0, -1, 9).withSinCos(1, -1, 10);
         InputStream epsilonStream =
             getClass().getResourceAsStream(directory + "1996/tab5.1.txt");
