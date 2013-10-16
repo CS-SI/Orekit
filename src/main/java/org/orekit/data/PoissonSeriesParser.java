@@ -86,7 +86,7 @@ import org.orekit.errors.OrekitMessages;
  *   <li>firstDelaunay  =  1 (see {@link #withFirstDelaunay(int)})</li>
  *   <li>no calls to {@link #withFirstPlanetary(int)} as there are no planetary columns in this table</li>
  *   <li>sinCosColumns  =  7, -1 for degree 0 for Ai (see {@link #withSinCos(int, int, int)})</li>
- *   <li>sinCosColumns  =  8, -1 for degree 0 for A'i (see {@link #withSinCos(int, int, int)})</li>
+ *   <li>sinCosColumns  =  8, -1 for degree 1 for A'i (see {@link #withSinCos(int, int, int)})</li>
  * </ul>
  * <p>
  * In order to parse the nutation in obliquity from the previous table, the
@@ -97,7 +97,7 @@ import org.orekit.errors.OrekitMessages;
  *   <li>firstDelaunay  =  1 (see {@link #withFirstDelaunay(int)})</li>
  *   <li>no calls to {@link #withFirstPlanetary(int)} as there are no planetary columns in this table</li>
  *   <li>sinCosColumns  =  -1, 9 for degree 0 for Bi (see {@link #withSinCos(int, int, int)})</li>
- *   <li>sinCosColumns  =  -1, 10 for degree 0 for B'i (see {@link #withSinCos(int, int, int)})</li>
+ *   <li>sinCosColumns  =  -1, 10 for degree 1 for B'i (see {@link #withSinCos(int, int, int)})</li>
  * </ul>
  * <p>
  * A file from a recent convention, like table 5.3a in IERS conventions 2010, uses
@@ -158,6 +158,45 @@ import org.orekit.errors.OrekitMessages;
  *       degree 1, see {@link #withSinCos(int, int, int)} ...)</li>
  * </ul>
  * <p>
+ * A file from a recent convention, like table 6.5a in IERS conventions 2010, contains
+ * both Doodson arguments (τ, s, h, p, N', ps), Doodson numbers and Delaunay parameters.
+ * In this case, the coefficients for the Delaunay parameters must be <em>subtracted</em>
+ * from the γ = GMST + π tide parameter, so the signs in the files must be reversed
+ * in order to match the Doodson arguments and Doodson numbers. This is done automatically
+ * (and consistency is checked) only when the {@link #withDoodson(int, int)} method is
+ * called at parser configuration time. When only {@link #withGamma(int)} and {@link
+ * #withFirstDelaunay(int)} are called, no sign reversal is performed, which is the proper
+ * way to parse some other tides related files like the ones used for EOP interpolation
+ * accurate modeling (tables 8.2a, 8.2b, 8.3a and 8.3b in 2010 conventions). The file also
+ * contains a column for the waves names which may be empty, so it must be identified
+ * explicitly by calling {@link #withOptionalColumn(int)}. The 6.5a table reads as follows:
+ * </p>
+ * <pre>
+ * The in-phase (ip) amplitudes (A₁ δkfR Hf) and the out-of-phase (op) amplitudes (A₁ δkfI Hf)
+ * of the corrections for frequency dependence of k₂₁⁽⁰⁾, taking the nominal value k₂₁ for the
+ * diurnal tides as (0.29830 − i 0.00144). Units: 10⁻¹² . The entries for δkfR and δkfI are in
+ * units of 10⁻⁵. Multipliers of the Doodson arguments identifying the tidal terms are given,
+ * as also those of the Delaunay variables characterizing the nutations produced by these
+ * terms.
+ *
+ * Name   deg/hr    Doodson  τ  s  h  p  N' ps   l  l' F  D  Ω  δkfR  δkfI     Amp.    Amp.
+ *                    No.                                       /10−5 /10−5    (ip)    (op)
+ *   2Q₁ 12.85429   125,755  1 -3  0  2   0  0   2  0  2  0  2    -29     3    -0.1     0.0
+ *    σ₁ 12.92714   127,555  1 -3  2  0   0  0   0  0  2  2  2    -30     3    -0.1     0.0
+ *       13.39645   135,645  1 -2  0  1  -1  0   1  0  2  0  1    -45     5    -0.1     0.0
+ *    Q₁ 13.39866   135,655  1 -2  0  1   0  0   1  0  2  0  2    -46     5    -0.7     0.1
+ *    ρ₁ 13.47151   137,455  1 -2  2 -1   0  0  -1  0  2  2  2    -49     5    -0.1     0.0
+ * </pre>
+ * <ul>
+ *   <li>totalColumns   = 18 (see {@link #PoissonSeriesParser(int)})</li>
+ *   <li>factor         =  1.0e-12 (see {@link #withFactor(double)})</li>
+ *   <li>optionalColumn =  1 (see {@link #withOptionalColumn(int)})</li>
+ *   <li>gamma          =  1 (see {@link #withGamma(int)})</li>
+ *   <li>firstDoodson, Doodson number = 5, 3 (see {@link #withDoodson(int, int)})</li>
+ *   <li>firstDelaunay  =  10 (see {@link #withFirstDelaunay(int)})</li>
+ *   <li>sinCosColumns  =  17, 18, see {@link #withSinCos(int, int, int)} ...)</li>
+ * </ul>
+ * <p>
  * Our parsing algorithm involves adding the section degree from the "j = 0, 1, 2 ..." header
  * to the column degree. A side effect of this algorithm is that it is theoretically possible
  * to mix both formats and have for example degree two term appear as degree 2 column in section
@@ -201,11 +240,11 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     /** Column of the GMST tide multiplier (counting from 1). */
     private final int gamma;
 
-    /** Column of the Doodson number (counting from 1). */
-    private final int doodson;
-
     /** Column of the first Doodson multiplier (counting from 1). */
     private final int firstDoodson;
+
+    /** Column of the Doodson number (counting from 1). */
+    private final int doodson;
 
     /** Column of the first Delaunay multiplier (counting from 1). */
     private final int firstDelaunay;
@@ -229,8 +268,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      * @param fieldsPatterns patterns for fields
      * @param optional optional column
      * @param gamma column of the GMST tide multiplier
-     * @param doodson column of the Doodson number
      * @param firstDoodson column of the first Doodson multiplier
+     * @param doodson column of the Doodson number
      * @param firstDelaunay column of the first Delaunay multiplier
      * @param firstPlanetary column of the first planetary multiplier
      * @param sinCosColumns columns of the sine and cosine coefficients
@@ -238,15 +277,15 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     private PoissonSeriesParser(final PolynomialParser polynomialParser,
                                 final double factor, final String[] fieldsPatterns,
                                 final int optional, final int gamma,
-                                final int doodson, final int firstDoodson,
+                                final int firstDoodson, final int doodson,
                                 final int firstDelaunay, final int firstPlanetary,
                                 final int ... sinCosColumns) {
         this.polynomialParser = polynomialParser;
         this.fieldsPatterns   = fieldsPatterns;
         this.optional         = optional;
         this.gamma            = gamma;
-        this.doodson          = doodson;
         this.firstDoodson     = firstDoodson;
+        this.doodson          = doodson;
         this.firstDelaunay    = firstDelaunay;
         this.firstPlanetary   = firstPlanetary;
         this.sinCosColumns    = sinCosColumns;
@@ -289,7 +328,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      */
     public PoissonSeriesParser<T> withPolynomialPart(final char freeVariable, final PolynomialParser.Unit unit) {
         return new PoissonSeriesParser<T>(new PolynomialParser(freeVariable, unit), factor, fieldsPatterns,
-                                          optional, gamma, doodson, firstDoodson,
+                                          optional, gamma, firstDoodson, doodson,
                                           firstDelaunay, firstPlanetary, sinCosColumns);
     }
 
@@ -299,7 +338,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
      */
     public PoissonSeriesParser<T> withFactor(final double f) {
         return new PoissonSeriesParser<T>(polynomialParser, f, fieldsPatterns,
-                                          optional, gamma, doodson, firstDoodson,
+                                          optional, gamma, firstDoodson, doodson,
                                           firstDelaunay, firstPlanetary, sinCosColumns);
     }
 
@@ -323,7 +362,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, column,   1, OPTIONAL_FIELD_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          column, gamma, doodson, firstDoodson,
+                                          column, gamma, firstDoodson, doodson,
                                           firstDelaunay, firstPlanetary, sinCosColumns);
 
     }
@@ -331,6 +370,8 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
     /** Set up column of GMST tide multiplier.
      * @param column column of the GMST tide multiplier (counting from 1)
      * @return a new parser, with updated columns settings
+     * @see #withDoodson(int, int)
+     * @see #withFirstDelaunay(int)
      */
     public PoissonSeriesParser<T> withGamma(final int column) {
 
@@ -340,29 +381,43 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, column, 1, INTEGER_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, column, doodson, firstDoodson,
+                                          optional, column, firstDoodson, doodson,
                                           firstDelaunay, firstPlanetary, sinCosColumns);
 
     }
 
-    /** Set up column of Doodson number.
+    /** Set up columns for Doodson multiplers and Doodson number.
+     * <p>
+     * Some files contain both Doodson arguments (τ, s, h, p, N', ps), Doodson numbers and
+     * Delaunay parameters. The coefficients for the Delaunay parameters in these files
+     * must be <em>subtracted</em> from the γ = GMST + π tide parameter, so the signs in the
+     * files must be reversed in order to match the Doodson arguments and Doodson numbers.
+     * This is done automatically (and consistency is checked) only when the this method is
+     * called at parser configuration time. When only {@link #withGamma(int)} and {@link
+     * #withFirstDelaunay(int)} are called, no sign reversal is performed, which is the proper
+     * way to parse some other tides related files like the ones used for EOP interpolation
+     * accurate modeling (tables 8.2a, 8.2b, 8.3a and 8.3b in 2010 conventions).
+     * </p>
      * @param firstMultiplierColumn column of the first Doodson multiplier (counting from 1)
      * @param numberColumn column of the Doodson number (counting from 1)
      * @return a new parser, with updated columns settings
+     * @see #withGamma(int)
+     * @see #withFirstDelaunay(int)
      */
     public PoissonSeriesParser<T> withDoodson(final int firstMultiplierColumn, final int numberColumn) {
 
-        // update the fields pattern to expect 1 Doodson number at the right index
         final String[] newFieldsPatterns = fieldsPatterns.clone();
-        setPatterns(newFieldsPatterns, doodson,      1, UNKNOWN_TYPE_PATTERN);
-        setPatterns(newFieldsPatterns, numberColumn, 1, DOODSON_TYPE_PATTERN);
 
         // update the fields pattern to expect 5 integers at the right indices
         setPatterns(newFieldsPatterns, firstDoodson,          5, UNKNOWN_TYPE_PATTERN);
         setPatterns(newFieldsPatterns, firstMultiplierColumn, 5, INTEGER_TYPE_PATTERN);
 
+        // update the fields pattern to expect 1 Doodson number at the right index
+        setPatterns(newFieldsPatterns, doodson,      1, UNKNOWN_TYPE_PATTERN);
+        setPatterns(newFieldsPatterns, numberColumn, 1, DOODSON_TYPE_PATTERN);
+
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, numberColumn, firstMultiplierColumn,
+                                          optional, gamma, firstMultiplierColumn, numberColumn,
                                           firstDelaunay, firstPlanetary, sinCosColumns);
 
     }
@@ -379,7 +434,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, firstColumn,   5, INTEGER_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, doodson, firstDoodson,
+                                          optional, gamma, firstDoodson, doodson,
                                           firstColumn, firstPlanetary, sinCosColumns);
 
     }
@@ -396,7 +451,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, firstColumn,    9, INTEGER_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, doodson, firstDoodson,
+                                          optional, gamma, firstDoodson, doodson,
                                           firstDelaunay, firstColumn, sinCosColumns);
 
     }
@@ -431,7 +486,7 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
         setPatterns(newFieldsPatterns, cos, 1, REAL_TYPE_PATTERN);
 
         return new PoissonSeriesParser<T>(polynomialParser, factor, newFieldsPatterns,
-                                          optional, gamma, doodson, firstDoodson,
+                                          optional, gamma, firstDoodson, doodson,
                                           firstDelaunay, firstPlanetary, newSinCosColumns);
 
     }
@@ -470,12 +525,14 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
 
             // setup the reader
             final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-            ;
             int lineNumber    =  0;
             int expectedIndex = -1;
             int nTerms        = -1;
             int count         =  0;
             int degree        =  0;
+
+            // when Doodson numbers are present, the Delaunay coefficients are reversed
+            final int dSign   = (firstDoodson < 0) ? 1 : -1;
 
             // prepare the container for the parsed data
             PolynomialNutation<T> polynomial;
@@ -520,11 +577,11 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                     final int nDoodson = (doodson      < 0) ? 0 : Integer.parseInt(regularMatcher.group(doodson).replaceAll("[.,]", ""));
 
                     // get the Delaunay multipliers
-                    final int cL       = Integer.parseInt(regularMatcher.group(firstDelaunay));
-                    final int cLPrime  = Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
-                    final int cF       = Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
-                    final int cD       = Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
-                    final int cOmega   = Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
+                    final int cL       = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay));
+                    final int cLPrime  = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 1));
+                    final int cF       = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 2));
+                    final int cD       = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 3));
+                    final int cOmega   = dSign * Integer.parseInt(regularMatcher.group(firstDelaunay + 4));
 
                     // get the planetary multipliers
                     final int cMe      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary));
@@ -666,11 +723,11 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
 
         // reconstruct Doodson multipliers from gamma and Delaunay multipliers
         final int cTau    = cGamma;
-        final int cS      = cGamma - (cL + cF + cD);
-        final int cH      = cD - cLPrime;
-        final int cP      = cL;
-        final int cNprime = cOmega - cF;
-        final int cPs     = cLPrime;
+        final int cS      = cGamma + (cL + cF + cD);
+        final int cH      = cLPrime - cD;
+        final int cP      = -cL;
+        final int cNprime = cF - cOmega;
+        final int cPs     = -cLPrime;
 
         return doodsonToDoodsonNumber(cTau, cS, cH, cP, cNprime, cPs);
 

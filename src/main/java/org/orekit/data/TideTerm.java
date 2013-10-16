@@ -19,6 +19,19 @@ package org.orekit.data;
 import org.apache.commons.math3.RealFieldElement;
 
 /** Class for tide terms.
+ * <p>
+ * BEWARE! For consistency with all the other Poisson series terms,
+ * the elements in γ, l, l', F, D and Ω are ADDED together to compute
+ * the argument of the term. In classical tides series, the computed
+ * argument is cGamma * γ - (cL * l + cLPrime * l' + cF * F + cD * D
+ * + cOmega * Ω). So at parsing time, the signs of cL, cLPrime, cF,
+ * cD and cOmega must already have been reversed so the addition
+ * performed here will work. This is done automatically when the
+ * parser has been configured with a call to {@link
+ * PoissonSeriesParser#withDoodson(int, int)} as the relationship
+ * between the Doodson arguments and the traditional Delaunay
+ * arguments ensures the proper sign is known.
+ * </p>
  * @param <T> the type of the field elements
  * @author Luc Maisonobe
  */
