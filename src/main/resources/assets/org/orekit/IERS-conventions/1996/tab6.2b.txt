@@ -1,8 +1,5 @@
 # values extracted from IERS conventions 1996 table 6.2b
 
-Scale   δkf  1.0
-Scale   Amp  1.0e-12
-
 Corrections for frequency dependence of k₂₀⁽⁰⁾ of the zonal tides due to anelasticity. Units:
 10⁻¹² . The nominal value k₂0 for the zonal tides is taken as 0.30190. The real and imaginary parts δkfR
 and δkfI of δkf are listed, along with the corresponding in phase (ip) amplitude (A₀ Hf δkfR) and out

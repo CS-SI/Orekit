@@ -1,8 +1,5 @@
 # values extracted from IERS conventions 2003 table 6.3c
 
-Scale   δkf  1.0
-Scale   Amp  1.0e-12
-
 Amplitudes (A₂ δkf Hf) of the corrections for frequency dependence of k₂₂⁽⁰⁾, taking the
 nominal value k₂₂ for the sectorial tides as (0.30102 − i 0.00130). Units: 10⁻¹². The
 corrections are only to the real part.

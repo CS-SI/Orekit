@@ -1,8 +1,5 @@
 # values extracted from IERS conventions 1996 table 6.2a
 
-Scale   δkf  1.0
-Scale   Amp  1.0e-12
-
 Amplitudes (A₁ δkf Hf) of the corrections for frequency dependence of k₂₁⁽⁰⁾ , taking the nominal value k₂₁
 for the diurnal tides as 0.29470 for the elastic case, and (0.29830 -i 0.00144 for the anelastic case.
 Units: 10⁻¹² . Multipliers of the Doodson arguments identifying the tidal terms are given, as

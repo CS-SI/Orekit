@@ -1,8 +1,5 @@
 # values extracted from IERS conventions 2003 table 6.3a
 
-Scale   δkf  1.0e-5
-Scale   Amp  1.0e-12
-
 The in-phase (ip) amplitudes (A₁ δkfR Hf) and the out-of-phase (op) amplitudes
 (A₁ δkfI Hf ) of the corrections for frequency dependence of k₂₁ , taking the nominal value k₂₁(0)
 for the diurnal tides as (0.29830 − i 0.00144). Units: 10⁻¹² . The entries for δkfR and δkfI are in
