@@ -1,0 +1,7 @@
+# This file is intentionally truncated for test purposes
+# the only wave is K1, in order to match the computation example
+# at the bottom of page 86, IERS conventions 2010 section 6.2.1
+
+Name   deg/hr    Doodson  τ  s  h  p  N' ps   l  l' F  D  Ω  δkfR  δkfI     Amp.    Amp.
+                   No.                                       /10−5 /10−5    (ip)    (op)
+   K₁ 15.04107   165,555  1  1  0  0   0  0   0  0  0  0  0  -4084   262   470.9   -30.2
