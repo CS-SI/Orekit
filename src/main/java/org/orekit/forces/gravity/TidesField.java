@@ -124,16 +124,16 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         this.bodies            = bodies;
 
         // compute recursion coefficients for Legendre functions
-        this.pnm               = buildTriangularArray(love.getSize(), true);
-        this.anm               = buildTriangularArray(love.getSize(), false);
-        this.bnm               = buildTriangularArray(love.getSize(), false);
+        this.pnm               = buildTriangularArray(5, true);
+        this.anm               = buildTriangularArray(5, false);
+        this.bnm               = buildTriangularArray(5, false);
         this.dmm               = new double[love.getSize()];
         recursionCoefficients();
 
         // prepare coefficients caching
         this.cachedOffset      = Double.NaN;
-        this.cachedCnm         = buildTriangularArray(love.getSize(), true);
-        this.cachedSnm         = buildTriangularArray(love.getSize(), true);
+        this.cachedCnm         = buildTriangularArray(5, true);
+        this.cachedSnm         = buildTriangularArray(5, true);
 
         // Love numbers
         this.love = love;
