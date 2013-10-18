@@ -71,7 +71,7 @@ public interface Constants {
     /** Earth angular velocity from WGS84 model: 7.292115e-5 rad/s. */
     double WGS84_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
 
-    /** Earth gravitational constant from WGS84 model: 3.986004418 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from WGS84 model: 3.986004418e14 m<sup>3</sup>/s<sup>2</sup>. */
     double WGS84_EARTH_MU = 3.986004418e14;
 
     /** Earth un-normalized second zonal coefficient from WGS84 model: . */
@@ -97,7 +97,7 @@ public interface Constants {
     /** Earth equatorial radius from EGM96 model: 6378136.3 m. */
     double EGM96_EARTH_EQUATORIAL_RADIUS = 6378136.3;
 
-    /** Earth gravitational constant from EGM96 model: 3.986004415 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from EGM96 model: 3.986004415e14 m<sup>3</sup>/s<sup>2</sup>. */
     double EGM96_EARTH_MU = 3.986004415e14;
 
     /** Earth un-normalized second zonal coefficient from EGM96 model: -1.08262668355315e-3. */
@@ -125,7 +125,7 @@ public interface Constants {
     /** Earth angular velocity from GRIM5C1 model: 7.292115e-5 rad/s. */
     double GRIM5C1_EARTH_ANGULAR_VELOCITY = 7.292115e-5;
 
-    /** Earth gravitational constant from GRIM5C1 model: 3.986004415 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from GRIM5C1 model: 3.986004415e14 m<sup>3</sup>/s<sup>2</sup>. */
     double GRIM5C1_EARTH_MU = 3.986004415e14;
 
     /** Earth un-normalized second zonal coefficient from GRIM5C1 model: -1.082626110612609e-3. */
@@ -147,7 +147,7 @@ public interface Constants {
     /** Earth equatorial radius from EIGEN5C model: 6378136.46 m. */
     double EIGEN5C_EARTH_EQUATORIAL_RADIUS = 6378136.46;
 
-    /** Earth gravitational constant from EIGEN5C model: 3.986004415 m<sup>3</sup>/s<sup>2</sup>. */
+    /** Earth gravitational constant from EIGEN5C model: 3.986004415e14 m<sup>3</sup>/s<sup>2</sup>. */
     double EIGEN5C_EARTH_MU = 3.986004415e14;
 
     /** Earth un-normalized second zonal coefficient from EIGEN5C model: -1.082626457231767e-3. */
