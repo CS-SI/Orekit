@@ -270,10 +270,9 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         // (see equations 11 and 12 from Holmes and Featherstone paper)
         for (int n = 0; n < anm.length; ++n) {
             for (int m = 0; m < n; ++m) {
-                anm[n][m] = FastMath.sqrt((2 * n - 1) * (2 * n + 1) /
-                                          ((n - m) * (n + m)));
-                bnm[n][m] = FastMath.sqrt((2 * n + 1) * (n + m - 1) * (n - m - 1) /
-                                          ((n - m) * (n + m) * (2 * n - 3)));
+                final double f = (n - m) * (n + m );
+                anm[n][m] = FastMath.sqrt((2 * n - 1) * (2 * n + 1) / f);
+                bnm[n][m] = FastMath.sqrt((2 * n + 1) * (n + m - 1) * (n - m - 1) / (f * (2 * n - 3)));
             }
         }
 
