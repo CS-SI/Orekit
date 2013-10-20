@@ -598,8 +598,6 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                     final int cUr      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 6));
                     final int cNe      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 7));
                     final int cPa      = (firstPlanetary < 0) ? 0 : Integer.parseInt(regularMatcher.group(firstPlanetary + 8));
-                    final long key     = NutationCodec.encode(cGamma, cL, cLPrime, cF, cD, cOmega,
-                                                              cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
 
                     if (nDoodson > 0) {
 
@@ -619,6 +617,9 @@ public class PoissonSeriesParser<T extends RealFieldElement<T>> {
                         }
 
                     }
+
+                    final long key = NutationCodec.encode(cGamma, cL, cLPrime, cF, cD, cOmega,
+                                                          cMe, cVe, cE, cMa, cJu, cSa, cUr, cNe, cPa);
 
                     // retrieved the term, or build it if it's the first time it is encountered in the file
                     final SeriesTerm<T> term;
