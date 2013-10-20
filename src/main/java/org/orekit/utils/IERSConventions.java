@@ -467,7 +467,9 @@ public enum IERSConventions {
             final double pico = 1.0e-12;
             final PoissonSeries<DerivativeStructure> c20Series =
                     k20Parser.
-                    withSinCos(0, 18, -pico, 16, pico).
+                    // TODO: check sign!
+//                  withSinCos(0, 18, pico, 16, pico).
+                  withSinCos(0, 18, -pico, 16, pico).
                     parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
             final PoissonSeries<DerivativeStructure> c21Series =
                     k21Parser.
@@ -906,7 +908,9 @@ public enum IERSConventions {
             final double pico = 1.0e-12;
             final PoissonSeries<DerivativeStructure> c20Series =
                     k20Parser.
-                    withSinCos(0, 18, -pico, 16, pico).
+                    // TODO: check sign!
+//                  withSinCos(0, 18, pico, 16, pico).
+                  withSinCos(0, 18, -pico, 16, pico).
                     parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
             final PoissonSeries<DerivativeStructure> c21Series =
                     k21Parser.
@@ -1088,6 +1092,8 @@ public enum IERSConventions {
             final double pico = 1.0e-12;
             final PoissonSeries<DerivativeStructure> c20Series =
                     k20Parser.
+                    // TODO: check sign!
+//                    withSinCos(0, 18, pico, 16, pico).
                     withSinCos(0, 18, -pico, 16, pico).
                     parse(getStream(K20_FREQUENCY_DEPENDENCE), K20_FREQUENCY_DEPENDENCE);
             final PoissonSeries<DerivativeStructure> c21Series =

@@ -22,6 +22,9 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="add">
+        Added a new force model for solid tides in numerical propagation.
+      </action>
+      <action dev="luc" type="add">
         Added a way to select IERS conventions for non-rotating origin
         based ITRF.
       </action>
