@@ -45,6 +45,13 @@ import org.orekit.utils.LoveNumbers;
  * order normalised associated Legendre functions</a> (Journal of Geodesy (2002)
  * 76: 279–299).
  * </p>
+ * <p>
+ * Note that this class is <em>not</em> thread-safe, and that tides computation
+ * are computer intensive if repeated. So this class is really expected to
+ * be wrapped within a {@link
+ * org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider}
+ * that will both ensure thread safety and improve performances using caching.
+ * </p>
  * @see SolidTides
  * @author Luc Maisonobe
  */

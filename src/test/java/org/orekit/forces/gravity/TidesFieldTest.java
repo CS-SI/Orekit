@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,9 +34,11 @@ import org.orekit.data.FundamentalNutationArguments;
 import org.orekit.data.PoissonSeries;
 import org.orekit.data.PoissonSeriesParser;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.TideSystem;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
@@ -44,6 +47,7 @@ import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.LoveNumbers;
+import org.orekit.utils.OrekitConfiguration;
 
 
 public class TidesFieldTest {
@@ -197,7 +201,6 @@ public class TidesFieldTest {
 
     @Test
     public void testDeltaCnmSnm() throws OrekitException {
-        Utils.setDataRoot("regular-data:potential/icgem-format");
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(8, 8);
         TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
@@ -237,9 +240,74 @@ public class TidesFieldTest {
         }
     }
 
+    @Test
+    public void testInterpolationAccuracy() throws OrekitException {
+
+        // The shortest periods are slightly below one half day for the tidal waves
+        // considered here. This implies the sampling rate should be fast enough.
+        // The tuning parameters we have finally settled correspond to a two hours
+        // sample containing 12 points (i.e. one new point is computed every 10 minutes).
+        // The observed relative interpolation error with these settings are essentially
+        // due to Runge phenomenon at points sampling rate. Plotting the errors shows
+        // singular peaks pointing out of merely numerical noise.
+        final IERSConventions conventions = IERSConventions.IERS_2010;
+        Frame itrf    = FramesFactory.getITRF(conventions, true);
+        TimeScale utc = TimeScalesFactory.getUTC();
+        TimeScale ut1 = TimeScalesFactory.getUT1(conventions, true);
+        NormalizedSphericalHarmonicsProvider gravityField =
+                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+
+        TidesField raw = new TidesField(conventions.getLoveNumbers(),
+                                        conventions.getTideFrequencyDependenceFunction(ut1),
+                                        conventions.getPermanentTide(),
+                                        itrf, gravityField.getAe(), gravityField.getMu(),
+                                        gravityField.getTideSystem(),
+                                        CelestialBodyFactory.getSun(),
+                                        CelestialBodyFactory.getMoon());
+        int step     = 600;
+        int nbPoints = 12;
+        CachedNormalizedSphericalHarmonicsProvider interpolated =
+                new CachedNormalizedSphericalHarmonicsProvider(raw, step, nbPoints,
+                                                               OrekitConfiguration.getCacheSlotsNumber(),
+                                                               7 * Constants.JULIAN_DAY,
+                                                               0.5 * Constants.JULIAN_DAY);
+
+        // the following time range is located around the maximal observed error
+        AbsoluteDate start = new AbsoluteDate(2003, 6, 12, utc);
+        AbsoluteDate end   = start.shiftedBy(3 * Constants.JULIAN_DAY);
+        SummaryStatistics stat = new SummaryStatistics();
+        for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
+            final double dateOffset = raw.getOffset(date);
+            
+            for (int n = 2; n < 5; ++n) {
+                for (int m = 0; m <= n; ++m) {
+
+                    if (n < 4 || m < 3) {
+                        double cnmRaw    = raw.getNormalizedCnm(dateOffset, n, m);
+                        double cnmInterp = interpolated.getNormalizedCnm(dateOffset, n, m);
+                        double errorC = (cnmInterp - cnmRaw) / FastMath.abs(cnmRaw);
+                        stat.addValue(errorC);
+
+                        if (m > 0) {
+                            double snmRaw    = raw.getNormalizedSnm(dateOffset, n, m);
+                            double snmInterp = interpolated.getNormalizedSnm(dateOffset, n, m);
+                            double errorS = (snmInterp - snmRaw) / FastMath.abs(snmRaw);
+                            stat.addValue(errorS);
+                        }
+                    }
+                }
+            }
+        }
+        Assert.assertEquals(0.0, stat.getMean(), 2.0e-13);
+        Assert.assertTrue(stat.getStandardDeviation() < 3.0e-11);
+        Assert.assertTrue(stat.getMin() > -6.0e-10);
+        Assert.assertTrue(stat.getMax() <  7.0e-9);
+
+    }
+
     @Before
     public void setUp() {
-        Utils.setDataRoot("regular-data");
+        Utils.setDataRoot("regular-data:potential/icgem-format");
     }
 
 }
