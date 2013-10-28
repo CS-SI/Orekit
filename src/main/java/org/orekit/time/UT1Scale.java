@@ -44,6 +44,13 @@ public class UT1Scale implements TimeScale {
         this.utc        = utc;
     }
 
+    /** Get the EOP history.
+     * @return eop history (may be null)
+     */
+    public EOPHistory getEopHistory() {
+        return eopHistory;
+    }
+
     /** {@inheritDoc} */
     public double offsetFromTAI(final AbsoluteDate date) {
         final double dtu1        = eopHistory == null ? 0 : eopHistory.getUT1MinusUTC(date);

@@ -69,6 +69,9 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     /** Permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used. */
     private final double deltaC20PermanentTide;
 
+    /** Function computing pole tide terms (ΔC₂₁, ΔS₂₁). */
+    private final TimeFunction<double []> poleTideFunction;
+
     /** Rotating body frame. */
     private final Frame centralBodyFrame;
 
@@ -109,6 +112,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      * @param love Love numbers
      * @param deltaCSFunction function computing frequency dependent terms (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂)
      * @param deltaC20PermanentTide permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used
+     * @param poleTideFunction function computing pole tide terms (ΔC₂₁, ΔS₂₁), may be null
      * @param centralBodyFrame rotating body frame
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
@@ -118,7 +122,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      * library cannot be read
      */
     public TidesField(final LoveNumbers love, final TimeFunction<double []> deltaCSFunction,
-                      final double deltaC20PermanentTide,
+                      final double deltaC20PermanentTide, final TimeFunction<double []> poleTideFunction,
                       final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem, final CelestialBody ... bodies)
         throws OrekitException {
@@ -150,6 +154,9 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
         // permanent tide
         this.deltaC20PermanentTide = deltaC20PermanentTide;
+
+        // pole tide
+        this.poleTideFunction = poleTideFunction;
 
     }
 
@@ -267,6 +274,11 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             removePermanentTide();
         }
 
+        if (poleTideFunction != null) {
+            // add pole tide
+            poleTide(date);
+        }
+
     }
 
     /** Compute recursion coefficients.
@@ -380,6 +392,15 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      */
     private void removePermanentTide() {
         cachedCnm[2][0] -= deltaC20PermanentTide;
+    }
+
+    /** Update coefficients applying pole tide.
+     * @param date current date
+     */
+    private void poleTide(final AbsoluteDate date) {
+        final double[] deltaCS = poleTideFunction.value(date);
+        cachedCnm[2][1] += deltaCS[0]; // ΔC₂₁
+        cachedSnm[2][1] += deltaCS[1]; // ΔS₂₁
     }
 
     /** Create a triangular array.

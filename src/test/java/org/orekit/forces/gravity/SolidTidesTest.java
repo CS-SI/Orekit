@@ -40,6 +40,7 @@ import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 
@@ -53,7 +54,7 @@ public class SolidTidesTest {
         Frame eme2000 = FramesFactory.getEME2000();
         Frame itrf    = FramesFactory.getITRF(conventions, true);
         TimeScale utc = TimeScalesFactory.getUTC();
-        TimeScale ut1 = TimeScalesFactory.getUT1(conventions, true);
+        UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(5, 5);
 
@@ -68,7 +69,7 @@ public class SolidTidesTest {
         ForceModel hf = new HolmesFeatherstoneAttractionModel(itrf, gravityField);
         SpacecraftState raw = propagate(orbit, target, hf,
                                         new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
-                                                       gravityField.getTideSystem(), Double.NaN, -1,
+                                                       gravityField.getTideSystem(), true, Double.NaN, -1,
                                                        conventions, ut1,
                                                        CelestialBodyFactory.getSun(),
                                                        CelestialBodyFactory.getMoon()));
@@ -81,7 +82,7 @@ public class SolidTidesTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(raw.getPVCoordinates().getPosition(),
                                               interpolated.getPVCoordinates().getPosition()),
-                            7.0e-6); // threshold would be 2.0e-4 for 30 days propagation
+                            2.0e-5); // threshold would be 1.2e-3 for 30 days propagation
 
     }
 

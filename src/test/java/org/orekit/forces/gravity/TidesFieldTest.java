@@ -44,6 +44,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.LoveNumbers;
@@ -55,11 +56,12 @@ public class TidesFieldTest {
     @Test
     public void testConventions2003() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
-        TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
+        UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
         TidesField tidesField =
                 new TidesField(IERSConventions.IERS_2003.getLoveNumbers(),
                                IERSConventions.IERS_2003.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2003.getPermanentTide(),
+                               IERSConventions.IERS_2003.getSolidPoleTide(ut1.getEopHistory()),
                                FramesFactory.getITRF(IERSConventions.IERS_2003, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
@@ -97,11 +99,12 @@ public class TidesFieldTest {
     @Test
     public void testConventions2010() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
-        TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         TidesField tidesField =
                 new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2010.getPermanentTide(),
+                               IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
                                FramesFactory.getITRF(IERSConventions.IERS_2010, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
@@ -149,7 +152,7 @@ public class TidesFieldTest {
                 k21Parser.
                 withSinCos(0, 18, -pico, 17, pico).
                 parse(getClass().getResourceAsStream(name), name);
-        final TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
+        final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
         final TimeFunction<DerivativeStructure> gmstFunction = IERSConventions.IERS_2010.getGMSTFunction(ut1);
         Method getNA = IERSConventions.class.getDeclaredMethod("getNutationArguments", TimeFunction.class);
         getNA.setAccessible(true);
@@ -167,6 +170,7 @@ public class TidesFieldTest {
         TidesField tf = new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                        deltaCSFunction,
                                        IERSConventions.IERS_2010.getPermanentTide(),
+                                       IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
                                        FramesFactory.getITRF(IERSConventions.IERS_2010, false),
                                        Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                        Constants.EIGEN5C_EARTH_MU,
@@ -203,7 +207,7 @@ public class TidesFieldTest {
     public void testDeltaCnmSnm() throws OrekitException {
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(8, 8);
-        TimeScale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
         TimeScale utc = TimeScalesFactory.getUTC();
 
         AbsoluteDate date = new AbsoluteDate(2003, 5, 6, 13, 43, 32.125, utc);
@@ -211,6 +215,7 @@ public class TidesFieldTest {
                 new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2010.getPermanentTide(),
+                               null,
                                FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                gravityField.getAe(), gravityField.getMu(), TideSystem.TIDE_FREE,
                                CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
@@ -253,13 +258,14 @@ public class TidesFieldTest {
         final IERSConventions conventions = IERSConventions.IERS_2010;
         Frame itrf    = FramesFactory.getITRF(conventions, true);
         TimeScale utc = TimeScalesFactory.getUTC();
-        TimeScale ut1 = TimeScalesFactory.getUT1(conventions, true);
+        UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(5, 5);
 
         TidesField raw = new TidesField(conventions.getLoveNumbers(),
                                         conventions.getTideFrequencyDependenceFunction(ut1),
                                         conventions.getPermanentTide(),
+                                        conventions.getSolidPoleTide(ut1.getEopHistory()),
                                         itrf, gravityField.getAe(), gravityField.getMu(),
                                         gravityField.getTideSystem(),
                                         CelestialBodyFactory.getSun(),
@@ -299,8 +305,8 @@ public class TidesFieldTest {
             }
         }
         Assert.assertEquals(0.0, stat.getMean(), 2.0e-13);
-        Assert.assertTrue(stat.getStandardDeviation() < 3.0e-11);
-        Assert.assertTrue(stat.getMin() > -6.0e-10);
+        Assert.assertTrue(stat.getStandardDeviation() < 4.0e-11);
+        Assert.assertTrue(stat.getMin() > -2.0e-9);
         Assert.assertTrue(stat.getMax() <  7.0e-9);
 
     }

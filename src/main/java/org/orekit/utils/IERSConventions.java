@@ -20,8 +20,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
+import java.util.List;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.data.BodiesElements;
@@ -33,15 +36,19 @@ import org.orekit.data.PoissonSeriesParser;
 import org.orekit.data.PolynomialNutation;
 import org.orekit.data.PolynomialParser;
 import org.orekit.data.PolynomialParser.Unit;
+import org.orekit.data.SimpleTimeStampedTableParser;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.frames.EOPHistory;
+import org.orekit.frames.PoleCorrection;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeFunction;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.time.TimeStamped;
 
 
 /** Supported IERS conventions.
@@ -508,6 +515,27 @@ public enum IERSConventions {
             return 4.4228e-8 * -0.31460 * getLoveNumbers().getReal(2, 0);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory) {
+
+            // constants from IERS 1996 page 47
+            final double globalFactor = -1.348e-9 / Constants.ARC_SECONDS_TO_RADIANS;
+            final double coupling     =  0.00112;
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+                    final PoleCorrection pole = eopHistory.getPoleCorrection(date);
+                    return new double[] {
+                        globalFactor * (pole.getXp() + coupling * pole.getYp()),
+                        globalFactor * (coupling * pole.getXp() - pole.getYp()),
+                    };
+                }
+            };
+        }
+
     },
 
     /** Constant for IERS 2003 conventions. */
@@ -551,6 +579,9 @@ public enum IERSConventions {
 
         /** Frequency dependence model for k₂₂. */
         private static final String K22_FREQUENCY_DEPENDENCE = IERS_BASE + "2003/tab6.3c.txt";
+
+        /** Annual pole table. */
+        private static final String ANNUAL_POLE = IERS_BASE + "2003/annual.pole";
 
         /** {@inheritDoc} */
         protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
@@ -949,6 +980,103 @@ public enum IERSConventions {
             return 4.4228e-8 * -0.31460 * getLoveNumbers().getReal(2, 0);
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory)
+            throws OrekitException {
+
+            // annual pole from ftp://tai.bipm.org/iers/conv2003/chapter7/annual.pole
+            final TimeScale utc = TimeScalesFactory.getUTC();
+            final SimpleTimeStampedTableParser.RowConverter<MeanPole> converter =
+                new SimpleTimeStampedTableParser.RowConverter<MeanPole>() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public MeanPole convert(final double[] rawFields) throws OrekitException {
+                        return new MeanPole(new AbsoluteDate((int) rawFields[0], 1, 1, utc),
+                                            rawFields[1] * Constants.ARC_SECONDS_TO_RADIANS,
+                                            rawFields[2] * Constants.ARC_SECONDS_TO_RADIANS);
+                    }
+                };
+            final SimpleTimeStampedTableParser<MeanPole> parser =
+                    new SimpleTimeStampedTableParser<MeanPole>(3, converter);
+            final List<MeanPole> annualPoleList = parser.parse(getStream(ANNUAL_POLE), ANNUAL_POLE);
+            final AbsoluteDate firstAnnualPoleDate = annualPoleList.get(0).getDate();
+            final AbsoluteDate lastAnnualPoleDate  = annualPoleList.get(annualPoleList.size() - 1).getDate();
+            final ImmutableTimeStampedCache<MeanPole> annualCache =
+                    new ImmutableTimeStampedCache<MeanPole>(2, annualPoleList);
+
+            // polynomial extension from IERS 2003, section 7.1.4, equations 23a and 23b
+            final double xp0    = 0.054   * Constants.ARC_SECONDS_TO_RADIANS;
+            final double xp0Dot = 0.00083 * Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_YEAR;
+            final double yp0    = 0.357   * Constants.ARC_SECONDS_TO_RADIANS;
+            final double yp0Dot = 0.00395 * Constants.ARC_SECONDS_TO_RADIANS / Constants.JULIAN_YEAR;
+
+            // constants from IERS 2003, section 6.2
+            final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
+            final double coupling     =  0.00115;
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+
+                    // we can't compute anything before the range covered by the annual pole file
+                    if (date.compareTo(firstAnnualPoleDate) <= 0) {
+                        return new double[] {
+                            0.0, 0.0
+                        };
+                    }
+
+                    // evaluate mean pole
+                    double meanPoleX = 0;
+                    double meanPoleY = 0;
+                    if (date.compareTo(lastAnnualPoleDate) <= 0) {
+                        // we are within the range covered by the annual pole file,
+                        // we interpolate within it
+                        try {
+                            final List<MeanPole> neighbors = annualCache.getNeighbors(date);
+                            final HermiteInterpolator interpolator = new HermiteInterpolator();
+                            for (final MeanPole neighbor : neighbors) {
+                                interpolator.addSamplePoint(neighbor.getDate().durationFrom(date),
+                                                            new double[] {
+                                                                neighbor.getX(), neighbor.getY()
+                                                            });
+                            }
+                            final double[] interpolated = interpolator.value(0);
+                            meanPoleX = interpolated[0];
+                            meanPoleY = interpolated[1];
+                        } catch (TimeStampedCacheException tsce) {
+                            // this should never happen
+                            throw OrekitException.createInternalError(tsce);
+                        }
+                    } else {
+
+                        // we are after the range covered by the annual pole file,
+                        // we use the polynomial extension
+                        final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+                        meanPoleX = xp0 + t * xp0Dot;
+                        meanPoleY = yp0 + t * yp0Dot;
+
+                    }
+
+                    // evaluate wobble variables
+                    final PoleCorrection correction = eopHistory.getPoleCorrection(date);
+                    final double m1 = correction.getXp() - meanPoleX;
+                    final double m2 = meanPoleY - correction.getYp();
+
+                    return new double[] {
+                        // beware the signs are different in conventions 2003 and 2010
+                        // as m1 and m2 have the same meaning, it is probably a typo
+                        // in one conventions, but which one?
+                        globalFactor * (m1 - coupling * m2),
+                        globalFactor * (m2 + coupling * m1),
+                    };
+
+                }
+            };
+
+        }
+
     },
 
     /** Constant for IERS 2010 conventions. */
@@ -1131,6 +1259,77 @@ public enum IERSConventions {
         @Override
         public double getPermanentTide() throws OrekitException {
             return 4.4228e-8 * -0.31460 * getLoveNumbers().getReal(2, 0);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory)
+            throws OrekitException {
+
+            // polynomial model from IERS 2010, table 7.7
+            final double f0 = Constants.ARC_SECONDS_TO_RADIANS;
+            final double f1 = f0 / Constants.JULIAN_YEAR;
+            final double f2 = f1 / Constants.JULIAN_YEAR;
+            final double f3 = f2 / Constants.JULIAN_YEAR;
+            final AbsoluteDate changeDate = new AbsoluteDate(2010, 1, 1, TimeScalesFactory.getUTC());
+            final double[] xBefore2010 = new double[] {
+                55.974 * f0, 1.8243 * f1, 0.18413 * f2, 0.007024 * f3
+            };
+            final double[] yBefore2010 = new double[] {
+                346.346 * f0, 1.7896 * f1, -0.10729 * f2, -0.000908 * f3
+            };
+            final double[] xAfter2010 = new double[] {
+                23.513 * f0, 7.6141 * f1
+            };
+            final double[] yAfter2010 = new double[] {
+                358.891 * f0,  -0.6287 * f1
+            };
+
+            // constants from IERS 2010, section 6.4
+            final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
+            final double coupling     =  0.00115;
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+
+                    // evaluate mean pole
+                    final double[] xPolynomial;
+                    final double[] yPolynomial;
+                    if (date.compareTo(changeDate) <= 0) {
+                        xPolynomial = xBefore2010;
+                        yPolynomial = yBefore2010;
+                    } else {
+                        xPolynomial = xAfter2010;
+                        yPolynomial = yAfter2010;
+                    }
+                    double meanPoleX = 0;
+                    double meanPoleY = 0;
+                    final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+                    for (int i = xPolynomial.length - 1; i >= 0; --i) {
+                        meanPoleX = meanPoleX * t + xPolynomial[i];
+                    }
+                    for (int i = yPolynomial.length - 1; i >= 0; --i) {
+                        meanPoleY = meanPoleY * t + yPolynomial[i];
+                    }
+
+                    // evaluate wobble variables
+                    final PoleCorrection correction = eopHistory.getPoleCorrection(date);
+                    final double m1 = correction.getXp() - meanPoleX;
+                    final double m2 = meanPoleY - correction.getYp();
+
+                    return new double[] {
+                        // beware the signs are different in conventions 2003 and 2010
+                        // as m1 and m2 have the same meaning, it is probably a typo
+                        // in one conventions, but which one?
+                        globalFactor * (m1 + coupling * m2),
+                        globalFactor * (m2 - coupling * m1),
+                    };
+
+                }
+            };
+
         }
 
         /** {@inheritDoc} */
@@ -1475,8 +1674,8 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<DerivativeStructure> getGASTFunction(final TimeScale ut1,
-                                                                      final EOPHistory eopHistory)
+    public abstract TimeFunction<DerivativeStructure> getGASTFunction(TimeScale ut1,
+                                                                      EOPHistory eopHistory)
         throws OrekitException;
 
     /** Get the function computing tidal corrections for Earth Orientation Parameters.
@@ -1502,7 +1701,7 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      * @since 6.1
      */
-    public abstract TimeFunction<double[]> getTideFrequencyDependenceFunction(final TimeScale ut1)
+    public abstract TimeFunction<double[]> getTideFrequencyDependenceFunction(TimeScale ut1)
         throws OrekitException;
 
     /** Get the permanent tide to be <em>removed</em> from ΔC₂₀ when zero-tide potentials are used.
@@ -1510,6 +1709,15 @@ public enum IERSConventions {
      * @exception OrekitException if table cannot be loaded
      */
     public abstract double getPermanentTide() throws OrekitException;
+
+    /** Get the function computing solid pole tide (ΔC₂₁, ΔS₂₁).
+     * @param eopHistory EOP history
+     * @return model for solid pole tide (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
+     * @exception OrekitException if table cannot be loaded
+     * @since 6.1
+     */
+    public abstract TimeFunction<double[]> getSolidPoleTide(EOPHistory eopHistory)
+        throws OrekitException;
 
     /** Interface for functions converting nutation corrections between
      * &delta;&Delta;&psi;/&delta;&Delta;&epsilon; to &delta;X/&delta;Y.
@@ -1803,4 +2011,51 @@ public enum IERSConventions {
 
     }
 
+    /** Mean pole. */
+    private static class MeanPole implements TimeStamped, Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131028l;
+
+        /** Date. */
+        private final AbsoluteDate date;
+
+        /** X coordinate. */
+        private double x;
+
+        /** Y coordinate. */
+        private double y;
+
+        /** Simple constructor.
+         * @param date date
+         * @param x x coordinate
+         * @param y y coordinate
+         */
+        public MeanPole(final AbsoluteDate date, final double x, final double y) {
+            this.date = date;
+            this.x    = x;
+            this.y    = y;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+
+        /** Get x coordinate.
+         * @return x coordinate
+         */
+        public double getX() {
+            return x;
+        }
+
+        /** Get y coordinate.
+         * @return y coordinate
+         */
+        public double getY() {
+            return y;
+        }
+
+    }
 }

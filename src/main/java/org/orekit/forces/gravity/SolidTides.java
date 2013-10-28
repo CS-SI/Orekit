@@ -32,7 +32,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScale;
+import org.orekit.time.UT1Scale;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
@@ -54,7 +54,7 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
 
     /** Simple constructor.
      * <p>
-     * This constructor uses the default {@link #DEFAULT_STEP step} and default
+     * This constructor uses pole tides, the default {@link #DEFAULT_STEP step} and default
      * {@link #DEFAULT_POINTS number of points} for the tides field interpolation.
      * </p>
      * @param centralBodyFrame rotating body frame
@@ -72,11 +72,11 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem,
-                      final IERSConventions conventions, final TimeScale ut1,
+                      final IERSConventions conventions, final UT1Scale ut1,
                       final CelestialBody ... bodies)
         throws OrekitException {
-        this(centralBodyFrame, ae, mu, centralTideSystem, DEFAULT_STEP, DEFAULT_POINTS,
-             conventions, ut1, bodies);
+        this(centralBodyFrame, ae, mu, centralTideSystem, true,
+             DEFAULT_STEP, DEFAULT_POINTS, conventions, ut1, bodies);
     }
 
     /** Simple constructor.
@@ -84,6 +84,7 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
      * @param ae central body reference radius
      * @param mu central body attraction coefficient
      * @param centralTideSystem tide system used in the central attraction model
+     * @param poleTide if true, pole tide is computed
      * @param step time step between sample points for interpolation
      * @param nbPoints number of points to use for interpolation, if less than 2
      * then no interpolation is performed (thus greatly increasing computation cost)
@@ -94,14 +95,16 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
      * library cannot be read
      */
     public SolidTides(final Frame centralBodyFrame, final double ae, final double mu,
-                      final TideSystem centralTideSystem, final double step, final int nbPoints,
-                      final IERSConventions conventions, final TimeScale ut1,
+                      final TideSystem centralTideSystem, final boolean poleTide,
+                      final double step, final int nbPoints,
+                      final IERSConventions conventions, final UT1Scale ut1,
                       final CelestialBody ... bodies)
         throws OrekitException {
         final TidesField raw =
                 new TidesField(conventions.getLoveNumbers(),
                                conventions.getTideFrequencyDependenceFunction(ut1),
                                conventions.getPermanentTide(),
+                               poleTide ? conventions.getSolidPoleTide(ut1.getEopHistory()) : null,
                                centralBodyFrame, ae, mu, centralTideSystem, bodies);
         final NormalizedSphericalHarmonicsProvider provider;
         if (nbPoints < 2) {
