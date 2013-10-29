@@ -86,9 +86,54 @@ public class SolidTidesTest {
 
     }
 
+    @Test
+    public void testTideEffect() throws OrekitException {
+
+        IERSConventions conventions = IERSConventions.IERS_2010;
+        Frame eme2000 = FramesFactory.getEME2000();
+        Frame itrf    = FramesFactory.getITRF(conventions, true);
+        TimeScale utc = TimeScalesFactory.getUTC();
+        UT1Scale  ut1 = TimeScalesFactory.getUT1(conventions, true);
+        NormalizedSphericalHarmonicsProvider gravityField =
+                GravityFieldFactory.getConstantNormalizedProvider(5, 5);
+
+        // initialization
+        AbsoluteDate date = new AbsoluteDate(2003, 07, 01, 13, 59, 27.816, utc);
+        Orbit orbit = new KeplerianOrbit(7201009.7124401, 1e-3, FastMath.toRadians(98.7),
+                                         FastMath.toRadians(93.0), FastMath.toRadians(15.0 * 22.5),
+                                         0, PositionAngle.MEAN, eme2000, date,
+                                         gravityField.getMu());
+
+        AbsoluteDate target = date.shiftedBy(7 * Constants.JULIAN_DAY);
+        ForceModel hf = new HolmesFeatherstoneAttractionModel(itrf, gravityField);
+        SpacecraftState noTides              = propagate(orbit, target, hf);
+        SpacecraftState solidTidesNoPoleTide = propagate(orbit, target, hf,
+                                                         new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                                                        gravityField.getTideSystem(), false,
+                                                                        SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                                                                        conventions, ut1,
+                                                                        CelestialBodyFactory.getSun(),
+                                                                        CelestialBodyFactory.getMoon()));
+        SpacecraftState solidTidesPoleTide = propagate(orbit, target, hf,
+                                                       new SolidTides(itrf, gravityField.getAe(), gravityField.getMu(),
+                                                                      gravityField.getTideSystem(), true,
+                                                                      SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
+                                                                      conventions, ut1,
+                                                                      CelestialBodyFactory.getSun(),
+                                                                      CelestialBodyFactory.getMoon()));
+        Assert.assertEquals(44.25,
+                            Vector3D.distance(noTides.getPVCoordinates().getPosition(),
+                                              solidTidesNoPoleTide.getPVCoordinates().getPosition()),
+                            0.01);
+        Assert.assertEquals(0.7071,
+                            Vector3D.distance(solidTidesNoPoleTide.getPVCoordinates().getPosition(),
+                                              solidTidesPoleTide.getPVCoordinates().getPosition()),
+                            0.01);
+
+    }
+
     private SpacecraftState propagate(Orbit orbit, AbsoluteDate target, ForceModel ... forceModels)
         throws OrekitException {
-
         double[][] tolerances = NumericalPropagator.tolerances(10, orbit, OrbitType.KEPLERIAN);
         AbstractIntegrator integrator = new DormandPrince853Integrator(1.0e-3, 300, tolerances[0], tolerances[1]);
         NumericalPropagator propagator = new NumericalPropagator(integrator);

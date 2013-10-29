@@ -304,10 +304,10 @@ public class TidesFieldTest {
                 }
             }
         }
-        Assert.assertEquals(0.0, stat.getMean(), 2.0e-13);
-        Assert.assertTrue(stat.getStandardDeviation() < 4.0e-11);
-        Assert.assertTrue(stat.getMin() > -2.0e-9);
-        Assert.assertTrue(stat.getMax() <  7.0e-9);
+        Assert.assertEquals(0.0, stat.getMean(), 2.0e-12);
+        Assert.assertTrue(stat.getStandardDeviation() < 2.0e-9);
+        Assert.assertTrue(stat.getMin() > -9.0e-8);
+        Assert.assertTrue(stat.getMax() <  8.0e-8);
 
     }
 

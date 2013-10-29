@@ -1013,7 +1013,7 @@ public enum IERSConventions {
 
             // constants from IERS 2003, section 6.2
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double coupling     =  0.00115;
+            final double ratio        =  0.00115;
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -1065,11 +1065,34 @@ public enum IERSConventions {
                     final double m2 = meanPoleY - correction.getYp();
 
                     return new double[] {
-                        // beware the signs are different in conventions 2003 and 2010
-                        // as m1 and m2 have the same meaning, it is probably a typo
-                        // in one conventions, but which one?
-                        globalFactor * (m1 - coupling * m2),
-                        globalFactor * (m2 + coupling * m1),
+                        // the following correspond to the equations published in IERS 2003 conventions,
+                        // section 6.2 page 65. In the publication, the equations read:
+                        // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ − 0.0115m₂)
+                        // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ + 0.0115m₁)
+                        // However, it seems there are sign errors in these equations, which have
+                        // been fixed in IERS 2010 conventions, section 6.4 page 94. In these newer
+                        // publication, the equations read:
+                        // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ + 0.0115m₂)
+                        // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ − 0.0115m₁)
+                        // the newer equations seem more consistent with the premises as the
+                        // deformation due to the centrifugal potential has the form:
+                        // −Ω²r²/2 sin 2θ Re [k₂(m₁ − im₂) exp(iλ)] where k₂ is the complex
+                        // number 0.3077 + 0.0036i, so the real part in the previous equation is:
+                        // A[Re(k₂) m₁ + Im(k₂) m₂)] cos λ + A[Re(k₂) m₂ - Im(k₂) m₁] sin λ
+                        // identifying this with ∆C₂₁ cos λ + ∆S₂₁ sin λ we get:
+                        // ∆C₂₁ = A Re(k₂) [m₁ + Im(k₂)/Re(k₂) m₂)]
+                        // ∆S₂₁ = A Re(k₂) [m₂ - Im(k₂)/Re(k₂) m₁)]
+                        // and Im(k₂)/Re(k₂) is very close to +0.00115
+                        // As the equation as written in the IERS 2003 conventions are used in
+                        // legacy systems, we have reproduced this alleged error here (and fixed it in
+                        // the IERS 2010 conventions below) for validation purposes. We don't recommend
+                        // using the IERS 2003 conventions for solid pole tide computation other than
+                        // for validation or reproducibility of legacy applications behavior.
+                        // As solid pole tide is small and as the sign change is on the smallest coefficient,
+                        // the effect is quite small. A test case on a propagated orbit showed a position change
+                        // slightly below 0.4m after a 30 days propagation on a Low Earth Orbit
+                        globalFactor * (m1 - ratio * m2),
+                        globalFactor * (m2 + ratio * m1),
                     };
 
                 }
@@ -1267,7 +1290,7 @@ public enum IERSConventions {
             throws OrekitException {
 
             // polynomial model from IERS 2010, table 7.7
-            final double f0 = Constants.ARC_SECONDS_TO_RADIANS;
+            final double f0 = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
             final double f1 = f0 / Constants.JULIAN_YEAR;
             final double f2 = f1 / Constants.JULIAN_YEAR;
             final double f3 = f2 / Constants.JULIAN_YEAR;
@@ -1287,7 +1310,7 @@ public enum IERSConventions {
 
             // constants from IERS 2010, section 6.4
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
-            final double coupling     =  0.00115;
+            final double ratio        =  0.00115;
 
             return new TimeFunction<double[]>() {
                 /** {@inheritDoc} */
@@ -1320,11 +1343,16 @@ public enum IERSConventions {
                     final double m2 = meanPoleY - correction.getYp();
 
                     return new double[] {
-                        // beware the signs are different in conventions 2003 and 2010
-                        // as m1 and m2 have the same meaning, it is probably a typo
-                        // in one conventions, but which one?
-                        globalFactor * (m1 + coupling * m2),
-                        globalFactor * (m2 - coupling * m1),
+                        // the following correspond to the equations published in IERS 2010 conventions,
+                        // section 6.4 page 94. The equations read:
+                        // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ + 0.0115m₂)
+                        // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ − 0.0115m₁)
+                        // These equations seem to fix what was probably a sign error in IERS 2003
+                        // conventions section 6.2 page 65. In this older publication, the equations read:
+                        // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ − 0.0115m₂)
+                        // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ + 0.0115m₁)
+                        globalFactor * (m1 + ratio * m2),
+                        globalFactor * (m2 - ratio * m1),
                     };
 
                 }
