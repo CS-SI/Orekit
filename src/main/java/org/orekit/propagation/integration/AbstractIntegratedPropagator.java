@@ -32,10 +32,8 @@ import org.apache.commons.math3.ode.ExpandableStatefulODE;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.SecondaryEquations;
 import org.apache.commons.math3.ode.events.EventHandler;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
-import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -549,55 +547,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         // additional states integrated here
         if (!additionalEquations.isEmpty()) {
 
-            if (mathODE.getTotalDimension() <= y.length) {
-                // the provided y vector already contains everything needed
-                final EquationsMapper[] em = mathODE.getSecondaryMappers();
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final double[] secondary = new double[em[i].getDimension()];
-                    System.arraycopy(y, em[i].getFirstIndex(), secondary, 0, secondary.length);
-                    state = state.addAdditionalState(additionalEquations.get(i).getName(),
-                                                     secondary);
-                }
-            } else {
-                // the y array doesn't contain the additional equations data
-
-                // TODO: remove this case when MATH-965 fix is officially published
-                // (i.e for the next Apache Commons Math version after 3.2)
-                // The fix for MATH-965 ensures that y always contains all
-                // needed data, including additional states, so the workaround
-                // below will not be needed anymore
-
-                if (mathInterpolator == null) {
-                    // we are still in the first step, before the step handler call
-                    // we build a temporary interpolator just for this step
-                    final double step = FastMath.abs(integrator.getCurrentSignedStepsize());
-                    final ClassicalRungeKuttaIntegrator firstStepIntegrator =
-                            new ClassicalRungeKuttaIntegrator(step);
-                    firstStepIntegrator.addStepHandler(new StepHandler() {
-
-                        /** {@inheritDoc} */
-                        public void init(final double t0, final double[] y0, final double t) {
-                        }
-
-                        /** {@inheritDoc} */
-                        public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
-                            mathInterpolator = interpolator;
-                        }
-
-                    });
-                    final ExpandableStatefulODE localODE = createODE(firstStepIntegrator);
-                    firstStepIntegrator.clearEventHandlers();
-                    firstStepIntegrator.integrate(localODE, step);
-                }
-
-                // extract the additional data from the spied interpolator
-                mathInterpolator.setInterpolatedTime(t);
-                for (int i = 0; i < additionalEquations.size(); ++i) {
-                    final double[] secondary = mathInterpolator.getInterpolatedSecondaryState(i);
-                    state = state.addAdditionalState(additionalEquations.get(i).getName(),
-                                                     secondary);
-                }
-
+            final EquationsMapper[] em = mathODE.getSecondaryMappers();
+            for (int i = 0; i < additionalEquations.size(); ++i) {
+                final double[] secondary = new double[em[i].getDimension()];
+                System.arraycopy(y, em[i].getFirstIndex(), secondary, 0, secondary.length);
+                state = state.addAdditionalState(additionalEquations.get(i).getName(), secondary);
             }
 
         }
