@@ -27,6 +27,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -282,7 +283,7 @@ class TesseralContribution implements DSSTForceModel {
     public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
 
         // Compute potential derivatives
-        final double[] dU  = computeUDerivatives(provider.getOffset(spacecraftState.getDate()));
+        final double[] dU  = computeUDerivatives(spacecraftState.getDate());
         final double dUda  = dU[0];
         final double dUdh  = dU[1];
         final double dUdk  = dU[2];
@@ -355,11 +356,11 @@ class TesseralContribution implements DSSTForceModel {
      *  </pre>
      *  </p>
      *
-     *  @param dateOffset offset between current date and gravity field reference date
+     *  @param date current date
      *  @return potential derivatives
      *  @throws OrekitException if an error occurs
      */
-    private double[] computeUDerivatives(final double dateOffset) throws OrekitException {
+    private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
 
         // Potential derivatives
         double dUda  = 0.;
@@ -421,7 +422,7 @@ class TesseralContribution implements DSSTForceModel {
                 for (int s = 0; s <= sMax; s++) {
 
                     // n-SUM for s positive
-                    final double[][] nSumSpos = computeNSum(dateOffset, j, m, s,
+                    final double[][] nSumSpos = computeNSum(date, j, m, s,
                                                             roaPow, ghMSJ, gammaMNS, hansen);
                     dUdaCos  += nSumSpos[0][0];
                     dUdaSin  += nSumSpos[0][1];
@@ -440,7 +441,7 @@ class TesseralContribution implements DSSTForceModel {
 
                     // n-SUM for s negative
                     if (s > 0 && s <= sMin) {
-                        final double[][] nSumSneg = computeNSum(dateOffset, j, m, -s,
+                        final double[][] nSumSneg = computeNSum(date, j, m, -s,
                                                                 roaPow, ghMSJ, gammaMNS, hansen);
                         dUdaCos  += nSumSneg[0][0];
                         dUdaSin  += nSumSneg[0][1];
@@ -482,7 +483,7 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** Compute the n-SUM for potential derivatives components.
-     *  @param dateOffset offset between current date and gravity field reference date
+     *  @param date current date
      *  @param j resonant index <i>j</i>
      *  @param m resonant order <i>m</i>
      *  @param s d'Alembert characteristic <i>s</i>
@@ -493,12 +494,15 @@ class TesseralContribution implements DSSTForceModel {
      *  @return Components of U<sub>n</sub> derivatives for fixed j, m, s
      * @throws OrekitException if some error occurred
      */
-    private double[][] computeNSum(final double dateOffset,
+    private double[][] computeNSum(final AbsoluteDate date,
                                              final int j, final int m, final int s,
                                              final double[] roaPow,
                                              final GHmsjPolynomials ghMSJ,
                                              final GammaMnsFunction gammaMNS,
                                              final HansenTesseral hansen) throws OrekitException {
+
+        //spherical harmonics
+        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
         // Potential derivatives components
         double dUdaCos  = 0.;
@@ -577,8 +581,8 @@ class TesseralContribution implements DSSTForceModel {
                 final double dJacobi = jacobiPoly.derivative().value(gamma);
 
                 // Geopotential coefficients
-                final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
-                final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+                final double cnm = harmonics.getUnnormalizedCnm(n, m);
+                final double snm = harmonics.getUnnormalizedSnm(n, m);
 
                 // Common factors from expansion of equations 3.3-4
                 final double cf_0      = roaPow[n] * Im * vMNS;

@@ -17,6 +17,7 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider.RawSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper providing un-normalized coefficients.
@@ -74,18 +75,30 @@ class WrappingUnnormalizedProvider implements UnnormalizedSphericalHarmonicsProv
         return rawProvider.getTideSystem();
     }
 
-    /** {@inheritDoc} */
-    public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        // no conversion is done here
-        return rawProvider.getRawCnm(dateOffset, n, m);
-    }
+    @Override
+    public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        final RawSphericalHarmonics raw = rawProvider.onDate(date);
+        return new UnnormalizedSphericalHarmonics() {
 
-    /** {@inheritDoc} */
-    public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        // no conversion is done here
-        return rawProvider.getRawSnm(dateOffset, n, m);
-    }
+            @Override
+            public AbsoluteDate getDate() {
+                return date;
+            }
 
+            /** {@inheritDoc} */
+            public double getUnnormalizedCnm(final int n, final int m)
+                throws OrekitException {
+                // no conversion is done here
+                return raw.getRawCnm(n, m);
+            }
+
+            /** {@inheritDoc} */
+            public double getUnnormalizedSnm(final int n, final int m)
+                throws OrekitException {
+                // no conversion is done here
+                return raw.getRawSnm(n, m);
+            }
+
+        };
+    }
 }

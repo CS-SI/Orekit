@@ -100,38 +100,53 @@ class PulsatingSphericalHarmonics implements RawSphericalHarmonicsProvider {
         return provider.getTideSystem();
     }
 
-    /** {@inheritDoc} */
-    public double getRawCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
+    @Override
+    public RawSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        //raw (constant) harmonics
+        final RawSphericalHarmonics raw = provider.onDate(date);
+        //phase angle, will loose precision for large offsets
+        final double alpha = pulsation * getOffset(date);
+        //pre-compute transcendental functions
+        final double cAlpha = FastMath.cos(alpha);
+        final double sAlpha = FastMath.sin(alpha);
+        return new RawSphericalHarmonics() {
 
-        // retrieve the underlying part of the coefficient
-        double cnm = provider.getRawCnm(dateOffset, n, m);
+            @Override
+            public AbsoluteDate getDate() {
+                return date;
+            }
 
-        if (n < cosC.length && m < cosC[n].length) {
-            // add pulsation
-            final double alpha = pulsation * dateOffset;
-            cnm += cosC[n][m] * FastMath.cos(alpha) + sinC[n][m] * FastMath.sin(alpha);
-        }
+            /** {@inheritDoc} */
+            public double getRawCnm(final int n, final int m)
+                throws OrekitException {
 
-        return cnm;
+                // retrieve the underlying part of the coefficient
+                double cnm = raw.getRawCnm(n, m);
 
-    }
+                if (n < cosC.length && m < cosC[n].length) {
+                    // add pulsation
+                    cnm += cosC[n][m] * cAlpha + sinC[n][m] * sAlpha;
+                }
 
-    /** {@inheritDoc} */
-    public double getRawSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
+                return cnm;
+            }
 
-        // retrieve the constant part of the coefficient
-        double snm = provider.getRawSnm(dateOffset, n, m);
+            /** {@inheritDoc} */
+            public double getRawSnm(final int n, final int m)
+                throws OrekitException {
 
-        if (n < cosS.length && m < cosS[n].length) {
-            // add pulsation
-            final double alpha = pulsation * dateOffset;
-            snm += cosS[n][m] * FastMath.cos(alpha) + sinS[n][m] * FastMath.sin(alpha);
-        }
+                // retrieve the constant part of the coefficient
+                double snm = raw.getRawSnm(n, m);
 
-        return snm;
+                if (n < cosS.length && m < cosS[n].length) {
+                    // add pulsation
+                    snm += cosS[n][m] * cAlpha + sinS[n][m] * sAlpha;
+                }
 
+                return snm;
+            }
+
+        };
     }
 
 }

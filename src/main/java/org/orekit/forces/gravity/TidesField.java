@@ -16,11 +16,8 @@
  */
 package org.orekit.forces.gravity;
 
-import java.util.Arrays;
-
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Precision;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
@@ -84,28 +81,16 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     /** Tide system used in the central attraction model. */
     private final TideSystem centralTideSystem;
 
-    /** Tide generating bodies (typically Sun and Moon). */
+    /** Tide generating bodies (typically Sun and Moon). Read only after construction. */
     private final CelestialBody[] bodies;
 
-    /** Date offset of cached coefficients. */
-    private double cachedOffset;
-
-    /** Cached cnm. */
-    private final double[][] cachedCnm;
-
-    /** Cached snm. */
-    private final double[][] cachedSnm;
-
-    /** Tesseral terms. */
-    private final double[][] pnm;
-
-    /** First recursion coefficients for tesseral terms. */
+    /** First recursion coefficients for tesseral terms. Read only after construction. */
     private final double[][] anm;
 
-    /** Second recursion coefficients for tesseral terms. */
+    /** Second recursion coefficients for tesseral terms. Read only after construction. */
     private final double[][] bnm;
 
-    /** Third recursion coefficients for sectorial terms. */
+    /** Third recursion coefficients for sectorial terms. Read only after construction. */
     private final double[] dmm;
 
     /** Simple constructor.
@@ -135,16 +120,10 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         this.bodies            = bodies;
 
         // compute recursion coefficients for Legendre functions
-        this.pnm               = buildTriangularArray(5, true);
         this.anm               = buildTriangularArray(5, false);
         this.bnm               = buildTriangularArray(5, false);
         this.dmm               = new double[love.getSize()];
         recursionCoefficients();
-
-        // prepare coefficients caching
-        this.cachedOffset      = Double.NaN;
-        this.cachedCnm         = buildTriangularArray(5, true);
-        this.cachedSnm         = buildTriangularArray(5, true);
 
         // Love numbers
         this.love = love;
@@ -204,39 +183,23 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         return TideSystem.ZERO_TIDE;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public double getNormalizedCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        if (!Precision.equals(dateOffset, cachedOffset, 1)) {
-            fillCache(dateOffset);
-        }
-        return cachedCnm[n][m];
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        return computeHarmonics(date);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public double getNormalizedSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        if (!Precision.equals(dateOffset, cachedOffset, 1)) {
-            fillCache(dateOffset);
-        }
-        return cachedSnm[n][m];
-    }
-
-    /** Fill the cache.
-     * @param offset date offset from J2000.0
+    /** Evaluate the tidal geopotential on a specific date.
+     * @param date of evaluation
      * @exception OrekitException if coefficients cannot be computed
+     * @return the tidal spherical harmonics
      */
-    private void fillCache(final double offset) throws OrekitException {
+    private TideHarmonics computeHarmonics(final AbsoluteDate date) throws OrekitException {
 
-        cachedOffset = offset;
-        for (int i = 0; i < cachedCnm.length; ++i) {
-            Arrays.fill(cachedCnm[i], 0.0);
-            Arrays.fill(cachedSnm[i], 0.0);
-        }
-
-        final AbsoluteDate date = new AbsoluteDate(AbsoluteDate.J2000_EPOCH, offset);
+        //computed Cnm and Snm coefficients
+        final double[][] cnm = buildTriangularArray(5, true);
+        final double[][] snm = buildTriangularArray(5, true);
+        //work array to hold Legendre coefficients
+        final double[][] pnm = buildTriangularArray(5, true);
 
         // step 1: frequency independent part
         // equations 6.6 (for degrees 2 and 3) and 6.7 (for degree 4) in IERS conventions 2010
@@ -258,31 +221,32 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             final double rho  = FastMath.sqrt(rho2);
 
             // evaluate Pnm
-            evaluateLegendre(z / r, rho / r);
+            evaluateLegendre(z / r, rho / r, pnm);
 
             // update spherical harmonic coefficients
-            frequencyIndependentPart(r, body.getGM(), x / rho, y / rho);
+            frequencyIndependentPart(r, body.getGM(), x / rho, y / rho, pnm, cnm, snm);
 
         }
 
         // step 2: frequency dependent corrections
-        frequencyDependentPart(date);
+        frequencyDependentPart(date, cnm, snm);
 
         if (centralTideSystem == TideSystem.ZERO_TIDE) {
             // step 3: remove permanent tide which is already considered
             // in the central body gravity field
-            removePermanentTide();
+            removePermanentTide(cnm);
         }
 
         if (poleTideFunction != null) {
             // add pole tide
-            poleTide(date);
+            poleTide(date, cnm, snm);
         }
+
+        return new TideHarmonics(date, cnm, snm);
 
     }
 
-    /** Compute recursion coefficients.
-     */
+    /** Compute recursion coefficients. */
     private void recursionCoefficients() {
 
         // pre-compute the recursion coefficients
@@ -307,8 +271,9 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
     /** Evaluate Legendre functions.
      * @param t cos(&theta;), where &theta; is the polar angle
      * @param u sin(&theta;), where &theta; is the polar angle
+     * @param pnm the computed coefficients. Modified in place.
      */
-    private void evaluateLegendre(final double t, final double u) {
+    private void evaluateLegendre(final double t, final double u, final double[][] pnm) {
 
         // as the degree is very low, we use the standard forward column method
         // and store everything (see equations 11 and 13 from Holmes and Featherstone paper)
@@ -332,9 +297,17 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      * @param gm tide generating body attraction coefficient
      * @param cosLambda cosine of the tide generating body longitude
      * @param sinLambda sine of the tide generating body longitude
+     * @param pnm the Legendre coefficients. See {@link #evaluateLegendre(double, double, double[][])}.
+     * @param cnm the computed Cnm coefficients. Modified in place.
+     * @param snm the computed Snm coefficients. Modified in place.
      */
-    private void frequencyIndependentPart(final double r, final double gm,
-                                          final double cosLambda, final double sinLambda) {
+    private void frequencyIndependentPart(final double r,
+                                          final double gm,
+                                          final double cosLambda,
+                                          final double sinLambda,
+                                          final double[][] pnm,
+                                          final double[][] cnm,
+                                          final double[][] snm) {
 
         final double rRatio = ae / r;
         double fM           = gm / mu;
@@ -353,15 +326,15 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
                 // equation 6.6 from IERS conventions (2010)
                 final double kR = love.getReal(n, m);
                 final double kI = love.getImaginary(n, m);
-                cachedCnm[n][m] += kR * cCos + kI * cSin;
-                cachedSnm[n][m] += kR * cSin - kI * cCos;
+                cnm[n][m] += kR * cCos + kI * cSin;
+                snm[n][m] += kR * cSin - kI * cCos;
 
                 if (n == 2) {
                     // indirect effect of degree 2 tides on degree 4 coefficients
                     // equation 6.7 from IERS conventions (2010)
                     final double kP = love.getPlus(n, m);
-                    cachedCnm[4][m] += kP * cCos;
-                    cachedSnm[4][m] += kP * cSin;
+                    cnm[4][m] += kP * cCos;
+                    snm[4][m] += kP * cSin;
                 }
 
             }
@@ -378,29 +351,38 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** Update coefficients applying frequency dependent step.
      * @param date current date
+     * @param cnm the Cnm coefficients. Modified in place.
+     * @param snm the Snm coefficients. Modified in place.
      */
-    private void frequencyDependentPart(final AbsoluteDate date) {
+    private void frequencyDependentPart(final AbsoluteDate date,
+                                        final double[][] cnm,
+                                        final double[][] snm) {
         final double[] deltaCS = deltaCSFunction.value(date);
-        cachedCnm[2][0] += deltaCS[0]; // ΔC₂₀
-        cachedCnm[2][1] += deltaCS[1]; // ΔC₂₁
-        cachedSnm[2][1] += deltaCS[2]; // ΔS₂₁
-        cachedCnm[2][2] += deltaCS[3]; // ΔC₂₂
-        cachedSnm[2][2] += deltaCS[4]; // ΔS₂₂
+        cnm[2][0] += deltaCS[0]; // ΔC₂₀
+        cnm[2][1] += deltaCS[1]; // ΔC₂₁
+        snm[2][1] += deltaCS[2]; // ΔS₂₁
+        cnm[2][2] += deltaCS[3]; // ΔC₂₂
+        snm[2][2] += deltaCS[4]; // ΔS₂₂
     }
 
     /** Remove the permanent tide already counted in zero-tide central gravity fields.
+     * @param cnm the Cnm coefficients. Modified in place.
      */
-    private void removePermanentTide() {
-        cachedCnm[2][0] -= deltaC20PermanentTide;
+    private void removePermanentTide(final double[][] cnm) {
+        cnm[2][0] -= deltaC20PermanentTide;
     }
 
     /** Update coefficients applying pole tide.
      * @param date current date
+     * @param cnm the Cnm coefficients. Modified in place.
+     * @param snm the Snm coefficients. Modified in place.
      */
-    private void poleTide(final AbsoluteDate date) {
+    private void poleTide(final AbsoluteDate date,
+                          final double[][] cnm,
+                          final double[][] snm) {
         final double[] deltaCS = poleTideFunction.value(date);
-        cachedCnm[2][1] += deltaCS[0]; // ΔC₂₁
-        cachedSnm[2][1] += deltaCS[1]; // ΔS₂₁
+        cnm[2][1] += deltaCS[0]; // ΔC₂₁
+        snm[2][1] += deltaCS[1]; // ΔS₂₁
     }
 
     /** Create a triangular array.
@@ -415,6 +397,53 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             array[i] = new double[withDiagonal ? i + 1 : i];
         }
         return array;
+    }
+
+    /** The Tidal geopotential evaluated on a specific date. */
+    private static class TideHarmonics implements NormalizedSphericalHarmonics {
+
+        /** evaluation date. */
+        private final AbsoluteDate date;
+
+        /** Cached cnm. */
+        private final double[][] cnm;
+
+        /** Cached snm. */
+        private final double[][] snm;
+
+        /** Construct the tidal harmonics on the given date.
+         *
+         * @param date of evaluation
+         * @param cnm the Cnm coefficients. Not copied.
+         * @param snm the Snm coeffiecients. Not copied.
+         */
+        private TideHarmonics(final AbsoluteDate date,
+                              final double[][] cnm,
+                              final double[][] snm) {
+            this.date = date;
+            this.cnm = cnm;
+            this.snm = snm;
+        }
+
+        @Override
+        public AbsoluteDate getDate() {
+            return date;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getNormalizedCnm(final int n, final int m)
+            throws OrekitException {
+            return cnm[n][m];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getNormalizedSnm(final int n, final int m)
+            throws OrekitException {
+            return snm[n][m];
+        }
+
     }
 
 }

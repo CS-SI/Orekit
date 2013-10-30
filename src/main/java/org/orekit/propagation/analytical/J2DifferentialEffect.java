@@ -72,7 +72,7 @@ public class J2DifferentialEffect
         throws OrekitException {
         this(original, directEffect, applyBefore,
              gravityField.getAe(), gravityField.getMu(),
-             -gravityField.getUnnormalizedCnm(gravityField.getOffset(original.getDate()), 2, 0));
+             -gravityField.onDate(original.getDate()).getUnnormalizedCnm(2, 0));
     }
 
     /** Simple constructor.
@@ -93,7 +93,7 @@ public class J2DifferentialEffect
         throws OrekitException {
         this(orbit0, orbit1, applyBefore,
              gravityField.getAe(), gravityField.getMu(),
-             -gravityField.getUnnormalizedCnm(gravityField.getOffset(orbit0.getDate()), 2, 0));
+             -gravityField.onDate(orbit0.getDate()).getUnnormalizedCnm(2, 0));
     }
 
     /** Simple constructor.

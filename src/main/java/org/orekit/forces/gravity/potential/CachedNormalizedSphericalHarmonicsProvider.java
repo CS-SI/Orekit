@@ -20,11 +20,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
-import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
@@ -54,15 +51,6 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
     /** Number of coefficients in C<sub>n, m</sub> and S<sub>n, m</sub> arrays (counted separately). */
     private final int size;
 
-    /** Date offset of cached coefficients. */
-    private double cachedOffset;
-
-    /** Cached coefficients. */
-    private final double[] cachedCnmSnm;
-
-    /** Global lock. */
-    private final ReadWriteLock lock;
-
     /** Cache. */
     private final TimeStampedCache<TimeStampedSphericalHarmonics> cache;
 
@@ -84,9 +72,6 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         this.rawProvider  = rawProvider;
         final int k       = rawProvider.getMaxDegree() + 1;
         this.size         = (k * (k + 1)) / 2;
-        this.cachedOffset = Double.NaN;
-        this.cachedCnmSnm = new double[2 * size];
-        this.lock         = new ReentrantReadWriteLock();
 
         cache = new GenericTimeStampedCache<TimeStampedSphericalHarmonics>(nbPoints, maxSlots, maxSpan,
                                                                            newSlotInterval, new Generator(step),
@@ -135,69 +120,10 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         return rawProvider.getTideSystem();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public double getNormalizedCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        lock.readLock().lock();
-        try {
-            if (!Precision.equals(dateOffset, cachedOffset, 1)) {
-                fillCache(dateOffset);
-            }
-            return cachedCnmSnm[(n * (n + 1)) / 2 + m];
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public double getNormalizedSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        lock.readLock().lock();
-        try {
-            if (!Precision.equals(dateOffset, cachedOffset, 1)) {
-                fillCache(dateOffset);
-            }
-            return cachedCnmSnm[(n * (n + 1)) / 2 + m + size];
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    /** Fill the cache.
-     * @param dateOffset date offset from reference date
-     * @exception OrekitException if coefficients cannot be computed
-     */
-    private void fillCache(final double dateOffset) throws OrekitException {
-
-        // upgrade the read lock to a write lock so we can change the spherical harmonics arrays
-        lock.readLock().unlock();
-        lock.writeLock().lock();
-
-        try {
-            // check offset again as another thread may have changed
-            // it while we were waiting for the write lock
-            if (!Precision.equals(dateOffset, cachedOffset, 1)) {
-                cachedOffset = dateOffset;
-                final AbsoluteDate date = getReferenceDate().shiftedBy(dateOffset);
-                final TimeStampedSphericalHarmonics interpolated =
-                        TimeStampedSphericalHarmonics.interpolate(date, cache.getNeighbors(date));
-                System.arraycopy(interpolated.cnmsnm, 0, cachedCnmSnm, 0, 2 * size);
-            }
-        } catch (TimeStampedCacheException tsce) {
-            if (tsce.getCause() != null && tsce.getCause() instanceof OrekitException) {
-                // unwrap the underlying Orekit exception
-                throw (OrekitException) tsce.getCause();
-            } else {
-                throw tsce;
-            }
-        } finally {
-            // downgrade back to a read lock
-            lock.readLock().lock();
-            lock.writeLock().unlock();
-        }
-
+    public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws
+            TimeStampedCacheException {
+        return TimeStampedSphericalHarmonics.interpolate(date, cache.getNeighbors(date));
     }
 
     /** Generator for time-stamped spherical harmonics. */
@@ -229,7 +155,7 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                     // no prior existing transforms, just generate a first set
                     for (int i = 0; i < cache.getNeighborsSize(); ++i) {
                         final AbsoluteDate t = date.shiftedBy((i - cache.getNeighborsSize() / 2) * step);
-                        fillArray(t, cnmsnm);
+                        fillArray(rawProvider.onDate(t), cnmsnm);
                         generated.add(new TimeStampedSphericalHarmonics(t, cnmsnm));
                     }
 
@@ -243,14 +169,14 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                         // forward generation
                         do {
                             t = t.shiftedBy(step);
-                            fillArray(t, cnmsnm);
+                            fillArray(rawProvider.onDate(t), cnmsnm);
                             generated.add(new TimeStampedSphericalHarmonics(t, cnmsnm));
                         } while (t.compareTo(date) <= 0);
                     } else {
                         // backward generation
                         do {
                             t = t.shiftedBy(-step);
-                            fillArray(t, cnmsnm);
+                            fillArray(rawProvider.onDate(t), cnmsnm);
                             generated.add(new TimeStampedSphericalHarmonics(t, cnmsnm));
                         } while (t.compareTo(date) >= 0);
                     }
@@ -266,54 +192,75 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         }
 
         /** Fill coefficients array for one entry.
-         * @param date date of the entry to generate
+         * @param raw the un-interpolated spherical harmonics
          * @param cnmsnm arrays to fill in
          * @exception OrekitException if coefficients cannot be computed at specified date
          */
-        private void fillArray(final AbsoluteDate date, final double[] cnmsnm)
+        private void fillArray(final NormalizedSphericalHarmonics raw,
+                               final double[] cnmsnm)
             throws OrekitException {
-            final double dateOffset = rawProvider.getOffset(date);
             int index = 0;
             for (int n = 0; n <= rawProvider.getMaxDegree(); ++n) {
                 for (int m = 0; m <= n; ++m) {
-                    cnmsnm[index++] = rawProvider.getNormalizedCnm(dateOffset, n, m);
+                    cnmsnm[index++] = raw.getNormalizedCnm(n, m);
                 }
             }
             for (int n = 0; n <= rawProvider.getMaxDegree(); ++n) {
                 for (int m = 0; m <= n; ++m) {
-                    cnmsnm[index++] = rawProvider.getNormalizedSnm(dateOffset, n, m);
+                    cnmsnm[index++] = raw.getNormalizedSnm(n, m);
                 }
             }
         }
 
     }
 
-    /** Internal class for time-stamped spherical harmonics. */
-    private static class TimeStampedSphericalHarmonics implements TimeStamped, Serializable {
+    /**
+     * Internal class for time-stamped spherical harmonics. Instances are created using
+     * {@link #interpolate(AbsoluteDate, Collection)}
+     */
+    private static class TimeStampedSphericalHarmonics
+            implements TimeStamped, Serializable, NormalizedSphericalHarmonics {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131021l;
+        private static final long serialVersionUID = 20131029l;
 
         /** Current date. */
         private final AbsoluteDate date;
+
+        /** number of C or S coefficients. */
+        private final int size;
 
         /** Flattened array for C<sub>n,m</sub> and S<sub>n,m</sub> coefficients. */
         private final double[] cnmsnm;
 
         /** Simple constructor.
          * @param date current date
-         * @param cnmsnm flattened array for C<sub>n,m</sub> and S<sub>n,m</sub> coefficients
+         * @param cnmsnm flattened array for C<sub>n,m</sub> and S<sub>n,m</sub>
+         *               coefficients. It is copied.
          */
-        public TimeStampedSphericalHarmonics(final AbsoluteDate date,
-                                             final double[] cnmsnm) {
+        private TimeStampedSphericalHarmonics(final AbsoluteDate date,
+                                              final double[] cnmsnm) {
             this.date   = date;
             this.cnmsnm = cnmsnm.clone();
+            this.size   = cnmsnm.length / 2;
         }
 
         /** {@inheritDoc} */
         @Override
         public AbsoluteDate getDate() {
             return date;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getNormalizedCnm(final int n, final int m) throws OrekitException {
+            return cnmsnm[(n * (n + 1)) / 2 + m];
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double getNormalizedSnm(final int n, final int m) throws OrekitException {
+            return cnmsnm[(n * (n + 1)) / 2 + m + size];
         }
 
         /** Interpolate spherical harmonics.

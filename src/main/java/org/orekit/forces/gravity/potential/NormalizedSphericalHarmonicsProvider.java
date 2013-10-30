@@ -17,6 +17,8 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeStamped;
 
 /** Interface used to provide normalized spherical harmonics coefficients.
  * @see GravityFieldFactory
@@ -25,26 +27,40 @@ import org.orekit.errors.OrekitException;
  */
 public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonicsProvider {
 
-    /** Get a spherical harmonic cosine coefficient.
-     * @param dateOffset date offset since reference date (s)
-     * @param n degree of the coefficient
-     * @param m order of the coefficient
-     * @return normalized coefficient Cnm
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
+    /**
+     * The normalized geopotential coefficients at a specific instance in time.
+     * @see NormalizedSphericalHarmonicsProvider
+     * @see NormalizedSphericalHarmonicsProvider#onDate(AbsoluteDate)
      */
-    double getNormalizedCnm(double dateOffset, int n, int m)
-        throws OrekitException;
+    interface NormalizedSphericalHarmonics extends TimeStamped {
 
-    /** Get a spherical harmonic sine coefficient.
-     * @param dateOffset date offset since reference date (s)
-     * @param n degree of the coefficient
-     * @param m order of the coefficient
-     * @return normalized coefficient Snm
-     * @exception OrekitException if the requested maximal degree or order exceeds the
-     * available degree or order
+        /** Get a spherical harmonic cosine coefficient.
+         * @param n degree of the coefficient
+         * @param m order of the coefficient
+         * @return normalized coefficient Cnm
+         * @exception OrekitException if the requested maximal degree or order exceeds the
+         * available degree or order
+         */
+        double getNormalizedCnm(int n, int m) throws OrekitException;
+
+        /** Get a spherical harmonic sine coefficient.
+         * @param n degree of the coefficient
+         * @param m order of the coefficient
+         * @return normalized coefficient Snm
+         * @exception OrekitException if the requested maximal degree or order exceeds the
+         * available degree or order
+         */
+        double getNormalizedSnm(int n, int m) throws OrekitException;
+
+    }
+
+    /**
+     * Get the normalized spherical harmonic coefficients at a specific instance in time.
+     *
+     * @param date of evaluation
+     * @return normalized coefficients on {@code date}.
+     * @throws OrekitException on error
      */
-    double getNormalizedSnm(double dateOffset, int n, int m)
-        throws OrekitException;
+    NormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
 
 }

@@ -32,6 +32,7 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.propagation.SpacecraftState;
@@ -143,7 +144,7 @@ public class CunninghamAttractionModel
 
         // get the position in body frame
         final AbsoluteDate date = s.getDate();
-        final double dateOffset = provider.getOffset(date);
+        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
         final Transform fromBodyFrame = bodyFrame.getTransformTo(s.getFrame(), date);
         final Transform toBodyFrame   = fromBodyFrame.getInverse();
         final Vector3D relative = toBodyFrame.transformPosition(s.getPVCoordinates().getPosition());
@@ -350,8 +351,8 @@ public class CunninghamAttractionModel
                 // compute the acceleration due to the Cnm and Snm coefficients
                 // ignoring the central attraction
                 if (n > 0) {
-                    final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
-                    final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+                    final double cnm = harmonics.getUnnormalizedCnm(n, m);
+                    final double snm = harmonics.getUnnormalizedSnm(n, m);
                     vdX += cnm * gradXVrn + snm * gradXVin;
                     vdY += cnm * gradYVrn + snm * gradYVin;
                     vdZ += cnm * gradZVrn + snm * gradZVin;

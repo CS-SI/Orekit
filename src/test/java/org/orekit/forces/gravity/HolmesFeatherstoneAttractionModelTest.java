@@ -299,12 +299,24 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
             return TideSystem.UNKNOWN;
         }
 
-        public double getNormalizedCnm(double dateOffset, int n, int m) {
-            return 1;
-        }
+        @Override
+        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+            return new NormalizedSphericalHarmonics() {
+                @Override
+                public double getNormalizedCnm(int n, int m) throws OrekitException {
+                    return 1;
+                }
 
-        public double getNormalizedSnm(double dateOffset, int n, int m) {
-            return 1;
+                @Override
+                public double getNormalizedSnm(int n, int m) throws OrekitException {
+                    return 1;
+                }
+
+                @Override
+                public AbsoluteDate getDate() {
+                    return date;
+                }
+            };
         }
 
     }

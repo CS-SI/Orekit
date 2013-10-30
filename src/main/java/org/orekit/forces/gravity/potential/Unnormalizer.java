@@ -17,6 +17,7 @@
 package org.orekit.forces.gravity.potential;
 
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper providing un-normalized coefficients from normalized ones.
@@ -78,16 +79,27 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
         return normalized.getTideSystem();
     }
 
-    /** {@inheritDoc} */
-    public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        return normalized.getNormalizedCnm(dateOffset, n, m) * factors[n][m];
-    }
+    @Override
+    public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+        final NormalizedSphericalHarmonics harmonics = normalized.onDate(date);
+        return new UnnormalizedSphericalHarmonics() {
 
-    /** {@inheritDoc} */
-    public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
-        throws OrekitException {
-        return normalized.getNormalizedSnm(dateOffset, n, m) * factors[n][m];
+            @Override
+            public AbsoluteDate getDate() {
+                return date;
+            }
+
+            /** {@inheritDoc} */
+            public double getUnnormalizedCnm(final int n, final int m) throws OrekitException {
+                return harmonics.getNormalizedCnm(n, m) * factors[n][m];
+            }
+
+            /** {@inheritDoc} */
+            public double getUnnormalizedSnm(final int n, final int m) throws OrekitException {
+                return harmonics.getNormalizedSnm(n, m) * factors[n][m];
+            }
+
+        };
     }
 
 }

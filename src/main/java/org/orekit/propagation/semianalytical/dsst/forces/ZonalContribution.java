@@ -21,6 +21,7 @@ import java.util.TreeMap;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -150,7 +151,7 @@ class ZonalContribution implements DSSTForceModel {
         } else {
             // Initializes specific parameters.
             initializeStep(aux);
-            final double dateOffset = provider.getOffset(aux.getDate());
+            final UnnormalizedSphericalHarmonics harmonics = provider.onDate(aux.getDate());
 
             // Utilities for truncation
             final double ax2or = 2. * a / provider.getAe();
@@ -181,8 +182,8 @@ class ZonalContribution implements DSSTForceModel {
                 // Loop over m
                 do {
                     // Compute magnitude of current spherical harmonic coefficient.
-                    final double cnm = provider.getUnnormalizedCnm(dateOffset, n, m);
-                    final double snm = provider.getUnnormalizedSnm(dateOffset, n, m);
+                    final double cnm = harmonics.getUnnormalizedCnm(n, m);
+                    final double snm = harmonics.getUnnormalizedSnm(n, m);
                     final double csnm = FastMath.hypot(cnm, snm);
                     if (csnm == 0.) break;
                     // Set magnitude of last spherical harmonic term.
@@ -337,7 +338,7 @@ class ZonalContribution implements DSSTForceModel {
      */
     private double[] computeUDerivatives(final AbsoluteDate date) throws OrekitException {
 
-        final double dateOffset = provider.getOffset(date);
+        final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
         // Hansen coefficients
         final HansenZonal hansen = new HansenZonal();
@@ -392,7 +393,7 @@ class ZonalContribution implements DSSTForceModel {
                     final double kns   = hansen.getValue(-n - 1, s);
                     final double dkns  = hansen.getDerivative(-n - 1, s);
                     final double vns   = Vns.get(new NSKey(n, s));
-                    final double coef0 = d0s * roaPow[n] * vns * -provider.getUnnormalizedCnm(dateOffset, n, 0);
+                    final double coef0 = d0s * roaPow[n] * vns * -harmonics.getUnnormalizedCnm(n, 0);
                     final double coef1 = coef0 * Qns[n][s];
                     final double coef2 = coef1 * kns;
                     // dQns/dGamma = Q(n, s + 1) from Equation 3.1-(8)
