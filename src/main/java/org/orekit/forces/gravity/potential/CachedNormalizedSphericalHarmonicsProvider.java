@@ -120,6 +120,21 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
         return rawProvider.getTideSystem();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double getNormalizedCnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedCnm(n, m);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getNormalizedSnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedSnm(n, m);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws
             TimeStampedCacheException {

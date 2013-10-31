@@ -41,56 +41,81 @@ class WrappingNormalizedProvider implements NormalizedSphericalHarmonicsProvider
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getMaxDegree() {
         return rawProvider.getMaxDegree();
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getMaxOrder() {
         return rawProvider.getMaxOrder();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getMu() {
         return rawProvider.getMu();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getAe() {
         return rawProvider.getAe();
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getReferenceDate() {
         return rawProvider.getReferenceDate();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getOffset(final AbsoluteDate date) {
         return rawProvider.getOffset(date);
     }
 
     /** {@inheritDoc} */
+    @Override
     public TideSystem getTideSystem() {
         return rawProvider.getTideSystem();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getNormalizedCnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedCnm(n, m);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getNormalizedSnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedSnm(n, m);
     }
 
     @Override
     public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
         final RawSphericalHarmonics raw = rawProvider.onDate(date);
         return new NormalizedSphericalHarmonics() {
+
+            /** {@inheritDoc} */
             @Override
             public AbsoluteDate getDate() {
                 return date;
             }
 
             /** {@inheritDoc} */
+            @Override
             public double getNormalizedCnm(final int n, final int m) throws OrekitException {
                 // no conversion is done here
                 return raw.getRawCnm(n, m);
             }
 
             /** {@inheritDoc} */
+            @Override
             public double getNormalizedSnm(final int n, final int m) throws OrekitException {
                 // no conversion is done here
                 return raw.getRawSnm(n, m);

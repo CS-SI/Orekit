@@ -51,6 +51,7 @@ import org.orekit.utils.LoveNumbers;
  * </p>
  * @see SolidTides
  * @author Luc Maisonobe
+ * @since 6.1
  */
 class TidesField implements NormalizedSphericalHarmonicsProvider {
 
@@ -183,6 +184,21 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
         return TideSystem.ZERO_TIDE;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double getNormalizedCnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedCnm(n, m);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getNormalizedSnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedSnm(n, m);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
         return computeHarmonics(date);
@@ -425,6 +441,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
             this.snm = snm;
         }
 
+        /** {@inheritDoc} */
         @Override
         public AbsoluteDate getDate() {
             return date;

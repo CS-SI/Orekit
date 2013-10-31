@@ -31,6 +31,7 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
      * The normalized geopotential coefficients at a specific instance in time.
      * @see NormalizedSphericalHarmonicsProvider
      * @see NormalizedSphericalHarmonicsProvider#onDate(AbsoluteDate)
+     * @since 6.1
      */
     interface NormalizedSphericalHarmonics extends TimeStamped {
 
@@ -60,7 +61,34 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
      * @param date of evaluation
      * @return normalized coefficients on {@code date}.
      * @throws OrekitException on error
+     * @since 6.1
      */
     NormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
+
+    /** Get a spherical harmonic cosine coefficient.
+     * @param dateOffset date offset since reference date (s)
+     * @param n degree of the coefficient
+     * @param m order of the coefficient
+     * @return normalized coefficient Cnm
+     * @exception OrekitException if the requested maximal degree or order exceeds the
+     * available degree or order
+     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
+     */
+    @Deprecated
+    double getNormalizedCnm(double dateOffset, int n, int m)
+        throws OrekitException;
+
+    /** Get a spherical harmonic sine coefficient.
+     * @param dateOffset date offset since reference date (s)
+     * @param n degree of the coefficient
+     * @param m order of the coefficient
+     * @return normalized coefficient Snm
+     * @exception OrekitException if the requested maximal degree or order exceeds the
+     * available degree or order
+     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
+     */
+    @Deprecated
+    double getNormalizedSnm(double dateOffset, int n, int m)
+        throws OrekitException;
 
 }

@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 
 import org.apache.commons.math3.dfp.Dfp;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractIntegrator;
@@ -297,6 +298,16 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
 
         public TideSystem getTideSystem() {
             return TideSystem.UNKNOWN;
+        }
+
+        public double getNormalizedCnm(final double dateOffset, final int n, final int m) {
+            throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
+                                                              "this deprecated metho should never be called");
+        }
+
+        public double getNormalizedSnm(final double dateOffset, final int n, final int m) {
+            throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
+                                                              "this deprecated metho should never be called");
         }
 
         @Override

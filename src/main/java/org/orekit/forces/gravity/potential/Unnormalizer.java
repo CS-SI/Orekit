@@ -45,56 +45,81 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getMaxDegree() {
         return normalized.getMaxDegree();
     }
 
     /** {@inheritDoc} */
+    @Override
     public int getMaxOrder() {
         return normalized.getMaxOrder();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getMu() {
         return normalized.getMu();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getAe() {
         return normalized.getAe();
     }
 
     /** {@inheritDoc} */
+    @Override
     public AbsoluteDate getReferenceDate() {
         return normalized.getReferenceDate();
     }
 
     /** {@inheritDoc} */
+    @Override
     public double getOffset(final AbsoluteDate date) {
         return normalized.getOffset(date);
     }
 
     /** {@inheritDoc} */
+    @Override
     public TideSystem getTideSystem() {
         return normalized.getTideSystem();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedCnm(n, m);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
+        throws OrekitException {
+        return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedSnm(n, m);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public UnnormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
         final NormalizedSphericalHarmonics harmonics = normalized.onDate(date);
         return new UnnormalizedSphericalHarmonics() {
 
+            /** {@inheritDoc} */
             @Override
             public AbsoluteDate getDate() {
                 return date;
             }
 
             /** {@inheritDoc} */
+            @Override
             public double getUnnormalizedCnm(final int n, final int m) throws OrekitException {
                 return harmonics.getNormalizedCnm(n, m) * factors[n][m];
             }
 
             /** {@inheritDoc} */
+            @Override
             public double getUnnormalizedSnm(final int n, final int m) throws OrekitException {
                 return harmonics.getNormalizedSnm(n, m) * factors[n][m];
             }

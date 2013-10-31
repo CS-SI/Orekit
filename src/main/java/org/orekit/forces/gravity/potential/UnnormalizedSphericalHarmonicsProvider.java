@@ -37,6 +37,7 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
     /**
      * Un-normalized spherical harmonics coefficients evaluated at a specific instant.
      * @see #onDate(AbsoluteDate)
+     * @since 6.1
      */
     interface UnnormalizedSphericalHarmonics extends TimeStamped {
 
@@ -69,7 +70,34 @@ public interface UnnormalizedSphericalHarmonicsProvider extends SphericalHarmoni
      * @param date of evaluation
      * @return un-normalized coefficients on {@code date}.
      * @throws OrekitException on error
+     * @since 6.1
      */
     UnnormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
+
+    /** Get a spherical harmonic cosine coefficient.
+     * @param dateOffset date offset since reference date (s)
+     * @param n degree of the coefficient
+     * @param m order of the coefficient
+     * @return un-normalized coefficient Cnm
+     * @exception OrekitException if the requested maximal degree or order exceeds the
+     * available degree or order
+     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
+     */
+    @Deprecated
+    double getUnnormalizedCnm(double dateOffset, int n, int m)
+        throws OrekitException;
+
+    /** Get a spherical harmonic sine coefficient.
+     * @param dateOffset date offset since reference date (s)
+     * @param n degree of the coefficient
+     * @param m order of the coefficient
+     * @return un-normalized coefficient Snm
+     * @exception OrekitException if the requested maximal degree or order exceeds the
+     * available degree or order
+     * @deprecated as of 6.1, replaced with {@link #onDate(AbsoluteDate)}
+     */
+    @Deprecated
+    double getUnnormalizedSnm(double dateOffset, int n, int m)
+        throws OrekitException;
 
 }
