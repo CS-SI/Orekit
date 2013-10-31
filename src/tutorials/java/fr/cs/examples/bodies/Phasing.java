@@ -275,7 +275,8 @@ public class Phasing {
         throws OrekitException {
 
         double mu = gravityField.getMu();
-        double dateOffset = gravityField.getOffset(date);
+        NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics harmonics =
+                gravityField.onDate(date);
 
         // initial semi major axis guess based on Keplerian period
         double period0 = (nbDays * Constants.JULIAN_DAY) / nbOrbits;
@@ -284,8 +285,8 @@ public class Phasing {
 
         // initial inclination guess based on ascending node drift due to J2
         double[][] unnormalization = GravityFieldFactory.getUnnormalizationFactors(3, 0);
-        double j2       = -unnormalization[2][0] * gravityField.getNormalizedCnm(dateOffset, 2, 0);
-        double j3       = -unnormalization[3][0] * gravityField.getNormalizedCnm(dateOffset, 3, 0);
+        double j2       = -unnormalization[2][0] * harmonics.getNormalizedCnm(2, 0);
+        double j3       = -unnormalization[3][0] * harmonics.getNormalizedCnm(3, 0);
         double raanRate = 2 * FastMath.PI / Constants.JULIAN_YEAR;
         double ae       = gravityField.getAe();
         double i0       = FastMath.acos(-raanRate * a0 * a0 / (1.5 * ae * ae * j2 * n0));
@@ -462,14 +463,15 @@ public class Phasing {
         propagator.resetInitialState(new SpacecraftState(previous));
         AbsoluteDate start = previous.getDate();
 
+        NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics harmonics =
+                gravityField.onDate(previous.getDate());
         double[][] unnormalization = GravityFieldFactory.getUnnormalizationFactors(2, 0);
         double a    = previous.getA();
         double sinI = FastMath.sin(previous.getI());
         double aeOa = gravityField.getAe() / a;
         double mu   = gravityField.getMu();
         double n    = FastMath.sqrt(mu / a) / a;
-        double j2   = -unnormalization[2][0] * gravityField.getNormalizedCnm(gravityField.getOffset(previous.getDate()),
-                                                                             2, 0);
+        double j2   = -unnormalization[2][0] * harmonics.getNormalizedCnm(2, 0);
         double frozenPulsation = 3 * n * j2 * aeOa * aeOa * (1 - 1.25 * sinI * sinI);
 
         // fit the eccentricity to an harmonic model with short and medium periods
