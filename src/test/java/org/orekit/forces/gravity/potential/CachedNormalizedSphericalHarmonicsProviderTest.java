@@ -117,13 +117,13 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         @Override
         public double getNormalizedCnm(final double dateOffset, final int n, final int m) {
             throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
-                                                              "this deprecated metho should never be called");
+                                                              "this deprecated method should never be called");
         }
 
         @Override
         public double getNormalizedSnm(final double dateOffset, final int n, final int m) {
             throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
-                                                              "this deprecated metho should never be called");
+                                                              "this deprecated method should never be called");
         }
 
     }
