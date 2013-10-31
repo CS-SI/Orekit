@@ -38,7 +38,7 @@ import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 
 /** Solid tides force model.
- *
+ * @since 6.1
  * @author Luc Maisonobe
  */
 public class SolidTides extends AbstractParameterizable implements ForceModel {
