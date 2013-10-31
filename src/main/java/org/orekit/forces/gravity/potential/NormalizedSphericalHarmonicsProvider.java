@@ -66,6 +66,12 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
     NormalizedSphericalHarmonics onDate(AbsoluteDate date) throws OrekitException;
 
     /** Get a spherical harmonic cosine coefficient.
+     * <p>
+     * Note that this method is deprecated and will be removed in the future.
+     * The implementation provided by Orekit for compatibility reason is
+     * expected to be slower than it was in version 6.0. Users are advised to
+     * switch to the new API (see {@link #onDate(AbsoluteDate)}).
+     * </p>
      * @param dateOffset date offset since reference date (s)
      * @param n degree of the coefficient
      * @param m order of the coefficient
@@ -79,6 +85,12 @@ public interface NormalizedSphericalHarmonicsProvider extends SphericalHarmonics
         throws OrekitException;
 
     /** Get a spherical harmonic sine coefficient.
+     * <p>
+     * Note that this method is deprecated and will be removed in the future.
+     * The implementation provided by Orekit for compatibility reason is
+     * expected to be slower than it was in version 6.0. Users are advised to
+     * switch to the new API (see {@link #onDate(AbsoluteDate)}).
+     * </p>
      * @param dateOffset date offset since reference date (s)
      * @param n degree of the coefficient
      * @param m order of the coefficient
