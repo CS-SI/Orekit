@@ -60,7 +60,7 @@ import org.orekit.utils.Constants;
  *     periods should appear in the file,
  *   </li>
  *   <li>
- *     only one occurrence of the each coefficient may appear in the file, otherwise
+ *     only one occurrence of each coefficient may appear in the file, otherwise
  *     an error will be triggered during parsing. Multiple occurrences with different
  *     time stamps are forbidden (both because they correspond to a duplicated entry
  *     and because they define two different reference dates as per previous design
