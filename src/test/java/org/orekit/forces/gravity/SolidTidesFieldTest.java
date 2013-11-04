@@ -52,14 +52,14 @@ import org.orekit.utils.LoveNumbers;
 import org.orekit.utils.OrekitConfiguration;
 
 
-public class TidesFieldTest {
+public class SolidTidesFieldTest {
 
     @Test
     public void testConventions2003() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
-        TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2003.getLoveNumbers(),
+        SolidTidesField tidesField =
+                new SolidTidesField(IERSConventions.IERS_2003.getLoveNumbers(),
                                IERSConventions.IERS_2003.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2003.getPermanentTide(),
                                IERSConventions.IERS_2003.getSolidPoleTide(ut1.getEopHistory()),
@@ -101,8 +101,8 @@ public class TidesFieldTest {
     public void testConventions2010() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
+        SolidTidesField tidesField =
+                new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2010.getPermanentTide(),
                                IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
@@ -168,7 +168,7 @@ public class TidesFieldTest {
             }
         };
 
-        TidesField tf = new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
+        SolidTidesField tf = new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                        deltaCSFunction,
                                        IERSConventions.IERS_2010.getPermanentTide(),
                                        IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
@@ -178,7 +178,7 @@ public class TidesFieldTest {
                                        TideSystem.ZERO_TIDE,
                                        CelestialBodyFactory.getSun(),
                                        CelestialBodyFactory.getMoon());
-        Method frequencyDependentPart = TidesField.class.getDeclaredMethod("frequencyDependentPart", AbsoluteDate.class, double[][].class, double[][].class);
+        Method frequencyDependentPart = SolidTidesField.class.getDeclaredMethod("frequencyDependentPart", AbsoluteDate.class, double[][].class, double[][].class);
         frequencyDependentPart.setAccessible(true);
         double[][] cachedCNM = new double[5][5];
         double[][] cachedSNM = new double[5][5];
@@ -208,8 +208,8 @@ public class TidesFieldTest {
         TimeScale utc = TimeScalesFactory.getUTC();
 
         AbsoluteDate date = new AbsoluteDate(2003, 5, 6, 13, 43, 32.125, utc);
-        TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
+        SolidTidesField tidesField =
+                new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2010.getPermanentTide(),
                                null,
@@ -259,7 +259,7 @@ public class TidesFieldTest {
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(5, 5);
 
-        TidesField raw = new TidesField(conventions.getLoveNumbers(),
+        SolidTidesField raw = new SolidTidesField(conventions.getLoveNumbers(),
                                         conventions.getTideFrequencyDependenceFunction(ut1),
                                         conventions.getPermanentTide(),
                                         conventions.getSolidPoleTide(ut1.getEopHistory()),
@@ -280,20 +280,21 @@ public class TidesFieldTest {
         AbsoluteDate end   = start.shiftedBy(3 * Constants.JULIAN_DAY);
         SummaryStatistics stat = new SummaryStatistics();
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
-            NormalizedSphericalHarmonics harmonics = raw.onDate(date);
+            NormalizedSphericalHarmonics rawHarmonics = raw.onDate(date);
+            NormalizedSphericalHarmonics interpolatedHarmonics = interpolated.onDate(date);
 
             for (int n = 2; n < 5; ++n) {
                 for (int m = 0; m <= n; ++m) {
 
                     if (n < 4 || m < 3) {
-                        double cnmRaw    = harmonics.getNormalizedCnm(n, m);
-                        double cnmInterp = harmonics.getNormalizedCnm(n, m);
+                        double cnmRaw    = rawHarmonics.getNormalizedCnm(n, m);
+                        double cnmInterp = interpolatedHarmonics.getNormalizedCnm(n, m);
                         double errorC = (cnmInterp - cnmRaw) / FastMath.abs(cnmRaw);
                         stat.addValue(errorC);
 
                         if (m > 0) {
-                            double snmRaw    = harmonics.getNormalizedSnm(n, m);
-                            double snmInterp = harmonics.getNormalizedSnm(n, m);
+                            double snmRaw    = rawHarmonics.getNormalizedSnm(n, m);
+                            double snmInterp = interpolatedHarmonics.getNormalizedSnm(n, m);
                             double errorS = (snmInterp - snmRaw) / FastMath.abs(snmRaw);
                             stat.addValue(errorS);
                         }

@@ -53,7 +53,7 @@ import org.orekit.utils.LoveNumbers;
  * @author Luc Maisonobe
  * @since 6.1
  */
-class TidesField implements NormalizedSphericalHarmonicsProvider {
+class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
 
     /** Maximum degree for normalized Legendre functions. */
     private static final int MAX_LEGENDRE_DEGREE = 4;
@@ -107,7 +107,7 @@ class TidesField implements NormalizedSphericalHarmonicsProvider {
      * @exception OrekitException if the Love numbers embedded in the
      * library cannot be read
      */
-    public TidesField(final LoveNumbers love, final TimeFunction<double []> deltaCSFunction,
+    public SolidTidesField(final LoveNumbers love, final TimeFunction<double []> deltaCSFunction,
                       final double deltaC20PermanentTide, final TimeFunction<double []> poleTideFunction,
                       final Frame centralBodyFrame, final double ae, final double mu,
                       final TideSystem centralTideSystem, final CelestialBody ... bodies)

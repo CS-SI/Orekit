@@ -100,8 +100,8 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
                       final IERSConventions conventions, final UT1Scale ut1,
                       final CelestialBody ... bodies)
         throws OrekitException {
-        final TidesField raw =
-                new TidesField(conventions.getLoveNumbers(),
+        final SolidTidesField raw =
+                new SolidTidesField(conventions.getLoveNumbers(),
                                conventions.getTideFrequencyDependenceFunction(ut1),
                                conventions.getPermanentTide(),
                                poleTide ? conventions.getSolidPoleTide(ut1.getEopHistory()) : null,
