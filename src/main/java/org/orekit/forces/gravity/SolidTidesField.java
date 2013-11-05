@@ -27,7 +27,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.utils.LoveNumbers;
 
-/** Gravity field corresponding to tides.
+/** Gravity field corresponding to solid tides.
  * <p>
  * This solid tides force model implementation corresponds to the method described
  * in <a href="http://www.iers.org/nn_11216/IERS/EN/Publications/TechnicalNotes/tn36.html">
@@ -104,14 +104,11 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
      * @param mu central body attraction coefficient
      * @param centralTideSystem tide system used in the central attraction model
      * @param bodies tide generating bodies (typically Sun and Moon)
-     * @exception OrekitException if the Love numbers embedded in the
-     * library cannot be read
      */
     public SolidTidesField(final LoveNumbers love, final TimeFunction<double []> deltaCSFunction,
-                      final double deltaC20PermanentTide, final TimeFunction<double []> poleTideFunction,
-                      final Frame centralBodyFrame, final double ae, final double mu,
-                      final TideSystem centralTideSystem, final CelestialBody ... bodies)
-        throws OrekitException {
+                           final double deltaC20PermanentTide, final TimeFunction<double []> poleTideFunction,
+                           final Frame centralBodyFrame, final double ae, final double mu,
+                           final TideSystem centralTideSystem, final CelestialBody ... bodies) {
 
         // store mode parameters
         this.centralBodyFrame  = centralBodyFrame;
