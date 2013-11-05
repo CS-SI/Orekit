@@ -745,10 +745,10 @@ class TesseralContribution implements DSSTForceModel {
             final int a = FastMath.max(j - s, 0);
             final int b = FastMath.max(s - j, 0);
             // Expansion until maxNewcomb-1, the maximum power in e^2 for the Kernel derivative
-            double sum = newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
+            double sum = maxNewcomb * newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
             for (int alpha = maxNewcomb - 1; alpha >= 1; alpha--) {
                 sum *= e2;
-                sum += newcomb.getValue(alpha + a, alpha + b, mnm1, s);
+                sum += alpha * newcomb.getValue(alpha + a, alpha + b, mnm1, s);
             }
             // Kernel derivative from equation 3.3-(5)
             final MNSKey key  = new MNSKey(j, mnm1, s);
