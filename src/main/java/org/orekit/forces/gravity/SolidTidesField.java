@@ -198,20 +198,12 @@ class SolidTidesField implements NormalizedSphericalHarmonicsProvider {
     /** {@inheritDoc} */
     @Override
     public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
-        return computeHarmonics(date);
-    }
 
-    /** Evaluate the tidal geopotential on a specific date.
-     * @param date of evaluation
-     * @exception OrekitException if coefficients cannot be computed
-     * @return the tidal spherical harmonics
-     */
-    private TideHarmonics computeHarmonics(final AbsoluteDate date) throws OrekitException {
-
-        //computed Cnm and Snm coefficients
+        // computed Cnm and Snm coefficients
         final double[][] cnm = buildTriangularArray(5, true);
         final double[][] snm = buildTriangularArray(5, true);
-        //work array to hold Legendre coefficients
+
+        // work array to hold Legendre coefficients
         final double[][] pnm = buildTriangularArray(5, true);
 
         // step 1: frequency independent part
