@@ -21,6 +21,11 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Lucian Barbulescu">
+        Fixed conversion from position-velocity to Keplerian, when the orbit is
+        perfectly equatorial.
+        Fixes issue #151.
+      </action>
       <action dev="luc" type="add">
         Added a new force model for solid tides in numerical propagation, including pole tides.
       </action>
