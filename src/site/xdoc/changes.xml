@@ -21,6 +21,20 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added a new force model for ocean tides in numerical propagation, including pole tides.
+        WARNING: as of 2013-11-17, there seem to be an inconsistency when loading
+        the two IERS files "fes2004_Cnm-Snm.dat" or "fes2004dat". The inconsistency appears for
+        wave Sa (Doodson number 56.554) and P1 (Doodson number 163.555) : the sign of the
+        coefficients after reading and conversion are different. We think the problem lies in
+        the input files from IERS and not in the conversion (which works for all other waves),
+        but cannot be sure. There also seem to be a magnitude error in file "fes2004_Cnm-Snm.dat",
+        which seems to use units of 10^-11 instead of 10^-12 as claimed in the file header. As this
+        file is declared to have been computed from the other file, it seems safer to use "fes2004dat"
+        (and to restrict to degree and order 6 as the k'i are not published by IERS for larger degrees).
+        For these reasons, ocean tides are still considered experimental at this date.
+        Fixes issue #11.
+      </action>
       <action dev="luc" type="fix" due-to="Lucian Barbulescu">
         Fixed conversion from position-velocity to Keplerian, when the orbit is
         perfectly equatorial.
@@ -28,6 +42,7 @@
       </action>
       <action dev="luc" type="add">
         Added a new force model for solid tides in numerical propagation, including pole tides.
+        Fixes issue #10.
       </action>
       <action dev="luc" type="add">
         Added a way to select IERS conventions for non-rotating origin

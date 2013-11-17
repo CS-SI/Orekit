@@ -67,6 +67,7 @@ public class Utils {
             TimeScalesFactory.clearUTCTAILoaders();
             Utils.clearJPLEphemeridesConstants();
             GravityFieldFactory.clearPotentialCoefficientsReaders();
+            GravityFieldFactory.clearOceanTidesReaders();
             DataProvidersManager.getInstance().clearProviders();
             DataProvidersManager.getInstance().clearLoadedDataNames();
             StringBuffer buffer = new StringBuffer();

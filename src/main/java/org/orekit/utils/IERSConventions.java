@@ -89,7 +89,7 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
+        public FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
             throws OrekitException {
             return new FundamentalNutationArguments(this, gmstFunction,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
@@ -536,6 +536,32 @@ public enum IERSConventions {
             };
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getOceanPoleTide(final EOPHistory eopHistory)
+            throws OrekitException {
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+                    // there are no model for ocean pole tide prior to conventions 2010
+                    return new double[] {
+                        0.0, 0.0
+                    };
+                }
+            };
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] getOceanLoadDeformationCoefficients() {
+            return new double[] {
+                // IERS conventions 1996, chapter 6 page 48
+                0.0, 0.0, -0.3075, -0.195, -0.132, -0.1032, -0.0892
+            };
+        }
+
     },
 
     /** Constant for IERS 2003 conventions. */
@@ -584,7 +610,7 @@ public enum IERSConventions {
         private static final String ANNUAL_POLE = IERS_BASE + "2003/annual.pole";
 
         /** {@inheritDoc} */
-        protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
+        public FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
             throws OrekitException {
             return new FundamentalNutationArguments(this, gmstFunction,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
@@ -1100,6 +1126,32 @@ public enum IERSConventions {
 
         }
 
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getOceanPoleTide(final EOPHistory eopHistory)
+            throws OrekitException {
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+                    // there are no model for ocean pole tide prior to conventions 2010
+                    return new double[] {
+                        0.0, 0.0
+                    };
+                }
+            };
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] getOceanLoadDeformationCoefficients() {
+            return new double[] {
+                // IERS conventions 2003, section 6.4 page 67 equation 13
+                0.0, 0.0, -0.3075, -0.195, -0.132, -0.1032, -0.0892
+            };
+        }
+
     },
 
     /** Constant for IERS 2010 conventions. */
@@ -1145,7 +1197,7 @@ public enum IERSConventions {
         private static final String K22_FREQUENCY_DEPENDENCE = IERS_BASE + "2010/tab6.5c.txt";
 
         /** {@inheritDoc} */
-        protected FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
+        public FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
             throws OrekitException {
             return new FundamentalNutationArguments(this, gmstFunction,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
@@ -1284,29 +1336,63 @@ public enum IERSConventions {
             return 4.4228e-8 * -0.31460 * getLoveNumbers().getReal(2, 0);
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory)
-            throws OrekitException {
+        /** Compute pole wobble variables m₁ and m₂.
+         * @param date current date
+         * @param eopHistory EOP history
+         * @return array containing m₁ and m₂
+         */
+        private double[] computePoleWobble(final AbsoluteDate date, final EOPHistory eopHistory) {
 
             // polynomial model from IERS 2010, table 7.7
             final double f0 = Constants.ARC_SECONDS_TO_RADIANS / 1000.0;
             final double f1 = f0 / Constants.JULIAN_YEAR;
             final double f2 = f1 / Constants.JULIAN_YEAR;
             final double f3 = f2 / Constants.JULIAN_YEAR;
-            final AbsoluteDate changeDate = new AbsoluteDate(2010, 1, 1, TimeScalesFactory.getUTC());
-            final double[] xBefore2010 = new double[] {
-                55.974 * f0, 1.8243 * f1, 0.18413 * f2, 0.007024 * f3
+            final AbsoluteDate changeDate = new AbsoluteDate(2010, 1, 1, TimeScalesFactory.getTT());
+
+            // evaluate mean pole
+            final double[] xPolynomial;
+            final double[] yPolynomial;
+            if (date.compareTo(changeDate) <= 0) {
+                xPolynomial = new double[] {
+                    55.974 * f0, 1.8243 * f1, 0.18413 * f2, 0.007024 * f3
+                };
+                yPolynomial = new double[] {
+                    346.346 * f0, 1.7896 * f1, -0.10729 * f2, -0.000908 * f3
+                };
+            } else {
+                xPolynomial = new double[] {
+                    23.513 * f0, 7.6141 * f1
+                };
+                yPolynomial = new double[] {
+                    358.891 * f0,  -0.6287 * f1
+                };
+            }
+            double meanPoleX = 0;
+            double meanPoleY = 0;
+            final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
+            for (int i = xPolynomial.length - 1; i >= 0; --i) {
+                meanPoleX = meanPoleX * t + xPolynomial[i];
+            }
+            for (int i = yPolynomial.length - 1; i >= 0; --i) {
+                meanPoleY = meanPoleY * t + yPolynomial[i];
+            }
+
+            // evaluate wobble variables
+            final PoleCorrection correction = eopHistory.getPoleCorrection(date);
+            final double m1 = correction.getXp() - meanPoleX;
+            final double m2 = meanPoleY - correction.getYp();
+
+            return new double[] {
+                m1, m2
             };
-            final double[] yBefore2010 = new double[] {
-                346.346 * f0, 1.7896 * f1, -0.10729 * f2, -0.000908 * f3
-            };
-            final double[] xAfter2010 = new double[] {
-                23.513 * f0, 7.6141 * f1
-            };
-            final double[] yAfter2010 = new double[] {
-                358.891 * f0,  -0.6287 * f1
-            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getSolidPoleTide(final EOPHistory eopHistory)
+            throws OrekitException {
 
             // constants from IERS 2010, section 6.4
             final double globalFactor = -1.333e-9 / Constants.ARC_SECONDS_TO_RADIANS;
@@ -1317,30 +1403,8 @@ public enum IERSConventions {
                 @Override
                 public double[] value(final AbsoluteDate date) {
 
-                    // evaluate mean pole
-                    final double[] xPolynomial;
-                    final double[] yPolynomial;
-                    if (date.compareTo(changeDate) <= 0) {
-                        xPolynomial = xBefore2010;
-                        yPolynomial = yBefore2010;
-                    } else {
-                        xPolynomial = xAfter2010;
-                        yPolynomial = yAfter2010;
-                    }
-                    double meanPoleX = 0;
-                    double meanPoleY = 0;
-                    final double t = date.durationFrom(AbsoluteDate.J2000_EPOCH);
-                    for (int i = xPolynomial.length - 1; i >= 0; --i) {
-                        meanPoleX = meanPoleX * t + xPolynomial[i];
-                    }
-                    for (int i = yPolynomial.length - 1; i >= 0; --i) {
-                        meanPoleY = meanPoleY * t + yPolynomial[i];
-                    }
-
                     // evaluate wobble variables
-                    final PoleCorrection correction = eopHistory.getPoleCorrection(date);
-                    final double m1 = correction.getXp() - meanPoleX;
-                    final double m2 = meanPoleY - correction.getYp();
+                    final double[] wobbleM = computePoleWobble(date, eopHistory);
 
                     return new double[] {
                         // the following correspond to the equations published in IERS 2010 conventions,
@@ -1351,13 +1415,49 @@ public enum IERSConventions {
                         // conventions section 6.2 page 65. In this older publication, the equations read:
                         // ∆C₂₁ = −1.333 × 10⁻⁹ (m₁ − 0.0115m₂)
                         // ∆S₂₁ = −1.333 × 10⁻⁹ (m₂ + 0.0115m₁)
-                        globalFactor * (m1 + ratio * m2),
-                        globalFactor * (m2 - ratio * m1),
+                        globalFactor * (wobbleM[0] + ratio * wobbleM[1]),
+                        globalFactor * (wobbleM[1] - ratio * wobbleM[0])
                     };
 
                 }
             };
 
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public TimeFunction<double[]> getOceanPoleTide(final EOPHistory eopHistory)
+            throws OrekitException {
+
+            return new TimeFunction<double[]>() {
+                /** {@inheritDoc} */
+                @Override
+                public double[] value(final AbsoluteDate date) {
+
+                    // evaluate wobble variables
+                    final double[] wobbleM = computePoleWobble(date, eopHistory);
+
+                    return new double[] {
+                        // the following correspond to the equations published in IERS 2010 conventions,
+                        // section 6.4 page 94 equation 6.24:
+                        // ∆C₂₁ = −2.1778 × 10⁻¹⁰ (m₁ − 0.01724m₂)
+                        // ∆S₂₁ = −1.7232 × 10⁻¹⁰ (m₂ − 0.03365m₁)
+                        -2.1778e-10 * (wobbleM[0] - 0.01724 * wobbleM[1]) / Constants.ARC_SECONDS_TO_RADIANS,
+                        -1.7232e-10 * (wobbleM[1] - 0.03365 * wobbleM[0]) / Constants.ARC_SECONDS_TO_RADIANS
+                    };
+
+                }
+            };
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public double[] getOceanLoadDeformationCoefficients() {
+            return new double[] {
+                // IERS conventions 2010, section 6.3.1 page 91
+                0.0, 0.0, -0.3075, -0.195, -0.132, -0.1032, -0.0892
+            };
         }
 
         /** {@inheritDoc} */
@@ -1617,7 +1717,7 @@ public enum IERSConventions {
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      * @since 6.1
      */
-    protected abstract FundamentalNutationArguments getNutationArguments(TimeFunction<DerivativeStructure> gmstFunction)
+    public abstract FundamentalNutationArguments getNutationArguments(TimeFunction<DerivativeStructure> gmstFunction)
         throws OrekitException;
 
     /** Get the function computing mean obliquity of the ecliptic.
@@ -1746,6 +1846,20 @@ public enum IERSConventions {
      */
     public abstract TimeFunction<double[]> getSolidPoleTide(EOPHistory eopHistory)
         throws OrekitException;
+
+    /** Get the function computing ocean pole tide (ΔC₂₁, ΔS₂₁).
+     * @param eopHistory EOP history
+     * @return model for ocean pole tide (ΔC₂₀, ΔC₂₁, ΔS₂₁, ΔC₂₂, ΔS₂₂).
+     * @exception OrekitException if table cannot be loaded
+     * @since 6.1
+     */
+    public abstract TimeFunction<double[]> getOceanPoleTide(EOPHistory eopHistory)
+        throws OrekitException;
+
+    /** Get the load deformation coefficients for ocean tides.
+     * @return load deformation coefficients for ocean tides
+     */
+    public abstract double [] getOceanLoadDeformationCoefficients();
 
     /** Interface for functions converting nutation corrections between
      * &delta;&Delta;&psi;/&delta;&Delta;&epsilon; to &delta;X/&delta;Y.

@@ -103,6 +103,12 @@ NO_GRAVITY_FIELD_DATA_LOADED = los datos del campo de gravedad no están cargado
 # gravity field normalization underflow for degree {0} and order {1}
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético en la normalización de un campo de gravedad para grado {0} y orden {1}
 
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = <MISSING TRANSLATION>
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = <MISSING TRANSLATION>
+
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = trayectoria polar (distancia al eje de los polos : {0})
 

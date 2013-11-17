@@ -82,6 +82,8 @@ public enum OrekitMessages implements Localizable {
     POSITIVE_FLOW_RATE("positive flow rate (q: {0})"),
     NO_GRAVITY_FIELD_DATA_LOADED("no gravity field data loaded"),
     GRAVITY_FIELD_NORMALIZATION_UNDERFLOW("gravity field normalization underflow for degree {0} and order {1}"),
+    NO_OCEAN_TIDE_DATA_LOADED("no ocean tide data loaded"),
+    OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS("ocean tide data file {0} limited to degree {1} and order {2}"),
     POLAR_TRAJECTORY("polar trajectory (distance to polar axis: {0})"),
     UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER("unexpected format error for file {0} with loader {1}"),
     DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE("duplicated gravity field coefficient {0}({1}, {2}) in file {3}"),
