@@ -1,0 +1,135 @@
+/* Copyright 2002-2013 CS Systèmes d'Information
+ * Licensed to CS Systèmes d'Information (CS) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * CS licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.orekit.propagation.events;
+
+import org.orekit.errors.OrekitException;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
+
+/** Builder reconfiguration API for detectors.
+ * <p>
+ * This class is only a temporary one introduced with Orekit 6.1 between the
+ * legacy {@link AbstractDetector} and all the Orekit provided detectors. It
+ * will be removed in 7.0, when all its methods will be pushed up in the
+ * hierarchy, with declarations at the {@link EventDetector} interface level
+ * and implementation at the {@link AbstractDetector} abstract class level.
+ * In other words, the methods will stay, but the intermediate class will
+ * disappear.
+ * </p>
+ * @author Luc Maisonobe
+ * @param <T> class type for the generic version
+ * @since 6.1
+ */
+public abstract class AbstractReconfigurableDetector<T extends EventDetector> extends AbstractDetector {
+
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131118L;
+
+    /** Default handler for event overrides. */
+    private final DetectorEventHandler<T> handler;
+
+    /** Build a new instance.
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     */
+    protected AbstractReconfigurableDetector(final double maxCheck, final double threshold,
+                                             final DetectorEventHandler<T> handler) {
+        super(maxCheck, threshold);
+        this.handler = handler;
+    }
+
+    /** Build a new instance.
+     * @param newMaxCheck maximum checking interval (s)
+     * @param newThreshold convergence threshold (s)
+     * @param newHandler event handler to call at event occurrences
+     * @return a new instance of the appropriate sub-type
+     */
+    protected abstract T create(final double newMaxCheck,
+                                final double newThreshold,
+                                final DetectorEventHandler<T> newHandler);
+
+    /**
+     * Setup the maximum checking interval.
+     * <p>
+     * This will override a maximum checking interval if it has been configured previously.
+     * </p>
+     * @param newMaxCheck maximum checking interval (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    public T withMaxCheck(final double newMaxCheck) {
+        return create(newMaxCheck, getThreshold(), handler);
+    }
+
+    /**
+     * Setup the convergence threshold.
+     * <p>
+     * This will override a convergence threshold if it has been configured previously.
+     * </p>
+     * @param newThreshold convergence threshold (s)
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    public T withThreshold(final double newThreshold) {
+        return create(getMaxCheckInterval(), newThreshold, handler);
+    }
+
+    /**
+     * Setup the event handler to call at event occurrences.
+     * <p>
+     * This will override a handler if it has been configured previously.
+     * </p>
+     * @param newHandler event handler to call at event occurrences
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    public T withHandler(final DetectorEventHandler<T> newHandler) {
+        return create(getMaxCheckInterval(), getThreshold(), newHandler);
+    }
+
+    /** Get the handler.
+     * @return event handler to call at event occurrences
+     */
+    public DetectorEventHandler<T> getHandler() {
+        return handler;
+    }
+
+    /** {@inheritDoc}
+     * @deprecated as of 6.1 replaced by {@link
+     * DetectorEventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)}
+     */
+    @Deprecated
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
+        throws OrekitException {
+        @SuppressWarnings("unchecked")
+        final T self = (T) this;
+        return handler.eventOccurred(s, self, increasing);
+    }
+
+    /** {@inheritDoc}
+     * @deprecated as of 6.1 replaced by {@link DetectorEventHandler#resetState(SpacecraftState)}
+     */
+    @Deprecated
+    public SpacecraftState resetState(final SpacecraftState oldState)
+        throws OrekitException {
+        @SuppressWarnings("unchecked")
+        final T self = (T) this;
+        return handler.resetState(self, oldState);
+    }
+
+}

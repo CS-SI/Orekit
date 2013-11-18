@@ -21,6 +21,17 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Added a DetectorEventHandler interface aimed at handling only the
+        event occurrence part in propagation. This allows to separate the
+        event detection itself (which is declared by the EventDetector interface)
+        from the action to perform once the event has been detected. This also
+        allows to avoid subclassing of events, which was cumbersome. It also allows
+        to share a single handler for several events.
+        The previous behavior with eventOccurred declared at detector level and
+        subclassing is still available but is deprecated and will be removed in
+        the next major release.
+      </action>
       <action dev="luc" type="fix" due-to="Christophe Le Bris">
         Fixed an indexing error in Harris-Priester model.
         Fixes issue #152.
