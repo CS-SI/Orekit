@@ -22,6 +22,12 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="add" due-to="Hank Grabowski">
+        Merged all elevation detectors into one. The new detector supports all
+        features from the previous (and now deprecated) ApparentElevationDetector
+        and GroundMaskElevationDetector.
+        Fixes issue #144.  
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
         Added a DetectorEventHandler interface aimed at handling only the
         event occurrence part in propagation. This allows to separate the
         event detection itself (which is declared by the EventDetector interface)
