@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" due-to="Christophe Le Bris">
+        Fixed an indexing error in Harris-Priester model.
+        Fixes issue #152.
+      </action>
       <action dev="luc" type="add">
         Added a new force model for ocean tides in numerical propagation, including pole tides.
         WARNING: as of 2013-11-17, there seem to be an inconsistency when loading

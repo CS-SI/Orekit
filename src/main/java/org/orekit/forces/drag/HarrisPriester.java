@@ -302,7 +302,7 @@ public class HarrisPriester implements Atmosphere {
 
         // Search altitude index in density table
         int ia = 0;
-        while (ia < tabAltRho.length - 2 && posAlt > tabAltRho[ia][0]) {
+        while (ia < tabAltRho.length - 2 && posAlt > tabAltRho[ia + 1][0]) {
             ia++;
         }
 

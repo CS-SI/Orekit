@@ -313,7 +313,7 @@ public class DSSTPropagatorTest {
         // p/hy =  0.8698955648709271
         // q/hx =  0.7757573478894775
         // lM   = 193°0939742953394
-        Assert.assertEquals(7204521.657141485, state.getA(), 5.e-1);
+        Assert.assertEquals(7204521.657141485, state.getA(), 6.e-1);
         Assert.assertEquals(-0.001016800430994036, state.getEquinoctialEx(), 5.e-8);
         Assert.assertEquals(0.0007093755541595772, state.getEquinoctialEy(), 2.e-8);
         Assert.assertEquals(0.7757573478894775, state.getHx(), 5.e-8);
