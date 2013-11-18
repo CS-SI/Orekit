@@ -28,6 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -188,7 +189,8 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
     /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return new EventDetector[] {
-            new FiringStartDetector(), new FiringStopDetector()
+            new DateDetector(startDate).withHandler(new FiringStartHandler()),
+            new DateDetector(endDate).withHandler(new FiringStopHandler())
         };
     }
 
@@ -213,42 +215,43 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
         }
     }
 
-    /** Detector for start of maneuver. */
-    private class FiringStartDetector extends DateDetector {
+    /** Handler for start of maneuver. */
+    private class FiringStartHandler implements DetectorEventHandler<DateDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -6518235379334993498L;
-
-        /** Build an instance. */
-        public FiringStartDetector() {
-            super(startDate);
+        /** {@inheritDoc} */
+        @Override
+        public EventDetector.Action eventOccurred(final SpacecraftState s,
+                                                  final DateDetector detector,
+                                                  final boolean increasing) {
+            // start the maneuver
+            firing = true;
+            return EventDetector.Action.RESET_DERIVATIVES;
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-            // start the maneuver
-            firing = true;
-            return Action.RESET_DERIVATIVES;
+        @Override
+        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState) {
+            return oldState;
         }
 
     }
 
-    /** Detector for end of maneuver. */
-    private class FiringStopDetector extends DateDetector {
+    /** Handler for end of maneuver. */
+    private class FiringStopHandler implements DetectorEventHandler<DateDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = -8037677613943782679L;
-
-        /** Build an instance. */
-        public FiringStopDetector() {
-            super(endDate);
+        /** {@inheritDoc} */
+        public EventDetector.Action eventOccurred(final SpacecraftState s,
+                                                  final DateDetector detector,
+                                                  final boolean increasing) {
+            // stop the maneuver
+            firing = false;
+            return EventDetector.Action.RESET_DERIVATIVES;
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-            // stop the maneuver
-            firing = false;
-            return Action.RESET_DERIVATIVES;
+        @Override
+        public SpacecraftState resetState(final DateDetector detector, final SpacecraftState oldState) {
+            return oldState;
         }
 
     }

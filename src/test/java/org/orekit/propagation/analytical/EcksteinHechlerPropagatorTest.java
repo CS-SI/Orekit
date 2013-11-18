@@ -55,6 +55,7 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -597,12 +598,8 @@ public class EcksteinHechlerPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
-        propagator.addEventDetector(new NodeDetector(orbit, FramesFactory.getITRF(IERSConventions.IERS_2010, true)) {
-            private static final long serialVersionUID = 8805264185199866748L;
-            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                return Action.CONTINUE;
-            }
-        });
+        Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new DetectorContinueOnEvent<NodeDetector>()));
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
@@ -673,8 +670,8 @@ public class EcksteinHechlerPropagatorTest {
             new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
-        ElevationDetector detector = new ElevationDetector(60, 1.0e-9, 0.09, topo);
-        Assert.assertEquals(0.09, detector.getElevation(), 1.0e-12);
+        ElevationDetector detector = new ElevationDetector(60, 1.0e-9, topo).withConstantValue(0.09);
+        Assert.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
         Assert.assertTrue(topo == detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
         AbsoluteDate farTarget = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
@@ -684,7 +681,7 @@ public class EcksteinHechlerPropagatorTest {
                                                    propagated.getDate());
         final double zVelocity = propagated.getPVCoordinates(topo).getVelocity().getZ();
         Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) > 7800.0);
-        Assert.assertTrue(farTarget.durationFrom(propagated.getDate()) < 7900.0);
+        Assert.assertTrue("Incorrect value " + farTarget.durationFrom(propagated.getDate()) + " !< 7900",farTarget.durationFrom(propagated.getDate()) < 7900.0);
         Assert.assertEquals(0.09, elevation, 1.0e-11);
         Assert.assertTrue(zVelocity < 0);
     }

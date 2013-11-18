@@ -19,49 +19,83 @@ package org.orekit.propagation.events;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
-/** Finder for target entry/exit events with respect to a satellite sensor field of view.
+/** Finder for target entry/exit events with respect to a satellite sensor Field Of View.
  * <p>This class handle fields of view with a circular boundary.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at fov entry and to
+ * EventDetector.Action#CONTINUE continue} propagation at FOV entry and to
  * {@link EventDetector.Action#STOP stop} propagation
- * at fov exit. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
- * derived class.</p>
+ * at FOV exit. This can be changed by calling
+ * {@link #withHandler(DetectorEventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see DihedralFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
  */
-public class CircularFieldOfViewDetector extends AbstractDetector {
+public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<CircularFieldOfViewDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4571340030201230951L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Position/velocity provider of the considered target. */
     private final PVCoordinatesProvider targetPVProvider;
 
-    /** Direction of the fov center. */
+    /** Direction of the FOV center. */
     private final Vector3D center;
 
-    /** Fov half aperture angle. */
+    /** FOV half aperture angle. */
     private final double halfAperture;
 
     /** Build a new instance.
-     * <p>The maximal interval between distance to fov boundary checks should
+     * <p>The maximal interval between distance to FOV boundary checks should
      * be smaller than the half duration of the minimal pass to handle,
      * otherwise some short passes could be missed.</p>
      * @param maxCheck maximal interval in seconds
      * @param pvTarget Position/velocity provider of the considered target
-     * @param center Direction of the fov center, in spacecraft frame
-     * @param halfAperture Fov half aperture angle
+     * @param center Direction of the FOV center, in spacecraft frame
+     * @param halfAperture FOV half aperture angle
      */
     public CircularFieldOfViewDetector(final double maxCheck,
             final PVCoordinatesProvider pvTarget, final Vector3D center, final double halfAperture) {
-        super(maxCheck, 1.0e-3);
+        this(maxCheck, 1.0e-3, new DetectorStopOnDecreasing<CircularFieldOfViewDetector>(),
+             pvTarget, center, halfAperture);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param pvTarget Position/velocity provider of the considered target
+     * @param center Direction of the FOV center, in spacecraft frame
+     * @param halfAperture FOV half aperture angle
+     * @since 6.1
+     */
+    private CircularFieldOfViewDetector(final double maxCheck,
+                                        final double threshold,
+                                        final DetectorEventHandler<CircularFieldOfViewDetector> handler,
+                                        final PVCoordinatesProvider pvTarget,
+                                        final Vector3D center,
+                                        final double halfAperture) {
+        super(maxCheck, threshold, handler);
         this.targetPVProvider = pvTarget;
-        this.center = center;
-        this.halfAperture = halfAperture;
+        this.center           = center;
+        this.halfAperture     = halfAperture;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected CircularFieldOfViewDetector create(final double newMaxCheck,
+                                                 final double newThreshold,
+                                                 final DetectorEventHandler<CircularFieldOfViewDetector> newHandler) {
+        return new CircularFieldOfViewDetector(newMaxCheck, newThreshold, newHandler,
+                                               targetPVProvider, center, halfAperture);
     }
 
     /** Get the position/velocity provider of the target .
@@ -71,43 +105,27 @@ public class CircularFieldOfViewDetector extends AbstractDetector {
         return targetPVProvider;
     }
 
-    /** Get the direction of fov center.
-     * @return the direction of fov center
+    /** Get the direction of FOV center.
+     * @return the direction of FOV center
      */
     public Vector3D getCenter() {
         return center;
     }
 
-    /** Get fov half aperture angle.
-     * @return the fov half aperture angle
+    /** Get FOV half aperture angle.
+     * @return the FOV half aperture angle
      */
     public double getHalfAperture() {
         return halfAperture;
     }
 
-    /** Handle an fov event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation at entry and to
-     * {@link EventDetector.Action#STOP stop} propagation at exit. This can
-     * be changed by overriding the {@link #eventOccurred(SpacecraftState, boolean)
-     * eventOccurred} method in a derived class.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event, i.e. target enters the fov (note that increase
-     * is measured with respect to physical time, not with respect to propagation which
-     * may go backward in time)
-     * @return one of {@link EventDetector.Action#STOP}, {@link EventDetector.Action#RESET_STATE},
-     * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.CONTINUE : Action.STOP;
-    }
-
     /** {@inheritDoc}
-     * g function value is the difference between fov half aperture and the absolute value of the angle between
-     * target direction and field of view center. It is positive inside the fov and negative outside. */
+     * <p>
+     * The g function value is the difference between FOV half aperture and the
+     * absolute value of the angle between target direction and field of view center.
+     * It is positive inside the FOV and negative outside.
+     * </p>
+     */
     public double g(final SpacecraftState s) throws OrekitException {
 
         // Compute target position/velocity at date in spacecraft frame */
@@ -115,9 +133,9 @@ public class CircularFieldOfViewDetector extends AbstractDetector {
                                            -1, s.getPVCoordinates().getPosition());
         final Vector3D targetPosSat = s.getAttitude().getRotation().applyTo(targetPosInert);
 
-        // Target is in the field of view if the absolute value that angle is smaller than fov half aperture.
-        // g function value is the difference between fov half aperture and the absolute value of the angle between
-        // target direction and field of view center. It is positive inside the fov and negative outside.
+        // Target is in the field of view if the absolute value that angle is smaller than FOV half aperture.
+        // g function value is the difference between FOV half aperture and the absolute value of the angle between
+        // target direction and field of view center. It is positive inside the FOV and negative outside.
         return halfAperture - Vector3D.angle(targetPosSat, center);
     }
 

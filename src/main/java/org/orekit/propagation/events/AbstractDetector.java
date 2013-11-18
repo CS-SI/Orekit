@@ -55,7 +55,12 @@ public abstract class AbstractDetector implements EventDetector {
         // do nothing by default
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.DetectorEventHandler#eventOccurred(SpacecraftState,
+     * EventDetector, boolean)}
+     */
+    @Deprecated
     public abstract Action eventOccurred(SpacecraftState s, boolean increasing)
         throws OrekitException;
 
@@ -77,7 +82,11 @@ public abstract class AbstractDetector implements EventDetector {
         return threshold;
     }
 
-    /** {@inheritDoc} */
+    /** {@inheritDoc}
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.DetectorEventHandler#resetState(SpacecraftState)}
+     */
+    @Deprecated
     public SpacecraftState resetState(final SpacecraftState oldState)
         throws OrekitException {
         return oldState;

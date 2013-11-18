@@ -759,6 +759,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 final SpacecraftState state = getCompleteState(t, y);
+                @SuppressWarnings("deprecation")
                 final EventDetector.Action whatNext = detector.eventOccurred(state, increasing);
 
                 switch (whatNext) {
@@ -780,6 +781,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void resetState(final double t, final double[] y) {
             try {
                 final SpacecraftState oldState = getCompleteState(t, y);
+                @SuppressWarnings("deprecation")
                 final SpacecraftState newState = detector.resetState(oldState);
 
                 // main part

@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.events;
 
+import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,6 +33,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -71,8 +73,10 @@ public class BackAndForthDetectorTest {
         final TopocentricFrame stationFrame = new TopocentricFrame(earth, stationPosition, "");
 
         // Detector
-        final VisibilityDetector visiDetector = new VisibilityDetector(Math.toRadians(10.), stationFrame);
-        propagator.addEventDetector(visiDetector);
+        final Visibility visi = new Visibility();
+        propagator.addEventDetector(new ElevationDetector(stationFrame).
+                                    withConstantValue(FastMath.toRadians(10.)).
+                                    withHandler(visi));
 
         // Forward propagation (AOS + LOS)
         propagator.propagate(date1);
@@ -81,28 +85,28 @@ public class BackAndForthDetectorTest {
         propagator.propagate(date1);
         propagator.propagate(date0);
 
-        Assert.assertEquals(4, visiDetector.getVisiNb());
+        Assert.assertEquals(4, visi.getVisiNb());
 
     }
 
-    private static class VisibilityDetector extends ElevationDetector {
-        private static final long serialVersionUID = 8739302131525333416L;
+    private static class Visibility implements DetectorEventHandler<ElevationDetector> {
         private int _visiNb;
 
-        public VisibilityDetector(double elevation, TopocentricFrame topo) {
-            super(elevation, topo);
+        public Visibility() {
             _visiNb = 0;
-        }
-
-        @Override
-        public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException
-        {
-            _visiNb++;
-            return Action.CONTINUE;
         }
 
         public int getVisiNb() {
             return _visiNb;
+        }
+
+        public EventDetector.Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
+            _visiNb++;
+            return EventDetector.Action.CONTINUE;
+        }
+
+        public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
+            return oldState;
         }
     }
 

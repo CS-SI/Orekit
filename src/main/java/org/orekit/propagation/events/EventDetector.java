@@ -137,7 +137,11 @@ public interface EventDetector extends Serializable {
      * @return one of {@link EventDetector.Action#STOP}, {@link EventDetector.Action#RESET_STATE},
      * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.DetectorEventHandler#eventOccurred(SpacecraftState,
+     * EventDetector, boolean)}
      */
+    @Deprecated
     Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException;
 
     /** Reset the state prior to continue propagation.
@@ -151,7 +155,10 @@ public interface EventDetector extends Serializable {
      * @param oldState old state
      * @return new state
      * @exception OrekitException if the state cannot be reseted
+     * @deprecated as of 6.1 replaced by {@link
+     * org.orekit.propagation.events.handlers.DetectorEventHandler#resetState(SpacecraftState)}
      */
+    @Deprecated
     SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;
 
     /** Get the convergence threshold in the event time search.

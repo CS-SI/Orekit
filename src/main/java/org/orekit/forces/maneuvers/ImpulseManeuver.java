@@ -22,7 +22,9 @@ import org.orekit.attitudes.Attitude;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -56,16 +58,19 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver implements EventDetector {
+public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeuver> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7150871329986590368L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Triggering event. */
     private final EventDetector trigger;
 
     /** Velocity increment in satellite frame. */
     private final Vector3D deltaVSat;
+
+    /** Specific impulse. */
+    private final double isp;
 
     /** Engine exhaust velocity. */
     private final double vExhaust;
@@ -77,31 +82,42 @@ public class ImpulseManeuver implements EventDetector {
      */
     public ImpulseManeuver(final EventDetector trigger, final Vector3D deltaVSat,
                            final double isp) {
+        this(trigger.getMaxCheckInterval(), trigger.getThreshold(), new Handler(),
+             trigger, deltaVSat, isp);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param trigger triggering event
+     * @param deltaVSat velocity increment in satellite frame
+     * @param isp engine specific impulse (s)
+     * @since 6.1
+     */
+    private ImpulseManeuver(final double maxCheck, final double threshold,
+                            final DetectorEventHandler<ImpulseManeuver> handler,
+                            final EventDetector trigger, final Vector3D deltaVSat,
+                            final double isp) {
+        super(maxCheck, threshold, handler);
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;
+        this.isp       = isp;
         this.vExhaust  = Constants.G0_STANDARD_GRAVITY * isp;
     }
 
     /** {@inheritDoc} */
-    public double getMaxCheckInterval() {
-        return trigger.getMaxCheckInterval();
-    }
-
-    /** {@inheritDoc} */
-    public int getMaxIterationCount() {
-        return trigger.getMaxIterationCount();
-    }
-
-    /** {@inheritDoc} */
-    public double getThreshold() {
-        return trigger.getThreshold();
-    }
-
-    /** {@inheritDoc} */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        // filter underlying event
-        return (trigger.eventOccurred(s, increasing) == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
+    @Override
+    protected ImpulseManeuver create(final double newMaxCheck,
+                                     final double newThreshold,
+                                     final DetectorEventHandler<ImpulseManeuver> newHandler) {
+        return new ImpulseManeuver(newMaxCheck, newThreshold, newHandler,
+                                   trigger, deltaVSat, isp);
     }
 
     /** {@inheritDoc} */
@@ -111,32 +127,6 @@ public class ImpulseManeuver implements EventDetector {
     /** {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
         return trigger.g(s);
-    }
-
-    /** {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState oldState)
-        throws OrekitException {
-
-        final AbsoluteDate date = oldState.getDate();
-        final Attitude attitude = oldState.getAttitude();
-
-        // convert velocity increment in inertial frame
-        final Vector3D deltaV = attitude.getRotation().applyInverseTo(deltaVSat);
-
-        // apply increment to position/velocity
-        final PVCoordinates oldPV = oldState.getPVCoordinates();
-        final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
-                                                      oldPV.getVelocity().add(deltaV));
-        final CartesianOrbit newOrbit =
-                new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
-
-        // compute new mass
-        final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / vExhaust);
-
-        // pack everything in a new state
-        return new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
-                                   attitude, newMass);
-
     }
 
     /** Get the triggering event.
@@ -157,7 +147,52 @@ public class ImpulseManeuver implements EventDetector {
     * @return specific impulse
     */
     public double getIsp() {
-        return vExhaust / Constants.G0_STANDARD_GRAVITY;
+        return isp;
+    }
+
+    /** Local handler. */
+    private static class Handler implements DetectorEventHandler<ImpulseManeuver> {
+
+        /** {@inheritDoc} */
+        public EventDetector.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver im,
+                                                  final boolean increasing)
+            throws OrekitException {
+
+            // filter underlying event
+            @SuppressWarnings("deprecation")
+            final EventDetector.Action underlyingAction = im.trigger.eventOccurred(s, increasing);
+
+            return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public SpacecraftState resetState(final ImpulseManeuver im, final SpacecraftState oldState)
+            throws OrekitException {
+
+            final AbsoluteDate date = oldState.getDate();
+            final Attitude attitude = oldState.getAttitude();
+
+            // convert velocity increment in inertial frame
+            final Vector3D deltaV = attitude.getRotation().applyInverseTo(im.deltaVSat);
+
+            // apply increment to position/velocity
+            final PVCoordinates oldPV = oldState.getPVCoordinates();
+            final PVCoordinates newPV = new PVCoordinates(oldPV.getPosition(),
+                                                          oldPV.getVelocity().add(deltaV));
+            final CartesianOrbit newOrbit =
+                    new CartesianOrbit(newPV, oldState.getFrame(), date, oldState.getMu());
+
+            // compute new mass
+            final double newMass = oldState.getMass() * FastMath.exp(-deltaV.getNorm() / im.vExhaust);
+
+            // pack everything in a new state
+            return new SpacecraftState(oldState.getOrbit().getType().convertType(newOrbit),
+                                       attitude, newMass);
+
+        }
+
     }
 
 }

@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper used to detect only increasing or decreasing events.
@@ -60,7 +61,7 @@ import org.orekit.time.AbsoluteDate;
  *
  */
 
-public class EventFilter implements EventDetector {
+public class EventFilter extends AbstractReconfigurableDetector<EventFilter> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20130409L;
@@ -91,10 +92,39 @@ public class EventFilter implements EventDetector {
      * @param filter filter to use
      */
     public EventFilter(final EventDetector rawDetector, final FilterType filter) {
+        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(), new Handler(),
+             rawDetector, filter);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param rawDetector event detector to wrap
+     * @param filter filter to use
+     * @since 6.1
+     */
+    private EventFilter(final double maxCheck, final double threshold,
+                        final DetectorEventHandler<EventFilter> handler,
+                        final EventDetector rawDetector, final FilterType filter) {
+        super(maxCheck, threshold, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
         this.updates      = new AbsoluteDate[HISTORY_SIZE];
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EventFilter create(final double newMaxCheck,
+                            final double newThreshold,
+                            final DetectorEventHandler<EventFilter> newHandler) {
+        return new EventFilter(newMaxCheck, newThreshold, newHandler, rawDetector, filter);
     }
 
     /**  {@inheritDoc} */
@@ -200,33 +230,24 @@ public class EventFilter implements EventDetector {
 
     }
 
-    /**  {@inheritDoc} */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        // delegate to raw detector, fixing increasing status on the fly
-        return rawDetector.eventOccurred(s, filter.getTriggeredIncreasing());
-    }
+    /** Local handler. */
+    private static class Handler implements DetectorEventHandler<EventFilter> {
 
-    /**  {@inheritDoc} */
-    public SpacecraftState resetState(final SpacecraftState s)
-        throws OrekitException {
-        // delegate to raw detector
-        return rawDetector.resetState(s);
-    }
+        /** {@inheritDoc} */
+        @SuppressWarnings("deprecation")
+        public EventDetector.Action eventOccurred(final SpacecraftState s, final EventFilter ef, final boolean increasing)
+            throws OrekitException {
+            return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
+        }
 
-    /**  {@inheritDoc} */
-    public double getThreshold() {
-        return rawDetector.getThreshold();
-    }
+        /** {@inheritDoc} */
+        @Override
+        @SuppressWarnings("deprecation")
+        public SpacecraftState resetState(final EventFilter ef, final SpacecraftState oldState)
+            throws OrekitException {
+            return ef.rawDetector.resetState(oldState);
+        }
 
-    /**  {@inheritDoc} */
-    public double getMaxCheckInterval() {
-        return rawDetector.getMaxCheckInterval();
-    }
-
-    /**  {@inheritDoc} */
-    public int getMaxIterationCount() {
-        return rawDetector.getMaxIterationCount();
     }
 
 }

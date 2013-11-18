@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.DetectorStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -34,17 +36,16 @@ import org.orekit.time.TimeStamped;
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
  * <p>The default implementation behavior is to {@link EventDetector.Action#STOP stop}
- * propagation at the first event date occurrence. This can be changed by
- * overriding the {@link #eventOccurred(SpacecraftState, boolean) eventOccurred}
- * method in a derived class.</p>
+ * propagation at the first event date occurrence. This can be changed by calling
+ * {@link #withHandler(DetectorEventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @author Pascal Parraud
  */
-public class DateDetector extends AbstractDetector implements TimeStamped {
+public class DateDetector extends AbstractReconfigurableDetector<DateDetector> implements TimeStamped {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -334171965326514174L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Last date for g computation. */
     private AbsoluteDate gDate;
@@ -56,57 +57,60 @@ public class DateDetector extends AbstractDetector implements TimeStamped {
     private int currentIndex;
 
     /** Build a new instance.
-     * <p>This constructor is dedicated to date detection
-     * when the event date is not known before propagating.
-     * It can be triggered later by adding some event date,
-     * it then acts like a timer.</p>
-     * @param maxCheck maximum checking interval (s)
-     * @param threshold convergence threshold (s)
-     * @see #addEventDate(AbsoluteDate)
-     */
-    public DateDetector(final double maxCheck, final double threshold) {
-        super(maxCheck, threshold);
-        this.eventDateList = new ArrayList<EventDate>();
-        this.currentIndex = -1;
-        this.gDate = null;
-    }
-
-    /** Build a new instance.
-     * <p>First event date is set here, but others can be
+     * <p>First event dates are set here, but others can be
      * added later with {@link #addEventDate(AbsoluteDate)}.</p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
-     * @param target target date
+     * @param dates list of event dates
      * @see #addEventDate(AbsoluteDate)
      */
-    public DateDetector(final double maxCheck, final double threshold, final AbsoluteDate target) {
-        this(maxCheck, threshold);
-        this.addEventDate(target);
+    public DateDetector(final double maxCheck, final double threshold, final TimeStamped ... dates) {
+        this(maxCheck, threshold, new DetectorStopOnEvent<DateDetector>(), dates);
     }
 
     /** Build a new instance.
      * <p>This constructor is dedicated to single date detection.
-     * MaxCheck is set to 10.e9, so almost no other date can be
-     * added. Tolerance is set to 10.e-10.</p>
+     * {@link #getMaxCheckInterval() max check interval} is set to 1.0e10, so almost
+     * no other date can be added. Tolerance is set to 1.0e-9.</p>
      * @param target target date
      * @see #addEventDate(AbsoluteDate)
      */
     public DateDetector(final AbsoluteDate target) {
-        this(10.e9, 10.e-10, target);
+        this(1.0e10, 1.e-9, target);
     }
 
-    /** Handle a date event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#STOP stop} propagation at date occurrence.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing the way of the switching function is not guaranted
-     * as it can change according to the added event dates.
-     * @return {@link EventDetector.Action#STOP}
-     * @exception OrekitException if some specific error occurs
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param dates list of event dates
+     * @since 6.1
      */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return Action.STOP;
+    private DateDetector(final double maxCheck,
+                         final double threshold,
+                         final DetectorEventHandler<DateDetector> handler,
+                         final TimeStamped ... dates) {
+        super(maxCheck, threshold, handler);
+        this.currentIndex  = -1;
+        this.gDate         = null;
+        this.eventDateList = new ArrayList<DateDetector.EventDate>(dates.length);
+        for (final TimeStamped ts : dates) {
+            addEventDate(ts.getDate());
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected DateDetector create(final double newMaxCheck,
+                                  final double newThreshold,
+                                  final DetectorEventHandler<DateDetector> newHandler) {
+        return new DateDetector(newMaxCheck, newThreshold, newHandler,
+                                eventDateList.toArray(new EventDate[eventDateList.size()]));
     }
 
     /** Compute the value of the switching function.

@@ -25,7 +25,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -153,10 +155,10 @@ public class AttitudesSequence implements AttitudeProvider {
     }
 
     /** Switch specification. */
-    private class Switch implements EventDetector {
+    private class Switch extends AbstractReconfigurableDetector<Switch> {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -668295773303559063L;
+        private static final long serialVersionUID = 20131118L;
 
         /** Event. */
         private final EventDetector event;
@@ -181,10 +183,52 @@ public class AttitudesSequence implements AttitudeProvider {
                       final boolean switchOnIncrease,
                       final boolean switchOnDecrease,
                       final AttitudeProvider next) {
+            this(event.getMaxCheckInterval(), event.getMaxIterationCount(),
+                 new Handler(),
+                 event, switchOnIncrease, switchOnDecrease, next);
+        }
+
+        /** Private constructor with full parameters.
+         * <p>
+         * This constructor is private as users are expected to use the builder
+         * API with the various {@code withXxx()} methods to set up the instance
+         * in a readable manner without using a huge amount of parameters.
+         * </p>
+         * @param maxCheck maximum checking interval (s)
+         * @param threshold convergence threshold (s)
+         * @param handler event handler to call at event occurrences
+         * @param event event
+         * @param switchOnIncrease if true, switch is triggered on increasing event
+         * @param switchOnDecrease if true, switch is triggered on decreasing event
+         * otherwise switch is triggered on decreasing event
+         * @param next next attitude provider
+         * @since 6.1
+         */
+        private Switch(final double maxCheck, final double threshold,
+                       final DetectorEventHandler<Switch> handler,
+                       final EventDetector event,
+                       final boolean switchOnIncrease, final boolean switchOnDecrease,
+                       final AttitudeProvider next) {
+            super(maxCheck, threshold, handler);
             this.event            = event;
             this.switchOnIncrease = switchOnIncrease;
             this.switchOnDecrease = switchOnDecrease;
             this.next             = next;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected Switch create(final double newMaxCheck,
+                                final double newThreshold,
+                                final DetectorEventHandler<Switch> newHandler) {
+            return new Switch(newMaxCheck, newThreshold, newHandler,
+                              event, switchOnIncrease, switchOnDecrease, next);
+        }
+
+        /** Perform the switch.
+         */
+        public void performSwitch() {
+            active = next;
         }
 
         /** {@inheritDoc} */
@@ -193,43 +237,36 @@ public class AttitudesSequence implements AttitudeProvider {
         }
 
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-            throws OrekitException {
-
-            if ((increasing && switchOnIncrease) || (!increasing && switchOnDecrease)) {
-                // switch to next attitude provider
-                active = next;
-            }
-
-            return event.eventOccurred(s, increasing);
-
-        }
-
-        /** {@inheritDoc} */
         public double g(final SpacecraftState s)
             throws OrekitException {
             return event.g(s);
         }
 
-        /** {@inheritDoc} */
-        public double getMaxCheckInterval() {
-            return event.getMaxCheckInterval();
-        }
+    }
+
+    /** Local handler. */
+    private static class Handler implements DetectorEventHandler<Switch> {
 
         /** {@inheritDoc} */
-        public int getMaxIterationCount() {
-            return event.getMaxIterationCount();
-        }
-
-        /** {@inheritDoc} */
-        public double getThreshold() {
-            return event.getThreshold();
-        }
-
-        /** {@inheritDoc} */
-        public SpacecraftState resetState(final SpacecraftState oldState)
+        @SuppressWarnings("deprecation")
+        public EventDetector.Action eventOccurred(final SpacecraftState s, final Switch sw, final boolean increasing)
             throws OrekitException {
-            return event.resetState(oldState);
+
+            if ((increasing && sw.switchOnIncrease) || (!increasing && sw.switchOnDecrease)) {
+                // switch to next attitude provider
+                sw.performSwitch();
+            }
+
+            return sw.event.eventOccurred(s, increasing);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        @SuppressWarnings("deprecation")
+        public SpacecraftState resetState(final Switch sw, final SpacecraftState oldState)
+            throws OrekitException {
+            return sw.event.resetState(oldState);
         }
 
     }

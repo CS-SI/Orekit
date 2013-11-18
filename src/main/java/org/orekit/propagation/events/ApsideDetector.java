@@ -20,6 +20,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
 import org.orekit.utils.PVCoordinates;
 
 /** Finder for apside crossing events.
@@ -27,9 +29,8 @@ import org.orekit.utils.PVCoordinates;
  * <p>The default implementation behavior is to {@link
  * EventDetector.Action#CONTINUE continue} propagation at apogee crossing
  * and to {@link EventDetector.Action#STOP stop} propagation
- * at perigee crossing. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
- * derived class.</p>
+ * at perigee crossing. This can be changed by calling
+ * {@link #withHandler(DetectorEventHandler)} after construction.</p>
  * <p>Beware that apside detection will fail for almost circular orbits. If
  * for example an apside detector is used to trigger an {@link
  * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
@@ -38,10 +39,10 @@ import org.orekit.utils.PVCoordinates;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class ApsideDetector extends AbstractDetector {
+public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -7542434866922384844L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Build a new instance.
      * <p>The orbit is used only to set an upper bound for the
@@ -50,8 +51,7 @@ public class ApsideDetector extends AbstractDetector {
      * @param orbit initial orbit
      */
     public ApsideDetector(final Orbit orbit) {
-        super(orbit.getKeplerianPeriod() / 3,
-              1.0e-13 * orbit.getKeplerianPeriod());
+        this(1.0e-13 * orbit.getKeplerianPeriod(), orbit);
     }
 
     /** Build a new instance.
@@ -61,23 +61,33 @@ public class ApsideDetector extends AbstractDetector {
      * @param orbit initial orbit
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
-        super(orbit.getKeplerianPeriod() / 3, threshold);
+        super(orbit.getKeplerianPeriod() / 3, threshold,
+              new DetectorStopOnIncreasing<ApsideDetector>());
     }
 
-    /** Handle an apside crossing event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation at apogee
-     * crossing and to {@link EventDetector.Action#STOP stop} propagation
-     * at perigee crossing.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event.
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @since 6.1
      */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.STOP : Action.CONTINUE;
+    private ApsideDetector(final double maxCheck,
+                           final double threshold,
+                           final DetectorEventHandler<ApsideDetector> handler) {
+        super(maxCheck, threshold, handler);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected ApsideDetector create(final double newMaxCheck,
+                                    final double newThreshold,
+                                    final DetectorEventHandler<ApsideDetector> newHandler) {
+        return new ApsideDetector(newMaxCheck, newThreshold, newHandler);
     }
 
     /** Compute the value of the switching function.

@@ -30,6 +30,7 @@ import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -57,12 +58,9 @@ public class NodeDetectorTest {
         propagator.setInitialState(initialState);
 
         // Define 2 instances of NodeDetector:
-        EventDetector rawDetector = new NodeDetector(1e-6,initialState.getOrbit(), initialState.getFrame()){
-            private static final long serialVersionUID = 1L;
-            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                return Action.CONTINUE;
-            }
-        };
+        EventDetector rawDetector =
+                new NodeDetector(1e-6,initialState.getOrbit(), initialState.getFrame()).
+                withHandler(new DetectorContinueOnEvent<NodeDetector>());
 
         EventsLogger logger1 = new EventsLogger();
         EventDetector node1 = logger1.monitorDetector(rawDetector);

@@ -30,6 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -49,12 +50,7 @@ public class EclipseDetectorTest {
     public void testEclipse() throws OrekitException {
         propagator.addEventDetector(new EclipseDetector(60., 1.e-3,
                 CelestialBodyFactory.getSun(), sunRadius,
-                CelestialBodyFactory.getEarth(), earthRadius) {
-            private static final long serialVersionUID = 1L;
-			public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-		        return increasing ? Action.CONTINUE : Action.STOP;
-            }
-        });
+                CelestialBodyFactory.getEarth(), earthRadius).withHandler(new DetectorStopOnDecreasing<EclipseDetector>()));
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 
@@ -64,7 +60,7 @@ public class EclipseDetectorTest {
     public void testPenumbra() throws OrekitException {
         propagator.addEventDetector(new EclipseDetector(
                 CelestialBodyFactory.getSun(), sunRadius,
-                CelestialBodyFactory.getEarth(), earthRadius, false));
+                CelestialBodyFactory.getEarth(), earthRadius).withPenumbra());
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(4388.155852, finalState.getDate().durationFrom(iniDate), 1.0e-6);
 
