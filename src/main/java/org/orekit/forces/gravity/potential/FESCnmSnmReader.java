@@ -101,21 +101,24 @@ public class FESCnmSnmReader extends OceanTidesReader {
             if (regularMatcher.matches()) {
                 // we have found a regular data line
 
-                // parse fields
-                final int    doodson = Integer.parseInt(regularMatcher.group(1).replaceAll("[.,]", ""));
-                final int    n       = Integer.parseInt(regularMatcher.group(3));
-                final int    m       = Integer.parseInt(regularMatcher.group(4));
-                final double cPlus   = scale * Double.parseDouble(regularMatcher.group(5));
-                final double sPlus   = scale * Double.parseDouble(regularMatcher.group(6));
-                final double cMinus  = scale * Double.parseDouble(regularMatcher.group(7));
-                final double sMinus  = scale * Double.parseDouble(regularMatcher.group(8));
+                // parse Doodson, degree and order fields
+                final int doodson = Integer.parseInt(regularMatcher.group(1).replaceAll("[.,]", ""));
+                final int n       = Integer.parseInt(regularMatcher.group(3));
+                final int m       = Integer.parseInt(regularMatcher.group(4));
 
-                // store parsed fields
-                final boolean added =
-                        addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus,
-                                            lineNumber, line);
+                if (canAdd(n, m)) {
 
-                dataStarted = dataStarted || added;
+                    // parse coefficients
+                    final double cPlus  = scale * Double.parseDouble(regularMatcher.group(5));
+                    final double sPlus  = scale * Double.parseDouble(regularMatcher.group(6));
+                    final double cMinus = scale * Double.parseDouble(regularMatcher.group(7));
+                    final double sMinus = scale * Double.parseDouble(regularMatcher.group(8));
+
+                    // store parsed fields
+                    addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
+                    dataStarted = true;
+
+                }
 
             } else if (dataStarted) {
                 // once the first data line has been encountered,

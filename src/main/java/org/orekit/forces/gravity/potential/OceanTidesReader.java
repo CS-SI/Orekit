@@ -128,6 +128,17 @@ public abstract class OceanTidesReader implements DataLoader {
         this.maxOrder     = -1;
     }
 
+    /** Check if coefficients can be added.
+     * @param n degree of the coefficients
+     * @param m order of the coefficients
+     * @return true if coefficients can be added
+     */
+    public boolean canAdd(final int n, final int m) {
+        maxDegree = FastMath.max(maxDegree, n);
+        maxOrder  = FastMath.max(maxOrder,  m);
+        return n <= getMaxParseDegree() && m <= getMaxParseOrder();
+    }
+
     /** Add parsed coefficients.
      * @param doodson Doodson number of the current wave
      * @param n degree of the coefficients
@@ -138,20 +149,13 @@ public abstract class OceanTidesReader implements DataLoader {
      * @param sMinus S-(n,m)
      * @param lineNumber number of the parsed line
      * @param line text of the line
-     * @return true if coefficients have been added
      * @exception OrekitException if coefficients for waves are interleaved
      */
-    protected boolean addWaveCoefficients(final int doodson, final int n, final int m,
-                                          final double cPlus, final double sPlus,
-                                          final double cMinus, final double sMinus,
-                                          final int lineNumber, final String line)
+    protected void addWaveCoefficients(final int doodson, final int n, final int m,
+                                       final double cPlus, final double sPlus,
+                                       final double cMinus, final double sMinus,
+                                       final int lineNumber, final String line)
         throws OrekitException {
-
-        maxDegree = FastMath.max(maxDegree, n);
-        maxOrder  = FastMath.max(maxOrder,  m);
-        if (n > getMaxParseDegree() || m > getMaxParseOrder()) {
-            return false;
-        }
 
         if (!coefficients.containsKey(doodson)) {
             // prepare the triangular array to hold coefficients
@@ -171,8 +175,6 @@ public abstract class OceanTidesReader implements DataLoader {
         cs[1] = (n < START_DEGREE) ? 0.0 : sPlus;
         cs[2] = (n < START_DEGREE) ? 0.0 : cMinus;
         cs[3] = (n < START_DEGREE) ? 0.0 : sMinus;
-
-        return true;
 
     }
 

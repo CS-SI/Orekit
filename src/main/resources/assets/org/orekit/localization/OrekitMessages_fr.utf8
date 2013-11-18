@@ -109,6 +109,9 @@ NO_OCEAN_TIDE_DATA_LOADED = aucune donnée de marée océanique n''a été charg
 # ocean tide data file {0} limited to degree {1} and order {2}
 OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = le fichier de marées océaniques {0} est limité au degré {1} et à l''ordre {2}
 
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = coefficients de déformation sous la charge limités au degré {0}, impossible de lire un terme de degré {1} dans le fichier {2}
+
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = trajectoire polaire (distance à l''axe des pôles : {0})
 

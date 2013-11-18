@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 
 /** Reader for ocean tides files following the fes2004.dat format.
  * @since 6.1
@@ -135,38 +136,47 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
                 // we have found a regular data line
 
                 // parse fields
-                final int    doodson   = Integer.parseInt(regularMatcher.group(1).replaceAll("[.,]", ""));
-                final int    n         = Integer.parseInt(regularMatcher.group(3));
-                final int    m         = Integer.parseInt(regularMatcher.group(4));
-                final double cHatPlus  = scaleCHat    * Double.parseDouble(regularMatcher.group(9));
-                final double ePlus     = scaleEpsilon * Double.parseDouble(regularMatcher.group(10));
-                final double cHatMinus = scaleCHat    * Double.parseDouble(regularMatcher.group(11));
-                final double eMinus    = scaleEpsilon * Double.parseDouble(regularMatcher.group(12));
+                final int doodson = Integer.parseInt(regularMatcher.group(1).replaceAll("[.,]", ""));
+                final int n       = Integer.parseInt(regularMatcher.group(3));
+                final int m       = Integer.parseInt(regularMatcher.group(4));
 
-                // compute bias from table 6.6
-                final double hf = astronomicalAmplitudes.containsKey(doodson) ? astronomicalAmplitudes.get(doodson) : 0.0;
-                final int cGamma = doodson / 100000;
-                final double chiF;
-                if (cGamma == 0) {
-                    chiF = hf > 0 ? FastMath.PI : 0.0;
-                } else if (cGamma == 1) {
-                    chiF = hf > 0 ? 0.5 * FastMath.PI : -0.5 * FastMath.PI;
-                } else if (cGamma == 2) {
-                    chiF = hf > 0 ? 0.0 : FastMath.PI;
-                } else {
-                    chiF = 0;
+                if (canAdd(n, m)) {
+
+                    final double cHatPlus  = scaleCHat    * Double.parseDouble(regularMatcher.group(9));
+                    final double ePlus     = scaleEpsilon * Double.parseDouble(regularMatcher.group(10));
+                    final double cHatMinus = scaleCHat    * Double.parseDouble(regularMatcher.group(11));
+                    final double eMinus    = scaleEpsilon * Double.parseDouble(regularMatcher.group(12));
+
+                    // compute bias from table 6.6
+                    final double hf = astronomicalAmplitudes.containsKey(doodson) ? astronomicalAmplitudes.get(doodson) : 0.0;
+                    final int cGamma = doodson / 100000;
+                    final double chiF;
+                    if (cGamma == 0) {
+                        chiF = hf > 0 ? FastMath.PI : 0.0;
+                    } else if (cGamma == 1) {
+                        chiF = hf > 0 ? 0.5 * FastMath.PI : -0.5 * FastMath.PI;
+                    } else if (cGamma == 2) {
+                        chiF = hf > 0 ? 0.0 : FastMath.PI;
+                    } else {
+                        chiF = 0;
+                    }
+
+                    // compute reference gravity coefficients by converting height coefficients
+                    // IERS conventions 2010, equation 6.21
+                    if (n >= kPrime.length) {
+                        throw new OrekitException(OrekitMessages.OCEAN_TIDE_LOAD_DEFORMATION_LIMITS,
+                                                  kPrime.length - 1, n, name);
+                    }
+                    final double termFactor = (1 + kPrime[n]) / (2 * n + 1);
+                    final double cPlus      = commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
+                    final double sPlus      = commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
+                    final double cMinus     = commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
+                    final double sMinus     = commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
+
+                    // store parsed fields
+                    addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
+
                 }
-
-                // compute reference gravity coefficients by converting height coefficients
-                // IERS conventions 2010, equation 6.21
-                final double termFactor = (1 + kPrime[n]) / (2 * n + 1);
-                final double cPlus      = commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
-                final double sPlus      = commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
-                final double cMinus     = commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
-                final double sMinus     = commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
-
-                // store parsed fields
-                addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
 
             }
         }

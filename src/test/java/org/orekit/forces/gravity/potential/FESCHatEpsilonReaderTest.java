@@ -27,9 +27,34 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.utils.IERSConventions;
 
 public class FESCHatEpsilonReaderTest {
+
+    @Test
+    public void testTooLargeDegree()
+        throws OrekitException {
+
+        try {
+        AstronomicalAmplitudeReader aaReader =
+                new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
+        DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
+        Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
+        OceanTidesReader reader2 = new FESCHatEpsilonReader("fes2004-7x7.dat",
+                                                            0.01, FastMath.toRadians(1.0),
+                                                            IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
+                                                            map);
+        reader2.setMaxParseDegree(8);
+        reader2.setMaxParseOrder(8);
+        DataProvidersManager.getInstance().feed(reader2.getSupportedNames(), reader2);
+        List<OceanTidesWave> waves2 =  reader2.getWaves();
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OCEAN_TIDE_LOAD_DEFORMATION_LIMITS, oe.getSpecifier());
+            Assert.assertEquals(6, ((Integer) oe.getParts()[0]).intValue());
+            Assert.assertEquals(7, ((Integer) oe.getParts()[1]).intValue());
+        }
+    }
 
     @Test
     public void testCoefficientsConversion()
@@ -57,7 +82,7 @@ public class FESCHatEpsilonReaderTest {
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
-        OceanTidesReader reader2 = new FESCHatEpsilonReader("fes2004-6x6.dat",
+        OceanTidesReader reader2 = new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                             0.01, FastMath.toRadians(1.0),
                                                             IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
                                                             map);

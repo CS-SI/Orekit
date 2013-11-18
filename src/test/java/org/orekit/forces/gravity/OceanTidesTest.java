@@ -62,7 +62,7 @@ public class OceanTidesTest {
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
-        GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-6x6.dat",
+        GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),
                                                                          IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
                                                                          map));
@@ -102,7 +102,7 @@ public class OceanTidesTest {
                 new AstronomicalAmplitudeReader("hf-fes2004.dat", 5, 2, 3, 1.0);
         DataProvidersManager.getInstance().feed(aaReader.getSupportedNames(), aaReader);
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
-        GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-6x6.dat",
+        GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),
                                                                          IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
                                                                          map));
