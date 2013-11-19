@@ -4,7 +4,6 @@ import org.apache.commons.math3.util.FastMath;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -69,9 +68,7 @@ public class EarthStandardAtmosphereTest {
         
     }
 
-    // test temporarily ignored, waiting for further investigation
     @Test
-    @Ignore
     public void testGetRefraction() {
         double pressure = 101325;
         double temperature = 290;
@@ -79,7 +76,7 @@ public class EarthStandardAtmosphereTest {
 
         double refractedElevation = model.getRefraction(FastMath.toRadians(1.0));
         
-        Assert.assertEquals(0.0065023463, refractedElevation, 1e-9);
+        Assert.assertEquals(0.0061922285, refractedElevation, 1e-9);
     }
 
 }
