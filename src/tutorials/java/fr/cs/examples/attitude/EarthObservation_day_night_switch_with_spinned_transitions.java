@@ -107,10 +107,10 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endDayNightRdV2Event_increase = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (increasing) {
-                		output.add(s.getDate() + ": switching to night law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-2 night-mode");
-                	}
+                    if (increasing) {
+                        output.add(s.getDate() + ": switching to night law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-2 night-mode");
+                    }
                     return Action.CONTINUE;
                 }
             };
@@ -118,10 +118,10 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endDayNightRdV2Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (!increasing) {
-                		output.add(s.getDate() + ": switching to night law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-2 night-mode");
-                	}
+                    if (!increasing) {
+                        output.add(s.getDate() + ": switching to night law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-2 night-mode");
+                    }
                     return Action.CONTINUE;
                 }
             };
@@ -130,12 +130,12 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endDayNightRdV1Event_increase = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (increasing) {
-                		output.add(s.getDate() + ": switching to day-night rdv 2 law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-1 day-night-rdv2-mode");
-                		endDayNightRdV2Event_increase.addEventDate(s.getDate().shiftedBy(20));
-                		endDayNightRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(20));
-                	}
+                    if (increasing) {
+                        output.add(s.getDate() + ": switching to day-night rdv 2 law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-1 day-night-rdv2-mode");
+                        endDayNightRdV2Event_increase.addEventDate(s.getDate().shiftedBy(20));
+                        endDayNightRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(20));
+                    }
                     return Action.CONTINUE;
                 }
             };
@@ -143,12 +143,12 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endDayNightRdV1Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (!increasing) {
-                		output.add(s.getDate() + ": switching to day-night rdv 2 law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-1 day-night-rdv2-mode");
-                		endDayNightRdV2Event_increase.addEventDate(s.getDate().shiftedBy(20));
-                		endDayNightRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(20));
-                	}
+                    if (!increasing) {
+                        output.add(s.getDate() + ": switching to day-night rdv 2 law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-day-night-1 day-night-rdv2-mode");
+                        endDayNightRdV2Event_increase.addEventDate(s.getDate().shiftedBy(20));
+                        endDayNightRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(20));
+                    }
                     return Action.CONTINUE;
                 }
             };
@@ -171,10 +171,10 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endNightDayRdV2Event_increase = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (increasing) {
-                		output.add(s.getDate() + ": switching to day law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-2 day-mode");
-                	}
+                    if (increasing) {
+                        output.add(s.getDate() + ": switching to day law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-2 day-mode");
+                    }
                     return Action.CONTINUE;
                 }
             };
@@ -182,10 +182,10 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endNightDayRdV2Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (!increasing) {
-                		output.add(s.getDate() + ": switching to day law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-2 day-mode");
-                	}
+                    if (!increasing) {
+                        output.add(s.getDate() + ": switching to day law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-2 day-mode");
+                    }
                     return Action.CONTINUE;
                 }
             };
@@ -194,12 +194,12 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endNightDayRdV1Event_increase = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (increasing) {
-                		output.add(s.getDate() + ": switching to night-day rdv 2 law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-1 night-day-rdv2-mode");
-                		endNightDayRdV2Event_increase.addEventDate(s.getDate().shiftedBy(40));
-                		endNightDayRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(40));
-                	}
+                    if (increasing) {
+                        output.add(s.getDate() + ": switching to night-day rdv 2 law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-1 night-day-rdv2-mode");
+                        endNightDayRdV2Event_increase.addEventDate(s.getDate().shiftedBy(40));
+                        endNightDayRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(40));
+                    }
                     return Action.CONTINUE;
                 }
             };
@@ -207,12 +207,12 @@ public class EarthObservation_day_night_switch_with_spinned_transitions {
             final DateDetector endNightDayRdV1Event_decrease = new DateDetector(10, 1e-04) {
                 private static final long serialVersionUID = -377454330129772997L;
                 public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                	if (!increasing) {
-                		output.add(s.getDate() + ": switching to night-day rdv 2 law");
-                		System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-1 night-day-rdv2-mode");
-                		endNightDayRdV2Event_increase.addEventDate(s.getDate().shiftedBy(40));
-                		endNightDayRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(40));
-                	}
+                    if (!increasing) {
+                        output.add(s.getDate() + ": switching to night-day rdv 2 law");
+                        System.out.println("# " + (s.getDate().durationFrom(AbsoluteDate.J2000_EPOCH) / Constants.JULIAN_DAY) + " end-night-day-1 night-day-rdv2-mode");
+                        endNightDayRdV2Event_increase.addEventDate(s.getDate().shiftedBy(40));
+                        endNightDayRdV2Event_decrease.addEventDate(s.getDate().shiftedBy(40));
+                    }
                     return Action.CONTINUE;
                 }
             };
