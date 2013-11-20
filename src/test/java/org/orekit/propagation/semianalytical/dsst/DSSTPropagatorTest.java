@@ -285,7 +285,10 @@ public class DSSTPropagatorTest {
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             earthFrame);
         final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
-        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, 2.0, 25.0);
+
+        final double cd = 2.0;
+        final double area = 25.0;
+        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area);
 
         // LEO Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 00.000,
@@ -324,6 +327,12 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(193.0939742953394, 
                             FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), FastMath.PI)),
                             2.e-3);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
+
+        final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS,1e-9);
     }
 
     @Test

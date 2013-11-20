@@ -24,7 +24,28 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
     public void setUp() {
         raw = new QuadraticProvider(date);
         cache = new CachedNormalizedSphericalHarmonicsProvider(raw, step, interpolationPoints, maxSlots, slotSpan, newSlotInterval);
+    }
 
+    @Test
+    public void testGetReferenceDate() {
+        AbsoluteDate actualDate = cache.getReferenceDate();
+        Assert.assertEquals(actualDate, date);
+    }
+
+    @Test
+    public void testGetTideSystem() {
+        TideSystem actualSystem = cache.getTideSystem();
+        Assert.assertEquals(actualSystem, TideSystem.UNKNOWN);
+    }
+
+    @Test
+    public void testGetOffset() {
+        final double epsilon = 1e-12;
+        AbsoluteDate offsetDate = AbsoluteDate.GALILEO_EPOCH;
+        double targetOffset = offsetDate.durationFrom(date);
+        double actualOffset = cache.getOffset(offsetDate);
+
+        Assert.assertEquals(targetOffset, actualOffset,epsilon);
     }
 
     @Test

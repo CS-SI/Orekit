@@ -22,6 +22,10 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="add" due-to="Hank Grabowski">
+        Improved test coverage.
+        Fixes issue #153.
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
         Merged all elevation detectors into one. The new detector supports all
         features from the previous (and now deprecated) ApparentElevationDetector
         and GroundMaskElevationDetector.
