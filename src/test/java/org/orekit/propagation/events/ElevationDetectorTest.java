@@ -89,7 +89,7 @@ public class ElevationDetectorTest {
         Checking checking = new Checking(topo);
         ElevationDetector detector =
                 new ElevationDetector(topo).
-                withConstantValue(FastMath.toRadians(5.0)).
+                withConstantElevation(FastMath.toRadians(5.0)).
                 withHandler(checking);
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 12, 0, 0, utc);
@@ -266,7 +266,7 @@ public class ElevationDetectorTest {
         final double elevation = FastMath.toRadians(5.);
         final double threshold = 10.0;
         final EventDetector rawEvent = new ElevationDetector(maxcheck, threshold, sta1Frame)
-                                                .withConstantValue(elevation)
+                                                .withConstantElevation(elevation)
                                                 .withHandler(new DetectorContinueOnEvent<ElevationDetector>());
         final EventsLogger logger = new EventsLogger();
         kepler.addEventDetector(logger.monitorDetector(rawEvent));
@@ -315,7 +315,7 @@ public class ElevationDetectorTest {
         final double maxCheck = 600.;
         final double threshold = 1.0e-3;
         final EventDetector rawEvent = new ElevationDetector(maxCheck, threshold, station)
-                                                    .withConstantValue(FastMath.toRadians(5.0))
+                                                    .withConstantElevation(FastMath.toRadians(5.0))
                                                     .withHandler(new DetectorContinueOnEvent<ElevationDetector>());
         final EventsLogger logger = new EventsLogger();
         kProp.addEventDetector(logger.monitorDetector(rawEvent));

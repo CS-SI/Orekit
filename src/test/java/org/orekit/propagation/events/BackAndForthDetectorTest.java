@@ -75,7 +75,7 @@ public class BackAndForthDetectorTest {
         // Detector
         final Visibility visi = new Visibility();
         propagator.addEventDetector(new ElevationDetector(stationFrame).
-                                    withConstantValue(FastMath.toRadians(10.)).
+                                    withConstantElevation(FastMath.toRadians(10.)).
                                     withHandler(visi));
 
         // Forward propagation (AOS + LOS)

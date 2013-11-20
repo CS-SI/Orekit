@@ -62,7 +62,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * uses default values for maximal checking interval ({@link #DEFAULT_MAXCHECK})
      * and convergence threshold ({@link #DEFAULT_THRESHOLD}).</p>
      * @param topo reference to a topocentric model
-     * @see #withConstantValue(double)
+     * @see #withConstantElevation(double)
      * @see #withElevationMask(ElevationMask)
      * @see #withRefraction(AtmosphericRefractionModel)
      */
@@ -80,7 +80,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @param minElevation minimum elevation angle
      * @param topo reference to a topocentric model
      * @deprecated as of 6.1 replace with {@link #ElevationDetector(TopocentricFrame)} followed
-     * by a call to {@link #withConstantValue(double)}
+     * by a call to {@link #withConstantElevation(double)}
      */
     @Deprecated
     public ElevationDetector(final double minElevation, final TopocentricFrame topo) {
@@ -94,7 +94,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @param maxCheck maximum checking interval (s)
      * @param threshold maximum divergence threshold (s)
      * @param topo reference to a topocentric model
-     * @see #withConstantValue(double)
+     * @see #withConstantElevation(double)
      * @see #withElevationMask(ElevationMask)
      * @see #withRefraction(AtmosphericRefractionModel)
      */
@@ -142,6 +142,8 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
     /**
      * Returns the currently configured elevation mask.
      * @return elevation mask
+     * (null if instance has been configured with {@link #withConstantElevation(double)}
+     * @see #withElevationMask(ElevationMask)
      */
     public ElevationMask getElevationMask() {
         return this.elevationMask;
@@ -150,6 +152,8 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
     /**
      * Returns the currently configured minimum valid elevation value.
      * @return minimum elevation value
+     * ({@code Double.NaN} if instance has been configured with {@link #withElevationMask(ElevationMask)}
+     * @see #withConstantElevation(double)
      */
     public double getMinElevation() {
         return this.minElevation;
@@ -158,6 +162,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
     /**
      * Returns the currently configured refraction model.
      * @return refraction model
+     * @see #withRefraction(AtmosphericRefractionModel)
      */
     public AtmosphericRefractionModel getRefractionModel() {
         return this.refractionModel;
@@ -207,11 +212,12 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * </p>
      * @param newMinElevation minimum elevation for visibility in radians (rad)
      * @return a new detector with updated configuration (the instance is not changed)
+     * @see #getMinElevation()
      * @since 6.1
      */
-    public ElevationDetector withConstantValue(final double newMinElevation) {
+    public ElevationDetector withConstantElevation(final double newMinElevation) {
         return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
-                                     newMinElevation, elevationMask, refractionModel, topo);
+                                     newMinElevation, null, refractionModel, topo);
     }
 
     /**
@@ -219,10 +225,11 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @param newElevationMask elevation mask to use for the computation
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
+     * @see #getElevationMask()
      */
     public ElevationDetector withElevationMask(final ElevationMask newElevationMask) {
         return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
-                                     minElevation, newElevationMask, refractionModel, topo);
+                                     Double.NaN, newElevationMask, refractionModel, topo);
     }
 
     /**
@@ -235,6 +242,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @param newRefractionModel refraction model to use for the computation
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
+     * @see #getRefractionModel()
      */
     public ElevationDetector withRefraction(final AtmosphericRefractionModel newRefractionModel) {
         return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getHandler(),

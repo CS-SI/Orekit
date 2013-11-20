@@ -670,7 +670,7 @@ public class EcksteinHechlerPropagatorTest {
             new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, FramesFactory.getITRF(IERSConventions.IERS_2010, true));
         final TopocentricFrame topo =
             new TopocentricFrame(earthShape, new GeodeticPoint(0.389, -2.962, 0), null);
-        ElevationDetector detector = new ElevationDetector(60, 1.0e-9, topo).withConstantValue(0.09);
+        ElevationDetector detector = new ElevationDetector(60, 1.0e-9, topo).withConstantElevation(0.09);
         Assert.assertEquals(0.09, detector.getMinElevation(), 1.0e-12);
         Assert.assertTrue(topo == detector.getTopocentricFrame());
         propagator.addEventDetector(detector);
