@@ -28,6 +28,9 @@ import org.orekit.data.BodiesElements;
  */
 public class OceanTidesWave {
 
+    /** Waves of degree 0 and 1 do not affect spacecrafts. */
+    private final int START_DEGREE = 2;
+
     /** Maximum supported degree. */
     private final int degree;
 
@@ -155,7 +158,7 @@ public class OceanTidesWave {
         final double cos    = FastMath.cos(thetaF);
         final double sin    = FastMath.sin(thetaF);
 
-        for (int i = 0; i <= degree; ++i) {
+        for (int i = START_DEGREE; i <= degree; ++i) {
             for (int j = 0; j <= FastMath.min(i, order); ++j) {
                 // from IERS conventions 2010, section 6.3, equation 6.15
                 cnm[i][j] += (cPlus[i][j] + cMinus[i][j]) * cos + (sPlus[i][j] + sMinus[i][j]) * sin;

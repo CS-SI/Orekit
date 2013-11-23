@@ -34,9 +34,6 @@ import org.orekit.errors.OrekitMessages;
  */
 public abstract class OceanTidesReader implements DataLoader {
 
-    /** Waves of degree 0 and 1 do not affect spacecrafts. */
-    private final int START_DEGREE = 2;
-
     /** Regular expression for supported files names. */
     private final String supportedNames;
 
@@ -163,7 +160,7 @@ public abstract class OceanTidesReader implements DataLoader {
             for (int i = 0; i <= getMaxParseDegree(); ++i) {
                 array[i] = new double[FastMath.min(i, getMaxParseOrder()) + 1][4];
                 for (double[] a : array[i]) {
-                    Arrays.fill(a, i < START_DEGREE ? 0.0 : Double.NaN);
+                    Arrays.fill(a, Double.NaN);
                 }
             }
             coefficients.put(doodson, array);
@@ -171,10 +168,10 @@ public abstract class OceanTidesReader implements DataLoader {
 
         // store the fields
         final double[] cs = coefficients.get(doodson)[n][m];
-        cs[0] = (n < START_DEGREE) ? 0.0 : cPlus;
-        cs[1] = (n < START_DEGREE) ? 0.0 : sPlus;
-        cs[2] = (n < START_DEGREE) ? 0.0 : cMinus;
-        cs[3] = (n < START_DEGREE) ? 0.0 : sMinus;
+        cs[0] = cPlus;
+        cs[1] = sPlus;
+        cs[2] = cMinus;
+        cs[3] = sMinus;
 
     }
 
@@ -197,7 +194,7 @@ public abstract class OceanTidesReader implements DataLoader {
             // check wave degree and order
             int waveDegree = -1;
             int waveOrder  = -1;
-            for (int i = START_DEGREE; i < entry.getValue().length; ++i) {
+            for (int i = 0; i < entry.getValue().length; ++i) {
                 for (int j = 0; j < entry.getValue()[i].length; ++j) {
                     if (!Double.isNaN(entry.getValue()[i][j][0])) {
                         waveDegree = FastMath.max(waveDegree, i);
