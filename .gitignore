@@ -4,3 +4,5 @@
 .checkstyle
 bin
 target
+/build
+*.class

@@ -32,6 +32,8 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector.Action;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -154,14 +156,32 @@ public class EventsLoggerTest {
     }
 
     private EventDetector buildDetector(final boolean totalEclipse) throws OrekitException {
-        return new EclipseDetector(60., 1.e-3, CelestialBodyFactory.getSun(), 696000000,
-                                   CelestialBodyFactory.getEarth(), 6400000, totalEclipse) {
-            private static final long serialVersionUID = 1L;
-            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
+
+        EclipseDetector detector =
+                new EclipseDetector(60., 1.e-3, CelestialBodyFactory.getSun(), 696000000,
+                                   CelestialBodyFactory.getEarth(), 6400000);
+
+        if (totalEclipse) {
+            detector = detector.withUmbra();
+        } else {
+            detector = detector.withPenumbra();
+        }
+
+        detector = detector.withHandler(new DetectorEventHandler<EclipseDetector>() {
+
+            public Action eventOccurred(SpacecraftState s, EclipseDetector detector, boolean increasing) {
                 ++count;
                 return Action.CONTINUE;
             }
-        };
+
+            public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+                return oldState;
+            }
+
+        });
+
+        return detector;
+
     }
 
     @Before

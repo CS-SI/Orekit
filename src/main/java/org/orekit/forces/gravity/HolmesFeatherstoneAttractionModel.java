@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.ForceModel;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.TideSystemProvider;
 import org.orekit.frames.Frame;
@@ -173,7 +174,7 @@ public class HolmesFeatherstoneAttractionModel
 
         final int degree = provider.getMaxDegree();
         final int order  = provider.getMaxOrder();
-        final double dateOffset = provider.getOffset(date);
+        final NormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
         // allocate the columns for recursion
         double[] pnm0Plus2 = new double[degree + 1];
@@ -216,8 +217,8 @@ public class HolmesFeatherstoneAttractionModel
                 double sumDegreeS        = 0;
                 double sumDegreeC        = 0;
                 for (int n = FastMath.max(2, m); n <= degree; ++n) {
-                    sumDegreeS += pnm0[n] * aOrN[n] * provider.getNormalizedSnm(dateOffset, n, m);
-                    sumDegreeC += pnm0[n] * aOrN[n] * provider.getNormalizedCnm(dateOffset, n, m);
+                    sumDegreeS += pnm0[n] * aOrN[n] * harmonics.getNormalizedSnm(n, m);
+                    sumDegreeC += pnm0[n] * aOrN[n] * harmonics.getNormalizedCnm(n, m);
                 }
 
                 // contribution to outer summation over order
@@ -252,7 +253,7 @@ public class HolmesFeatherstoneAttractionModel
 
         final int degree = provider.getMaxDegree();
         final int order  = provider.getMaxOrder();
-        final double dateOffset = provider.getOffset(date);
+        final NormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
         // allocate the columns for recursion
         double[] pnm0Plus2  = new double[degree + 1];
@@ -302,8 +303,8 @@ public class HolmesFeatherstoneAttractionModel
                 double dSumDegreeSdTheta = 0;
                 double dSumDegreeCdTheta = 0;
                 for (int n = FastMath.max(2, m); n <= degree; ++n) {
-                    final double qSnm  = aOrN[n] * provider.getNormalizedSnm(dateOffset, n, m);
-                    final double qCnm  = aOrN[n] * provider.getNormalizedCnm(dateOffset, n, m);
+                    final double qSnm  = aOrN[n] * harmonics.getNormalizedSnm(n, m);
+                    final double qCnm  = aOrN[n] * harmonics.getNormalizedCnm(n, m);
                     final double nOr   = n / r;
                     final double s0    = pnm0[n] * qSnm;
                     final double c0    = pnm0[n] * qCnm;
@@ -367,7 +368,7 @@ public class HolmesFeatherstoneAttractionModel
 
         final int degree = provider.getMaxDegree();
         final int order  = provider.getMaxOrder();
-        final double dateOffset = provider.getOffset(date);
+        final NormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
         // allocate the columns for recursion
         double[] pnm0Plus2  = new double[degree + 1];
@@ -426,8 +427,8 @@ public class HolmesFeatherstoneAttractionModel
                 double d2SumDegreeCdRdTheta     = 0;
                 double d2SumDegreeCdThetadTheta = 0;
                 for (int n = FastMath.max(2, m); n <= degree; ++n) {
-                    final double qSnm         = aOrN[n] * provider.getNormalizedSnm(dateOffset, n, m);
-                    final double qCnm         = aOrN[n] * provider.getNormalizedCnm(dateOffset, n, m);
+                    final double qSnm         = aOrN[n] * harmonics.getNormalizedSnm(n, m);
+                    final double qCnm         = aOrN[n] * harmonics.getNormalizedCnm(n, m);
                     final double nOr          = n / r;
                     final double nnP1Or2      = nOr * (n + 1) / r;
                     final double s0           = pnm0[n] * qSnm;

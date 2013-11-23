@@ -25,6 +25,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
 
 /** Finder for satellite azimuth-elevation events with respect to a mask.
  * <p>This class finds elevation events (i.e. satellite raising and setting) with
@@ -54,15 +56,16 @@ import org.orekit.propagation.SpacecraftState;
  * <p>The default implementation behavior is to {@link
  * EventDetector.Action#CONTINUE continue} propagation at raising and to
  * {@link EventDetector.Action#STOP stop} propagation at setting. This can be changed
- * by overriding the {@link #eventOccurred(SpacecraftState, boolean) eventOccurred}
- * method in a derived class.</p>
+ * by calling {@link #withHandler(DetectorEventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
+ * @deprecated as of 6.1 replaced by {@link ElevationDetector}
  */
-public class GroundMaskElevationDetector extends AbstractDetector {
+@Deprecated
+public class GroundMaskElevationDetector extends AbstractReconfigurableDetector<GroundMaskElevationDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8124322408349693773L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Azimuth-elevation mask. */
     private final double[][] azelmask;
@@ -79,9 +82,7 @@ public class GroundMaskElevationDetector extends AbstractDetector {
      * @exception IllegalArgumentException if azimuth-elevation mask is not supported
      */
     public GroundMaskElevationDetector(final double[][] azimelev, final TopocentricFrame topo) {
-        super(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD);
-        this.azelmask = checkMask(azimelev);
-        this.topo = topo;
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, azimelev, topo);
     }
 
     /** Build a new azimuth-elevation detector.
@@ -98,9 +99,7 @@ public class GroundMaskElevationDetector extends AbstractDetector {
     public GroundMaskElevationDetector(final double maxCheck,
                                     final double[][] azimelev,
                                     final TopocentricFrame topo) {
-        super(maxCheck, DEFAULT_THRESHOLD);
-        this.azelmask = checkMask(azimelev);
-        this.topo = topo;
+        this(maxCheck, DEFAULT_THRESHOLD, azimelev, topo);
     }
 
     /** Build a new azimuth-elevation detector.
@@ -113,13 +112,42 @@ public class GroundMaskElevationDetector extends AbstractDetector {
      * @param topo topocentric frame in which elevation should be evaluated
      * @exception IllegalArgumentException if azimuth-elevation mask is not supported
      */
-    public GroundMaskElevationDetector(final double maxCheck,
-                                    final double threshold,
-                                    final double[][] azimelev,
-                                    final TopocentricFrame topo) {
-        super(maxCheck, threshold);
+    public GroundMaskElevationDetector(final double maxCheck, final double threshold,
+                                       final double[][] azimelev, final TopocentricFrame topo) {
+        this(maxCheck, threshold, new DetectorStopOnDecreasing<GroundMaskElevationDetector>(),
+             azimelev, topo);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param azimelev azimuth-elevation mask (rad)
+     * @param topo topocentric frame in which elevation should be evaluated
+     * @since 6.1
+     */
+    private GroundMaskElevationDetector(final double maxCheck,
+                             final double threshold,
+                             final DetectorEventHandler<GroundMaskElevationDetector> handler,
+                             final double[][] azimelev,
+                             final TopocentricFrame topo) {
+        super(maxCheck, threshold, handler);
         this.azelmask = checkMask(azimelev);
-        this.topo = topo;
+        this.topo     = topo;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected GroundMaskElevationDetector create(final double newMaxCheck,
+                                                 final double newThreshold,
+                                                 final DetectorEventHandler<GroundMaskElevationDetector> newHandler) {
+        return new GroundMaskElevationDetector(newMaxCheck, newThreshold, newHandler,
+                                               azelmask, topo);
     }
 
     /** Get the topocentric frame.
@@ -127,21 +155,6 @@ public class GroundMaskElevationDetector extends AbstractDetector {
      */
     public TopocentricFrame getTopocentricFrame() {
         return topo;
-    }
-
-    /** Handle an azimuth-elevation event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation at raising and to
-     * {@link EventDetector.Action#STOP stop} propagation at setting.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event.
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.CONTINUE : Action.STOP;
     }
 
     /** Compute the value of the switching function.

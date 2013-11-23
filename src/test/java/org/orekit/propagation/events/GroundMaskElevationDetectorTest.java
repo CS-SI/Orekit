@@ -35,6 +35,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -42,6 +43,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
+@Deprecated
 public class GroundMaskElevationDetectorTest {
 
     private double mu;
@@ -87,13 +89,8 @@ public class GroundMaskElevationDetectorTest {
                               {FastMath.toRadians(300),FastMath.toRadians(3)},
                               {FastMath.toRadians(330),FastMath.toRadians(4)}};
         GroundMaskElevationDetector detector =
-            new GroundMaskElevationDetector(masque, topo) {
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7515758050410436713L;
-                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? Action.STOP : Action.CONTINUE;
-                }
-        };
+            new GroundMaskElevationDetector(masque, topo).
+            withHandler(new DetectorStopOnIncreasing<GroundMaskElevationDetector>());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));

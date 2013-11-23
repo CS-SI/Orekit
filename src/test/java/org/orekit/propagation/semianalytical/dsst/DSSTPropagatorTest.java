@@ -50,7 +50,10 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.EventDetector.Action;
 import org.orekit.propagation.events.NodeDetector;
+import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -282,7 +285,10 @@ public class DSSTPropagatorTest {
                                                             Constants.WGS84_EARTH_FLATTENING,
                                                             earthFrame);
         final Atmosphere atm = new HarrisPriester(CelestialBodyFactory.getSun(), earth, 6);
-        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, 2.0, 25.0);
+
+        final double cd = 2.0;
+        final double area = 25.0;
+        DSSTForceModel drag = new DSSTAtmosphericDrag(atm, cd, area);
 
         // LEO Orbit
         final AbsoluteDate initDate = new AbsoluteDate(2003, 7, 1, 0, 0, 00.000,
@@ -313,7 +319,7 @@ public class DSSTPropagatorTest {
         // p/hy =  0.8698955648709271
         // q/hx =  0.7757573478894775
         // lM   = 193°0939742953394
-        Assert.assertEquals(7204521.657141485, state.getA(), 5.e-1);
+        Assert.assertEquals(7204521.657141485, state.getA(), 6.e-1);
         Assert.assertEquals(-0.001016800430994036, state.getEquinoctialEx(), 5.e-8);
         Assert.assertEquals(0.0007093755541595772, state.getEquinoctialEy(), 2.e-8);
         Assert.assertEquals(0.7757573478894775, state.getHx(), 5.e-8);
@@ -321,6 +327,12 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(193.0939742953394, 
                             FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), FastMath.PI)),
                             2.e-3);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
+
+        final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
+        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getRbar(), atmosphericMaxConstant + Constants.WGS84_EARTH_EQUATORIAL_RADIUS,1e-9);
     }
 
     @Test
@@ -381,19 +393,15 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         final AbsoluteDate stopDate = state.getDate().shiftedBy(1000);
-        dsstProp.addEventDetector(new DateDetector(stopDate) {
-            private static final long serialVersionUID = -5024861864672841095L;
-
-            public EventDetector.Action eventOccurred(SpacecraftState s,
-                                                      boolean increasing) throws OrekitException {
+        dsstProp.addEventDetector(new DateDetector(stopDate).withHandler(new DetectorEventHandler<DateDetector>() {
+            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
                 setGotHere(true);
                 return EventDetector.Action.STOP;
             }
-
-            public SpacecraftState resetState(SpacecraftState oldState) {
+            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
                 return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
             }
-        });
+        }));
         Assert.assertFalse(gotHere);
         final SpacecraftState finalState = dsstProp.propagate(state.getDate().shiftedBy(3200));
         Assert.assertTrue(gotHere);
@@ -406,15 +414,12 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         final AbsoluteDate resetDate = state.getDate().shiftedBy(1000);
-        dsstProp.addEventDetector(new DateDetector(resetDate) {
-            private static final long serialVersionUID = 5959523015368708867L;
-
-            public EventDetector.Action eventOccurred(SpacecraftState s,
-                                                      boolean increasing) throws OrekitException {
+        dsstProp.addEventDetector(new DateDetector(resetDate).withHandler(new DetectorContinueOnEvent<DateDetector>() {
+           public EventDetector.Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing) {
                 setGotHere(true);
                 return EventDetector.Action.CONTINUE;
             }
-        });
+        }));
         final double dt = 3200;
         Assert.assertFalse(gotHere);
         final SpacecraftState finalState = dsstProp.propagate(state.getDate().shiftedBy(dt));
@@ -434,7 +439,8 @@ public class DSSTPropagatorTest {
 
     private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {
         // No shadow at this date
-        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.), TimeScalesFactory.getUTC());
+        final AbsoluteDate initDate = new AbsoluteDate(new DateComponents(2003, 05, 21), new TimeComponents(1, 0, 0.),
+                                                       TimeScalesFactory.getUTC());
         final Orbit orbit = new EquinoctialOrbit(42164000,
                                                  10e-3,
                                                  10e-3,

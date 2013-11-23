@@ -273,8 +273,7 @@ public class KeplerianOrbit extends Orbit {
         i = Vector3D.angle(momentum, Vector3D.PLUS_K);
 
         // compute right ascension of ascending node
-        final Vector3D node = Vector3D.crossProduct(Vector3D.PLUS_K, momentum);
-        raan = FastMath.atan2(node.getY(), node.getX());
+        raan = Vector3D.crossProduct(Vector3D.PLUS_K, momentum).getAlpha();
 
         // preliminary computations for parameters depending on orbit shape (elliptic or hyperbolic)
         final Vector3D pvP     = pvCoordinates.getPosition();
@@ -303,6 +302,7 @@ public class KeplerianOrbit extends Orbit {
         }
 
         // compute perigee argument
+        final Vector3D node = new Vector3D(raan, 0.0);
         final double px = Vector3D.dotProduct(pvP, node);
         final double py = Vector3D.dotProduct(pvP, Vector3D.crossProduct(momentum, node)) / FastMath.sqrt(m2);
         pa = FastMath.atan2(py, px) - v;

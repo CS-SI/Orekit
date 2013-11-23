@@ -19,6 +19,7 @@ package org.orekit.forces.gravity.potential;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 
 /** Converter providing the older {@link PotentialCoefficientsProvider} interface.
  * <p>
@@ -64,10 +65,12 @@ public class ProviderConverter implements PotentialCoefficientsProvider {
         }
 
         // fill-in the arrays
+        final UnnormalizedSphericalHarmonics harmonics =
+                provider.onDate(provider.getReferenceDate());
         for (int i = 0; i < unNormalizedC.length; ++i) {
             for (int j = 0; j < unNormalizedC[i].length; ++j) {
-                unNormalizedC[i][j] = provider.getUnnormalizedCnm(0.0, i, j);
-                unNormalizedS[i][j] = provider.getUnnormalizedSnm(0.0, i, j);
+                unNormalizedC[i][j] = harmonics.getUnnormalizedCnm(i, j);
+                unNormalizedS[i][j] = harmonics.getUnnormalizedSnm(i, j);
             }
         }
 

@@ -31,6 +31,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.DetectorStopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -55,12 +56,9 @@ public class AltitudeDetectorTest {
                                                       initialDate,CelestialBodyFactory.getEarth().getGM());
         final SpacecraftState initialState = new SpacecraftState(initialOrbit);
         final KeplerianPropagator kepPropagator = new KeplerianPropagator(initialOrbit);
-        final AltitudeDetector altDetector = new AltitudeDetector(alt, new OneAxisEllipsoid(earthRadius, earthF, EME2000)) {
-            private static final long serialVersionUID = 1L;
-            public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                return Action.STOP;
-            }
-        };
+        final AltitudeDetector altDetector =
+                new AltitudeDetector(alt, new OneAxisEllipsoid(earthRadius, earthF, EME2000)).
+                withHandler(new DetectorStopOnEvent<AltitudeDetector>());
 
         // altitudeDetector should stop propagation upon reaching required altitude
         kepPropagator.addEventDetector(altDetector);

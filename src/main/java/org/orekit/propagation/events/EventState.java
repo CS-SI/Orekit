@@ -257,7 +257,9 @@ public class EventState implements Serializable {
             // force the sign to its value "just after the event"
             previousEventTime = state.getDate();
             g0Positive        = increasing;
-            nextAction        = detector.eventOccurred(state, !(increasing ^ forward));
+            @SuppressWarnings("deprecation")
+            final EventDetector.Action a = detector.eventOccurred(state, !(increasing ^ forward));
+            nextAction = a;
         } else {
             g0Positive = g0 >= 0;
             nextAction = EventDetector.Action.CONTINUE;
@@ -285,9 +287,15 @@ public class EventState implements Serializable {
             return null;
         }
 
-        final SpacecraftState newState =
-            (nextAction == EventDetector.Action.RESET_STATE) ?
-            detector.resetState(oldState) : null;
+        final SpacecraftState newState;
+        if (nextAction != EventDetector.Action.RESET_STATE) {
+            newState = null;
+        } else {
+            @SuppressWarnings("deprecation")
+            final SpacecraftState s = detector.resetState(oldState);
+            newState = s;
+        }
+
         pendingEvent      = false;
         pendingEventTime  = null;
 

@@ -18,9 +18,25 @@ package org.orekit.forces.gravity.potential;
 
 import org.orekit.time.AbsoluteDate;
 
-/** Interface used to provide spherical harmonics coefficients.
- * @see GravityFieldFactory
+/**
+ * Interface used to provide spherical harmonics coefficients.
+ * <p/>
+ * Two interfaces are provided to distinguish between normalized and un-normalized
+ * coefficients: {@link NormalizedSphericalHarmonicsProvider} and {@link
+ * UnnormalizedSphericalHarmonicsProvider}. To account for gravity pertubations all
+ * providers are capable of providing the coefficients on specific dates, using the {@link
+ * NormalizedSphericalHarmonicsProvider#onDate(AbsoluteDate) onDate(AbsoluteDate)}
+ * methods.
+ * <p>
+ * Typical usage when evaluating the geopotential:
+ * <pre><code>
+ *     NormalizedSphericalHarmonicsProvider provider = ...;
+ *     NormalizedShpericalHarmonics coeffs = provider.onDate(date);
+ *     double c20 = coeffs.getNormalizedCnm(2, 0);
+ * </code></pre>
+ *
  * @author Luc Maisonobe
+ * @see GravityFieldFactory
  * @since 6.0
  */
 public interface SphericalHarmonicsProvider extends TideSystemProvider {

@@ -24,8 +24,13 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
+import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.RawSphericalHarmonicsProvider.RawSphericalHarmonics;
 import org.orekit.forces.gravity.potential.SphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -95,7 +100,8 @@ class ReferenceFieldModel {
 
         int degree = provider.getMaxDegree();
         int order  = provider.getMaxOrder();
-        double dateOffset = provider.getOffset(date);
+        //use coefficients without caring if they are the correct type
+        final RawSphericalHarmonics harmonics = raw(provider).onDate(date);
 
         Dfp x      = dfpField.newDfp(position.getX());
         Dfp y      = dfpField.newDfp(position.getY());
@@ -116,15 +122,8 @@ class ReferenceFieldModel {
         for (int n = 2; n <= degree; ++n) {
             Dfp sum = dfpField.getZero();
             for (int m = 0; m <= FastMath.min(n, order); ++m) {
-                double cnm;
-                double snm;
-                if (provider instanceof NormalizedSphericalHarmonicsProvider) {
-                    cnm = ((NormalizedSphericalHarmonicsProvider) provider).getNormalizedCnm(dateOffset, n, m);
-                    snm = ((NormalizedSphericalHarmonicsProvider) provider).getNormalizedSnm(dateOffset, n, m);
-                } else {
-                    cnm = ((UnnormalizedSphericalHarmonicsProvider) provider).getUnnormalizedCnm(dateOffset, n, m);
-                    snm = ((UnnormalizedSphericalHarmonicsProvider) provider).getUnnormalizedSnm(dateOffset, n, m);
-                }
+                double cnm = harmonics.getRawCnm(n, m);
+                double snm = harmonics.getRawSnm(n, m);
                 Dfp mLambda = lambda.multiply(m);
                 Dfp c       = DfpMath.cos(mLambda).multiply(dfpField.newDfp(cnm));
                 Dfp s       = DfpMath.sin(mLambda).multiply(dfpField.newDfp(snm));
@@ -139,4 +138,113 @@ class ReferenceFieldModel {
 
     }
 
+    /**
+     * Wrap the given harmonics with a {@link RawSphericalHarmonicsProvider} to ignore the
+     * type of the coefficients.
+     *
+     * @param provider harmonics provider
+     * @return a raw provider wrapping {@code provider}.
+     */
+    private RawSphericalHarmonicsProvider raw(final SphericalHarmonicsProvider provider) {
+        if (provider instanceof RawSphericalHarmonicsProvider) {
+            return (RawSphericalHarmonicsProvider) provider;
+        } else if (provider instanceof NormalizedSphericalHarmonicsProvider) {
+            return new RawerSphericalHarmonicsProvider(provider) {
+                @Override
+                public RawSphericalHarmonics onDate(final AbsoluteDate date)
+                        throws OrekitException {
+                    final NormalizedSphericalHarmonics normalized =
+                            ((NormalizedSphericalHarmonicsProvider) provider).onDate(date);
+                    return new RawSphericalHarmonics() {
+                        @Override
+                        public double getRawCnm(int n, int m) throws OrekitException {
+                            return normalized.getNormalizedCnm(n, m);
+                        }
+
+                        @Override
+                        public double getRawSnm(int n, int m) throws OrekitException {
+                            return normalized.getNormalizedSnm(n, m);
+                        }
+
+                        @Override
+                        public AbsoluteDate getDate() {
+                            return date;
+                        }
+                    };
+                }
+            };
+        } else if (provider instanceof UnnormalizedSphericalHarmonicsProvider) {
+            return new RawerSphericalHarmonicsProvider(provider) {
+                @Override
+                public RawSphericalHarmonics onDate(final AbsoluteDate date)
+                        throws OrekitException {
+                    final UnnormalizedSphericalHarmonics unnormalized =
+                            ((UnnormalizedSphericalHarmonicsProvider) provider).onDate(date);
+                    return new RawSphericalHarmonics() {
+                        @Override
+                        public double getRawCnm(int n, int m) throws OrekitException {
+                            return unnormalized.getUnnormalizedCnm(n, m);
+                        }
+
+                        @Override
+                        public double getRawSnm(int n, int m) throws OrekitException {
+                            return unnormalized.getUnnormalizedSnm(n, m);
+                        }
+
+                        @Override
+                        public AbsoluteDate getDate() {
+                            return date;
+                        }
+                    };
+                }
+            };
+        } else {
+            throw new RuntimeException("Unknown harmonics provider type: " + provider);
+        }
+    }
+
+    /** Delegating Provider class */
+    public static abstract class RawerSphericalHarmonicsProvider
+            implements RawSphericalHarmonicsProvider {
+
+        /** wrapped provider */
+        private final SphericalHarmonicsProvider provider;
+
+        /**
+         * Wrap the given provider.
+         *
+         * @param provider the provider to delegate to
+         */
+        public RawerSphericalHarmonicsProvider(SphericalHarmonicsProvider provider) {
+            this.provider = provider;
+        }
+
+        public int getMaxDegree() {
+            return provider.getMaxDegree();
+        }
+
+        public int getMaxOrder() {
+            return provider.getMaxOrder();
+        }
+
+        public double getMu() {
+            return provider.getMu();
+        }
+
+        public double getAe() {
+            return provider.getAe();
+        }
+
+        public AbsoluteDate getReferenceDate() {
+            return provider.getReferenceDate();
+        }
+
+        public double getOffset(AbsoluteDate date) {
+            return provider.getOffset(date);
+        }
+
+        public TideSystem getTideSystem() {
+            return provider.getTideSystem();
+        }
+    }
 }

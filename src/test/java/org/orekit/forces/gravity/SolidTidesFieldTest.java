@@ -37,6 +37,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.CachedNormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.TideSystem;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -51,14 +52,14 @@ import org.orekit.utils.LoveNumbers;
 import org.orekit.utils.OrekitConfiguration;
 
 
-public class TidesFieldTest {
+public class SolidTidesFieldTest {
 
     @Test
     public void testConventions2003() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
-        TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2003.getLoveNumbers(),
+        SolidTidesField tidesField =
+                new SolidTidesField(IERSConventions.IERS_2003.getLoveNumbers(),
                                IERSConventions.IERS_2003.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2003.getPermanentTide(),
                                IERSConventions.IERS_2003.getSolidPoleTide(ut1.getEopHistory()),
@@ -100,8 +101,8 @@ public class TidesFieldTest {
     public void testConventions2010() throws OrekitException, NoSuchFieldException, IllegalAccessException {
 
         UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
-        TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
+        SolidTidesField tidesField =
+                new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2010.getPermanentTide(),
                                IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
@@ -167,7 +168,7 @@ public class TidesFieldTest {
             }
         };
 
-        TidesField tf = new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
+        SolidTidesField tf = new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                        deltaCSFunction,
                                        IERSConventions.IERS_2010.getPermanentTide(),
                                        IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
@@ -177,14 +178,10 @@ public class TidesFieldTest {
                                        TideSystem.ZERO_TIDE,
                                        CelestialBodyFactory.getSun(),
                                        CelestialBodyFactory.getMoon());
-        Method frequencyDependentPart = TidesField.class.getDeclaredMethod("frequencyDependentPart", AbsoluteDate.class);
+        Method frequencyDependentPart = SolidTidesField.class.getDeclaredMethod("frequencyDependentPart", AbsoluteDate.class, double[][].class, double[][].class);
         frequencyDependentPart.setAccessible(true);
-        Field cachedCNMField = TidesField.class.getDeclaredField("cachedCnm");
-        cachedCNMField.setAccessible(true);
-        double[][] cachedCNM = (double[][]) cachedCNMField.get(tf);
-        Field cachedSNMField = TidesField.class.getDeclaredField("cachedSnm");
-        cachedSNMField.setAccessible(true);
-        double[][] cachedSNM = (double[][]) cachedSNMField.get(tf);
+        double[][] cachedCNM = new double[5][5];
+        double[][] cachedSNM = new double[5][5];
 
         AbsoluteDate t0 = new AbsoluteDate(2003, 5, 6, 13, 43, 32.125, TimeScalesFactory.getUTC());
         for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 300) {
@@ -193,7 +190,7 @@ public class TidesFieldTest {
                 Arrays.fill(cachedCNM[i], 0.0);
                 Arrays.fill(cachedSNM[i], 0.0);
             }
-            frequencyDependentPart.invoke(tf, date);
+            frequencyDependentPart.invoke(tf, date, cachedCNM, cachedSNM);
             double thetaPlusPi = gmstFunction.value(date).getValue() + FastMath.PI;
             Assert.assertEquals(470.9e-12 * FastMath.sin(thetaPlusPi) - 30.2e-12 * FastMath.cos(thetaPlusPi),
                                 cachedCNM[2][1], 2.0e-25);
@@ -211,15 +208,15 @@ public class TidesFieldTest {
         TimeScale utc = TimeScalesFactory.getUTC();
 
         AbsoluteDate date = new AbsoluteDate(2003, 5, 6, 13, 43, 32.125, utc);
-        TidesField tidesField =
-                new TidesField(IERSConventions.IERS_2010.getLoveNumbers(),
+        SolidTidesField tidesField =
+                new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2010.getPermanentTide(),
                                null,
                                FramesFactory.getITRF(IERSConventions.IERS_2010, true),
                                gravityField.getAe(), gravityField.getMu(), TideSystem.TIDE_FREE,
                                CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
-        double dateOffset = tidesField.getOffset(date);
+        NormalizedSphericalHarmonics harmonics = tidesField.onDate(date);
         double[][] refDeltaCnm = new double[][] {
             {           0.0,                     0.0,                    0.0,                   0.0,                  0.0  },
             {           0.0,                     0.0,                    0.0,                   0.0,                  0.0  },
@@ -239,8 +236,8 @@ public class TidesFieldTest {
         for (int n = 0; n < refDeltaCnm.length; ++n) {
             double threshold = (n == 2) ? 1.3e-17 : 1.0e-24;
             for (int m = 0; m <= n; ++m) {
-                Assert.assertEquals(refDeltaCnm[n][m], tidesField.getNormalizedCnm(dateOffset, n, m), threshold);
-                Assert.assertEquals(refDeltaSnm[n][m], tidesField.getNormalizedSnm(dateOffset, n, m), threshold);
+                Assert.assertEquals(refDeltaCnm[n][m], harmonics.getNormalizedCnm(n, m), threshold);
+                Assert.assertEquals(refDeltaSnm[n][m], harmonics.getNormalizedSnm(n, m), threshold);
             }
         }
     }
@@ -262,7 +259,7 @@ public class TidesFieldTest {
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(5, 5);
 
-        TidesField raw = new TidesField(conventions.getLoveNumbers(),
+        SolidTidesField raw = new SolidTidesField(conventions.getLoveNumbers(),
                                         conventions.getTideFrequencyDependenceFunction(ut1),
                                         conventions.getPermanentTide(),
                                         conventions.getSolidPoleTide(ut1.getEopHistory()),
@@ -283,20 +280,21 @@ public class TidesFieldTest {
         AbsoluteDate end   = start.shiftedBy(3 * Constants.JULIAN_DAY);
         SummaryStatistics stat = new SummaryStatistics();
         for (AbsoluteDate date = start; date.compareTo(end) < 0; date = date.shiftedBy(60)) {
-            final double dateOffset = raw.getOffset(date);
-            
+            NormalizedSphericalHarmonics rawHarmonics = raw.onDate(date);
+            NormalizedSphericalHarmonics interpolatedHarmonics = interpolated.onDate(date);
+
             for (int n = 2; n < 5; ++n) {
                 for (int m = 0; m <= n; ++m) {
 
                     if (n < 4 || m < 3) {
-                        double cnmRaw    = raw.getNormalizedCnm(dateOffset, n, m);
-                        double cnmInterp = interpolated.getNormalizedCnm(dateOffset, n, m);
+                        double cnmRaw    = rawHarmonics.getNormalizedCnm(n, m);
+                        double cnmInterp = interpolatedHarmonics.getNormalizedCnm(n, m);
                         double errorC = (cnmInterp - cnmRaw) / FastMath.abs(cnmRaw);
                         stat.addValue(errorC);
 
                         if (m > 0) {
-                            double snmRaw    = raw.getNormalizedSnm(dateOffset, n, m);
-                            double snmInterp = interpolated.getNormalizedSnm(dateOffset, n, m);
+                            double snmRaw    = rawHarmonics.getNormalizedSnm(n, m);
+                            double snmInterp = interpolatedHarmonics.getNormalizedSnm(n, m);
                             double errorS = (snmInterp - snmRaw) / FastMath.abs(snmRaw);
                             stat.addValue(errorS);
                         }

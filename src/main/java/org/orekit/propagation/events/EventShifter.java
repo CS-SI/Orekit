@@ -19,6 +19,7 @@ package org.orekit.propagation.events;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper shifting events occurrences times.
@@ -35,10 +36,10 @@ import org.orekit.time.AbsoluteDate;
  * @see EventDetector
  * @author Luc Maisonobe
  */
-public class EventShifter extends AbstractDetector {
+public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4910163524748330428L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Event detector for the raw unshifted event. */
     private final EventDetector detector;
@@ -70,11 +71,46 @@ public class EventShifter extends AbstractDetector {
      */
     public EventShifter(final EventDetector detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
-        super(detector.getMaxCheckInterval(), detector.getThreshold());
+        this(detector.getMaxCheckInterval(), detector.getThreshold(), new LocalHandler(),
+             detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param detector event detector for the raw unshifted event
+     * @param useShiftedStates if true, the state provided to {@link
+     * #eventOccurred(SpacecraftState, boolean) eventOccurred} method of
+     * the <code>detector</code> will remain shifted, otherwise it will
+     * be <i>unshifted</i> to correspond to the underlying raw event.
+     * @param increasingTimeShift increasing events time shift.
+     * @param decreasingTimeShift decreasing events time shift.
+     * @since 6.1
+     */
+    private EventShifter(final double maxCheck, final double threshold,
+                         final DetectorEventHandler<EventShifter> handler,
+                         final EventDetector detector, final boolean useShiftedStates,
+                         final double increasingTimeShift, final double decreasingTimeShift) {
+        super(maxCheck, threshold, handler);
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;
         this.decreasingOffset = -decreasingTimeShift;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected EventShifter create(final double newMaxCheck,
+                                  final double newThreshold,
+                                  final DetectorEventHandler<EventShifter> newHandler) {
+        return new EventShifter(newMaxCheck, newThreshold, newHandler,
+                                detector, useShiftedStates, -increasingOffset, -decreasingOffset);
     }
 
     /** Get the increasing events time shift.
@@ -97,26 +133,45 @@ public class EventShifter extends AbstractDetector {
     }
 
     /** {@inheritDoc} */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-
-        if (useShiftedStates) {
-            // the state provided by the caller already includes the time shift
-            return detector.eventOccurred(s, increasing);
-        }
-
-        // we need to "unshift" the state
-        final double offset = increasing ? increasingOffset : decreasingOffset;
-        return detector.eventOccurred(s.shiftedBy(offset), increasing);
-
-    }
-
-    /** {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
         final double incShiftedG = detector.g(s.shiftedBy(increasingOffset));
         final double decShiftedG = detector.g(s.shiftedBy(decreasingOffset));
         return (increasingOffset >= decreasingOffset) ?
                FastMath.max(incShiftedG, decShiftedG) : FastMath.min(incShiftedG, decShiftedG);
+    }
+
+    /** Local class for handling events. */
+    private static class LocalHandler implements DetectorEventHandler<EventShifter> {
+
+        /** Shifted state at even occurrence. */
+        private SpacecraftState shiftedState;
+
+        /** {@inheritDoc} */
+        @SuppressWarnings("deprecation")
+        public Action eventOccurred(final SpacecraftState s, final EventShifter shifter, final boolean increasing)
+            throws OrekitException {
+
+            if (shifter.useShiftedStates) {
+                // the state provided by the caller already includes the time shift
+                shiftedState = s;
+            } else {
+                // we need to "unshift" the state
+                final double offset = increasing ? shifter.increasingOffset : shifter.decreasingOffset;
+                shiftedState = s.shiftedBy(offset);
+            }
+
+            return shifter.detector.eventOccurred(shiftedState, increasing);
+
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        @SuppressWarnings("deprecation")
+        public SpacecraftState resetState(final EventShifter shifter, final SpacecraftState oldState)
+            throws OrekitException {
+            return shifter.detector.resetState(shiftedState);
+        }
+
     }
 
 }

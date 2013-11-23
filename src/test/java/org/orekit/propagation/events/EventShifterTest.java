@@ -35,6 +35,8 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.EventDetector.Action;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
@@ -196,14 +198,18 @@ public class EventShifterTest {
         throws OrekitException {
         return new EclipseDetector(60., 1.e-10,
                                    CelestialBodyFactory.getSun(), sunRadius,
-                                   CelestialBodyFactory.getEarth(), earthRadius) {
-            private static final long serialVersionUID = 1L;
-            public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                log.add(new EventEntry(s.getDate().durationFrom(iniDate), tolerance,
-                                       increasing ? nameIncreasing : nameDecreasing));
-                return Action.CONTINUE;
-            }
-        };
+                                   CelestialBodyFactory.getEarth(), earthRadius).
+                                   withHandler(new DetectorEventHandler<EclipseDetector>() {
+                                       public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
+                                                                   boolean increasing) {
+                                           log.add(new EventEntry(s.getDate().durationFrom(iniDate), tolerance,
+                                                                  increasing ? nameIncreasing : nameDecreasing));
+                                           return Action.CONTINUE;
+                                       }
+                                       public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+                                           return oldState;
+                                       }
+                                   });
     }
 
     @Before

@@ -18,6 +18,7 @@ package org.orekit.forces.gravity;
 
 
 import org.apache.commons.math3.dfp.Dfp;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.AbstractIntegrator;
@@ -299,12 +300,34 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
             return TideSystem.UNKNOWN;
         }
 
-        public double getNormalizedCnm(double dateOffset, int n, int m) {
-            return 1;
+        public double getNormalizedCnm(final double dateOffset, final int n, final int m) {
+            throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
+                                                              "this deprecated method should never be called");
         }
 
-        public double getNormalizedSnm(double dateOffset, int n, int m) {
-            return 1;
+        public double getNormalizedSnm(final double dateOffset, final int n, final int m) {
+            throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
+                                                              "this deprecated method should never be called");
+        }
+
+        @Override
+        public NormalizedSphericalHarmonics onDate(final AbsoluteDate date) throws OrekitException {
+            return new NormalizedSphericalHarmonics() {
+                @Override
+                public double getNormalizedCnm(int n, int m) throws OrekitException {
+                    return 1;
+                }
+
+                @Override
+                public double getNormalizedSnm(int n, int m) throws OrekitException {
+                    return 1;
+                }
+
+                @Override
+                public AbsoluteDate getDate() {
+                    return date;
+                }
+            };
         }
 
     }

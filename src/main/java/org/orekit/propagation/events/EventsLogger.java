@@ -22,6 +22,8 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector.Action;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** This class logs events detectors events during propagation.
@@ -157,10 +159,10 @@ public class EventsLogger implements Serializable {
     }
 
     /** Internal wrapper for events detectors. */
-    private class LoggingWrapper implements EventDetector {
+    private class LoggingWrapper extends AbstractReconfigurableDetector<LoggingWrapper> {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 2572438914929652326L;
+        private static final long serialVersionUID = 20131118L;
 
         /** Wrapped events detector. */
         private final EventDetector detector;
@@ -169,7 +171,43 @@ public class EventsLogger implements Serializable {
          * @param detector events detector to wrap
          */
         public LoggingWrapper(final EventDetector detector) {
+            this(detector.getMaxCheckInterval(), detector.getThreshold(), new LocalHandler(),
+                 detector);
+        }
+
+        /** Private constructor with full parameters.
+         * <p>
+         * This constructor is private as users are expected to use the builder
+         * API with the various {@code withXxx()} methods to set up the instance
+         * in a readable manner without using a huge amount of parameters.
+         * </p>
+         * @param maxCheck maximum checking interval (s)
+         * @param threshold convergence threshold (s)
+         * @param handler event handler to call at event occurrences
+         * @param detector events detector to wrap
+         * @since 6.1
+         */
+        private LoggingWrapper(final double maxCheck, final double threshold,
+                               final DetectorEventHandler<LoggingWrapper> handler,
+                               final EventDetector detector) {
+            super(maxCheck, threshold, handler);
             this.detector = detector;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected LoggingWrapper create(final double newMaxCheck,
+                                        final double newThreshold,
+                                        final DetectorEventHandler<LoggingWrapper> newHandler) {
+            return new LoggingWrapper(newMaxCheck, newThreshold, newHandler, detector);
+        }
+
+        /** Log an event.
+         * @param state state at event trigger date
+         * @param increasing indicator if the event switching function was increasing
+         */
+        public void logEvent(final SpacecraftState state, final boolean increasing) {
+            log.add(new LoggedEvent(detector, state, increasing));
         }
 
         /** {@inheritDoc} */
@@ -182,32 +220,25 @@ public class EventsLogger implements Serializable {
             return detector.g(s);
         }
 
+    }
+
+    /** Local class for handling events. */
+    private static class LocalHandler implements DetectorEventHandler<LoggingWrapper> {
+
         /** {@inheritDoc} */
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
+        @SuppressWarnings("deprecation")
+        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper wrapper, final boolean increasing)
             throws OrekitException {
-            log.add(new LoggedEvent(detector, s, increasing));
-            return detector.eventOccurred(s, increasing);
+            wrapper.logEvent(s, increasing);
+            return wrapper.detector.eventOccurred(s, increasing);
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState resetState(final SpacecraftState oldState)
+        @Override
+        @SuppressWarnings("deprecation")
+        public SpacecraftState resetState(final LoggingWrapper wrapper, final SpacecraftState oldState)
             throws OrekitException {
-            return detector.resetState(oldState);
-        }
-
-        /** {@inheritDoc} */
-        public double getThreshold() {
-            return detector.getThreshold();
-        }
-
-        /** {@inheritDoc} */
-        public double getMaxCheckInterval() {
-            return detector.getMaxCheckInterval();
-        }
-
-        /** {@inheritDoc} */
-        public int getMaxIterationCount() {
-            return detector.getMaxIterationCount();
+            return wrapper.detector.resetState(oldState);
         }
 
     }

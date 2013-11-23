@@ -21,8 +21,53 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Improved test coverage.
+        Fixes issue #153.
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Merged all elevation detectors into one. The new detector supports all
+        features from the previous (and now deprecated) ApparentElevationDetector
+        and GroundMaskElevationDetector.
+        Fixes issue #144.  
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Added a DetectorEventHandler interface aimed at handling only the
+        event occurrence part in propagation. This allows to separate the
+        event detection itself (which is declared by the EventDetector interface)
+        from the action to perform once the event has been detected. This also
+        allows to avoid subclassing of events, which was cumbersome. It also allows
+        to share a single handler for several events.
+        The previous behavior with eventOccurred declared at detector level and
+        subclassing is still available but is deprecated and will be removed in
+        the next major release.
+      </action>
+      <action dev="luc" type="fix" due-to="Christophe Le Bris">
+        Fixed an indexing error in Harris-Priester model.
+        Fixes issue #152.
+      </action>
+      <action dev="luc" type="add">
+        Added a new force model for ocean tides in numerical propagation, including pole tides.
+        WARNING: as of 2013-11-17, the IERS file "fes2004_Cnm-Snm.dat" seem to be inconsistent
+        with the other IERS file "fes2004dat", despite it is declared to have been computed from
+        it. The first inconsistency appears for wave Sa (Doodson number 56.554) and P1 (Doodson
+        number 163.555) : the sign of the Cnm and Snm coefficients read from "fes2004_Cnm-Snm.dat"
+        is opposite to the expected sign obtained by converting height coefficients cHat and
+        epsilon from "fes2004dat". The signs for all other waves are consistent. The second
+        inconsistency is that the file coefficients  seem to use units of 10^-11 instead of 10^-12
+        as claimed in the file header. We therefore think the published "fes2004_Cnm-Snm.dat" is
+        wrong and recommend to rather use the "fes2004dat", despite doing so limit the usable degree
+        to 6 as the k'i are not published by IERS for larger degrees.
+        Fixes issue #11.
+      </action>
+      <action dev="luc" type="fix" due-to="Lucian Barbulescu">
+        Fixed conversion from position-velocity to Keplerian, when the orbit is
+        perfectly equatorial.
+        Fixes issue #151.
+      </action>
       <action dev="luc" type="add">
         Added a new force model for solid tides in numerical propagation, including pole tides.
+        Fixes issue #10.
       </action>
       <action dev="luc" type="add">
         Added a way to select IERS conventions for non-rotating origin

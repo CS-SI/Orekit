@@ -29,6 +29,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -52,31 +53,36 @@ public class DetectorTest {
 
         Propagator propagator = new KeplerianPropagator(orbit);
         double stepSize = 60.0;
-        OutOfOrderChecker detector = new OutOfOrderChecker(date.shiftedBy(5.25 * stepSize), stepSize);
-        propagator.addEventDetector(detector);
-        propagator.setMasterMode(stepSize, detector);
+        OutOfOrderChecker checker = new OutOfOrderChecker(stepSize);
+        propagator.addEventDetector(new DateDetector(date.shiftedBy(5.25 * stepSize)).withHandler(checker));
+        propagator.setMasterMode(stepSize, checker);
         propagator.propagate(date.shiftedBy(10 * stepSize));
-        Assert.assertTrue(detector.outOfOrderCallDetected());
+        Assert.assertTrue(checker.outOfOrderCallDetected());
 
     }
 
-    private static class OutOfOrderChecker extends DateDetector implements OrekitFixedStepHandler {
+    private static class OutOfOrderChecker implements DetectorEventHandler<DateDetector>, OrekitFixedStepHandler {
 
-        private static final long serialVersionUID = 26319257020496654L;
         private AbsoluteDate triggerDate;
         private boolean outOfOrderCallDetected;
         private double stepSize;
 
-        public OutOfOrderChecker(final AbsoluteDate target, final double stepSize) {
-            super(target);
+        public OutOfOrderChecker(final double stepSize) {
             triggerDate = null;
             outOfOrderCallDetected = false;
             this.stepSize = stepSize;
         }
 
-        public Action eventOccurred(SpacecraftState s, boolean increasing) {
+        public EventDetector.Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
             triggerDate = s.getDate();
-            return Action.CONTINUE;
+            return EventDetector.Action.CONTINUE;
+        }
+
+        public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
+            return oldState;
+        }
+
+        public void init(SpacecraftState s0, AbsoluteDate t) {
         }
 
         public void handleStep(SpacecraftState currentState, boolean isLast) {

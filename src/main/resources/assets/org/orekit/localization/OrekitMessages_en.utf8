@@ -103,6 +103,15 @@ NO_GRAVITY_FIELD_DATA_LOADED = no gravity field data loaded
 # gravity field normalization underflow for degree {0} and order {1}
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = gravity field normalization underflow for degree {0} and order {1}
 
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = no ocean tide data loaded
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = ocean tide data file {0} limited to degree {1} and order {2}
+
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = polar trajectory (distance to polar axis: {0})
 

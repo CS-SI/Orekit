@@ -20,6 +20,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
@@ -27,9 +29,8 @@ import org.orekit.propagation.SpacecraftState;
  * <p>The default implementation behavior is to {@link
  * EventDetector.Action#CONTINUE continue} propagation at descending node
  * crossing and to {@link EventDetector.Action#STOP stop} propagation
- * at ascending node crossing. This can be changed by overriding the
- * {@link #eventOccurred(SpacecraftState, boolean) eventOccurred} method in a
- * derived class.</p>
+ * at ascending node crossing. This can be changed by calling
+ * {@link #withHandler(DetectorEventHandler)} after construction.</p>
  * <p>Beware that node detection will fail for almost equatorial orbits. If
  * for example a node detector is used to trigger an {@link
  * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
@@ -39,10 +40,10 @@ import org.orekit.propagation.SpacecraftState;
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
-public class NodeDetector extends AbstractDetector {
+public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 601812664015866572L;
+    private static final long serialVersionUID = 20131118L;
 
     /** Frame in which the equator is defined. */
     private final Frame frame;
@@ -56,8 +57,7 @@ public class NodeDetector extends AbstractDetector {
      * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
      */
     public NodeDetector(final Orbit orbit, final Frame frame) {
-        super(orbit.getKeplerianPeriod() / 3, 1.0e-13 * orbit.getKeplerianPeriod());
-        this.frame  = frame;
+        this(1.0e-13 * orbit.getKeplerianPeriod(), orbit, frame);
     }
 
     /** Build a new instance.
@@ -70,8 +70,38 @@ public class NodeDetector extends AbstractDetector {
      * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
-        super(orbit.getKeplerianPeriod() / 3, threshold);
-        this.frame  = frame;
+        this(orbit.getKeplerianPeriod() / 3, threshold,
+             new DetectorStopOnIncreasing<NodeDetector>(),
+             frame);
+    }
+
+    /** Private constructor with full parameters.
+     * <p>
+     * This constructor is private as users are expected to use the builder
+     * API with the various {@code withXxx()} methods to set up the instance
+     * in a readable manner without using a huge amount of parameters.
+     * </p>
+     * @param maxCheck maximum checking interval (s)
+     * @param threshold convergence threshold (s)
+     * @param handler event handler to call at event occurrences
+     * @param frame frame in which the equator is defined (typical
+     * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
+     * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
+     * @since 6.1
+     */
+    private NodeDetector(final double maxCheck, final double threshold,
+                         final DetectorEventHandler<NodeDetector> handler,
+                         final Frame frame) {
+        super(maxCheck, threshold, handler);
+        this.frame = frame;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    protected NodeDetector create(final double newMaxCheck,
+                                  final double newThreshold,
+                                  final DetectorEventHandler<NodeDetector> newHandler) {
+        return new NodeDetector(newMaxCheck, newThreshold, newHandler, frame);
     }
 
     /** Get the frame in which the equator is defined.
@@ -79,22 +109,6 @@ public class NodeDetector extends AbstractDetector {
      */
     public Frame getFrame() {
         return frame;
-    }
-
-    /** Handle a node crossing event and choose what to do next.
-     * <p>The default implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation at descending node
-     * crossing and to {@link EventDetector.Action#STOP stop} propagation
-     * at ascending node crossing.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
-     * @exception OrekitException if some specific error occurs
-     */
-    public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-        throws OrekitException {
-        return increasing ? Action.STOP : Action.CONTINUE;
     }
 
     /** Compute the value of the switching function.

@@ -39,6 +39,7 @@ import org.orekit.frames.Transform;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -968,9 +969,23 @@ public class KeplerianParametersTest {
 
     }
 
-@Test
+    @Test
+    public void testPerfectlyEquatorialConversion() throws OrekitException {
+        KeplerianOrbit initial = new KeplerianOrbit(13378000.0, 0.05, 0.0, 0.0, FastMath.PI,
+                                                    0.0, PositionAngle.MEAN,
+                                                    FramesFactory.getEME2000(), date,
+                                                    Constants.EIGEN5C_EARTH_MU);
+        EquinoctialOrbit equ = (EquinoctialOrbit) OrbitType.EQUINOCTIAL.convertType(initial);
+        KeplerianOrbit converted = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(equ);
+        Assert.assertEquals(FastMath.PI,
+                            MathUtils.normalizeAngle(converted.getRightAscensionOfAscendingNode() +
+                                                     converted.getPerigeeArgument(), FastMath.PI),
+                            1.0e-10);
+    }
+
+    @Test
     public void testSerialization()
-      throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+            throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
         Vector3D position = new Vector3D(-29536113.0, 30329259.0, -100125.0);
         Vector3D velocity = new Vector3D(-2194.0, -2141.0, -8.0);
         PVCoordinates pvCoordinates = new PVCoordinates( position, velocity);
