@@ -108,29 +108,15 @@ public class FESCHatEpsilonReaderTest {
                     double[][] cM2 = (double[][])  cMinusField.get(wave2);
                     double[][] sM2 = (double[][])  sMinusField.get(wave2);
 
-                    for (int n = 0; n <= wave1.getMaxDegree(); ++n) {
+                    for (int n = 2; n <= wave1.getMaxDegree(); ++n) {
                         for (int m = 0; m <= FastMath.min(wave1.getMaxOrder(), n); ++m) {
-
-                            final double f;
-                            if (n < 2) {
-                                // in the IERS fes2004_Cnm-Snm file, all degree 0 and 1 terms have been forced to 0
-                                f = 0;
-                            } else if (wave1.getDoodson() == 56554 || wave1.getDoodson() == 163555) {
-                                // as of 2013-11-17, it seems the conversion gives the wrong sign
-                                // only for waves Sa (56.554) and P1 (163.555), we think the problem
-                                // lies in the input files from IERS, but cannot be sure.
-                                f = -1;
-                            } else {
-                                f = 1;
-                            }
-
-                            Assert.assertEquals(cP1[n][m], f * cP2[n][m], 1.0e-14);
-                            Assert.assertEquals(sP1[n][m], f * sP2[n][m], 1.0e-14);
-                            Assert.assertEquals(cM1[n][m], f * cM2[n][m], 1.0e-14);
-                            Assert.assertEquals(sM1[n][m], f * sM2[n][m], 1.0e-14);
-
+                            Assert.assertEquals(cP1[n][m], cP2[n][m], 1.0e-14);
+                            Assert.assertEquals(sP1[n][m], sP2[n][m], 1.0e-14);
+                            Assert.assertEquals(cM1[n][m], cM2[n][m], 1.0e-14);
+                            Assert.assertEquals(sM1[n][m], sM2[n][m], 1.0e-14);
                         }
                     }
+
                 }
             }
             Assert.assertTrue(found);

@@ -124,17 +124,15 @@ public class GravityFieldFactory {
     /** Add the default READERS for ocean tides.
      * <p>
      * The default READERS supports files similar to the fes2004_Cnm-Snm.dat and
-     * fes2004.dat as published by IERS, using IERS 2010 for convertion as needed
+     * fes2004.dat as published by IERS, using IERS 2010 for convention as needed
      * (for ocean load deformation).
      * </p>
-     * <p><span style="color:red">
-     * WARNING: as of 2013-11-17, there seem to be an inconsistency when loading
-     * one or the other file, for wave Sa (Doodson number 56.554) and P1 (Doodson
-     * number 163.555). The sign of the coefficients are different. We think the
-     * problem lies in the input files from IERS and not in the conversion (which
-     * works for all other waves), but cannot be sure. For this reason, ocean
-     * tides are still considered experimental at this date.
-     * </span></p>
+     * <p>
+     * WARNING: the files referenced in the published conventions have some errors.
+     * These errors have been corrected and the updated files can be found here:
+     * <a href="http://tai.bipm.org/iers/convupdt/convupdt_c6.html">
+     * http://tai.bipm.org/iers/convupdt/convupdt_c6.html</a>.
+     * </p>
      * @exception OrekitException if astronomical amplitudes cannot be read
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #clearPotentialCoefficientsReaders()
@@ -143,7 +141,6 @@ public class GravityFieldFactory {
         throws OrekitException {
         synchronized (OCEAN_TIDES_READERS) {
 
-            // note that despite the FES2004 claims units are 10^-12, it seems they are really 10^-11
             OCEAN_TIDES_READERS.add(new FESCnmSnmReader(FES_CNM_SNM_FILENAME, 1.0e-11));
 
             final AstronomicalAmplitudeReader aaReader =

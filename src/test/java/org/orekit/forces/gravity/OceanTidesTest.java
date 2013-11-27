@@ -83,10 +83,12 @@ public class OceanTidesTest {
                        6, 6, conventions, ut1));
         SpacecraftState interpolated = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                         6, 6, IERSConventions.IERS_2010, ut1));
+        System.out.println(Vector3D.distance(raw.getPVCoordinates().getPosition(),
+                                              interpolated.getPVCoordinates().getPosition()));
         Assert.assertEquals(0.0,
                             Vector3D.distance(raw.getPVCoordinates().getPosition(),
                                               interpolated.getPVCoordinates().getPosition()),
-                            1.3e-5); // threshold would be 1.6e-3 for 30 days propagation
+                            2.5e-6); // threshold would be 3.9e-4 for 30 days propagation
 
     }
 
@@ -125,7 +127,7 @@ public class OceanTidesTest {
         SpacecraftState oceanTidesPoleTide = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                           true, SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
                           6, 6, conventions, ut1));
-        Assert.assertEquals(1.79,
+        Assert.assertEquals(3.67,
                             Vector3D.distance(noTides.getPVCoordinates().getPosition(),
                                               oceanTidesNoPoleTide.getPVCoordinates().getPosition()),
                             0.01);

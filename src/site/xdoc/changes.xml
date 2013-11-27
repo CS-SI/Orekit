@@ -48,16 +48,6 @@
       </action>
       <action dev="luc" type="add">
         Added a new force model for ocean tides in numerical propagation, including pole tides.
-        WARNING: as of 2013-11-17, the IERS file "fes2004_Cnm-Snm.dat" seem to be inconsistent
-        with the other IERS file "fes2004dat", despite it is declared to have been computed from
-        it. The first inconsistency appears for wave Sa (Doodson number 56.554) and P1 (Doodson
-        number 163.555) : the sign of the Cnm and Snm coefficients read from "fes2004_Cnm-Snm.dat"
-        is opposite to the expected sign obtained by converting height coefficients cHat and
-        epsilon from "fes2004dat". The signs for all other waves are consistent. The second
-        inconsistency is that the file coefficients  seem to use units of 10^-11 instead of 10^-12
-        as claimed in the file header. We therefore think the published "fes2004_Cnm-Snm.dat" is
-        wrong and recommend to rather use the "fes2004dat", despite doing so limit the usable degree
-        to 6 as the k'i are not published by IERS for larger degrees.
         Fixes issue #11.
       </action>
       <action dev="luc" type="fix" due-to="Lucian Barbulescu">

@@ -168,10 +168,18 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
                                                   kPrime.length - 1, n, name);
                     }
                     final double termFactor = (1 + kPrime[n]) / (2 * n + 1);
-                    final double cPlus      = commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
-                    final double sPlus      = commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
-                    final double cMinus     = commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
-                    final double sMinus     = commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
+
+                    // an update on IERS conventions from 2012-08-10 states that for FES model:
+                    //      Note that, for zonal terms, FES2004 takes the approach to set
+                    //      the retrograde coefficients C-f,nO and S-f,n0 to zero and to double
+                    //      the prograde coefficients C+f,nO and S+f,n0. Therefore, after
+                    //      applying Equation (6.15), the ΔCn0 have the expected value but the
+                    //      ΔSn0 must be set to zero.
+                    // (see ftp://tai.bipm.org/iers/convupdt/chapter6/icc6.pdf)
+                    final double cPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
+                    final double sPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
+                    final double cMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
+                    final double sMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
 
                     // store parsed fields
                     addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);
