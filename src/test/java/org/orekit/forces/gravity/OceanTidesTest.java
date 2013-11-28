@@ -83,8 +83,6 @@ public class OceanTidesTest {
                        6, 6, conventions, ut1));
         SpacecraftState interpolated = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                         6, 6, IERSConventions.IERS_2010, ut1));
-        System.out.println(Vector3D.distance(raw.getPVCoordinates().getPosition(),
-                                              interpolated.getPVCoordinates().getPosition()));
         Assert.assertEquals(0.0,
                             Vector3D.distance(raw.getPVCoordinates().getPosition(),
                                               interpolated.getPVCoordinates().getPosition()),
