@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add">
+        Added an attitude provider from tabulated attitudes.
+        Fixes issue #154.
+      </action>
       <action dev="luc" type="add" due-to="Hank Grabowski">
         Improved test coverage.
         Fixes issue #153.

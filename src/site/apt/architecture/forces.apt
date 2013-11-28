@@ -70,6 +70,10 @@ Forces
   * solar radiation pressure force, taking into account force reduction in
   penumbra and no force at all during complete eclipse,
 
+  * solid tides, with or without solid pole tide,
+
+  * ocean tides, with or without ocean pole tide,
+
   * forces induced by maneuvers. At present, only constant thrust maneuvers 
   are implemented, with the possibility to define an impulse maneuver, thanks 
   to the event detector mechanism.

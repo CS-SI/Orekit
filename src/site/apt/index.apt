@@ -105,6 +105,10 @@ Overview
 
         * radiation pressure with eclipses
 
+        * solid tides, with or without solid pole tide
+
+        * ocean tides, with or without ocean pole tide
+
         * multiple maneuvers
 
       * state of the art ODE integrators (adaptive stepsize with error control,
