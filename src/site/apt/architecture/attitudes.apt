@@ -53,8 +53,12 @@ Attitudes
   the rotation axis, but can in fact be anything...
   
   ** lof offset law, defined as a given angular offset from local orbital 
-     frame at given date.
-  
+  frame at given date.
+
+  ** tabulated law, defined by interpolating within a user-provided ephemerides,
+  using any number of interpolation points and either using or ignoring the
+  tabulated rotation rates.
+
 ** Ground pointing laws
 
   These classes are designed to represent attitude laws used to fulfill pointing missions.

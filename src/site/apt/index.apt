@@ -190,6 +190,8 @@ Overview
       * space referenced attitudes
         (inertial, celestial body-pointed, spin-stabilized)
 
+      * tabulated attitudes
+
   ** Orbit file handling
   
     * loading of SP3-a and SP3-c orbit files
