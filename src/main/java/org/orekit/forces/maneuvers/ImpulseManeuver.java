@@ -82,7 +82,8 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
      * @param isp engine specific impulse (s)
      */
     public ImpulseManeuver(final T trigger, final Vector3D deltaVSat, final double isp) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(), new Handler<T>(),
+        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
+             trigger.getMaxIterationCount(), new Handler<T>(),
              trigger, deltaVSat, isp);
     }
 
@@ -94,6 +95,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param trigger triggering event
      * @param deltaVSat velocity increment in satellite frame
@@ -101,10 +103,10 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
      * @since 6.1
      */
     private ImpulseManeuver(final double maxCheck, final double threshold,
-                            final EventHandler<ImpulseManeuver<T>> handler,
+                            final int maxIter, final EventHandler<ImpulseManeuver<T>> handler,
                             final T trigger, final Vector3D deltaVSat,
                             final double isp) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;
         this.isp       = isp;
@@ -113,10 +115,9 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
 
     /** {@inheritDoc} */
     @Override
-    protected ImpulseManeuver<T> create(final double newMaxCheck,
-                                        final double newThreshold,
-                                        final EventHandler<ImpulseManeuver<T>> newHandler) {
-        return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newHandler,
+    protected ImpulseManeuver<T> create(final double newMaxCheck, final double newThreshold,
+                                        final int newMaxIter, final EventHandler<ImpulseManeuver<T>> newHandler) {
+        return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                       trigger, deltaVSat, isp);
     }
 

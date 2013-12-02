@@ -443,18 +443,18 @@ public class NumericalPropagatorTest {
         private static final long serialVersionUID = 1L;
 
         public AdditionalStateLinearDetector(double maxCheck, double threshold) {
-            this(maxCheck, threshold, new StopOnEvent<AdditionalStateLinearDetector>());
+            this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<AdditionalStateLinearDetector>());
         }
         
-        private AdditionalStateLinearDetector(double maxCheck, double threshold,
+        private AdditionalStateLinearDetector(double maxCheck, double threshold, int maxIter,
                                               EventHandler<AdditionalStateLinearDetector> handler) {
-            super(maxCheck, threshold, handler);
+            super(maxCheck, threshold, maxIter, handler);
         }
         
-        protected AdditionalStateLinearDetector create(final double newMaxCheck,
-                                                       final double newThreshold,
+        protected AdditionalStateLinearDetector create(final double newMaxCheck, final double newThreshold,
+                                                       final int newMaxIter,
                                                        final EventHandler<AdditionalStateLinearDetector> newHandler) {
-            return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newHandler);
+            return new AdditionalStateLinearDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
         public double g(SpacecraftState s) throws OrekitException {

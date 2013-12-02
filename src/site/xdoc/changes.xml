@@ -21,6 +21,10 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" >
+        Added a way to set the maximum number of iterations for events detection.
+        Fixes issue #155.
+      </action>
       <action dev="luc" type="add">
         Added an attitude provider from tabulated attitudes.
         Fixes issue #154.

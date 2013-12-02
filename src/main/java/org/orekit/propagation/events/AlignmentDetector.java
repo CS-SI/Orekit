@@ -80,7 +80,7 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
                              final Orbit orbit,
                              final PVCoordinatesProvider body,
                              final double alignAngle) {
-        this(orbit.getKeplerianPeriod() / 3, threshold,
+        this(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER,
              new StopOnIncreasing<AlignmentDetector>(),
              body, alignAngle);
     }
@@ -93,16 +93,16 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body the body to align
      * @param alignAngle the alignment angle (rad)
      */
-    private AlignmentDetector(final double maxCheck,
-                              final double threshold,
-                              final EventHandler<AlignmentDetector> handler,
+    private AlignmentDetector(final double maxCheck, final double threshold,
+                              final int maxIter, final EventHandler<AlignmentDetector> handler,
                               final PVCoordinatesProvider body,
                               final double alignAngle) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.body          = body;
         this.alignAngle    = alignAngle;
         this.cosAlignAngle = FastMath.cos(alignAngle);
@@ -111,10 +111,9 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
 
     /** {@inheritDoc} */
     @Override
-    protected AlignmentDetector create(final double newMaxCheck,
-                                       final double newThreshold,
-                                       final EventHandler<AlignmentDetector> newHandler) {
-        return new AlignmentDetector(newMaxCheck, newThreshold, newHandler,
+    protected AlignmentDetector create(final double newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler<AlignmentDetector> newHandler) {
+        return new AlignmentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      body, alignAngle);
     }
 

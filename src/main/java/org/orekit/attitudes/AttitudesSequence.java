@@ -186,7 +186,7 @@ public class AttitudesSequence implements AttitudeProvider {
                       final boolean switchOnIncrease,
                       final boolean switchOnDecrease,
                       final AttitudeProvider next) {
-            this(event.getMaxCheckInterval(), event.getMaxIterationCount(),
+            this(event.getMaxCheckInterval(), event.getThreshold(), event.getMaxIterationCount(),
                  new Handler<T>(), event, switchOnIncrease, switchOnDecrease, next);
         }
 
@@ -198,6 +198,7 @@ public class AttitudesSequence implements AttitudeProvider {
          * </p>
          * @param maxCheck maximum checking interval (s)
          * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          * @param event event
          * @param switchOnIncrease if true, switch is triggered on increasing event
@@ -207,10 +208,10 @@ public class AttitudesSequence implements AttitudeProvider {
          * @since 6.1
          */
         private Switch(final double maxCheck, final double threshold,
-                       final EventHandler<Switch<T>> handler, final T event,
+                       final int maxIter, final EventHandler<Switch<T>> handler, final T event,
                        final boolean switchOnIncrease, final boolean switchOnDecrease,
                        final AttitudeProvider next) {
-            super(maxCheck, threshold, handler);
+            super(maxCheck, threshold, maxIter, handler);
             this.event            = event;
             this.switchOnIncrease = switchOnIncrease;
             this.switchOnDecrease = switchOnDecrease;
@@ -219,10 +220,9 @@ public class AttitudesSequence implements AttitudeProvider {
 
         /** {@inheritDoc} */
         @Override
-        protected Switch<T> create(final double newMaxCheck,
-                                   final double newThreshold,
-                                   final EventHandler<Switch<T>> newHandler) {
-            return new Switch<T>(newMaxCheck, newThreshold, newHandler,
+        protected Switch<T> create(final double newMaxCheck, final double newThreshold,
+                                   final int newMaxIter, final EventHandler<Switch<T>> newHandler) {
+            return new Switch<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                  event, switchOnIncrease, switchOnDecrease, next);
         }
 

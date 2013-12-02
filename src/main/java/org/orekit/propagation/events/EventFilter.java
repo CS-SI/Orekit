@@ -92,7 +92,8 @@ public class EventFilter extends AbstractReconfigurableDetector<EventFilter> {
      * @param filter filter to use
      */
     public EventFilter(final EventDetector rawDetector, final FilterType filter) {
-        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(), new Handler(),
+        this(rawDetector.getMaxCheckInterval(), rawDetector.getThreshold(),
+             rawDetector.getMaxIterationCount(), new Handler(),
              rawDetector, filter);
     }
 
@@ -104,15 +105,16 @@ public class EventFilter extends AbstractReconfigurableDetector<EventFilter> {
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param rawDetector event detector to wrap
      * @param filter filter to use
      * @since 6.1
      */
     private EventFilter(final double maxCheck, final double threshold,
-                        final EventHandler<EventFilter> handler,
+                        final int maxIter, final EventHandler<EventFilter> handler,
                         final EventDetector rawDetector, final FilterType filter) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.rawDetector  = rawDetector;
         this.filter       = filter;
         this.transformers = new Transformer[HISTORY_SIZE];
@@ -121,10 +123,9 @@ public class EventFilter extends AbstractReconfigurableDetector<EventFilter> {
 
     /** {@inheritDoc} */
     @Override
-    protected EventFilter create(final double newMaxCheck,
-                            final double newThreshold,
-                            final EventHandler<EventFilter> newHandler) {
-        return new EventFilter(newMaxCheck, newThreshold, newHandler, rawDetector, filter);
+    protected EventFilter create(final double newMaxCheck, final double newThreshold,
+                                 final int newMaxIter, final EventHandler<EventFilter> newHandler) {
+        return new EventFilter(newMaxCheck, newThreshold, newMaxIter, newHandler, rawDetector, filter);
     }
 
     /**  {@inheritDoc} */

@@ -121,7 +121,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
                            final PVCoordinatesProvider occulted, final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius,
                            final boolean totalEclipse) {
-        this(maxCheck, threshold, new StopOnIncreasing<EclipseDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
              occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
@@ -174,7 +174,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
     public EclipseDetector(final double maxCheck, final double threshold,
                            final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
-        this(maxCheck, threshold, new StopOnIncreasing<EclipseDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
              occulted, occultedRadius, occulting, occultingRadius, true);
     }
 
@@ -186,6 +186,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param occulted the body to be occulted
      * @param occultedRadius the radius of the body to be occulted in meters
@@ -195,11 +196,11 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * @since 6.1
      */
     private EclipseDetector(final double maxCheck, final double threshold,
-                            final EventHandler<EclipseDetector> handler,
+                            final int maxIter, final EventHandler<EclipseDetector> handler,
                             final PVCoordinatesProvider occulted,  final double occultedRadius,
                             final PVCoordinatesProvider occulting, final double occultingRadius,
                             final boolean totalEclipse) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.occulted        = occulted;
         this.occultedRadius  = FastMath.abs(occultedRadius);
         this.occulting       = occulting;
@@ -209,10 +210,9 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
 
     /** {@inheritDoc} */
     @Override
-    protected EclipseDetector create(final double newMaxCheck,
-                                     final double newThreshold,
-                                     final EventHandler<EclipseDetector> newHandler) {
-        return new EclipseDetector(newMaxCheck, newThreshold, newHandler,
+    protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
+                                     final int nawMaxIter, final EventHandler<EclipseDetector> newHandler) {
+        return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
                                    occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
@@ -226,7 +226,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * @since 6.1
      */
     public EclipseDetector withUmbra() {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
                                    occulted, occultedRadius, occulting, occultingRadius,
                                    true);
     }
@@ -241,7 +241,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * @since 6.1
      */
     public EclipseDetector withPenumbra() {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
                                    occulted, occultedRadius, occulting, occultingRadius,
                                    false);
     }

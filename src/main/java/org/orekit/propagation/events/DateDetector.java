@@ -65,7 +65,7 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      * @see #addEventDate(AbsoluteDate)
      */
     public DateDetector(final double maxCheck, final double threshold, final TimeStamped ... dates) {
-        this(maxCheck, threshold, new StopOnEvent<DateDetector>(), dates);
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<DateDetector>(), dates);
     }
 
     /** Build a new instance.
@@ -87,15 +87,15 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param dates list of event dates
      * @since 6.1
      */
-    private DateDetector(final double maxCheck,
-                         final double threshold,
-                         final EventHandler<DateDetector> handler,
+    private DateDetector(final double maxCheck, final double threshold,
+                         final int maxIter, final EventHandler<DateDetector> handler,
                          final TimeStamped ... dates) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
         this.eventDateList = new ArrayList<DateDetector.EventDate>(dates.length);
@@ -106,10 +106,9 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
 
     /** {@inheritDoc} */
     @Override
-    protected DateDetector create(final double newMaxCheck,
-                                  final double newThreshold,
-                                  final EventHandler<DateDetector> newHandler) {
-        return new DateDetector(newMaxCheck, newThreshold, newHandler,
+    protected DateDetector create(final double newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler<DateDetector> newHandler) {
+        return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }
 

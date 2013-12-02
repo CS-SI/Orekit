@@ -89,7 +89,7 @@ public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDet
                             final double threshold,
                             final double altitude,
                             final BodyShape bodyShape) {
-        this(maxCheck, threshold, new StopOnDecreasing<AltitudeDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing<AltitudeDetector>(),
              altitude, bodyShape);
     }
 
@@ -101,27 +101,26 @@ public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDet
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param altitude threshold altitude value (m)
      * @param bodyShape body shape with respect to which altitude should be evaluated
      * @since 6.1
      */
-    private AltitudeDetector(final double maxCheck,
-                             final double threshold,
-                             final EventHandler<AltitudeDetector> handler,
+    private AltitudeDetector(final double maxCheck, final double threshold,
+                             final int maxIter, final EventHandler<AltitudeDetector> handler,
                              final double altitude,
                              final BodyShape bodyShape) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected AltitudeDetector create(final double newMaxCheck,
-                                      final double newThreshold,
-                                      final EventHandler<AltitudeDetector> newHandler) {
-        return new AltitudeDetector(newMaxCheck, newThreshold, newHandler,
+    protected AltitudeDetector create(final double newMaxCheck, final double newThreshold,
+                                      final int newMaxIter, final EventHandler<AltitudeDetector> newHandler) {
+        return new AltitudeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                     altitude, bodyShape);
     }
 

@@ -65,8 +65,9 @@
 
       EventDetector <--* "1" EventShifter 
       class "AbstractReconfigurableDetector<T extends EventDetector>" as AbstractReconfigurableDetector_T_ {
-        +T withMaxcheck(double maxCheck)
+        +T withMaxCheck(double maxCheck)
         +T withThreshold(double threshold)
+        +T withMaxIter(int maxIter)
         +T withHandler(EventHandler<T> handler)
         +EventHandler<T> getHandler()
       }

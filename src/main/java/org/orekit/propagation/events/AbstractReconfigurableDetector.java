@@ -37,7 +37,7 @@ import org.orekit.propagation.events.handlers.EventHandler;
 public abstract class AbstractReconfigurableDetector<T extends EventDetector> extends AbstractDetector {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131118L;
+    private static final long serialVersionUID = 20131202L;
 
     /** Default handler for event overrides. */
     private final EventHandler<T> handler;
@@ -45,23 +45,24 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
     /** Build a new instance.
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      */
     protected AbstractReconfigurableDetector(final double maxCheck, final double threshold,
-                                             final EventHandler<T> handler) {
-        super(maxCheck, threshold);
+                                             final int maxIter, final EventHandler<T> handler) {
+        super(maxCheck, threshold, maxIter);
         this.handler = handler;
     }
 
     /** Build a new instance.
      * @param newMaxCheck maximum checking interval (s)
      * @param newThreshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      */
-    protected abstract T create(final double newMaxCheck,
-                                final double newThreshold,
-                                final EventHandler<T> newHandler);
+    protected abstract T create(final double newMaxCheck, final double newThreshold,
+                                final int maxIter, final EventHandler<T> newHandler);
 
     /**
      * Setup the maximum checking interval.
@@ -73,7 +74,20 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
      * @since 6.1
      */
     public T withMaxCheck(final double newMaxCheck) {
-        return create(newMaxCheck, getThreshold(), handler);
+        return create(newMaxCheck, getThreshold(), getMaxIterationCount(), getHandler());
+    }
+
+    /**
+     * Setup the maximum number of iterations in the event time search.
+     * <p>
+     * This will override a number of iterations if it has been configured previously.
+     * </p>
+     * @param newMaxIter maximum number of iterations in the event time search
+     * @return a new detector with updated configuration (the instance is not changed)
+     * @since 6.1
+     */
+    public T withMaxIter(final int newMaxIter) {
+        return create(getMaxCheckInterval(), getThreshold(), newMaxIter,  getHandler());
     }
 
     /**
@@ -86,7 +100,7 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
      * @since 6.1
      */
     public T withThreshold(final double newThreshold) {
-        return create(getMaxCheckInterval(), newThreshold, handler);
+        return create(getMaxCheckInterval(), newThreshold, getMaxIterationCount(),  getHandler());
     }
 
     /**
@@ -99,7 +113,7 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
      * @since 6.1
      */
     public T withHandler(final EventHandler<T> newHandler) {
-        return create(getMaxCheckInterval(), getThreshold(), newHandler);
+        return create(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), newHandler);
     }
 
     /** Get the handler.

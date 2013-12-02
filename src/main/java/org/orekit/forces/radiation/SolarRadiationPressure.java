@@ -281,7 +281,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
 
         /** Build a new instance. */
         public UmbraDetector() {
-            super(60.0, 1.0e-3, new EventHandler<UmbraDetector>() {
+            super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<UmbraDetector>() {
 
                 /** {@inheritDoc} */
                 public Action eventOccurred(final SpacecraftState s, final UmbraDetector detector,
@@ -306,20 +306,20 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
          * </p>
          * @param maxCheck maximum checking interval (s)
          * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          * @since 6.1
          */
         private UmbraDetector(final double maxCheck, final double threshold,
-                             final EventHandler<UmbraDetector> handler) {
-            super(maxCheck, threshold, handler);
+                              final int maxIter, final EventHandler<UmbraDetector> handler) {
+            super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected UmbraDetector create(final double newMaxCheck,
-                                      final double newThreshold,
-                                      final EventHandler<UmbraDetector> newHandler) {
-            return new UmbraDetector(newMaxCheck, newThreshold, newHandler);
+        protected UmbraDetector create(final double newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler<UmbraDetector> newHandler) {
+            return new UmbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and
@@ -344,7 +344,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
 
         /** Build a new instance. */
         public PenumbraDetector() {
-            super(60.0, 1.0e-3, new EventHandler<PenumbraDetector>() {
+            super(60.0, 1.0e-3, DEFAULT_MAX_ITER, new EventHandler<PenumbraDetector>() {
 
                 /** {@inheritDoc} */
                 public Action eventOccurred(final SpacecraftState s, final PenumbraDetector detector,
@@ -369,20 +369,20 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
          * </p>
          * @param maxCheck maximum checking interval (s)
          * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          * @since 6.1
          */
         private PenumbraDetector(final double maxCheck, final double threshold,
-                             final EventHandler<PenumbraDetector> handler) {
-            super(maxCheck, threshold, handler);
+                                 final int maxIter, final EventHandler<PenumbraDetector> handler) {
+            super(maxCheck, threshold, maxIter, handler);
         }
 
         /** {@inheritDoc} */
         @Override
-        protected PenumbraDetector create(final double newMaxCheck,
-                                          final double newThreshold,
-                                          final EventHandler<PenumbraDetector> newHandler) {
-            return new PenumbraDetector(newMaxCheck, newThreshold, newHandler);
+        protected PenumbraDetector create(final double newMaxCheck, final double newThreshold,
+                                          final int newMaxIter, final EventHandler<PenumbraDetector> newHandler) {
+            return new PenumbraDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
         }
 
         /** The G-function is the difference between the Sat-Sun-Sat-Earth angle and

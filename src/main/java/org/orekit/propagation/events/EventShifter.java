@@ -72,7 +72,8 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
      */
     public EventShifter(final T detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
-        this(detector.getMaxCheckInterval(), detector.getThreshold(), new LocalHandler<T>(),
+        this(detector.getMaxCheckInterval(), detector.getThreshold(),
+             detector.getMaxIterationCount(), new LocalHandler<T>(),
              detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
@@ -84,6 +85,7 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
@@ -95,10 +97,10 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
      * @since 6.1
      */
     private EventShifter(final double maxCheck, final double threshold,
-                         final EventHandler<EventShifter<T>> handler,
+                         final int maxIter, final EventHandler<EventShifter<T>> handler,
                          final T detector, final boolean useShiftedStates,
                          final double increasingTimeShift, final double decreasingTimeShift) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;
@@ -107,10 +109,9 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter<T> create(final double newMaxCheck,
-                                     final double newThreshold,
-                                     final EventHandler<EventShifter<T>> newHandler) {
-        return new EventShifter<T>(newMaxCheck, newThreshold, newHandler,
+    protected EventShifter<T> create(final double newMaxCheck, final double newThreshold,
+                                     final int newMaxIter, final EventHandler<EventShifter<T>> newHandler) {
+        return new EventShifter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                    detector, useShiftedStates, -increasingOffset, -decreasingOffset);
     }
 

@@ -62,7 +62,7 @@ public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetecto
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
         super(orbit.getKeplerianPeriod() / 3, threshold,
-              new StopOnIncreasing<ApsideDetector>());
+              DEFAULT_MAX_ITER, new StopOnIncreasing<ApsideDetector>());
     }
 
     /** Private constructor with full parameters.
@@ -73,21 +73,20 @@ public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetecto
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @since 6.1
      */
-    private ApsideDetector(final double maxCheck,
-                           final double threshold,
-                           final EventHandler<ApsideDetector> handler) {
-        super(maxCheck, threshold, handler);
+    private ApsideDetector(final double maxCheck, final double threshold,
+                           final int maxIter, final EventHandler<ApsideDetector> handler) {
+        super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ApsideDetector create(final double newMaxCheck,
-                                    final double newThreshold,
-                                    final EventHandler<ApsideDetector> newHandler) {
-        return new ApsideDetector(newMaxCheck, newThreshold, newHandler);
+    protected ApsideDetector create(final double newMaxCheck, final double newThreshold,
+                                    final int newMaxIter, final EventHandler<ApsideDetector> newHandler) {
+        return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
     /** Compute the value of the switching function.

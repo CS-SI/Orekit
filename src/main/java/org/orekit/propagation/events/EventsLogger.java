@@ -174,7 +174,8 @@ public class EventsLogger implements Serializable {
          * @param detector events detector to wrap
          */
         public LoggingWrapper(final T detector) {
-            this(detector.getMaxCheckInterval(), detector.getThreshold(), new LocalHandler<T>(),
+            this(detector.getMaxCheckInterval(), detector.getThreshold(),
+                 detector.getMaxIterationCount(), new LocalHandler<T>(),
                  detector);
         }
 
@@ -186,22 +187,23 @@ public class EventsLogger implements Serializable {
          * </p>
          * @param maxCheck maximum checking interval (s)
          * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          * @param detector events detector to wrap
          * @since 6.1
          */
         private LoggingWrapper(final double maxCheck, final double threshold,
-                               final EventHandler<LoggingWrapper<T>> handler, final T detector) {
-            super(maxCheck, threshold, handler);
+                               final int maxIter, final EventHandler<LoggingWrapper<T>> handler,
+                               final T detector) {
+            super(maxCheck, threshold, maxIter, handler);
             this.detector = detector;
         }
 
         /** {@inheritDoc} */
         @Override
-        protected LoggingWrapper<T> create(final double newMaxCheck,
-                                           final double newThreshold,
-                                           final EventHandler<LoggingWrapper<T>> newHandler) {
-            return new LoggingWrapper<T>(newMaxCheck, newThreshold, newHandler, detector);
+        protected LoggingWrapper<T> create(final double newMaxCheck, final double newThreshold,
+                                           final int newMaxIter, final EventHandler<LoggingWrapper<T>> newHandler) {
+            return new LoggingWrapper<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
         }
 
         /** Log an event.

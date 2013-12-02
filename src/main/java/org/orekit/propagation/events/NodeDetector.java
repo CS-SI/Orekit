@@ -71,7 +71,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
         this(orbit.getKeplerianPeriod() / 3, threshold,
-             new StopOnIncreasing<NodeDetector>(),
+             DEFAULT_MAX_ITER, new StopOnIncreasing<NodeDetector>(),
              frame);
     }
 
@@ -83,6 +83,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param frame frame in which the equator is defined (typical
      * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
@@ -90,18 +91,17 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      * @since 6.1
      */
     private NodeDetector(final double maxCheck, final double threshold,
-                         final EventHandler<NodeDetector> handler,
+                         final int maxIter, final EventHandler<NodeDetector> handler,
                          final Frame frame) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected NodeDetector create(final double newMaxCheck,
-                                  final double newThreshold,
-                                  final EventHandler<NodeDetector> newHandler) {
-        return new NodeDetector(newMaxCheck, newThreshold, newHandler, frame);
+    protected NodeDetector create(final double newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler<NodeDetector> newHandler) {
+        return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 
     /** Get the frame in which the equator is defined.

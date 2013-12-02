@@ -120,7 +120,7 @@ public class ApparentElevationDetector extends AbstractReconfigurableDetector<Ap
                                      final double threshold,
                                      final double elevation,
                                      final TopocentricFrame topo) {
-        this(maxCheck, threshold, new StopOnDecreasing<ApparentElevationDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing<ApparentElevationDetector>(),
              elevation, topo);
     }
 
@@ -131,28 +131,27 @@ public class ApparentElevationDetector extends AbstractReconfigurableDetector<Ap
      * in a readable manner without using a huge amount of parameters.
      * </p>
      * @param maxCheck maximum checking interval (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param threshold convergence threshold (s)
      * @param handler event handler to call at event occurrences
      * @param elevation threshold elevation value (rad)
      * @param topo topocentric frame in which elevation should be evaluated
      * @since 6.1
      */
-    private ApparentElevationDetector(final double maxCheck,
-                                      final double threshold,
-                                      final EventHandler<ApparentElevationDetector> handler,
+    private ApparentElevationDetector(final double maxCheck, final double threshold,
+                                      final int maxIter, final EventHandler<ApparentElevationDetector> handler,
                                       final double elevation,
                                       final TopocentricFrame topo) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.elevation = elevation;
         this.topo      = topo;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ApparentElevationDetector create(final double newMaxCheck,
-                                               final double newThreshold,
-                                               final EventHandler<ApparentElevationDetector> newHandler) {
-        return new ApparentElevationDetector(newMaxCheck, newThreshold, newHandler,
+    protected ApparentElevationDetector create(final double newMaxCheck, final double newThreshold,
+                                               final int newMaxIter, final EventHandler<ApparentElevationDetector> newHandler) {
+        return new ApparentElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              elevation, topo);
     }
 
