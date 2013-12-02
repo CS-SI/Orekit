@@ -35,8 +35,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
-import org.orekit.propagation.events.EventDetector.Action;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.PVCoordinates;
@@ -54,10 +53,10 @@ public class EventShifterTest {
     @Test
     public void testNegNeg() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                     true, -15, -20));
-        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                     false, -5, -10));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
+                                                                      true, -15, -20));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                                      false, -5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
         log.get(0).checkExpected(2280.238432465, "shifted decreasing");
@@ -71,10 +70,10 @@ public class EventShifterTest {
     @Test
     public void testNegPos() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                     true, -15,  20));
-        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                     false, -5,  10));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
+                                                                      true, -15,  20));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                                      false, -5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
         log.get(0).checkExpected(2300.238432465, "raw decreasing");
@@ -88,10 +87,10 @@ public class EventShifterTest {
     @Test
     public void testPosNeg() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                     true,  15, -20));
-        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                     false,  5, -10));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
+                                                                      true,  15, -20));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                                      false,  5, -10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
         log.get(0).checkExpected(2280.238432465, "shifted decreasing");
@@ -105,10 +104,10 @@ public class EventShifterTest {
     @Test
     public void testPosPos() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 1.0e-9));
-        propagator.addEventDetector(new EventShifter(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
-                                                     true,  15,  20));
-        propagator.addEventDetector(new EventShifter(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
-                                                     false,  5,  10));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("shifted increasing", "shifted decreasing", 1.0e-3),
+                                                                      true,  15,  20));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("unshifted increasing", "unshifted decreasing", 1.0e-3),
+                                                                      false,  5,  10));
         propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(6, log.size());
         log.get(0).checkExpected(2300.238432465, "raw decreasing");
@@ -122,14 +121,14 @@ public class EventShifterTest {
     @Test
     public void testIncreasingError() throws OrekitException {
         propagator.addEventDetector(createRawDetector("raw increasing", "raw decreasing", 2.0e-9));
-        propagator.addEventDetector(new EventShifter(createRawDetector("-10s increasing", "-10s decreasing", 2.0e-3),
-                                                     true, -10, -10));
-        propagator.addEventDetector(new EventShifter(createRawDetector("-100s increasing", "-100s decreasing", 3.0e-2),
-                                                     true, -100, -100));
-        propagator.addEventDetector(new EventShifter(createRawDetector("-1000s increasing", "-1000s decreasing", 4.0),
-                                                     true, -1000, -1000));
-        propagator.addEventDetector(new EventShifter(createRawDetector("-10000s increasing", "-10000s decreasing", 47),
-                                                     true, -10000, -10000));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-10s increasing", "-10s decreasing", 2.0e-3),
+                                                                      true, -10, -10));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-100s increasing", "-100s decreasing", 3.0e-2),
+                                                                      true, -100, -100));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-1000s increasing", "-1000s decreasing", 4.0),
+                                                                      true, -1000, -1000));
+        propagator.addEventDetector(new EventShifter<EclipseDetector>(createRawDetector("-10000s increasing", "-10000s decreasing", 47),
+                                                                      true, -10000, -10000));
         propagator.propagate(iniDate.shiftedBy(20000));
 
         // the raw eclipses (not all within the propagation range) are at times:
@@ -193,13 +192,13 @@ public class EventShifterTest {
         }
     }
 
-    private EventDetector createRawDetector(final String nameIncreasing, final String nameDecreasing,
-                                            final double tolerance)
+    private EclipseDetector createRawDetector(final String nameIncreasing, final String nameDecreasing,
+                                              final double tolerance)
         throws OrekitException {
         return new EclipseDetector(60., 1.e-10,
                                    CelestialBodyFactory.getSun(), sunRadius,
                                    CelestialBodyFactory.getEarth(), earthRadius).
-                                   withHandler(new DetectorEventHandler<EclipseDetector>() {
+                                   withHandler(new EventHandler<EclipseDetector>() {
                                        public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                                    boolean increasing) {
                                            log.add(new EventEntry(s.getDate().durationFrom(iniDate), tolerance,

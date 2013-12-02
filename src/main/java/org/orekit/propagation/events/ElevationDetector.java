@@ -20,7 +20,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.ElevationMask;
 
@@ -34,7 +34,7 @@ import org.orekit.utils.ElevationMask;
  * EventDetector.Action#CONTINUE continue} propagation at raising and to
  * {@link EventDetector.Action#STOP stop} propagation
  * at setting. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @author Hank Grabowski
  * @since 6.1
  */
@@ -119,7 +119,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @param topo reference to a topocentric model
      */
     private ElevationDetector(final double maxCheck, final double threshold,
-                              final DetectorEventHandler<ElevationDetector> handler,
+                              final EventHandler<ElevationDetector> handler,
                               final double minElevation, final ElevationMask mask,
                               final AtmosphericRefractionModel refractionModel,
                               final TopocentricFrame topo) {
@@ -134,7 +134,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
     @Override
     protected ElevationDetector create(final double newMaxCheck,
                                        final double newThreshold,
-                                       final DetectorEventHandler<ElevationDetector> newHandler) {
+                                       final EventHandler<ElevationDetector> newHandler) {
         return new ElevationDetector(newMaxCheck, newThreshold, newHandler,
                                      minElevation, elevationMask, refractionModel, topo);
     }

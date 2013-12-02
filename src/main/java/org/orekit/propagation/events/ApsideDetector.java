@@ -20,7 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinates;
 
@@ -30,7 +30,7 @@ import org.orekit.utils.PVCoordinates;
  * EventDetector.Action#CONTINUE continue} propagation at apogee crossing
  * and to {@link EventDetector.Action#STOP stop} propagation
  * at perigee crossing. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * <p>Beware that apside detection will fail for almost circular orbits. If
  * for example an apside detector is used to trigger an {@link
  * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
@@ -78,7 +78,7 @@ public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetecto
      */
     private ApsideDetector(final double maxCheck,
                            final double threshold,
-                           final DetectorEventHandler<ApsideDetector> handler) {
+                           final EventHandler<ApsideDetector> handler) {
         super(maxCheck, threshold, handler);
     }
 
@@ -86,7 +86,7 @@ public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetecto
     @Override
     protected ApsideDetector create(final double newMaxCheck,
                                     final double newThreshold,
-                                    final DetectorEventHandler<ApsideDetector> newHandler) {
+                                    final EventHandler<ApsideDetector> newHandler) {
         return new ApsideDetector(newMaxCheck, newThreshold, newHandler);
     }
 

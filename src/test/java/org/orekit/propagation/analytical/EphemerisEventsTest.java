@@ -21,8 +21,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.Ephemeris;
 import org.orekit.propagation.events.EclipseDetector;
-import org.orekit.propagation.events.EventDetector.Action;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -95,7 +94,7 @@ public class EphemerisEventsTest {
         EclipseDetector ecl = new EclipseDetector(60., 1.e-3,
                                                   CelestialBodyFactory.getSun(), sunRadius,
                                                   CelestialBodyFactory.getEarth(), earthRadius).
-                              withHandler(new DetectorEventHandler<EclipseDetector>() {
+                              withHandler(new EventHandler<EclipseDetector>() {
                                 public Action eventOccurred(SpacecraftState s, EclipseDetector detector,
                                                             boolean increasing)
                                     throws OrekitException {

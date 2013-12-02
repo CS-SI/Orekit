@@ -21,7 +21,7 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinates;
 
@@ -31,7 +31,7 @@ import org.orekit.utils.PVCoordinates;
  * <p>The default implementation behavior is to {@link EventDetector.Action#CONTINUE
  * continue} propagation when ascending and to {@link EventDetector.Action#STOP
  * stop} propagation when descending. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
@@ -108,7 +108,7 @@ public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDet
      */
     private AltitudeDetector(final double maxCheck,
                              final double threshold,
-                             final DetectorEventHandler<AltitudeDetector> handler,
+                             final EventHandler<AltitudeDetector> handler,
                              final double altitude,
                              final BodyShape bodyShape) {
         super(maxCheck, threshold, handler);
@@ -120,7 +120,7 @@ public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDet
     @Override
     protected AltitudeDetector create(final double newMaxCheck,
                                       final double newThreshold,
-                                      final DetectorEventHandler<AltitudeDetector> newHandler) {
+                                      final EventHandler<AltitudeDetector> newHandler) {
         return new AltitudeDetector(newMaxCheck, newThreshold, newHandler,
                                     altitude, bodyShape);
     }

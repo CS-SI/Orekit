@@ -43,7 +43,7 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
@@ -100,7 +100,7 @@ public class ElevationDetectorTest {
 
     }
 
-    private static class Checking implements DetectorEventHandler<ElevationDetector>, OrekitFixedStepHandler {
+    private static class Checking implements EventHandler<ElevationDetector>, OrekitFixedStepHandler {
 
         private TopocentricFrame topo;
         private boolean visible;
@@ -110,9 +110,9 @@ public class ElevationDetectorTest {
             this.visible = false;
         }
 
-        public EventDetector.Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
             visible = increasing;
-            return EventDetector.Action.CONTINUE;
+            return Action.CONTINUE;
         }
 
         public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {

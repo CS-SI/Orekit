@@ -20,7 +20,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Finder for satellite apparent elevation events.
@@ -42,7 +42,7 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
  * EventDetector.Action#CONTINUE continue} propagation at raising and to
  * {@link EventDetector.Action#STOP stop} propagation
  * at setting. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  * @deprecated as of 6.1 replaced by {@link ElevationDetector}
@@ -139,7 +139,7 @@ public class ApparentElevationDetector extends AbstractReconfigurableDetector<Ap
      */
     private ApparentElevationDetector(final double maxCheck,
                                       final double threshold,
-                                      final DetectorEventHandler<ApparentElevationDetector> handler,
+                                      final EventHandler<ApparentElevationDetector> handler,
                                       final double elevation,
                                       final TopocentricFrame topo) {
         super(maxCheck, threshold, handler);
@@ -151,7 +151,7 @@ public class ApparentElevationDetector extends AbstractReconfigurableDetector<Ap
     @Override
     protected ApparentElevationDetector create(final double newMaxCheck,
                                                final double newThreshold,
-                                               final DetectorEventHandler<ApparentElevationDetector> newHandler) {
+                                               final EventHandler<ApparentElevationDetector> newHandler) {
         return new ApparentElevationDetector(newMaxCheck, newThreshold, newHandler,
                                              elevation, topo);
     }

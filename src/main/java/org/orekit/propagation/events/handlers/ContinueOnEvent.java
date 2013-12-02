@@ -19,7 +19,6 @@ package org.orekit.propagation.events.handlers;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventDetector.Action;
 
 
 /**
@@ -29,7 +28,7 @@ import org.orekit.propagation.events.EventDetector.Action;
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class ContinueOnEvent<T extends EventDetector> implements DetectorEventHandler<T> {
+public class ContinueOnEvent<T extends EventDetector> implements EventHandler<T> {
 
     /**
      * Specific implementation of the eventOccurred interface.

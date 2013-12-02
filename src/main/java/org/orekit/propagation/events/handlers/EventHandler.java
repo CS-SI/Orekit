@@ -19,7 +19,6 @@ package org.orekit.propagation.events.handlers;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventDetector.Action;
 
 
 /**
@@ -34,7 +33,43 @@ import org.orekit.propagation.events.EventDetector.Action;
  * @param <T> object type that the handler is called from
  * @since 6.1
  */
-public interface DetectorEventHandler<T extends EventDetector> {
+public interface EventHandler<T extends EventDetector> {
+
+    /** Enumerate for actions to be performed when an event occurs. */
+    public enum Action {
+
+        /** Stop indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should be
+         * stopped after the event ending the current step.</p>
+         */
+        STOP,
+
+        /** Reset state indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should
+         * go on after the event ending the current step, with a new state
+         * (which will be retrieved thanks to the {@link #resetState
+         * resetState} method).</p>
+         */
+        RESET_STATE,
+
+        /** Reset derivatives indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should
+         * go on after the event ending the current step, with recomputed
+         * derivatives vector.</p>
+         */
+        RESET_DERIVATIVES,
+
+        /** Continue indicator.
+         * <p>This value should be used as the return value of the {@link
+         * #eventOccurred eventOccurred} method when the propagation should go
+         * on after the event ending the current step.</p>
+         */
+        CONTINUE;
+
+    }
 
     /**
      * eventOccurred method mirrors the same interface method as in {@link EventDetector}

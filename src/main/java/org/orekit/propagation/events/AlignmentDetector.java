@@ -21,7 +21,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -33,8 +33,8 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>The default handler behavior is to {@link EventDetector.Action#STOP stop}
  * propagation when alignment is reached. This can be changed by calling
  * the other {@link #AlignmentDetector(double, Orbit, PVCoordinatesProvider,
- * double, DetectorEventHandler) constructor} with an explicit {@link
- * DetectorEventHandler handler}.</p>
+ * double, EventHandler) constructor} with an explicit {@link
+ * EventHandler handler}.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
@@ -99,7 +99,7 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
      */
     private AlignmentDetector(final double maxCheck,
                               final double threshold,
-                              final DetectorEventHandler<AlignmentDetector> handler,
+                              final EventHandler<AlignmentDetector> handler,
                               final PVCoordinatesProvider body,
                               final double alignAngle) {
         super(maxCheck, threshold, handler);
@@ -113,7 +113,7 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
     @Override
     protected AlignmentDetector create(final double newMaxCheck,
                                        final double newThreshold,
-                                       final DetectorEventHandler<AlignmentDetector> newHandler) {
+                                       final EventHandler<AlignmentDetector> newHandler) {
         return new AlignmentDetector(newMaxCheck, newThreshold, newHandler,
                                      body, alignAngle);
     }

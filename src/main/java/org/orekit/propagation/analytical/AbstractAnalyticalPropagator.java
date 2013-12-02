@@ -74,7 +74,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     private boolean isLastStep;
 
     /** Event steps. */
-    private final Collection<EventState> eventsStates;
+    private final Collection<EventState<?>> eventsStates;
 
     /** Build a new instance.
      * @param attitudeProvider provider for attitude computation
@@ -86,7 +86,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         lastPropagationStart     = AbsoluteDate.PAST_INFINITY;
         lastPropagationEnd       = AbsoluteDate.FUTURE_INFINITY;
         statesInitialized        = false;
-        eventsStates             = new ArrayList<EventState>();
+        eventsStates             = new ArrayList<EventState<?>>();
     }
 
     /** {@inheritDoc} */
@@ -95,14 +95,14 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public void addEventDetector(final EventDetector detector) {
-        eventsStates.add(new EventState(detector));
+    public <T extends EventDetector> void addEventDetector(final T detector) {
+        eventsStates.add(new EventState<T>(detector));
     }
 
     /** {@inheritDoc} */
     public Collection<EventDetector> getEventsDetectors() {
         final List<EventDetector> list = new ArrayList<EventDetector>();
-        for (final EventState state : eventsStates) {
+        for (final EventState<?> state : eventsStates) {
             list.add(state.getEventDetector());
         }
         return Collections.unmodifiableCollection(list);
@@ -138,7 +138,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             }
 
             // initialize event detectors
-            for (final EventState es : eventsStates) {
+            for (final EventState<?> es : eventsStates) {
                 es.getEventDetector().init(state, target);
             }
 
@@ -205,7 +205,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
             final AbsoluteDate t0 = interpolator.getPreviousDate();
             interpolator.setInterpolatedDate(t0);
             final SpacecraftState y = interpolator.getInterpolatedState();
-            for (final EventState state : eventsStates) {
+            for (final EventState<?> state : eventsStates) {
                 state.reinitializeBegin(y, interpolator.isForward());
             }
 
@@ -214,8 +214,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         // search for next events that may occur during the step
-        final List<EventState> occurringEvents = new ArrayList<EventState>();
-        for (final EventState state : eventsStates) {
+        final List<EventState<?>> occurringEvents = new ArrayList<EventState<?>>();
+        for (final EventState<?> state : eventsStates) {
             if (state.evaluateStep(interpolator)) {
                 // the event occurs during the current step
                 occurringEvents.add(state);
@@ -224,10 +224,10 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         // chronological or reverse chronological sorter, according to propagation direction
         final int orderingSign = interpolator.isForward() ? +1 : -1;
-        final Comparator<EventState> sorter = new Comparator<EventState>() {
+        final Comparator<EventState<?>> sorter = new Comparator<EventState<?>>() {
 
             /** {@inheritDoc} */
-            public int compare(final EventState es0, final EventState es1) {
+            public int compare(final EventState<?> es0, final EventState<?> es1) {
                 return orderingSign * es0.getEventTime().compareTo(es1.getEventTime());
             }
 
@@ -237,8 +237,8 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             // handle the chronologically first event
             Collections.sort(occurringEvents, sorter);
-            final Iterator<EventState> iterator = occurringEvents.iterator();
-            final EventState currentEvent = iterator.next();
+            final Iterator<EventState<?>> iterator = occurringEvents.iterator();
+            final EventState<?> currentEvent = iterator.next();
             iterator.remove();
 
             // restrict the interpolator to the first part of the step, up to the event
@@ -293,7 +293,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
         interpolator.setInterpolatedDate(currentT);
         final SpacecraftState currentY = interpolator.getInterpolatedState();
-        for (final EventState state : eventsStates) {
+        for (final EventState<?> state : eventsStates) {
             state.stepAccepted(currentY);
             isLastStep = isLastStep || state.stop();
         }

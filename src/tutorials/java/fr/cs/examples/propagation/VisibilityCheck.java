@@ -33,6 +33,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
@@ -83,7 +84,8 @@ public class VisibilityCheck {
             // Event definition
             final double maxcheck  = 1.;
             final double elevation = FastMath.toRadians(5.);
-            final EventDetector sta1Visi = new VisibilityDetector(maxcheck, elevation, sta1Frame);
+            final EventDetector sta1Visi =
+                    new ElevationDetector(maxcheck, elevation, sta1Frame).withHandler(new VisibilityHandler());
 
             // Add event to be detected
             kepler.addEventDetector(sta1Visi);
@@ -98,29 +100,24 @@ public class VisibilityCheck {
         }
     }
 
-    /** Finder for visibility event.
-     * <p>This class extends the elevation detector modifying the event handler.<p>
-     */
-    private static class VisibilityDetector extends ElevationDetector {
+    /** Handler for visibility event. */
+    private static class VisibilityHandler implements EventHandler<ElevationDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 1181779674621070074L;
-
-        public VisibilityDetector(double maxCheck, double elevation, TopocentricFrame topo) {
-            super(maxCheck, elevation, topo);
-        }
-
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
-            throws OrekitException {
+        public Action eventOccurred(final SpacecraftState s, final ElevationDetector detector,
+                                    final boolean increasing) {
             if (increasing) {
-                System.out.println(" Visibility on " + getTopocentricFrame().getName()
+                System.out.println(" Visibility on " + detector.getTopocentricFrame().getName()
                                                      + " begins at " + s.getDate());
                 return Action.CONTINUE;
             } else {
-                System.out.println(" Visibility on " + getTopocentricFrame().getName()
+                System.out.println(" Visibility on " + detector.getTopocentricFrame().getName()
                                                      + " ends at " + s.getDate());
                 return Action.CONTINUE;//STOP;
             }
+        }
+
+        public SpacecraftState resetState(final ElevationDetector detector, final SpacecraftState oldState) {
+            return oldState;
         }
 
     }

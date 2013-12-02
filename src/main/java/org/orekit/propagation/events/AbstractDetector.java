@@ -57,7 +57,7 @@ public abstract class AbstractDetector implements EventDetector {
 
     /** {@inheritDoc}
      * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.DetectorEventHandler#eventOccurred(SpacecraftState,
+     * org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState,
      * EventDetector, boolean)}
      */
     @Deprecated
@@ -84,7 +84,7 @@ public abstract class AbstractDetector implements EventDetector {
 
     /** {@inheritDoc}
      * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.DetectorEventHandler#resetState(SpacecraftState)}
+     * org.orekit.propagation.events.handlers.EventHandler#resetState(SpacecraftState)}
      */
     @Deprecated
     public SpacecraftState resetState(final SpacecraftState oldState)

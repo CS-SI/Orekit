@@ -197,8 +197,9 @@ public interface Propagator extends PVCoordinatesProvider {
      * @param detector event detector to add
      * @see #clearEventsDetectors()
      * @see #getEventsDetectors()
+     * @param <T> class type for the generic version
      */
-    void addEventDetector(final EventDetector detector);
+    <T extends EventDetector> void addEventDetector(final T detector);
 
     /** Get all the events detectors that have been added.
      * @return an unmodifiable collection of the added detectors

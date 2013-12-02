@@ -31,7 +31,6 @@ import org.apache.commons.math3.ode.EquationsMapper;
 import org.apache.commons.math3.ode.ExpandableStatefulODE;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.SecondaryEquations;
-import org.apache.commons.math3.ode.events.EventHandler;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
@@ -48,7 +47,9 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.AbstractPropagator;
 import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
@@ -221,7 +222,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     }
 
     /** {@inheritDoc} */
-    public void addEventDetector(final EventDetector detector) {
+    public <T extends EventDetector> void addEventDetector(final T detector) {
         detectors.add(detector);
     }
 
@@ -246,10 +247,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Wrap an Orekit event detector and register it to the integrator.
      * @param integ integrator into which event detector should be registered
      * @param detector event detector to wrap
+     * @param <T> class type for the generic version
      */
-    protected void setUpEventDetector(final AbstractIntegrator integ,
-                                      final EventDetector detector) {
-        integ.addEventHandler(new AdaptedEventDetector(detector),
+    protected <T extends EventDetector> void setUpEventDetector(final AbstractIntegrator integ,
+                                                                final T detector) {
+        integ.addEventHandler(new AdaptedEventDetector<T>(detector),
                               detector.getMaxCheckInterval(),
                               detector.getThreshold(),
                               detector.getMaxIterationCount());
@@ -720,17 +722,18 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     /** Adapt an {@link org.orekit.propagation.events.EventDetector}
      * to commons-math {@link org.apache.commons.math3.ode.events.EventHandler} interface.
+     * @param <T> class type for the generic version
      * @author Fabien Maussion
      */
-    private class AdaptedEventDetector implements EventHandler {
+    private class AdaptedEventDetector<T extends EventDetector> implements org.apache.commons.math3.ode.events.EventHandler {
 
         /** Underlying event detector. */
-        private final EventDetector detector;
+        private final T detector;
 
         /** Build a wrapped event detector.
          * @param detector event detector to wrap
         */
-        public AdaptedEventDetector(final EventDetector detector) {
+        public AdaptedEventDetector(final T detector) {
             this.detector = detector;
         }
 
@@ -759,8 +762,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 final SpacecraftState state = getCompleteState(t, y);
-                @SuppressWarnings("deprecation")
-                final EventDetector.Action whatNext = detector.eventOccurred(state, increasing);
+                final EventHandler.Action whatNext;
+                if (detector instanceof AbstractReconfigurableDetector) {
+                    @SuppressWarnings("unchecked")
+                    final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
+                    whatNext = handler.eventOccurred(state, detector, increasing);
+                } else {
+                    @SuppressWarnings("deprecation")
+                    final EventDetector.Action a = detector.eventOccurred(state, increasing);
+                    whatNext = AbstractReconfigurableDetector.convert(a);
+                }
 
                 switch (whatNext) {
                 case STOP :

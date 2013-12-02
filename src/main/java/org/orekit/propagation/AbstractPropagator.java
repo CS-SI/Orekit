@@ -241,7 +241,7 @@ public abstract class AbstractPropagator implements Propagator {
     public abstract BoundedPropagator getGeneratedEphemeris();
 
     /** {@inheritDoc} */
-    public abstract void addEventDetector(final EventDetector detector);
+    public abstract <T extends EventDetector> void addEventDetector(final T detector);
 
     /** {@inheritDoc} */
     public abstract Collection<EventDetector> getEventsDetectors();

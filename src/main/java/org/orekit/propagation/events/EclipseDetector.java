@@ -20,7 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -30,7 +30,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>The default implementation behavior is to {@link
  * EventDetector.Action#CONTINUE continue} propagation when entering the eclipse and to
  * {@link EventDetector.Action#STOP stop} propagation when exiting the eclipse.
- * This can be changed by calling {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * This can be changed by calling {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
@@ -195,7 +195,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * @since 6.1
      */
     private EclipseDetector(final double maxCheck, final double threshold,
-                            final DetectorEventHandler<EclipseDetector> handler,
+                            final EventHandler<EclipseDetector> handler,
                             final PVCoordinatesProvider occulted,  final double occultedRadius,
                             final PVCoordinatesProvider occulting, final double occultingRadius,
                             final boolean totalEclipse) {
@@ -211,7 +211,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
     @Override
     protected EclipseDetector create(final double newMaxCheck,
                                      final double newThreshold,
-                                     final DetectorEventHandler<EclipseDetector> newHandler) {
+                                     final EventHandler<EclipseDetector> newHandler) {
         return new EclipseDetector(newMaxCheck, newThreshold, newHandler,
                                    occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }

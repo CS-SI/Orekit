@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -29,7 +29,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * EventDetector.Action#CONTINUE continue} propagation at FOV entry and to
  * {@link EventDetector.Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see DihedralFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
@@ -79,7 +79,7 @@ public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<
      */
     private CircularFieldOfViewDetector(final double maxCheck,
                                         final double threshold,
-                                        final DetectorEventHandler<CircularFieldOfViewDetector> handler,
+                                        final EventHandler<CircularFieldOfViewDetector> handler,
                                         final PVCoordinatesProvider pvTarget,
                                         final Vector3D center,
                                         final double halfAperture) {
@@ -93,7 +93,7 @@ public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<
     @Override
     protected CircularFieldOfViewDetector create(final double newMaxCheck,
                                                  final double newThreshold,
-                                                 final DetectorEventHandler<CircularFieldOfViewDetector> newHandler) {
+                                                 final EventHandler<CircularFieldOfViewDetector> newHandler) {
         return new CircularFieldOfViewDetector(newMaxCheck, newThreshold, newHandler,
                                                targetPVProvider, center, halfAperture);
     }

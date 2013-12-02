@@ -18,7 +18,7 @@ package org.orekit.propagation.events;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 
 /** Builder reconfiguration API for detectors.
  * <p>
@@ -40,7 +40,7 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
     private static final long serialVersionUID = 20131118L;
 
     /** Default handler for event overrides. */
-    private final DetectorEventHandler<T> handler;
+    private final EventHandler<T> handler;
 
     /** Build a new instance.
      * @param maxCheck maximum checking interval (s)
@@ -48,7 +48,7 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
      * @param handler event handler to call at event occurrences
      */
     protected AbstractReconfigurableDetector(final double maxCheck, final double threshold,
-                                             final DetectorEventHandler<T> handler) {
+                                             final EventHandler<T> handler) {
         super(maxCheck, threshold);
         this.handler = handler;
     }
@@ -61,7 +61,7 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
      */
     protected abstract T create(final double newMaxCheck,
                                 final double newThreshold,
-                                final DetectorEventHandler<T> newHandler);
+                                final EventHandler<T> newHandler);
 
     /**
      * Setup the maximum checking interval.
@@ -98,31 +98,73 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
      * @return a new detector with updated configuration (the instance is not changed)
      * @since 6.1
      */
-    public T withHandler(final DetectorEventHandler<T> newHandler) {
+    public T withHandler(final EventHandler<T> newHandler) {
         return create(getMaxCheckInterval(), getThreshold(), newHandler);
     }
 
     /** Get the handler.
      * @return event handler to call at event occurrences
      */
-    public DetectorEventHandler<T> getHandler() {
+    public EventHandler<T> getHandler() {
         return handler;
     }
 
     /** {@inheritDoc}
      * @deprecated as of 6.1 replaced by {@link
-     * DetectorEventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)}
+     * EventHandler#eventOccurred(SpacecraftState, EventDetector, boolean)}
      */
     @Deprecated
     public Action eventOccurred(final SpacecraftState s, final boolean increasing)
         throws OrekitException {
         @SuppressWarnings("unchecked")
         final T self = (T) this;
-        return handler.eventOccurred(s, self, increasing);
+        return convert(handler.eventOccurred(s, self, increasing));
+    }
+
+    /** Conversion between pre-6.1 EventDetector.Action and post-6.1 EventHandler.Action.
+     * @param action action to convert
+     * @return converted action
+     */
+    @SuppressWarnings("deprecation")
+    public static EventHandler.Action convert(final EventDetector.Action action) {
+        switch (action) {
+        case STOP :
+            return EventHandler.Action.STOP;
+        case RESET_STATE :
+            return EventHandler.Action.RESET_STATE;
+        case RESET_DERIVATIVES :
+            return EventHandler.Action.RESET_DERIVATIVES;
+        case CONTINUE :
+            return EventHandler.Action.CONTINUE;
+        default :
+            // this should never occur
+            throw OrekitException.createInternalError(null);
+        }
+    }
+
+    /** Conversion between post 6.1 EventHandler.Action and pre-6.1 EventDetector.Action.
+     * @param action action to convert
+     * @return converted action
+     */
+    @SuppressWarnings("deprecation")
+    public static EventDetector.Action convert(final EventHandler.Action action) {
+        switch (action) {
+        case STOP :
+            return EventDetector.Action.STOP;
+        case RESET_STATE :
+            return EventDetector.Action.RESET_STATE;
+        case RESET_DERIVATIVES :
+            return EventDetector.Action.RESET_DERIVATIVES;
+        case CONTINUE :
+            return EventDetector.Action.CONTINUE;
+        default :
+            // this should never occur
+            throw OrekitException.createInternalError(null);
+        }
     }
 
     /** {@inheritDoc}
-     * @deprecated as of 6.1 replaced by {@link DetectorEventHandler#resetState(SpacecraftState)}
+     * @deprecated as of 6.1 replaced by {@link EventHandler#resetState(SpacecraftState)}
      */
     @Deprecated
     public SpacecraftState resetState(final SpacecraftState oldState)

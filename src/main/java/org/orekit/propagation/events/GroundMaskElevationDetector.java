@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Finder for satellite azimuth-elevation events with respect to a mask.
@@ -56,7 +56,7 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
  * <p>The default implementation behavior is to {@link
  * EventDetector.Action#CONTINUE continue} propagation at raising and to
  * {@link EventDetector.Action#STOP stop} propagation at setting. This can be changed
- * by calling {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * by calling {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  * @deprecated as of 6.1 replaced by {@link ElevationDetector}
@@ -133,7 +133,7 @@ public class GroundMaskElevationDetector extends AbstractReconfigurableDetector<
      */
     private GroundMaskElevationDetector(final double maxCheck,
                              final double threshold,
-                             final DetectorEventHandler<GroundMaskElevationDetector> handler,
+                             final EventHandler<GroundMaskElevationDetector> handler,
                              final double[][] azimelev,
                              final TopocentricFrame topo) {
         super(maxCheck, threshold, handler);
@@ -145,7 +145,7 @@ public class GroundMaskElevationDetector extends AbstractReconfigurableDetector<
     @Override
     protected GroundMaskElevationDetector create(final double newMaxCheck,
                                                  final double newThreshold,
-                                                 final DetectorEventHandler<GroundMaskElevationDetector> newHandler) {
+                                                 final EventHandler<GroundMaskElevationDetector> newHandler) {
         return new GroundMaskElevationDetector(newMaxCheck, newThreshold, newHandler,
                                                azelmask, topo);
     }

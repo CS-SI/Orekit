@@ -19,7 +19,6 @@ package org.orekit.propagation.events.handlers;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventDetector.Action;
 
 
 /** Handle a detection event and choose what to do next.
@@ -32,7 +31,7 @@ import org.orekit.propagation.events.EventDetector.Action;
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class StopOnDecreasing <T extends EventDetector> implements DetectorEventHandler<T> {
+public class StopOnDecreasing <T extends EventDetector> implements EventHandler<T> {
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link

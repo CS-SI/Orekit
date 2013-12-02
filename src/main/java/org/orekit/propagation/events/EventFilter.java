@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper used to detect only increasing or decreasing events.
@@ -110,7 +110,7 @@ public class EventFilter extends AbstractReconfigurableDetector<EventFilter> {
      * @since 6.1
      */
     private EventFilter(final double maxCheck, final double threshold,
-                        final DetectorEventHandler<EventFilter> handler,
+                        final EventHandler<EventFilter> handler,
                         final EventDetector rawDetector, final FilterType filter) {
         super(maxCheck, threshold, handler);
         this.rawDetector  = rawDetector;
@@ -123,7 +123,7 @@ public class EventFilter extends AbstractReconfigurableDetector<EventFilter> {
     @Override
     protected EventFilter create(final double newMaxCheck,
                             final double newThreshold,
-                            final DetectorEventHandler<EventFilter> newHandler) {
+                            final EventHandler<EventFilter> newHandler) {
         return new EventFilter(newMaxCheck, newThreshold, newHandler, rawDetector, filter);
     }
 
@@ -231,13 +231,13 @@ public class EventFilter extends AbstractReconfigurableDetector<EventFilter> {
     }
 
     /** Local handler. */
-    private static class Handler implements DetectorEventHandler<EventFilter> {
+    private static class Handler implements EventHandler<EventFilter> {
 
         /** {@inheritDoc} */
         @SuppressWarnings("deprecation")
-        public EventDetector.Action eventOccurred(final SpacecraftState s, final EventFilter ef, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final EventFilter ef, final boolean increasing)
             throws OrekitException {
-            return ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing());
+            return AbstractReconfigurableDetector.convert(ef.rawDetector.eventOccurred(s, ef.filter.getTriggeredIncreasing()));
         }
 
         /** {@inheritDoc} */

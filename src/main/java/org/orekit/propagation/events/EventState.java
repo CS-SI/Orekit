@@ -26,6 +26,7 @@ import org.apache.commons.math3.exception.TooManyEvaluationsException;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 
@@ -44,14 +45,15 @@ import org.orekit.time.AbsoluteDate;
  * step (and hence the step should be reduced to ensure the event
  * occurs at a bound rather than inside the step).</p>
  * @author Luc Maisonobe
+ * @param <T> class type for the generic version
  */
-public class EventState implements Serializable {
+public class EventState<T extends EventDetector> implements Serializable {
 
     /** Serializable version identifier. */
     private static final long serialVersionUID = 4489391420715269318L;
 
     /** Event detector. */
-    private EventDetector detector;
+    private T detector;
 
     /** Time at the beginning of the step. */
     private AbsoluteDate t0;
@@ -80,12 +82,12 @@ public class EventState implements Serializable {
     private boolean increasing;
 
     /** Next action indicator. */
-    private EventDetector.Action nextAction;
+    private EventHandler.Action nextAction;
 
     /** Simple constructor.
      * @param detector monitored event detector
      */
-    public EventState(final EventDetector detector) {
+    public EventState(final T detector) {
         this.detector     = detector;
 
         // some dummy values ...
@@ -96,14 +98,14 @@ public class EventState implements Serializable {
         pendingEventTime  = null;
         previousEventTime = null;
         increasing        = true;
-        nextAction        = EventDetector.Action.CONTINUE;
+        nextAction        = EventHandler.Action.CONTINUE;
 
     }
 
     /** Get the underlying event detector.
      * @return underlying event detector
      */
-    public EventDetector getEventDetector() {
+    public T getEventDetector() {
         return detector;
     }
 
@@ -257,12 +259,19 @@ public class EventState implements Serializable {
             // force the sign to its value "just after the event"
             previousEventTime = state.getDate();
             g0Positive        = increasing;
-            @SuppressWarnings("deprecation")
-            final EventDetector.Action a = detector.eventOccurred(state, !(increasing ^ forward));
-            nextAction = a;
+            if (detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
+                nextAction = handler.eventOccurred(state, detector, !(increasing ^ forward));
+            } else {
+                @SuppressWarnings("deprecation")
+                final EventHandler.Action a =
+                    AbstractReconfigurableDetector.convert(detector.eventOccurred(state, !(increasing ^ forward)));
+                nextAction = a;
+            }
         } else {
             g0Positive = g0 >= 0;
-            nextAction = EventDetector.Action.CONTINUE;
+            nextAction = EventHandler.Action.CONTINUE;
         }
     }
 
@@ -271,7 +280,7 @@ public class EventState implements Serializable {
      * @return true if the propagation should be stopped
      */
     public boolean stop() {
-        return nextAction == EventDetector.Action.STOP;
+        return nextAction == EventHandler.Action.STOP;
     }
 
     /** Let the event detector reset the state if it wants.
@@ -288,7 +297,7 @@ public class EventState implements Serializable {
         }
 
         final SpacecraftState newState;
-        if (nextAction != EventDetector.Action.RESET_STATE) {
+        if (nextAction != EventHandler.Action.RESET_STATE) {
             newState = null;
         } else {
             @SuppressWarnings("deprecation")

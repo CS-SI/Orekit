@@ -38,6 +38,7 @@ import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -70,9 +71,9 @@ public class AttitudesSequenceTest {
         final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
         final EclipseDetector ed = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
         final EventDetector dayNightEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>() {
-            public EventDetector.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+            public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                 setInEclipse(s.getDate(), !increasing);
-                return EventDetector.Action.CONTINUE;
+                return EventHandler.Action.CONTINUE;
             }
         }));
         final EventDetector nightDayEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>()));

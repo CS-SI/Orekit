@@ -47,7 +47,10 @@ import org.orekit.time.AbsoluteDate;
  */
 public interface EventDetector extends Serializable {
 
-    /** Enumerate for actions to be performed when an event occurs. */
+    /** Enumerate for actions to be performed when an event occurs.
+     * @deprecated as of 6.1, replaced with {@link org.orekit.propagation.events.handlers.EventHandler.Action}
+     */
+    @Deprecated
     public enum Action {
 
         /** Stop indicator.
@@ -138,7 +141,7 @@ public interface EventDetector extends Serializable {
      * {@link EventDetector.Action#RESET_DERIVATIVES} or {@link EventDetector.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.DetectorEventHandler#eventOccurred(SpacecraftState,
+     * org.orekit.propagation.events.handlers.EventHandler#eventOccurred(SpacecraftState,
      * EventDetector, boolean)}
      */
     @Deprecated
@@ -156,7 +159,7 @@ public interface EventDetector extends Serializable {
      * @return new state
      * @exception OrekitException if the state cannot be reseted
      * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.DetectorEventHandler#resetState(SpacecraftState)}
+     * org.orekit.propagation.events.handlers.EventHandler#resetState(SpacecraftState)}
      */
     @Deprecated
     SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;

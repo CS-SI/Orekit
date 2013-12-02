@@ -20,7 +20,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
 
 /** Finder for node crossing events.
@@ -30,7 +30,7 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * EventDetector.Action#CONTINUE continue} propagation at descending node
  * crossing and to {@link EventDetector.Action#STOP stop} propagation
  * at ascending node crossing. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * <p>Beware that node detection will fail for almost equatorial orbits. If
  * for example a node detector is used to trigger an {@link
  * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
@@ -90,7 +90,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      * @since 6.1
      */
     private NodeDetector(final double maxCheck, final double threshold,
-                         final DetectorEventHandler<NodeDetector> handler,
+                         final EventHandler<NodeDetector> handler,
                          final Frame frame) {
         super(maxCheck, threshold, handler);
         this.frame = frame;
@@ -100,7 +100,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
     @Override
     protected NodeDetector create(final double newMaxCheck,
                                   final double newThreshold,
-                                  final DetectorEventHandler<NodeDetector> newHandler) {
+                                  final EventHandler<NodeDetector> newHandler) {
         return new NodeDetector(newMaxCheck, newThreshold, newHandler, frame);
     }
 

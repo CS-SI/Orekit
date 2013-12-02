@@ -35,6 +35,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -76,13 +77,8 @@ public class ApparentElevationDetectorTest {
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
         ApparentElevationDetector detector =
-            new ApparentElevationDetector(FastMath.toRadians(0.0), topo) {
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7515758050410436713L;
-                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? Action.STOP : Action.CONTINUE;
-                }
-        };
+            new ApparentElevationDetector(FastMath.toRadians(0.0), topo).
+            withHandler(new StopOnIncreasing<ApparentElevationDetector>());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -116,13 +112,8 @@ public class ApparentElevationDetectorTest {
                                                 0.0);
         TopocentricFrame topo = new TopocentricFrame(earth, point, "Gstation");
         ApparentElevationDetector detector =
-            new ApparentElevationDetector(FastMath.toRadians(2.0), topo) {
-                /** Serializable UID. */
-                private static final long serialVersionUID = 7515758050410436713L;
-                public Action eventOccurred(SpacecraftState s, boolean increasing) throws OrekitException {
-                    return increasing ? Action.STOP : Action.CONTINUE;
-                }
-        };
+            new ApparentElevationDetector(FastMath.toRadians(2.0), topo).
+            withHandler(new StopOnIncreasing<ApparentElevationDetector>());
         detector.setPressure(101325);
         detector.setTemperature(290);
 

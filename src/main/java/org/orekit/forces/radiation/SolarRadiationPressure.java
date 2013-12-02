@@ -29,7 +29,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -281,7 +281,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
 
         /** Build a new instance. */
         public UmbraDetector() {
-            super(60.0, 1.0e-3, new DetectorEventHandler<UmbraDetector>() {
+            super(60.0, 1.0e-3, new EventHandler<UmbraDetector>() {
 
                 /** {@inheritDoc} */
                 public Action eventOccurred(final SpacecraftState s, final UmbraDetector detector,
@@ -310,7 +310,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
          * @since 6.1
          */
         private UmbraDetector(final double maxCheck, final double threshold,
-                             final DetectorEventHandler<UmbraDetector> handler) {
+                             final EventHandler<UmbraDetector> handler) {
             super(maxCheck, threshold, handler);
         }
 
@@ -318,7 +318,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         @Override
         protected UmbraDetector create(final double newMaxCheck,
                                       final double newThreshold,
-                                      final DetectorEventHandler<UmbraDetector> newHandler) {
+                                      final EventHandler<UmbraDetector> newHandler) {
             return new UmbraDetector(newMaxCheck, newThreshold, newHandler);
         }
 
@@ -344,7 +344,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
 
         /** Build a new instance. */
         public PenumbraDetector() {
-            super(60.0, 1.0e-3, new DetectorEventHandler<PenumbraDetector>() {
+            super(60.0, 1.0e-3, new EventHandler<PenumbraDetector>() {
 
                 /** {@inheritDoc} */
                 public Action eventOccurred(final SpacecraftState s, final PenumbraDetector detector,
@@ -373,7 +373,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
          * @since 6.1
          */
         private PenumbraDetector(final double maxCheck, final double threshold,
-                             final DetectorEventHandler<PenumbraDetector> handler) {
+                             final EventHandler<PenumbraDetector> handler) {
             super(maxCheck, threshold, handler);
         }
 
@@ -381,7 +381,7 @@ public class SolarRadiationPressure extends AbstractParameterizable implements F
         @Override
         protected PenumbraDetector create(final double newMaxCheck,
                                           final double newThreshold,
-                                          final DetectorEventHandler<PenumbraDetector> newHandler) {
+                                          final EventHandler<PenumbraDetector> newHandler) {
             return new PenumbraDetector(newMaxCheck, newThreshold, newHandler);
         }
 

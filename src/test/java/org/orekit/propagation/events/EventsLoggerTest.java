@@ -32,8 +32,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector.Action;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -167,7 +166,7 @@ public class EventsLoggerTest {
             detector = detector.withPenumbra();
         }
 
-        detector = detector.withHandler(new DetectorEventHandler<EclipseDetector>() {
+        detector = detector.withHandler(new EventHandler<EclipseDetector>() {
 
             public Action eventOccurred(SpacecraftState s, EclipseDetector detector, boolean increasing) {
                 ++count;

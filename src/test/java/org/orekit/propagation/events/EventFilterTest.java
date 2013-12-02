@@ -30,7 +30,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
@@ -104,7 +104,7 @@ public class EventFilterTest {
 
     }
 
-    private static class Counter implements DetectorEventHandler<EclipseDetector> {
+    private static class Counter implements EventHandler<EclipseDetector> {
 
         private int increasingCounter;
         private int decreasingCounter;
@@ -118,13 +118,13 @@ public class EventFilterTest {
             decreasingCounter = 0;
         }
 
-        public EventDetector.Action eventOccurred(SpacecraftState s, EclipseDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, EclipseDetector ed, boolean increasing) {
             if (increasing) {
                 increasingCounter++;
             } else {
                 decreasingCounter++;
             }
-            return EventDetector.Action.CONTINUE;
+            return Action.CONTINUE;
         }
 
         public SpacecraftState resetState(EclipseDetector ed, SpacecraftState oldState) {

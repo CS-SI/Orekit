@@ -33,7 +33,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
@@ -89,7 +89,7 @@ public class BackAndForthDetectorTest {
 
     }
 
-    private static class Visibility implements DetectorEventHandler<ElevationDetector> {
+    private static class Visibility implements EventHandler<ElevationDetector> {
         private int _visiNb;
 
         public Visibility() {
@@ -100,9 +100,9 @@ public class BackAndForthDetectorTest {
             return _visiNb;
         }
 
-        public EventDetector.Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, ElevationDetector ed, boolean increasing) {
             _visiNb++;
-            return EventDetector.Action.CONTINUE;
+            return Action.CONTINUE;
         }
 
         public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {

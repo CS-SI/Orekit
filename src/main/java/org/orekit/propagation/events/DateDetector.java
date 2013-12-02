@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
@@ -37,7 +37,7 @@ import org.orekit.time.TimeStamped;
  * <p>The gap between the added dates must be more than the maxCheck.</p>
  * <p>The default implementation behavior is to {@link EventDetector.Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @author Pascal Parraud
@@ -93,7 +93,7 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      */
     private DateDetector(final double maxCheck,
                          final double threshold,
-                         final DetectorEventHandler<DateDetector> handler,
+                         final EventHandler<DateDetector> handler,
                          final TimeStamped ... dates) {
         super(maxCheck, threshold, handler);
         this.currentIndex  = -1;
@@ -108,7 +108,7 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
     @Override
     protected DateDetector create(final double newMaxCheck,
                                   final double newThreshold,
-                                  final DetectorEventHandler<DateDetector> newHandler) {
+                                  final EventHandler<DateDetector> newHandler) {
         return new DateDetector(newMaxCheck, newThreshold, newHandler,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }

@@ -29,7 +29,7 @@ import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -61,7 +61,7 @@ public class DetectorTest {
 
     }
 
-    private static class OutOfOrderChecker implements DetectorEventHandler<DateDetector>, OrekitFixedStepHandler {
+    private static class OutOfOrderChecker implements EventHandler<DateDetector>, OrekitFixedStepHandler {
 
         private AbsoluteDate triggerDate;
         private boolean outOfOrderCallDetected;
@@ -73,9 +73,9 @@ public class DetectorTest {
             this.stepSize = stepSize;
         }
 
-        public EventDetector.Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
             triggerDate = s.getDate();
-            return EventDetector.Action.CONTINUE;
+            return Action.CONTINUE;
         }
 
         public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {

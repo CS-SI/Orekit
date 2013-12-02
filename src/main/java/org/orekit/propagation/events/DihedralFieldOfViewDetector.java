@@ -20,7 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -30,7 +30,7 @@ import org.orekit.utils.PVCoordinatesProvider;
  * EventDetector.Action#CONTINUE continue} propagation at entry and to
  * {@link EventDetector.Action#STOP stop} propagation
  * at exit. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see CircularFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
@@ -103,7 +103,7 @@ public class DihedralFieldOfViewDetector extends AbstractReconfigurableDetector<
      */
     private DihedralFieldOfViewDetector(final double maxCheck,
                                         final double threshold,
-                                        final DetectorEventHandler<DihedralFieldOfViewDetector> handler,
+                                        final EventHandler<DihedralFieldOfViewDetector> handler,
                                         final PVCoordinatesProvider pvTarget, final Vector3D center,
                                         final Vector3D axis1, final double halfAperture1,
                                         final Vector3D axis2, final double halfAperture2) {
@@ -127,7 +127,7 @@ public class DihedralFieldOfViewDetector extends AbstractReconfigurableDetector<
     @Override
     protected DihedralFieldOfViewDetector create(final double newMaxCheck,
                                                  final double newThreshold,
-                                                 final DetectorEventHandler<DihedralFieldOfViewDetector> newHandler) {
+                                                 final EventHandler<DihedralFieldOfViewDetector> newHandler) {
         return new DihedralFieldOfViewDetector(newMaxCheck, newThreshold, newHandler,
                                                targetPVProvider, center,
                                                axis1, halfAperture1,
