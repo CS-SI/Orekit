@@ -20,6 +20,9 @@
   skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
   skinparam ClassArrowColor       #691616
   skinparam ClassBorderColor      #691616
+  skinparam NoteBackgroundColor   #F3EFEB
+  skinparam NoteBorderColor       #691616
+  skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
   package org.orekit #ECEBD8
@@ -55,7 +58,15 @@
         +Orbit getOrbit()
         +Attitude getAttitude()
         +double getMass()
+        +SpacecraftState addAdditionalState(final String name, final double ... value)
+        +boolean hasAdditionalState(final String name)
+        +double[] getAdditionalState(final String name)
+        +Map<String, double[]> getAdditionalStates()
       }
+      note bottom
+        always immutable
+        addAdditionalState creates new instances
+      end note
 
       interface Propagator {
         +int getMode()

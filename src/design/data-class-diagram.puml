@@ -54,6 +54,9 @@
         +void clearLoadedDataNames()
         +boolean feed(String supportedNames, DataLoader loader)
       }
+      note top
+        manages configuration
+      end note
 
       interface DataLoader {
         +boolean stillAcceptsData()
@@ -78,8 +81,8 @@
     end package
 
     package frames #DDEBD8
-      interface EOP2000HistoryLoader
-      DataLoader <|.. EOP2000HistoryLoader
+      interface EOPHistoryLoader
+      DataLoader <|.. EOPHistoryLoader
     end package
 
     package various.other.packages #DDEBD8

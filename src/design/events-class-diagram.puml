@@ -27,59 +27,78 @@
 
   package org.orekit.propagation #ECEBD8
 
-    interface Propagator {
-      +void addEventDetector(EventDetector detector)
-      +Collection<EventDetector> getEventsDetectors()
-      +void clearEventsDetectors()
-    }
-
     package events #DDEBD8
+
+      package handlers #CEEBD8
+
+        interface "EventHandler<T extends EventDetector>" as EventHandler_T_ {
+          +Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
+          +SpacecraftState resetState(T detector, SpacecraftState oldState)
+        }
+
+        enum Action {
+          +STOP
+          +RESET_STATE
+          +RESET_DERIVATIVES
+          +CONTINUE
+        }
+
+        ContinueOnEvent       --|> EventHandler_T_
+        StopOnEvent           --|> EventHandler_T_
+        StopOnDecreasingEvent --|> EventHandler_T_
+        StopOnIncreasingEvent --|> EventHandler_T_
+
+      end package
 
       interface EventDetector {
         +void init(SpacecraftState s0, AbsoluteDate t)
         +double g(SpacecraftState s)
-        +Action eventOccurred(SpacecraftState s, boolean increasing)
-        +SpacecraftState resetState(SpacecraftState oldState)
         +double getThreshold()
         +double getMaxCheckInterval()
         +int getMaxIterationCount()
       }
 
-      enum EventDetector.Action {
-        +STOP
-        +RESET_STATE
-        +RESET_DERIVATIVES
-        +CONTINUE
-      }
-
-      class AbstractDetector
-      note top
-        provides default implementations for
-        all methods except the g function
-        and eventOccurred
-      end note
-
       class EventShifter {
        -double increasingOffset
        -double decreasingOffset
       }
-      EventDetector <--* "1" EventShifter 
-      EventShifter --|> AbstractDetector 
 
-      Propagator "1" o--> "*" EventDetector : detectors
-      EventDetector.Action <-right-  EventDetector
-      EventDetector <|.. AbstractDetector
-      AbstractDetector <|-- AltitudeDetector
-      AbstractDetector <|-- EclipseDetector
-      AbstractDetector <|-- ElevationDetector
+      EventDetector <--* "1" EventShifter 
+      class "AbstractReconfigurableDetector<T extends EventDetector>" as AbstractReconfigurableDetector_T_ {
+        +T withMaxcheck(double maxCheck)
+        +T withThreshold(double threshold)
+        +T withHandler(EventHandler<T> handler)
+        +EventHandler<T> getHandler()
+      }
+      note right
+        temporary class in 6.1
+        will be merged with AbstractDetector in 7.0
+      end note
+      AbstractReconfigurableDetector_T_ <|-- EventShifter  
+      AbstractDetector <|-- AbstractReconfigurableDetector_T_  
+
+      Action <--  EventHandler_T_
+      EventDetector    <|.. AbstractDetector
+      AbstractReconfigurableDetector_T_ <|-- AltitudeDetector
+      AbstractReconfigurableDetector_T_ <|-- EclipseDetector
+      AbstractReconfigurableDetector_T_ <|-- ElevationDetector
       class "...Detector" as DummyDetector
-      AbstractDetector <|--DummyDetector
+      AbstractReconfigurableDetector_T_ <|-- DummyDetector
       note top
         many implementations not displayed
         for the sake of diagram clarity
       end note
 
+      EventHandler_T_ "1" <--o AbstractReconfigurableDetector_T_ : handler
+
     end package
+
+    interface Propagator {
+      +void addEventDetector(EventDetector detector)
+      +Collection<EventDetector> getEventsDetectors()
+      +void clearEventsDetectors()
+    }
+    EventDetector "*" <--o "1" Propagator : detectors
 
   end package
 
