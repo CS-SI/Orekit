@@ -22,7 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinates;
 
 /** Finder for satellite altitude crossing events.
@@ -89,7 +89,7 @@ public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDet
                             final double threshold,
                             final double altitude,
                             final BodyShape bodyShape) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<AltitudeDetector>(),
+        this(maxCheck, threshold, new StopOnDecreasing<AltitudeDetector>(),
              altitude, bodyShape);
     }
 

@@ -21,29 +21,29 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetector.Action;
 
-
 /**
- * Event handler which will always return {@link EventDetector.Action#CONTINUE continue} as a state.
+ * Event handler which will always return {@link EventDetector.Action#STOP stop} as a state.
+ *
  * @author Hank Grabowski
  *
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class DetectorContinueOnEvent<T extends EventDetector> implements DetectorEventHandler<T> {
+public class StopOnEvent <T extends EventDetector> implements DetectorEventHandler<T> {
 
     /**
      * Specific implementation of the eventOccurred interface.
      *
      * @param s SpaceCraft state to be used in the evaluation
      * @param detector object with appropriate type that can be used in determining correct return state
-     * @param increasing with the event occured in an "increasing" or "decreasing" slope direction
-     * @return {@link EventDetector.Action#CONTINUE continue} under all circumstances
+     * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
+     * @return {@link EventDetector.Action#STOP stop} under all circumstances
      * @exception OrekitException if some specific error occurs
      */
     @Override
     public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing)
         throws OrekitException {
-        return Action.CONTINUE;
+        return Action.STOP;
     }
 
     /** {@inheritDoc} */

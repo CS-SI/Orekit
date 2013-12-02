@@ -20,7 +20,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor Field Of View.
@@ -59,7 +59,7 @@ public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<
      */
     public CircularFieldOfViewDetector(final double maxCheck,
             final PVCoordinatesProvider pvTarget, final Vector3D center, final double halfAperture) {
-        this(maxCheck, 1.0e-3, new DetectorStopOnDecreasing<CircularFieldOfViewDetector>(),
+        this(maxCheck, 1.0e-3, new StopOnDecreasing<CircularFieldOfViewDetector>(),
              pvTarget, center, halfAperture);
     }
 

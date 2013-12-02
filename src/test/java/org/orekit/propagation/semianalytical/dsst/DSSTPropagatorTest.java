@@ -52,7 +52,7 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetector.Action;
 import org.orekit.propagation.events.NodeDetector;
-import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
@@ -414,7 +414,7 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         final AbsoluteDate resetDate = state.getDate().shiftedBy(1000);
-        dsstProp.addEventDetector(new DateDetector(resetDate).withHandler(new DetectorContinueOnEvent<DateDetector>() {
+        dsstProp.addEventDetector(new DateDetector(resetDate).withHandler(new ContinueOnEvent<DateDetector>() {
            public EventDetector.Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing) {
                 setGotHere(true);
                 return EventDetector.Action.CONTINUE;

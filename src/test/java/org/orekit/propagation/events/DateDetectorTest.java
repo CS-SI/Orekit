@@ -14,7 +14,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector.Action;
-import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -45,7 +45,7 @@ public class DateDetectorTest {
     public void testEmbeddedTimer() throws OrekitException {
     	dateDetector = new DateDetector(maxCheck, threshold);
     	EventDetector nodeDetector = new NodeDetector(iniOrbit, iniOrbit.getFrame()).
-    	        withHandler(new DetectorContinueOnEvent<NodeDetector>() {
+    	        withHandler(new ContinueOnEvent<NodeDetector>() {
     	            public Action eventOccurred(SpacecraftState s, NodeDetector nd, boolean increasing)
     	                throws OrekitException {
     	                if (increasing) {
@@ -66,7 +66,7 @@ public class DateDetectorTest {
     @Test
     public void testAutoEmbeddedTimer() throws OrekitException {
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(-dt)).
-                withHandler(new DetectorContinueOnEvent<DateDetector>() {
+                withHandler(new ContinueOnEvent<DateDetector>() {
                     public Action eventOccurred(SpacecraftState s, DateDetector dd,  boolean increasing)
                             throws OrekitException {
                         AbsoluteDate nextDate = s.getDate().shiftedBy(-dt);
@@ -84,7 +84,7 @@ public class DateDetectorTest {
     @Test(expected=IllegalArgumentException.class)
     public void testExceptionTimer() throws OrekitException {
         dateDetector = new DateDetector(maxCheck, threshold, iniDate.shiftedBy(dt)).
-                withHandler(new DetectorContinueOnEvent<DateDetector>() {
+                withHandler(new ContinueOnEvent<DateDetector>() {
                     public Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing)
                         throws OrekitException {
                         double step = (evtno % 2 == 0) ? 2.*maxCheck : maxCheck/2.;

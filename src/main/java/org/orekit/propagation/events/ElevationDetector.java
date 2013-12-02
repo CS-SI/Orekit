@@ -21,7 +21,7 @@ import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.ElevationMask;
 
 
@@ -67,7 +67,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public ElevationDetector(final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, new DetectorStopOnDecreasing<ElevationDetector>(),
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, new StopOnDecreasing<ElevationDetector>(),
              0.0, null, null, topo);
     }
 
@@ -84,7 +84,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      */
     @Deprecated
     public ElevationDetector(final double minElevation, final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, new DetectorStopOnDecreasing<ElevationDetector>(),
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, new StopOnDecreasing<ElevationDetector>(),
              minElevation, null, null, topo);
     }
 
@@ -100,7 +100,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      */
     public ElevationDetector(final double maxCheck, final double threshold,
                              final TopocentricFrame topo) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<ElevationDetector>(),
+        this(maxCheck, threshold, new StopOnDecreasing<ElevationDetector>(),
              0.0, null, null, topo);
     }
 

@@ -22,33 +22,28 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventDetector.Action;
 
 
-/** Handle a detection event and choose what to do next.
- * <p>The implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation when descending and to
- * {@link EventDetector.Action#STOP stop} propagation when ascending.</p>
- *
+/**
+ * Event handler which will always return {@link EventDetector.Action#CONTINUE continue} as a state.
  * @author Hank Grabowski
  *
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class DetectorStopOnIncreasing<T extends EventDetector> implements DetectorEventHandler<T> {
+public class ContinueOnEvent<T extends EventDetector> implements DetectorEventHandler<T> {
 
-    /** Handle a detection event and choose what to do next.
-     * <p>The implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation when descending and to
-     * {@link EventDetector.Action#STOP stop} propagation when ascending.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param detector the detector object calling this method (not used in the evaluation)
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
+    /**
+     * Specific implementation of the eventOccurred interface.
+     *
+     * @param s SpaceCraft state to be used in the evaluation
+     * @param detector object with appropriate type that can be used in determining correct return state
+     * @param increasing with the event occured in an "increasing" or "decreasing" slope direction
+     * @return {@link EventDetector.Action#CONTINUE continue} under all circumstances
      * @exception OrekitException if some specific error occurs
      */
     @Override
     public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing)
         throws OrekitException {
-        return increasing ? Action.STOP : Action.CONTINUE;
+        return Action.CONTINUE;
     }
 
     /** {@inheritDoc} */

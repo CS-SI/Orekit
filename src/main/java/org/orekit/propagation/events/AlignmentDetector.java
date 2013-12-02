@@ -22,7 +22,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -81,7 +81,7 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
                              final PVCoordinatesProvider body,
                              final double alignAngle) {
         this(orbit.getKeplerianPeriod() / 3, threshold,
-             new DetectorStopOnIncreasing<AlignmentDetector>(),
+             new StopOnIncreasing<AlignmentDetector>(),
              body, alignAngle);
     }
 

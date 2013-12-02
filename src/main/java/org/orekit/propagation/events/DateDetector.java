@@ -23,7 +23,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnEvent;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -65,7 +65,7 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      * @see #addEventDate(AbsoluteDate)
      */
     public DateDetector(final double maxCheck, final double threshold, final TimeStamped ... dates) {
-        this(maxCheck, threshold, new DetectorStopOnEvent<DateDetector>(), dates);
+        this(maxCheck, threshold, new StopOnEvent<DateDetector>(), dates);
     }
 
     /** Build a new instance.

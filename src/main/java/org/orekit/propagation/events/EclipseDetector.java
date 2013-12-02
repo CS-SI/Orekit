@@ -21,7 +21,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
@@ -121,7 +121,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
                            final PVCoordinatesProvider occulted, final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius,
                            final boolean totalEclipse) {
-        this(maxCheck, threshold, new DetectorStopOnIncreasing<EclipseDetector>(),
+        this(maxCheck, threshold, new StopOnIncreasing<EclipseDetector>(),
              occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
@@ -174,7 +174,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
     public EclipseDetector(final double maxCheck, final double threshold,
                            final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
-        this(maxCheck, threshold, new DetectorStopOnIncreasing<EclipseDetector>(),
+        this(maxCheck, threshold, new StopOnIncreasing<EclipseDetector>(),
              occulted, occultedRadius, occulting, occultingRadius, true);
     }
 

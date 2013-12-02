@@ -21,7 +21,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Finder for satellite apparent elevation events.
  * <p>This class finds apparent elevation events (i.e. apparent satellite raising
@@ -120,7 +120,7 @@ public class ApparentElevationDetector extends AbstractReconfigurableDetector<Ap
                                      final double threshold,
                                      final double elevation,
                                      final TopocentricFrame topo) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<ApparentElevationDetector>(),
+        this(maxCheck, threshold, new StopOnDecreasing<ApparentElevationDetector>(),
              elevation, topo);
     }
 

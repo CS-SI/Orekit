@@ -21,7 +21,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for body entering/exiting dihedral FOV events.
@@ -80,7 +80,7 @@ public class DihedralFieldOfViewDetector extends AbstractReconfigurableDetector<
                                        final PVCoordinatesProvider pvTarget, final Vector3D center,
                                        final Vector3D axis1, final double halfAperture1,
                                        final Vector3D axis2, final double halfAperture2) {
-        this(maxCheck, 1.0e-3, new DetectorStopOnDecreasing<DihedralFieldOfViewDetector>(),
+        this(maxCheck, 1.0e-3, new StopOnDecreasing<DihedralFieldOfViewDetector>(),
              pvTarget, center, axis1, halfAperture1, axis2, halfAperture2);
     }
 

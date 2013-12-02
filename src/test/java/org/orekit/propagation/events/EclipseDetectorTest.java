@@ -30,7 +30,7 @@ import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -50,7 +50,7 @@ public class EclipseDetectorTest {
     public void testEclipse() throws OrekitException {
         propagator.addEventDetector(new EclipseDetector(60., 1.e-3,
                 CelestialBodyFactory.getSun(), sunRadius,
-                CelestialBodyFactory.getEarth(), earthRadius).withHandler(new DetectorStopOnDecreasing<EclipseDetector>()));
+                CelestialBodyFactory.getEarth(), earthRadius).withHandler(new StopOnDecreasing<EclipseDetector>()));
         final SpacecraftState finalState = propagator.propagate(iniDate.shiftedBy(6000));
         Assert.assertEquals(2303.1835, finalState.getDate().durationFrom(iniDate), 1.0e-3);
 

@@ -26,7 +26,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Finder for satellite azimuth-elevation events with respect to a mask.
  * <p>This class finds elevation events (i.e. satellite raising and setting) with
@@ -114,7 +114,7 @@ public class GroundMaskElevationDetector extends AbstractReconfigurableDetector<
      */
     public GroundMaskElevationDetector(final double maxCheck, final double threshold,
                                        final double[][] azimelev, final TopocentricFrame topo) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<GroundMaskElevationDetector>(),
+        this(maxCheck, threshold, new StopOnDecreasing<GroundMaskElevationDetector>(),
              azimelev, topo);
     }
 

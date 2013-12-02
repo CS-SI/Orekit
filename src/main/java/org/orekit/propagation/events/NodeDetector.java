@@ -21,7 +21,7 @@ import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
@@ -71,7 +71,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
         this(orbit.getKeplerianPeriod() / 3, threshold,
-             new DetectorStopOnIncreasing<NodeDetector>(),
+             new StopOnIncreasing<NodeDetector>(),
              frame);
     }
 
