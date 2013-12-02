@@ -17,6 +17,7 @@
 package org.orekit.frames;
 
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.junit.Assert;
@@ -41,21 +42,21 @@ public class MODProviderTest {
 
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
-            private final PolynomialNutation zetaA =
-                    new PolynomialNutation(0.0,
-                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
-                                           0.30188   * Constants.ARC_SECONDS_TO_RADIANS,
-                                           0.017998  * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation thetaA =
-                    new PolynomialNutation(0.0,
-                                           2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
-                                           -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
-                                           -0.041833 * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation zA =
-                    new PolynomialNutation(0.0,
-                                           2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
-                                           1.09468   * Constants.ARC_SECONDS_TO_RADIANS,
-                                           0.018203  * Constants.ARC_SECONDS_TO_RADIANS);
+            private final PolynomialNutation<DerivativeStructure> zetaA =
+                    new PolynomialNutation<DerivativeStructure>(0.0,
+                            2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
+                            0.30188   * Constants.ARC_SECONDS_TO_RADIANS,
+                            0.017998  * Constants.ARC_SECONDS_TO_RADIANS);
+            private final PolynomialNutation<DerivativeStructure> thetaA =
+                    new PolynomialNutation<DerivativeStructure>(0.0,
+                            2004.3109 * Constants.ARC_SECONDS_TO_RADIANS,
+                            -0.42665  * Constants.ARC_SECONDS_TO_RADIANS,
+                            -0.041833 * Constants.ARC_SECONDS_TO_RADIANS);
+            private final PolynomialNutation<DerivativeStructure> zA =
+                    new PolynomialNutation<DerivativeStructure>(0.0,
+                            2306.2181 * Constants.ARC_SECONDS_TO_RADIANS,
+                            1.09468   * Constants.ARC_SECONDS_TO_RADIANS,
+                            0.018203  * Constants.ARC_SECONDS_TO_RADIANS);
 
             public Transform getTransform(AbsoluteDate date) {
                 final double tc = IERSConventions.IERS_1996.evaluateTC(date);
@@ -85,22 +86,22 @@ public class MODProviderTest {
         // is from equation 33 in IERS conventions 2003
         TransformProvider eulerBasedProvider = new TransformProvider() {
             private static final long serialVersionUID = 1L;
-            private final PolynomialNutation zetaA =
-                    new PolynomialNutation(   2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
+            private final PolynomialNutation<DerivativeStructure> zetaA =
+                    new PolynomialNutation<DerivativeStructure>(   2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
                                            2306.0809506 * Constants.ARC_SECONDS_TO_RADIANS,
                                               0.3019015 * Constants.ARC_SECONDS_TO_RADIANS,
                                               0.0179663 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000327 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000002 * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation thetaA =
-                    new PolynomialNutation(0.0,
+            private final PolynomialNutation<DerivativeStructure> thetaA =
+                    new PolynomialNutation<DerivativeStructure>(0.0,
                                            2004.1917476 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.4269353 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0418251 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000601 * Constants.ARC_SECONDS_TO_RADIANS,
                                              -0.0000001 * Constants.ARC_SECONDS_TO_RADIANS);
-            private final PolynomialNutation zA =
-                    new PolynomialNutation(  -2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
+            private final PolynomialNutation<DerivativeStructure> zA =
+                    new PolynomialNutation<DerivativeStructure>(  -2.5976176 * Constants.ARC_SECONDS_TO_RADIANS,
                                            2306.0803226 * Constants.ARC_SECONDS_TO_RADIANS,
                                               1.0947790 * Constants.ARC_SECONDS_TO_RADIANS,
                                               0.0182273 * Constants.ARC_SECONDS_TO_RADIANS,
