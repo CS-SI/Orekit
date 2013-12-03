@@ -80,7 +80,7 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE = keine Eintragungen in IERS UTC-TAI His
 MISSING_SERIE_J_IN_FILE = Serie j = {0} fehlt in der Datei {1} (Zeile {2})
 
 # cannot parse both τ and γ from the same Poissons series file
-CANNOT_PARSE_BOTH_TAU_AND_GAMMA = <MISSING TRANSLATION>
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = es kann nicht gleichzeitig τ und γ aus der selben Poissonreihen Datei geparst werden
 
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = unerwartetes Ende der Datei {0} (hinter Zeile {1})
@@ -104,13 +104,13 @@ NO_GRAVITY_FIELD_DATA_LOADED = keine Gravitationsfeld Daten geladen
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = Gravitätsfeld-Normalisierung hat einen underflow für Degree {0} und Order {1}
 
 # no ocean tide data loaded
-NO_OCEAN_TIDE_DATA_LOADED = <MISSING TRANSLATION>
+NO_OCEAN_TIDE_DATA_LOADED = keine Gezeitendaten geladen
 
 # ocean tide data file {0} limited to degree {1} and order {2}
-OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = Gezeitendaten Datei {0} ist begrenzt auf Degree {1} und Order {2}
 
 # load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
-OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = Lastdeformierungs-Koeffizienten sind begrenzt bis Degree {0}, Element für Degree {1} aus Datei {2} kann nicht geparst werden
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = polare Umlaufbahn (Entfernung zu Polachse: {0})
@@ -284,22 +284,22 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ungültige Länge des Zeitfelds in CCSDS 
 CCSDS_DATE_MISSING_AGENCY_EPOCH = fehlende Agency Epoche in CCSDS Datum
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
-CCSDS_UNEXPECTED_KEYWORD = <MISSING TRANSLATION>
+CCSDS_UNEXPECTED_KEYWORD = unerwartetes Schlüsselwort in CCSDS Zeilennummer {0} in Datei {1}:\n{2}
 
 # the central body gravitational coefficient cannot be retrieved from the OPM
-CCSDS_UNKNOWN_GM = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_GM = der Gravitationskoeffizient des Zentralkörpers kann nicht aus den OPM Daten gelesen werden
 
 # there is no spacecraft mass associated with this ODM file
-CCSDS_UNKNOWN_SPACECRAFT_MASS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_SPACECRAFT_MASS = keine Satellitenmasse definiert in dieser ODM Datei
 
 # no IERS conventions have been set before parsing
-CCSDS_UNKNOWN_CONVENTIONS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_CONVENTIONS = es wurden keine IERS Richtlinien eingestellt vor dem Parsen
 
 # frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = <MISSING TRANSLATION>
+CCSDS_INVALID_FRAME = Koordinatennetz {0} ist nicht gültig im Kontext dieser ODM Datei
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inkonsistente Zeitreferenz im Ephemeris-Block: {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = Name "{0}" wird bereits für einen anderen Zustand verwendet
