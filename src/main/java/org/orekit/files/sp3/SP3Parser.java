@@ -143,6 +143,7 @@ public class SP3Parser implements OrbitFileParser {
         throws OrekitException {
 
         final SP3File file = pi.file;
+        @SuppressWarnings("resource") // we scan a String which is not closeable
         final Scanner scanner = new Scanner(line).useDelimiter("\\s+").useLocale(Locale.US);
 
         // CHECKSTYLE: stop FallThrough check
