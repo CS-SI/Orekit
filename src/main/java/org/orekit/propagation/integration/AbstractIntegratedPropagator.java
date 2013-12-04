@@ -792,8 +792,16 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         public void resetState(final double t, final double[] y) {
             try {
                 final SpacecraftState oldState = getCompleteState(t, y);
-                @SuppressWarnings("deprecation")
-                final SpacecraftState newState = detector.resetState(oldState);
+                final SpacecraftState newState;
+                if (detector instanceof AbstractReconfigurableDetector) {
+                    @SuppressWarnings("unchecked")
+                    final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
+                    newState = handler.resetState(detector, oldState);
+                } else {
+                    @SuppressWarnings("deprecation")
+                    final SpacecraftState s = detector.resetState(oldState);
+                    newState = s;
+                }
 
                 // main part
                 stateMapper.mapStateToArray(newState, y);

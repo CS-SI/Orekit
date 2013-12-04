@@ -232,7 +232,6 @@ public class EventsLogger implements Serializable {
     private static class LocalHandler<T extends EventDetector> implements EventHandler<LoggingWrapper<T>> {
 
         /** {@inheritDoc} */
-        @SuppressWarnings("deprecation")
         public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing)
             throws OrekitException {
             wrapper.logEvent(s, increasing);
@@ -241,16 +240,25 @@ public class EventsLogger implements Serializable {
                 final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) wrapper.detector).getHandler();
                 return handler.eventOccurred(s, wrapper.detector, increasing);
             } else {
-                return AbstractReconfigurableDetector.convert(wrapper.detector.eventOccurred(s, increasing));
+                @SuppressWarnings("deprecation")
+                final EventDetector.Action a = wrapper.detector.eventOccurred(s, increasing);
+                return AbstractReconfigurableDetector.convert(a);
             }
         }
 
         /** {@inheritDoc} */
         @Override
-        @SuppressWarnings("deprecation")
         public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState)
             throws OrekitException {
-            return wrapper.detector.resetState(oldState);
+            if (wrapper.detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) wrapper.detector).getHandler();
+                return handler.resetState(wrapper.detector, oldState);
+            } else {
+                @SuppressWarnings("deprecation")
+                final SpacecraftState newState = wrapper.detector.resetState(oldState);
+                return newState;
+            }
         }
 
     }

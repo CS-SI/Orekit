@@ -300,9 +300,15 @@ public class EventState<T extends EventDetector> implements Serializable {
         if (nextAction != EventHandler.Action.RESET_STATE) {
             newState = null;
         } else {
-            @SuppressWarnings("deprecation")
-            final SpacecraftState s = detector.resetState(oldState);
-            newState = s;
+            if (detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) detector).getHandler();
+                newState = handler.resetState(detector, oldState);
+            } else {
+                @SuppressWarnings("deprecation")
+                final SpacecraftState s = detector.resetState(oldState);
+                newState = s;
+            }
         }
 
         pendingEvent      = false;

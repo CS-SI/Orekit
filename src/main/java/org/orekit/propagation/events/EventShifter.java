@@ -149,7 +149,6 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
         private SpacecraftState shiftedState;
 
         /** {@inheritDoc} */
-        @SuppressWarnings("deprecation")
         public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing)
             throws OrekitException {
 
@@ -167,17 +166,26 @@ public class EventShifter<T extends EventDetector> extends AbstractReconfigurabl
                 final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) shifter.detector).getHandler();
                 return handler.eventOccurred(shiftedState, shifter.detector, increasing);
             } else {
-                return AbstractReconfigurableDetector.convert(shifter.detector.eventOccurred(shiftedState, increasing));
+                @SuppressWarnings("deprecation")
+                final EventDetector.Action a = shifter.detector.eventOccurred(shiftedState, increasing);
+                return AbstractReconfigurableDetector.convert(a);
             }
 
         }
 
         /** {@inheritDoc} */
         @Override
-        @SuppressWarnings("deprecation")
         public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState)
             throws OrekitException {
-            return shifter.detector.resetState(shiftedState);
+            if (shifter.detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) shifter.detector).getHandler();
+                return handler.resetState(shifter.detector, shiftedState);
+            } else {
+                @SuppressWarnings("deprecation")
+                final SpacecraftState newState = shifter.detector.resetState(shiftedState);
+                return newState;
+            }
         }
 
     }
