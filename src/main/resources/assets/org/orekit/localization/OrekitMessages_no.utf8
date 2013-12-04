@@ -286,7 +286,7 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = manglende byrå epoke for CCSDS dato
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = <MISSING TRANSLATION>
 
-# the central body gravitational coefficient cannot be retrieved from the OPM
+# the central body gravitational coefficient cannot be retrieved from the ODM
 CCSDS_UNKNOWN_GM = <MISSING TRANSLATION>
 
 # there is no spacecraft mass associated with this ODM file

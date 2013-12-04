@@ -286,8 +286,8 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = fehlende Agency Epoche in CCSDS Datum
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = unerwartetes Schlüsselwort in CCSDS Zeilennummer {0} in Datei {1}:\n{2}
 
-# the central body gravitational coefficient cannot be retrieved from the OPM
-CCSDS_UNKNOWN_GM = der Gravitationskoeffizient des Zentralkörpers kann nicht aus den OPM Daten gelesen werden
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = der Gravitationskoeffizient des Zentralkörpers kann nicht aus den ODM Daten gelesen werden
 
 # there is no spacecraft mass associated with this ODM file
 CCSDS_UNKNOWN_SPACECRAFT_MASS = keine Satellitenmasse definiert in dieser ODM Datei
