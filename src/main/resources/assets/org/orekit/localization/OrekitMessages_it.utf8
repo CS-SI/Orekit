@@ -80,7 +80,7 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  nessun dato trovato nel file storico 
 MISSING_SERIE_J_IN_FILE = serie j = {0} mancante nel file {1} (linea {2})
 
 # cannot parse both τ and γ from the same Poissons series file
-CANNOT_PARSE_BOTH_TAU_AND_GAMMA = <MISSING TRANSLATION>
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = impossibile leggere allo stesso tempo τ e γ a partire dallo stesso file di serie di Poisson
 
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = fine inattesa del file {0} (dopo la linea {1})
@@ -104,13 +104,13 @@ NO_GRAVITY_FIELD_DATA_LOADED = i dati del campo gravitazionale non sono caricati
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = sottoflusso della normalizzazione del campo gravitazionale per il grado {0} e l''ordine {1}
 
 # no ocean tide data loaded
-NO_OCEAN_TIDE_DATA_LOADED = <MISSING TRANSLATION>
+NO_OCEAN_TIDE_DATA_LOADED = non è stato caricato nessun dato di marea oceanica
 
 # ocean tide data file {0} limited to degree {1} and order {2}
-OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = il file di maree oceaniche {0} è limitato al grado {1} e all''ordine {2}
 
 # load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
-OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = coefficienti di deformazione sotto carico limitati al grado {0}, impossibile leggere un termine di grado {1} nel file {2}
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = traiettoria polare (distanza dall''asse polare: {0})
@@ -284,22 +284,22 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = lunghezza non valida per il campo del tem
 CCSDS_DATE_MISSING_AGENCY_EPOCH = epoca di riferimento specifica dell''agenzia mancante nella data CCSDS
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
-CCSDS_UNEXPECTED_KEYWORD = <MISSING TRANSLATION>
+CCSDS_UNEXPECTED_KEYWORD = parola-chiave inattesa alla linea {0} del file CCSDS {1} :\n{2}
 
 # the central body gravitational coefficient cannot be retrieved from the OPM
-CCSDS_UNKNOWN_GM = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_GM = il coefficiente d''attrazione gravitazionale non può essere recuperato nell''OPM
 
 # there is no spacecraft mass associated with this ODM file
-CCSDS_UNKNOWN_SPACECRAFT_MASS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_SPACECRAFT_MASS = nessuna massa associata al veicolo spaziale nel file ODM
 
 # no IERS conventions have been set before parsing
-CCSDS_UNKNOWN_CONVENTIONS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_CONVENTIONS = le convenzioni IERS non sono state inizializzate prima della lettura
 
 # frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = <MISSING TRANSLATION>
+CCSDS_INVALID_FRAME = il frame {0} non è valido in questo contesto del file ODM
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemi temporali incoerenti nei blocchi di effemeridi : {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = il nome "{0}" è già utilizzato per uno stato aggiuntivo
