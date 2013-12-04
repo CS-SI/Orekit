@@ -50,6 +50,8 @@
 
       end package
 
+      class EventsLogger
+
       interface EventDetector {
         +void init(SpacecraftState s0, AbsoluteDate t)
         +double g(SpacecraftState s)
@@ -71,14 +73,28 @@
         +T withHandler(EventHandler<T> handler)
         +EventHandler<T> getHandler()
       }
-      note right
+      note left
         temporary class in 6.1
-        will be merged with AbstractDetector in 7.0
+        will be merged with
+        AbstractDetector in 7.0
       end note
-      AbstractReconfigurableDetector_T_ <|-- EventShifter  
-      AbstractDetector <|-- AbstractReconfigurableDetector_T_  
 
-      Action <--  EventHandler_T_
+      class EventFilter
+      enum FilterType {
+	    TRIGGER_ONLY_DECREASING_EVENTS
+	    TRIGGER_ONLY_INCREASING_EVENTS
+      }
+
+      EventsLogger "*" *--> EventDetector : monitors
+
+      EventDetector <--* "1" EventFilter 
+      EventFilter "1" *--> FilterType
+
+      AbstractReconfigurableDetector_T_ <|-- EventShifter  
+      AbstractReconfigurableDetector_T_ <|-- EventFilter  
+      AbstractDetector <|-left- AbstractReconfigurableDetector_T_  
+
+      Action <-left- EventHandler_T_
       EventDetector    <|.. AbstractDetector
       AbstractReconfigurableDetector_T_ <|-- AltitudeDetector
       AbstractReconfigurableDetector_T_ <|-- EclipseDetector
@@ -86,8 +102,9 @@
       class "...Detector" as DummyDetector
       AbstractReconfigurableDetector_T_ <|-- DummyDetector
       note top
-        many implementations not displayed
-        for the sake of diagram clarity
+        many implementations
+        not displayed for the
+        sake of diagram clarity
       end note
 
       EventHandler_T_ "1" <--o AbstractReconfigurableDetector_T_ : handler
