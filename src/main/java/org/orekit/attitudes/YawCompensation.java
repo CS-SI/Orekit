@@ -16,6 +16,7 @@
  */
 package org.orekit.attitudes;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Plane;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -78,7 +79,12 @@ public class YawCompensation extends GroundPointingWrapper {
         final Vector3D bodySpin = bodyFrame.getTransformTo(orbitFrame, date).getRotationRate().negate();
         final Vector3D surfacePointVelocity = Vector3D.crossProduct(bodySpin, surfacePointLocation);
         final Vector3D satVelocity = pvProv.getPVCoordinates(date, orbitFrame).getVelocity();
-        final Vector3D relativeVelocity = surfacePointVelocity.subtract(satVelocity);
+        final Vector3D satPosition = pvProv.getPVCoordinates(date, orbitFrame).getPosition();
+        final Plane sspPlane = new Plane(surfacePointLocation);
+        final Vector3D satVelocityHorizonal = sspPlane.toSpace(sspPlane.toSubSpace(satVelocity));
+        final Vector3D satVelocityAtSurface = satVelocityHorizonal.scalarMultiply(surfacePointLocation.getNorm() / satPosition.getNorm());
+
+        final Vector3D relativeVelocity = surfacePointVelocity.subtract(satVelocityAtSurface);
 
         // Compensation rotation definition :
         //  . Z satellite axis is unchanged

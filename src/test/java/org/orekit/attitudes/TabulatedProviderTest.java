@@ -61,7 +61,7 @@ public class TabulatedProviderTest {
 
     @Test
     public void testWithoutRate() throws OrekitException {
-        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, false), 9e-12);
+        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, false), 1.0e-11);
     }
 
     @Test
