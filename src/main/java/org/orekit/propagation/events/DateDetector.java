@@ -31,11 +31,12 @@ import org.orekit.time.TimeStamped;
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
  * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
- *   <li>it can be defined without prior date ({@link #DateDetector(double,double)})</li>
+ *   <li>it can be defined without prior date ({@link #DateDetector(double, double, TimeStamped...)})</li>
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
- * <p>The default implementation behavior is to {@link EventDetector.Action#STOP stop}
+ * <p>The default implementation behavior is to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
@@ -143,7 +144,7 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      * </ul>
      * @param target target date
      * @throws IllegalArgumentException if the date is too close from already defined interval
-     * @see #DateDetector(double, double)
+     * @see #DateDetector(double, double, TimeStamped...)
      */
     public void addEventDate(final AbsoluteDate target) throws IllegalArgumentException {
         final boolean increasing;

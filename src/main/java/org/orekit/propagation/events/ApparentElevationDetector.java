@@ -39,8 +39,9 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
  *  variable atmospheric effects become very important.</p>
  * <p>Local pressure and temperature can be set to correct refraction at the viewpoint.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at raising and to
- * {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at raising and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at setting. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)

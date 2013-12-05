@@ -54,9 +54,11 @@ import org.orekit.propagation.events.handlers.StopOnDecreasing;
  * <p>No assumption is made on azimuth values and ordering. The only restraint is
  * that only one elevation value can be associated to identical azimuths modulo 2PI.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at raising and to
- * {@link EventDetector.Action#STOP stop} propagation at setting. This can be changed
- * by calling {@link #withHandler(EventHandler)} after construction.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at raising and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * at setting. This can be changed by calling {@link #withHandler(EventHandler)}
+ * after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  * @deprecated as of 6.1 replaced by {@link ElevationDetector}

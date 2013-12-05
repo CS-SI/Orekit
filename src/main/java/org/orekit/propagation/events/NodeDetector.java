@@ -27,8 +27,9 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
  * <p>This class finds equator crossing events (i.e. ascending
  * or descending node crossing).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at descending node
- * crossing and to {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at descending node crossing and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at ascending node crossing. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * <p>Beware that node detection will fail for almost equatorial orbits. If

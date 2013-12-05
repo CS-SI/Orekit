@@ -70,7 +70,7 @@ public class OceanTides extends AbstractParameterizable implements ForceModel {
      * model does not support requested degree or order
      * @see #DEFAULT_STEP
      * @see #DEFAULT_POINTS
-     * @see #OceanTides(Frame, double, double, TideSystem, double, int, IERSConventions, TimeScale, CelestialBody...)
+     * @see #OceanTides(Frame, double, double, boolean, double, int, int, int, IERSConventions, UT1Scale)
      * @see GravityFieldFactory#getOceanTidesWaves(int, int)
      */
     public OceanTides(final Frame centralBodyFrame, final double ae, final double mu,

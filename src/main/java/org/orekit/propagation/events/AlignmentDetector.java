@@ -30,11 +30,10 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>This class finds alignment events.</p>
  * <p>Alignment means the conjunction, with some threshold angle, between the satellite
  * position and the projection in the orbital plane of some body position.</p>
- * <p>The default handler behavior is to {@link EventDetector.Action#STOP stop}
+ * <p>The default handler behavior is to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
  * propagation when alignment is reached. This can be changed by calling
- * the other {@link #AlignmentDetector(double, Orbit, PVCoordinatesProvider,
- * double, EventHandler) constructor} with an explicit {@link
- * EventHandler handler}.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */

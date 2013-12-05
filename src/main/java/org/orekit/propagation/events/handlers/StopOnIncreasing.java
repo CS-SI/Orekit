@@ -23,8 +23,8 @@ import org.orekit.propagation.events.EventDetector;
 
 /** Handle a detection event and choose what to do next.
  * <p>The implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation when descending and to
- * {@link EventDetector.Action#STOP stop} propagation when ascending.</p>
+ * EventHandler.Action#CONTINUE continue} propagation when descending and to
+ * {@link EventHandler.Action#STOP stop} propagation when ascending.</p>
  *
  * @author Hank Grabowski
  *
@@ -35,13 +35,13 @@ public class StopOnIncreasing<T extends EventDetector> implements EventHandler<T
 
     /** Handle a detection event and choose what to do next.
      * <p>The implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation when descending and to
-     * {@link EventDetector.Action#STOP stop} propagation when ascending.</p>
+     * EventHandler.Action#CONTINUE continue} propagation when descending and to
+     * {@link EventHandler.Action#STOP stop} propagation when ascending.</p>
      * @param s the current state information : date, kinematics, attitude
      * @param detector the detector object calling this method (not used in the evaluation)
      * @param increasing if true, the value of the switching function increases
      * when times increases around event
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
+     * @return {@link EventHandler.Action#STOP} or {@link EventHandler.Action#CONTINUE}
      * @exception OrekitException if some specific error occurs
      */
     @Override

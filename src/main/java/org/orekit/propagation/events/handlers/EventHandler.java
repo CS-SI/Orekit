@@ -90,10 +90,10 @@ public interface EventHandler<T extends EventDetector> {
     /** Reset the state prior to continue propagation.
      * <p>This method is called after the step handler has returned and
      * before the next step is started, but only when {@link
-     * #eventOccurred} has itself returned the {@link EventDetector.Action#RESET_STATE}
+     * #eventOccurred} has itself returned the {@link Action#RESET_STATE}
      * indicator. It allows the user to reset the state for the next step,
      * without perturbing the step handler of the finishing step. If the
-     * {@link #eventOccurred} never returns the {@link EventDetector.Action#RESET_STATE}
+     * {@link #eventOccurred} never returns the {@link Action#RESET_STATE}
      * indicator, this function will never be called, and it is safe to simply return null.</p>
      * @param detector object with appropriate type that can be used in determining correct return state
      * @param oldState old state

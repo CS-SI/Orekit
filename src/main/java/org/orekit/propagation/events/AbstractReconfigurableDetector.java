@@ -178,7 +178,7 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
     }
 
     /** {@inheritDoc}
-     * @deprecated as of 6.1 replaced by {@link EventHandler#resetState(SpacecraftState)}
+     * @deprecated as of 6.1 replaced by {@link EventHandler#resetState(EventDetector, SpacecraftState)}
      */
     @Deprecated
     public SpacecraftState resetState(final SpacecraftState oldState)

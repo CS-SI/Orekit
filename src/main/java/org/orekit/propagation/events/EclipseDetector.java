@@ -28,9 +28,11 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
  * eclipse) or penumbra (partial eclipse).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation when entering the eclipse and to
- * {@link EventDetector.Action#STOP stop} propagation when exiting the eclipse.
- * This can be changed by calling {@link #withHandler(EventHandler)} after construction.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation when entering the eclipse and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * when exiting the eclipse. This can be changed by calling {@link
+ * #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */

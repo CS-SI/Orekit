@@ -31,8 +31,9 @@ import org.orekit.utils.ElevationMask;
  * mask input. Each calculation be configured to use atmospheric refraction
  * as well.
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at raising and to
- * {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at raising and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at setting. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @author Hank Grabowski

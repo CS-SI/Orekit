@@ -20,8 +20,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.BodiesElements;
 
 /** Container for ocen tides coefficients for one tide wave.
- * @see OceanTides
- * @see OceanTidesField
+ * @see org.orekit.forces.gravity.OceanTides
+ * @see org.orekit.forces.gravity.OceanTidesField
  * @author Luc Maisonobe
  * @since 6.1
  * @see OceanTidesReader

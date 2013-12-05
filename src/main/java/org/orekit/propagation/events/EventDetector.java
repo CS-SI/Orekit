@@ -159,7 +159,7 @@ public interface EventDetector extends Serializable {
      * @return new state
      * @exception OrekitException if the state cannot be reseted
      * @deprecated as of 6.1 replaced by {@link
-     * org.orekit.propagation.events.handlers.EventHandler#resetState(SpacecraftState)}
+     * org.orekit.propagation.events.handlers.EventHandler#resetState(EventDetector, SpacecraftState)}
      */
     @Deprecated
     SpacecraftState resetState(SpacecraftState oldState) throws OrekitException;

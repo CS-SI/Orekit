@@ -105,9 +105,7 @@ public class EventsLogger implements Serializable {
         return new ArrayList<EventsLogger.LoggedEvent>(log);
     }
 
-    /** Class for logged events entries.
-     * @param <T> class type for the generic version
-     */
+    /** Class for logged events entries. */
     public static class LoggedEvent implements Serializable {
 
         /** Serializable UID. */

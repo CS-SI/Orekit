@@ -28,9 +28,11 @@ import org.orekit.utils.PVCoordinates;
 /** Finder for satellite altitude crossing events.
  * <p>This class finds altitude events (i.e. satellite crossing
  * a predefined altitude level above ground).</p>
- * <p>The default implementation behavior is to {@link EventDetector.Action#CONTINUE
- * continue} propagation when ascending and to {@link EventDetector.Action#STOP
- * stop} propagation when descending. This can be changed by calling
+ * <p>The default implementation behavior is to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE
+ * continue} propagation when ascending and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * propagation when descending. This can be changed by calling
  * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
