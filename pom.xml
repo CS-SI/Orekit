@@ -20,24 +20,24 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <orekit.findbugs-maven-plugin.version>2.5.2</orekit.findbugs-maven-plugin.version>
-    <orekit.jacoco-maven-plugin.version>0.6.2.201302030002</orekit.jacoco-maven-plugin.version>
+    <orekit.findbugs-maven-plugin.version>2.5.3</orekit.findbugs-maven-plugin.version>
+    <orekit.jacoco-maven-plugin.version>0.6.3.201306030806</orekit.jacoco-maven-plugin.version>
     <orekit.maven-assembly-plugin.version>2.4</orekit.maven-assembly-plugin.version>
-    <orekit.maven-bundle-plugin.version>2.3.7</orekit.maven-bundle-plugin.version>
+    <orekit.maven-bundle-plugin.version>2.4.0</orekit.maven-bundle-plugin.version>
     <orekit.maven-changes-plugin.version>2.9</orekit.maven-changes-plugin.version>
-    <orekit.maven-checkstyle-plugin.version>2.10</orekit.maven-checkstyle-plugin.version>
+    <orekit.maven-checkstyle-plugin.version>2.11</orekit.maven-checkstyle-plugin.version>
     <orekit.maven-clean-plugin.version>2.5</orekit.maven-clean-plugin.version>
     <orekit.maven-compiler-plugin.version>3.1</orekit.maven-compiler-plugin.version>
     <orekit.maven-javadoc-plugin.version>2.9.1</orekit.maven-javadoc-plugin.version>
     <orekit.maven-jxr-plugin.version>2.3</orekit.maven-jxr-plugin.version>
     <orekit.maven-plantuml-plugin.version>7940</orekit.maven-plantuml-plugin.version>
-    <orekit.maven-project-info-reports-plugin.version>2.6</orekit.maven-project-info-reports-plugin.version>
+    <orekit.maven-project-info-reports-plugin.version>2.7</orekit.maven-project-info-reports-plugin.version>
     <orekit.maven-resources-plugin.version>2.6</orekit.maven-resources-plugin.version>
     <orekit.maven-site-plugin.version>3.3</orekit.maven-site-plugin.version>
     <orekit.maven-source-plugin.version>2.2.1</orekit.maven-source-plugin.version>
-    <orekit.maven-surefire-plugin.version>2.14.1</orekit.maven-surefire-plugin.version>
-    <orekit.maven-surefire-report-plugin.version>2.14.1</orekit.maven-surefire-report-plugin.version>
-    <orekit.plantuml.version>7955</orekit.plantuml.version>
+    <orekit.maven-surefire-plugin.version>2.16</orekit.maven-surefire-plugin.version>
+    <orekit.maven-surefire-report-plugin.version>2.16</orekit.maven-surefire-report-plugin.version>
+    <orekit.plantuml.version>7986</orekit.plantuml.version>
   </properties>
 
   <developers>
