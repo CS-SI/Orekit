@@ -88,6 +88,7 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double getUnnormalizedCnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
         return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedCnm(n, m);
@@ -95,6 +96,7 @@ class Unnormalizer implements UnnormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double getUnnormalizedSnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
         return onDate(getReferenceDate().shiftedBy(dateOffset)).getUnnormalizedSnm(n, m);
