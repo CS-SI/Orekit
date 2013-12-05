@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -30,8 +31,11 @@ import org.orekit.Utils;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.ccsds.OEMFile.EphemeridesBlock;
+import org.orekit.files.ccsds.OEMFile.EphemeridesDataLine;
 import org.orekit.files.general.OrbitFile;
 import org.orekit.files.general.OrbitFile.TimeSystem;
+import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.time.AbsoluteDate;
@@ -49,9 +53,8 @@ public class OEMParserTest {
     }
 
     @Test
-    public void testParseOEM1() 
-            throws OrekitException, IOException {
-        // 
+    public void testParseOEM1() throws OrekitException, IOException {
+        //
         final String ex = "/ccsds/OEMExample.txt";
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
@@ -88,33 +91,33 @@ public class OEMParserTest {
         Assert.assertArrayEquals(orbit.getPVCoordinates().getPosition().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getOrbit().getPVCoordinates().getPosition().toArray(),1e-10);
         Assert.assertArrayEquals(orbit.getPVCoordinates().getVelocity().toArray(), file.getEphemeridesBlocks().get(0).getEphemeridesDataLines().get(0).getOrbit().getPVCoordinates().getVelocity().toArray(),1e-10);
         Assert.assertArrayEquals((new Vector3D(1, 1, 1)).toArray(), file.getEphemeridesBlocks().get(1).getEphemeridesDataLines().get(0).getAcceleration().toArray(), 1e-10);        
-        Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
-        double[] column1 = {
+        final Array2DRowRealMatrix covMatrix = new Array2DRowRealMatrix(6, 6);
+        final double[] column1 = {
             3.331349476038534e-04, 4.618927349220216e-04,
             -3.070007847730449e-04, -3.349365033922630e-07,
             -2.211832501084875e-07, -3.041346050686871e-07
         };
-        double[] column2 = {
+        final double[] column2 = {
             4.618927349220216e-04, 6.782421679971363e-04,
             -4.221234189514228e-04, -4.686084221046758e-07,
             -2.864186892102733e-07, -4.989496988610662e-07
         };
-        double[] column3 = {
+        final double[] column3 = {
             -3.070007847730449e-04, -4.221234189514228e-04,
             3.231931992380369e-04, 2.484949578400095e-07,
             1.798098699846038e-07, 3.540310904497689e-07
         };
-        double[] column4 = {
+        final double[] column4 = {
             -3.349365033922630e-07, -4.686084221046758e-07,
             2.484949578400095e-07, 4.296022805587290e-10,
             2.608899201686016e-10, 1.869263192954590e-10
         };
-        double[] column5 = {
+        final double[] column5 = {
             -2.211832501084875e-07, -2.864186892102733e-07,
             1.798098699846038e-07, 2.608899201686016e-10,
             1.767514756338532e-10, 1.008862586240695e-10
         };
-        double[] column6 = {
+        final double[] column6 = {
             -3.041346050686871e-07, -4.989496988610662e-07,
             3.540310904497689e-07, 1.869263192954590e-10,
             1.008862586240695e-10, 6.224444338635500e-10
@@ -133,9 +136,46 @@ public class OEMParserTest {
             }
         }
         Assert.assertEquals(new AbsoluteDate("1996-12-28T21:29:07.267", TimeScalesFactory.getUTC()),
-                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getEpoch());   
+                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(0).getEpoch());
         Assert.assertEquals(FramesFactory.getEME2000(),
-                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getFrame());   
+                            file.getEphemeridesBlocks().get(2).getCovarianceMatrices().get(1).getFrame());
+    }
+
+    @Test
+    public void testParseOEM1OrbitFile() throws OrekitException, IOException {
+ 
+        final String ex = "/ccsds/OEMExample.txt";
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final OEMParser parser = new OEMParser().withMu(CelestialBodyFactory.getEarth().getGM());
+        final OEMFile file = parser.parse(inEntry, "OEMExample.txt");
+        Assert.assertEquals(TimeSystem.UTC, file.getTimeSystem());
+        Assert.assertEquals("MARS GLOBAL SURVEYOR", file.getEphemeridesBlocks().get(0).getMetaData().getObjectName());
+        Assert.assertEquals("1996-062A", file.getEphemeridesBlocks().get(0).getMetaData().getObjectID());
+
+        Assert.assertEquals(1, file.getSatelliteCount());
+        Assert.assertEquals(true, file.containsSatellite("1996-062A"));
+        Assert.assertEquals(false, file.containsSatellite("MARS GLOBAL SURVEYOR"));
+        Assert.assertEquals(1, file.getSatellites().size());
+        Assert.assertEquals("1996-062A", file.getSatellites().iterator().next().getSatelliteId());
+        Assert.assertEquals(new AbsoluteDate("1996-12-18T12:00:00.331", TimeScalesFactory.getUTC()), file.getEpoch());
+
+        final List<SatelliteTimeCoordinate> coordinates = file.getSatelliteCoordinates("1996-062A");
+        Assert.assertEquals(13, coordinates.size());
+
+        final List<EphemeridesDataLine> dataLines = new ArrayList<EphemeridesDataLine>();
+        for (EphemeridesBlock block : file.getEphemeridesBlocks()) {
+            for (EphemeridesDataLine dataLine : block.getEphemeridesDataLines()) {
+                dataLines.add(dataLine);
+            }
+        }
+
+        int index = 0;
+        for (SatelliteTimeCoordinate coord : file.getSatelliteCoordinates("1996-062A")) {
+            final EphemeridesDataLine dataLine = dataLines.get(index++);
+            final CartesianOrbit orbit = dataLine.getOrbit();
+            Assert.assertEquals(orbit.getDate(), coord.getDate());
+            Assert.assertEquals(orbit.getPVCoordinates(), coord.getCoordinate());
+        }
     }
 
     @Test
@@ -146,13 +186,14 @@ public class OEMParserTest {
         OEMParser parser = new OEMParser().withConventions(IERSConventions.IERS_2010).withMu(CelestialBodyFactory.getMars().getGM());
 
         final OEMFile file = parser.parse(name);
-        ArrayList<String> headerComment = new ArrayList<String>();
+        final List<String> headerComment = new ArrayList<String>();
         headerComment.add("comment");
         Assert.assertEquals(headerComment, file.getHeaderComment());
-        ArrayList<String> metadataComment = new ArrayList<String>();
+        final List<String> metadataComment = new ArrayList<String>();
         metadataComment.add("comment 1");
         metadataComment.add("comment 2");
-        Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetaData().getComment());        
+        Assert.assertEquals(metadataComment, file.getEphemeridesBlocks().get(0).getMetaData().getComment());
+
     }
 
     @Test

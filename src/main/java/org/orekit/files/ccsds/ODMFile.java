@@ -19,6 +19,7 @@ package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
@@ -246,52 +247,49 @@ public abstract class ODMFile implements OrbitFile {
         this.originator = originator;
     }
 
-    @Override
-    public AbsoluteDate getEpoch() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
+    /**
+     * Not supported by CCSDS orbit messages.
+     * @return always throws an {@link UnsupportedOperationException}
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public double getEpochInterval() {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new UnsupportedOperationException();
     }
 
+    /**
+     * Not supported by CCSDS orbit messages.
+     * @return always throws an {@link UnsupportedOperationException}
+     * @throws UnsupportedOperationException always
+     */
     @Override
     public int getNumberOfEpochs() {
-        // TODO Auto-generated method stub
-        return 0;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Collection<SatelliteInformation> getSatellites() {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public int getSatelliteCount() {
-        // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
     public SatelliteInformation getSatellite(final String satId) {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public boolean containsSatellite(final String satId) {
-        // TODO Auto-generated method stub
-        return false;
+        return getSatellite(satId) != null;
     }
 
     @Override
     public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
-        // TODO Auto-generated method stub
-        return null;
+        return Collections.emptyList();
     }
 
 }
