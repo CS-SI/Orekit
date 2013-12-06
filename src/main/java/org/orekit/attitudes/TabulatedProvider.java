@@ -16,6 +16,8 @@
  */
 package org.orekit.attitudes;
 
+import java.io.NotSerializableException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,9 +43,9 @@ public class TabulatedProvider implements AttitudeProvider {
     private static final long serialVersionUID = 20131128L;
 
     /** Cached attitude table. */
-    private final ImmutableTimeStampedCache<Attitude> table;
+    private final transient ImmutableTimeStampedCache<Attitude> table;
 
-    /** Indivator for rate use. */
+    /** Indicator for rate use. */
     private final boolean useRotationRate;
 
     /** Creates new instance.
@@ -76,6 +78,49 @@ public class TabulatedProvider implements AttitudeProvider {
 
         // build the attitude
         return new Attitude(date, sample.get(0).getReferenceFrame(), interpolated);
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
+     */
+    private Object writeReplace() throws NotSerializableException {
+        return new DataTransferObject(table.getAll(), table.getNeighborsSize(), useRotationRate);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131205L;
+
+        /** Tabulated attitudes. */
+        private final List<Attitude> list;
+
+        /** Number of attitude to use for interpolation. */
+        private final int n;
+
+        /** Indicator for rate use. */
+        private final boolean useRotationRate;
+
+        /** Simple constructor.
+         * @param list tabulated attitudes
+         * @param n number of attitude to use for interpolation
+         * @param useRotationRate indicator for rate use
+         */
+        public DataTransferObject(final List<Attitude> list, final int n, final boolean useRotationRate) {
+            this.list            = list;
+            this.n               = n;
+            this.useRotationRate = useRotationRate;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TabulatedProvider}.
+         * @return replacement {@link TabulatedProvider}
+         */
+        private Object readResolve() {
+            return new TabulatedProvider(list, n, useRotationRate);
+        }
 
     }
 

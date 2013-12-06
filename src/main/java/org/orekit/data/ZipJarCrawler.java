@@ -245,7 +245,7 @@ public class ZipJarCrawler implements DataProvider {
     }
 
     /** Local class wrapping a zip archive. */
-    private final class Archive implements Closeable, Iterable<Archive.EntryStream> {
+    private static final class Archive implements Closeable, Iterable<Archive.EntryStream> {
 
         /** Zip stream. */
         private final ZipInputStream zip;

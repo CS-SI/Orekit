@@ -489,7 +489,7 @@ public class NewcombOperators {
 
         /** {@inheritDoc} */
         public int hashCode() {
-            return 0x25baa451 ^ (n << 32) ^ (s << 16) ^ (rho << 8) ^ sigma;
+            return 0x25baa451 ^ (n << 24) ^ (s << 16) ^ (rho << 8) ^ sigma;
         }
 
     }

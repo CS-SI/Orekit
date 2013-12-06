@@ -29,7 +29,7 @@ import org.orekit.data.BodiesElements;
 public class OceanTidesWave {
 
     /** Waves of degree 0 and 1 do not affect spacecrafts. */
-    private final int START_DEGREE = 2;
+    private static final int START_DEGREE = 2;
 
     /** Maximum supported degree. */
     private final int degree;

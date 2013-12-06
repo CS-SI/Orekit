@@ -297,7 +297,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         private boolean                    initialIsOsculating;
 
         /** Force models used to compute short periodic terms. */
-        private final List<DSSTForceModel> forceModels;
+        private final transient List<DSSTForceModel> forceModels;
 
         /** Number of satellite revolutions in the averaging interval. */
         private int                        satelliteRevolution;

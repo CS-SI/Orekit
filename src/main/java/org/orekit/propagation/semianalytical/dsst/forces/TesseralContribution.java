@@ -62,7 +62,7 @@ class TesseralContribution implements DSSTForceModel {
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
 
     /** Newcomb operators. */
-    private static NewcombOperators newcomb;
+    private final NewcombOperators newcomb;
 
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -171,7 +171,7 @@ class TesseralContribution implements DSSTForceModel {
         this.maxHansen = 0;
 
         // Provider for Newcomb operators
-        TesseralContribution.newcomb  = new NewcombOperators();
+        this.newcomb  = new NewcombOperators();
 
         // Factorials computation
         final int maxFact = 2 * maxDegree + 1;
@@ -641,7 +641,7 @@ class TesseralContribution implements DSSTForceModel {
      *  For a given eccentricity, the computed elements are stored in a map.
      *  </p>
      */
-    private static class HansenTesseral {
+    private class HansenTesseral {
 
         /** Map to store every Hansen kernel value computed. */
         private TreeMap<MNSKey, Double> values;
@@ -718,13 +718,13 @@ class TesseralContribution implements DSSTForceModel {
          */
         public void valueFromNewcomb(final int j, final int mnm1, final int s) {
             // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
+            final int aHT = FastMath.max(j - s, 0);
+            final int bHT = FastMath.max(s - j, 0);
             // Expansion until maxNewcomb, the maximum power in e^2 for the Kernel value
-            double sum = newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 0; alpha--) {
+            double sum = newcomb.getValue(maxNewcomb + aHT, maxNewcomb + bHT, mnm1, s);
+            for (int alphaHT = maxNewcomb - 1; alphaHT >= 0; alphaHT--) {
                 sum *= e2;
-                sum += newcomb.getValue(alpha + a, alpha + b, mnm1, s);
+                sum += newcomb.getValue(alphaHT + aHT, alphaHT + bHT, mnm1, s);
             }
             // Kernel value from equation 2.7.3-(10)
             final double value = FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
@@ -742,13 +742,13 @@ class TesseralContribution implements DSSTForceModel {
          */
         public void derivFromNewcomb(final int j, final int mnm1, final int s) {
             // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
+            final int aHT = FastMath.max(j - s, 0);
+            final int bHT = FastMath.max(s - j, 0);
             // Expansion until maxNewcomb-1, the maximum power in e^2 for the Kernel derivative
-            double sum = maxNewcomb * newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 1; alpha--) {
+            double sum = maxNewcomb * newcomb.getValue(maxNewcomb + aHT, maxNewcomb + bHT, mnm1, s);
+            for (int alphaHT = maxNewcomb - 1; alphaHT >= 1; alphaHT--) {
                 sum *= e2;
-                sum += alpha * newcomb.getValue(alpha + a, alpha + b, mnm1, s);
+                sum += alphaHT * newcomb.getValue(alphaHT + aHT, alphaHT + bHT, mnm1, s);
             }
             // Kernel derivative from equation 3.3-(5)
             final MNSKey key  = new MNSKey(j, mnm1, s);
