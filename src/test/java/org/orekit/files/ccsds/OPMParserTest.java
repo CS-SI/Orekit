@@ -344,8 +344,18 @@ public class OPMParserTest {
                 withConventions(IERSConventions.IERS_2010);
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
-        file.getEpochInterval();
-        file.getNumberOfEpochs();
+        try {
+          file.getEpochInterval();
+          Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
+        try {
+            file.getNumberOfEpochs();
+            Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
         file.getCoordinateSystem();
         file.getSatellites();
         file.getSatelliteCount();
