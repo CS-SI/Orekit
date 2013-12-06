@@ -17,7 +17,7 @@
 
   <!-- the following classes are serialized using writeReplace/readResolve with proxy classes,
        so the is no real problem about the base class not having a proper constructor.
-       This is test in the IntegratedEphemerisTest for both the ephemeris and bot propagators. -->
+       This is tested in the IntegratedEphemerisTest for the ephemeris and both propagators. -->
   <Match>
     <Or>
       <Class name="~.*\.IntegratedEphemeris$" />

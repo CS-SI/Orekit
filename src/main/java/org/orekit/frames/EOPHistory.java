@@ -49,7 +49,7 @@ public class EOPHistory implements Serializable {
     private final boolean hasData;
 
     /** EOP history entries. */
-    private final ImmutableTimeStampedCache<EOPEntry> cache;
+    private final transient ImmutableTimeStampedCache<EOPEntry> cache;
 
     /** IERS conventions to which EOP refers. */
     private final IERSConventions conventions;
