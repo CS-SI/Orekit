@@ -18,14 +18,12 @@
 package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteInformation;
 import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
@@ -267,26 +265,13 @@ public abstract class ODMFile implements OrbitFile {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public Collection<SatelliteInformation> getSatellites() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public int getSatelliteCount() {
-        return 0;
-    }
-
-    @Override
-    public SatelliteInformation getSatellite(final String satId) {
-        return null;
-    }
-
+    /** {@inheritDoc} */
     @Override
     public boolean containsSatellite(final String satId) {
         return getSatellite(satId) != null;
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
         return Collections.emptyList();

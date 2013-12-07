@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
@@ -362,8 +363,45 @@ public class OPMParserTest {
         file.getSatellite("a");
         file.containsSatellite("a");
         file.getSatelliteCoordinates("a");
-        
-        
+    }
+
+    @Test
+    public void testOrbitFileInterface() throws OrekitException {
+        final String ex = "/ccsds/OPMExample4.txt";
+
+        final OPMParser parser = new OPMParser().withMissionReferenceDate(new AbsoluteDate())
+                                                .withConventions(IERSConventions.IERS_2010);
+
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final OPMFile file = parser.parse(inEntry, "OPMExample4.txt");
+
+        final String satId = "1998-057A";
+        Assert.assertEquals(1, file.getSatelliteCount());
+        Assert.assertTrue(file.containsSatellite(satId));
+        Assert.assertFalse(file.containsSatellite("1995-025B"));
+        Assert.assertNotNull(file.getSatellite(satId));
+        Assert.assertEquals(1, file.getSatellites().size());
+        Assert.assertEquals(satId, file.getSatellite(satId).getSatelliteId());
+
+        final List<SatelliteTimeCoordinate> coords = file.getSatelliteCoordinates(satId);
+        Assert.assertEquals(1, coords.size());
+
+        final SatelliteTimeCoordinate coord = coords.get(0);
+        checkPVEntry(file.getPVCoordinates(), coord.getCoordinate());
+        Assert.assertEquals(file.getEpoch(), coord.getEpoch());
+
+        try {
+            file.getEpochInterval();
+            Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
+        try {
+            file.getNumberOfEpochs();
+            Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
     }
 
     private void checkPVEntry(final PVCoordinates expected,

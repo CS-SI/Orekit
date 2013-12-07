@@ -107,6 +107,7 @@ public class OEMFile extends ODMFile {
         return ephemeridesBlocks.get(0).getStartTime();
     }
 
+    /** {@inheritDoc} */
     @Override
     public Collection<SatelliteInformation> getSatellites() {
         final Set<String> availableSatellites = getAvailableSatelliteIds();
@@ -118,11 +119,13 @@ public class OEMFile extends ODMFile {
         return satellites;
     }
 
+    /** {@inheritDoc} */
     @Override
     public int getSatelliteCount() {
         return getAvailableSatelliteIds().size();
     }
 
+    /** {@inheritDoc} */
     @Override
     public SatelliteInformation getSatellite(final String satId) {
         final Set<String> availableSatellites = getAvailableSatelliteIds();
@@ -133,6 +136,7 @@ public class OEMFile extends ODMFile {
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
         // first we collect all available EphemeridesBlocks for this satellite

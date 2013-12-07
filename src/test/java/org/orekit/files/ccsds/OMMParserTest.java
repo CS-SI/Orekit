@@ -54,7 +54,7 @@ public class OMMParserTest {
         // (in order to check it is correctly overridden when parsing)
         final OMMParser parser =
                 new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
-        
+
         final InputStream inEntry = getClass().getResourceAsStream(ex);
         final OMMFile file = parser.parse(inEntry, "OMMExample.txt");
 
@@ -62,11 +62,11 @@ public class OMMParserTest {
         Assert.assertEquals(2.0, file.getFormatVersion(), 1.0e-10);
         Assert.assertEquals(new AbsoluteDate(2007, 03, 06, 16, 00, 00,
                                              TimeScalesFactory.getUTC()),
-                                             file.getCreationDate());        
+                                             file.getCreationDate());
         Assert.assertEquals("NOAA/USA", file.getOriginator());
-        
+
         // Check Metadata Block;
-        
+
         Assert.assertEquals("GOES 9", file.getMetaData().getObjectName());
         Assert.assertEquals("1995-025A", file.getMetaData().getObjectID());
         Assert.assertEquals("EARTH", file.getMetaData().getCenterName());
@@ -76,9 +76,9 @@ public class OMMParserTest {
         Assert.assertEquals(file.getMetaData().getFrame(), FramesFactory.getTEME());
         Assert.assertEquals(file.getTimeSystem(), TimeSystem.UTC);
         Assert.assertEquals("SGP/SGP4", file.getMetaData().getMeanElementTheory());
-        
+
         // Check Mean Keplerian elements data block;
-        
+
         Assert.assertEquals(new AbsoluteDate(2007, 03, 05, 10, 34, 41.4264,
                                              TimeScalesFactory.getUTC()), file.getEpoch());
         Assert.assertEquals(file.getMeanMotion(), 1.00273272 * FastMath.PI / 43200.0 , 1e-10);
@@ -87,38 +87,37 @@ public class OMMParserTest {
         Assert.assertEquals(file.getRaan(), FastMath.toRadians(81.7939), 1e-10);
         Assert.assertEquals(file.getPa(), FastMath.toRadians(249.2363), 1e-10);
         Assert.assertEquals(file.getAnomaly(), FastMath.toRadians(150.1602), 1e-10);
-        Assert.assertEquals(file.getMuParsed(), 398600.8 * 1e9, 1e-10);  
-        Assert.assertEquals(file.getMuSet(), 398600e9, 1e-10);  
-        Assert.assertEquals(file.getMuCreated(), CelestialBodyFactory.getEarth().getGM(), 1e-10);  
+        Assert.assertEquals(file.getMuParsed(), 398600.8 * 1e9, 1e-10);
+        Assert.assertEquals(file.getMuSet(), 398600e9, 1e-10);
+        Assert.assertEquals(file.getMuCreated(), CelestialBodyFactory.getEarth().getGM(), 1e-10);
 
 
-        
         // Check TLE Related Parameters data block;
 
         Assert.assertEquals(0, file.getEphemerisType());
         Assert.assertEquals('U', file.getClassificationType());
         int[] noradIDExpected = new int[23581];
-        int[] noradIDActual = new int[file.getNoradID()];        
-        Assert.assertEquals(noradIDExpected[0], noradIDActual[0]);        
+        int[] noradIDActual = new int[file.getNoradID()];
+        Assert.assertEquals(noradIDExpected[0], noradIDActual[0]);
         Assert.assertEquals("0925", file.getElementSetNumber());
         int[] revAtEpochExpected = new int[4316];
-        int[] revAtEpochActual = new int[file.getRevAtEpoch()];    
+        int[] revAtEpochActual = new int[file.getRevAtEpoch()];
         Assert.assertEquals(1.00273272 * FastMath.PI / 43200.0, file.getMeanMotion(), 1e-10);
         Assert.assertEquals(revAtEpochExpected[0], revAtEpochActual[0]);
         Assert.assertEquals(file.getBStar(), 0.0001, 1e-10);
         Assert.assertEquals(file.getMeanMotionDot(), -0.00000113 * FastMath.PI / 1.86624e9, 1e-12);
-        Assert.assertEquals(file.getMeanMotionDotDot(), 0.0 * FastMath.PI / 5.3747712e13, 1e-10);   
+        Assert.assertEquals(file.getMeanMotionDotDot(), 0.0 * FastMath.PI / 5.3747712e13, 1e-10);
         Assert.assertEquals(1995, file.getMetaData().getLaunchYear());
         Assert.assertEquals(25, file.getMetaData().getLaunchNumber());
         Assert.assertEquals("A", file.getMetaData().getLaunchPiece());
         file.generateCartesianOrbit();
         file.generateKeplerianOrbit();
-        try{
-          file.generateSpacecraftState();
-      }catch(OrekitException orekitException){
-          Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS, orekitException.getSpecifier());
-      }finally{            
-      }
+        try {
+            file.generateSpacecraftState();
+        } catch (OrekitException orekitException) {
+            Assert.assertEquals(OrekitMessages.CCSDS_UNKNOWN_SPACECRAFT_MASS, orekitException.getSpecifier());
+        } finally {
+        }
         file.generateTLE();
     }
 
@@ -168,7 +167,42 @@ public class OMMParserTest {
         file.generateSpacecraftState();
         file.generateKeplerianOrbit();
 
-        
+    }
+
+    @Test
+    public void testOrbitFileInterface() throws OrekitException {
+        // simple test for OMM file, contains p/v entries and other mandatory data.
+        final String ex = "/ccsds/OMMExample.txt";
+
+        // initialize parser with purposely wrong international designator
+        // (in order to check it is correctly overridden when parsing)
+        final OMMParser parser =
+                new OMMParser().withMu(398600e9).withInternationalDesignator(1998, 1, "a");
+
+        final InputStream inEntry = getClass().getResourceAsStream(ex);
+        final OMMFile file = parser.parse(inEntry, "OMMExample.txt");
+
+        final String satId = "1995-025A";
+        Assert.assertEquals(1, file.getSatelliteCount());
+        Assert.assertTrue(file.containsSatellite(satId));
+        Assert.assertFalse(file.containsSatellite("1995-025B"));
+        Assert.assertNotNull(file.getSatellite(satId));
+        Assert.assertEquals(1, file.getSatellites().size());
+        Assert.assertEquals(satId, file.getSatellite(satId).getSatelliteId());
+        Assert.assertEquals(0, file.getSatelliteCoordinates(satId).size());
+
+        try {
+            file.getEpochInterval();
+            Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
+        try {
+            file.getNumberOfEpochs();
+            Assert.fail("an exception should have been thrown");
+        } catch (UnsupportedOperationException uoe) {
+            // expected
+        }
     }
 
     @Test
