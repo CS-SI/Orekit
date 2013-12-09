@@ -33,6 +33,8 @@ import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.frames.EOPEntry;
 import org.orekit.frames.EOPHistoryLoader;
 import org.orekit.frames.FramesFactory;
+import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
+import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeScale;
@@ -57,19 +59,30 @@ public class Utils {
     public static final double ae =  6378136.460;
     public static final double mu =  3.986004415e+14;
 
+    public static void clearFactories() {
+        Utils.clearFactoryMaps(CelestialBodyFactory.class);
+        CelestialBodyFactory.clearCelestialBodyLoaders();
+        Utils.clearFactoryMaps(FramesFactory.class);
+        Utils.clearFactoryMaps(TimeScalesFactory.class);
+        Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
+        Utils.clearFactoryMaps(JacobiPolynomials.class);
+        Utils.clearFactoryMaps(NewcombOperators.class);
+        for (final Class<?> c : NewcombOperators.class.getDeclaredClasses()) {
+            if (c.getName().endsWith("PolynomialsGenerator")) {
+                Utils.clearFactoryMaps(c);
+            }
+        }
+        TimeScalesFactory.clearUTCTAILoaders();
+        Utils.clearJPLEphemeridesConstants();
+        GravityFieldFactory.clearPotentialCoefficientsReaders();
+        GravityFieldFactory.clearOceanTidesReaders();        
+        DataProvidersManager.getInstance().clearProviders();
+        DataProvidersManager.getInstance().clearLoadedDataNames();
+    }
+
     public static void setDataRoot(String root) {
         try {
-            Utils.clearFactoryMaps(CelestialBodyFactory.class);
-            CelestialBodyFactory.clearCelestialBodyLoaders();
-            Utils.clearFactoryMaps(FramesFactory.class);
-            Utils.clearFactoryMaps(TimeScalesFactory.class);
-            Utils.clearFactory(TimeScalesFactory.class, TimeScale.class);
-            TimeScalesFactory.clearUTCTAILoaders();
-            Utils.clearJPLEphemeridesConstants();
-            GravityFieldFactory.clearPotentialCoefficientsReaders();
-            GravityFieldFactory.clearOceanTidesReaders();
-            DataProvidersManager.getInstance().clearProviders();
-            DataProvidersManager.getInstance().clearLoadedDataNames();
+            clearFactories();
             StringBuffer buffer = new StringBuffer();
             for (String component : root.split(":")) {
                 String componentPath;

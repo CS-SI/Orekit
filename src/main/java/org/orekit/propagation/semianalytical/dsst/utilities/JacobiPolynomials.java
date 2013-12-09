@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 
@@ -33,88 +34,54 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 public class JacobiPolynomials {
 
     /** Storage map. */
-    private Map<JacobiKey, List<PolynomialFunction>> map;
+    private static final Map<JacobiKey, List<PolynomialFunction>> MAP =
+            new HashMap<JacobiPolynomials.JacobiKey, List<PolynomialFunction>>();
 
-    /** Simple constructor.
-     */
-    public JacobiPolynomials() {
-        map = new HashMap<JacobiPolynomials.JacobiKey, List<PolynomialFunction>>();
+    /** Private constructor as class is a utility. */
+    private JacobiPolynomials() {
     }
 
-    /** Returns the value of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at &gamma;.
-     * @param l l value
-     * @param v v value
-     * @param w w value
-     * @param gamma &gamma; value
-     * @return Value of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(&gamma;)
-     */
-    public double getValue(final int l, final int v, final int w, final double gamma) {
-        final JacobiKey key = new JacobiKey(v, w);
-
-        // Check the existence of the corresponding key in the map.
-        if (!map.containsKey(key)) {
-            map.put(key, new ArrayList<PolynomialFunction>());
-        }
-
-        // If the l-th degree polynomial has not been computed yet, the polynomials
-        // up to this degree are computed.
-        final int maxComputedDegree = map.get(key).size() - 1;
-        if (maxComputedDegree < l) {
-            computeUpToDegree(l, v, w);
-        }
-
-        return map.get(key).get(l).value(gamma);
-
-    }
-
-    /** Returns the value of the derivative of the Jacobi polynomial.
-     * dP<sub>l</sub><sup>v,w</sup> / d&gamma; evaluated at &gamma;
-     * @param l l value
-     * @param v v value
-     * @param w w value
-     * @param gamma &gamma; value
-     * @return Value of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(&gamma;)
-     */
-    public double getDerivative(final int l, final int v, final int w, final double gamma) {
-        final JacobiKey key = new JacobiKey(v, w);
-
-        // Check the existence of the corresponding key in the map.
-        if (!map.containsKey(key)) {
-            map.put(key, new ArrayList<PolynomialFunction>());
-        }
-
-        // If the l-th degree polynomial has not been computed yet, the polynomials
-        // up to this degree are computed.
-        final int maxComputedDegree = map.get(key).size() - 1;
-        if (maxComputedDegree < l) {
-            computeUpToDegree(l, v, w);
-        }
-
-        return map.get(key).get(l).derivative().value(gamma);
-    }
-
-
-    /** Compute for a tuple (v,w) the polynomials up to a given degree.
+    /** Returns the value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup> evaluated at &gamma;.
      * <p>
-     * The already computed degrees
-     * are skipped. The computation is done through the use of
-     * {@link org.apache.commons.math3.analysis.polynomials.PolynomialsUtils PolynomialsUtils}
+     * This method is guaranteed to be thread-safe
      * </p>
-     *
-     * @param degree maximum degree of polynomial to compute
+     * @param l degree of the polynomial
      * @param v v value
      * @param w w value
-     *
-     * @see org.apache.commons.math3.analysis.polynomials.PolynomialsUtils
+     * @param gamma &gamma; value
+     * @return value and derivatives of the Jacobi polynomial P<sub>l</sub><sup>v,w</sup>(&gamma;)
      */
-    private void computeUpToDegree(final int degree, final int v, final int w) {
-        final JacobiKey key = new JacobiKey(v, w);
-        final List<PolynomialFunction> polyList = map.get(key);
+    public static DerivativeStructure getValue(final int l, final int v, final int w, final DerivativeStructure gamma) {
 
-        for (int l = polyList.size(); l <= degree; l++) {
-            polyList.add(l, PolynomialsUtils.createJacobiPolynomial(l, v, w));
+        final List<PolynomialFunction> polyList;
+        synchronized (MAP) {
+
+            final JacobiKey key = new JacobiKey(v, w);
+
+            // Check the existence of the corresponding key in the map.
+            if (!MAP.containsKey(key)) {
+                MAP.put(key, new ArrayList<PolynomialFunction>());
+            }
+
+            polyList = MAP.get(key);
+
         }
+
+        final PolynomialFunction polynomial;
+        synchronized (polyList) {
+            // If the l-th degree polynomial has not been computed yet, the polynomials
+            // up to this degree are computed.
+            for (int degree = polyList.size(); degree <= l; degree++) {
+                polyList.add(degree, PolynomialsUtils.createJacobiPolynomial(degree, v, w));
+            }
+            polynomial = polyList.get(l);
+        }
+
+        // compute value and derivative
+        return polynomial.value(gamma);
+
     }
+
 
     /** Inner class for Jacobi polynomials keys.
      * <p>

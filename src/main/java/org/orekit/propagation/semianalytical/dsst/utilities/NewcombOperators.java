@@ -56,89 +56,56 @@ import org.apache.commons.math3.util.FastMath;
 public class NewcombOperators {
 
     /** Storage map. */
-    private final Map<NewKey, Double> map;
+    private static final Map<NewKey, Double> MAP = new TreeMap<NewKey, Double>();
 
     /** Private constructor as class is a utility.
      */
-    public NewcombOperators() {
-        this.map = new TreeMap<NewKey, Double>();
+    private NewcombOperators() {
     }
 
     /** Get the Newcomb operator evaluated at n, s, &rho;, &sigma;.
-     *
+     * <p>
+     * This method is guaranteed to be thread-safe
+     * </p>
      *  @param rho &rho; index
      *  @param sigma &sigma; index
      *  @param n n index
      *  @param s s index
      *  @return Y<sub>&rho;,&sigma;</sub><sup>n,s</sup>
      */
-    public double getValue(final int rho, final int sigma, final int n, final int s) {
-        double value = 0.;
+    public static double getValue(final int rho, final int sigma, final int n, final int s) {
+
         final NewKey key = new NewKey(n, s, rho, sigma);
-        if (map.containsKey(key)) {
-            value = map.get(key);
-        } else {
-            // Get the Newcomb polynomials for the given rho and sigma
-            final List<PolynomialFunction> polynomials = PolynomialsGenerator.getPolynomials(rho, sigma);
-            // Compute the value from the list of polynomials for the given n and s
-            double nPower = 1.;
-            for (final PolynomialFunction polynomial : polynomials) {
-                value += polynomial.value(s) * nPower;
-                nPower = n * nPower;
+        synchronized (MAP) {
+            if (MAP.containsKey(key)) {
+                return MAP.get(key);
             }
-            map.put(key, value);
         }
+
+        // Get the Newcomb polynomials for the given rho and sigma
+        final List<PolynomialFunction> polynomials = PolynomialsGenerator.getPolynomials(rho, sigma);
+
+        // Compute the value from the list of polynomials for the given n and s
+        double nPower = 1.;
+        double value = 0.0;
+        for (final PolynomialFunction polynomial : polynomials) {
+            value += polynomial.value(s) * nPower;
+            nPower = n * nPower;
+        }
+        synchronized (MAP) {
+            MAP.put(key, value);
+        }
+
         return value;
+
     }
 
     /** Generator for Newcomb polynomials. */
     private static class PolynomialsGenerator {
 
         /** Polynomials storage. */
-        private static SortedMap<Couple, List<PolynomialFunction>> POLYNOMIALS = new TreeMap<Couple, List<PolynomialFunction>>();
-
-        static {
-            // Initialize lists
-            final List<PolynomialFunction> l00 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> l01 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> l10 = new ArrayList<PolynomialFunction>();
-            final List<PolynomialFunction> l11 = new ArrayList<PolynomialFunction>();
-
-            // Y(rho = 0, sigma = 0) = 1
-            l00.add(new PolynomialFunction(new double[] {
-                1.
-            }));
-            // Y(rho = 0, sigma = 1) =  -s - n/2
-            l01.add(new PolynomialFunction(new double[] {
-                0, -1.
-            }));
-            l01.add(new PolynomialFunction(new double[] {
-                -0.5
-            }));
-            // Y(rho = 1, sigma = 0) =  s - n/2
-            l10.add(new PolynomialFunction(new double[] {
-                0, 1.
-            }));
-            l10.add(new PolynomialFunction(new double[] {
-                -0.5
-            }));
-            // Y(rho = 1, sigma = 1) = 3/2 - s² + 5n/4 + n²/4
-            l11.add(new PolynomialFunction(new double[] {
-                1.5, 0., -1.
-            }));
-            l11.add(new PolynomialFunction(new double[] {
-                1.25
-            }));
-            l11.add(new PolynomialFunction(new double[] {
-                0.25
-            }));
-
-            // Initialize polynomials
-            POLYNOMIALS.put(new Couple(0, 0), l00);
-            POLYNOMIALS.put(new Couple(0, 1), l01);
-            POLYNOMIALS.put(new Couple(1, 0), l10);
-            POLYNOMIALS.put(new Couple(1, 1), l11);
-        }
+        private static final SortedMap<Couple, List<PolynomialFunction>> POLYNOMIALS =
+                new TreeMap<Couple, List<PolynomialFunction>>();
 
         /** Private constructor as class is a utility.
          */
@@ -146,7 +113,9 @@ public class NewcombOperators {
         }
 
         /** Get the list of polynomials representing the Newcomb Operator for the (&rho;,&sigma;) couple.
-         *
+         * <p>
+         * This method is guaranteed to be thread-safe
+         * </p>
          *  @param rho &rho; value
          *  @param sigma &sigma; value
          *  @return Polynomials representing the Newcomb Operator for the (&rho;,&sigma;) couple.
@@ -155,12 +124,60 @@ public class NewcombOperators {
 
             final Couple couple = new Couple(rho, sigma);
 
-            // If order hasn't been computed yet, update the Newcomb polynomials
-            if (!POLYNOMIALS.containsKey(couple)) {
-                PolynomialsGenerator.computeFor(rho, sigma);
-            }
+            synchronized (POLYNOMIALS) {
 
-            return POLYNOMIALS.get(couple);
+                if (POLYNOMIALS.isEmpty()) {
+                    // Initialize lists
+                    final List<PolynomialFunction> l00 = new ArrayList<PolynomialFunction>();
+                    final List<PolynomialFunction> l01 = new ArrayList<PolynomialFunction>();
+                    final List<PolynomialFunction> l10 = new ArrayList<PolynomialFunction>();
+                    final List<PolynomialFunction> l11 = new ArrayList<PolynomialFunction>();
+
+                    // Y(rho = 0, sigma = 0) = 1
+                    l00.add(new PolynomialFunction(new double[] {
+                        1.
+                    }));
+                    // Y(rho = 0, sigma = 1) =  -s - n/2
+                    l01.add(new PolynomialFunction(new double[] {
+                        0, -1.
+                    }));
+                    l01.add(new PolynomialFunction(new double[] {
+                        -0.5
+                    }));
+                    // Y(rho = 1, sigma = 0) =  s - n/2
+                    l10.add(new PolynomialFunction(new double[] {
+                        0, 1.
+                    }));
+                    l10.add(new PolynomialFunction(new double[] {
+                        -0.5
+                    }));
+                    // Y(rho = 1, sigma = 1) = 3/2 - s² + 5n/4 + n²/4
+                    l11.add(new PolynomialFunction(new double[] {
+                        1.5, 0., -1.
+                    }));
+                    l11.add(new PolynomialFunction(new double[] {
+                        1.25
+                    }));
+                    l11.add(new PolynomialFunction(new double[] {
+                        0.25
+                    }));
+
+                    // Initialize polynomials
+                    POLYNOMIALS.put(new Couple(0, 0), l00);
+                    POLYNOMIALS.put(new Couple(0, 1), l01);
+                    POLYNOMIALS.put(new Couple(1, 0), l10);
+                    POLYNOMIALS.put(new Couple(1, 1), l11);
+
+                }
+
+                // If order hasn't been computed yet, update the Newcomb polynomials
+                if (!POLYNOMIALS.containsKey(couple)) {
+                    PolynomialsGenerator.computeFor(rho, sigma);
+                }
+
+                return POLYNOMIALS.get(couple);
+
+            }
         }
 
         /** Compute the Modified Newcomb Operators up to a given (&rho;, &sigma;) couple.
