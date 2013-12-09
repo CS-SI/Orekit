@@ -634,7 +634,7 @@ class TesseralContribution implements DSSTForceModel {
      *  For a given eccentricity, the computed elements are stored in a map.
      *  </p>
      */
-    private class HansenTesseral {
+    private static class HansenTesseral {
 
         /** Map to store every Hansen kernel value computed. */
         private TreeMap<MNSKey, Double> values;
