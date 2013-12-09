@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -37,6 +35,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.GHmsjPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.GammaMnsFunction;
+import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
 
@@ -63,6 +62,9 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Newcomb operators. */
     private final NewcombOperators newcomb;
+
+    /** Jacobi polynomials. */
+    private final JacobiPolynomials jacobiPoly;
 
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -173,7 +175,10 @@ class TesseralContribution implements DSSTForceModel {
         // Provider for Newcomb operators
         this.newcomb  = new NewcombOperators();
 
-        // Factorials computation
+        // Provider for Jacobi polynomials
+        this.jacobiPoly = new JacobiPolynomials();
+
+       // Factorials computation
         final int maxFact = 2 * maxDegree + 1;
         this.fact = new double[maxFact];
         fact[0] = 1;
@@ -576,9 +581,8 @@ class TesseralContribution implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                final double jacobi  = jacobiPoly.value(gamma);
-                final double dJacobi = jacobiPoly.derivative().value(gamma);
+                final double jacobi  = jacobiPoly.getValue(l, v , w, gamma);
+                final double dJacobi = jacobiPoly.getDerivative(l, v, w, gamma);
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);

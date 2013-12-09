@@ -21,6 +21,9 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="add" due-to="Nicolas Bernard">
+        Improved DSST tesseral computation efficiency by caching Jacobi polynomials.
+      </action>
       <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
         Fixed yaw steering attitude law, which didn't project spacecraft velocity correctly.
         Fixes issue #156.
