@@ -87,9 +87,9 @@ public class EOPHistoryTest {
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);
         EOPHistory deserialized  = (EOPHistory) ois.readObject();
-        Assert.assertEquals(deserialized.getStartDate(), deserialized.getStartDate());
-        Assert.assertEquals(deserialized.getEndDate(), deserialized.getEndDate());
-        Assert.assertEquals(deserialized.getEntries(), deserialized.getEntries());
+        Assert.assertEquals(history.getStartDate(), deserialized.getStartDate());
+        Assert.assertEquals(history.getEndDate(), deserialized.getEndDate());
+        Assert.assertEquals(history.getEntries().size(), deserialized.getEntries().size());
         for (int i = 0; i < history.getEntries().size(); ++i) {
             EOPEntry e1 = history.getEntries().get(i);
             EOPEntry e2 = deserialized.getEntries().get(i);
