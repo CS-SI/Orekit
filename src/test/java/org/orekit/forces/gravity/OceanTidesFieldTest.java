@@ -54,7 +54,7 @@ public class OceanTidesFieldTest {
         OceanTidesField tidesField =
                 new OceanTidesField(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, Constants.EIGEN5C_EARTH_MU,
                                     waves,
-                                    IERSConventions.IERS_2010.getNutationArguments(IERSConventions.IERS_2010.getGMSTFunction(ut1)),
+                                    IERSConventions.IERS_2010.getNutationArguments(ut1),
                                     null);
         NormalizedSphericalHarmonics harmonics = tidesField.onDate(date);
         double[][] refDeltaCnm = new double[][] {

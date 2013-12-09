@@ -109,8 +109,8 @@ public class OceanTides extends AbstractParameterizable implements ForceModel {
 
         final OceanTidesField raw =
                 new OceanTidesField(ae, mu, waves,
-                                    conventions.getNutationArguments(conventions.getGMSTFunction(ut1)),
-                                    poleTide ? conventions.getOceanPoleTide(ut1.getEopHistory()) : null);
+                                    conventions.getNutationArguments(ut1),
+                                    poleTide ? conventions.getOceanPoleTide(ut1.getEOPHistory()) : null);
 
         final NormalizedSphericalHarmonicsProvider provider;
         if (nbPoints < 2) {

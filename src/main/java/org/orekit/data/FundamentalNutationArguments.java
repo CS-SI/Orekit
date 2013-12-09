@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +36,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
+import org.orekit.time.TimeScale;
 import org.orekit.utils.IERSConventions;
 
 /**
@@ -53,13 +57,16 @@ import org.orekit.utils.IERSConventions;
 public class FundamentalNutationArguments implements Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131004L;
+    private static final long serialVersionUID = 20131209L;
 
     /** IERS conventions to use. */
     private final IERSConventions conventions;
 
+    /** Time scale for GMST computation. */
+    private final TimeScale timeScale;
+
     /** Function computing Greenwich Mean Sidereal Time. */
-    private final TimeFunction<DerivativeStructure> gmstFunction;
+    private final transient TimeFunction<DerivativeStructure> gmstFunction;
 
     // luni-solar Delaunay arguments
 
@@ -109,19 +116,58 @@ public class FundamentalNutationArguments implements Serializable {
 
     /** Build a model of fundamental arguments from an IERS table file.
      * @param conventions IERS conventions to use
-     * @param gmstFunction function computing Greenwich Mean Sidereal Time
+     * @param timeScale time scale for GMST computation
      * (may be null if tide parameter γ = GMST + π is not needed)
      * @param stream stream containing the IERS table
      * @param name name of the resource file (for error messages only)
      * @exception OrekitException if stream is null or the table cannot be parsed
      */
     public FundamentalNutationArguments(final IERSConventions conventions,
-                                        final TimeFunction<DerivativeStructure> gmstFunction,
+                                        final TimeScale timeScale,
                                         final InputStream stream, final String name)
         throws OrekitException {
+        this(conventions, timeScale, parseCoefficients(stream, name));
+    }
 
-        this.conventions  = conventions;
-        this.gmstFunction = gmstFunction;
+    /** Build a model of fundamental arguments from an IERS table file.
+     * @param conventions IERS conventions to use
+     * @param timeScale time scale for GMST computation
+     * (may be null if tide parameter γ = GMST + π is not needed)
+     * @param coefficients list of coefficients arrays (all 14 arrays must be provided,
+     * the 5 Delaunay first and the 9 planetary afterwards)
+     * @exception OrekitException if GMST function cannot be retrieved
+     * @since 6.1
+     */
+    public FundamentalNutationArguments(final IERSConventions conventions, final TimeScale timeScale,
+                                        final List<double[]> coefficients)
+        throws OrekitException {
+        this.conventions        = conventions;
+        this.timeScale          = timeScale;
+        this.gmstFunction       = (timeScale == null) ? null : conventions.getGMSTFunction(timeScale);
+        this.lCoefficients      = coefficients.get( 0);
+        this.lPrimeCoefficients = coefficients.get( 1);
+        this.fCoefficients      = coefficients.get( 2);
+        this.dCoefficients      = coefficients.get( 3);
+        this.omegaCoefficients  = coefficients.get( 4);
+        this.lMeCoefficients    = coefficients.get( 5);
+        this.lVeCoefficients    = coefficients.get( 6);
+        this.lECoefficients     = coefficients.get( 7);
+        this.lMaCoefficients    = coefficients.get( 8);
+        this.lJCoefficients     = coefficients.get( 9);
+        this.lSaCoefficients    = coefficients.get(10);
+        this.lUCoefficients     = coefficients.get(11);
+        this.lNeCoefficients    = coefficients.get(12);
+        this.paCoefficients     = coefficients.get(13);
+    }
+
+    /** Parse coefficients.
+     * @param stream stream containing the IERS table
+     * @param name name of the resource file (for error messages only)
+     * @return list of coefficients arrays
+     * @exception OrekitException if stream is null or the table cannot be parsed
+     */
+    private static List<double[]> parseCoefficients(final InputStream stream, final String name)
+        throws OrekitException {
 
         if (stream == null) {
             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
@@ -136,7 +182,8 @@ public class FundamentalNutationArguments implements Serializable {
             int lineNumber = 0;
 
             // look for the reference date and the 14 polynomials
-            final Map<FundamentalName, double[]> polynomials = new HashMap<FundamentalName, double[]>(14);
+            final int n = FundamentalName.values().length;
+            final Map<FundamentalName, double[]> polynomials = new HashMap<FundamentalName, double[]>(n);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                 lineNumber++;
                 if (definitionParser.parseDefinition(line, lineNumber, name)) {
@@ -145,37 +192,34 @@ public class FundamentalNutationArguments implements Serializable {
                 }
             }
 
-            lCoefficients      = getCoefficients(FundamentalName.L,       polynomials, name);
-            lPrimeCoefficients = getCoefficients(FundamentalName.L_PRIME, polynomials, name);
-            fCoefficients      = getCoefficients(FundamentalName.F,       polynomials, name);
-            dCoefficients      = getCoefficients(FundamentalName.D,       polynomials, name);
-            omegaCoefficients  = getCoefficients(FundamentalName.OMEGA,   polynomials, name);
+            final List<double[]> coefficients = new ArrayList<double[]>(n);
+            coefficients.add(getCoefficients(FundamentalName.L,       polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.L_PRIME, polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.F,       polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.D,       polynomials, name));
+            coefficients.add(getCoefficients(FundamentalName.OMEGA,   polynomials, name));
             if (polynomials.containsKey(FundamentalName.L_ME)) {
                 // IERS conventions 2003 and later provide planetary nutation arguments
-                lMeCoefficients = getCoefficients(FundamentalName.L_ME,    polynomials, name);
-                lVeCoefficients = getCoefficients(FundamentalName.L_VE,    polynomials, name);
-                lECoefficients  = getCoefficients(FundamentalName.L_E,     polynomials, name);
-                lMaCoefficients = getCoefficients(FundamentalName.L_MA,    polynomials, name);
-                lJCoefficients  = getCoefficients(FundamentalName.L_J,     polynomials, name);
-                lSaCoefficients = getCoefficients(FundamentalName.L_SA,    polynomials, name);
-                lUCoefficients  = getCoefficients(FundamentalName.L_U,     polynomials, name);
-                lNeCoefficients = getCoefficients(FundamentalName.L_NE,    polynomials, name);
-                paCoefficients  = getCoefficients(FundamentalName.PA,      polynomials, name);
+                coefficients.add(getCoefficients(FundamentalName.L_ME,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_VE,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_E,     polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_MA,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_J,     polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_SA,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_U,     polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.L_NE,    polynomials, name));
+                coefficients.add(getCoefficients(FundamentalName.PA,      polynomials, name));
             } else {
                 // IERS conventions 1996 and earlier don't provide planetary nutation arguments
                 final double[] zero = new double[] {
                     0.0
                 };
-                lMeCoefficients = zero;
-                lVeCoefficients = zero;
-                lECoefficients  = zero;
-                lMaCoefficients = zero;
-                lJCoefficients  = zero;
-                lSaCoefficients = zero;
-                lUCoefficients  = zero;
-                lNeCoefficients = zero;
-                paCoefficients  = zero;
+                while (coefficients.size() < n) {
+                    coefficients.add(zero);
+                }
             }
+
+            return coefficients;
 
         } catch (IOException ioe) {
             throw new OrekitException(ioe, new DummyLocalizable(ioe.getMessage()));
@@ -190,9 +234,9 @@ public class FundamentalNutationArguments implements Serializable {
      * @return polynomials coefficients (ordered from high degrees to low degrees)
      * @exception OrekitException if the argument is not found
      */
-    private double[] getCoefficients(final FundamentalName argument,
-                                     final Map<FundamentalName, double[]> polynomials,
-                                     final String fileName)
+    private static double[] getCoefficients(final FundamentalName argument,
+                                            final Map<FundamentalName, double[]> polynomials,
+                                            final String fileName)
         throws OrekitException {
         if (!polynomials.containsKey(argument)) {
             throw new OrekitException(OrekitMessages.NOT_A_SUPPORTED_IERS_DATA_FILE, fileName);
@@ -280,6 +324,62 @@ public class FundamentalNutationArguments implements Serializable {
                                                             value(tc, lUCoefficients),     // mean Uranus longitude
                                                             value(tc, lNeCoefficients),    // mean Neptune longitude
                                                             value(tc, paCoefficients));    // general accumulated precession in longitude
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(conventions, timeScale,
+                                      Arrays.asList(lCoefficients, lPrimeCoefficients, fCoefficients,
+                                                    dCoefficients, omegaCoefficients,
+                                                    lMeCoefficients, lVeCoefficients, lECoefficients,
+                                                    lMaCoefficients, lJCoefficients, lSaCoefficients,
+                                                    lUCoefficients, lNeCoefficients, paCoefficients));
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** IERS conventions to use. */
+        private final IERSConventions conventions;
+
+        /** Time scale for GMST computation. */
+        private final TimeScale timeScale;
+
+        /** All coefficients. */
+        private final List<double[]> coefficients;
+
+        /** Simple constructor.
+         * @param conventions IERS conventions to use
+         * @param timeScale time scale for GMST computation
+         * @param coefficients all coefficients
+         */
+        public DataTransferObject(final IERSConventions conventions, final TimeScale timeScale,
+                                  final List<double[]> coefficients) {
+            this.conventions  = conventions;
+            this.timeScale    = timeScale;
+            this.coefficients = coefficients;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TIRFProvider}.
+         * @return replacement {@link TIRFProvider}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new FundamentalNutationArguments(conventions, timeScale, coefficients);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
 
     }
 

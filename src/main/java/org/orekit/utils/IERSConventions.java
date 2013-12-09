@@ -89,9 +89,9 @@ public enum IERSConventions {
 
         /** {@inheritDoc} */
         @Override
-        public FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
             throws OrekitException {
-            return new FundamentalNutationArguments(this, gmstFunction,
+            return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
@@ -391,8 +391,7 @@ public enum IERSConventions {
             // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
             // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
             // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
-            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(TimeScalesFactory.getTT());
-            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+            final FundamentalNutationArguments arguments = getNutationArguments(TimeScalesFactory.getTT());
 
             // set up Poisson series
             final double milliAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-3;
@@ -451,8 +450,7 @@ public enum IERSConventions {
             throws OrekitException {
 
             // set up nutation arguments
-            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(ut1);
-            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser<DerivativeStructure> k20Parser =
@@ -610,9 +608,9 @@ public enum IERSConventions {
         private static final String ANNUAL_POLE = IERS_BASE + "2003/annual.pole";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
             throws OrekitException {
-            return new FundamentalNutationArguments(this, gmstFunction,
+            return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
@@ -883,8 +881,7 @@ public enum IERSConventions {
             // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
             // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
             // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
-            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(TimeScalesFactory.getTT());
-            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+            final FundamentalNutationArguments arguments = getNutationArguments(TimeScalesFactory.getTT());
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -942,8 +939,7 @@ public enum IERSConventions {
             throws OrekitException {
 
             // set up nutation arguments
-            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(ut1);
-            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser<DerivativeStructure> k20Parser =
@@ -1197,9 +1193,9 @@ public enum IERSConventions {
         private static final String K22_FREQUENCY_DEPENDENCE = IERS_BASE + "2010/tab6.5c.txt";
 
         /** {@inheritDoc} */
-        public FundamentalNutationArguments getNutationArguments(final TimeFunction<DerivativeStructure> gmstFunction)
+        public FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
             throws OrekitException {
-            return new FundamentalNutationArguments(this, gmstFunction,
+            return new FundamentalNutationArguments(this, timeScale,
                                                     getStream(NUTATION_ARGUMENTS), NUTATION_ARGUMENTS);
         }
 
@@ -1272,8 +1268,7 @@ public enum IERSConventions {
             throws OrekitException {
 
             // set up nutation arguments
-            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(ut1);
-            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+            final FundamentalNutationArguments arguments = getNutationArguments(ut1);
 
             // set up Poisson series
             final PoissonSeriesParser<DerivativeStructure> k20Parser =
@@ -1630,8 +1625,7 @@ public enum IERSConventions {
             // as this correction is used to compute UT1 itself, it is not surprising we cannot use UT1 yet,
             // however, using the close UTC as would seem logical make the comparison with interp.f from IERS fail
             // looking in the interp.f code, the same TT scale is used for both Delaunay and gamma argument
-            final TimeFunction<DerivativeStructure> gmstFunction = getGMSTFunction(TimeScalesFactory.getTT());
-            final FundamentalNutationArguments arguments = getNutationArguments(gmstFunction);
+            final FundamentalNutationArguments arguments = getNutationArguments(TimeScalesFactory.getTT());
 
             // set up Poisson series
             final double microAS = Constants.ARC_SECONDS_TO_RADIANS * 1.0e-6;
@@ -1712,12 +1706,13 @@ public enum IERSConventions {
     }
 
     /** Get the fundamental nutation arguments.
-     * @param gmstFunction function computing Greenwich Mean Sidereal Time
+     * @param timeScale time scale for computing Greenwich Mean Sidereal Time
+     * (typically {@link TimeScalesFactory#getUT1(IERSConventions, boolean) UT1})
      * @return fundamental nutation arguments
      * @exception OrekitException if fundamental nutation arguments cannot be loaded
      * @since 6.1
      */
-    public abstract FundamentalNutationArguments getNutationArguments(TimeFunction<DerivativeStructure> gmstFunction)
+    public abstract FundamentalNutationArguments getNutationArguments(final TimeScale timeScale)
         throws OrekitException;
 
     /** Get the function computing mean obliquity of the ecliptic.

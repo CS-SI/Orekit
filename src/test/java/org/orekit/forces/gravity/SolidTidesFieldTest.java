@@ -62,7 +62,7 @@ public class SolidTidesFieldTest {
                 new SolidTidesField(IERSConventions.IERS_2003.getLoveNumbers(),
                                IERSConventions.IERS_2003.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2003.getPermanentTide(),
-                               IERSConventions.IERS_2003.getSolidPoleTide(ut1.getEopHistory()),
+                               IERSConventions.IERS_2003.getSolidPoleTide(ut1.getEOPHistory()),
                                FramesFactory.getITRF(IERSConventions.IERS_2003, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
@@ -105,7 +105,7 @@ public class SolidTidesFieldTest {
                 new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                IERSConventions.IERS_2010.getTideFrequencyDependenceFunction(ut1),
                                IERSConventions.IERS_2010.getPermanentTide(),
-                               IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
+                               IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEOPHistory()),
                                FramesFactory.getITRF(IERSConventions.IERS_2010, false),
                                Constants.WGS84_EARTH_EQUATORIAL_RADIUS, Constants.WGS84_EARTH_MU,
                                TideSystem.ZERO_TIDE, CelestialBodyFactory.getSun(), CelestialBodyFactory.getMoon());
@@ -155,10 +155,10 @@ public class SolidTidesFieldTest {
                 parse(getClass().getResourceAsStream(name), name);
         final UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, false);
         final TimeFunction<DerivativeStructure> gmstFunction = IERSConventions.IERS_2010.getGMSTFunction(ut1);
-        Method getNA = IERSConventions.class.getDeclaredMethod("getNutationArguments", TimeFunction.class);
+        Method getNA = IERSConventions.class.getDeclaredMethod("getNutationArguments", TimeScale.class);
         getNA.setAccessible(true);
         final FundamentalNutationArguments arguments =
-                (FundamentalNutationArguments) getNA.invoke(IERSConventions.IERS_2010, gmstFunction);
+                (FundamentalNutationArguments) getNA.invoke(IERSConventions.IERS_2010, ut1);
         TimeFunction<double[]> deltaCSFunction = new TimeFunction<double[]>() {
             public double[] value(final AbsoluteDate date) {
                 final BodiesElements elements = arguments.evaluateAll(date);
@@ -171,7 +171,7 @@ public class SolidTidesFieldTest {
         SolidTidesField tf = new SolidTidesField(IERSConventions.IERS_2010.getLoveNumbers(),
                                        deltaCSFunction,
                                        IERSConventions.IERS_2010.getPermanentTide(),
-                                       IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEopHistory()),
+                                       IERSConventions.IERS_2010.getSolidPoleTide(ut1.getEOPHistory()),
                                        FramesFactory.getITRF(IERSConventions.IERS_2010, false),
                                        Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
                                        Constants.EIGEN5C_EARTH_MU,
@@ -262,7 +262,7 @@ public class SolidTidesFieldTest {
         SolidTidesField raw = new SolidTidesField(conventions.getLoveNumbers(),
                                         conventions.getTideFrequencyDependenceFunction(ut1),
                                         conventions.getPermanentTide(),
-                                        conventions.getSolidPoleTide(ut1.getEopHistory()),
+                                        conventions.getSolidPoleTide(ut1.getEOPHistory()),
                                         itrf, gravityField.getAe(), gravityField.getMu(),
                                         gravityField.getTideSystem(),
                                         CelestialBodyFactory.getSun(),

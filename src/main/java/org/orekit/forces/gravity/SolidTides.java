@@ -104,7 +104,7 @@ public class SolidTides extends AbstractParameterizable implements ForceModel {
                 new SolidTidesField(conventions.getLoveNumbers(),
                                conventions.getTideFrequencyDependenceFunction(ut1),
                                conventions.getPermanentTide(),
-                               poleTide ? conventions.getSolidPoleTide(ut1.getEopHistory()) : null,
+                               poleTide ? conventions.getSolidPoleTide(ut1.getEOPHistory()) : null,
                                centralBodyFrame, ae, mu, centralTideSystem, bodies);
         final NormalizedSphericalHarmonicsProvider provider;
         if (nbPoints < 2) {
