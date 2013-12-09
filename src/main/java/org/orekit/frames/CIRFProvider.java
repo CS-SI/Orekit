@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -40,7 +42,7 @@ class CIRFProvider implements TransformProvider {
     private static final long serialVersionUID = 20130806L;
 
     /** Function computing CIP/CIO components. */
-    private final TimeFunction<double[]> xysPxy2Function;
+    private final transient TimeFunction<double[]> xysPxy2Function;
 
     /** EOP history. */
     private final EOPHistory eopHistory;
@@ -105,6 +107,46 @@ class CIRFProvider implements TransformProvider {
                                            true);
 
         return new Transform(date, bpn, Vector3D.ZERO);
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(eopHistory);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** EOP history. */
+        private final EOPHistory eopHistory;
+
+        /** Simple constructor.
+         * @param eopHistory EOP history
+         */
+        public DataTransferObject(final EOPHistory eopHistory) {
+            this.eopHistory = eopHistory;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link CIRFProvider}.
+         * @return replacement {@link CIRFProvider}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new CIRFProvider(eopHistory);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
 
     }
 

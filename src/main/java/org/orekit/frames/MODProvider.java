@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -34,8 +36,11 @@ class MODProvider implements TransformProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 20130920L;
 
+    /** Conventions. */
+    private final IERSConventions conventions;
+
     /** Function computing the precession angles. */
-    private final TimeFunction<double[]> precessionFunction;
+    private final transient TimeFunction<double[]> precessionFunction;
 
     /** Constant rotation betwee ecliptic and equatoror poles at J2000.0. */
     private final Rotation r4;
@@ -45,6 +50,7 @@ class MODProvider implements TransformProvider {
      * @exception OrekitException if IERS conventions tables cannot be read
      */
     public MODProvider(final IERSConventions conventions) throws OrekitException {
+        this.conventions        = conventions;
         this.precessionFunction = conventions.getPrecessionFunction();
         final TimeFunction<Double> epsilonAFunction = conventions.getMeanObliquityFunction();
         final AbsoluteDate date0 = conventions.getNutationReferenceEpoch();
@@ -72,6 +78,46 @@ class MODProvider implements TransformProvider {
 
         // set up the transform from parent GCRF
         return new Transform(date, precession);
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(conventions);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** Conventions. */
+        private final IERSConventions conventions;
+
+        /** Simple constructor.
+         * @param conventions IERSConventions conventions
+         */
+        public DataTransferObject(final IERSConventions conventions) {
+            this.conventions = conventions;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link MODProvider}.
+         * @return replacement {@link MODProvider}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new MODProvider(conventions);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
 
     }
 

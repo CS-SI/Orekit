@@ -17,6 +17,12 @@
 package org.orekit.frames;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -390,6 +396,31 @@ public class MODProviderTest {
             // MOD2006 and MOD2000 are similar to about 0.15 milli-arcseconds between 2000 and 2010
             Assert.assertEquals(0.0, delta, 7.2e-10);
         }
+    }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        MODProvider provider = new MODProvider(IERSConventions.IERS_2010);
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(provider);
+
+        Assert.assertTrue(bos.size() > 150);
+        Assert.assertTrue(bos.size() < 250);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        MODProvider deserialized  = (MODProvider) ois.readObject();
+        for (double dt = 0; dt < Constants.JULIAN_DAY; dt += 3600) {
+            AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(dt);
+            Transform expectedIdentity = new Transform(date,
+                                                       provider.getTransform(date).getInverse(),
+                                                       deserialized.getTransform(date));
+            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+        }
+
     }
 
     @Before

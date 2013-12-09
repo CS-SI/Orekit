@@ -17,7 +17,12 @@
 package org.orekit.frames;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -356,6 +361,32 @@ public class TODProviderTest {
             // TOD2006 and TOD2000 are similar to about 30 micro-arcseconds
             // between 2000 and 2002, with EOP corrections taken into account in both cases
             Assert.assertEquals(0.0, delta, 1.5e-10);
+        }
+
+    }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        TODProvider provider = new TODProvider(IERSConventions.IERS_2010,
+                                               FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(provider);
+
+        Assert.assertTrue(bos.size() > 280000);
+        Assert.assertTrue(bos.size() < 285000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        TODProvider deserialized  = (TODProvider) ois.readObject();
+        for (int i = 0; i < FastMath.min(100, provider.getEOPHistory().getEntries().size()); ++i) {
+            AbsoluteDate date = provider.getEOPHistory().getEntries().get(i).getDate();
+            Transform expectedIdentity = new Transform(date,
+                                                       provider.getTransform(date).getInverse(),
+                                                       deserialized.getTransform(date));
+            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
         }
 
     }

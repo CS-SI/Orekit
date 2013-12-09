@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -35,16 +37,19 @@ import org.orekit.utils.IERSConventions;
 class TEMEProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20131004L;
+    private static final long serialVersionUID = 20131209L;
+
+    /** Conventions. */
+    private final IERSConventions conventions;
 
     /** EOP history. */
     private final EOPHistory eopHistory;
 
     /** Function computing the mean obliquity. */
-    private final TimeFunction<Double> obliquityFunction;
+    private final transient TimeFunction<Double> obliquityFunction;
 
     /** Function computing the nutation angles. */
-    private final TimeFunction<double[]> nutationFunction;
+    private final transient TimeFunction<double[]> nutationFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -54,9 +59,18 @@ class TEMEProvider implements TransformProvider {
      */
     public TEMEProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
+        this.conventions       = conventions;
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
         this.nutationFunction  = conventions.getNutationFunction();
+    }
+
+    /** Get the EOP history.
+     * @return EOP history
+     * @since 6.1
+     */
+    EOPHistory getEOPHistory() {
+        return eopHistory;
     }
 
     /** Get the transform from True Of Date date.
@@ -98,6 +112,51 @@ class TEMEProvider implements TransformProvider {
 
         // apply correction if needed
         return eqe + angles[2];
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(conventions, eopHistory);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** Conventions. */
+        private final IERSConventions conventions;
+
+        /** EOP history. */
+        private final EOPHistory eopHistory;
+
+        /** Simple constructor.
+         * @param conventions IERS conventions to apply
+         * @param eopHistory EOP history
+         */
+        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+            this.conventions = conventions;
+            this.eopHistory  = eopHistory;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TEMEProvider}.
+         * @return replacement {@link TEMEProvider}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new TEMEProvider(conventions, eopHistory);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
 
     }
 
