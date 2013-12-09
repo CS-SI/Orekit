@@ -26,7 +26,11 @@ import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
 
 /** Provider of the Jacobi polynomials P<sub>l</sub><sup>v,w</sup>.
- * employed in the {@link TesseralContribution TesseralContribution}
+ * <p>
+ * This class is used for {@link
+ * org.orekit.propagation.semianalytical.dsst.forces.TesseralContribution
+ * tesseral contribution} computation.
+ * </p>
  *
  * @author Nicolas Bernard
  * @since 6.1
