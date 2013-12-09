@@ -16,6 +16,7 @@
  */
 package org.orekit.time;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +52,11 @@ import org.orekit.utils.TimeStampedCache;
  */
 public class UTCScale implements TimeScale {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
+
     /** Time steps. */
-    private TimeStampedCache<UTCTAIOffset> cache;
+    private transient TimeStampedCache<UTCTAIOffset> cache;
 
     /** Package private constructor for the factory.
      * Used to create the prototype instance of this class that is used to
@@ -274,6 +278,35 @@ public class UTCScale implements TimeScale {
                 throw OrekitException.createInternalError(tce);
             }
         }
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject();
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** Replace the deserialized data transfer object with a {@link UTCScale}.
+         * @return replacement {@link UTCScale}
+         */
+        private Object readResolve() {
+            try {
+                return TimeScalesFactory.getUTC();
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
+
     }
 
 }

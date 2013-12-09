@@ -26,6 +26,9 @@ package org.orekit.time;
  */
 public class TCGScale implements TimeScale {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
+
     /** LG rate. */
     private static double LG_RATE = 6.969290134e-10;
 

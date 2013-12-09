@@ -25,6 +25,9 @@ package org.orekit.time;
  */
 public class GPSScale implements TimeScale {
 
+    /** Serializable UID. */
+    private static final long serialVersionUID = 20131209L;
+
     /** Package private constructor for the factory.
      */
     GPSScale() {
