@@ -62,7 +62,7 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
     private final double scaleEpsilon;
 
     /** Load deformation coefficients for ocean tides. */
-    private final double[] kPrime;
+    private final OceanLoadDeformationCoefficients oldc;
 
     /** Map for astronomical amplitudes. */
     private final Map<Integer, Double> astronomicalAmplitudes;
@@ -71,18 +71,18 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
      * @param supportedNames regular expression for supported files names
      * @param scaleCHat scale of the CHat parameters
      * @param scaleEpsilon scale of the epsilon parameters
-     * @param kPrime load deformation coefficients for ocean tides
+     * @param oldc load deformation coefficients for ocean tides
      * @param astronomicalAmplitudes map for astronomical amplitudes
-     * @see org.orekit.utils.IERSConventions#getOceanLoadDeformationCoefficients()
      * @see AstronomicalAmplitudeReader#getAstronomicalAmplitudesMap()
      */
     public FESCHatEpsilonReader(final String supportedNames,
                                 final double scaleCHat, final double scaleEpsilon,
-                                final double[] kPrime, final Map<Integer, Double> astronomicalAmplitudes) {
+                                final OceanLoadDeformationCoefficients oldc,
+                                final Map<Integer, Double> astronomicalAmplitudes) {
         super(supportedNames);
         this.scaleCHat              = scaleCHat;
         this.scaleEpsilon           = scaleEpsilon;
-        this.kPrime                 = kPrime.clone();
+        this.oldc                   = oldc;
         this.astronomicalAmplitudes = astronomicalAmplitudes;
     }
 
@@ -124,6 +124,7 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
         final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
         final double commonFactor = 4 * FastMath.PI * BIG_G * RHO / GE;
+        final double[] kPrime = oldc.getCoefficients();
 
         // parse the file
         startParse(name);

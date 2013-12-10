@@ -551,15 +551,6 @@ public enum IERSConventions {
             };
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public double[] getOceanLoadDeformationCoefficients() {
-            return new double[] {
-                // IERS conventions 1996, chapter 6 page 48
-                0.0, 0.0, -0.3075, -0.195, -0.132, -0.1032, -0.0892
-            };
-        }
-
     },
 
     /** Constant for IERS 2003 conventions. */
@@ -1139,15 +1130,6 @@ public enum IERSConventions {
             };
         }
 
-        /** {@inheritDoc} */
-        @Override
-        public double[] getOceanLoadDeformationCoefficients() {
-            return new double[] {
-                // IERS conventions 2003, section 6.4 page 67 equation 13
-                0.0, 0.0, -0.3075, -0.195, -0.132, -0.1032, -0.0892
-            };
-        }
-
     },
 
     /** Constant for IERS 2010 conventions. */
@@ -1444,15 +1426,6 @@ public enum IERSConventions {
                 }
             };
 
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public double[] getOceanLoadDeformationCoefficients() {
-            return new double[] {
-                // IERS conventions 2010, section 6.3.1 page 91
-                0.0, 0.0, -0.3075, -0.195, -0.132, -0.1032, -0.0892
-            };
         }
 
         /** {@inheritDoc} */
@@ -1850,11 +1823,6 @@ public enum IERSConventions {
      */
     public abstract TimeFunction<double[]> getOceanPoleTide(EOPHistory eopHistory)
         throws OrekitException;
-
-    /** Get the load deformation coefficients for ocean tides.
-     * @return load deformation coefficients for ocean tides
-     */
-    public abstract double [] getOceanLoadDeformationCoefficients();
 
     /** Interface for functions converting nutation corrections between
      * &delta;&Delta;&psi;/&delta;&Delta;&epsilon; to &delta;X/&delta;Y.

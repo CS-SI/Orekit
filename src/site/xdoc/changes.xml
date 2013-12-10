@@ -22,6 +22,10 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added high degree ocean load deformation coefficients computed by Pascal
+        Gégout (CNRS / UMR5563 - GET).
+      </action>
+      <action dev="luc" type="add" >
         Time scales are now serializable.
       </action>
       <action dev="luc" type="add" due-to="Nicolas Bernard">

@@ -25,7 +25,6 @@ import org.apache.commons.math3.util.Precision;
 import org.orekit.data.DataProvidersManager;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
-import org.orekit.utils.IERSConventions;
 
 /** Factory used to read gravity field files in several supported formats.
  * @author Fabien Maussion
@@ -62,6 +61,10 @@ public class GravityFieldFactory {
     /** Ocean tides readers. */
     private static final List<OceanTidesReader> OCEAN_TIDES_READERS =
         new ArrayList<OceanTidesReader>();
+
+    /** Ocean load deformation coefficients. */
+    private static OceanLoadDeformationCoefficients OCEAN_LOAD_DEFORMATION_COEFFICIENTS =
+        OceanLoadDeformationCoefficients.IERS_2010;
 
     /** Private constructor.
      * <p>This class is a utility class, it should neither have a public
@@ -121,11 +124,41 @@ public class GravityFieldFactory {
         }
     }
 
+    /** Configure ocean load deformation coefficients.
+     * @param oldc ocean load deformation coefficients
+     * @see #getOceanLoadDeformationCoefficients()
+     */
+    public static void configureOceanLoadDeformationCoefficients(final OceanLoadDeformationCoefficients oldc) {
+        OCEAN_LOAD_DEFORMATION_COEFFICIENTS = oldc;
+    }
+
+    /** Get the configured ocean load deformation coefficients.
+     * <p>
+     * If {@link #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * configureOceanLoadDeformationCoefficients} has never been called, the default
+     * value will be the {@link OceanLoadDeformationCoefficients#IERS_2010 IERS 2010}
+     * coefficients.
+     * </p>
+     * @return ocean load deformation coefficients
+     * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     */
+    public static OceanLoadDeformationCoefficients getOceanLoadDeformationCoefficients() {
+        return OCEAN_LOAD_DEFORMATION_COEFFICIENTS;
+    }
+
     /** Add the default READERS for ocean tides.
      * <p>
      * The default READERS supports files similar to the fes2004_Cnm-Snm.dat and
-     * fes2004.dat as published by IERS, using IERS 2010 for convention as needed
-     * (for ocean load deformation).
+     * fes2004.dat as published by IERS, using the {@link
+     * #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * configured} ocean load deformation coefficients, which by default are the
+     * IERS 2010 coefficients, which are limited to degree 6. If higher degree
+     * coefficients are needed, the {@link
+     * #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * configureOceanLoadDeformationCoefficients} method can be called prior to
+     * loading the ocean tides model with the {@link
+     * OceanLoadDeformationCoefficients#GEGOUT high degree coefficients} computed
+     * by Pascal Gégout.
      * </p>
      * <p>
      * WARNING: the files referenced in the published conventions have some errors.
@@ -136,6 +169,8 @@ public class GravityFieldFactory {
      * @exception OrekitException if astronomical amplitudes cannot be read
      * @see #addPotentialCoefficientsReader(PotentialCoefficientsReader)
      * @see #clearPotentialCoefficientsReaders()
+     * @see #configureOceanLoadDeformationCoefficients(OceanLoadDeformationCoefficients)
+     * @see #getOceanLoadDeformationCoefficients()
      */
     public static void addDefaultOceanTidesReaders()
         throws OrekitException {
@@ -149,7 +184,7 @@ public class GravityFieldFactory {
             final Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
             OCEAN_TIDES_READERS.add(new FESCHatEpsilonReader(FES_CHAT_EPSILON_FILENAME,
                                                              0.01, FastMath.toRadians(1.0),
-                                                             IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
+                                                             getOceanLoadDeformationCoefficients(),
                                                              map));
 
 

@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 import org.orekit.time.AbsoluteDate;
@@ -90,7 +91,7 @@ public class OceanTidesFieldTest {
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),
-                                                                         IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
+                                                                         OceanLoadDeformationCoefficients.IERS_2010,
                                                                          map));
         List<OceanTidesWave> complete =  GravityFieldFactory.getOceanTidesWaves(degree, order);
         double[][][] triangular = new double[degree + 1][][];
