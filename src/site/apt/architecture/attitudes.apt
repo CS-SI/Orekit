@@ -111,13 +111,13 @@ Attitudes
   an active state. When one of the switch events associated with the active law occurs,
   the active law becomes the one specified with the event.
 
-  It is possible to have perpetual alternated laws, for example when eclipse entry
+  It is possible to have perpetually alternating laws, for example when eclipse entry
   triggers a switch from a day light attitude to a night attitude and eclipse exit
   triggers the reverse (possibly with intermediate transition modes).
 
 * Package organization
 
-[../images/design/attitudes-class-diagram.png]
+[../images/design/attitude-class-diagram.png]
 
 * Authors
 
