@@ -27,7 +27,7 @@ Frames
 
   Each Frame is defined by a single <transform> linking it to one specific frame:
   its <parent frame>. This defining transform may be fixed or time-dependent, for
-  example the Earth related frame ITRF2008 depends on time due to precession/nutation,
+  example the Earth related frame ITRF depends on time due to precession/nutation,
   Earth rotation and pole motion. The predefined root frame is the only one with no
   parent frames.
 
@@ -76,13 +76,14 @@ Frames
   The <<<FramesFactory>>> class provides several predefined reference frames.
 
   The user can retrieve them using various static methods: <<<getGCRF()>>>, <<<getEME2000()>>>,
-  <<<getICRF()>>>, <<<getCIRF2000()>>>, <<<getTIRF2000()>>>, <<<getITRF93()>>>, <<<getITRF97()>>>,
-  <<<getITRF2000()>>>, <<<getITRF2005()>>>, <<<getITRF2008()>>>, <<<getMOD()>>>, <<<getTOD()>>>,
-  <<<getGTOD()>>>, <<<getITRFEquinox()>>>, <<<getTEME()>>>, <<<getTIRF2000()>>> and <<<getVeis1950()>>>.
+  <<<getICRF()>>>, <<<getCIRF(IERSConventions, boolean)>>>, <<<getTIRF(IERSConventions, boolean)>>>,
+  <<<getITRF(IERSConventions, boolean)>>>, <<<getMOD(IERSConventions)>>>, <<<getTOD(IERSConventions)>>>,
+  <<<getGTOD(IERSConventions)>>>, <<<getITRFEquinox(IERSConventions, boolean)>>>, <<<getTEME()>>>,
+  and <<<getVeis1950()>>>.
   One of these reference frames has been arbitrarily chosen as the root of the frames tree:
   the <Geocentric Celestial Reference Frame> (GCRF) which is an inertial reference defined by IERS.
 
-  For most purposes, the recommended frames are ITRF 20xx for terrestrial frame and
+  For most purposes, the recommended frames are ITRF for terrestrial frame and
   GCRF for celestial frame. EME2000, TOD, Veis1950 could also be used for compatibility
   with legacy systems. TEME should be used only for TLE.
 
@@ -95,14 +96,14 @@ Frames
   This set defines the GCRF reference frame on the celestial (i.e. inertial) side,
   the ITRF (International Terrestrial Reference Frame) on the terrestrial side and several
   intermediate frames between them. Several versions of ITRF have been defined. Orekit
-  supports the last available version at time of writing (2012), which is ITRF 2008.
+  supports several of them thanks to Helmert transformations.
 
-*** New paradigm: CIO-based transformations
+*** New paradigm: CIO-based transformations (Non-Rotating Origin)
 
-  There are several different ways to compute transforms between GCRF and ITRF. Orekit uses
+  There are several different ways to compute transforms between GCRF and ITRF. Orekit supports
   the new paradigm promoted by IERS and defined by IERS conventions 2010, i.e., it uses a
-  single transform for bias, precession and nutation, computed by the IAU-2006 precession
-  and IAU-200A nutation model and the Earth Orientation Parameters (EOP) data published online
+  single transform for bias, precession and nutation, computed by precession and nutation models
+  depending on the IERS conventions choice and the Earth Orientation Parameters (EOP) data published online
   by IERS. This single transform links the GCRF to a Celestial Intermediate Reference Frame (CIRF).
   The X axis of this frame is the Celestial Intermediate Origin (CIO) and its Z axis is the
   Celestial Intermediate Pole (CIP). The CIO is <<<not linked to equinox any more>>>. From CIRF,
@@ -114,18 +115,17 @@ Frames
   different ITRF. These realizations are linked together using Helmert transformations which are
   very small, slightly time-dependent transformations.
 
-  Orekit also provides some frames from IERS conventions 2003 (CIRF and TIRF), but as IERS
-  does not provide anymore Earth Orientation Data to link these frames with Earth frames,
-  the ITRF frames for new paradigm are only linked to the 2010 conventions version of CIRF
-  and TIRF, not to the 2003 version.
+  The precession-nutation models for Non-Rotating Origin paradigm available in Orekit are those
+  defined in either IERS 1996 conventions, IERS 2003 conventions or IERS 2010 conventions.
 
-  In summary, four frames are involved along this path, with various models: GCRF, CIRF
-  (2003 and 2010), TIRF (2003 and 2010)and ITRF (93, 97, 2000, 2005 and 2008).
+  In summary, four frames are involved along this path, with various precession-nutation
+  models: GCRF, CIRF, TIRF and ITRF.
 
 *** Classical paradigm: equinox-based transformations
 
   The classical paradigm used prior to IERS conventions 2003 is equinox-based and uses
-  more intermediate frames.
+  more intermediate frames. It is still used in many ground systems and can still be used
+  with new precession-nutation models.
 
   Starting from GCRF, the first transform is a bias to convert to EME2000, which was the
   former reference. The EME2000 frame (which is also known as J2000) is defined using
@@ -139,34 +139,45 @@ Frames
 
   In summary, six frames are involved along this path: GCRF, EME2000, MOD, TOD, GTOD
   and equinox-based ITRF.
-  
+
   The so-called Veis 1950 belongs also to this path, it is defined from the GTOD by the
   application of a modified sidereal time.
   
   This whole paradigm is deprecated by IERS. It involves additional complexity, first because
   of the larger number of frames and second because these frames are computed by mixed models
   with IAU-76 precession, correction terms to match IAU-2000, and a need to convert Earth
-  Orientation data from the published form to a form suitable for this model. Another
-  drawback of this method is that the intermediate frames do not match the similar frames
-  with the same names used prior to IERS conventions 2003 since a correction is added to the
-  IAU-76 precession model and the IAU-80 nutation model is completely replaced by the nutation
-  part extracted from IAU-2000 model.
+  Orientation data from the published form to a form suitable for this model.
 
   Despite this deprecation, these frames are very important ones and lots of legacy systems
   rely on them. They are therefore supported in Orekit for interoperability purposes (but not
   recommended for new systems).
 
+  As the classical paradigm uses the same definition for celestial pole (Z axis) but not
+  the same definition for frame origin (X axis) as the Non-Rotating Origin paradigm, the
+  TOD frame and the CIRF frame share the same Z axis but differ from each other by a
+  non-null rotation around Z (the equation of the origin, which should not be confused
+  with the equation of the equinox), and the TIRF and GTOD should be the same frame, at
+  model accuracy level (and of course ITRF should also be the same in both paradigms).
+  
 *** Orekit implementation of IERS conventions
 
   In summary, Orekit implements the following frames:
 
-  * those related to the IERS 2010 convention: GCRF, CIRF 2000, TIRF 2000 with and without
-    tidal effects, various ITRF with and without tidal effects,
+  * those related to the Non-Rotating Origin: GCRF, CIRF, TIRF, ITRF for all precession
+    and nutation models from IERS 1996, IERS 2003 and IERS 2010,
 
-  * those related to the older IERS conventions: MOD with and without EOP correction,
-    TOD with and without EOP correction, GTOD with and without EOP correction,
-    equinox-based ITRF, Veis 1950, CIRF and TIRF using IERS conventions 2003 precession
-    nutation model.
+  * those related to the equinox-based origin: MOD, TOD, GTOD, equinox-based ITRF
+    for all precession and nutation models from IERS 1996, IERS 2003 and IERS 2010
+    and Veis 1950.
+
+  The frames can be computed with or without Earth Orientation Parameters corrections,
+  and when these corrections are applied, they can either use a simple interpolation
+  or an accurate interpolation taking sub-daily tidal effects. It is possible to mix
+  all frames. It is for example one can easily estimate the difference between an ITRF
+  computed from equinox based paradigm and IERS 1996 precession-nutation, without EOP
+  and an ITRF computed from Non-Rotating Origin and IERS 2010 precession-nutation, with
+  EOP and tidal correction to the EOP interpolation. This is particularly interesting
+  when exchanging data between ground systems that use different conventions.
 
 **** CIO-based transformations
 
@@ -185,7 +196,7 @@ Frames
   this motion can be computed accurately using a few reference points per day or week and
   interpolated between these points. The trade-off selected for Orekit implementation is to use
   eight points separated by four hours each. The resulting maximal interpolation error
-  on the frame is about 4e-15 radians. The referencepoints are cached so the computation cost is
+  on the frame is about 4e-15 radians. The reference points are cached so the computation cost is
   roughly to perform two complete evaluations of the luni-solar and planetary terms per simulation
   day, and one interpolation per simulation step, regardless of the step size. This represents huge
   savings for steps shorter than one half day, which is the rule in most application (step sizes are
@@ -196,7 +207,7 @@ Frames
   model from IERS is used. Since this model is also computing intensive, a caching/interpolation
   algorithm is also used to avoid a massive effect on performance. The trade-off selected for
   Orekit implementation is to use 8 points separated by 3/32 day (135 minutes) each. The resulting
-  maximal interpolation error is about 3 microarcseconds. The penalty to use tidal effects is therefore
+  maximal interpolation error is about 3 micro-arcseconds. The penalty to use tidal effects is therefore
   limited to slightly more than 20%, to be compared with the 550% penalty without this mechanism.
 
 **** Equinox-based transformations
@@ -233,7 +244,7 @@ Frames
   
   This frame model allows defining the frame associated with any position at 
   the surface of a body shape, which itself is referenced to a frame, typically
-  ITRF 2008 for Earth. The frame is defined with the following
+  ITRF for Earth. The frame is defined with the following
   canonical axes:
   
     ** zenith direction (Z) is defined as the normal to local horizontal plane;
@@ -263,24 +274,24 @@ Frames
 
   The frames tree can be extended by users who can add as many frames as they
   want for specific needs. This is done by adding frames one at a time, attaching
-  each frame to an already built one by specifying the transform from parent to child.
+  each frame to an already built one by specifying the <TransformProvider> from parent to child.
 
   Transforms may be constant or varying. For simple fixed transforms, using directly the
-  <<<Frame>>> class is sufficient. For varying transforms (time-dependent or telemetry-based
-  for example), it may be useful to define specific subclasses that will implement
-  <<<updateFrame(AbsoluteDate)>>> or that will add some specific <<<updateFromTelemetry(telemetry)>>>
-  methods to recompute the transform and call internally the <<<setTransform(Transform)>>> method.
+  <<<FixedTransformProvider>>> class is sufficient. For varying transforms (time-dependent or
+  telemetry-based for example), it may be useful to define specific providers that will implement
+  <<<getTransform(AbsoluteDate)>>>.
 
-  A basic example of such extension is to add a satellite frame representing the satellite
+  A basic example of such an extension is to add a satellite frame representing the satellite
   motion and attitude. Such a frame would have an inertial frame as its parent frame (GCRF or
-  EME2000) and the <<<updateFrame(AbsoluteDate)>>> method would update the translation and rotation
-  from orbit and attitude data.
+  EME2000) and the <<<getTransform(AbsoluteDate)>>> method would compute a transform using the
+  translation and rotation from orbit and attitude data.
 
-  Frames are updated by resetting the transform from their parent frame to them. When such a
-  transform is changed, it basically moves not only the child frame but all the sub-trees starting
-  at this frame with respect to the rest of the tree. This property can be used to update easily
-  complex trees without bothering about combining transforms oneself. The following example
-  explains a practical case.
+  Frames transforms are computed by combining all transforms between parent frame and child frame
+  along the path from the origin frame to the destination. This implies that when one
+  <TransformProvider> locally changes a transform, it basically moves not only the child frame but
+  all the sub-trees starting at this frame with respect to the rest of the tree. This property can
+  be used to update easily complex trees without bothering about combining transforms oneself. The
+  following example explains a practical case.
 
 [../images/antenna-frames.png]
 
@@ -288,12 +299,7 @@ Frames
   case, we introduce several intermediate frames with elementary transforms and need to update the
   whole tree. We also want to take into account the offset between the GPS receiver antenna and the
   satellite center of mass. When a new GPS measurement is available, we want to update the complete
-  left subtree. This is done by updating the Local Orbital Frame (near the root) with a single
-  call to one of its <<<updateTransform>>> methods providing it a reference to the GCRF frame, a
-  reference to the GPS receiver antenna frame and the desired translation and relative velocity
-  between the two, i.e. the measurement itself. The method automatically locates the frames in the
-  global tree, combines all transforms and updates the single transform between itself and its parent
-  GCRF frame. 
+  left subtree. This is done by using the dedicated <UpdatableFrame> which will do all the conversions. 
 
 * Package organization
  

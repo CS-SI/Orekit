@@ -24,7 +24,7 @@ Forces
   The propagator will call at each step the force model contribution computation
   method, to be added to its time derivative equations. The force model instance 
   will extract all the state data it needs (date, position, velocity, frame, attitude, 
-  mass) from the first parameter. 
+  mass) from the SpacecraftState parameter. 
   From these state data, it will compute the perturbing acceleration. It
   will then add this acceleration to the second parameter which will take this
   contribution into account and will use the Gauss equations to evaluate its impact
@@ -41,7 +41,7 @@ Forces
 
   The force models implemented are as follows:
 
-  * atmospheric drag forces,
+  * atmospheric drag forces, taking attitude into account if spacecraft shape is defined,
   
   * central gravity forces, including time-dependent parts (linear trends and
     pulsation at several different periods). Several attraction models are
@@ -65,10 +65,11 @@ Forces
          (Journal of Geodesy (2002) 76: 279–299).
 
   * third body gravity force. Data for all solar system bodies is available,
-    based on JPL DE 405 or DE 406 ephemerides,
+    based on JPL DE ephemerides or IMCCE INPOP ephemerides,
 
   * solar radiation pressure force, taking into account force reduction in
-  penumbra and no force at all during complete eclipse,
+  penumbra and no force at all during complete eclipse, and taking attitude
+  into account if spacecraft shape is defined,
 
   * solid tides, with or without solid pole tide,
 
@@ -77,6 +78,20 @@ Forces
   * forces induced by maneuvers. At present, only constant thrust maneuvers 
   are implemented, with the possibility to define an impulse maneuver, thanks 
   to the event detector mechanism.
+
+* Spacecraft shapes
+
+  Surface forces like atmospheric drag or radiation pressure can use either
+  a simple <SphericalSpacecraft> shape or a more accurate
+  <BoxAndSolarArraySpacraft> shape.
+
+  The spherical shape will be independent of attitude.
+
+  The box and solar array will consider the contribution of all box facets facing
+  the flux as computed from the current attitude, and also the contribution of a
+  pivoting solar array, whose orientation is a combination of the spacecraft body
+  attitude and either the true Sun direction or a regularized rotation angle. As
+  of 6.1, the box and solar array does not compute yet shadowing effects.
 
 * Authors
 

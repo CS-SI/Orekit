@@ -185,11 +185,21 @@ Orbits
   parameters), then he can do so.
 
   The way conversion is handled in Orekit is very simple and allows easy and transparent
-  processing. All four parameters type-extend the abstract class Orbit, 
-  and every propagation algorithm, be it analytical or numerical, uses this abstract class as a
-  parameter, even if internally it relies on a specific representation. As an example, the
-  Eckstein-Hechler propagator is defined in terms of circular orbit only. So
-  there is an implicit conversion done at propagator initialization time.
+  processing, while avoiding blindly creating a new object if the the original orbit was
+  already of the appropriate type. So the appropriate way to convert an orbit is
+  the following one, using CircularOrbit as an example:
+
++---------------------
+OrbitType type  = OrbitType.CIRCULAR;
+CircularOrbit circular = (CircularOrbit) type.convertType(orbit);
++---------------------
+
+  In this example, the cast to CircularOrbit is garanteed to succeed because
+  the type enumerate is CIRCULAR. No object will be created if orbit was already
+  the proper type. As an example, the Eckstein-Hechler propagator is defined in
+  terms of circular orbit only. So there is an implicit conversion done at propagator
+  initialization or reset state time, using internally a code similar to the example
+  above.
 
 * Package organization
  
