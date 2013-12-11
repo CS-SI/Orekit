@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères 
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = le repère non pseudo-inertiel "{0}" n''est pas adapté à la définition d''orbites
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = répertoire de données racine {0} inexistant
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = répertoire de données racine {0} inexistant
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} n''est pas un répertoire

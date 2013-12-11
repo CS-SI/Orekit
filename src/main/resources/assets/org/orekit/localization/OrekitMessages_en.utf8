@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = unsupported local orbital frame, supported typ
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = non pseudo-inertial frame "{0}" is not suitable for defining orbits
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = data root directory {0} does not exist
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = data root directory {0} does not exist
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} is not a directory

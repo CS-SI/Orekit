@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local non soport
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = o sistema de referencia non pseudo-inercial "{0}" non está adaptado á definición de órbitas
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = repertorio de datos raíz {0} inexistente
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = repertorio de datos raíz {0} inexistente
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} non é un repertorio

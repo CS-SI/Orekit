@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = nicht unterstützte lokales Koordinatennetz, u
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = nicht pseudo-inertiales Koordinatennetz "{0}" ist nicht geeignet um eine Umlaufbahn zu definieren
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = Datenstammverzeichnis {0} existiert nicht
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = Datenstammverzeichnis {0} existiert nicht
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} ist kein Verzeichnis

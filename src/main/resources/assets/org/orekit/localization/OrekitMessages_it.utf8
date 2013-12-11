@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = riferimento orbitale locale non supportato, ri
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = il riferimento non pseudo-inerziale "{0}" non è adatto per definire delle orbite
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = cartella di dati radice {0} inesistente
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = cartella di dati radice {0} inesistente
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} non è una cartella
