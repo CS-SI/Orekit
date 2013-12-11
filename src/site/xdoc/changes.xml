@@ -22,6 +22,10 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="add" >
+        Added a method to get the number or calls to getNeighbors in the generic time stamped cache,
+        to allow performing measurements while tuning the cache.
+      </action>
+      <action dev="luc" type="add" >
         Added high degree ocean load deformation coefficients computed by Pascal
         Gégout (CNRS / UMR5563 - GET).
       </action>
