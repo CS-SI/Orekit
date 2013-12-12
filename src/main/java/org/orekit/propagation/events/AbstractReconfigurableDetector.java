@@ -57,12 +57,12 @@ public abstract class AbstractReconfigurableDetector<T extends EventDetector> ex
     /** Build a new instance.
      * @param newMaxCheck maximum checking interval (s)
      * @param newThreshold convergence threshold (s)
-     * @param maxIter maximum number of iterations in the event time search
+     * @param newMaxIter maximum number of iterations in the event time search
      * @param newHandler event handler to call at event occurrences
      * @return a new instance of the appropriate sub-type
      */
     protected abstract T create(final double newMaxCheck, final double newThreshold,
-                                final int maxIter, final EventHandler<T> newHandler);
+                                final int newMaxIter, final EventHandler<T> newHandler);
 
     /**
      * Setup the maximum checking interval.
