@@ -22,6 +22,10 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Fixed a spurious backward propagation.
+        Fixes issue #107.
+      </action>
+      <action dev="luc" type="fix" >
         Improved error detection for numerical and DSST propagation for cases
         where user attempts to compute integrator tolerances with an orbit for
         which Jacobian is singular (for example equatorial orbit while using
