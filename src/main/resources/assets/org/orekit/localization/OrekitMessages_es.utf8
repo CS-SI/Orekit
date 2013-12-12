@@ -250,6 +250,9 @@ UNKNOWN_ADDITIONAL_STATE = estado adicional desconocido "{0}"
 # unknown month "{0}"
 UNKNOWN_MONTH = mes desconocido "{0}"
 
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matriz jacobiana asociada al tipo {0} es singular para la órbita corriente
+
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = la matriz jacobiana del estado no ha sido todavía inicializada
 

@@ -31,12 +31,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
@@ -418,6 +420,38 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(state.getHx(), finalState.getHx(), 1.0e-10);
         Assert.assertEquals(state.getHy(), finalState.getHy(), 1.0e-10);
         Assert.assertEquals(state.getLM() + n * dt, finalState.getLM(), 6.0e-10);
+    }
+
+    @Test
+    public void testIssue157() throws OrekitException {
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+                                         FramesFactory.getTOD(false),
+                                         new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
+                                         nshp.getMu());
+        double period = orbit.getKeplerianPeriod();
+        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(10 * period);
+        DSSTPropagator propagator = new DSSTPropagator(integrator);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getGTOD(false));
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        CelestialBody moon = CelestialBodyFactory.getMoon();
+        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp));
+        propagator.addForceModel(new DSSTThirdBody(sun));
+        propagator.addForceModel(new DSSTThirdBody(moon));
+        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+
+        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
+        SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        Assert.assertEquals(8758.8, orbit.getA() - finalState.getA(), 10.0);
+
     }
 
     private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {

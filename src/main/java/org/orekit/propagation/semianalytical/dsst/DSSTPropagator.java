@@ -448,13 +448,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         private Propagator createPropagator(final SpacecraftState initialState)
             throws OrekitException {
             final Orbit initialOrbit = initialState.getOrbit();
-            final double[][] tol = NumericalPropagator.tolerances(1.0, initialOrbit, initialOrbit.getType());
+            final double[][] tol = NumericalPropagator.tolerances(1.0, initialOrbit, OrbitType.EQUINOCTIAL);
             final double minStep = 1.;
             final double maxStep = 200.;
             final AdaptiveStepsizeIntegrator integ = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
             integ.setInitialStepSize(100.);
 
             final NumericalPropagator propagator = new NumericalPropagator(integ);
+            propagator.setOrbitType(OrbitType.EQUINOCTIAL);
             propagator.setInitialState(initialState);
 
             // Define the same force model as the DSST
@@ -664,9 +665,11 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param orbit reference orbit
      * @return a two rows array, row 0 being the absolute tolerance error
      *                       and row 1 being the relative tolerance error
+     * @exception PropagationException if Jacobian is singular
      */
     public static double[][] tolerances(final double dP,
-                                        final Orbit orbit) {
+                                        final Orbit orbit)
+        throws PropagationException {
 
         return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
 

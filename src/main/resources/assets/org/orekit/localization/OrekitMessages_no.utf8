@@ -250,6 +250,9 @@ UNKNOWN_ADDITIONAL_STATE = ukjent ytterligere tilstand "{0}"
 # unknown month "{0}"
 UNKNOWN_MONTH = ukjent måned "{0}"
 
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = <MISSING TRANSLATION>
+
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobian-tilstanden har ikke blitt initialisert ennå
 

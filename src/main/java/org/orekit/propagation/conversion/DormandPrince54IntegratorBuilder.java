@@ -18,6 +18,7 @@ package org.orekit.propagation.conversion;
 
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import org.orekit.errors.PropagationException;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -51,7 +52,7 @@ public class DormandPrince54IntegratorBuilder implements FirstOrderIntegratorBui
     }
 
     /** {@inheritDoc} */
-    public AbstractIntegrator buildIntegrator(final Orbit orbit) {
+    public AbstractIntegrator buildIntegrator(final Orbit orbit) throws PropagationException {
         final double[][] tol = NumericalPropagator.tolerances(dP, orbit, OrbitType.CARTESIAN);
         return new DormandPrince54Integrator(minStep, maxStep, tol[0], tol[1]);
     }

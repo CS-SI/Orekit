@@ -21,6 +21,13 @@
   </properties>
   <body>
     <release version="6.1" date="TBD" description="TBD">
+      <action dev="luc" type="fix" >
+        Improved error detection for numerical and DSST propagation for cases
+        where user attempts to compute integrator tolerances with an orbit for
+        which Jacobian is singular (for example equatorial orbit while using
+        Keplerian representation).
+        Fixes issue #157.
+      </action>
       <action dev="luc" type="add" >
         Added a method to get the number or calls to getNeighbors in the generic time stamped cache,
         to allow performing measurements while tuning the cache.

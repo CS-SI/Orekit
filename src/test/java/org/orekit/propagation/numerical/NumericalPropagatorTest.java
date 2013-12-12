@@ -62,6 +62,7 @@ import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
@@ -648,6 +649,20 @@ public class NumericalPropagatorTest {
             Assert.assertEquals(OrekitMessages.NON_RESETABLE_STATE, oe.getSpecifier());
         }
 
+    }
+
+    @Test
+    public void testIssue157() throws OrekitException {
+        try {
+            Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+                                             FramesFactory.getTOD(false),
+                                             new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
+                                             Constants.EIGEN5C_EARTH_MU);
+            NumericalPropagator.tolerances(1.0, orbit, OrbitType.KEPLERIAN);
+            Assert.fail("an exception should have been thrown");
+        } catch (PropagationException pe) {
+            Assert.assertEquals(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, pe.getSpecifier());
+        }
     }
 
     private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
