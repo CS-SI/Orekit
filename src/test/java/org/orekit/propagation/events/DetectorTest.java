@@ -17,6 +17,7 @@
 package org.orekit.propagation.events;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +31,8 @@ import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnEvent;
+import org.orekit.propagation.numerical.NumericalPropagator;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -100,6 +103,74 @@ public class DetectorTest {
 
         public boolean outOfOrderCallDetected() {
             return outOfOrderCallDetected;
+        }
+
+    }
+
+    @Test
+    public void testIssue108Numerical() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
+        final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
+        final AbsoluteDate date = new AbsoluteDate(2003, 9, 16, utc);
+        final Orbit orbit = new CircularOrbit(new PVCoordinates(position,  velocity),
+                                              FramesFactory.getEME2000(), date, mu);
+        final double step = 60.0;
+        final int    n    = 100;
+        NumericalPropagator propagator = new NumericalPropagator(new ClassicalRungeKuttaIntegrator(step));
+        propagator.resetInitialState(new SpacecraftState(orbit));
+        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<DetectorTest.GCallsCounter>());
+        propagator.addEventDetector(counter);
+        propagator.propagate(date.shiftedBy(n * step));
+        Assert.assertEquals(n + 1, counter.getCount());
+    }
+
+    @Test
+    public void testIssue108Analytical() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
+        final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
+        final AbsoluteDate date = new AbsoluteDate(2003, 9, 16, utc);
+        final Orbit orbit = new CircularOrbit(new PVCoordinates(position,  velocity),
+                                              FramesFactory.getEME2000(), date, mu);
+        final double step = 60.0;
+        final int    n    = 100;
+        KeplerianPropagator propagator = new KeplerianPropagator(orbit);
+        GCallsCounter counter = new GCallsCounter(100000.0, 1.0e-6, 20, new StopOnEvent<DetectorTest.GCallsCounter>());
+        propagator.addEventDetector(counter);
+        propagator.setMasterMode(step, new OrekitFixedStepHandler() {
+            public void init(SpacecraftState s0, AbsoluteDate t) {
+            }
+            public void handleStep(SpacecraftState currentState, boolean isLast) {
+            }
+        });
+        propagator.propagate(date.shiftedBy(n * step));
+        Assert.assertEquals(n + 1, counter.getCount());
+    }
+
+    private static class GCallsCounter extends AbstractReconfigurableDetector<GCallsCounter> {
+
+        private static final long serialVersionUID = 1L;
+        private int count;
+
+        public GCallsCounter(final double maxCheck, final double threshold,
+                             final int maxIter, final EventHandler<GCallsCounter> handler) {
+            super(maxCheck, threshold, maxIter, handler);
+            count = 0;
+        }
+
+        protected GCallsCounter create(final double newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler<GCallsCounter> newHandler) {
+            return new GCallsCounter(newMaxCheck, newThreshold, newMaxIter, newHandler);
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public double g(SpacecraftState s) {
+            count++;
+            return 1.0;
         }
 
     }

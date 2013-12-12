@@ -35,6 +35,7 @@ import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
@@ -730,11 +731,19 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** Underlying event detector. */
         private final T detector;
 
+        /** Time of the previous call to g. */
+        private double lastT;
+
+        /** Value from the previous call to g. */
+        private double lastG;
+
         /** Build a wrapped event detector.
          * @param detector event detector to wrap
         */
         public AdaptedEventDetector(final T detector) {
             this.detector = detector;
+            this.lastT    = Double.NaN;
+            this.lastG    = Double.NaN;
         }
 
         /** {@inheritDoc} */
@@ -742,6 +751,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 detector.init(getCompleteState(t0, y0), stateMapper.mapDoubleToDate(t));
+                this.lastT = Double.NaN;
+                this.lastG = Double.NaN;
 
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
@@ -751,7 +762,11 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         /** {@inheritDoc} */
         public double g(final double t, final double[] y) {
             try {
-                return detector.g(getCompleteState(t, y));
+                if (!Precision.equals(lastT, t, 1)) {
+                    lastT = t;
+                    lastG = detector.g(getCompleteState(t, y));
+                }
+                return lastG;
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }

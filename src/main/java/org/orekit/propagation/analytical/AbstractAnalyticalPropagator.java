@@ -139,7 +139,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
 
             // initialize event detectors
             for (final EventState<?> es : eventsStates) {
-                es.getEventDetector().init(state, target);
+                es.init(state, target);
             }
 
             // initialize step handler

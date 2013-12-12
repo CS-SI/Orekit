@@ -22,6 +22,10 @@
   <body>
     <release version="6.1" date="TBD" description="TBD">
       <action dev="luc" type="fix" >
+        Reduced number of calls to the g function in event detectors.
+        Fixes issue #108.
+      </action>
+      <action dev="luc" type="fix" >
         Fixed a spurious backward propagation.
         Fixes issue #107.
       </action>

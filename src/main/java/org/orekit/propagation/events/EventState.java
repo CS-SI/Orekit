@@ -55,6 +55,12 @@ public class EventState<T extends EventDetector> implements Serializable {
     /** Event detector. */
     private T detector;
 
+    /** Time of the previous call to g. */
+    private AbsoluteDate lastT;
+
+    /** Value from the previous call to g. */
+    private double lastG;
+
     /** Time at the beginning of the step. */
     private AbsoluteDate t0;
 
@@ -109,6 +115,36 @@ public class EventState<T extends EventDetector> implements Serializable {
         return detector;
     }
 
+    /** Initialize event handler at the start of a propagation.
+     * <p>
+     * This method is called once at the start of the propagation. It
+     * may be used by the event handler to initialize some internal data
+     * if needed.
+     * </p>
+     * @param s0 initial state
+     * @param t target time for the integration
+     */
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        detector.init(s0, t);
+        lastT = AbsoluteDate.PAST_INFINITY;
+        lastG = Double.NaN;
+    }
+
+    /** Compute the value of the switching function.
+     * This function must be continuous (at least in its roots neighborhood),
+     * as the integrator will need to find its roots to locate the events.
+     * @param s the current state information: date, kinematics, attitude
+     * @return value of the switching function
+     * @exception OrekitException if some specific error occurs
+     */
+    private double g(final SpacecraftState s) throws OrekitException {
+        if (!s.getDate().equals(lastT)) {
+            lastT = s.getDate();
+            lastG = detector.g(s);
+        }
+        return lastG;
+    }
+
     /** Reinitialize the beginning of the step.
      * @param state0 state value at the beginning of the step
      * @param isForward if true, step will be forward
@@ -118,11 +154,11 @@ public class EventState<T extends EventDetector> implements Serializable {
     public void reinitializeBegin(final SpacecraftState state0, final boolean isForward)
         throws OrekitException {
         this.t0 = state0.getDate();
-        g0 = detector.g(state0);
+        g0 = g(state0);
         if (g0 == 0) {
             // extremely rare case: there is a zero EXACTLY at interval start
             // we will use the sign slightly after step beginning to force ignoring this zero
-            g0 = detector.g(state0.shiftedBy((isForward ? 0.5 : -0.5) * detector.getThreshold()));
+            g0 = g(state0.shiftedBy((isForward ? 0.5 : -0.5) * detector.getThreshold()));
         }
         g0Positive = g0 >= 0;
     }
@@ -163,7 +199,7 @@ public class EventState<T extends EventDetector> implements Serializable {
                 public double value(final double t) throws LocalWrapperException {
                     try {
                         interpolator.setInterpolatedDate(t0.shiftedBy(t));
-                        return detector.g(interpolator.getInterpolatedState());
+                        return g(interpolator.getInterpolatedState());
                     } catch (OrekitException oe) {
                         throw new LocalWrapperException(oe);
                     }
@@ -180,7 +216,7 @@ public class EventState<T extends EventDetector> implements Serializable {
                 // evaluate detector value at the end of the substep
                 final AbsoluteDate tb = t0.shiftedBy((i + 1) * h);
                 interpolator.setInterpolatedDate(tb);
-                final double gb = detector.g(interpolator.getInterpolatedState());
+                final double gb = g(interpolator.getInterpolatedState());
 
                 // check events occurrence
                 if (g0Positive ^ (gb >= 0)) {
@@ -253,7 +289,7 @@ public class EventState<T extends EventDetector> implements Serializable {
         throws OrekitException {
 
         t0 = state.getDate();
-        g0 = detector.g(state);
+        g0 = g(state);
 
         if (pendingEvent) {
             // force the sign to its value "just after the event"
