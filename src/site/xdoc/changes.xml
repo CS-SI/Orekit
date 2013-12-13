@@ -20,7 +20,27 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="6.1" date="TBD" description="TBD">
+    <release version="6.1" date="2013-12-13"
+             description="Version 6.1 is a minor release of Orekit. It introduces several new
+             features and bug fixes. The most important features introduced in version 6.1
+             are solid tides force model, including pole tide at user choice, and following
+             either IERS 1996, IERS 2003 or IERS 2010 conventions ; ocean tides force model,
+             including pole tide at user choice, loading a user provided model ; simultaneous
+             support for IERS 1996, 2003 and 2010 for frames definition, which is very
+             important to support legacy systems and to convert coordinates between older and
+             newer reference systems ; greatly improved accuracy of celestial/terrestrial
+             frames transforms (we are now at sub-micro arcsecond level for IERS 2003/2010,
+             both with equinox based and Non-Rotating Origin, at a sub-milli arcseconds for
+             IERS 1996, both with equinox based and Non-Rotating Origin) ; classical
+             equinox-based paradigm and new non-rotating origin paradigm for inertial and
+             terrestrial frames are now supported with all IERS conventions ; automatic
+             conversion of IERS Earth Orientation Paramters from equinoxial to non-rotating
+             paradigm ; support for CCSDS Orbit Data Message ; improved API for events,
+             allowing separation of event detection and event handling (the older API is still
+             available for compatibility) ; merged all the elevation related events, allowing
+             to use both refraction model and antenna mask at the same time if desired ;
+             new attitude mode based on interpolation on a table. Numerous bugs were also fixed.
+             Version 6.1 depends on version 3.2 of Apache commons math.">
       <action dev="luc" type="fix" >
         Reduced number of calls to the g function in event detectors.
         Fixes issue #108.
