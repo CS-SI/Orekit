@@ -51,7 +51,7 @@ import org.orekit.utils.OrekitConfiguration;
  * <p>
  * The user can retrieve those reference frames using various static methods, the most
  * important ones being: {@link #getFrame(Predefined)}, {@link #getGCRF()},
- * {@link #getCIRF(IERSConventions)} {@link #getTIRF(IERSConventions, boolean)},
+ * {@link #getCIRF(IERSConventions, boolean)} {@link #getTIRF(IERSConventions, boolean)},
  * {@link #getITRF(IERSConventions, boolean)}, {@link #getEME2000()},
  * {@link #getMOD(IERSConventions)}, {@link #getTOD(IERSConventions)},
  * {@link #getGTOD(IERSConventions)}, {@link #getITRFEquinox(IERSConventions, boolean)},
@@ -110,7 +110,7 @@ import org.orekit.utils.OrekitConfiguration;
  * (0.0) correction is used. This can occur when no EOP data is loaded, or when the
  * requested date is beyond the time span of the loaded EOP data. Using a null
  * correction can result in coarse accuracy. To check the time span covered by EOP data use
- * {@link #getEOPHistory(IERSConventions)}, {@link EOPHistory#getStartDate()},
+ * {@link #getEOPHistory(IERSConventions, boolean)}, {@link EOPHistory#getStartDate()},
  * and {@link EOPHistory#getEndDate()}.
  * <p>
  * For more on configuring the EOP data Orekit uses see

@@ -40,7 +40,9 @@ TLE
   architecture.
 
   It is considered to be closer to a propagation model than to an orbit representation and
-  has been moved withing the propagation package since 6.0.
+  has been moved within the propagation package since 6.0. This move allow the rich features
+  from the global propagation framework (master/slave/ephemeris mode, events handling) to
+  be used with TLE.
 
 * Authors
 

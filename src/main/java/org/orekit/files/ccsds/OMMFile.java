@@ -87,6 +87,7 @@ public class OMMFile extends OGMFile {
     /** Get the meta data.
      * @return meta data
      */
+    @Override
     public OMMMetaData getMetaData() {
         return metaData;
     }

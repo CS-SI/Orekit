@@ -20,17 +20,18 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinates;
 
 /** Finder for apside crossing events.
  * <p>This class finds apside crossing events (i.e. apogee or perigee crossing).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at apogee crossing
- * and to {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at apogee crossing and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at perigee crossing. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * <p>Beware that apside detection will fail for almost circular orbits. If
  * for example an apside detector is used to trigger an {@link
  * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
@@ -62,7 +63,7 @@ public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetecto
      */
     public ApsideDetector(final double threshold, final Orbit orbit) {
         super(orbit.getKeplerianPeriod() / 3, threshold,
-              new DetectorStopOnIncreasing<ApsideDetector>());
+              DEFAULT_MAX_ITER, new StopOnIncreasing<ApsideDetector>());
     }
 
     /** Private constructor with full parameters.
@@ -73,21 +74,20 @@ public class ApsideDetector extends AbstractReconfigurableDetector<ApsideDetecto
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @since 6.1
      */
-    private ApsideDetector(final double maxCheck,
-                           final double threshold,
-                           final DetectorEventHandler<ApsideDetector> handler) {
-        super(maxCheck, threshold, handler);
+    private ApsideDetector(final double maxCheck, final double threshold,
+                           final int maxIter, final EventHandler<ApsideDetector> handler) {
+        super(maxCheck, threshold, maxIter, handler);
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ApsideDetector create(final double newMaxCheck,
-                                    final double newThreshold,
-                                    final DetectorEventHandler<ApsideDetector> newHandler) {
-        return new ApsideDetector(newMaxCheck, newThreshold, newHandler);
+    protected ApsideDetector create(final double newMaxCheck, final double newThreshold,
+                                    final int newMaxIter, final EventHandler<ApsideDetector> newHandler) {
+        return new ApsideDetector(newMaxCheck, newThreshold, newMaxIter, newHandler);
     }
 
     /** Compute the value of the switching function.

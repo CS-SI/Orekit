@@ -15,6 +15,7 @@ import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
@@ -60,7 +61,9 @@ public class DihedralFieldOfViewDetectorTest {
         final double aperture1 = FastMath.toRadians(28);
         final double aperture2 = FastMath.toRadians(120);
 
-        final EventDetector sunVisi = new DihedralSunVisiDetector(maxCheck, sunPV, center, axis1, aperture1, axis2, aperture2);
+        final EventDetector sunVisi =
+                new DihedralFieldOfViewDetector(maxCheck, sunPV, center, axis1, aperture1, axis2, aperture2).
+                withHandler(new DihedralSunVisiHandler());
 
         // Add event to be detected
         propagator.addEventDetector(sunVisi);
@@ -103,21 +106,11 @@ public class DihedralFieldOfViewDetectorTest {
     }
 
 
-    /** Finder for visibility event.
-     * <p>This class extends the elevation detector modifying the event handler.<p>
-     */
-    private static class DihedralSunVisiDetector extends DihedralFieldOfViewDetector {
+    /** Handler for visibility event. */
+    private static class DihedralSunVisiHandler implements EventHandler<DihedralFieldOfViewDetector> {
 
-        /** Serializable UID. */
-        private static final long serialVersionUID = 1181779674621070074L;
-
-        public DihedralSunVisiDetector(final double maxCheck,
-                                       final PVCoordinatesProvider pvTarget, final Vector3D center, final Vector3D axis1, final double aperture1,
-                                       final Vector3D axis2, final double aperture2) {
-            super(maxCheck, pvTarget, center, axis1, aperture1, axis2, aperture2);
-        }
-
-        public Action eventOccurred(final SpacecraftState s, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final DihedralFieldOfViewDetector detector,
+                                    final boolean increasing)
             throws OrekitException {
             if (increasing) {
                 //System.err.println(" Sun visibility starts " + s.getDate());
@@ -135,6 +128,10 @@ public class DihedralFieldOfViewDetectorTest {
                 //System.err.println(" Sun visibility ends at " + s.getDate());
                 return Action.CONTINUE;//STOP;
             }
+        }
+
+        public SpacecraftState resetState(DihedralFieldOfViewDetector detector, SpacecraftState oldState) {
+            return oldState;
         }
 
     }

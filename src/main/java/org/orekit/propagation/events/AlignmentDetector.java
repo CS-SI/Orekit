@@ -21,8 +21,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -30,11 +30,10 @@ import org.orekit.utils.PVCoordinatesProvider;
  * <p>This class finds alignment events.</p>
  * <p>Alignment means the conjunction, with some threshold angle, between the satellite
  * position and the projection in the orbital plane of some body position.</p>
- * <p>The default handler behavior is to {@link EventDetector.Action#STOP stop}
+ * <p>The default handler behavior is to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
  * propagation when alignment is reached. This can be changed by calling
- * the other {@link #AlignmentDetector(double, Orbit, PVCoordinatesProvider,
- * double, DetectorEventHandler) constructor} with an explicit {@link
- * DetectorEventHandler handler}.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
@@ -80,8 +79,8 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
                              final Orbit orbit,
                              final PVCoordinatesProvider body,
                              final double alignAngle) {
-        this(orbit.getKeplerianPeriod() / 3, threshold,
-             new DetectorStopOnIncreasing<AlignmentDetector>(),
+        this(orbit.getKeplerianPeriod() / 3, threshold, DEFAULT_MAX_ITER,
+             new StopOnIncreasing<AlignmentDetector>(),
              body, alignAngle);
     }
 
@@ -93,16 +92,16 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param body the body to align
      * @param alignAngle the alignment angle (rad)
      */
-    private AlignmentDetector(final double maxCheck,
-                              final double threshold,
-                              final DetectorEventHandler<AlignmentDetector> handler,
+    private AlignmentDetector(final double maxCheck, final double threshold,
+                              final int maxIter, final EventHandler<AlignmentDetector> handler,
                               final PVCoordinatesProvider body,
                               final double alignAngle) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.body          = body;
         this.alignAngle    = alignAngle;
         this.cosAlignAngle = FastMath.cos(alignAngle);
@@ -111,10 +110,9 @@ public class AlignmentDetector extends AbstractReconfigurableDetector<AlignmentD
 
     /** {@inheritDoc} */
     @Override
-    protected AlignmentDetector create(final double newMaxCheck,
-                                       final double newThreshold,
-                                       final DetectorEventHandler<AlignmentDetector> newHandler) {
-        return new AlignmentDetector(newMaxCheck, newThreshold, newHandler,
+    protected AlignmentDetector create(final double newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler<AlignmentDetector> newHandler) {
+        return new AlignmentDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      body, alignAngle);
     }
 

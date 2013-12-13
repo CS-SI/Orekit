@@ -300,11 +300,13 @@ public class HolmesFeatherstoneAttractionModelTest extends AbstractForceModelTes
             return TideSystem.UNKNOWN;
         }
 
+        @Deprecated
         public double getNormalizedCnm(final double dateOffset, final int n, final int m) {
             throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
                                                               "this deprecated method should never be called");
         }
 
+        @Deprecated
         public double getNormalizedSnm(final double dateOffset, final int n, final int m) {
             throw OrekitException.createIllegalStateException(LocalizedFormats.SIMPLE_MESSAGE,
                                                               "this deprecated method should never be called");

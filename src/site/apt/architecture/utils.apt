@@ -36,6 +36,13 @@ Utils
   the fitting parameters or compute osculating or mean values (including first and
   second derivatives).
 
+  The <IERSConventions> enumerate gather all models that are defined by IERS and change
+  as conventions are updated, like precession-nutation models. It is mainly used as
+  a configuration parameter for frames, allonwing the user the choose which precession
+  nutation model to use when creating a Mean Of Date frame, simply by providing either
+  IERS_1996, IERS_2003 or IERS_2010 as the conventions parameters to the FrameFactory
+  <<getMOD>> factory method.
+
 * Package organization
  
 [../images/design/utils-class-diagram.png]

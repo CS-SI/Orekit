@@ -507,8 +507,10 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * (it may be different from {@code orbit.getType()})
      * @return a two rows array, row 0 being the absolute tolerance error and row 1
      * being the relative tolerance error
+     * @exception PropagationException if Jacobian is singular
      */
-    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type) {
+    public static double[][] tolerances(final double dP, final Orbit orbit, final OrbitType type)
+        throws PropagationException {
 
         // estimate the scalar velocity error
         final PVCoordinates pv = orbit.getPVCoordinates();
@@ -545,6 +547,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
                             FastMath.abs(row[3]) * dV +
                             FastMath.abs(row[4]) * dV +
                             FastMath.abs(row[5]) * dV;
+                if (Double.isNaN(absTol[i])) {
+                    throw new PropagationException(OrekitMessages.SINGULAR_JACOBIAN_FOR_ORBIT_TYPE, type);
+                }
             }
 
         }

@@ -104,6 +104,7 @@
       AttitudeProvider             <|-- CelestialBodyPointed
       AttitudeProvider             <|-- InertialProvider
       AttitudeProvider             <|-- LofOffset
+      AttitudeProvider             <|-- TabulatedProvider
 
     end package
 

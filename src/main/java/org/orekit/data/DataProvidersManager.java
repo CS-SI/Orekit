@@ -132,7 +132,7 @@ public class DataProvidersManager {
                         if (DataProvider.ZIP_ARCHIVE_PATTERN.matcher(name).matches()) {
                             throw new OrekitException(OrekitMessages.UNABLE_TO_FIND_FILE, name);
                         } else {
-                            throw new OrekitException(OrekitMessages.DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS, name);
+                            throw new OrekitException(OrekitMessages.DATA_ROOT_DIRECTORY_DOES_NOT_EXIST, name);
                         }
                     }
 

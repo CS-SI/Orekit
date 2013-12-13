@@ -19,35 +19,30 @@ package org.orekit.propagation.events.handlers;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventDetector.Action;
 
-
-/** Handle a detection event and choose what to do next.
- * <p>The implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation when ascending and to
- * {@link EventDetector.Action#STOP stop} propagation when descending.</p>
+/**
+ * Event handler which will always return {@link EventHandler.Action#STOP stop} as a state.
  *
  * @author Hank Grabowski
  *
  * @param <T> class type for the generic version
  * @since 6.1
  */
-public class DetectorStopOnDecreasing <T extends EventDetector> implements DetectorEventHandler<T> {
+public class StopOnEvent <T extends EventDetector> implements EventHandler<T> {
 
-    /** Handle a detection event and choose what to do next.
-     * <p>The implementation behavior is to {@link
-     * EventDetector.Action#CONTINUE continue} propagation when ascending and to
-     * {@link EventDetector.Action#STOP stop} propagation when descending.</p>
-     * @param s the current state information : date, kinematics, attitude
-     * @param detector the detector object calling this method (not used in the evaluation)
-     * @param increasing if true, the value of the switching function increases
-     * when times increases around event
-     * @return {@link EventDetector.Action#STOP} or {@link EventDetector.Action#CONTINUE}
+    /**
+     * Specific implementation of the eventOccurred interface.
+     *
+     * @param s SpaceCraft state to be used in the evaluation
+     * @param detector object with appropriate type that can be used in determining correct return state
+     * @param increasing with the event occurred in an "increasing" or "decreasing" slope direction
+     * @return {@link EventHandler.Action#STOP stop} under all circumstances
      * @exception OrekitException if some specific error occurs
      */
+    @Override
     public Action eventOccurred(final SpacecraftState s, final T detector, final boolean increasing)
         throws OrekitException {
-        return increasing ? Action.CONTINUE : Action.STOP;
+        return Action.STOP;
     }
 
     /** {@inheritDoc} */

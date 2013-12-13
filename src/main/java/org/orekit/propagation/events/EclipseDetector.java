@@ -20,17 +20,19 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for satellite eclipse related events.
  * <p>This class finds eclipse events, i.e. satellite within umbra (total
  * eclipse) or penumbra (partial eclipse).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation when entering the eclipse and to
- * {@link EventDetector.Action#STOP stop} propagation when exiting the eclipse.
- * This can be changed by calling {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation when entering the eclipse and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * when exiting the eclipse. This can be changed by calling {@link
+ * #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  */
@@ -121,7 +123,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
                            final PVCoordinatesProvider occulted, final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius,
                            final boolean totalEclipse) {
-        this(maxCheck, threshold, new DetectorStopOnIncreasing<EclipseDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
              occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
@@ -174,7 +176,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
     public EclipseDetector(final double maxCheck, final double threshold,
                            final PVCoordinatesProvider occulted,  final double occultedRadius,
                            final PVCoordinatesProvider occulting, final double occultingRadius) {
-        this(maxCheck, threshold, new DetectorStopOnIncreasing<EclipseDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnIncreasing<EclipseDetector>(),
              occulted, occultedRadius, occulting, occultingRadius, true);
     }
 
@@ -186,6 +188,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param occulted the body to be occulted
      * @param occultedRadius the radius of the body to be occulted in meters
@@ -195,11 +198,11 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * @since 6.1
      */
     private EclipseDetector(final double maxCheck, final double threshold,
-                            final DetectorEventHandler<EclipseDetector> handler,
+                            final int maxIter, final EventHandler<EclipseDetector> handler,
                             final PVCoordinatesProvider occulted,  final double occultedRadius,
                             final PVCoordinatesProvider occulting, final double occultingRadius,
                             final boolean totalEclipse) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.occulted        = occulted;
         this.occultedRadius  = FastMath.abs(occultedRadius);
         this.occulting       = occulting;
@@ -209,10 +212,9 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
 
     /** {@inheritDoc} */
     @Override
-    protected EclipseDetector create(final double newMaxCheck,
-                                     final double newThreshold,
-                                     final DetectorEventHandler<EclipseDetector> newHandler) {
-        return new EclipseDetector(newMaxCheck, newThreshold, newHandler,
+    protected EclipseDetector create(final double newMaxCheck, final double newThreshold,
+                                     final int nawMaxIter, final EventHandler<EclipseDetector> newHandler) {
+        return new EclipseDetector(newMaxCheck, newThreshold, nawMaxIter, newHandler,
                                    occulted, occultedRadius, occulting, occultingRadius, totalEclipse);
     }
 
@@ -226,7 +228,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * @since 6.1
      */
     public EclipseDetector withUmbra() {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
                                    occulted, occultedRadius, occulting, occultingRadius,
                                    true);
     }
@@ -241,7 +243,7 @@ public class EclipseDetector extends AbstractReconfigurableDetector<EclipseDetec
      * @since 6.1
      */
     public EclipseDetector withPenumbra() {
-        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
+        return new EclipseDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
                                    occulted, occultedRadius, occulting, occultingRadius,
                                    false);
     }

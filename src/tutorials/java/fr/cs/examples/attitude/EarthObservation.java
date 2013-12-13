@@ -41,6 +41,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -81,24 +82,32 @@ public class EarthObservation {
             final AttitudeProvider nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
             final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
             final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
-            final EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
-                private static final long serialVersionUID = 8091992101063392941L;
-                public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                    if (!increasing) {
-                        output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
+            final EventDetector dayNightEvent =
+                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                withHandler(new EventHandler<EclipseDetector>() {
+                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector detector, final boolean increasing) {
+                        if (!increasing) {
+                            output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
+                        }
+                        return Action.CONTINUE;
                     }
-                    return Action.CONTINUE;
-                }
-            };
-            final EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
-                private static final long serialVersionUID = -377454330129772997L;
-                public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
-                    if (increasing) {
-                        output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
+                    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+                        return oldState;
                     }
-                    return Action.CONTINUE;
-                }
-            };
+                });
+            final EventDetector nightDayEvent =
+                new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                withHandler(new EventHandler<EclipseDetector>() {
+                    public Action eventOccurred(final SpacecraftState s, final EclipseDetector detector, final boolean increasing) {
+                        if (increasing) {
+                            output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
+                        }
+                        return Action.CONTINUE;
+                    }
+                    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+                        return oldState;
+                    }
+                });
             attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
             attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
             if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {

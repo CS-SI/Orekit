@@ -224,7 +224,7 @@ public enum CCSDSFrame {
     /** Get the type of Local Orbital frame.
      * <p>
      * If the frame is not a Local Orbital frame (i.e. if this method returns null),
-     * then the {@link #getFrame(IERSConventions) getFrame} method must be used to
+     * then the {@link #getFrame(IERSConventions, boolean) getFrame} method must be used to
      * retrieve the absolute frame.
      * </p>
      * @return type of Local Orbital Frame, or null if the frame is not a local orbital frame

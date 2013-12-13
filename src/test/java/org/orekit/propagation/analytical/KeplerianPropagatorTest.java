@@ -18,6 +18,7 @@ package org.orekit.propagation.analytical;
 
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
+import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -36,11 +37,13 @@ import org.orekit.errors.PropagationException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.frames.TopocentricFrame;
+import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.BoundedPropagator;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractDetector;
 import org.orekit.propagation.events.AltitudeDetector;
@@ -48,12 +51,14 @@ import org.orekit.propagation.events.ApsideDetector;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.NodeDetector;
-import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandler;
 import org.orekit.propagation.sampling.OrekitStepHandlerMultiplexer;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.time.TimeScale;
+import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -391,7 +396,7 @@ public class KeplerianPropagatorTest {
                                FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, 3.986004415e14);
         KeplerianPropagator propagator = new KeplerianPropagator(orbit);
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new DetectorContinueOnEvent<NodeDetector>()));
+        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent<NodeDetector>()));
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);
@@ -549,6 +554,33 @@ public class KeplerianPropagatorTest {
 
         Assert.assertEquals(0.0, pv1.getPosition().subtract(pv2.getPosition()).getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, pv1.getVelocity().subtract(pv2.getVelocity()).getNorm(), 1.0e-15);
+
+    }
+
+    @Test
+    public void testIssue107() throws OrekitException {
+        final TimeScale utc = TimeScalesFactory.getUTC();
+        final Vector3D position = new Vector3D(-6142438.668, 3492467.56, -25767.257);
+        final Vector3D velocity = new Vector3D(505.848, 942.781, 7435.922);
+        final AbsoluteDate date = new AbsoluteDate(2003, 9, 16, utc);
+        final Orbit orbit = new CircularOrbit(new PVCoordinates(position,  velocity),
+                                              FramesFactory.getEME2000(), date, mu);
+
+        Propagator propagator = new KeplerianPropagator(orbit) {
+            AbsoluteDate lastDate = AbsoluteDate.PAST_INFINITY;
+            
+            protected SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
+                if (date.compareTo(lastDate) < 0) {
+                    throw new PropagationException(LocalizedFormats.SIMPLE_MESSAGE,
+                                                   "no backward propagation allowed");
+                }
+                lastDate = date;
+                return super.basicPropagate(date);
+            }
+        };
+
+        SpacecraftState finalState = propagator.propagate(date.shiftedBy(3600.0));
+        Assert.assertEquals(3600.0, finalState.getDate().durationFrom(date), 1.0e-15);
 
     }
 

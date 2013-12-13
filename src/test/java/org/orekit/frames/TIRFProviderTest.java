@@ -15,6 +15,11 @@
  */
 package org.orekit.frames;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -24,6 +29,7 @@ import java.util.concurrent.Future;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Before;
@@ -137,6 +143,31 @@ public class TIRFProviderTest {
         checkPV(pvCIRF,
                 tirf.getTransformTo(cirf, t0).transformPVCoordinates(pvTIRF),
                 0.0505, 3.60e-6);
+
+    }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        TIRFProvider provider = new TIRFProvider(FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true));
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(provider);
+
+        Assert.assertTrue(bos.size() > 280000);
+        Assert.assertTrue(bos.size() < 285000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        TIRFProvider deserialized  = (TIRFProvider) ois.readObject();
+        for (int i = 0; i < FastMath.min(100, provider.getEOPHistory().getEntries().size()); ++i) {
+            AbsoluteDate date = provider.getEOPHistory().getEntries().get(i).getDate();
+            Transform expectedIdentity = new Transform(date,
+                                                       provider.getTransform(date).getInverse(),
+                                                       deserialized.getTransform(date));
+            Assert.assertEquals(0.0, expectedIdentity.getTranslation().getNorm(), 1.0e-15);
+            Assert.assertEquals(0.0, expectedIdentity.getRotation().getAngle(),   1.0e-15);
+        }
 
     }
 

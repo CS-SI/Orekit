@@ -24,7 +24,7 @@ import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.AbstractReconfigurableDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -56,15 +56,16 @@ import org.orekit.utils.PVCoordinates;
  * node on an equatorial orbit! This is a real case that has been encountered
  * during validation ...</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
+     * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeuver> {
+public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigurableDetector<ImpulseManeuver<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
 
     /** Triggering event. */
-    private final EventDetector trigger;
+    private final T trigger;
 
     /** Velocity increment in satellite frame. */
     private final Vector3D deltaVSat;
@@ -80,9 +81,9 @@ public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeu
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      */
-    public ImpulseManeuver(final EventDetector trigger, final Vector3D deltaVSat,
-                           final double isp) {
-        this(trigger.getMaxCheckInterval(), trigger.getThreshold(), new Handler(),
+    public ImpulseManeuver(final T trigger, final Vector3D deltaVSat, final double isp) {
+        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
+             trigger.getMaxIterationCount(), new Handler<T>(),
              trigger, deltaVSat, isp);
     }
 
@@ -94,6 +95,7 @@ public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeu
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param trigger triggering event
      * @param deltaVSat velocity increment in satellite frame
@@ -101,10 +103,10 @@ public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeu
      * @since 6.1
      */
     private ImpulseManeuver(final double maxCheck, final double threshold,
-                            final DetectorEventHandler<ImpulseManeuver> handler,
-                            final EventDetector trigger, final Vector3D deltaVSat,
+                            final int maxIter, final EventHandler<ImpulseManeuver<T>> handler,
+                            final T trigger, final Vector3D deltaVSat,
                             final double isp) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;
         this.isp       = isp;
@@ -113,11 +115,10 @@ public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeu
 
     /** {@inheritDoc} */
     @Override
-    protected ImpulseManeuver create(final double newMaxCheck,
-                                     final double newThreshold,
-                                     final DetectorEventHandler<ImpulseManeuver> newHandler) {
-        return new ImpulseManeuver(newMaxCheck, newThreshold, newHandler,
-                                   trigger, deltaVSat, isp);
+    protected ImpulseManeuver<T> create(final double newMaxCheck, final double newThreshold,
+                                        final int newMaxIter, final EventHandler<ImpulseManeuver<T>> newHandler) {
+        return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                      trigger, deltaVSat, isp);
     }
 
     /** {@inheritDoc} */
@@ -132,7 +133,7 @@ public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeu
     /** Get the triggering event.
      * @return triggering event
      */
-    public EventDetector getTrigger() {
+    public T getTrigger() {
         return trigger;
     }
 
@@ -150,17 +151,27 @@ public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeu
         return isp;
     }
 
-    /** Local handler. */
-    private static class Handler implements DetectorEventHandler<ImpulseManeuver> {
+    /** Local handler.
+     * @param <T> class type for the generic version
+     */
+    private static class Handler<T extends EventDetector> implements EventHandler<ImpulseManeuver<T>> {
 
         /** {@inheritDoc} */
-        public EventDetector.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver im,
-                                                  final boolean increasing)
+        public EventHandler.Action eventOccurred(final SpacecraftState s, final ImpulseManeuver<T> im,
+                                                 final boolean increasing)
             throws OrekitException {
 
             // filter underlying event
-            @SuppressWarnings("deprecation")
-            final EventDetector.Action underlyingAction = im.trigger.eventOccurred(s, increasing);
+            final EventHandler.Action underlyingAction;
+            if (im.trigger instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) im.trigger).getHandler();
+                underlyingAction = handler.eventOccurred(s, im.trigger, increasing);
+            } else {
+                @SuppressWarnings("deprecation")
+                final EventDetector.Action a = im.trigger.eventOccurred(s, increasing);
+                underlyingAction = AbstractReconfigurableDetector.convert(a);
+            }
 
             return (underlyingAction == Action.STOP) ? Action.RESET_STATE : Action.CONTINUE;
 
@@ -168,7 +179,7 @@ public class ImpulseManeuver extends AbstractReconfigurableDetector<ImpulseManeu
 
         /** {@inheritDoc} */
         @Override
-        public SpacecraftState resetState(final ImpulseManeuver im, final SpacecraftState oldState)
+        public SpacecraftState resetState(final ImpulseManeuver<T> im, final SpacecraftState oldState)
             throws OrekitException {
 
             final AbsoluteDate date = oldState.getDate();

@@ -17,6 +17,11 @@
 package org.orekit.time;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -133,6 +138,27 @@ public class UT1ScaleTest {
         Assert.assertEquals(   7,        components.getTime().getHour());
         Assert.assertEquals(  51,        components.getTime().getMinute());
         Assert.assertEquals(  27.946047, components.getTime().getSecond(), 1.0e-10);
+    }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        UT1Scale ut1 = TimeScalesFactory.getUT1(IERSConventions.IERS_2010, true);
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(ut1);
+
+        Assert.assertTrue(bos.size() > 145000);
+        Assert.assertTrue(bos.size() < 155000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        UT1Scale deserialized  = (UT1Scale) ois.readObject();
+        for (double dt = 0; dt < 7 * Constants.JULIAN_DAY; dt += 3600) {
+            AbsoluteDate date = ut1.getEOPHistory().getStartDate().shiftedBy(dt);
+            Assert.assertEquals(ut1.offsetFromTAI(date), deserialized.offsetFromTAI(date), 1.0e-15);
+        }
+
     }
 
     @Before

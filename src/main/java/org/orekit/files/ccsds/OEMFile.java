@@ -17,15 +17,23 @@
 
 package org.orekit.files.ccsds;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.files.general.OrbitFile;
+import org.orekit.files.general.SatelliteInformation;
+import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.CartesianOrbit;
@@ -87,6 +95,117 @@ public class OEMFile extends ODMFile {
     @Override
     public OrbitFile.TimeSystem getTimeSystem() {
         return ephemeridesBlocks.get(0).getMetaData().getTimeSystem();
+    }
+
+    /** {@inheritDoc}
+     * <p>
+     * We return here only the start time of the first ephemerides block.
+     * </p>
+     */
+    @Override
+    public AbsoluteDate getEpoch() {
+        return ephemeridesBlocks.get(0).getStartTime();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Collection<SatelliteInformation> getSatellites() {
+        final Set<String> availableSatellites = getAvailableSatelliteIds();
+        final List<SatelliteInformation> satellites =
+                new ArrayList<SatelliteInformation>(availableSatellites.size());
+        for (String satId : availableSatellites) {
+            satellites.add(new SatelliteInformation(satId));
+        }
+        return satellites;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getSatelliteCount() {
+        return getAvailableSatelliteIds().size();
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SatelliteInformation getSatellite(final String satId) {
+        final Set<String> availableSatellites = getAvailableSatelliteIds();
+        if (availableSatellites.contains(satId)) {
+            return new SatelliteInformation(satId);
+        } else {
+            return null;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
+        // first we collect all available EphemeridesBlocks for this satellite
+        // and return a list view of the actual EphemeridesBlocks transforming the
+        // EphemeridesDataLines into SatelliteTimeCoordinates in a lazy manner.
+        final List<Pair<Integer, Integer>> ephemeridesBlockMapping = new ArrayList<Pair<Integer, Integer>>();
+        final ListIterator<EphemeridesBlock> it = ephemeridesBlocks.listIterator();
+        int totalDataLines = 0;
+        while (it.hasNext()) {
+            final int index = it.nextIndex();
+            final EphemeridesBlock block = it.next();
+
+            if (block.getMetaData().getObjectID().equals(satId)) {
+                final int dataLines = block.getEphemeridesDataLines().size();
+                totalDataLines += dataLines;
+                ephemeridesBlockMapping.add(new Pair<Integer, Integer>(index, dataLines));
+            }
+        }
+
+        // the total number of coordinates for this satellite
+        final int totalNumberOfCoordinates = totalDataLines;
+
+        return new AbstractList<SatelliteTimeCoordinate>() {
+
+            @Override
+            public SatelliteTimeCoordinate get(final int index) {
+                if (index < 0 || index >= size()) {
+                    throw new IndexOutOfBoundsException();
+                }
+
+                // find the corresponding ephemerides block and data line
+                int ephemeridesBlockIndex = -1;
+                int dataLineIndex = index;
+                for (Pair<Integer, Integer> pair : ephemeridesBlockMapping) {
+                    if (dataLineIndex < pair.getValue()) {
+                        ephemeridesBlockIndex = pair.getKey();
+                        break;
+                    } else {
+                        dataLineIndex -= pair.getValue();
+                    }
+                }
+
+                if (ephemeridesBlockIndex == -1 || dataLineIndex == -1) {
+                    throw new IndexOutOfBoundsException();
+                }
+
+                final EphemeridesDataLine dataLine =
+                        ephemeridesBlocks.get(ephemeridesBlockIndex).getEphemeridesDataLines().get(dataLineIndex);
+                final CartesianOrbit orbit = dataLine.getOrbit();
+                return new SatelliteTimeCoordinate(orbit.getDate(), orbit.getPVCoordinates());
+            }
+
+            @Override
+            public int size() {
+                return totalNumberOfCoordinates;
+            }
+
+        };
+    }
+
+    /** Returns a set of all available satellite Ids in this OEMFile.
+     * @return a set of all available satellite Ids
+     */
+    private Set<String> getAvailableSatelliteIds() {
+        final Set<String> availableSatellites = new LinkedHashSet<String>();
+        for (EphemeridesBlock block : ephemeridesBlocks) {
+            availableSatellites.add(block.getMetaData().getObjectID());
+        }
+        return availableSatellites;
     }
 
     /** The Ephemerides Blocks class contain metadata, the list of ephemerides data

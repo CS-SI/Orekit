@@ -16,6 +16,12 @@ Felix R. Hoots, Ronald L. Roehrich
 This product includes software translated from original work developed by
 R. Biancale, S. Bruinsma (CNES)
 
+This product includes data computed by
+P. Gégout (CNRS / UMR5563 - GET)
+
+This product includes software translated from original work developed by
+R. Biancale, S. Bruinsma (CNES)
+
 This product includes software translated from original work developed by
 Mickaël Gastineau (CNRS - Observatoire de Paris - IMCCE)
 

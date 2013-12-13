@@ -33,6 +33,7 @@ import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.KeplerianOrbit;
@@ -64,7 +65,7 @@ public class OceanTidesTest {
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),
-                                                                         IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
+                                                                         OceanLoadDeformationCoefficients.IERS_2010,
                                                                          map));
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(5, 5);
@@ -86,7 +87,7 @@ public class OceanTidesTest {
         Assert.assertEquals(0.0,
                             Vector3D.distance(raw.getPVCoordinates().getPosition(),
                                               interpolated.getPVCoordinates().getPosition()),
-                            1.3e-5); // threshold would be 1.6e-3 for 30 days propagation
+                            2.5e-6); // threshold would be 3.9e-4 for 30 days propagation
 
     }
 
@@ -104,7 +105,7 @@ public class OceanTidesTest {
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),
-                                                                         IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
+                                                                         OceanLoadDeformationCoefficients.IERS_2010,
                                                                          map));
         NormalizedSphericalHarmonicsProvider gravityField =
                 GravityFieldFactory.getConstantNormalizedProvider(5, 5);
@@ -125,7 +126,7 @@ public class OceanTidesTest {
         SpacecraftState oceanTidesPoleTide = propagate(orbit, target, hf, new OceanTides(itrf, gravityField.getAe(), gravityField.getMu(),
                           true, SolidTides.DEFAULT_STEP, SolidTides.DEFAULT_POINTS,
                           6, 6, conventions, ut1));
-        Assert.assertEquals(1.79,
+        Assert.assertEquals(3.67,
                             Vector3D.distance(noTides.getPVCoordinates().getPosition(),
                                               oceanTidesNoPoleTide.getPVCoordinates().getPosition()),
                             0.01);

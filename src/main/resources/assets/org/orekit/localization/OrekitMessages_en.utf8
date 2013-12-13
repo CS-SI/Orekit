@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = unsupported local orbital frame, supported typ
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = non pseudo-inertial frame "{0}" is not suitable for defining orbits
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = data root directory {0} does not exist
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = data root directory {0} does not exist
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} is not a directory
@@ -250,6 +250,9 @@ UNKNOWN_ADDITIONAL_STATE = unknown additional state "{0}"
 # unknown month "{0}"
 UNKNOWN_MONTH = unknown month "{0}"
 
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = Jacobian matrix for type {0} is singular with current orbit
+
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = state Jacobian has not been initialized yet
 
@@ -286,8 +289,8 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = missing agency epoch in CCSDS date
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 
-# the central body gravitational coefficient cannot be retrieved from the OPM
-CCSDS_UNKNOWN_GM = the central body gravitational coefficient cannot be retrieved from the OPM
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = the central body gravitational coefficient cannot be retrieved from the ODM
 
 # there is no spacecraft mass associated with this ODM file
 CCSDS_UNKNOWN_SPACECRAFT_MASS = there is no spacecraft mass associated with this ODM file

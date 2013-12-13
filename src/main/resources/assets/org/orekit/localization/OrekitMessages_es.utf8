@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = sistema de referencia orbital local no reconoc
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = el sistema de referencia no pseudo-inercial "{0}" no está adaptado a la definición de órbitas
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = repertorio de datos raíz {0} inexistente
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = repertorio de datos raíz {0} inexistente
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} no es un repertorio
@@ -80,7 +80,7 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE =  no se encuentran datos en el fichero 
 MISSING_SERIE_J_IN_FILE = falta la serie j = {0} en el fichero {1} (línea {2})
 
 # cannot parse both τ and γ from the same Poissons series file
-CANNOT_PARSE_BOTH_TAU_AND_GAMMA = <MISSING TRANSLATION>
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = no se pueden leer a la vez τ y γ de un mismo fichero de serie de Poisson
 
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = fin imprevisto del fichero {0} (después de la línea {1})
@@ -104,13 +104,13 @@ NO_GRAVITY_FIELD_DATA_LOADED = los datos del campo de gravedad no están cargado
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = underflow aritmético en la normalización de un campo de gravedad para grado {0} y orden {1}
 
 # no ocean tide data loaded
-NO_OCEAN_TIDE_DATA_LOADED = <MISSING TRANSLATION>
+NO_OCEAN_TIDE_DATA_LOADED = los datos de las mareas oceánicas no están cargados
 
 # ocean tide data file {0} limited to degree {1} and order {2}
-OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = el fichero de datos de las mareas oceánicas {0} está limitado a grado {1} y orden {2}  
 
 # load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
-OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = los coeficientes de deformación bajo carga están limitados a grado {0}, no se pueden leer términos de grado {1} en el fichero {2}    
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = trayectoria polar (distancia al eje de los polos : {0})
@@ -250,6 +250,9 @@ UNKNOWN_ADDITIONAL_STATE = estado adicional desconocido "{0}"
 # unknown month "{0}"
 UNKNOWN_MONTH = mes desconocido "{0}"
 
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matriz jacobiana asociada al tipo {0} es singular para la órbita corriente
+
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = la matriz jacobiana del estado no ha sido todavía inicializada
 
@@ -284,22 +287,22 @@ CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = longitud inválida para el campo fecha en
 CCSDS_DATE_MISSING_AGENCY_EPOCH = falta época de referencia específica agencia en una fecha CCSDS
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
-CCSDS_UNEXPECTED_KEYWORD = <MISSING TRANSLATION>
+CCSDS_UNEXPECTED_KEYWORD = palabra clave inesperada en la línea {0} del fichero CCSDS {1}:\n{2}
 
-# the central body gravitational coefficient cannot be retrieved from the OPM
-CCSDS_UNKNOWN_GM = <MISSING TRANSLATION>
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = el coeficiente gravitacional del cuerpo central no se puede recuperar del ODM
 
 # there is no spacecraft mass associated with this ODM file
-CCSDS_UNKNOWN_SPACECRAFT_MASS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_SPACECRAFT_MASS = no hay masa de satélite asociada a este fichero ODM
 
 # no IERS conventions have been set before parsing
-CCSDS_UNKNOWN_CONVENTIONS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_CONVENTIONS = no se ha inicializado ninguna convención IERS antes de la lectura
 
 # frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = <MISSING TRANSLATION>
+CCSDS_INVALID_FRAME = el sistema de referencia {0} no es válido en este contexto de fichero ODM  
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = sistemas temporales inconsistentes en los bloques de efemérides: {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE =  el nombre "{0}" ya está utilizado para un estado adicional

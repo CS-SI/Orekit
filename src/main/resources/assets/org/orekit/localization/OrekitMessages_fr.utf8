@@ -41,7 +41,7 @@ UNSUPPORTED_LOCAL_ORBITAL_FRAME = repère orbital local non supporté, repères 
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = le repère non pseudo-inertiel "{0}" n''est pas adapté à la définition d''orbites
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = répertoire de données racine {0} inexistant
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = répertoire de données racine {0} inexistant
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} n''est pas un répertoire
@@ -250,6 +250,9 @@ UNKNOWN_ADDITIONAL_STATE = état additionel "{0}" inconnu
 # unknown month "{0}"
 UNKNOWN_MONTH = mois inconnu "{0}"
 
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = la matrice jacobienne associée au type {0} est singulière pour l''orbite courante
+
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = la jacobienne de l''état n''a pas encore été initialisée
 
@@ -286,8 +289,8 @@ CCSDS_DATE_MISSING_AGENCY_EPOCH = époque de référence spécifique agence manq
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
 CCSDS_UNEXPECTED_KEYWORD = mot-clef inattendu à la ligne {0} du fichier CCSDS {1} :\n{2}
 
-# the central body gravitational coefficient cannot be retrieved from the OPM
-CCSDS_UNKNOWN_GM = le coefficient d''atraction gravifique ne peut être récupéré dans l''OMM
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = le coefficient d''atraction gravifique ne peut être récupéré dans l''ODM
 
 # there is no spacecraft mass associated with this ODM file
 CCSDS_UNKNOWN_SPACECRAFT_MASS = il n''y a pas de masse pour le véhicule spatial dans ce fichier ODM

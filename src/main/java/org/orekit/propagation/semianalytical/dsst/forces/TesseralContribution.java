@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
-import org.apache.commons.math3.analysis.polynomials.PolynomialsUtils;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
@@ -37,6 +36,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.MNSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.GHmsjPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.GammaMnsFunction;
+import org.orekit.propagation.semianalytical.dsst.utilities.JacobiPolynomials;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
 import org.orekit.time.AbsoluteDate;
 
@@ -60,9 +60,6 @@ class TesseralContribution implements DSSTForceModel {
      *  central body spherical harmonics in satellite revolutions.
      */
     private static final double MIN_PERIOD_IN_SAT_REV = 10.;
-
-    /** Newcomb operators. */
-    private static NewcombOperators newcomb;
 
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
@@ -170,10 +167,7 @@ class TesseralContribution implements DSSTForceModel {
         this.maxEccPow = 0;
         this.maxHansen = 0;
 
-        // Provider for Newcomb operators
-        TesseralContribution.newcomb  = new NewcombOperators();
-
-        // Factorials computation
+       // Factorials computation
         final int maxFact = 2 * maxDegree + 1;
         this.fact = new double[maxFact];
         fact[0] = 1;
@@ -576,9 +570,8 @@ class TesseralContribution implements DSSTForceModel {
                 // Jacobi l-index from 2.7.1-(15)
                 final int l = FastMath.min(n - m, n - FastMath.abs(s));
                 // Jacobi polynomial and derivative
-                final PolynomialFunction jacobiPoly = PolynomialsUtils.createJacobiPolynomial(l, v, w);
-                final double jacobi  = jacobiPoly.value(gamma);
-                final double dJacobi = jacobiPoly.derivative().value(gamma);
+                final DerivativeStructure jacobi =
+                        JacobiPolynomials.getValue(l, v , w, new DerivativeStructure(1, 1, 0, gamma));
 
                 // Geopotential coefficients
                 final double cnm = harmonics.getUnnormalizedCnm(n, m);
@@ -586,7 +579,7 @@ class TesseralContribution implements DSSTForceModel {
 
                 // Common factors from expansion of equations 3.3-4
                 final double cf_0      = roaPow[n] * Im * vMNS;
-                final double cf_1      = cf_0 * gaMNS * jacobi;
+                final double cf_1      = cf_0 * gaMNS * jacobi.getValue();
                 final double cf_2      = cf_1 * kJNS;
                 final double gcPhs     = gMSJ * cnm + hMSJ * snm;
                 final double gsMhc     = gMSJ * snm - hMSJ * cnm;
@@ -594,7 +587,7 @@ class TesseralContribution implements DSSTForceModel {
                 final double dKgsMhcx2 = 2. * dkJNS * gsMhc;
                 final double dUdaCoef  = (n + 1) * cf_2;
                 final double dUdlCoef  = j * cf_2;
-                final double dUdGaCoef = cf_0 * kJNS * (jacobi * dGaMNS + gaMNS * dJacobi);
+                final double dUdGaCoef = cf_0 * kJNS * (jacobi.getValue() * dGaMNS + gaMNS * jacobi.getPartialDerivative(1));
 
                 // dU / da components
                 dUdaCos  += dUdaCoef * gcPhs;
@@ -718,13 +711,13 @@ class TesseralContribution implements DSSTForceModel {
          */
         public void valueFromNewcomb(final int j, final int mnm1, final int s) {
             // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
+            final int aHT = FastMath.max(j - s, 0);
+            final int bHT = FastMath.max(s - j, 0);
             // Expansion until maxNewcomb, the maximum power in e^2 for the Kernel value
-            double sum = newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 0; alpha--) {
+            double sum = NewcombOperators.getValue(maxNewcomb + aHT, maxNewcomb + bHT, mnm1, s);
+            for (int alphaHT = maxNewcomb - 1; alphaHT >= 0; alphaHT--) {
                 sum *= e2;
-                sum += newcomb.getValue(alpha + a, alpha + b, mnm1, s);
+                sum += NewcombOperators.getValue(alphaHT + aHT, alphaHT + bHT, mnm1, s);
             }
             // Kernel value from equation 2.7.3-(10)
             final double value = FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
@@ -742,13 +735,13 @@ class TesseralContribution implements DSSTForceModel {
          */
         public void derivFromNewcomb(final int j, final int mnm1, final int s) {
             // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
+            final int aHT = FastMath.max(j - s, 0);
+            final int bHT = FastMath.max(s - j, 0);
             // Expansion until maxNewcomb-1, the maximum power in e^2 for the Kernel derivative
-            double sum = maxNewcomb * newcomb.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 1; alpha--) {
+            double sum = maxNewcomb * NewcombOperators.getValue(maxNewcomb + aHT, maxNewcomb + bHT, mnm1, s);
+            for (int alphaHT = maxNewcomb - 1; alphaHT >= 1; alphaHT--) {
                 sum *= e2;
-                sum += alpha * newcomb.getValue(alpha + a, alpha + b, mnm1, s);
+                sum += alphaHT * NewcombOperators.getValue(alphaHT + aHT, alphaHT + bHT, mnm1, s);
             }
             // Kernel derivative from equation 3.3-(5)
             final MNSKey key  = new MNSKey(j, mnm1, s);

@@ -133,6 +133,7 @@
           Orekit 5.0 depends on version 2.1 of Apache Commons Math.
           Orekit 5.0.3 depends on version 2.2 of Apache Commons Math.
           Orekit 6.0 depends on version 3.2 of Apache Commons Math.
+          Orekit 6.1 depends on version 3.2 of Apache Commons Math.
         </p>
       </answer>
     </faq>
@@ -156,7 +157,7 @@
           the IERS publish them.
         </p>
         <p>
-          Concerning UTC leap seconds, as of early 2013, the last one was introduced at the end of June 2012.
+          Concerning UTC leap seconds, as of end 2013, the last one was introduced at the end of June 2012.
         </p>
       </answer>
     </faq>

@@ -20,8 +20,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.data.BodiesElements;
 
 /** Container for ocen tides coefficients for one tide wave.
- * @see OceanTides
- * @see OceanTidesField
+ * @see org.orekit.forces.gravity.OceanTides
+ * @see org.orekit.forces.gravity.OceanTidesField
  * @author Luc Maisonobe
  * @since 6.1
  * @see OceanTidesReader
@@ -29,7 +29,7 @@ import org.orekit.data.BodiesElements;
 public class OceanTidesWave {
 
     /** Waves of degree 0 and 1 do not affect spacecrafts. */
-    private final int START_DEGREE = 2;
+    private static final int START_DEGREE = 2;
 
     /** Maximum supported degree. */
     private final int degree;

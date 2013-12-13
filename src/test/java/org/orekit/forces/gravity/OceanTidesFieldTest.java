@@ -30,6 +30,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.AstronomicalAmplitudeReader;
 import org.orekit.forces.gravity.potential.FESCHatEpsilonReader;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.OceanLoadDeformationCoefficients;
 import org.orekit.forces.gravity.potential.NormalizedSphericalHarmonicsProvider.NormalizedSphericalHarmonics;
 import org.orekit.forces.gravity.potential.OceanTidesWave;
 import org.orekit.time.AbsoluteDate;
@@ -54,20 +55,20 @@ public class OceanTidesFieldTest {
         OceanTidesField tidesField =
                 new OceanTidesField(Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS, Constants.EIGEN5C_EARTH_MU,
                                     waves,
-                                    IERSConventions.IERS_2010.getNutationArguments(IERSConventions.IERS_2010.getGMSTFunction(ut1)),
+                                    IERSConventions.IERS_2010.getNutationArguments(ut1),
                                     null);
         NormalizedSphericalHarmonics harmonics = tidesField.onDate(date);
         double[][] refDeltaCnm = new double[][] {
             {           0.0,                    0.0,                   0.0,                      0.0,                     0.0           },
             {           0.0,                    0.0,                   0.0,                      0.0,                     0.0           },
-            {  1.6921389815970375E-11, -4.1748378190052583E-11, 7.013273986245356E-11,           0.0,                     0.0           },
+            { -4.812565797928061E-11,  -4.1748378190052583E-11, 7.013273986245356E-11,           0.0,                     0.0           },
             { -2.5341227608443308E-11,  9.76515813742254E-11,  -1.21931214469994E-10,    1.3179722429471184E-10,          0.0           },
             { -2.7496974839179478E-11,  8.419627031293907E-11,  6.56546217101275E-11,   -3.375298928713117E-11,  -7.588006744166988E-11 }
         };
         double[][] refDeltaSnm = new double[][] {
             {           0.0,                    0.0,                   0.0,                      0.0,                     0.0           },
             {           0.0,                    0.0,                   0.0,                      0.0,                     0.0           },
-            { -2.3830480256889446E-12,  5.646187590518608E-12,  1.742233297668071E-10,           0.0,                     0.0           },
+            { -1.168129177701461E-10,   5.646187590518608E-12,  1.742233297668071E-10,           0.0,                     0.0           },
             { -6.586546350227345E-11,  -8.032186864783105E-11, -3.118910148495339E-11,   1.0566857199592183E-10,          0.0           },
             {  7.665313525684617E-11,   7.37884528812169E-11,  -1.3085142873419844E-10, -1.5813709543115768E-10,  1.770903634801541E-10 }
         };
@@ -90,7 +91,7 @@ public class OceanTidesFieldTest {
         Map<Integer, Double> map = aaReader.getAstronomicalAmplitudesMap();
         GravityFieldFactory.addOceanTidesReader(new FESCHatEpsilonReader("fes2004-7x7.dat",
                                                                          0.01, FastMath.toRadians(1.0),
-                                                                         IERSConventions.IERS_2010.getOceanLoadDeformationCoefficients(),
+                                                                         OceanLoadDeformationCoefficients.IERS_2010,
                                                                          map));
         List<OceanTidesWave> complete =  GravityFieldFactory.getOceanTidesWaves(degree, order);
         double[][][] triangular = new double[degree + 1][][];

@@ -20,7 +20,8 @@ Propagation
   Propagation is the prediction of the evolution of a system from an initial state.
   In Orekit, this initial state is represented by a <SpacecraftState>, which is a 
   simple container for all needed information : orbit, mass, kinematics, attitude, date, 
-  frame.
+  frame, and which can also hold any number user-defined additional data like battery
+  status or operating mode for example.
 
   Propagation is based on a top level <Propagation> interface (which in facts extends
   the <PVCoordinatesProvider> interface) and several implementations.
@@ -87,14 +88,15 @@ Propagation
 
   All propagators, including analytical ones, support discrete events handling during
   propagation. This feature is activated by registering events detectors as defined by
-  the <EventDetector> interface to the propagator. The following class diagram shows
-  the main interfaces used for event handling.
+  the <EventDetector> interface to the propagator, each <EventDetector> being
+  associated with an <EventHandler> that will be triggered automatically at event
+  occurrence. The following class diagram shows the main interfaces used for event handling.
 
 [../images/design/events-class-diagram.png]
 
   At each propagation step, the propagator checks the registered events detectors for
-  the occurrence of some event, as shown in the following squence diagram. If an event
-  occurs, then the corresponding action is triggered, which can ask the propagator to
+  the occurrence of some event, as shown in the following sequence diagram. If an event
+  occurs, then the corresponding action is triggered, which can notify the propagator to
   resume propagation (possibly with an updated state) or to stop propagation.
 
 [../images/design/events-sequence-diagram.png]
@@ -109,7 +111,7 @@ Propagation
   time is not known in advance. A typical example would be to find the next ascending node
   or the next apogee. In this case, we can register a <NodeDetector> or an <ApsideDetector>
   object and launch a propagation with a target time far away in the future. When the
-  event is triggered, it asks the propagator to stop and the returned value is the state
+  event is triggered, it notifies the propagator to stop and the returned value is the state
   exactly at the event time.
 
   Users can define their own events, typically by extending the <AbstractDetector> abstract class.
@@ -119,12 +121,9 @@ Propagation
     reset to add new dates on the run (which is useful to set up delays starting when a
     previous event is been detected),
 
-  * an <ApparentElevationDetector>, which is triggered at raising or setting time of a
+  * an <ElevationDetector>, which is triggered at raising or setting time of a
     satellite with respect to a ground point, taking atmospheric refraction into account
-    (an <ElevationDetector> detector is also available which does not consider refraction),
-
-  * a <GroundMaskElevationDetector>, which is similar to the previous one but adds a ground mask
-    to be used when threshold elevation is azimuth-dependent,
+    and either constant elevation or ground mask when threshold elevation is azimuth-dependent,
 
   * an <AltitudeDetector> which is triggered when satellite crosses a predefined altitude limit
     and can be used to compute easily operational forecasts, 
@@ -148,14 +147,22 @@ Propagation
   A typical use case is for handling operational delays before or after some physical event
   really occurs.
 
+  An <EventFilter> is provided when user is only interested in one kind of events that
+  occurs in pairs like raising in the raising/setting pair for elevation detector, or
+  eclipse entry in the entry/exit pair for eclipse detector. The filter does not simply
+  ignore events after they have been detected, it filters them before they are located
+  and hence save some computation time by not doing an accurate search for events that
+  will ultimately be ignored.
+
   Event occurring can be automatically logged using the <EventsLogger> class.
 
 ** Additional states
 
   All propagators can be used to propagate user additional states on top of regular
   orbit attitude and mass state. These additional states will be available throughout
-  propagation, i.e. they can be used in the step handlers, in the event handlers and
-  they will also be available in the final propagated state. There are three main cases:
+  propagation, i.e. they can be used in the step handlers, in the event detectors and
+  events handlers and they will also be available in the final propagated state.
+  There are three main cases:
 
   * if a deterministic way to compute the additional state from the spacecraft state
     is known, then the user can put this computation in an implementation of the
@@ -186,18 +193,14 @@ Propagation
 
 *** Keplerian propagation
 
- The <KeplerianPropagator> implements the <Propagator> interface, which ensures 
- that we can obtain a propagated SpacecraftState at any time once the instance 
- is initialized with an initial state. This model is based on Keplerian-only
- motion. It depends on \u00b5.
+ The <KeplerianPropagator> is based on Keplerian-only motion. It depends only on \u00b5.
 
 
 *** Eckstein-Hechler propagation	
 
   This analytical model is suited for near-circular orbits and inclination neither 
   equatorial nor critical. It considers J2 to J6 potential zonal coefficients, 
-  and uses mean parameters to compute the new position. As the Keplerian propagator, 
-  it implements the <Propagator> interface.
+  and uses mean parameters to compute the new position.
 
 *** SGP4/SDP4 propagation
 
@@ -206,7 +209,7 @@ Propagation
 *** Differential effects adapter
 
   This model is used to add to an underlying propagator some effects it does not
-  take into account. A typical exemple is to add small station-keeping maneuvers
+  take into account. A typical example is to add small station-keeping maneuvers
   to a pre-computed ephemeris or reference orbit which does not take these maneuvers
   into account. The additive maneuvers can take both the direct effect (Keplerian part)
   and the induced effect due for example to J2 which changes ascending node rate when
@@ -305,11 +308,11 @@ propagator = new NumericalPropagator(integrator);
 
 ** Semianalytical propagation
 
-  Semianalytical propagation is an intermediate beween anaytical and numerical propagation.
+  Semianalytical propagation is an intermediate between analytical and numerical propagation.
   It retains the best of both worlds, speed from analytical models and accuracy from numerical models.
   Semianalytical propagation is implemented using Draper Semianalytical Satellite Theory (DSST).
 
-  As of writing (May 2013), only the mean elements equations of motion models have been implemented;
+  As of writing (end 2013), only the mean elements equations of motion models have been implemented;
   the short periodic terms are still missing. They will be added later on.
 
 * Authors

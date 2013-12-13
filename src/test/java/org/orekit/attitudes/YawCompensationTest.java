@@ -18,6 +18,7 @@ package org.orekit.attitudes;
 
 
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
+import org.apache.commons.math3.geometry.euclidean.threed.Plane;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -122,8 +123,15 @@ public class YawCompensationTest {
         Vector3D pP1h = tP1h.transformPosition(pEarth);
         Transform tP2h = earthFrame.getTransformTo(inertFrame, circOrbit.getDate().shiftedBy( 2 * h));
         Vector3D pP2h = tP2h.transformPosition(pEarth);
-        Vector3D velInert = new Vector3D(s1, pP1h, -s1, pM1h, -s2, pP2h, s2, pM2h);
-        Vector3D relativeVelocity = velInert.subtract(circOrbit.getPVCoordinates().getVelocity());
+        Vector3D vSurfaceInertial = new Vector3D(s1, pP1h, -s1, pM1h, -s2, pP2h, s2, pM2h);
+        
+        // relative velocity
+        Vector3D pSurfaceInertial = earthFrame.getTransformTo(inertFrame, circOrbit.getDate()).transformPosition(pEarth);
+        Vector3D vSatInertial = circOrbit.getPVCoordinates().getVelocity();
+        Plane sspPlane = new Plane(pSurfaceInertial);
+        Vector3D satVelocityHorizonal = sspPlane.toSpace(sspPlane.toSubSpace(vSatInertial));
+        Vector3D satVelocityAtSurface = satVelocityHorizonal.scalarMultiply(pSurfaceInertial.getNorm()/satInert.getNorm());
+        Vector3D relativeVelocity = vSurfaceInertial.subtract(satVelocityAtSurface);
 
         // relative velocity in satellite frame, must be in (X, Z) plane
         Vector3D relVelSat = att0.getRotation().applyTo(relativeVelocity);
@@ -182,10 +190,10 @@ public class YawCompensationTest {
             // ------------------
 
             // 1/ Check yaw values around ascending node (max yaw)
-            if ((FastMath.abs(extrapLat) < FastMath.toRadians(20.)) &&
+            if ((FastMath.abs(extrapLat) < FastMath.toRadians(2.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(2.51)) &&
-                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(2.86)));
+                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(3.22)) &&
+                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(3.23)));
             }
 
             // 2/ Check yaw values around maximum positive latitude (min yaw)
@@ -196,8 +204,8 @@ public class YawCompensationTest {
             // 3/ Check yaw values around descending node (max yaw)
             if ( (FastMath.abs(extrapLat) < FastMath.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) ) {
-                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(2.51)) &&
-                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(2.86)));
+                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(3.22)) &&
+                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(3.23)));
             }
 
             // 4/ Check yaw values around maximum negative latitude (min yaw)

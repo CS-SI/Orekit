@@ -20,8 +20,8 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Finder for satellite apparent elevation events.
  * <p>This class finds apparent elevation events (i.e. apparent satellite raising
@@ -39,10 +39,11 @@ import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
  *  variable atmospheric effects become very important.</p>
  * <p>Local pressure and temperature can be set to correct refraction at the viewpoint.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at raising and to
- * {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at raising and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at setting. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  * @deprecated as of 6.1 replaced by {@link ElevationDetector}
@@ -120,7 +121,7 @@ public class ApparentElevationDetector extends AbstractReconfigurableDetector<Ap
                                      final double threshold,
                                      final double elevation,
                                      final TopocentricFrame topo) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<ApparentElevationDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing<ApparentElevationDetector>(),
              elevation, topo);
     }
 
@@ -131,28 +132,27 @@ public class ApparentElevationDetector extends AbstractReconfigurableDetector<Ap
      * in a readable manner without using a huge amount of parameters.
      * </p>
      * @param maxCheck maximum checking interval (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param threshold convergence threshold (s)
      * @param handler event handler to call at event occurrences
      * @param elevation threshold elevation value (rad)
      * @param topo topocentric frame in which elevation should be evaluated
      * @since 6.1
      */
-    private ApparentElevationDetector(final double maxCheck,
-                                      final double threshold,
-                                      final DetectorEventHandler<ApparentElevationDetector> handler,
+    private ApparentElevationDetector(final double maxCheck, final double threshold,
+                                      final int maxIter, final EventHandler<ApparentElevationDetector> handler,
                                       final double elevation,
                                       final TopocentricFrame topo) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.elevation = elevation;
         this.topo      = topo;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected ApparentElevationDetector create(final double newMaxCheck,
-                                               final double newThreshold,
-                                               final DetectorEventHandler<ApparentElevationDetector> newHandler) {
-        return new ApparentElevationDetector(newMaxCheck, newThreshold, newHandler,
+    protected ApparentElevationDetector create(final double newMaxCheck, final double newThreshold,
+                                               final int newMaxIter, final EventHandler<ApparentElevationDetector> newHandler) {
+        return new ApparentElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                              elevation, topo);
     }
 

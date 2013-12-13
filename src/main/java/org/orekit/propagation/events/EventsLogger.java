@@ -22,8 +22,7 @@ import java.util.List;
 
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.EventDetector.Action;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** This class logs events detectors events during propagation.
@@ -82,9 +81,10 @@ public class EventsLogger implements Serializable {
      * </p>
      * @param monitoredDetector event detector to monitor
      * @return the wrapping detector to add to the propagator
+     * @param <T> class type for the generic version
      */
-    public EventDetector monitorDetector(final EventDetector monitoredDetector) {
-        return new LoggingWrapper(monitoredDetector);
+    public <T extends EventDetector> EventDetector monitorDetector(final T monitoredDetector) {
+        return new LoggingWrapper<T>(monitoredDetector);
     }
 
     /** Clear the logged events.
@@ -109,7 +109,7 @@ public class EventsLogger implements Serializable {
     public static class LoggedEvent implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = -4491889728766419035L;
+        private static final long serialVersionUID = 20131202L;
 
         /** Event detector triggered. */
         private final EventDetector detector;
@@ -126,8 +126,7 @@ public class EventsLogger implements Serializable {
          * @param increasing indicator if the event switching function was increasing
          * or decreasing at event occurrence date
          */
-        private LoggedEvent(final EventDetector detector, final SpacecraftState state,
-                            final boolean increasing) {
+        private LoggedEvent(final EventDetector detector, final SpacecraftState state, final boolean increasing) {
             this.detector   = detector;
             this.state      = state;
             this.increasing = increasing;
@@ -158,20 +157,23 @@ public class EventsLogger implements Serializable {
 
     }
 
-    /** Internal wrapper for events detectors. */
-    private class LoggingWrapper extends AbstractReconfigurableDetector<LoggingWrapper> {
+    /** Internal wrapper for events detectors.
+     * @param <T> class type for the generic version
+     */
+    private class LoggingWrapper<T extends EventDetector> extends AbstractReconfigurableDetector<LoggingWrapper<T>> {
 
         /** Serializable UID. */
         private static final long serialVersionUID = 20131118L;
 
         /** Wrapped events detector. */
-        private final EventDetector detector;
+        private final T detector;
 
         /** Simple constructor.
          * @param detector events detector to wrap
          */
-        public LoggingWrapper(final EventDetector detector) {
-            this(detector.getMaxCheckInterval(), detector.getThreshold(), new LocalHandler(),
+        public LoggingWrapper(final T detector) {
+            this(detector.getMaxCheckInterval(), detector.getThreshold(),
+                 detector.getMaxIterationCount(), new LocalHandler<T>(),
                  detector);
         }
 
@@ -183,23 +185,23 @@ public class EventsLogger implements Serializable {
          * </p>
          * @param maxCheck maximum checking interval (s)
          * @param threshold convergence threshold (s)
+         * @param maxIter maximum number of iterations in the event time search
          * @param handler event handler to call at event occurrences
          * @param detector events detector to wrap
          * @since 6.1
          */
         private LoggingWrapper(final double maxCheck, final double threshold,
-                               final DetectorEventHandler<LoggingWrapper> handler,
-                               final EventDetector detector) {
-            super(maxCheck, threshold, handler);
+                               final int maxIter, final EventHandler<LoggingWrapper<T>> handler,
+                               final T detector) {
+            super(maxCheck, threshold, maxIter, handler);
             this.detector = detector;
         }
 
         /** {@inheritDoc} */
         @Override
-        protected LoggingWrapper create(final double newMaxCheck,
-                                        final double newThreshold,
-                                        final DetectorEventHandler<LoggingWrapper> newHandler) {
-            return new LoggingWrapper(newMaxCheck, newThreshold, newHandler, detector);
+        protected LoggingWrapper<T> create(final double newMaxCheck, final double newThreshold,
+                                           final int newMaxIter, final EventHandler<LoggingWrapper<T>> newHandler) {
+            return new LoggingWrapper<T>(newMaxCheck, newThreshold, newMaxIter, newHandler, detector);
         }
 
         /** Log an event.
@@ -222,23 +224,39 @@ public class EventsLogger implements Serializable {
 
     }
 
-    /** Local class for handling events. */
-    private static class LocalHandler implements DetectorEventHandler<LoggingWrapper> {
+    /** Local class for handling events.
+     * @param <T> class type for the generic version
+     */
+    private static class LocalHandler<T extends EventDetector> implements EventHandler<LoggingWrapper<T>> {
 
         /** {@inheritDoc} */
-        @SuppressWarnings("deprecation")
-        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper wrapper, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final LoggingWrapper<T> wrapper, final boolean increasing)
             throws OrekitException {
             wrapper.logEvent(s, increasing);
-            return wrapper.detector.eventOccurred(s, increasing);
+            if (wrapper.detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) wrapper.detector).getHandler();
+                return handler.eventOccurred(s, wrapper.detector, increasing);
+            } else {
+                @SuppressWarnings("deprecation")
+                final EventDetector.Action a = wrapper.detector.eventOccurred(s, increasing);
+                return AbstractReconfigurableDetector.convert(a);
+            }
         }
 
         /** {@inheritDoc} */
         @Override
-        @SuppressWarnings("deprecation")
-        public SpacecraftState resetState(final LoggingWrapper wrapper, final SpacecraftState oldState)
+        public SpacecraftState resetState(final LoggingWrapper<T> wrapper, final SpacecraftState oldState)
             throws OrekitException {
-            return wrapper.detector.resetState(oldState);
+            if (wrapper.detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) wrapper.detector).getHandler();
+                return handler.resetState(wrapper.detector, oldState);
+            } else {
+                @SuppressWarnings("deprecation")
+                final SpacecraftState newState = wrapper.detector.resetState(oldState);
+                return newState;
+            }
         }
 
     }

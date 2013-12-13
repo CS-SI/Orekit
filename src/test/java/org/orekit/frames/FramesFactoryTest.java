@@ -115,6 +115,7 @@ public class FramesFactoryTest {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Test
     public void testSerialization()
             throws OrekitException, IOException, ClassNotFoundException {

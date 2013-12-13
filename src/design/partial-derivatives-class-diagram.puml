@@ -29,24 +29,20 @@
 
     package forces #DDEBD8
 
-      interface Parameterizable
-
       interface ForceModel {
         +void addContribution()
+        +FieldVector3D<DerivativeStructure> accelerationDerivatives()
+        +EventDetector[] getEventsDetectors()
       }
-
-      ForceModel        ..|> Parameterizable
 
       package complex #DDDBD8
         class ComplexForceModel
-        ForceModel      <|.. ComplexForceModel
-        Parameterizable <|.. ComplexForceModel
+        ForceModel <|.. ComplexForceModel
       end package
 
       package radiation #DDDBD8
         class SolarRadiationPressure
-        ForceModel      <|.. SolarRadiationPressure
-        Parameterizable <|.. SolarRadiationPressure
+        ForceModel <|.. SolarRadiationPressure
       end package
 
     end package
@@ -57,10 +53,23 @@
         + SpacecraftState propagate(AbsoluteDate target)
       }
 
+      Propagator <|.. AbstractPropagator
+
+      package integration #DDDBD8
+        interface AdditionalEquations {
+          +String getName()
+          +void computeDerivatives()
+        }
+        class  AbstractIntegratedPropagator {
+         +void addAdditionalEquations(AdditionalEquations addEqu)
+        }
+        AbstractPropagator <|-- AbstractIntegratedPropagator
+        AdditionalEquations <---o AbstractIntegratedPropagator : additional
+      end package
+
       package numerical #DDDBD8
 
         interface TimeDerivativesEquations {
-          +void initDerivatives()
           +void addKeplerContribution()
           +void addXYZAcceleration()
           +void addAcceleration()
@@ -68,15 +77,8 @@
         }
 
        class NumericalPropagator {
-         +void addAdditionalEquations(AdditionalEquations addEqu)
-         +void setInitialAdditionalState(String name, double[] addState)
          +void addForceModel(ForceModel model)
        }
-
-        interface AdditionalEquations {
-          +String getName()
-          +void computeDerivatives()
-        }
 
         class PartialDerivativesEquations {
           +List<String> getAvailableParameters()
@@ -85,23 +87,14 @@
           +void setInitialJacobians()
        }
 
-       interface AccelerationJacobiansProvider
-
-       class Jacobianizer
-
-       TimeDerivativesEquations    <--      AdditionalEquations
        TimeDerivativesEquations    <--      ForceModel : contributes
        AdditionalEquations         <|..     PartialDerivativesEquations
-       PartialDerivativesEquations *-->     AccelerationJacobiansProvider : providers
-       AccelerationJacobiansProvider <|..   Jacobianizer
-       Parameterizable             <|--     AccelerationJacobiansProvider
-       Propagator                  <|--     NumericalPropagator
+       PartialDerivativesEquations *-->     ForceModel
+       AbstractIntegratedPropagator  <|--     NumericalPropagator
        NumericalPropagator         "1..*" *--> ForceModel
-       NumericalPropagator         "*" o--> AdditionalEquations      : additional
        NumericalPropagator         "1" *--> TimeDerivativesEquations : main
 
-       AccelerationJacobiansProvider <|.. SolarRadiationPressure
-       Jacobianizer                  -->  ComplexForceModel
+       Jacobianizer                  "1" <-->  "1" ComplexForceModel
 
       end package
     end package

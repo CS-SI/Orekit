@@ -42,9 +42,9 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.propagation.events.EventsLogger.LoggedEvent;
-import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScale;
@@ -100,7 +100,7 @@ public class ElevationDetectorTest {
 
     }
 
-    private static class Checking implements DetectorEventHandler<ElevationDetector>, OrekitFixedStepHandler {
+    private static class Checking implements EventHandler<ElevationDetector>, OrekitFixedStepHandler {
 
         private TopocentricFrame topo;
         private boolean visible;
@@ -110,9 +110,9 @@ public class ElevationDetectorTest {
             this.visible = false;
         }
 
-        public EventDetector.Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
+        public Action eventOccurred(SpacecraftState s, ElevationDetector detector, boolean increasing) {
             visible = increasing;
-            return EventDetector.Action.CONTINUE;
+            return Action.CONTINUE;
         }
 
         public SpacecraftState resetState(ElevationDetector detector, SpacecraftState oldState) {
@@ -183,7 +183,7 @@ public class ElevationDetectorTest {
         ElevationMask mask = new ElevationMask(maskValues);
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withElevationMask(mask)
-                                            .withHandler(new DetectorStopOnIncreasing<ElevationDetector>());
+                                            .withHandler(new StopOnIncreasing<ElevationDetector>());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -220,7 +220,7 @@ public class ElevationDetectorTest {
         AtmosphericRefractionModel refractionModel = new EarthStandardAtmosphereRefraction();
         ElevationDetector detector = new ElevationDetector(topo)
                                             .withRefraction(refractionModel)
-                                            .withHandler(new DetectorStopOnIncreasing<ElevationDetector>());
+                                            .withHandler(new StopOnIncreasing<ElevationDetector>());
 
         AbsoluteDate startDate = new AbsoluteDate(2003, 9, 15, 20, 0, 0, utc);
         propagator.resetInitialState(propagator.propagate(startDate));
@@ -267,7 +267,7 @@ public class ElevationDetectorTest {
         final double threshold = 10.0;
         final EventDetector rawEvent = new ElevationDetector(maxcheck, threshold, sta1Frame)
                                                 .withConstantElevation(elevation)
-                                                .withHandler(new DetectorContinueOnEvent<ElevationDetector>());
+                                                .withHandler(new ContinueOnEvent<ElevationDetector>());
         final EventsLogger logger = new EventsLogger();
         kepler.addEventDetector(logger.monitorDetector(rawEvent));
 
@@ -316,7 +316,7 @@ public class ElevationDetectorTest {
         final double threshold = 1.0e-3;
         final EventDetector rawEvent = new ElevationDetector(maxCheck, threshold, station)
                                                     .withConstantElevation(FastMath.toRadians(5.0))
-                                                    .withHandler(new DetectorContinueOnEvent<ElevationDetector>());
+                                                    .withHandler(new ContinueOnEvent<ElevationDetector>());
         final EventsLogger logger = new EventsLogger();
         kProp.addEventDetector(logger.monitorDetector(rawEvent));
 
@@ -357,7 +357,7 @@ public class ElevationDetectorTest {
         EarthStandardAtmosphereRefraction refractionModel = new EarthStandardAtmosphereRefraction();
         ElevationDetector detector = new ElevationDetector(topo)
                                                  .withRefraction(refractionModel)
-                                                 .withHandler(new DetectorStopOnIncreasing<ElevationDetector>());
+                                                 .withHandler(new StopOnIncreasing<ElevationDetector>());
         refractionModel.setPressure(101325);
         refractionModel.setTemperature(290);
 

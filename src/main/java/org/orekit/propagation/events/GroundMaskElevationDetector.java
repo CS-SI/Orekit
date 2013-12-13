@@ -25,8 +25,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 
 /** Finder for satellite azimuth-elevation events with respect to a mask.
  * <p>This class finds elevation events (i.e. satellite raising and setting) with
@@ -54,9 +54,11 @@ import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
  * <p>No assumption is made on azimuth values and ordering. The only restraint is
  * that only one elevation value can be associated to identical azimuths modulo 2PI.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at raising and to
- * {@link EventDetector.Action#STOP stop} propagation at setting. This can be changed
- * by calling {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at raising and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
+ * at setting. This can be changed by calling {@link #withHandler(EventHandler)}
+ * after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Pascal Parraud
  * @deprecated as of 6.1 replaced by {@link ElevationDetector}
@@ -97,8 +99,8 @@ public class GroundMaskElevationDetector extends AbstractReconfigurableDetector<
      * @exception IllegalArgumentException if azimuth-elevation mask is not supported
      */
     public GroundMaskElevationDetector(final double maxCheck,
-                                    final double[][] azimelev,
-                                    final TopocentricFrame topo) {
+                                       final double[][] azimelev,
+                                       final TopocentricFrame topo) {
         this(maxCheck, DEFAULT_THRESHOLD, azimelev, topo);
     }
 
@@ -114,7 +116,8 @@ public class GroundMaskElevationDetector extends AbstractReconfigurableDetector<
      */
     public GroundMaskElevationDetector(final double maxCheck, final double threshold,
                                        final double[][] azimelev, final TopocentricFrame topo) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<GroundMaskElevationDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER,
+             new StopOnDecreasing<GroundMaskElevationDetector>(),
              azimelev, topo);
     }
 
@@ -126,27 +129,26 @@ public class GroundMaskElevationDetector extends AbstractReconfigurableDetector<
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param azimelev azimuth-elevation mask (rad)
      * @param topo topocentric frame in which elevation should be evaluated
      * @since 6.1
      */
-    private GroundMaskElevationDetector(final double maxCheck,
-                             final double threshold,
-                             final DetectorEventHandler<GroundMaskElevationDetector> handler,
-                             final double[][] azimelev,
-                             final TopocentricFrame topo) {
-        super(maxCheck, threshold, handler);
+    private GroundMaskElevationDetector(final double maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler<GroundMaskElevationDetector> handler,
+                                        final double[][] azimelev,
+                                        final TopocentricFrame topo) {
+        super(maxCheck, threshold, maxIter, handler);
         this.azelmask = checkMask(azimelev);
         this.topo     = topo;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected GroundMaskElevationDetector create(final double newMaxCheck,
-                                                 final double newThreshold,
-                                                 final DetectorEventHandler<GroundMaskElevationDetector> newHandler) {
-        return new GroundMaskElevationDetector(newMaxCheck, newThreshold, newHandler,
+    protected GroundMaskElevationDetector create(final double newMaxCheck, final double newThreshold,
+                                                 final int newMaxIter, final EventHandler<GroundMaskElevationDetector> newHandler) {
+        return new GroundMaskElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                azelmask, topo);
     }
 

@@ -44,6 +44,17 @@ Downloads
 *----------*--------------------------------------------------------*
 |  package |                          link                          |
 *----------*--------------------------------------------------------*
+|  source  | {{{https://www.orekit.org/forge/attachments/download/401/orekit-6.1-sources.zip}orekit-6.1-sources.zip}} |
+*----------*--------------------------------------------------------*
+|  binary  |     {{{https://www.orekit.org/forge/attachments/download/402/orekit-6.1.jar}orekit-6.1.jar}}     |
+*----------*--------------------------------------------------------*
+|  javadoc | {{{https://www.orekit.org/forge/attachments/download/403/orekit-6.1-javadoc.jar}orekit-6.1-javadoc.jar}} |
+*----------*--------------------------------------------------------*
+version 6.1 downloads (release date: 2013-12-13)
+
+*----------*--------------------------------------------------------*
+|  package |                          link                          |
+*----------*--------------------------------------------------------*
 |  source  | {{{https://www.orekit.org/forge/attachments/download/356/orekit-6.0-sources.zip}orekit-6.0-sources.zip}} |
 *----------*--------------------------------------------------------*
 |  binary  |     {{{https://www.orekit.org/forge/attachments/download/357/orekit-6.0.jar}orekit-6.0.jar}}     |
@@ -140,8 +151,8 @@ version 3.1 downloads (release date: 2008-07-16)
 
     ** leap seconds data up to 2013,
 
-    ** IERS Earth orientation parameters from 1973 to early 2013
-       with predicted date to 2014 for some parameters (both IAU-1980 and IAU-2000),
+    ** IERS Earth orientation parameters from 1973 to end 2013
+       with predicted date to early 2014 for some parameters (both IAU-1980 and IAU-2000),
 
     ** Marshall Solar Activity Futur Estimation from 1999 to 2013,
 
@@ -153,4 +164,4 @@ version 3.1 downloads (release date: 2008-07-16)
   content will be updated. It should be considered as a simple configuration example.
   Users are encouraged to set up their own configuration data.
 
-  The file is available by following this link: {{{https://www.orekit.org/forge/attachments/download/355/orekit-data.zip}orekit-data.zip}}.
+  The file is available by following this link: {{{https://www.orekit.org/forge/attachments/download/400/orekit-data.zip}orekit-data.zip}}.

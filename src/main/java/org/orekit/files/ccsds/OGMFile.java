@@ -18,6 +18,8 @@
 package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,7 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
+import org.orekit.files.general.SatelliteInformation;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
 import org.orekit.orbits.PositionAngle;
@@ -464,6 +467,32 @@ public abstract class OGMFile extends ODMFile {
      */
     void setCovarianceComment(final List<String> comment) {
         covarianceComment = new ArrayList<String>(comment);
+    }
+
+    /** Get the meta data.
+     * @return meta data
+     */
+    public abstract ODMMetaData getMetaData();
+
+    /** {@inheritDoc} */
+    @Override
+    public Collection<SatelliteInformation> getSatellites() {
+        return Arrays.asList(new SatelliteInformation(getMetaData().getObjectID()));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public int getSatelliteCount() {
+        return 1;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SatelliteInformation getSatellite(final String satId) {
+        if (getMetaData().getObjectID().equals(satId)) {
+            return new SatelliteInformation(satId);
+        }
+        return null;
     }
 
 }

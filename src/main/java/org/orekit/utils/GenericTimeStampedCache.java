@@ -72,8 +72,11 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
     /** Independent time slots cached. */
     private final List<Slot> slots;
 
+    /** Number of calls to the getNeighbors method. */
+    private final AtomicInteger getNeighborsCalls;
+
     /** Number of calls to the generate method. */
-    private final AtomicInteger calls;
+    private final AtomicInteger generateCalls;
 
     /** Number of evictions. */
     private final AtomicInteger evictions;
@@ -93,8 +96,8 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * @param entriesClass class of the cached entries
      */
     public GenericTimeStampedCache(final int neighborsSize, final int maxSlots, final double maxSpan,
-                            final double newSlotInterval, final TimeStampedGenerator<T> generator,
-                            final Class<T> entriesClass) {
+                                   final double newSlotInterval, final TimeStampedGenerator<T> generator,
+                                   final Class<T> entriesClass) {
 
         // safety check
         if (maxSlots < 1) {
@@ -105,17 +108,18 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                                                                  neighborsSize, 2);
         }
 
-        this.reference      = new AtomicReference<AbsoluteDate>();
-        this.maxSlots       = maxSlots;
-        this.maxSpan        = maxSpan;
-        this.newSlotQuantumGap     = FastMath.round(newSlotInterval / QUANTUM_STEP);
-        this.entriesClass   = entriesClass;
-        this.generator      = generator;
-        this.neighborsSize  = neighborsSize;
-        this.slots          = new ArrayList<Slot>(maxSlots);
-        this.calls          = new AtomicInteger(0);
-        this.evictions      = new AtomicInteger(0);
-        this.lock           = new ReentrantReadWriteLock();
+        this.reference         = new AtomicReference<AbsoluteDate>();
+        this.maxSlots          = maxSlots;
+        this.maxSpan           = maxSpan;
+        this.newSlotQuantumGap = FastMath.round(newSlotInterval / QUANTUM_STEP);
+        this.entriesClass      = entriesClass;
+        this.generator         = generator;
+        this.neighborsSize     = neighborsSize;
+        this.slots             = new ArrayList<Slot>(maxSlots);
+        this.getNeighborsCalls = new AtomicInteger(0);
+        this.generateCalls     = new AtomicInteger(0);
+        this.evictions         = new AtomicInteger(0);
+        this.lock              = new ReentrantReadWriteLock();
 
     }
 
@@ -151,6 +155,17 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
         return newSlotQuantumGap * QUANTUM_STEP;
     }
 
+    /** Get the number of calls to the {@link #getNeighbors(AbsoluteDate)} method.
+     * <p>
+     * This number of calls is used as a reference to interpret {@link #getGenerateCalls()}.
+     * </p>
+     * @return number of calls to the {@link #getNeighbors(AbsoluteDate)} method
+     * @see #getGenerateCalls()
+     */
+    public int getGetNeighborsCalls() {
+        return getNeighborsCalls.get();
+    }
+
     /** Get the number of calls to the generate method.
      * <p>
      * This number of calls is related to the number of cache misses and may
@@ -160,9 +175,10 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
      * elements and step between elements in the arrays returned by the generator.
      * </p>
      * @return number of calls to the generate method
+     * @see #getGetNeighborsCalls()
      */
     public int getGenerateCalls() {
-        return calls.get();
+        return generateCalls.get();
     }
 
     /** Get the number of slots evictions.
@@ -280,6 +296,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
         lock.readLock().lock();
         try {
+            getNeighborsCalls.incrementAndGet();
             final long dateQuantum = quantum(central);
             return Arrays.asList(selectSlot(central, dateQuantum).getNeighbors(central, dateQuantum));
         } finally {
@@ -440,7 +457,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
             // set up first entries
             AbsoluteDate generationDate = date;
 
-            calls.incrementAndGet();
+            generateCalls.incrementAndGet();
             for (final T entry : generateAndCheck(null, generationDate)) {
                 cache.add(new Entry(entry, quantum(entry.getDate())));
             }
@@ -452,7 +469,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
 
                 final T entry0 = cache.get(0).getData();
                 final T entryN = cache.get(cache.size() - 1).getData();
-                calls.incrementAndGet();
+                generateCalls.incrementAndGet();
 
                 final T existing;
                 if (entryN.getDate().durationFrom(date) <= date.durationFrom(entry0.getDate())) {
@@ -585,7 +602,7 @@ public class GenericTimeStampedCache<T extends TimeStamped> implements TimeStamp
                                 generationDate  = existing.getDate().shiftedBy(step * (firstNeighbor + neighborsSize - cache.size()));
                                 simplyRebalance = existing.getDate().compareTo(central) >= 0;
                             }
-                            calls.incrementAndGet();
+                            generateCalls.incrementAndGet();
 
                             // generated data and add it to the slot
                             try {

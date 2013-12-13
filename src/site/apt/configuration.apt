@@ -113,7 +113,7 @@ Configuration
 
   The following diagram shows data handling in Orekit.
   
-[./images/data-handling.png]
+[./images/design/data-class-diagram.png]
 
   When some data is read in Orekit (say JPL DE405 or DE406 ephemerides which are needed by
   the <<<CelestialBodyFactory>>> class), an implementation of the <<<DataLoader>>> interface is used.
@@ -232,18 +232,27 @@ Configuration
   For convenience, a zip file containing some default data is available for
   download on orekit forge: {{https://www.orekit.org/forge/projects/orekit/files}}. Setting the
   <orekit.data.path> property to the location of this file on a local computer is enough to
-  use Orekit efficiently. This zip archive contains Earth Orientation Parameters from 1962
-  to 2012 (both IAU-1980 and IAU-2006/2000A), JPL DE 406 ephemerides from 1962 to 2029 and UTC
-  TAI history from 1972-01-01 to mid 2012 and the Eigen 05C gravity field.
+  use Orekit efficiently, but the preferred setup is to expand the zip file in the user
+  home folder so that new IERS files can be added easily when they become avialble. In this
+  case, data is loaded by puttin the following code in the main application:
+
++---------------------
+final File home = new File(System.getProperty("user.home"));
+final File orekitDir = new File(home, "orekit-data");
+final DataProvider provider = new DirectoryCrawler(orekitDir);
+DataProvidersManager.getInstance().addProvider(provider);
++---------------------
+
+  This zip file contains JPL DE 406 ephemerides from 1962 to 2029, IERS Earth orientation
+  parameters from 1973 to end 2012 with predicted date to mid-2013 (both IAU-1980
+  and IAU-2000), UTC-TAI history from 1972 to end of 2013, Marshall Solar Activity Future
+  Estimation from 1999 to 2013 and the Eigen 06S gravity field.
 
 * Supported data types
 
   The data types supported by Orekit are described in the following table, where the <#>
   character represents any digit, <(m/p)> represents either the m character or the p
-  character and <*> represents any character sequence. The [_08] part in some EOP files
-  is due to the fact files retrieved fromhpiers.obspm.fr do not have _08 in their names whereas
-  files retrieved from data.iers.org do have _08 in their names. Despite this naming difference,
-  the files content is strictly identical. The <[.gz]> part at the end of all
+  character and <*> represents any character sequence. The <[.gz]> part at the end of all
   naming patterns means that an optional <.gz> suffix can be appended, in which case the
   data are considered to be compressed with gzip.
   
@@ -251,40 +260,43 @@ Configuration
   (Bulletin A, several different formats of Bulletin B, EOP 08 C04, finals file combining
   both Bulletin a and Bulletin B information ...). They are also provided for different
   precession-nutation models (IAU-1980 and IAU-2006/2000A). Orekit supports all of these formats
-  except Bulletin A and supports both precession-nutation models. Note that as of early
-  2010, IERS as ceased publishing the original Bulletin B files. The IAU-1980 version are
-  however still published by Paris-Meudon observatory site using a new format. Two different
+  except Bulletin A and supports both precession-nutation models. Two different
   naming patterns for Bulletin B are supported by default. Both the old Bulletin B format
-  used up to 2009 and the new format used since 2010 are supported. The supported format
-  for <finals2000A> files for IAU-2006/2000A and the finals files for IAU-1980 is the XML format.
+  used up to 2009 and the new format used since 2010 are supported. The supported formats
+  for <finals2000A> files for IAU-2006/2000A and the finals files for IAU-1980 are both
+  the XML format and the columns format.
 
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |      default naming pattern     |       format      |                   data type                  |                                     source                                  |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |       UTC-TAI.history[.gz]      |    IERS history   |       leap seconds introduction history      |           {{http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history}}         |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|    bulletinb_IAU2000.###[.gz]   |  IERS Bulletin B  |     monthly Earth Orientation Parameters     |             {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}                      |
-|             <or>                |                   |                model IAU 2000                |                                                                             |
-|  bulletinb_IAU2000-###.txt[.gz] |                   |                                              | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID18.html}} |
+|                                 |  IERS Bulletin B  |     monthly Earth Orientation Parameters     |           {{ftp://ftp.iers.org/products/eop/bulletinb/iau2000/}}            |
+|  bulletinb_IAU2000-###.txt[.gz] |                   |                model IAU 2006/2000A                                                                                        |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|        bulletinb.###[.gz]       |  IERS Bulletin B  |     monthly Earth Orientation Parameters     |             {{http://hpiers.obspm.fr/eoppc/bul/bulb/}}                      |
-|             <or>                |                   |                model IAU 1980                |           {{http://hpiers.obspm.fr/eoppc/bul/bulb_new/}}                    |
-|      bulletinb-###.txt[.gz]     |                   |                                              | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID15.html}} |
+|                                 |  IERS Bulletin B  |     monthly Earth Orientation Parameters     |           {{ftp://ftp.iers.org/products/eop/bulletinb/iau1980/}}            |
+|  bulletinb_IAU1980-###.txt[.gz] |                   |                model IAU 1980                |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|    eopc04[_08]_IAU2000.##[.gz]  |  IERS EOP 08 C04  |     yearly Earth Orientation Parameters      |             {{http://hpiers.obspm.fr/eoppc/eop/eopc04/}}                 |
-|                                 |                   |                model IAU 2006/2000A          | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID211.html}} |
+|    eopc04_08_IAU2000.##[.gz]    |  IERS EOP 08 C04  |     yearly Earth Orientation Parameters      |        {{ftp://ftp.iers.org/products/eop/long-term/c04_08/iau2000/}}        |
+|                                 |                   |                model IAU 2006/2000A          |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|        eopc04[_08].##[.gz]      |  IERS EOP 08 C04  |     yearly Earth Orientation Parameters      |             {{http://hpiers.obspm.fr/eoppc/eop/eopc04/}}                 |
-|                                 |                   |                model IAU 1980                | {{http://www.iers.org/nn_11252/IERS/EN/DataProducts/EarthOrientationData/__Function/generischeTabelle__ID212.html}} |
+|        eopc04_08.##[.gz]        |  IERS EOP 08 C04  |     yearly Earth Orientation Parameters      |        {{ftp://ftp.iers.org/products/eop/long-term/c04_08/iau1980/}}        |
+|                                 |                   |                model IAU 1980                |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|      finals2000A.*.xml[.gz]     | IERS standard and |         Earth Orientation Parameters         | {{http://data.iers.org/products/13/1388/output/54461/finals2000A.daily.xml}}|
-|                                 |     daily EOP     | (daily and final data) model IAU 2006/2000A  |   {{http://data.iers.org/products/9/1379/output/54354/finals2000A.all.xml}} |
+|      finals2000A.*.[.gz]        |      IERS         |         Earth Orientation Parameters         |       {{ftp://ftp.iers.org/products/eop/rapid/standard/finals2000A.data}}   |
+|                                 |  standard EOP     |               model IAU 2006/2000A           |       {{ftp://ftp.iers.org/products/eop/rapid/standard/finals2000A.all}}    |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|         finals.*.xml[.gz]       | IERS standard and |         Earth Orientation Parameters         |   {{http://data.iers.org/products/12/1386/output/54458/finals.daily.xml}}   |
-|                                 |     daily EOP     |     (daily and final data) model IAU 1980    |     {{http://data.iers.org/products/7/1378/output/54351/finals.all.xml}}    |
+|         finals.*.[.gz]          |      IERS         |         Earth Orientation Parameters         |       {{ftp://ftp.iers.org/products/eop/rapid/standard/finals.data}}        |
+|                                 |  standard EOP     |               model IAU 1980                 |       {{ftp://ftp.iers.org/products/eop/rapid/standard/finals.all}}         |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|     (l/u)nx(m/p)####.4##[.gz]   |   DE 4xx binary   |        JPL DE 4xx planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/SunOS}}                |
-|     (l/u)nxm####p####.4##[.gz]  | big/little endian |                                              |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux}}                |
+|    finals2000A.*.xml[.gz]       |      IERS         |         Earth Orientation Parameters         | {{ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals2000A.data.xml}} |
+|                                 |  standard EOP     |               model IAU 2006/2000A           | {{ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals2000A.all.xml}}  |
+*---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
+|       finals.*.xml[.gz]         |      IERS         |         Earth Orientation Parameters         |     {{ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals.data.xml}}  |
+|                                 |  standard EOP     |                model IAU 1980                |     {{ftp://ftp.iers.org/products/eop/rapid/standard/xml/finals.all.xml}}   |
+*---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
+|     (l/u)nx(m/p)####.4##[.gz]   |   DE 4xx binary   |        JPL DE 4xx planets ephemerides        |             {{ftp://ssd.jpl.nasa.gov/pub/eph/planets/Linux/}}               |
+|     (l/u)nxm####p####.4##[.gz]  |                   |                                              |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |    inpop*_m####_p####*.dat[.gz] |   DE 4xx binary   |        IMCCE inpop planets ephemerides       |             {{ftp://ftp.imcce.fr/pub/ephem/planets/}}                       |
 |                                 | big/little endian |                                              |                                                                             |
@@ -296,8 +308,6 @@ Configuration
 |         g###_eigen_*_coef       |                   |                    (ICGEM)                   |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |            egm##_to#*           |     EGM format    |             EGM gravity field                |             {{ftp://cddis.gsfc.nasa.gov/pub/egm96/general_info}}            |
-*---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
-|            grim#_*              |    GRGS format    |            GRGS gravity field                |                                                                             |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*
 |Jan####F10.txt to Dec####F10.txt |    MSAFE format   |   Marshall Solar Activity Future Estimation  |             {{http://sail.msfc.nasa.gov/archive_index.htm}}                 |
 *---------------------------------*-------------------*----------------------------------------------*-----------------------------------------------------------------------------*

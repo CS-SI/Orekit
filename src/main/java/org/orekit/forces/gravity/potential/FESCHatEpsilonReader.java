@@ -62,7 +62,7 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
     private final double scaleEpsilon;
 
     /** Load deformation coefficients for ocean tides. */
-    private final double[] kPrime;
+    private final OceanLoadDeformationCoefficients oldc;
 
     /** Map for astronomical amplitudes. */
     private final Map<Integer, Double> astronomicalAmplitudes;
@@ -71,18 +71,18 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
      * @param supportedNames regular expression for supported files names
      * @param scaleCHat scale of the CHat parameters
      * @param scaleEpsilon scale of the epsilon parameters
-     * @param kPrime load deformation coefficients for ocean tides
+     * @param oldc load deformation coefficients for ocean tides
      * @param astronomicalAmplitudes map for astronomical amplitudes
-     * @see org.orekit.utils.IERSConventions#getOceanLoadDeformationCoefficients()
      * @see AstronomicalAmplitudeReader#getAstronomicalAmplitudesMap()
      */
     public FESCHatEpsilonReader(final String supportedNames,
                                 final double scaleCHat, final double scaleEpsilon,
-                                final double[] kPrime, final Map<Integer, Double> astronomicalAmplitudes) {
+                                final OceanLoadDeformationCoefficients oldc,
+                                final Map<Integer, Double> astronomicalAmplitudes) {
         super(supportedNames);
         this.scaleCHat              = scaleCHat;
         this.scaleEpsilon           = scaleEpsilon;
-        this.kPrime                 = kPrime.clone();
+        this.oldc                   = oldc;
         this.astronomicalAmplitudes = astronomicalAmplitudes;
     }
 
@@ -124,6 +124,7 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
         final Pattern regularLinePattern = Pattern.compile(builder.toString());
 
         final double commonFactor = 4 * FastMath.PI * BIG_G * RHO / GE;
+        final double[] kPrime = oldc.getCoefficients();
 
         // parse the file
         startParse(name);
@@ -168,10 +169,18 @@ public class FESCHatEpsilonReader extends OceanTidesReader {
                                                   kPrime.length - 1, n, name);
                     }
                     final double termFactor = (1 + kPrime[n]) / (2 * n + 1);
-                    final double cPlus      = commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
-                    final double sPlus      = commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
-                    final double cMinus     = commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
-                    final double sMinus     = commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
+
+                    // an update on IERS conventions from 2012-08-10 states that for FES model:
+                    //      Note that, for zonal terms, FES2004 takes the approach to set
+                    //      the retrograde coefficients C-f,nO and S-f,n0 to zero and to double
+                    //      the prograde coefficients C+f,nO and S+f,n0. Therefore, after
+                    //      applying Equation (6.15), the ΔCn0 have the expected value but the
+                    //      ΔSn0 must be set to zero.
+                    // (see ftp://tai.bipm.org/iers/convupdt/chapter6/icc6.pdf)
+                    final double cPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.sin(ePlus  + chiF);
+                    final double sPlus  =                  commonFactor * termFactor * cHatPlus  * FastMath.cos(ePlus  + chiF);
+                    final double cMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.sin(eMinus + chiF);
+                    final double sMinus = (m == 0) ? 0.0 : commonFactor * termFactor * cHatMinus * FastMath.cos(eMinus + chiF);
 
                     // store parsed fields
                     addWaveCoefficients(doodson, n, m, cPlus,  sPlus, cMinus, sMinus, lineNumber, line);

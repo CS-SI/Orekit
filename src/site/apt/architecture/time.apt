@@ -146,7 +146,7 @@ AbsoluteDate date2         = new AbsoluteDate(referenceDate, 2.0);
 
 ** Reference Epochs
 
-  Orekit defines 9 reference epochs. The first 6 are commonly used in the space
+  Orekit defines 10 reference epochs. The first 7 are commonly used in the space
   community, the seventh one is commonly used in the computer science field and the
   last two are convenient for initialization in min/max research loops:
 
@@ -158,11 +158,13 @@ AbsoluteDate date2         = new AbsoluteDate(referenceDate, 2.0);
 
       ** <CCSDS Epoch>: 1958-01-01 at 00:00:00,  TAIScale
 
+      ** <Galileo Epoch>: 1999-08-22 at 00:00:00,  UTCScale
+
       ** <GPS Epoch>: 1980-01-06 at 00:00:00,  UTCScale
 
       ** <J2000 Epoch>: 2000-01-01 at 12:00:00, TTScale
 
-      ** <Java Epoch>: 1970-01-01 at 00:00:00, TTScale
+      ** <Java Epoch>: 1970-01-01 at 00:00:00, UTCScale
  
       ** <Past infinity Epoch>: at infinity in the past
  

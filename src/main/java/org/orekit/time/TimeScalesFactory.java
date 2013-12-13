@@ -224,7 +224,7 @@ public class TimeScalesFactory implements Serializable {
      * it may involve large data sets. So this method does <em>not</em>
      * cache the resulting {@link UT1Scale UT1Scale} instance, a new
      * instance will be returned each time. In order to avoid wasting
-     * memory, calling {@link #getUT1(IERSConventions) getUT1(IERSConventions)}
+     * memory, calling {@link #getUT1(IERSConventions, boolean)}
      * with the single enumerate corresponding to the conventions may be
      * a better solution. This method is made available only for expert use.
      * </p>
@@ -233,7 +233,7 @@ public class TimeScalesFactory implements Serializable {
      * @return Universal Time 1 scale
      * @exception OrekitException if some data can't be read or some
      * file content is corrupted
-     * @see #getUT1(IERSConventions)
+     * @see #getUT1(IERSConventions, boolean)
      */
     public static UT1Scale getUT1(final EOPHistory history) throws OrekitException {
         return new UT1Scale(history, getUTC());

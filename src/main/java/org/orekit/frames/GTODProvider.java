@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
+
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -43,14 +45,17 @@ public class GTODProvider implements TransformProvider {
     /** Angular velocity of the Earth, in rad/s. */
     private static final double AVE = 7.292115146706979e-5;
 
+    /** Conventions. */
+    private final IERSConventions conventions;
+
     /** EOP history. */
     private final EOPHistory eopHistory;
 
     /** GMST function. */
-    private final TimeFunction<DerivativeStructure> gmstFunction;
+    private final transient TimeFunction<DerivativeStructure> gmstFunction;
 
     /** GAST function. */
-    private final TimeFunction<DerivativeStructure> gastFunction;
+    private final transient TimeFunction<DerivativeStructure> gastFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to use
@@ -60,6 +65,7 @@ public class GTODProvider implements TransformProvider {
     protected GTODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
         final UT1Scale ut1 = TimeScalesFactory.getUT1(eopHistory);
+        this.conventions   = conventions;
         this.eopHistory    = eopHistory;
         this.gmstFunction  = conventions.getGMSTFunction(ut1);
         this.gastFunction  = conventions.getGASTFunction(ut1, eopHistory);
@@ -114,6 +120,51 @@ public class GTODProvider implements TransformProvider {
     @Deprecated
     public double getGAST(final AbsoluteDate date) throws OrekitException {
         return gastFunction.value(date).getValue();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(conventions, eopHistory);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** Conventions. */
+        private final IERSConventions conventions;
+
+        /** EOP history. */
+        private final EOPHistory eopHistory;
+
+        /** Simple constructor.
+         * @param conventions IERS conventions to apply
+         * @param eopHistory EOP history
+         */
+        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+            this.conventions = conventions;
+            this.eopHistory  = eopHistory;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link GTODProvider}.
+         * @return replacement {@link GTODProvider}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new GTODProvider(conventions, eopHistory);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
+
     }
 
 }

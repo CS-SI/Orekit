@@ -20,7 +20,71 @@
     <title>Orekit Changes</title>
   </properties>
   <body>
-    <release version="6.1" date="TBD" description="TBD">
+    <release version="7.0" date="TBD"
+             description="TBD">
+    </release>
+    <release version="6.1" date="2013-12-13"
+             description="Version 6.1 is a minor release of Orekit. It introduces several new
+             features and bug fixes. The most important features introduced in version 6.1
+             are solid tides force model, including pole tide at user choice, and following
+             either IERS 1996, IERS 2003 or IERS 2010 conventions ; ocean tides force model,
+             including pole tide at user choice, loading a user provided model ; simultaneous
+             support for IERS 1996, 2003 and 2010 for frames definition, which is very
+             important to support legacy systems and to convert coordinates between older and
+             newer reference systems ; greatly improved accuracy of celestial/terrestrial
+             frames transforms (we are now at sub-micro arcsecond level for IERS 2003/2010,
+             both with equinox based and Non-Rotating Origin, at a sub-milli arcseconds for
+             IERS 1996, both with equinox based and Non-Rotating Origin) ; classical
+             equinox-based paradigm and new non-rotating origin paradigm for inertial and
+             terrestrial frames are now supported with all IERS conventions ; automatic
+             conversion of IERS Earth Orientation Paramters from equinoxial to non-rotating
+             paradigm ; support for CCSDS Orbit Data Message ; improved API for events,
+             allowing separation of event detection and event handling (the older API is still
+             available for compatibility) ; merged all the elevation related events, allowing
+             to use both refraction model and antenna mask at the same time if desired ;
+             new attitude mode based on interpolation on a table. Numerous bugs were also fixed.
+             Version 6.1 depends on version 3.2 of Apache commons math.">
+      <action dev="luc" type="fix" >
+        Reduced number of calls to the g function in event detectors.
+        Fixes issue #108.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed a spurious backward propagation.
+        Fixes issue #107.
+      </action>
+      <action dev="luc" type="fix" >
+        Improved error detection for numerical and DSST propagation for cases
+        where user attempts to compute integrator tolerances with an orbit for
+        which Jacobian is singular (for example equatorial orbit while using
+        Keplerian representation).
+        Fixes issue #157.
+      </action>
+      <action dev="luc" type="add" >
+        Added a method to get the number or calls to getNeighbors in the generic time stamped cache,
+        to allow performing measurements while tuning the cache.
+      </action>
+      <action dev="luc" type="add" >
+        Added high degree ocean load deformation coefficients computed by Pascal
+        Gégout (CNRS / UMR5563 - GET).
+      </action>
+      <action dev="luc" type="add" >
+        Time scales are now serializable.
+      </action>
+      <action dev="luc" type="add" due-to="Nicolas Bernard">
+        Improved DSST tesseral computation efficiency by caching Jacobi polynomials.
+      </action>
+      <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
+        Fixed yaw steering attitude law, which didn't project spacecraft velocity correctly.
+        Fixes issue #156.
+      </action>
+      <action dev="luc" type="add" >
+        Added a way to set the maximum number of iterations for events detection.
+        Fixes issue #155.
+      </action>
+      <action dev="luc" type="add">
+        Added an attitude provider from tabulated attitudes.
+        Fixes issue #154.
+      </action>
       <action dev="luc" type="add" due-to="Hank Grabowski">
         Improved test coverage.
         Fixes issue #153.
@@ -48,16 +112,6 @@
       </action>
       <action dev="luc" type="add">
         Added a new force model for ocean tides in numerical propagation, including pole tides.
-        WARNING: as of 2013-11-17, the IERS file "fes2004_Cnm-Snm.dat" seem to be inconsistent
-        with the other IERS file "fes2004dat", despite it is declared to have been computed from
-        it. The first inconsistency appears for wave Sa (Doodson number 56.554) and P1 (Doodson
-        number 163.555) : the sign of the Cnm and Snm coefficients read from "fes2004_Cnm-Snm.dat"
-        is opposite to the expected sign obtained by converting height coefficients cHat and
-        epsilon from "fes2004dat". The signs for all other waves are consistent. The second
-        inconsistency is that the file coefficients  seem to use units of 10^-11 instead of 10^-12
-        as claimed in the file header. We therefore think the published "fes2004_Cnm-Snm.dat" is
-        wrong and recommend to rather use the "fes2004dat", despite doing so limit the usable degree
-        to 6 as the k'i are not published by IERS for larger degrees.
         Fixes issue #11.
       </action>
       <action dev="luc" type="fix" due-to="Lucian Barbulescu">

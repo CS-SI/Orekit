@@ -16,6 +16,12 @@
  */
 package org.orekit.frames;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +71,40 @@ public class EOPHistoryTest {
                 Assert.assertEquals(0.3388, dtu1, 3.0e-5);
             }
         }
+    }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        EOPHistory history = FramesFactory.getEOPHistory(IERSConventions.IERS_2010, true);
+        
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(history);
+
+        Assert.assertTrue(bos.size() > 145000);
+        Assert.assertTrue(bos.size() < 150000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        EOPHistory deserialized  = (EOPHistory) ois.readObject();
+        Assert.assertEquals(history.getStartDate(), deserialized.getStartDate());
+        Assert.assertEquals(history.getEndDate(), deserialized.getEndDate());
+        Assert.assertEquals(history.getEntries().size(), deserialized.getEntries().size());
+        for (int i = 0; i < history.getEntries().size(); ++i) {
+            EOPEntry e1 = history.getEntries().get(i);
+            EOPEntry e2 = deserialized.getEntries().get(i);
+            Assert.assertEquals(e1.getMjd(),         e2.getMjd());
+            Assert.assertEquals(e1.getDate(),        e2.getDate());
+            Assert.assertEquals(e1.getUT1MinusUTC(), e2.getUT1MinusUTC(), 1.0e-10);
+            Assert.assertEquals(e1.getLOD(),         e2.getLOD(),         1.0e-10);
+            Assert.assertEquals(e1.getDdEps(),       e2.getDdEps(),       1.0e-10);
+            Assert.assertEquals(e1.getDdPsi(),       e2.getDdPsi(),       1.0e-10);
+            Assert.assertEquals(e1.getDx(),          e2.getDx(),          1.0e-10);
+            Assert.assertEquals(e1.getDy(),          e2.getDy(),          1.0e-10);
+            Assert.assertEquals(e1.getX(),           e2.getX(),           1.0e-10);
+            Assert.assertEquals(e1.getY(),           e2.getY(),           1.0e-10);
+        }
+
     }
 
     @Before

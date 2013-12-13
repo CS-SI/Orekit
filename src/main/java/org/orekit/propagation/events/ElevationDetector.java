@@ -20,8 +20,8 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.TopocentricFrame;
 import org.orekit.models.AtmosphericRefractionModel;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.ElevationMask;
 
 
@@ -31,10 +31,11 @@ import org.orekit.utils.ElevationMask;
  * mask input. Each calculation be configured to use atmospheric refraction
  * as well.
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at raising and to
- * {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at raising and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at setting. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @author Hank Grabowski
  * @since 6.1
  */
@@ -67,8 +68,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @see #withRefraction(AtmosphericRefractionModel)
      */
     public ElevationDetector(final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, new DetectorStopOnDecreasing<ElevationDetector>(),
-             0.0, null, null, topo);
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, topo);
     }
 
     /**
@@ -84,7 +84,8 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      */
     @Deprecated
     public ElevationDetector(final double minElevation, final TopocentricFrame topo) {
-        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, new DetectorStopOnDecreasing<ElevationDetector>(),
+        this(DEFAULT_MAXCHECK, DEFAULT_THRESHOLD, DEFAULT_MAX_ITER,
+             new StopOnDecreasing<ElevationDetector>(),
              minElevation, null, null, topo);
     }
 
@@ -100,7 +101,8 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      */
     public ElevationDetector(final double maxCheck, final double threshold,
                              final TopocentricFrame topo) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<ElevationDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER,
+             new StopOnDecreasing<ElevationDetector>(),
              0.0, null, null, topo);
     }
 
@@ -112,6 +114,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param minElevation minimum elevation in radians (rad)
      * @param mask reference to elevation mask
@@ -119,11 +122,11 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @param topo reference to a topocentric model
      */
     private ElevationDetector(final double maxCheck, final double threshold,
-                              final DetectorEventHandler<ElevationDetector> handler,
+                              final int maxIter, final EventHandler<ElevationDetector> handler,
                               final double minElevation, final ElevationMask mask,
                               final AtmosphericRefractionModel refractionModel,
                               final TopocentricFrame topo) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.minElevation    = minElevation;
         this.elevationMask   = mask;
         this.refractionModel = refractionModel;
@@ -132,10 +135,9 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
 
     /** {@inheritDoc} */
     @Override
-    protected ElevationDetector create(final double newMaxCheck,
-                                       final double newThreshold,
-                                       final DetectorEventHandler<ElevationDetector> newHandler) {
-        return new ElevationDetector(newMaxCheck, newThreshold, newHandler,
+    protected ElevationDetector create(final double newMaxCheck, final double newThreshold,
+                                       final int newMaxIter, final EventHandler<ElevationDetector> newHandler) {
+        return new ElevationDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                      minElevation, elevationMask, refractionModel, topo);
     }
 
@@ -216,7 +218,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @since 6.1
      */
     public ElevationDetector withConstantElevation(final double newMinElevation) {
-        return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
+        return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
                                      newMinElevation, null, refractionModel, topo);
     }
 
@@ -228,7 +230,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @see #getElevationMask()
      */
     public ElevationDetector withElevationMask(final ElevationMask newElevationMask) {
-        return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
+        return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
                                      Double.NaN, newElevationMask, refractionModel, topo);
     }
 
@@ -245,7 +247,7 @@ public class ElevationDetector extends AbstractReconfigurableDetector<ElevationD
      * @see #getRefractionModel()
      */
     public ElevationDetector withRefraction(final AtmosphericRefractionModel newRefractionModel) {
-        return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getHandler(),
+        return new ElevationDetector(getMaxCheckInterval(), getThreshold(), getMaxIterationCount(), getHandler(),
                                      minElevation, elevationMask, newRefractionModel, topo);
     }
 

@@ -20,17 +20,18 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnIncreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnIncreasing;
 
 /** Finder for node crossing events.
  * <p>This class finds equator crossing events (i.e. ascending
  * or descending node crossing).</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at descending node
- * crossing and to {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at descending node crossing and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at ascending node crossing. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * <p>Beware that node detection will fail for almost equatorial orbits. If
  * for example a node detector is used to trigger an {@link
  * org.orekit.forces.maneuvers.ImpulseManeuver ImpulseManeuver} and the maneuver
@@ -71,7 +72,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
         this(orbit.getKeplerianPeriod() / 3, threshold,
-             new DetectorStopOnIncreasing<NodeDetector>(),
+             DEFAULT_MAX_ITER, new StopOnIncreasing<NodeDetector>(),
              frame);
     }
 
@@ -83,6 +84,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param frame frame in which the equator is defined (typical
      * values are {@link org.orekit.frames.FramesFactory#getEME2000() J<sub>2000</sub>} or
@@ -90,18 +92,17 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      * @since 6.1
      */
     private NodeDetector(final double maxCheck, final double threshold,
-                         final DetectorEventHandler<NodeDetector> handler,
+                         final int maxIter, final EventHandler<NodeDetector> handler,
                          final Frame frame) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.frame = frame;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected NodeDetector create(final double newMaxCheck,
-                                  final double newThreshold,
-                                  final DetectorEventHandler<NodeDetector> newHandler) {
-        return new NodeDetector(newMaxCheck, newThreshold, newHandler, frame);
+    protected NodeDetector create(final double newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler<NodeDetector> newHandler) {
+        return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
     }
 
     /** Get the frame in which the equator is defined.

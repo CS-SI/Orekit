@@ -18,13 +18,13 @@
 package org.orekit.files.ccsds;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.files.general.OrbitFile;
-import org.orekit.files.general.SatelliteInformation;
 import org.orekit.files.general.SatelliteTimeCoordinate;
 import org.orekit.frames.Frame;
 import org.orekit.frames.LOFType;
@@ -62,6 +62,7 @@ public class OPMFile extends OGMFile {
     /** Get the meta data.
      * @return meta data
      */
+    @Override
     public ODMMetaData getMetaData() {
         return metaData;
     }
@@ -137,6 +138,16 @@ public class OPMFile extends OGMFile {
         return metaData.getComment();
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public List<SatelliteTimeCoordinate> getSatelliteCoordinates(final String satId) {
+        if (getMetaData().getObjectID().equals(satId)) {
+            return Arrays.asList(new SatelliteTimeCoordinate(getEpoch(), getPVCoordinates()));
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     /** Get the {@link SatelliteTimeCoordinate} of the OPM.
      * @return the {@link SatelliteTimeCoordinate}
      */
@@ -149,12 +160,6 @@ public class OPMFile extends OGMFile {
      */
     public PVCoordinates getPVCoordinates() {
         return new PVCoordinates(getPosition(), getVelocity());
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public SatelliteInformation getSatellite(final String objID) {
-        return new SatelliteInformation(metaData.getObjectID());
     }
 
     /** {@inheritDoc} */

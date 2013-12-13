@@ -16,6 +16,8 @@
  */
 package org.orekit.frames;
 
+import java.io.Serializable;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
@@ -32,16 +34,19 @@ import org.orekit.utils.IERSConventions;
 class TODProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20130922L;
+    private static final long serialVersionUID = 20131209L;
+
+    /** Conventions. */
+    private final IERSConventions conventions;
 
     /** EOP history. */
     private final EOPHistory eopHistory;
 
     /** Function computing the mean obliquity. */
-    private final TimeFunction<Double> obliquityFunction;
+    private final transient TimeFunction<Double> obliquityFunction;
 
     /** Function computing the nutation angles. */
-    private final TimeFunction<double[]> nutationFunction;
+    private final transient TimeFunction<double[]> nutationFunction;
 
     /** Simple constructor.
      * @param conventions IERS conventions to apply
@@ -50,6 +55,7 @@ class TODProvider implements TransformProvider {
      */
     public TODProvider(final IERSConventions conventions, final EOPHistory eopHistory)
         throws OrekitException {
+        this.conventions       = conventions;
         this.eopHistory        = eopHistory;
         this.obliquityFunction = conventions.getMeanObliquityFunction();
         this.nutationFunction  = conventions.getNutationFunction();
@@ -119,6 +125,51 @@ class TODProvider implements TransformProvider {
 
         // set up the transform from parent MOD
         return new Transform(date, nutation);
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * <p>
+     * This intermediate class serializes only the frame key.
+     * </p>
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DataTransferObject(conventions, eopHistory);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DataTransferObject implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20131209L;
+
+        /** Conventions. */
+        private final IERSConventions conventions;
+
+        /** EOP history. */
+        private final EOPHistory eopHistory;
+
+        /** Simple constructor.
+         * @param conventions IERS conventions to apply
+         * @param eopHistory EOP history
+         */
+        public DataTransferObject(final IERSConventions conventions, final EOPHistory eopHistory) {
+            this.conventions = conventions;
+            this.eopHistory  = eopHistory;
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TODProvider}.
+         * @return replacement {@link TODProvider}
+         */
+        private Object readResolve() {
+            try {
+                // retrieve a managed frame
+                return new TODProvider(conventions, eopHistory);
+            } catch (OrekitException oe) {
+                throw OrekitException.createInternalError(oe);
+            }
+        }
 
     }
 

@@ -22,8 +22,8 @@ import java.util.ArrayList;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -31,13 +31,14 @@ import org.orekit.time.TimeStamped;
  * <p>This class finds date events (i.e. occurrence of some predefined dates).</p>
  * <p>As of version 5.1, it is an enhanced date detector:</p>
  * <ul>
- *   <li>it can be defined without prior date ({@link #DateDetector(double,double)})</li>
+ *   <li>it can be defined without prior date ({@link #DateDetector(double, double, TimeStamped...)})</li>
  *   <li>several dates can be added ({@link #addEventDate(AbsoluteDate)})</li>
  * </ul>
  * <p>The gap between the added dates must be more than the maxCheck.</p>
- * <p>The default implementation behavior is to {@link EventDetector.Action#STOP stop}
+ * <p>The default implementation behavior is to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
  * propagation at the first event date occurrence. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  * @author Pascal Parraud
@@ -65,7 +66,7 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      * @see #addEventDate(AbsoluteDate)
      */
     public DateDetector(final double maxCheck, final double threshold, final TimeStamped ... dates) {
-        this(maxCheck, threshold, new DetectorStopOnEvent<DateDetector>(), dates);
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnEvent<DateDetector>(), dates);
     }
 
     /** Build a new instance.
@@ -87,15 +88,15 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param dates list of event dates
      * @since 6.1
      */
-    private DateDetector(final double maxCheck,
-                         final double threshold,
-                         final DetectorEventHandler<DateDetector> handler,
+    private DateDetector(final double maxCheck, final double threshold,
+                         final int maxIter, final EventHandler<DateDetector> handler,
                          final TimeStamped ... dates) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.currentIndex  = -1;
         this.gDate         = null;
         this.eventDateList = new ArrayList<DateDetector.EventDate>(dates.length);
@@ -106,10 +107,9 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
 
     /** {@inheritDoc} */
     @Override
-    protected DateDetector create(final double newMaxCheck,
-                                  final double newThreshold,
-                                  final DetectorEventHandler<DateDetector> newHandler) {
-        return new DateDetector(newMaxCheck, newThreshold, newHandler,
+    protected DateDetector create(final double newMaxCheck, final double newThreshold,
+                                  final int newMaxIter, final EventHandler<DateDetector> newHandler) {
+        return new DateDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                 eventDateList.toArray(new EventDate[eventDateList.size()]));
     }
 
@@ -144,7 +144,7 @@ public class DateDetector extends AbstractReconfigurableDetector<DateDetector> i
      * </ul>
      * @param target target date
      * @throws IllegalArgumentException if the date is too close from already defined interval
-     * @see #DateDetector(double, double)
+     * @see #DateDetector(double, double, TimeStamped...)
      */
     public void addEventDate(final AbsoluteDate target) throws IllegalArgumentException {
         final boolean increasing;

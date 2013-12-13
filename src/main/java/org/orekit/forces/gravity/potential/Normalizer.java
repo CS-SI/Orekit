@@ -88,6 +88,7 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double getNormalizedCnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
         return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedCnm(n, m);
@@ -95,6 +96,7 @@ class Normalizer implements NormalizedSphericalHarmonicsProvider {
 
     /** {@inheritDoc} */
     @Override
+    @Deprecated
     public double getNormalizedSnm(final double dateOffset, final int n, final int m)
         throws OrekitException {
         return onDate(getReferenceDate().shiftedBy(dateOffset)).getNormalizedSnm(n, m);

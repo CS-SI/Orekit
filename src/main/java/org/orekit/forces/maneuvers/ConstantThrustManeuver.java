@@ -28,7 +28,7 @@ import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -216,16 +216,16 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
     }
 
     /** Handler for start of maneuver. */
-    private class FiringStartHandler implements DetectorEventHandler<DateDetector> {
+    private class FiringStartHandler implements EventHandler<DateDetector> {
 
         /** {@inheritDoc} */
         @Override
-        public EventDetector.Action eventOccurred(final SpacecraftState s,
-                                                  final DateDetector detector,
-                                                  final boolean increasing) {
+        public EventHandler.Action eventOccurred(final SpacecraftState s,
+                                                 final DateDetector detector,
+                                                 final boolean increasing) {
             // start the maneuver
             firing = true;
-            return EventDetector.Action.RESET_DERIVATIVES;
+            return EventHandler.Action.RESET_DERIVATIVES;
         }
 
         /** {@inheritDoc} */
@@ -237,15 +237,15 @@ public class ConstantThrustManeuver extends AbstractParameterizable implements F
     }
 
     /** Handler for end of maneuver. */
-    private class FiringStopHandler implements DetectorEventHandler<DateDetector> {
+    private class FiringStopHandler implements EventHandler<DateDetector> {
 
         /** {@inheritDoc} */
-        public EventDetector.Action eventOccurred(final SpacecraftState s,
-                                                  final DateDetector detector,
-                                                  final boolean increasing) {
+        public EventHandler.Action eventOccurred(final SpacecraftState s,
+                                                 final DateDetector detector,
+                                                 final boolean increasing) {
             // stop the maneuver
             firing = false;
-            return EventDetector.Action.RESET_DERIVATIVES;
+            return EventHandler.Action.RESET_DERIVATIVES;
         }
 
         /** {@inheritDoc} */

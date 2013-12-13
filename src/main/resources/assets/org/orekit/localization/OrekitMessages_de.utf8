@@ -29,28 +29,28 @@ FRAME_NOT_ATTACHED = Koordinatennetz {0} ist nicht an den Haupt-Koordinatenbaum 
 FRAME_ANCESTOR_OF_BOTH_FRAMES = Koordinatennetz {0} ist ein gemeinsamer Vorgänger für beide Koordinatennetze {1} und {2}
 
 # frame {0} is an ancestor of neither frame {1} nor {2}
-FRAME_ANCESTOR_OF_NEITHER_FRAME = Koordinatennetz {0} ist weder ein Vorgänger für Koordinatennetz {1} noch {2}
+FRAME_ANCESTOR_OF_NEITHER_FRAME = Koordinatennetz {0} ist weder ein Vorgänger für Koordinatennetz {1} noch für {2}
 
 # frame {0} has depth {1}, it cannot have an ancestor {2} levels above
 FRAME_NO_NTH_ANCESTOR = Koordinatennetz {0} hat eine Tiefe von {1}, es kann nicht einen Vorgänger {2} Ebenen darüber haben
 
 # unsupported local orbital frame, supported types: {0} and {1}
-UNSUPPORTED_LOCAL_ORBITAL_FRAME = nicht unterstützte lokales Koordinatennetz, unterstützte Typen: {0} und {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = nicht unterstütztes lokales Koordinatennetz, unterstützte Typen: {0} und {1}
 
 # non pseudo-inertial frame "{0}" is not suitable for defining orbits
 NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = nicht pseudo-inertiales Koordinatennetz "{0}" ist nicht geeignet um eine Umlaufbahn zu definieren
 
 # data root directory {0} does not exist
-DATA_ROOT_DIRECTORY_DOESN_NOT_EXISTS = Datenstammverzeichnis {0} existiert nicht
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = Datenstammverzeichnis {0} existiert nicht
 
 # {0} is not a directory
 NOT_A_DIRECTORY = {0} ist kein Verzeichnis
 
 # {0} is neither a directory nor a zip/jar archive file
-NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} ist weder ein Verzeichnis noch ein Zip/Jar-Datei
+NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} ist weder ein Verzeichnis noch eine Zip/Jar-Datei
 
 # unable to find resource {0} in classpath
-UNABLE_TO_FIND_RESOURCE = {0} existiert nicht im classpath
+UNABLE_TO_FIND_RESOURCE = {0} existiert nicht im Klassenpfad
 
 # no Earth Orientation Parameters loaded
 NO_EARTH_ORIENTATION_PARAMETERS_LOADED = Orientierungsparameter der Erde sind nicht geladen
@@ -65,7 +65,7 @@ NOT_A_SUPPORTED_IERS_DATA_FILE = Datei {0} ist keine unterstützte IERS-Datendat
 INCONSISTENT_DATES_IN_IERS_FILE = inkonsistente Datumsangaben in IERS Datei {0}: {1}-{2}-{3} und MJD {4}
 
 # unexpected data after line {0} in file {1}: {2}
-UNEXPECTED_DATA_AFTER_LINE_IN_FILE = unerwartete Daten hinter Zeile {0} in der Datei {1}: {2}
+UNEXPECTED_DATA_AFTER_LINE_IN_FILE = unerwartete Daten nach Zeile {0} in der Datei {1}: {2}
 
 # non-chronological dates in file {0}, line {1}
 NON_CHRONOLOGICAL_DATES_IN_FILE = nicht chronologische Daten, abgelegt unter Datei {0}, Zeile {1}
@@ -80,13 +80,13 @@ NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE = keine Eintragungen in IERS UTC-TAI His
 MISSING_SERIE_J_IN_FILE = Serie j = {0} fehlt in der Datei {1} (Zeile {2})
 
 # cannot parse both τ and γ from the same Poissons series file
-CANNOT_PARSE_BOTH_TAU_AND_GAMMA = <MISSING TRANSLATION>
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = es kann nicht gleichzeitig τ und γ aus der selben Poissonreihendatei gelesen werden
 
 # unexpected end of file {0} (after line {1})
 UNEXPECTED_END_OF_FILE_AFTER_LINE = unerwartetes Ende der Datei {0} (hinter Zeile {1})
 
 # unable to parse line {0} of file {1}:\n{2}
-UNABLE_TO_PARSE_LINE_IN_FILE = Zeile {0} der Datei {1}:\n{2} kann nicht geparst werden
+UNABLE_TO_PARSE_LINE_IN_FILE = Zeile {0} der Datei {1}:\n{2} kann nicht gelesen werden
 
 # unable to find file {0}
 UNABLE_TO_FIND_FILE = Datei {0} kann nicht gefunden werden
@@ -104,13 +104,13 @@ NO_GRAVITY_FIELD_DATA_LOADED = keine Gravitationsfeld Daten geladen
 GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = Gravitätsfeld-Normalisierung hat einen underflow für Degree {0} und Order {1}
 
 # no ocean tide data loaded
-NO_OCEAN_TIDE_DATA_LOADED = <MISSING TRANSLATION>
+NO_OCEAN_TIDE_DATA_LOADED = keine Gezeitendaten geladen
 
 # ocean tide data file {0} limited to degree {1} and order {2}
-OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = Gezeitendatendatei {0} ist begrenzt auf Degree {1} und Order {2}
 
 # load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
-OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = <MISSING TRANSLATION>
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = Lastdeformierungs-Koeffizienten sind begrenzt bis Degree {0}, Element für Degree {1} aus Datei {2} kann nicht gelesen werden
 
 # polar trajectory (distance to polar axis: {0})
 POLAR_TRAJECTORY = polare Umlaufbahn (Entfernung zu Polachse: {0})
@@ -158,7 +158,7 @@ NO_TLE_DATA_AVAILABLE = keine TLE Daten verfügbar
 NOT_POSITIVE_SPACECRAFT_MASS = Masse des Raumfahrzeugs ist nicht positiv: {0} kg
 
 # too large eccentricity for propagation model: e = {0}
-TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = Exzentrizität zu groß für propagation (e: {0})
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = Exzentrizität zu groß für Propagation Modell (e: {0})
 
 # no solar activity available at {0}, data available only in range [{1}, {2}]
 NO_SOLAR_ACTIVITY_AT_DATE = kein Solaraktivität gültig am {0}, Daten nur in der Zeitspanne [{1}, {2}] verfügbar
@@ -170,13 +170,13 @@ NON_EXISTENT_MONTH = nicht existierender Monat {0}
 NON_EXISTENT_YEAR_MONTH_DAY = nicht existierendes Datum {0}-{1}-{2}
 
 # non-existent week date {0}-W{1}-{2}
-NON_EXISTENT_WEEK_DATE = nicht existentes Wochendatum {0}-W{1}-{2}
+NON_EXISTENT_WEEK_DATE = nicht existierendes Wochendatum {0}-W{1}-{2}
 
 # non-existent date {0}
 NON_EXISTENT_DATE = nicht existierendes Datum {0}
 
 # no day number {0} in year {1}
-NON_EXISTENT_DAY_NUMBER_IN_YEAR = kein Tagesnummer {0} im Jahr {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = nicht vorhandene Tagesnummer {0} für Jahr {1}
 
 # non-existent time {0}:{1}:{2}
 NON_EXISTENT_HMS_TIME = nicht existierende Stunde {0}:{1}:{2}
@@ -200,10 +200,10 @@ ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = Attitude Pointing Law zeigt nic
 ORBIT_AND_ATTITUDE_DATES_MISMATCH = Datum der Umlaufbahn ({0}) stimmt nicht mit den Lagedatum überein ({1})
 
 # frame ({0}) does not match frame ({1})
-FRAMES_MISMATCH = Koordinatennetz ({0}) stimmt nicht mit Koordinatennetz ({1}) überein ({1})
+FRAMES_MISMATCH = Koordinatennetz ({0}) stimmt nicht mit Koordinatennetz ({1}) überein
 
 # initial state not specified for orbit propagation
-INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = Anfangs Status nicht specifiziert für Orbit-propagation
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = Anfangs Status nicht spezifiziert für Orbit-propagation
 
 # propagator is not in ephemeris generation mode
 PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Propagator ist nicht in den Modus der Ephemeris-generation
@@ -212,25 +212,25 @@ PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Propagator ist nicht in den Modus 
 EVENT_DATE_TOO_CLOSE = Ereignisdatum {0}, grösser als {1} minus {3} Sekunden and kleiner als {2} plus {3} Sekunden, kann nicht addiert werden
 
 # unable to read header record from JPL ephemerides binary file {0}
-UNABLE_TO_READ_JPL_HEADER = Der Anfangskennsatz der JPL Ephemerides binary file {0} ist nicht lesebar
+UNABLE_TO_READ_JPL_HEADER = Die Kopfzeile der JPL Ephemerides Binärdatei {0} ist nicht lesbar
 
 # inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = wiederspruchliche Werte der Astronomischen Einheit in JPL-Ephemerides files: ({0} and {1})
+INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = widersprüchliche Werte der Astronomischen Einheit in JPL-Ephemerides Dateien: ({0} and {1})
 
 # inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
-INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = wiederspruchliche Werte des Erd-Mond-Quotient Einheit in JPL-Ephemerides files: ({0} and {1})
+INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = widersprüchliche Werte des Erd-Mond-Quotienten in JPL-Ephemerides Dateien: ({0} and {1})
 
 # no data loaded for celestial body {0}
 NO_DATA_LOADED_FOR_CELESTIAL_BODY = keine Daten geladen für Himmelskörper {0}
 
 # file {0} is not a JPL ephemerides binary file
-NOT_A_JPL_EPHEMERIDES_BINARY_FILE = Datei {0} ist kein JPL ephemerides binary file
+NOT_A_JPL_EPHEMERIDES_BINARY_FILE = Datei {0} ist keine JPL Ephemerides Binärdatei
 
 # file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
 NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = Datei {0} ist keine Marshall Solar Activity Future Estimation (MSAFE) Datei
 
 # no JPL ephemerides binary files found
-NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = kein JPL-Ephemerides Binärdateien gefunden
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = keine JPL-Ephemerides Binärdateien gefunden
 
 # out of range date for {0} ephemerides: {1}
 OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = Datum nicht im zulässigen Bereich für {0} ephemerides: {1}
@@ -245,10 +245,13 @@ UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = unerwartet zwei Höhenwerte: {
 UNSUPPORTED_PARAMETER_NAME = nicht unterstützter Parametername {0}, unterstützte Namen {1}
 
 # unknown additional state "{0}"
-UNKNOWN_ADDITIONAL_STATE = unbekannte zusätzliche Gleichung "{0}"
+UNKNOWN_ADDITIONAL_STATE = unbekannter zusätzlicher Zustand "{0}"
 
 # unknown month "{0}"
 UNKNOWN_MONTH = unbekannter Monat "{0}"
+
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = Jacobi Matrix des Typs {0} ist singulär für die aktuelle Umlaufbahn
 
 # state Jacobian has not been initialized yet
 STATE_JACOBIAN_NOT_INITIALIZED = Jacobi Zustandsmatrix wurde noch nicht initialisiert
@@ -260,10 +263,10 @@ STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Jacobi Zustandsmatrix ist eine {0}x{1} Matr
 STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Jacobi Zustandsmatrix hat {0} Zeilen, aber Jacobi Parametermatrix hat {1} Zeilen
 
 # finite differences steps for force models derivatives not initialized
-STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = endliche Differenzschritte fur Kräftemodell Ableitungen nicht initialisiert
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = endliche Differenzschritte für Ableitungen des Kräftemodell wurden nicht initialisiert
 
 # initial Jacobian matrix has {0} columns, but {1} parameters have been selected
-INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = Initiale Jacobi-Matrix hat {0} Spalten, aber {1} Parameter wurden selektiert
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = Initiale Jacobi Matrix hat {0} Spalten, aber {1} Parameter wurden selektiert
 
 # orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
 ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = Orbit sollte entweder elliptisch (a > 0 und e < 1), oder hyperbolisch (a < 1 und e > 1) sein, a = {0}, e = {1}
@@ -281,25 +284,25 @@ CCSDS_DATE_INVALID_PREAMBLE_FIELD = ungültiges Präambel Feld in CCSDS Datum: {
 CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = ungültige Länge des Zeitfelds in CCSDS Datum: {0}, erwartet {1}
 
 # missing agency epoch in CCSDS date
-CCSDS_DATE_MISSING_AGENCY_EPOCH = fehlende Agency Epoche in CCSDS Datum
+CCSDS_DATE_MISSING_AGENCY_EPOCH = fehlende Agentur Epoche in CCSDS Datum
 
 # unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
-CCSDS_UNEXPECTED_KEYWORD = <MISSING TRANSLATION>
+CCSDS_UNEXPECTED_KEYWORD = unerwartetes Schlüsselwort in CCSDS Zeilennummer {0} in Datei {1}:\n{2}
 
-# the central body gravitational coefficient cannot be retrieved from the OPM
-CCSDS_UNKNOWN_GM = <MISSING TRANSLATION>
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = der Gravitationskoeffizient des Zentralkörpers kann nicht aus den ODM Daten gelesen werden
 
 # there is no spacecraft mass associated with this ODM file
-CCSDS_UNKNOWN_SPACECRAFT_MASS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_SPACECRAFT_MASS = keine Satellitenmasse definiert in dieser ODM Datei
 
 # no IERS conventions have been set before parsing
-CCSDS_UNKNOWN_CONVENTIONS = <MISSING TRANSLATION>
+CCSDS_UNKNOWN_CONVENTIONS = es wurden keine IERS Richtlinien eingestellt vor dem Parsen
 
 # frame {0} is not valid in this ODM file context
-CCSDS_INVALID_FRAME = <MISSING TRANSLATION>
+CCSDS_INVALID_FRAME = Koordinatennetz {0} ist nicht gültig im Kontext dieser ODM Datei
 
 # inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
-CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = <MISSING TRANSLATION>
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = inkonsistente Zeitreferenz im Ephemeris-Block: {0} ≠ {1}
 
 # name "{0}" is already used for an additional state
 ADDITIONAL_STATE_NAME_ALREADY_IN_USE = Name "{0}" wird bereits für einen anderen Zustand verwendet

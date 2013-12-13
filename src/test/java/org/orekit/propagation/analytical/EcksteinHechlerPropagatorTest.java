@@ -55,7 +55,7 @@ import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.ElevationDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.NodeDetector;
-import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
@@ -599,7 +599,7 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, provider);
         Frame itrf =  FramesFactory.getITRF(IERSConventions.IERS_2010, true);
-        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new DetectorContinueOnEvent<NodeDetector>()));
+        propagator.addEventDetector(new NodeDetector(orbit, itrf).withHandler(new ContinueOnEvent<NodeDetector>()));
         AbsoluteDate farTarget = orbit.getDate().shiftedBy(10000.0);
         SpacecraftState propagated = propagator.propagate(farTarget);
         Assert.assertEquals(0.0, FastMath.abs(farTarget.durationFrom(propagated.getDate())), 1.0e-3);

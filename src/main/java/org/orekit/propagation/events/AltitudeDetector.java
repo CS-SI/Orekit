@@ -21,17 +21,19 @@ import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinates;
 
 /** Finder for satellite altitude crossing events.
  * <p>This class finds altitude events (i.e. satellite crossing
  * a predefined altitude level above ground).</p>
- * <p>The default implementation behavior is to {@link EventDetector.Action#CONTINUE
- * continue} propagation when ascending and to {@link EventDetector.Action#STOP
- * stop} propagation when descending. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * <p>The default implementation behavior is to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE
+ * continue} propagation when ascending and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop}
+ * propagation when descending. This can be changed by calling
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @author Luc Maisonobe
  */
@@ -89,7 +91,7 @@ public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDet
                             final double threshold,
                             final double altitude,
                             final BodyShape bodyShape) {
-        this(maxCheck, threshold, new DetectorStopOnDecreasing<AltitudeDetector>(),
+        this(maxCheck, threshold, DEFAULT_MAX_ITER, new StopOnDecreasing<AltitudeDetector>(),
              altitude, bodyShape);
     }
 
@@ -101,27 +103,26 @@ public class AltitudeDetector extends AbstractReconfigurableDetector<AltitudeDet
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param altitude threshold altitude value (m)
      * @param bodyShape body shape with respect to which altitude should be evaluated
      * @since 6.1
      */
-    private AltitudeDetector(final double maxCheck,
-                             final double threshold,
-                             final DetectorEventHandler<AltitudeDetector> handler,
+    private AltitudeDetector(final double maxCheck, final double threshold,
+                             final int maxIter, final EventHandler<AltitudeDetector> handler,
                              final double altitude,
                              final BodyShape bodyShape) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.altitude  = altitude;
         this.bodyShape = bodyShape;
     }
 
     /** {@inheritDoc} */
     @Override
-    protected AltitudeDetector create(final double newMaxCheck,
-                                      final double newThreshold,
-                                      final DetectorEventHandler<AltitudeDetector> newHandler) {
-        return new AltitudeDetector(newMaxCheck, newThreshold, newHandler,
+    protected AltitudeDetector create(final double newMaxCheck, final double newThreshold,
+                                      final int newMaxIter, final EventHandler<AltitudeDetector> newHandler) {
+        return new AltitudeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                     altitude, bodyShape);
     }
 

@@ -25,7 +25,7 @@ Attitudes
   frame along with their derivatives. This container is similar in spirit to the various
   extensions of the abstract Orbit class: it represents a state at a specific instant.
 
-  In order to represent attitude evolution in time, the AttitudeLaw interface 
+  In order to represent attitude evolution in time, the AttitudeProvider interface 
   is available. 
   At a higher level, attitude laws defined by a ground pointing law are also available. 
   This corresponds to a "real" situation where satellite attitude law is defined in order
@@ -34,45 +34,49 @@ Attitudes
   Finally, there exist attitude laws that wrap a "base" attitude law, and add to this 
   base attitude law a complementary rotation in order to fulfill specific mission constraints.
 
-* Description of attitudes laws  
+* Description of attitudes providers  
 
 ** "Basic" attitude laws
 
-  ** inertial law, which represents an inertial attitude law, perfectly 
+  ** InertialProvider, which represents an inertial attitude law, perfectly 
   aligned with the EME2000 frame.
   
-  ** fixed rate law, which represents a rotation around a fixed axis at
+  ** FixedRate, which represents a rotation around a fixed axis at
   constant rate.
   
-  ** celestial body pointed, i.e satellite pointing axis directed towards given 
+  ** CelestialBodyPointed, i.e satellite pointing axis directed towards given 
   celestial body.
     
-  ** spin stabilized law, which is handled as a wrapper for an underlying
+  ** SpinStabilized, which is handled as a wrapper for an underlying
   non-rotating law. This underlying law is typically an instance
   of CelestialBodyPointed with the pointing axis equal to
   the rotation axis, but can in fact be anything...
   
-  ** lof offset law, defined as a given angular offset from local orbital 
-     frame at given date.
-  
+  ** LofOffset, defined as a given angular offset around three axes from local orbital 
+  frame at given date.
+
+  ** TabulatedProvider, defined by interpolating within a user-provided ephemerides,
+  using any number of interpolation points and either using or ignoring the
+  tabulated rotation rates.
+
 ** Ground pointing laws
 
   These classes are designed to represent attitude laws used to fulfill pointing missions.
   Several pointing laws are modelized :
   
-   ** body center pointing law, i.e satellite pointing axis directed towards 
+   ** BodyCenterPointing, where satellite pointing axis is directed towards 
       reference body frame center.
     
-   ** lof offset pointing, defined by a lof offset simple attitude law 
+   ** LofOffsetPointing, defined by a lof offset simple attitude law 
       and completed with ground pointing corresponding functions.
     
-   ** nadir pointing, i.e. satellite pointing axis aligned on subtrack 
+   ** NadirPointing, where satellite pointing axis is aligned on subtrack 
       point vertical direction.
     
-   ** target pointing, i.e. satellite pointing axis directed towards given 
+   ** TargetPointing, where satellite pointing axis is directed towards given 
       point on reference body shape.
 
-   ** ground pointing wrapper, which is an abstract class used for complex pointing 
+   ** GroundPointingWrapper, which is an abstract class used for complex pointing 
    laws described herebelow.
 
   All these ground pointing laws are relative to corresponding body frame,
@@ -88,14 +92,14 @@ Attitudes
   mission constraints. They are gathered under abstract class <GroundPointingWrapper>.
   At this point, implemented laws of this kind are:
   
-  ** yaw compensation law: this law is used to fulfill ground observation constraints
+  ** YawCompensation: this law is used to fulfill ground observation constraints
   that reduce geometrical distortion. Yaw angle is changed a little from 
   the basic ground pointing attitude, so that the apparent motion of ground points is 
   along a prescribed axis (orthogonal to the optical sensors rows), taking into account 
   all effects. It is the impact of earth proper rotation on ground points that is 
   compensated.
 
-  ** yaw steering law: this law is mainly used for low Earth orbiting satellites 
+  ** YawSteering: this law is mainly used for low Earth orbiting satellites 
   with no mission-related constraints on yaw angle. It sets the yaw angle in
   such a way that the solar arrays have maximal lighting without changing the
   roll and pitch.
@@ -107,9 +111,13 @@ Attitudes
   an active state. When one of the switch events associated with the active law occurs,
   the active law becomes the one specified with the event.
 
+  It is possible to have perpetually alternating laws, for example when eclipse entry
+  triggers a switch from a day light attitude to a night attitude and eclipse exit
+  triggers the reverse (possibly with intermediate transition modes).
+
 * Package organization
 
-[../images/attitudes.png]
+[../images/design/attitude-class-diagram.png]
 
 * Authors
 

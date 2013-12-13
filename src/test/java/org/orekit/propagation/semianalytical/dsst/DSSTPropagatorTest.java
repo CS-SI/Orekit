@@ -31,12 +31,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.attitudes.LofOffset;
+import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.bodies.OneAxisEllipsoid;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.HarrisPriester;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
+import org.orekit.forces.gravity.potential.ICGEMFormatReader;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.maneuvers.ImpulseManeuver;
 import org.orekit.frames.Frame;
@@ -50,10 +52,9 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.DateDetector;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.events.EventDetector.Action;
 import org.orekit.propagation.events.NodeDetector;
-import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.EventHandler.Action;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTAtmosphericDrag;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTCentralBody;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
@@ -69,7 +70,6 @@ import org.orekit.utils.PVCoordinates;
 public class DSSTPropagatorTest {
 
     private DSSTPropagator dsstProp;
-    private boolean        gotHere;
 
     @Test
     public void testNoExtrapolation() throws OrekitException {
@@ -160,7 +160,7 @@ public class DSSTPropagatorTest {
 
         // Add impulse maneuver
         dsstProp.setAttitudeProvider(new LofOffset(initialOrbit.getFrame(), LOFType.VVLH));
-        dsstProp.addEventDetector(new ImpulseManeuver(new NodeDetector(initialOrbit, FramesFactory.getEME2000()), new Vector3D(dv, Vector3D.PLUS_J), 400.0));
+        dsstProp.addEventDetector(new ImpulseManeuver<NodeDetector>(new NodeDetector(initialOrbit, FramesFactory.getEME2000()), new Vector3D(dv, Vector3D.PLUS_J), 400.0));
         SpacecraftState propagated = dsstProp.propagate(initialOrbit.getDate().shiftedBy(8000));
 
         Assert.assertEquals(0.0028257, propagated.getI(), 1.0e-6);
@@ -393,18 +393,11 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         final AbsoluteDate stopDate = state.getDate().shiftedBy(1000);
-        dsstProp.addEventDetector(new DateDetector(stopDate).withHandler(new DetectorEventHandler<DateDetector>() {
-            public Action eventOccurred(SpacecraftState s, DateDetector detector, boolean increasing) {
-                setGotHere(true);
-                return EventDetector.Action.STOP;
-            }
-            public SpacecraftState resetState(DateDetector detector, SpacecraftState oldState) {
-                return new SpacecraftState(oldState.getOrbit(), oldState.getAttitude(), oldState.getMass() - 200.0);
-            }
-        }));
-        Assert.assertFalse(gotHere);
+        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.STOP);
+        dsstProp.addEventDetector(new DateDetector(stopDate).withHandler(checking));
+        checking.assertEvent(false);
         final SpacecraftState finalState = dsstProp.propagate(state.getDate().shiftedBy(3200));
-        Assert.assertTrue(gotHere);
+        checking.assertEvent(true);
         Assert.assertEquals(0, finalState.getDate().durationFrom(stopDate), 1.0e-10);
     }
 
@@ -414,16 +407,12 @@ public class DSSTPropagatorTest {
         setDSSTProp(state);
 
         final AbsoluteDate resetDate = state.getDate().shiftedBy(1000);
-        dsstProp.addEventDetector(new DateDetector(resetDate).withHandler(new DetectorContinueOnEvent<DateDetector>() {
-           public EventDetector.Action eventOccurred(SpacecraftState s, DateDetector dd, boolean increasing) {
-                setGotHere(true);
-                return EventDetector.Action.CONTINUE;
-            }
-        }));
+        CheckingHandler<DateDetector> checking = new CheckingHandler<DateDetector>(Action.CONTINUE);
+        dsstProp.addEventDetector(new DateDetector(resetDate).withHandler(checking));
         final double dt = 3200;
-        Assert.assertFalse(gotHere);
+        checking.assertEvent(false);
         final SpacecraftState finalState = dsstProp.propagate(state.getDate().shiftedBy(dt));
-        Assert.assertTrue(gotHere);
+        checking.assertEvent(true);
         final double n = FastMath.sqrt(state.getMu() / state.getA()) / state.getA();
         Assert.assertEquals(state.getA(), finalState.getA(), 1.0e-10);
         Assert.assertEquals(state.getEquinoctialEx(), finalState.getEquinoctialEx(), 1.0e-10);
@@ -433,8 +422,36 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(state.getLM() + n * dt, finalState.getLM(), 6.0e-10);
     }
 
-    private void setGotHere(boolean gotHere) {
-        this.gotHere = gotHere;
+    @Test
+    public void testIssue157() throws OrekitException {
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        UnnormalizedSphericalHarmonicsProvider nshp = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        Orbit orbit = new KeplerianOrbit(13378000, 0.05, 0, 0, FastMath.PI, 0, PositionAngle.MEAN,
+                                         FramesFactory.getTOD(false),
+                                         new AbsoluteDate(2003, 5, 6, TimeScalesFactory.getUTC()),
+                                         nshp.getMu());
+        double period = orbit.getKeplerianPeriod();
+        double[][] tolerance = DSSTPropagator.tolerances(1.0, orbit);
+        AdaptiveStepsizeIntegrator integrator =
+                new DormandPrince853Integrator(period / 100, period * 100, tolerance[0], tolerance[1]);
+        integrator.setInitialStepSize(10 * period);
+        DSSTPropagator propagator = new DSSTPropagator(integrator);
+        OneAxisEllipsoid earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                      Constants.WGS84_EARTH_FLATTENING,
+                                                      FramesFactory.getGTOD(false));
+        CelestialBody sun = CelestialBodyFactory.getSun();
+        CelestialBody moon = CelestialBodyFactory.getMoon();
+        propagator.addForceModel(new DSSTCentralBody(earth.getBodyFrame(), Constants.WGS84_EARTH_ANGULAR_VELOCITY, nshp));
+        propagator.addForceModel(new DSSTThirdBody(sun));
+        propagator.addForceModel(new DSSTThirdBody(moon));
+        propagator.addForceModel(new DSSTAtmosphericDrag(new HarrisPriester(sun, earth), 2.1, 180));
+        propagator.addForceModel(new DSSTSolarRadiationPressure(1.2, 180, sun, earth.getEquatorialRadius()));
+
+        propagator.resetInitialState(new SpacecraftState(orbit, 45.0));
+        SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
+        Assert.assertEquals(8758.8, orbit.getA() - finalState.getA(), 10.0);
+
     }
 
     private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {
@@ -475,16 +492,40 @@ public class DSSTPropagatorTest {
 
     }
 
+    private static class CheckingHandler<T extends EventDetector> implements EventHandler<T> {
+
+        private final Action actionOnEvent;
+        private boolean gotHere;
+
+        public CheckingHandler(final Action actionOnEvent) {
+            this.actionOnEvent = actionOnEvent;
+            this.gotHere       = false;
+        }
+
+        public void assertEvent(boolean expected) {
+            Assert.assertEquals(expected, gotHere);
+        }
+
+        public Action eventOccurred(SpacecraftState s, T detector, boolean increasing) {
+            gotHere = true;
+            return actionOnEvent;
+        }
+
+        public SpacecraftState resetState(T detector, SpacecraftState oldState)
+            throws OrekitException {
+            return oldState;
+        }
+
+    }
+
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        gotHere = false;
     }
 
     @After
     public void tearDown() {
         dsstProp = null;
-        gotHere  = false;
     }
 
 }

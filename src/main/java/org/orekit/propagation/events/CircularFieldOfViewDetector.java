@@ -19,17 +19,18 @@ package org.orekit.propagation.events;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
-import org.orekit.propagation.events.handlers.DetectorStopOnDecreasing;
+import org.orekit.propagation.events.handlers.EventHandler;
+import org.orekit.propagation.events.handlers.StopOnDecreasing;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Finder for target entry/exit events with respect to a satellite sensor Field Of View.
  * <p>This class handle fields of view with a circular boundary.</p>
  * <p>The default implementation behavior is to {@link
- * EventDetector.Action#CONTINUE continue} propagation at FOV entry and to
- * {@link EventDetector.Action#STOP stop} propagation
+ * org.orekit.propagation.events.handlers.EventHandler.Action#CONTINUE continue}
+ * propagation at FOV entry and to {@link
+ * org.orekit.propagation.events.handlers.EventHandler.Action#STOP stop} propagation
  * at FOV exit. This can be changed by calling
- * {@link #withHandler(DetectorEventHandler)} after construction.</p>
+ * {@link #withHandler(EventHandler)} after construction.</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see DihedralFieldOfViewDetector
  * @author V&eacute;ronique Pommier-Maurussane
@@ -58,8 +59,10 @@ public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<
      * @param halfAperture FOV half aperture angle
      */
     public CircularFieldOfViewDetector(final double maxCheck,
-            final PVCoordinatesProvider pvTarget, final Vector3D center, final double halfAperture) {
-        this(maxCheck, 1.0e-3, new DetectorStopOnDecreasing<CircularFieldOfViewDetector>(),
+                                       final PVCoordinatesProvider pvTarget,
+                                       final Vector3D center,
+                                       final double halfAperture) {
+        this(maxCheck, 1.0e-3, DEFAULT_MAX_ITER, new StopOnDecreasing<CircularFieldOfViewDetector>(),
              pvTarget, center, halfAperture);
     }
 
@@ -71,19 +74,19 @@ public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param pvTarget Position/velocity provider of the considered target
      * @param center Direction of the FOV center, in spacecraft frame
      * @param halfAperture FOV half aperture angle
      * @since 6.1
      */
-    private CircularFieldOfViewDetector(final double maxCheck,
-                                        final double threshold,
-                                        final DetectorEventHandler<CircularFieldOfViewDetector> handler,
+    private CircularFieldOfViewDetector(final double maxCheck, final double threshold,
+                                        final int maxIter, final EventHandler<CircularFieldOfViewDetector> handler,
                                         final PVCoordinatesProvider pvTarget,
                                         final Vector3D center,
                                         final double halfAperture) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.targetPVProvider = pvTarget;
         this.center           = center;
         this.halfAperture     = halfAperture;
@@ -91,10 +94,9 @@ public class CircularFieldOfViewDetector extends AbstractReconfigurableDetector<
 
     /** {@inheritDoc} */
     @Override
-    protected CircularFieldOfViewDetector create(final double newMaxCheck,
-                                                 final double newThreshold,
-                                                 final DetectorEventHandler<CircularFieldOfViewDetector> newHandler) {
-        return new CircularFieldOfViewDetector(newMaxCheck, newThreshold, newHandler,
+    protected CircularFieldOfViewDetector create(final double newMaxCheck, final double newThreshold,
+                                                 final int newMaxIter, final EventHandler<CircularFieldOfViewDetector> newHandler) {
+        return new CircularFieldOfViewDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
                                                targetPVProvider, center, halfAperture);
     }
 

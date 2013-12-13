@@ -37,7 +37,8 @@ import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.events.EclipseDetector;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventsLogger;
-import org.orekit.propagation.events.handlers.DetectorContinueOnEvent;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
@@ -69,13 +70,13 @@ public class AttitudesSequenceTest {
         final PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
         final PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
         final EclipseDetector ed = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS);
-        final EventDetector dayNightEvent = logger.monitorDetector(ed.withHandler(new DetectorContinueOnEvent<EclipseDetector>() {
-            public EventDetector.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
+        final EventDetector dayNightEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>() {
+            public EventHandler.Action eventOccurred(final SpacecraftState s, final EclipseDetector d, final boolean increasing) {
                 setInEclipse(s.getDate(), !increasing);
-                return EventDetector.Action.CONTINUE;
+                return EventHandler.Action.CONTINUE;
             }
         }));
-        final EventDetector nightDayEvent = logger.monitorDetector(ed.withHandler(new DetectorContinueOnEvent<EclipseDetector>()));
+        final EventDetector nightDayEvent = logger.monitorDetector(ed.withHandler(new ContinueOnEvent<EclipseDetector>()));
         attitudesSequence.addSwitchingCondition(dayObservationLaw, dayNightEvent, false, true, nightRestingLaw);
         attitudesSequence.addSwitchingCondition(nightRestingLaw, nightDayEvent, true, false, dayObservationLaw);
         if (dayNightEvent.g(new SpacecraftState(initialOrbit)) >= 0) {

@@ -28,10 +28,10 @@ Bodies
   the Moon, the eight planets and the Pluto dwarf planet are the supported bodies. In
   addition to these real bodies, two points are supported for convenience as if they
   were real bodies: the solar system barycenter and the Earth-Moon barycenter.
-  By default, the <CelestialBodyFactory> relies on the JPL DE 405 or DE 406 binary
-  ephemerides files to compute all positions and velocities (note that the binary files
-  are used, not the ASCII ones, regardless of the processor endianness). This can be
-  overridden by defining a user specific loader for JPL ephemerides.
+  By default, the <CelestialBodyFactory> retrieve positions and velocities from binary
+  ephemerides files compatible with the the JPL DE formats like DE 405, DE 406, DE 423 ...
+  as well as the IMCCE Inpop ephemerides which share a similar format. This default
+  handling can be overridden by defining a user specific loader for JPL ephemerides.
 
 [../images/design/celestial-bodies-class-diagram.png]
 
@@ -48,8 +48,10 @@ Vector3D moonInEME2000 =
 +---------------------
 
   Since the supported bodies implement the <CelestialBody> interface, they all provide
-  their own body-centered inertial frame, hence adding a few more frames to the ones
-  provided by the frames package. Since the frames tree is rooted at an Earth-centered
+  their own body-centered inertially-oriented frame and their own body-centered
+  body-oriented frame, hence adding a few more frames to the ones
+  provided by the frames package. The body-oriented frames use the IAU pole and
+  prime meridian definition. Since the frames tree is rooted at an Earth-centered
   frame, the solar system bodies frames tree does not seem to be in canonical form. This of
   course is only a side effect of the arbitrary choice of GCRF as the root frame and has
   no effect at all on computations. The solar system bodies frames tree is shown below:
@@ -69,7 +71,7 @@ Vector3D moonInEME2000 =
   like planets or the Sun.
 
   For asteroids, it is expected that users will provide their own shape models, for example
-  based on triangulation. They should implement the <BodyShape> interface in order to
+  based on tessellation. They should implement the <BodyShape> interface in order to
   be used by Orekit.
 
 **  Geodetic coordinates
@@ -77,7 +79,8 @@ Vector3D moonInEME2000 =
   When using <OneAxisEllipsoid> body representation, points are generally described in 
   associated body frame, by so-called <geodetic> coordinates (longitude, latitude, altitude). 
   The <GeodeticPoint> class allows handling of such coordinates. It is a simple container
-  that does not provide processing methods.
+  that does not provide processing methods except basic computation of canonical topocentric
+  directions (Zenith/Nadir, East/West, North/South).
  
 * Authors
 

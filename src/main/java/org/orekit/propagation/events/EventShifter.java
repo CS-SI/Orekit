@@ -19,7 +19,7 @@ package org.orekit.propagation.events;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
-import org.orekit.propagation.events.handlers.DetectorEventHandler;
+import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 
 /** Wrapper shifting events occurrences times.
@@ -34,15 +34,16 @@ import org.orekit.time.AbsoluteDate;
  * and a negative times shift for decreasing events (eclipse entry).</p>
  * @see org.orekit.propagation.Propagator#addEventDetector(EventDetector)
  * @see EventDetector
+ * @param <T> class type for the generic version
  * @author Luc Maisonobe
  */
-public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
+public class EventShifter<T extends EventDetector> extends AbstractReconfigurableDetector<EventShifter<T>> {
 
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
 
     /** Event detector for the raw unshifted event. */
-    private final EventDetector detector;
+    private final T detector;
 
     /** Indicator for using shifted or unshifted states at event occurrence. */
     private final boolean useShiftedStates;
@@ -69,9 +70,10 @@ public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
      * @param increasingTimeShift increasing events time shift.
      * @param decreasingTimeShift decreasing events time shift.
      */
-    public EventShifter(final EventDetector detector, final boolean useShiftedStates,
+    public EventShifter(final T detector, final boolean useShiftedStates,
                         final double increasingTimeShift, final double decreasingTimeShift) {
-        this(detector.getMaxCheckInterval(), detector.getThreshold(), new LocalHandler(),
+        this(detector.getMaxCheckInterval(), detector.getThreshold(),
+             detector.getMaxIterationCount(), new LocalHandler<T>(),
              detector, useShiftedStates, increasingTimeShift, decreasingTimeShift);
     }
 
@@ -83,6 +85,7 @@ public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
      * </p>
      * @param maxCheck maximum checking interval (s)
      * @param threshold convergence threshold (s)
+     * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param detector event detector for the raw unshifted event
      * @param useShiftedStates if true, the state provided to {@link
@@ -94,10 +97,10 @@ public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
      * @since 6.1
      */
     private EventShifter(final double maxCheck, final double threshold,
-                         final DetectorEventHandler<EventShifter> handler,
-                         final EventDetector detector, final boolean useShiftedStates,
+                         final int maxIter, final EventHandler<EventShifter<T>> handler,
+                         final T detector, final boolean useShiftedStates,
                          final double increasingTimeShift, final double decreasingTimeShift) {
-        super(maxCheck, threshold, handler);
+        super(maxCheck, threshold, maxIter, handler);
         this.detector         = detector;
         this.useShiftedStates = useShiftedStates;
         this.increasingOffset = -increasingTimeShift;
@@ -106,11 +109,10 @@ public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
 
     /** {@inheritDoc} */
     @Override
-    protected EventShifter create(final double newMaxCheck,
-                                  final double newThreshold,
-                                  final DetectorEventHandler<EventShifter> newHandler) {
-        return new EventShifter(newMaxCheck, newThreshold, newHandler,
-                                detector, useShiftedStates, -increasingOffset, -decreasingOffset);
+    protected EventShifter<T> create(final double newMaxCheck, final double newThreshold,
+                                     final int newMaxIter, final EventHandler<EventShifter<T>> newHandler) {
+        return new EventShifter<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                   detector, useShiftedStates, -increasingOffset, -decreasingOffset);
     }
 
     /** Get the increasing events time shift.
@@ -141,14 +143,13 @@ public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
     }
 
     /** Local class for handling events. */
-    private static class LocalHandler implements DetectorEventHandler<EventShifter> {
+    private static class LocalHandler<T extends EventDetector> implements EventHandler<EventShifter<T>> {
 
         /** Shifted state at even occurrence. */
         private SpacecraftState shiftedState;
 
         /** {@inheritDoc} */
-        @SuppressWarnings("deprecation")
-        public Action eventOccurred(final SpacecraftState s, final EventShifter shifter, final boolean increasing)
+        public Action eventOccurred(final SpacecraftState s, final EventShifter<T> shifter, final boolean increasing)
             throws OrekitException {
 
             if (shifter.useShiftedStates) {
@@ -160,16 +161,31 @@ public class EventShifter extends AbstractReconfigurableDetector<EventShifter> {
                 shiftedState = s.shiftedBy(offset);
             }
 
-            return shifter.detector.eventOccurred(shiftedState, increasing);
+            if (shifter.detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) shifter.detector).getHandler();
+                return handler.eventOccurred(shiftedState, shifter.detector, increasing);
+            } else {
+                @SuppressWarnings("deprecation")
+                final EventDetector.Action a = shifter.detector.eventOccurred(shiftedState, increasing);
+                return AbstractReconfigurableDetector.convert(a);
+            }
 
         }
 
         /** {@inheritDoc} */
         @Override
-        @SuppressWarnings("deprecation")
-        public SpacecraftState resetState(final EventShifter shifter, final SpacecraftState oldState)
+        public SpacecraftState resetState(final EventShifter<T> shifter, final SpacecraftState oldState)
             throws OrekitException {
-            return shifter.detector.resetState(shiftedState);
+            if (shifter.detector instanceof AbstractReconfigurableDetector) {
+                @SuppressWarnings("unchecked")
+                final EventHandler<T> handler = ((AbstractReconfigurableDetector<T>) shifter.detector).getHandler();
+                return handler.resetState(shifter.detector, shiftedState);
+            } else {
+                @SuppressWarnings("deprecation")
+                final SpacecraftState newState = shifter.detector.resetState(shiftedState);
+                return newState;
+            }
         }
 
     }
