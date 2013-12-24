@@ -22,6 +22,11 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" >
+        Improved default max check interval for NodeDetector, so it handles correctly
+        highly eccentric orbits.
+        Fixes issue #158.
+      </action>
     </release>
     <release version="6.1" date="2013-12-13"
              description="Version 6.1 is a minor release of Orekit. It introduces several new
