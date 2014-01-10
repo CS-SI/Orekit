@@ -23,6 +23,10 @@
     <release version="7.0" date="TBD"
              description="TBD">
       <action dev="luc" type="fix" >
+        Fixed a missing reset of resonant tesseral terms in DSST propagation.
+        Fixes issue #159.
+      </action>
+      <action dev="luc" type="fix" >
         Improved default max check interval for NodeDetector, so it handles correctly
         highly eccentric orbits.
         Fixes issue #158.

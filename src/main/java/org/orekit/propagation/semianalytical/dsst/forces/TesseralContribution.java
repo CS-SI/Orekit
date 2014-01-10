@@ -326,6 +326,7 @@ class TesseralContribution implements DSSTForceModel {
                                                    MIN_PERIOD_IN_SECONDS / orbitPeriod);
 
         // Search the resonant orders in the tesseral harmonic field
+        resOrders.clear();
         final int maxOrder = provider.getMaxOrder();
         for (int m = 1; m <= maxOrder; m++) {
             final double resonance = ratio * m;
