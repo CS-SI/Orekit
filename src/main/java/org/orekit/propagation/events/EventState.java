@@ -237,9 +237,13 @@ public class EventState<T extends EventDetector> implements Serializable {
                         (FastMath.abs(root.durationFrom(ta)) <= convergence) &&
                         (FastMath.abs(root.durationFrom(previousEventTime)) <= convergence)) {
                         // we have either found nothing or found (again ?) a past event,
-                        // retry the substep excluding this value
-                        ta = forward ? ta.shiftedBy(convergence) : ta.shiftedBy(-convergence);
-                        ga = f.value(ta.durationFrom(t0));
+                        // retry the substep excluding this value, and taking care to have the
+                        // required sign in case the g function is noisy around its zero and
+                        // crosses the axis several times
+                        do {
+                            ta = forward ? ta.shiftedBy(convergence) : ta.shiftedBy(-convergence);
+                            ga = f.value(ta.durationFrom(t0));
+                        } while ((g0Positive ^ (ga >= 0)) && (forward ^ (ta.compareTo(tb) >= 0)));
                         --i;
                     } else if ((previousEventTime == null) ||
                                (FastMath.abs(previousEventTime.durationFrom(root)) > convergence)) {

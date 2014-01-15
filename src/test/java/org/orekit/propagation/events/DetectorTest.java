@@ -24,12 +24,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.KeplerianPropagator;
+import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnEvent;
 import org.orekit.propagation.numerical.NumericalPropagator;
@@ -39,6 +42,7 @@ import org.orekit.time.TimeScale;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 public class DetectorTest {
 
@@ -171,6 +175,62 @@ public class DetectorTest {
         public double g(SpacecraftState s) {
             count++;
             return 1.0;
+        }
+
+    }
+
+    @Test
+    public void testNoisyGFunction() throws OrekitException {
+
+        // initial conditions
+        Frame eme2000 = FramesFactory.getEME2000();
+        TimeScale utc = TimeScalesFactory.getUTC();
+        AbsoluteDate initialDate   = new AbsoluteDate(2011, 5, 11, utc);
+        AbsoluteDate startDate     = new AbsoluteDate(2032, 10, 17, utc);
+        AbsoluteDate interruptDate = new AbsoluteDate(2032, 10, 18, utc);
+        AbsoluteDate targetDate    = new AbsoluteDate(2211, 5, 11, utc);
+        KeplerianPropagator k1 =
+                new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008462.4706055815, -3155502.5373837613, -5044275.9880020910),
+                                                                               new Vector3D(-5012.9298276860990, 1920.3567095973078, -5172.7403501801580)),
+                                                             eme2000, initialDate, Constants.WGS84_EARTH_MU));
+        KeplerianPropagator k2 =
+                new KeplerianPropagator(new EquinoctialOrbit(new PVCoordinates(new Vector3D(4008912.4039522274, -3155453.3125615157, -5044297.6484738905),
+                                                                               new Vector3D(-5012.5883854112530, 1920.6332221785074, -5172.2177085540500)),
+                                                             eme2000, initialDate, Constants.WGS84_EARTH_MU));
+        k2.addEventDetector(new CloseApproachDetector(2015.243454166727, 0.0001, 100,
+                                                      new ContinueOnEvent<CloseApproachDetector>(),
+                                                      k1));
+        k2.addEventDetector(new DateDetector(Constants.JULIAN_DAY, 1.0e-6, interruptDate));
+        SpacecraftState s = k2.propagate(startDate, targetDate);
+        Assert.assertEquals(interruptDate, s.getDate());
+    }
+
+    private static class CloseApproachDetector extends AbstractReconfigurableDetector<CloseApproachDetector> {
+
+        private static final long serialVersionUID = 1L;
+        private final PVCoordinatesProvider provider;
+
+        public CloseApproachDetector(double maxCheck, double threshold,
+                                     final int maxIter, final EventHandler<CloseApproachDetector> handler,
+                                     PVCoordinatesProvider provider) {
+            super(maxCheck, threshold, maxIter, handler);
+            this.provider = provider;
+        }
+
+        public double g(final SpacecraftState s) throws OrekitException {
+            PVCoordinates pv1     = provider.getPVCoordinates(s.getDate(), s.getFrame());
+            PVCoordinates pv2     = s.getPVCoordinates();
+            Vector3D deltaP       = pv1.getPosition().subtract(pv2.getPosition());
+            Vector3D deltaV       = pv1.getVelocity().subtract(pv2.getVelocity());
+            double radialVelocity = Vector3D.dotProduct(deltaP.normalize(), deltaV);
+            return radialVelocity;
+        }
+
+        protected CloseApproachDetector create(final double newMaxCheck, final double newThreshold,
+                                               final int newMaxIter,
+                                               final EventHandler<CloseApproachDetector> newHandler) {
+            return new CloseApproachDetector(newMaxCheck, newThreshold, newMaxIter, newHandler,
+                                             provider);
         }
 
     }

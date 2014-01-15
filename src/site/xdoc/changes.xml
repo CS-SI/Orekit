@@ -23,6 +23,10 @@
     <release version="7.0" date="TBD"
              description="TBD">
       <action dev="luc" type="fix" >
+        Fixed a non-bracketing exception in event detection, in some rare cases of noisy g function.
+        Fixes issue #160.
+      </action>
+      <action dev="luc" type="fix" >
         Fixed a missing reset of resonant tesseral terms in DSST propagation.
         Fixes issue #159.
       </action>
