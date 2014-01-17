@@ -214,9 +214,9 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                                                                        lineNumber, name, line);
                         }
                     } else if ((tab.length == 2) && GRAVITY_CONSTANT.equals(tab[0])) {
-                        setMu(Double.parseDouble(tab[1].replace('D', 'E')));
+                        setMu(parseDouble(tab[1]));
                     } else if ((tab.length == 2) && REFERENCE_RADIUS.equals(tab[0])) {
-                        setAe(Double.parseDouble(tab[1].replace('D', 'E')));
+                        setAe(parseDouble(tab[1]));
                     } else if ((tab.length == 2) && MAX_DEGREE.equals(tab[0])) {
 
                         final int degree = FastMath.min(getMaxParseDegree(), Integer.parseInt(tab[1]));

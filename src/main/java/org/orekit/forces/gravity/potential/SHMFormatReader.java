@@ -106,8 +106,8 @@ public class SHMFormatReader extends PotentialCoefficientsReader {
 
                     // read the earth values
                     if ("EARTH".equals(tab[0])) {
-                        setMu(Double.parseDouble(tab[1].replace('D', 'E')));
-                        setAe(Double.parseDouble(tab[2].replace('D', 'E')));
+                        setMu(parseDouble(tab[1]));
+                        setAe(parseDouble(tab[2]));
                         okEarth = true;
                     }
 
