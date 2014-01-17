@@ -327,8 +327,10 @@ public class ICGEMFormatReader extends PotentialCoefficientsReader {
                     }
                 }
             } catch (NumberFormatException nfe) {
-                throw OrekitException.createParseException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
-                                                           lineNumber, name, line);
+                final ParseException pe = OrekitException.createParseException(
+                        OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE, lineNumber, name, line);
+                pe.initCause(nfe);
+                throw pe;
             }
         }
 
