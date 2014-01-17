@@ -28,6 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
+import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenZonalLinear;
 import org.orekit.time.AbsoluteDate;
 
 /** Zonal contribution to the {@link DSSTCentralBody central body gravitational perturbation}.
@@ -102,6 +103,10 @@ class ZonalContribution implements DSSTForceModel {
     /** &mu; / a .*/
     private double muoa;
 
+    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
+     * The index is s*/
+    private HansenZonalLinear[] hansenObjects;
+
     /** Simple constructor.
      * @param provider provider for spherical harmonics
      */
@@ -124,6 +129,13 @@ class ZonalContribution implements DSSTForceModel {
 
         // Initialize default values
         this.maxEccPow = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
+
+        //Initialise the HansenCoefficient generator
+        this.hansenObjects = new HansenZonalLinear[maxDegree - 1];
+
+        for (int s = 0; s < maxDegree - 1; s++) {
+            this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
+        }
     }
 
     /** Get the spherical harmonics provider.
@@ -340,8 +352,6 @@ class ZonalContribution implements DSSTForceModel {
 
         final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
 
-        // Hansen coefficients
-        final HansenZonal hansen = new HansenZonal();
         // Gs and Hs coefficients
         final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
         // Qns coefficients
@@ -389,9 +399,11 @@ class ZonalContribution implements DSSTForceModel {
             for (int n = s + 2; n <= maxDegree; n++) {
                 // (n - s) must be even
                 if ((n - s) % 2 == 0) {
-                    // Extract data from previous computation :
-                    final double kns   = hansen.getValue(-n - 1, s);
-                    final double dkns  = hansen.getDerivative(-n - 1, s);
+
+                    //Extract data from previous computation :
+                    final double kns   = this.hansenObjects[s].getValue(-n - 1, X);
+                    final double dkns  = this.hansenObjects[s].getDerivative(-n - 1, X);
+
                     final double vns   = Vns.get(new NSKey(n, s));
                     final double coef0 = d0s * roaPow[n] * vns * -harmonics.getUnnormalizedCnm(n, 0);
                     final double coef1 = coef0 * Qns[n][s];
@@ -424,155 +436,4 @@ class ZonalContribution implements DSSTForceModel {
             dUdGa * -muoa
         };
     }
-
-    /** Hansen coefficients for zonal contribution to central body force model.
-     *  <p>
-     *  Hansen coefficients are functions of the eccentricity.
-     *  For a given eccentricity, the computed elements are stored in a map.
-     *  </p>
-     */
-    private class HansenZonal {
-
-        /** Map to store every Hansen coefficient computed. */
-        private TreeMap<NSKey, Double> coefficients;
-
-        /** Map to store every Hansen coefficient derivative computed. */
-        private TreeMap<NSKey, Double> derivatives;
-
-        /** Simple constructor. */
-        public HansenZonal() {
-            coefficients = new TreeMap<CoefficientsFactory.NSKey, Double>();
-            derivatives  = new TreeMap<CoefficientsFactory.NSKey, Double>();
-            initialize();
-        }
-
-        /** Get the K<sub>0</sub><sup>-n-1,s</sup> coefficient value.
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         *  @return K<sub>0</sub><sup>-n-1,s</sup>
-         */
-        public double getValue(final int mnm1, final int s) {
-            if (coefficients.containsKey(new NSKey(mnm1, s))) {
-                return coefficients.get(new NSKey(mnm1, s));
-            } else {
-                // Compute the K0(-n-1,s) coefficients
-                return computeValue(-mnm1 - 1, s);
-            }
-        }
-
-        /** Get the dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; coefficient derivative.
-         *  @param mnm1 -n-1 value
-         *  @param s s value
-         *  @return dK<sub>0</sub><sup>-n-1,s</sup> / d&chi;
-         */
-        public double getDerivative(final int mnm1, final int s) {
-            if (derivatives.containsKey(new NSKey(mnm1, s))) {
-                return derivatives.get(new NSKey(mnm1, s));
-            } else {
-                // Compute the dK0(-n-1,s) / dX derivative
-                return computeDerivative(-mnm1 - 1, s);
-            }
-        }
-
-        /** Kernels initialization. */
-        private void initialize() {
-            // coefficients
-//            coefficients.put(new NSKey(0, 0), 1.);
-            coefficients.put(new NSKey(-1, 0), 0.);
-            coefficients.put(new NSKey(-1, 1), 0.);
-            coefficients.put(new NSKey(-2, 0), X);
-            coefficients.put(new NSKey(-2, 1), 0.);
-            coefficients.put(new NSKey(-3, 0), XXX);
-            coefficients.put(new NSKey(-3, 1), 0.5 * XXX);
-            // derivatives
-            derivatives.put(new NSKey(-1, 0), 0.);
-            derivatives.put(new NSKey(-2, 0), 1.);
-            derivatives.put(new NSKey(-2, 1), 0.);
-            derivatives.put(new NSKey(-3, 1), 1.5 * XX);
-        }
-
-        /** Compute the K<sub>0</sub><sup>-n-1,s</sup> coefficient from equation 2.7.3-(6).
-         * @param n n  positive value. For a given 'n', the K<sub>0</sub><sup>-n-1,s</sup> is returned.
-         * @param s s value
-         * @return K<sub>0</sub><sup>-n-1,s</sup>
-         */
-        private double computeValue(final int n, final int s) {
-            // Initialize return value
-            double kns = 0.;
-
-            final NSKey key = new NSKey(-n - 1, s);
-
-            if (coefficients.containsKey(key)) {
-                kns = coefficients.get(key);
-            } else {
-                if (n == s) {
-                    kns = 0.;
-                } else if (n == (s + 1)) {
-                    kns = FastMath.pow(X, 1 + 2 * s) / FastMath.pow(2, s);
-                } else {
-                    final NSKey keymNS = new NSKey(-n, s);
-                    double kmNS = 0.;
-                    if (coefficients.containsKey(keymNS)) {
-                        kmNS = coefficients.get(keymNS);
-                    } else {
-                        kmNS = computeValue(n - 1, s);
-                    }
-
-                    final NSKey keymNp1S = new NSKey(-(n - 1), s);
-                    double kmNp1S = 0.;
-                    if (coefficients.containsKey(keymNp1S)) {
-                        kmNp1S = coefficients.get(keymNp1S);
-                    } else {
-                        kmNp1S = computeValue(n - 2, s);
-                    }
-
-                    kns = (n - 1.) * XX * ((2. * n - 3.) * kmNS - (n - 2.) * kmNp1S);
-                    kns /= (n + s - 1.) * (n - s - 1.);
-                }
-                // Add K(-n-1, s)
-                coefficients.put(key, kns);
-            }
-            return kns;
-        }
-
-        /** Compute dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; from Equation 3.1-(7).
-         *  @param n n positive value. For a given 'n', the dK<sub>0</sub><sup>-n-1,s</sup> / d&chi; is returned.
-         *  @param s s value
-         *  @return dK<sub>0</sub><sup>-n-1,s</sup> / d&chi;
-         */
-        private double computeDerivative(final int n, final int s) {
-            // Initialize return value
-            double dkdxns = 0.;
-
-            final NSKey key = new NSKey(-n - 1, s);
-            if (n == s) {
-                derivatives.put(key, 0.);
-            } else if (n == s + 1) {
-                dkdxns = (1. + 2. * s) * FastMath.pow(X, 2 * s) / FastMath.pow(2, s);
-            } else {
-                final NSKey keymN = new NSKey(-n, s);
-                double dkmN = 0.;
-                if (derivatives.containsKey(keymN)) {
-                    dkmN = derivatives.get(keymN);
-                } else {
-                    dkmN = computeDerivative(n - 1, s);
-                }
-                final NSKey keymNp1 = new NSKey(-n + 1, s);
-                double dkmNp1 = 0.;
-                if (derivatives.containsKey(keymNp1)) {
-                    dkmNp1 = derivatives.get(keymNp1);
-                } else {
-                    dkmNp1 = computeDerivative(n - 2, s);
-                }
-                final double kns = getValue(-n - 1, s);
-                dkdxns = (n - 1) * XX * ((2. * n - 3.) * dkmN - (n - 2.) * dkmNp1) / ((n + s - 1.) * (n - s - 1.));
-                dkdxns += 2. * kns / X;
-            }
-
-            derivatives.put(key, dkdxns);
-            return dkdxns;
-        }
-
-    }
-
 }
