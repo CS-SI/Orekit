@@ -130,12 +130,6 @@ class ZonalContribution implements DSSTForceModel {
         // Initialize default values
         this.maxEccPow = (maxDegree == 2) ? 0 : Integer.MIN_VALUE;
 
-        //Initialise the HansenCoefficient generator
-        this.hansenObjects = new HansenZonalLinear[maxDegree - 1];
-
-        for (int s = 0; s < maxDegree - 1; s++) {
-            this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
-        }
     }
 
     /** Get the spherical harmonics provider.
@@ -236,6 +230,12 @@ class ZonalContribution implements DSSTForceModel {
                     // Is the current spherical harmonic term bigger than the truncation tolerance ?
                     if (term >= TRUNCATION_TOLERANCE) {
                         maxEccPow = FastMath.min(maxDegree - 2, maxEccPow);
+                        //Initialise the HansenCoefficient generator
+                        this.hansenObjects = new HansenZonalLinear[maxEccPow + 1];
+
+                        for (int s = 0; s <= maxEccPow; s++) {
+                            this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
+                        }
                         return;
                     }
                     // Proceed to next order.
@@ -248,6 +248,14 @@ class ZonalContribution implements DSSTForceModel {
 
             maxEccPow = FastMath.min(maxDegree - 2, maxEccPow);
         }
+
+        //Initialise the HansenCoefficient generator
+        this.hansenObjects = new HansenZonalLinear[maxEccPow + 1];
+
+        for (int s = 0; s <= maxEccPow; s++) {
+            this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
+        }
+
     }
 
     /** {@inheritDoc} */
@@ -374,6 +382,9 @@ class ZonalContribution implements DSSTForceModel {
         double dUdGa = 0.;
 
         for (int s = 0; s <= maxEccPow; s++) {
+            //Initialise the Hansen roots
+            this.hansenObjects[s].computeInitValues(X);
+
             // Get the current Gs coefficient
             final double gs = GsHs[0][s];
 

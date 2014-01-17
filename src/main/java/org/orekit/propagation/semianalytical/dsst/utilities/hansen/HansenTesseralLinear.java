@@ -32,6 +32,10 @@ import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
  * @author Lucian Barbulescu
  */
 public class HansenTesseralLinear {
+
+    /** The number of coefficients that will be computed with a set of roots. */
+    private static final int SLICE = 10;
+
     /**
      * The first vector of polynomials associated to Hansen coefficients and
      * derivatives.
@@ -40,6 +44,12 @@ public class HansenTesseralLinear {
 
     /** The second vector of polynomials associated only to derivatives. */
     private PolynomialFunction[][] mpvecDeriv;
+
+    /** The Hansen coefficients used as roots. */
+    private double[][] hansenRoot;
+
+    /** The derivatives of the Hansen coefficients used as roots. */
+    private double[][] hansenDerivRoot;
 
     /** The minimum value for the order. */
     private int Nmin;
@@ -53,6 +63,9 @@ public class HansenTesseralLinear {
     /** The j coefficient. */
     private int j;
 
+    /** The number of slices needed to compute the coefficients. */
+    private int numSlices;
+
     /**
      * The offset used to identify the polynomial that corresponds to a negative.
      * value of n in the internal array that starts at 0
@@ -61,11 +74,6 @@ public class HansenTesseralLinear {
 
     /** The objects used to calculate initial data by means of newcomb operators. */
     private HansenCoefficientsBySeries[] hansenInit;
-
-    /** Initial values of Hansen coefficients. */
-    private double[] hansenValue;
-    /** Initial values of Hansen coefficients derivatives. */
-    private double[] hansenDeriv;
 
     /**
      * Constructor.
@@ -83,17 +91,18 @@ public class HansenTesseralLinear {
         this.s = s;
         this.j = j;
 
-        // Create the objects used to generate the initial values
-        this.hansenInit = new HansenCoefficientsBySeries[4];
-        for (int i = 0; i < 4; i++) {
-            this.hansenInit[i] = new HansenCoefficientsBySeries(N0 + i, s, j);
+        //Ensure that only the needed terms are computed
+        final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
+        this.hansenInit = new HansenCoefficientsBySeries[maxRoots];
+        for (int i = 0; i < maxRoots; i++) {
+            this.hansenInit[i] = new HansenCoefficientsBySeries(N0 - i + 3, s, j);
         }
-
-        this.hansenValue = new double[4];
-        this.hansenDeriv = new double[4];
 
         // The first 4 values are computed with series. No linear combination is needed.
         final int size = N0 - Nmin;
+        this.numSlices = (int) FastMath.max(FastMath.ceil(((double) size) / SLICE), 1);
+        hansenRoot = new double[numSlices][4];
+        hansenDerivRoot = new double[numSlices][4];
         if (size > 0) {
             mpvec = new PolynomialFunction[size][];
             mpvecDeriv = new PolynomialFunction[size][];
@@ -231,9 +240,6 @@ public class HansenTesseralLinear {
     private void generatePolynomials() {
 
 
-        // The matrix that contains the coefficients at each step
-        final PolynomialFunctionMatrix a = new PolynomialFunctionMatrix(4);
-
         // Initialization of the matrices for linear transformations
         // The final configuration of these matrices are obtained by composition
         // of linear transformations
@@ -245,6 +251,7 @@ public class HansenTesseralLinear {
         // The matrix of polynomials associated to derivatives, Petre's paper
         final PolynomialFunctionMatrix B = HansenUtilities.buildZeroMatrix4();
         PolynomialFunctionMatrix D = HansenUtilities.buildZeroMatrix4();
+        final PolynomialFunctionMatrix a = HansenUtilities.buildZeroMatrix4();
 
         // The matrix of the current linear transformation
         a.setMatrixLine(0, new PolynomialFunction[] {
@@ -258,6 +265,7 @@ public class HansenTesseralLinear {
         });
         // The generation process
         int index;
+        int sliceCounter = 0;
         for (int i = N0 - 1; i > Nmin - 1; i--) {
             index = i + this.offset;
             // The matrix of the current linear transformation is updated
@@ -287,6 +295,14 @@ public class HansenTesseralLinear {
             // store the polynomials for Hansen coefficients from the
             // expressions of derivatives
             mpvecDeriv[index] = D.getMatrixLine(3);
+
+            if (++sliceCounter % SLICE == 0) {
+                // Re-Initialisation of matrix for linear transformmations
+                // The final configuration of these matrix are obtained by composition
+                // of linear transformations
+                A = HansenUtilities.buildIdentityMatrix4();
+                D = HansenUtilities.buildZeroMatrix4();
+            }
         }
     }
 
@@ -299,10 +315,35 @@ public class HansenTesseralLinear {
      * @param precision the precision that will be used in the series
      */
     public void computeInitValues(final double e2, final double chi, final double chi2, final int precision) {
-        for (int i = 0; i < 4; i++) {
-            this.hansenValue[i] = this.hansenInit[i].getValue(e2, chi, chi2, precision);
-            this.hansenDeriv[i] = this.hansenInit[i].getDerivativeValue(e2, chi, chi2,
-                    precision, this.hansenValue[i]);
+        // compute the values for n, n+1, n+2 and n+3 by series
+        // See Danielson 2.7.3-(10)
+        //Ensure that only the needed terms are computed
+        final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
+        for (int i = 0; i < maxRoots; i++) {
+            this.hansenRoot[0][i] = hansenInit[i].getValue(e2, chi, chi2, precision);
+            this.hansenDerivRoot[0][i] = hansenInit[i].getDerivativeValue(e2, chi, chi2,
+                                                                          precision, hansenRoot[0][i]);
+        }
+
+        for (int i = 1; i < numSlices; i++) {
+            for (int k = 0; k < 4; k++) {
+                final PolynomialFunction[] mv = mpvec[N0 - (i * SLICE) - k + 3 + offset];
+                final PolynomialFunction[] sv = mpvecDeriv[N0 - (i * SLICE) - k + 3 + offset];
+
+                hansenDerivRoot[i][k] = mv[3].value(chi) * hansenDerivRoot[i - 1][3] +
+                                        mv[2].value(chi) * hansenDerivRoot[i - 1][2] +
+                                        mv[1].value(chi) * hansenDerivRoot[i - 1][1] +
+                                        mv[0].value(chi) * hansenDerivRoot[i - 1][0] +
+                                        sv[3].value(chi) * hansenRoot[i - 1][3] +
+                                        sv[2].value(chi) * hansenRoot[i - 1][2] +
+                                        sv[1].value(chi) * hansenRoot[i - 1][1] +
+                                        sv[0].value(chi) * hansenRoot[i - 1][0];
+
+                hansenRoot[i][k] =  mv[3].value(chi) * hansenRoot[i - 1][3] +
+                                    mv[2].value(chi) * hansenRoot[i - 1][2] +
+                                    mv[1].value(chi) * hansenRoot[i - 1][1] +
+                                    mv[0].value(chi) * hansenRoot[i - 1][0];
+            }
         }
     }
 
@@ -314,21 +355,32 @@ public class HansenTesseralLinear {
      * @return the coefficient K<sub>j</sub><sup>-n-1, s</sup>
      */
     public double getValue(final int mnm1, final double chi) {
+        //Compute n
+        final int n = -mnm1 - 1;
 
-        // Check if the required coefficient is one of the initialization values
-        final int i = mnm1 - N0;
-        if (i >= 0 && i < 4) {
-            return hansenValue[i];
+        //Compute the potential slice
+        int sliceNo = (n + N0 + 4) / SLICE;
+        if (sliceNo < numSlices) {
+            //Compute the index within the slice
+            final int indexInSlice = (n + N0 + 4) % SLICE;
+
+            //Check if a root must be returned
+            if (indexInSlice <= 3) {
+                return hansenRoot[sliceNo][indexInSlice];
+            }
+        } else {
+            //the value was a potential root for a slice, but that slice was not required
+            //Decrease the slice number
+            sliceNo--;
         }
 
         // Computes the coefficient by linear transformation
         // Danielson 2.7.3-(9) or Collins 4-236 and Petre's paper
-        final PolynomialFunction[] vv = mpvec[mnm1 + offset];
-        final double v0 = vv[0].value(chi);
-        final double v1 = vv[1].value(chi);
-        final double v2 = vv[2].value(chi);
-        final double v3 = vv[3].value(chi);
-        return v0 * hansenValue[3] + v1 * hansenValue[2] + v2 * hansenValue[1] + v3 * hansenValue[0];
+        final PolynomialFunction[] v = mpvec[mnm1 + offset];
+        return v[3].value(chi) * hansenRoot[sliceNo][3] +
+               v[2].value(chi) * hansenRoot[sliceNo][2] +
+               v[1].value(chi) * hansenRoot[sliceNo][1] +
+               v[0].value(chi) * hansenRoot[sliceNo][0];
 
     }
 
@@ -341,29 +393,38 @@ public class HansenTesseralLinear {
      */
     public double getDerivative(final int mnm1, final double chi) {
 
-        // Check if the required derivative is one of the initialization values
-        final int i = mnm1 - N0;
-        if (i >= 0 && i < 4) {
-            return hansenDeriv[i];
+        //Compute n
+        final int n = -mnm1 - 1;
+
+        //Compute the potential slice
+        int sliceNo = (n + N0 + 4) / SLICE;
+        if (sliceNo < numSlices) {
+            //Compute the index within the slice
+            final int indexInSlice = (n + N0 + 4) % SLICE;
+
+            //Check if a root must be returned
+            if (indexInSlice <= 3) {
+                return hansenDerivRoot[sliceNo][indexInSlice];
+            }
+        } else {
+            //the value was a potential root for a slice, but that slice was not required
+            //Decrease the slice number
+            sliceNo--;
         }
 
-        // Compute the derivative by linear transformation
-        // Collins 4-240 and Petre's paper
-        PolynomialFunction[] vv = mpvec[mnm1 + offset];
-        final double dv0 = vv[0].value(chi);
-        final double dv1 = vv[1].value(chi);
-        final double dv2 = vv[2].value(chi);
-        final double dv3 = vv[3].value(chi);
-        double ret = dv0 * hansenDeriv[3] + dv1 * hansenDeriv[2] + dv2 * hansenDeriv[1] + dv3 * hansenDeriv[0];
+        // Computes the coefficient by linear transformation
+        // Danielson 2.7.3-(9) or Collins 4-236 and Petre's paper
+        final PolynomialFunction[] v = mpvec[mnm1 + this.offset];
+        final PolynomialFunction[] vv = mpvecDeriv[mnm1 + this.offset];
 
-        vv = mpvecDeriv[mnm1 + offset];
-        final double v0 = vv[0].value(chi);
-        final double v1 = vv[1].value(chi);
-        final double v2 = vv[2].value(chi);
-        final double v3 = vv[3].value(chi);
-        ret += v0 * hansenValue[3] + v1 * hansenValue[2] + v2 * hansenValue[1] + v3 * hansenValue[0];
-
-        return ret;
+        return v[3].value(chi)  * hansenDerivRoot[sliceNo][3] +
+               v[2].value(chi)  * hansenDerivRoot[sliceNo][2] +
+               v[1].value(chi)  * hansenDerivRoot[sliceNo][1] +
+               v[0].value(chi)  * hansenDerivRoot[sliceNo][0] +
+               vv[3].value(chi) * hansenRoot[sliceNo][3] +
+               vv[2].value(chi) * hansenRoot[sliceNo][2] +
+               vv[1].value(chi) * hansenRoot[sliceNo][1] +
+               vv[0].value(chi) * hansenRoot[sliceNo][0];
 
     }
 

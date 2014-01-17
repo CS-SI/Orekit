@@ -89,6 +89,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
     // Common factors for potential computation
     /** B = sqrt(1 - e<sup>2</sup>). */
     private double B;
+    /** B<sup>2</sup>. */
+    private double BB;
+    /** B<sup>3</sup>. */
+    private double BBB;
+
     /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
     private double X;
     /** &Chi;<sup>2</sup>. */
@@ -264,6 +269,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
         B = aux.getB();
         final double C = aux.getC();
 
+        //&Chi;<sup>-2</sup>.
+        BB = B * B;
+        //&Chi;<sup>-3</sup>.
+        BBB = BB * B;
+
         // &Chi;
         X = 1. / B;
         XX = X * X;
@@ -352,6 +362,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
         double dUdGa = 0.;
 
         for (int s = 0; s <= maxEccPow; s++) {
+            // initialise the Hansen roots
+            this.hansenObjects[s].computeInitValues(B, BB, BBB);
+
             // Get the current Gs coefficient
             final double gs = GsHs[0][s];
 

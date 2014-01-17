@@ -31,14 +31,24 @@ import org.apache.commons.math3.util.FastMath;
  * @author Lucian Barbulescu
  */
 public class HansenZonalLinear {
+
+    /** The number of coefficients that will be computed with a set of roots. */
+    private static final int SLICE = 10;
+
     /**
      * The first vector of polynomials associated to Hansen coefficients and
      * derivatives.
      */
-    private PolynomialFunction[] mpvec;
+    private PolynomialFunction[][] mpvec;
 
     /** The second vector of polynomials associated only to derivatives. */
-    private PolynomialFunction[] mpvecDeriv;
+    private PolynomialFunction[][] mpvecDeriv;
+
+    /** The Hansen coefficients used as roots. */
+    private double[][] hansenRoot;
+
+    /** The derivatives of the Hansen coefficients used as roots. */
+    private double[][] hansenDerivRoot;
 
     /** The minimum value for the order. */
     private int Nmin;
@@ -56,20 +66,20 @@ public class HansenZonalLinear {
      */
     private int offset;
 
+    /** The number of slices needed to compute the coefficients. */
+    private int numSlices;
+
     /** 2<sup>s</sup>. */
     private double twots;
-
-    /** 2<sup>s-1</sup>. */
-    private double twotsm1;
 
     /** 2*s+1. */
     private int twosp1;
 
-    /** 2*s-2. */
-    private int twosm2;
-
     /** 2*s. */
     private int twos;
+
+    /** (2*s+1) / 2<sup>s</sup>. */
+    private double twosp1otwots;
 
     /**
      * Constructor.
@@ -85,18 +95,22 @@ public class HansenZonalLinear {
         N0 = -(s + 2);
         this.s = s;
         this.twots = FastMath.pow(2., s);
-        this.twotsm1 = FastMath.pow(2., s - 1);
         this.twos = 2 * s;
         this.twosp1 = this.twos + 1;
-        this.twosm2 = this.twos - 2;
+        this.twosp1otwots = (double) this.twosp1 / this.twots;
 
         // prepare structures for stored data
         final int size = nMax - s - 1;
-        mpvec = new PolynomialFunction[size];
-        mpvecDeriv = new PolynomialFunction[size];
+        mpvec      = new PolynomialFunction[size][];
+        mpvecDeriv = new PolynomialFunction[size][];
+
+        this.numSlices  = (int) FastMath.ceil(((double) size) / SLICE);
+        hansenRoot      = new double[numSlices][2];
+        hansenDerivRoot = new double[numSlices][2];
 
         // Prepare the data base of associated polynomials
         generatePolynomials();
+
     }
 
     /**
@@ -156,25 +170,28 @@ public class HansenZonalLinear {
      */
     private void generatePolynomials() {
 
+        int sliceCounter = 0;
+        int index;
+
         // Initialisation of matrix for linear transformmations
         // The final configuration of these matrix are obtained by composition
         // of linear transformations
         PolynomialFunctionMatrix A = HansenUtilities.buildIdentityMatrix2();
-        final PolynomialFunctionMatrix B = HansenUtilities.buildZeroMatrix2();
         PolynomialFunctionMatrix D = HansenUtilities.buildZeroMatrix2();
         PolynomialFunctionMatrix E = HansenUtilities.buildIdentityMatrix2();
-
-        // from Collins 4-245 and Petre's paper
-        B.setElem(1, 1, new PolynomialFunction(new double[] {
-            0, 0, 1
-        }));
 
         // generation of polynomials associated to Hansen coefficients and to
         // their derivatives
         final PolynomialFunctionMatrix a = HansenUtilities.buildZeroMatrix2();
         a.setElem(0, 1, HansenUtilities.ONE);
 
-        int index;
+        //The B matrix is constant.
+        final PolynomialFunctionMatrix B = HansenUtilities.buildZeroMatrix2();
+        // from Collins 4-245 and Petre's paper
+        B.setElem(1, 1, new PolynomialFunction(new double[] {
+            2.0
+        }));
+
         for (int i = N0 - 1; i > Nmin - 1; i--) {
             index = i + offset;
             // Matrix of the current linear transformation
@@ -186,7 +203,7 @@ public class HansenZonalLinear {
             // see Petre's paper
             A = A.multiply(a);
             // store the polynomials for Hansen coefficients
-            mpvec[index] = A.getElem(1, 1);
+            mpvec[index] = A.getMatrixLine(1);
 
             D = D.multiply(a);
             E = E.multiply(a);
@@ -194,7 +211,51 @@ public class HansenZonalLinear {
 
             // store the polynomials for Hansen coefficients from the expressions
             // of derivatives
-            mpvecDeriv[index] = D.getElem(1, 1);
+            mpvecDeriv[index] = D.getMatrixLine(1);
+
+            if (++sliceCounter % SLICE == 0) {
+                // Re-Initialisation of matrix for linear transformmations
+                // The final configuration of these matrix are obtained by composition
+                // of linear transformations
+                A = HansenUtilities.buildIdentityMatrix2();
+                D = HansenUtilities.buildZeroMatrix2();
+                E = HansenUtilities.buildIdentityMatrix2();
+            }
+
+        }
+    }
+
+    /**
+     * Compute the roots for the Hansen coefficients and their derivatives.
+     *
+     * @param chi 1 / sqrt(1 - e<sup>2</sup>)
+     */
+    public void computeInitValues(final double chi) {
+        // compute the values for n=s and n=s+1
+        // See Danielson 2.7.3-(6a,b)
+        hansenRoot[0][0] = 0;
+        hansenRoot[0][1] = FastMath.pow(chi, this.twosp1) / this.twots;
+        hansenDerivRoot[0][0] = 0;
+        hansenDerivRoot[0][1] = this.twosp1otwots * FastMath.pow(chi, this.twos);
+
+        final int st = -s - 1;
+        for (int i = 1; i < numSlices; i++) {
+            for (int j = 0; j < 2; j++) {
+                // Get the required polynomials
+                final PolynomialFunction[] mv = mpvec[st - (i * SLICE) - j + offset];
+                final PolynomialFunction[] sv = mpvecDeriv[st - (i * SLICE) - j + offset];
+
+                //Compute the root derivatives
+                hansenDerivRoot[i][j] = mv[1].value(chi) * hansenDerivRoot[i - 1][1] +
+                                        mv[0].value(chi) * hansenDerivRoot[i - 1][0] +
+                                        (sv[1].value(chi) * hansenRoot[i - 1][1] +
+                                         sv[0].value(chi) * hansenRoot[i - 1][0]
+                                        ) / chi;
+                hansenRoot[i][j] =     mv[1].value(chi) * hansenRoot[i - 1][1] +
+                                       mv[0].value(chi) * hansenRoot[i - 1][0];
+
+            }
+
         }
     }
 
@@ -207,18 +268,33 @@ public class HansenZonalLinear {
      * @return K<sub>0</sub><sup>-n-1,s</sup>
      */
     public double getValue(final int mnm1, final double chi) {
-        // Danielson 2.7.3-(6a,b)
-        if (mnm1 == N0 + 1) {
-            return 0;
-        }
 
-        final double han1 = FastMath.pow(chi, twosp1) / twots;
-        if (mnm1 == N0) {
-            return han1;
+        //Compute n
+        final int n = -mnm1 - 1;
+
+        //Compute the potential slice
+        int sliceNo = (n - s) / SLICE;
+        if (sliceNo < numSlices) {
+            //Compute the index within the slice
+            final int indexInSlice = (n - s) % SLICE;
+
+            //Check if a root must be returned
+            if (indexInSlice <= 1) {
+                return hansenRoot[sliceNo][indexInSlice];
+            }
+        } else {
+            //the value was a potential root for a slice, but that slice was not required
+            //Decrease the slice number
+            sliceNo--;
         }
 
         // Danielson 2.7.3-(6c)/Collins 4-242 and Petre's paper
-        return mpvec[mnm1 + offset].value(chi) * han1;
+        final PolynomialFunction[] v = mpvec[mnm1 + offset];
+        double ret = v[1].value(chi) * hansenRoot[sliceNo][1];
+        if (hansenRoot[sliceNo][0] != 0) {
+            ret += v[0].value(chi) * hansenRoot[sliceNo][0];
+        }
+        return  ret;
     }
 
     /**
@@ -230,21 +306,43 @@ public class HansenZonalLinear {
      * @return dK<sub>0</sub><sup>-n-1,s</sup> / d&Chi;
      */
     public double getDerivative(final int mnm1, final double chi) {
-        // Danielson 3.1-(7a)
-        if (mnm1 == N0 + 1) {
-            return 0;
-        }
 
-        final double hanDeriv1 = this.twosp1 * FastMath.pow(chi, twos) / twots;
-        if (mnm1 == N0) {
-            return hanDeriv1;
+        //Compute n
+        final int n = -mnm1 - 1;
+
+        //Compute the potential slice
+        int sliceNo = (n - s) / SLICE;
+        if (sliceNo < numSlices) {
+            //Compute the index within the slice
+            final int indexInSlice = (n - s) % SLICE;
+
+            //Check if a root must be returned
+            if (indexInSlice <= 1) {
+                return hansenDerivRoot[sliceNo][indexInSlice];
+            }
+        } else {
+            //the value was a potential root for a slice, but that slice was not required
+            //Decrease the slice number
+            sliceNo--;
         }
 
         // Danielson 3.1-(7c) and Petre's paper
-        double ret = mpvec[mnm1 + offset].value(chi) * hanDeriv1;
+        final PolynomialFunction[] v = mpvec[mnm1 + offset];
+        double ret = v[1].value(chi) * hansenDerivRoot[sliceNo][1];
+        if (hansenDerivRoot[sliceNo][0] != 0) {
+            ret += v[0].value(chi) * hansenDerivRoot[sliceNo][0];
+        }
+
         // Danielson 2.7.3-(6b)
-        final double han1 = FastMath.pow(chi, twosm2) / twotsm1;
-        ret += mpvecDeriv[mnm1 + offset].value(chi) * han1;
+        final PolynomialFunction[] v1 = mpvecDeriv[mnm1 + offset];
+        double hret = v1[1].value(chi) * hansenRoot[sliceNo][1];
+        if (hansenRoot[sliceNo][0] != 0) {
+            hret += v1[0].value(chi) * hansenRoot[sliceNo][0];
+        }
+        ret += hret / chi;
+
         return ret;
+
     }
+
 }
