@@ -636,7 +636,7 @@ class DeepSDP4 extends SDP4 {
             for (int j = 0; j < SECULAR_INTEGRATION_ORDER; j += 2)  {
                 derivs[j]     = term1a + term2a + term3a;
                 derivs[j + 1] = term1b + term2b + term3b;
-                if ((i + 2) < SECULAR_INTEGRATION_ORDER) {
+                if ((j + 2) < SECULAR_INTEGRATION_ORDER) {
                     term1a  = -term1a;
                     term2a *= -4.0;
                     term3a *= -9.0;
