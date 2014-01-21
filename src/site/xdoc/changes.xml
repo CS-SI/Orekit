@@ -22,6 +22,12 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" due-to="Nicolas Bernard">
+        Added better handling of Hansen kernel computation through use of PolynomialFunction.
+      </action>
+      <action dev="luc" type="update" due-to="Petre Bazavan">
+        Compute Hansen coefficients using linear transformation.
+      </action>
       <action dev="luc" type="fix" >
         Fixed a non-bracketing exception in event detection, in some rare cases of noisy g function.
         Fixes issue #160.

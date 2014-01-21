@@ -266,11 +266,11 @@ class TesseralContribution implements DSSTForceModel {
                 final int n0 = FastMath.max(FastMath.max(2, m), s);
 
                 //Create the object for the pair j,s
-                this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0);
+                this.hansenObjects[s + maxDegree][j] = new HansenTesseralLinear(maxDegree, s, j, n0, maxHansen);
 
                 if (s > 0 && s <= sMin) {
                     //Also create the object for the pair j, -s
-                    this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0);
+                    this.hansenObjects[maxDegree - s][j] =  new HansenTesseralLinear(maxDegree, -s, j, n0, maxHansen);
                 }
             }
         }

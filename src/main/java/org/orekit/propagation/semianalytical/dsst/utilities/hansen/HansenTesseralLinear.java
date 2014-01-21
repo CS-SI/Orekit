@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.utilities.hansen;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.propagation.semianalytical.dsst.utilities.NewcombOperators;
@@ -72,7 +73,7 @@ public class HansenTesseralLinear {
      */
     private int offset;
 
-    /** The objects used to calculate initial data by means of newcomb operators. */
+    /** The objects used to calculate initial data by means of Newcomb operators. */
     private HansenCoefficientsBySeries[] hansenInit;
 
     /**
@@ -82,8 +83,9 @@ public class HansenTesseralLinear {
      * @param s s parameter
      * @param j j parameter
      * @param n0 the minimum (absolute) value of n
+     * @param maxHansen maximum power of e2 in Hansen expansion
      */
-    public HansenTesseralLinear(final int nMax, final int s, final int j, final int n0) {
+    public HansenTesseralLinear(final int nMax, final int s, final int j, final int n0, final int maxHansen) {
         //Initialize the fields
         this.offset = nMax + 1;
         this.Nmin = -nMax - 1;
@@ -95,7 +97,7 @@ public class HansenTesseralLinear {
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
         this.hansenInit = new HansenCoefficientsBySeries[maxRoots];
         for (int i = 0; i < maxRoots; i++) {
-            this.hansenInit[i] = new HansenCoefficientsBySeries(N0 - i + 3, s, j);
+            this.hansenInit[i] = new HansenCoefficientsBySeries(N0 - i + 3, s, j, maxHansen);
         }
 
         // The first 4 values are computed with series. No linear combination is needed.
@@ -271,7 +273,7 @@ public class HansenTesseralLinear {
             // The matrix of the current linear transformation is updated
             // Petre's paper
             a.setMatrixLine(3, new PolynomialFunction[] {
-                c(i), HansenUtilities.ZERO, b(i), a(i)
+                    c(i), HansenUtilities.ZERO, b(i), a(i)
             });
 
             // composition of the linear transformations to calculate
@@ -320,9 +322,9 @@ public class HansenTesseralLinear {
         //Ensure that only the needed terms are computed
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
         for (int i = 0; i < maxRoots; i++) {
-            this.hansenRoot[0][i] = hansenInit[i].getValue(e2, chi, chi2, precision);
-            this.hansenDerivRoot[0][i] = hansenInit[i].getDerivativeValue(e2, chi, chi2,
-                                                                          precision, hansenRoot[0][i]);
+            final DerivativeStructure hansenKernel = hansenInit[i].getValue(e2);
+            this.hansenRoot[0][i] = hansenKernel.getValue();
+            this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(1);
         }
 
         for (int i = 1; i < numSlices; i++) {
@@ -430,16 +432,29 @@ public class HansenTesseralLinear {
 
     /**
      * Compute a Hansen coefficient with series.
-     *
+     * <p>
+     * This class implements the computation of the Hansen kernels
+     * through a power series in e<sup>2</sup> and that is using
+     * modified Newcomb operators. The reference formulae can be found
+     * in Danielson 2.7.3-10 and 3.3-5
+     * </p>
      */
-    private class HansenCoefficientsBySeries {
+    private static class HansenCoefficientsBySeries {
 
         /** -n-1 coefficient. */
         private final int mnm1;
+
         /** s coefficient. */
         private final int s;
+
         /** j coefficient. */
         private final int j;
+
+        /** Max power in e<sup>2</sup> for the Newcomb's series expansion. */
+        private final int maxNewcomb;
+
+        /** Polynomial representing the serie. */
+        private PolynomialFunction polynomial;
 
         /**
          * Class constructor.
@@ -447,66 +462,66 @@ public class HansenTesseralLinear {
          * @param mnm1 -n-1 value
          * @param s s value
          * @param j j value
+         * @param maxHansen max power of e<sup>2</sup> in series expansion
          */
-        public HansenCoefficientsBySeries(final int mnm1, final int s, final int j) {
+        public HansenCoefficientsBySeries(final int mnm1, final int s,
+                                          final int j, final int maxHansen) {
             this.mnm1 = mnm1;
             this.s = s;
             this.j = j;
+            this.maxNewcomb = maxHansen;
+            this.polynomial = generatePolynomial();
         }
 
-        /**
-         * Compute the value of K<sub>j</sub><sup>-n-1, s</sup> with series.
-         *
-         * @param e2 e<sup>2</sup>
-         * @param chi &Chi;
-         * @param chi2 &Chi;<sup>2</sup>
-         * @param maxNewcomb Max power of e<sup>2</sup> in series expansion
-         * @return the value of K<sub>j</sub><sup>-n-1, s</sup>
+        /** Computes the value of Hansen kernel and its derivative at e<sup>2</sup>.
+         * <p>
+         * The formulae applied are described in Danielson 2.7.3-10 and
+         * 3.3-5
+         * </p>
+         * @param e2 e*e
+         * @return the value of the Hansen coefficient and its derivative for e<sup>2</sup>
          */
-        public double getValue(final double e2, final double chi, final double chi2, final int maxNewcomb) {
-            // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
-            // Expansion until maxNewcomb, the maximum power in e^2 for the
-            // Kernel value
-            double sum = NewcombOperators.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 0; alpha--) {
-                sum *= e2;
-                sum += NewcombOperators.getValue(alpha + a, alpha + b, mnm1, s);
-            }
-            // Kernel value from equation 2.7.3-(10)
-            final double value = FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
+        public DerivativeStructure getValue(final double e2) {
+            final double B = FastMath.sqrt(1 - e2);
+            final double chi = 1 / B;
+            final double chi2 = chi * chi;
 
-            return value;
+            //Estimation of the serie expansion at e2
+            final DerivativeStructure serie = polynomial.value(
+                    new DerivativeStructure(1, 1, 0, e2));
+
+            final double value      =  FastMath.pow(chi2, -mnm1 - 1) * serie.getValue() / chi;
+            final double coef       = -(mnm1 + 1.5);
+            final double derivative = coef * chi2 * value +
+                                      FastMath.pow(chi2, -mnm1 - 1) * serie.getPartialDerivative(1) / chi;
+            return new DerivativeStructure(1, 1, value, derivative);
         }
 
-        /**
-         *  Compute the value of dK<sub>j</sub><sup>-n-1, s</sup> / de<sup>2</sup> with series.
-         *
-         * @param e2 e<sup>2</sup>
-         * @param chi &Chi;
-         * @param chi2 &Chi;<sup>2</sup>
-         * @param maxNewcomb Max power of e<sup>2</sup> in series expansion
-         * @param Kjmnm1s the value of K<sub>j</sub><sup>-n-1, s</sup>
-         * @return derivative
+        /** Generate the serie expansion in e<sup>2</sup>.
+         * <p>
+         * Generate the series expansion in e<sup>2</sup> used in the formulation
+         * of the Hansen kernel (see Danielson 2.7.3-10):
+         * &Sigma; Y<sup>ns</sup><sub>&alpha;+a,&alpha;+b</sub>
+         * *e<sup>2&alpha;</sup>
+         * </p>
+         * @return polynomial representing the power serie expansion
          */
-        public double getDerivativeValue(final double e2, final double chi, final double chi2,
-                                         final int maxNewcomb, final double Kjmnm1s) {
+        private PolynomialFunction generatePolynomial() {
             // Initialization
-            final int a = FastMath.max(j - s, 0);
-            final int b = FastMath.max(s - j, 0);
-            // Expansion until maxNewcomb-1, the maximum power in e^2 for the
-            // Kernel derivative
-            double sum = maxNewcomb * NewcombOperators.getValue(maxNewcomb + a, maxNewcomb + b, mnm1, s);
-            for (int alpha = maxNewcomb - 1; alpha >= 1; alpha--) {
-                sum *= e2;
-                sum += alpha * NewcombOperators.getValue(alpha + a, alpha + b, mnm1, s);
-            }
-            // Kernel derivative from equation 3.3-(5)
-            final double coef = -(mnm1 + 1.5);
-            final double derivative = coef * chi2 * Kjmnm1s + FastMath.pow(chi2, -mnm1 - 1) * sum / chi;
+            final int aHT = FastMath.max(j - s, 0);
+            final int bHT = FastMath.max(s - j, 0);
 
-            return derivative;
+            final double[] coefficients = new double[maxNewcomb + 1];
+
+            //Loop for getting the Newcomb operators
+            for (int alphaHT = 0; alphaHT <= maxNewcomb; alphaHT++) {
+                coefficients[alphaHT] =
+                        NewcombOperators.getValue(alphaHT + aHT, alphaHT + bHT, mnm1, s);
+            }
+
+            //Creation of the polynomial
+            return new PolynomialFunction(coefficients);
         }
     }
+
 }
