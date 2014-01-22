@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -184,6 +184,19 @@ public class ICGEMFormatReaderTest {
         GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_unknown_tide_icgem", false));
         Assert.assertEquals(TideSystem.UNKNOWN,
                             GravityFieldFactory.getUnnormalizedProvider(3, 3).getTideSystem());
+    }
+
+    /** Check numbers in the format 1.0d0 can be parsed. */
+    @Test
+    public void testLowercaseD() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_small_d_icgem", false));
+        Assert.assertEquals(10.0,
+                GravityFieldFactory
+                        .getUnnormalizedProvider(3, 3)
+                        .onDate(AbsoluteDate.J2000_EPOCH)
+                        .getUnnormalizedCnm(2,2),
+                0.0);
     }
 
     private void checkValue(final double value,

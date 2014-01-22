@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -28,6 +28,7 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory;
 import org.orekit.propagation.semianalytical.dsst.utilities.CoefficientsFactory.NSKey;
 import org.orekit.propagation.semianalytical.dsst.utilities.UpperBounds;
+import org.orekit.propagation.semianalytical.dsst.utilities.hansen.HansenThirdBodyLinear;
 import org.orekit.time.AbsoluteDate;
 
 /** Third body attraction perturbation to the
@@ -86,6 +87,13 @@ public class DSSTThirdBody  implements DSSTForceModel {
     private double gamma;
 
     // Common factors for potential computation
+    /** B = sqrt(1 - e<sup>2</sup>). */
+    private double B;
+    /** B<sup>2</sup>. */
+    private double BB;
+    /** B<sup>3</sup>. */
+    private double BBB;
+
     /** &Chi; = 1 / sqrt(1 - e<sup>2</sup>) = 1 / B. */
     private double X;
     /** &Chi;<sup>2</sup>. */
@@ -112,6 +120,10 @@ public class DSSTThirdBody  implements DSSTForceModel {
     /** Maw power for e in the serie expansion. */
     private int    maxEccPow;
 
+    /** An array that contains the objects needed to build the Hansen coefficients. <br/>
+     * The index is s */
+    private HansenThirdBodyLinear[] hansenObjects;
+
     /** Complete constructor.
      *  @param body the 3rd body to consider
      *  @see org.orekit.bodies.CelestialBodyFactory
@@ -132,6 +144,13 @@ public class DSSTThirdBody  implements DSSTForceModel {
         for (int i = 1; i < dim; i++) {
             fact[i] = i * fact[i - 1];
         }
+
+        //Initialise the HansenCoefficient generator
+        this.hansenObjects = new HansenThirdBodyLinear[MAX_POWER + 1];
+        for (int s = 0; s <= MAX_POWER; s++) {
+            this.hansenObjects[s] = new HansenThirdBodyLinear(MAX_POWER, s);
+        }
+
     }
 
     /** Get third body.
@@ -247,8 +266,13 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         // Equinoctial coefficients
         final double A = aux.getA();
-        final double B = aux.getB();
+        B = aux.getB();
         final double C = aux.getC();
+
+        //&Chi;<sup>-2</sup>.
+        BB = B * B;
+        //&Chi;<sup>-3</sup>.
+        BBB = BB * B;
 
         // &Chi;
         X = 1. / B;
@@ -317,8 +341,6 @@ public class DSSTThirdBody  implements DSSTForceModel {
      */
     private double[] computeUDerivatives() throws OrekitException {
 
-        // Hansen coefficients
-        final HansenThirdBody hansen = new HansenThirdBody();
         // Gs and Hs coefficients
         final double[][] GsHs = CoefficientsFactory.computeGsHs(k, h, alpha, beta, maxEccPow);
         // Qns coefficients
@@ -340,6 +362,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
         double dUdGa = 0.;
 
         for (int s = 0; s <= maxEccPow; s++) {
+            // initialise the Hansen roots
+            this.hansenObjects[s].computeInitValues(B, BB, BBB);
+
             // Get the current Gs coefficient
             final double gs = GsHs[0][s];
 
@@ -366,8 +391,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
                 // (n - s) must be even
                 if ((n - s) % 2 == 0) {
                     // Extract data from previous computation :
-                    final double kns   = hansen.getValue(n, s);
-                    final double dkns  = hansen.getDerivative(n, s);
+                    final double kns   = this.hansenObjects[s].getValue(n, B);
+                    final double dkns  = this.hansenObjects[s].getDerivative(n, B);
+
                     final double vns   = Vns.get(new NSKey(n, s));
                     final double coef0 = delta0s * aoR3Pow[n] * vns;
                     final double coef1 = coef0 * Qns[n][s];
@@ -405,172 +431,4 @@ public class DSSTThirdBody  implements DSSTForceModel {
         };
 
     }
-
-    /** Hansen coefficients for 3rd body force model.
-     *  <p>
-     *  Hansen coefficients are functions of the eccentricity.
-     *  For a given eccentricity, the computed elements are stored in a map.
-     *  </p>
-     */
-    private class HansenThirdBody {
-
-        /** Map to store every Hansen coefficient computed. */
-        private TreeMap<NSKey, Double> coefficients;
-
-        /** Map to store every Hansen coefficient derivative computed. */
-        private TreeMap<NSKey, Double> derivatives;
-
-        /** Simple constructor. */
-        public HansenThirdBody() {
-            coefficients = new TreeMap<CoefficientsFactory.NSKey, Double>();
-            derivatives  = new TreeMap<CoefficientsFactory.NSKey, Double>();
-            initialize();
-        }
-
-        /** Get the K<sub>0</sub><sup>n,s</sup> coefficient value.
-         *  @param n n value
-         *  @param s s value
-         *  @return K<sub>0</sub><sup>n,s</sup>
-         */
-        public double getValue(final int n, final int s) {
-            if (coefficients.containsKey(new NSKey(n, s))) {
-                return coefficients.get(new NSKey(n, s));
-            } else {
-                // Compute the K0(n,s) coefficients
-                return computeValue(n, s);
-            }
-        }
-
-        /** Get the dK<sub>0</sub><sup>n,s</sup> / d&x; coefficient derivative.
-         *  @param n n value
-         *  @param s s value
-         *  @return dK<sub>j</sub><sup>n,s</sup> / d&x;
-         */
-        public double getDerivative(final int n, final int s) {
-            if (derivatives.containsKey(new NSKey(n, s))) {
-                return derivatives.get(new NSKey(n, s));
-            } else {
-                // Compute the dK0(n,s) / dX derivative
-                return computeDerivative(n, s);
-            }
-        }
-
-        /** Initialization. */
-        private void initialize() {
-            final double ec2 = ecc * ecc;
-            final double oX3 = 1. / XXX;
-            coefficients.put(new NSKey(0, 0),  1.);
-            coefficients.put(new NSKey(0, 1), -1.);
-            coefficients.put(new NSKey(1, 0),  1. + 0.5 * ec2);
-            coefficients.put(new NSKey(1, 1), -1.5);
-            coefficients.put(new NSKey(2, 0),  1. + 1.5 * ec2);
-            coefficients.put(new NSKey(2, 1), -2. - 0.5 * ec2);
-            derivatives.put(new NSKey(0, 0),  0.);
-            derivatives.put(new NSKey(1, 0),  oX3);
-            derivatives.put(new NSKey(2, 0),  3. * oX3);
-            derivatives.put(new NSKey(2, 1), -oX3);
-        }
-
-        /** Compute K<sub>0</sub><sup>n,s</sup> from Equation 2.7.3-(7)(8).
-         *  @param n n value
-         *  @param s s value
-         *  @return K<sub>0</sub><sup>n,s</sup>
-         */
-        private double computeValue(final int n, final int s) {
-            // Initialize return value
-            double kns = 0.;
-
-            if (n == (s - 1)) {
-
-                final NSKey key = new NSKey(s - 2, s - 1);
-                if (coefficients.containsKey(key)) {
-                    kns = coefficients.get(key);
-                } else {
-                    kns = computeValue(s - 2, s - 1);
-                }
-
-                kns *= -(2. * s - 1.) / s;
-
-            } else if (n == s) {
-
-                final NSKey key = new NSKey(s - 1, s);
-                if (coefficients.containsKey(key)) {
-                    kns = coefficients.get(key);
-                } else {
-                    kns = computeValue(s - 1, s);
-                }
-
-                kns *= (2. * s + 1.) / (s + 1.);
-
-            } else if (n > s) {
-
-                final NSKey key1 = new NSKey(n - 1, s);
-                double knM1 = 0.;
-                if (coefficients.containsKey(key1)) {
-                    knM1 = coefficients.get(key1);
-                } else {
-                    knM1 = computeValue(n - 1, s);
-                }
-
-                final NSKey key2 = new NSKey(n - 2, s);
-                double knM2 = 0.;
-                if (coefficients.containsKey(key2)) {
-                    knM2 = coefficients.get(key2);
-                } else {
-                    knM2 = computeValue(n - 2, s);
-                }
-
-                final double val1 = (2. * n + 1.) / (n + 1.);
-                final double val2 = (n + s) * (n - s) / (n * (n + 1.) * XX);
-
-                kns = val1 * knM1 - val2 * knM2;
-            }
-
-            coefficients.put(new NSKey(n, s), kns);
-            return kns;
-        }
-
-        /** Compute dK<sub>0</sub><sup>n,s</sup> / d&x; from Equation 3.2-(3).
-         *  @param n n value
-         *  @param s s value
-         *  @return dK<sub>0</sub><sup>n,s</sup> / d&x;
-         */
-        private double computeDerivative(final int n, final int s) {
-            // Initialize return value
-            double dknsdx = 0.;
-
-            if (n > s) {
-
-                final NSKey keyNm1 = new NSKey(n - 1, s);
-                double dKnM1 = 0.;
-                if (derivatives.containsKey(keyNm1)) {
-                    dKnM1 = derivatives.get(keyNm1);
-                } else {
-                    dKnM1 = computeDerivative(n - 1, s);
-                }
-
-                final NSKey keyNm2 = new NSKey(n - 2, s);
-                double dKnM2 = 0.;
-                if (derivatives.containsKey(keyNm2)) {
-                    dKnM2 = derivatives.get(keyNm2);
-                } else {
-                    dKnM2 = computeDerivative(n - 2, s);
-                }
-
-                final double knM2 = getValue(n - 2, s);
-
-                final double val1 = (2. * n + 1.) / (n + 1.);
-                final double coef = (n + s) * (n - s) / (n * (n + 1.));
-                final double val2 = coef / XX;
-                final double val3 = 2. * coef / XXX;
-
-                dknsdx = val1 * dKnM1 - val2 * dKnM2 + val3 * knM2;
-            }
-
-            derivatives.put(new NSKey(n, s), dknsdx);
-            return dknsdx;
-        }
-
-    }
-
 }

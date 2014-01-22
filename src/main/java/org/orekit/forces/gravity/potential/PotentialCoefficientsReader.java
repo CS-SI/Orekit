@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -22,6 +22,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
@@ -368,6 +369,17 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         return array;
     }
 
+    /**
+     * Parse a double from a string. Accept the Fortran convention of using a 'D' or
+     * 'd' instead of an 'E' or 'e'.
+     *
+     * @param string to be parsed.
+     * @return the double value of {@code string}.
+     */
+    protected static double parseDouble(final String string) {
+        return Double.parseDouble(string.toUpperCase(Locale.ENGLISH).replace('D', 'E'));
+    }
+
     /** Build a coefficients row.
      * @param degree row degree
      * @param order row order
@@ -426,7 +438,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                                     final int i, final int j,
                                     final String cName, final String name)
         throws OrekitException {
-        final double value    = Double.parseDouble(field.replace('D', 'E'));
+        final double value    = parseDouble(field);
         final double oldValue = list.get(i).get(j);
         if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 1)) {
             // the coefficient was not already initialized
@@ -450,7 +462,7 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
                                     final int i, final int j,
                                     final String cName, final String name)
         throws OrekitException {
-        final double value    = Double.parseDouble(field.replace('D', 'E'));
+        final double value    = parseDouble(field);
         final double oldValue = array[i][j];
         if (Double.isNaN(oldValue) || Precision.equals(oldValue, 0.0, 1)) {
             // the coefficient was not already initialized

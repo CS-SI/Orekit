@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -87,6 +87,37 @@ public class NodeDetectorTest {
         Assert.assertEquals(2, logger1.getLoggedEvents().size());
         Assert.assertEquals(2, logger2.getLoggedEvents().size());
 
+    }
+
+    @Test
+    public void testIssue158() throws OrekitException {
+
+        double a          = 3.0e7;
+        double e1         =  0.8;
+        double e2         =  1.0e-4;
+        double i          = 1.0;
+        double pa         = 1.5 * FastMath.PI;
+        double raan       = 5.0;
+        double m          = 0;
+        AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+        Frame frame       = FramesFactory.getEME2000();
+        double mu         = Constants.EIGEN5C_EARTH_MU;
+
+        // highly eccentric, inclined orbit
+        final KeplerianOrbit orbit1 =
+                new KeplerianOrbit(a, e1, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
+        EventDetector detector1 = new NodeDetector(orbit1, orbit1.getFrame());
+        double t1 = orbit1.getKeplerianPeriod();
+        Assert.assertEquals(t1 / 28.82, detector1.getMaxCheckInterval(), t1 / 10000);
+        
+        // nearly circular, inclined orbit
+        final KeplerianOrbit orbit2 =
+                new KeplerianOrbit(a, e2, i, pa, raan, m, PositionAngle.MEAN, frame, date, mu);
+        EventDetector detector2 = new NodeDetector(orbit2, orbit2.getFrame());
+        double t2 = orbit2.getKeplerianPeriod();
+        Assert.assertEquals(t1, t2, t1 / 10000);
+        Assert.assertEquals(t2 / 3, detector2.getMaxCheckInterval(), t2 / 10000);
+        
     }
 
     @Before

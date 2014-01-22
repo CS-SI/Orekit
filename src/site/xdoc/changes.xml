@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Copyright 2002-2013 CS Systèmes d'Information
+<!-- Copyright 2002-2014 CS Systèmes d'Information
   Licensed to CS Systèmes d'Information (CS) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
@@ -22,6 +22,25 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" due-to="Nicolas Bernard">
+        Added better handling of Hansen kernel computation through use of PolynomialFunction.
+      </action>
+      <action dev="luc" type="update" due-to="Petre Bazavan">
+        Compute Hansen coefficients using linear transformation.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed a non-bracketing exception in event detection, in some rare cases of noisy g function.
+        Fixes issue #160.
+      </action>
+      <action dev="luc" type="fix" >
+        Fixed a missing reset of resonant tesseral terms in DSST propagation.
+        Fixes issue #159.
+      </action>
+      <action dev="luc" type="fix" >
+        Improved default max check interval for NodeDetector, so it handles correctly
+        highly eccentric orbits.
+        Fixes issue #158.
+      </action>
     </release>
     <release version="6.1" date="2013-12-13"
              description="Version 6.1 is a minor release of Orekit. It introduces several new

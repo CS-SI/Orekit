@@ -23,7 +23,7 @@
   <property name="commons-math.maven.path" value="org/apache/commons/commons-math3" />
   <property name="maven.repository"        value="http://repo1.maven.org/maven2" />
 
-  <property name="copyright"               value="2002-2013 CS Syst&#232;mes d&#039;Information" />
+  <property name="copyright"               value="2002-2014 CS Syst&#232;mes d&#039;Information" />
 
   <available classname="org.junit.Test"            property="junit4.present" />
   <available file="${lib.dir}/${commons-math.jar}" property="apache-commons-math.present" />

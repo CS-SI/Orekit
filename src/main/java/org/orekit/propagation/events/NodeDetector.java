@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -16,9 +16,14 @@
  */
 package org.orekit.propagation.events;
 
+import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.KeplerianOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.OrbitType;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.propagation.events.handlers.StopOnIncreasing;
@@ -71,7 +76,7 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
      * {@link org.orekit.frames.FramesFactory#getITRF2005() ITRF 2005})
      */
     public NodeDetector(final double threshold, final Orbit orbit, final Frame frame) {
-        this(orbit.getKeplerianPeriod() / 3, threshold,
+        this(2 * estimateNodesTimeSeparation(orbit) / 3, threshold,
              DEFAULT_MAX_ITER, new StopOnIncreasing<NodeDetector>(),
              frame);
     }
@@ -103,6 +108,46 @@ public class NodeDetector extends AbstractReconfigurableDetector<NodeDetector> {
     protected NodeDetector create(final double newMaxCheck, final double newThreshold,
                                   final int newMaxIter, final EventHandler<NodeDetector> newHandler) {
         return new NodeDetector(newMaxCheck, newThreshold, newMaxIter, newHandler, frame);
+    }
+
+    /** Find time separation between nodes.
+     * <p>
+     * The estimation of time separation is based on Keplerian motion, it is only
+     * used as a rough guess for a safe setting of default max check interval for
+     * event detection.
+     * </p>
+     * @param orbit initial orbit
+     * @return minimum time separation between nodes
+     */
+    private static double estimateNodesTimeSeparation(final Orbit orbit) {
+
+        final KeplerianOrbit keplerian = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(orbit);
+
+        // mean anomaly of ascending node
+        final double ascendingM  =  new KeplerianOrbit(keplerian.getA(), keplerian.getE(),
+                                                       keplerian.getI(),
+                                                       keplerian.getPerigeeArgument(),
+                                                       keplerian.getRightAscensionOfAscendingNode(),
+                                                       -keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       keplerian.getFrame(), keplerian.getDate(),
+                                                       keplerian.getMu()).getMeanAnomaly();
+
+        // mean anomaly of descending node
+        final double descendingM =  new KeplerianOrbit(keplerian.getA(), keplerian.getE(),
+                                                       keplerian.getI(),
+                                                       keplerian.getPerigeeArgument(),
+                                                       keplerian.getRightAscensionOfAscendingNode(),
+                                                       FastMath.PI - keplerian.getPerigeeArgument(), PositionAngle.TRUE,
+                                                       keplerian.getFrame(), keplerian.getDate(),
+                                                       keplerian.getMu()).getMeanAnomaly();
+
+        // differences between mean anomalies
+        final double delta1 = MathUtils.normalizeAngle(ascendingM, descendingM + FastMath.PI) - descendingM;
+        final double delta2 = 2 * FastMath.PI - delta1;
+
+        // minimum time separation between the two nodes
+        return FastMath.min(delta1, delta2) / keplerian.getKeplerianMeanMotion();
+
     }
 
     /** Get the frame in which the equator is defined.

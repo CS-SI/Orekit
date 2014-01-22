@@ -1,4 +1,4 @@
-/* Copyright 2002-2013 CS Systèmes d'Information
+/* Copyright 2002-2014 CS Systèmes d'Information
  * Licensed to CS Systèmes d'Information (CS) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -452,6 +452,56 @@ public class DSSTPropagatorTest {
         SpacecraftState finalState = propagator.propagate(orbit.getDate().shiftedBy(30 * Constants.JULIAN_DAY));
         Assert.assertEquals(8758.8, orbit.getA() - finalState.getA(), 10.0);
 
+    }
+
+    @Test
+    public void testDSSTrestart() throws OrekitException {
+        
+        DSSTPropagator dsstProp;
+        
+        
+        // build force model geopotential 8x8
+        Utils.setDataRoot("regular-data:potential/icgem-format");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("^eigen-6s-truncated$", false));
+        final UnnormalizedSphericalHarmonicsProvider gravityProvider = GravityFieldFactory.getUnnormalizedProvider(8, 8);
+        final Frame rotatingFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
+        DSSTForceModel gravityForceModel = new DSSTCentralBody(rotatingFrame, Constants.WGS84_EARTH_ANGULAR_VELOCITY, gravityProvider);
+        
+        // build initial state
+        final AbsoluteDate epochDate = new AbsoluteDate(2014, 01, 01, 0, 0, 0, TimeScalesFactory.getUTC());
+        final KeplerianOrbit initialOrbit = new KeplerianOrbit( 26562000.0, 0.72, FastMath.toRadians(63.435),
+                FastMath.toRadians(270.0), 0.0, 0.0, PositionAngle.MEAN, FramesFactory.getEME2000(), epochDate, gravityProvider.getMu());
+        final SpacecraftState initialState = new SpacecraftState(new EquinoctialOrbit(initialOrbit));
+        
+        // build integrator
+        final double minStep = initialState.getKeplerianPeriod() * 0.1;
+        final double maxStep = initialState.getKeplerianPeriod() * 10.0;
+        final double[][] tol = DSSTPropagator.tolerances(0.1, initialState.getOrbit());
+        AdaptiveStepsizeIntegrator integrator = new DormandPrince853Integrator(minStep, maxStep, tol[0], tol[1]);
+        dsstProp = new DSSTPropagator(integrator);
+
+        // add force model
+        dsstProp.addForceModel(gravityForceModel);
+        
+        // DSST Propagation (first propagation without timing, for warm-up purposes)
+        dsstProp.setInitialState(initialState, false);
+        dsstProp.propagate(epochDate.shiftedBy(100.0 * 86400.0));
+        double refExecTime = 0;
+
+        for (int i = 0; i < 5; i++) {
+            dsstProp.setInitialState(initialState, false);
+            long propStart = System.currentTimeMillis();
+            dsstProp.propagate(epochDate.shiftedBy(100.0 * 86400.0));
+            long propEnd = System.currentTimeMillis();
+            double execTime = 0.001 * (propEnd - propStart);
+
+            if (refExecTime <= 0) {
+                refExecTime = execTime;
+            } else {
+                Assert.assertTrue(execTime <= refExecTime * 1.1);
+            }
+        }
+        
     }
 
     private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {
