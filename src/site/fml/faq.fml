@@ -167,7 +167,7 @@
     <title>Runtime errors</title>
     <faq id="orekit-data-zip-not-up-to-date">
       <question>
-        I get an error "no IERS UTC-TAI history data loaded" (or something similar in a another language). What does it mean?
+        I get an error "no IERS UTC-TAI history data loaded" (or something similar in another language). What does it mean?
       </question>
       <answer>
         <p>
