@@ -314,15 +314,14 @@ public class HansenTesseralLinear {
      * @param e2 e<sup>2</sup>
      * @param chi &Chi;
      * @param chi2 &Chi;<sup>2</sup>
-     * @param precision the precision that will be used in the series
      */
-    public void computeInitValues(final double e2, final double chi, final double chi2, final int precision) {
+    public void computeInitValues(final double e2, final double chi, final double chi2) {
         // compute the values for n, n+1, n+2 and n+3 by series
         // See Danielson 2.7.3-(10)
         //Ensure that only the needed terms are computed
         final int maxRoots = FastMath.min(4, N0 - Nmin + 4);
         for (int i = 0; i < maxRoots; i++) {
-            final DerivativeStructure hansenKernel = hansenInit[i].getValue(e2);
+            final DerivativeStructure hansenKernel = hansenInit[i].getValue(e2, chi, chi2);
             this.hansenRoot[0][i] = hansenKernel.getValue();
             this.hansenDerivRoot[0][i] = hansenKernel.getPartialDerivative(1);
         }
@@ -478,13 +477,13 @@ public class HansenTesseralLinear {
          * The formulae applied are described in Danielson 2.7.3-10 and
          * 3.3-5
          * </p>
-         * @param e2 e*e
+         * @param e2 e<sup>2</sup>
+         * @param chi &Chi;
+         * @param chi2 &Chi;<sup>2</sup>
          * @return the value of the Hansen coefficient and its derivative for e<sup>2</sup>
          */
-        public DerivativeStructure getValue(final double e2) {
-            final double B = FastMath.sqrt(1 - e2);
-            final double chi = 1 / B;
-            final double chi2 = chi * chi;
+        public DerivativeStructure getValue(final double e2, 
+                final double chi, final double chi2) {
 
             //Estimation of the serie expansion at e2
             final DerivativeStructure serie = polynomial.value(
