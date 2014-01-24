@@ -167,7 +167,7 @@
     <title>Runtime errors</title>
     <faq id="orekit-data-zip-not-up-to-date">
       <question>
-        I get an error "no utc-tai history data loaded" (or something similar in a another language). What does it mean?
+        I get an error "no IERS UTC-TAI history data loaded" (or something similar in another language). What does it mean?
       </question>
       <answer>
         <p>
@@ -179,13 +179,13 @@
           ephemerides for Sun direction, for example.
         </p>
         <p>
-          The error message "no utc-tai history data loaded" means the UTC-TAI history file which is used for leap
+          The error message "no IERS UTC-TAI history data loaded" means the UTC-TAI history file which is used for leap
           seconds management was not found. As leap seconds are used each time a UTC date is used, this message is
           often seen very early and is the first one unsuspecting users experience. It often means the user forgot
           to configure Orekit to load data.
         </p>
         <p>
-          Configuring data loading is explained in the configuration page For a first start, the simplest configuration
+          Configuring data loading is explained in the configuration page For a start, the simplest configuration
           is to download the orekit-data.zip file from the download page and to either set the "orekit.data.path" Java
           property to this file or to manually configure the DataProvidersManager to use it. This example archive file
           contains the required UTC-TAI history file among others. Configuring Orekit to use this archive file can be done
