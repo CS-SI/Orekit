@@ -482,8 +482,7 @@ public class HansenTesseralLinear {
          * @param chi2 &Chi;<sup>2</sup>
          * @return the value of the Hansen coefficient and its derivative for e<sup>2</sup>
          */
-        public DerivativeStructure getValue(final double e2, 
-                final double chi, final double chi2) {
+        public DerivativeStructure getValue(final double e2, final double chi, final double chi2) {
 
             //Estimation of the serie expansion at e2
             final DerivativeStructure serie = polynomial.value(
