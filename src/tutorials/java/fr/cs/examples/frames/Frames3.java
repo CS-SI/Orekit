@@ -18,10 +18,8 @@
 package fr.cs.examples.frames;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
+import java.io.PrintStream;
 import java.util.Locale;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
@@ -48,6 +46,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -64,9 +63,6 @@ public class Frames3 {
 
             // configure Orekit and printing format
             Autoconfiguration.configureOrekit();
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
-            final DecimalFormat d3 = new DecimalFormat("0.000", symbols);
-            final DecimalFormat d7 = new DecimalFormat("0.0000000", symbols);
 
             // Initial state definition :
             // ==========================
@@ -94,10 +90,10 @@ public class Frames3 {
             // *************
 
             // Earth
-            double ae =  6378137.0; // equatorial radius in meter
-            double f  =  1.0 / 298.257223563; // flattening
-            Frame itrf2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-            BodyShape earth = new OneAxisEllipsoid(ae, f, itrf2005);
+            Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                   Constants.WGS84_EARTH_FLATTENING,
+                                                   earthFrame);
 
             // Target pointing attitude provider over satellite nadir at date, without yaw compensation
             NadirPointing nadirLaw = new NadirPointing(earth);
@@ -108,24 +104,28 @@ public class Frames3 {
                 new YawSteering(nadirLaw, sun, Vector3D.MINUS_I);
 
             // Propagator : Eckstein-Hechler analytic propagator
-            final double c20 = -1.08263e-3;
-            final double c30 = 2.54e-6;
-            final double c40 = 1.62e-6;
-            final double c50 = 2.3e-7;
-            final double c60 = -5.5e-7;
             Propagator propagator =
                 new EcksteinHechlerPropagator(orbit, yawSteeringLaw,
-                                              ae, mu, c20, c30, c40, c50, c60);
+                                              Constants.EIGEN5C_EARTH_EQUATORIAL_RADIUS,
+                                              Constants.EIGEN5C_EARTH_MU,
+                                              Constants.EIGEN5C_EARTH_C20,
+                                              Constants.EIGEN5C_EARTH_C30,
+                                              Constants.EIGEN5C_EARTH_C40,
+                                              Constants.EIGEN5C_EARTH_C50,
+                                              Constants.EIGEN5C_EARTH_C60);
 
             // Let's write the results in a file in order to draw some plots.
-            final File file = new File(System.getProperty("user.home"), "XYZ.dat");
-            final FileWriter fileRes = new FileWriter(file);
             propagator.setMasterMode(10, new OrekitFixedStepHandler() {
-                
+
+                PrintStream out = null;
+
                 public void init(SpacecraftState s0, AbsoluteDate t)
                     throws PropagationException {
                     try {
-                        fileRes.write("#time X Y Z Wx Wy Wz\n");
+                        File file = new File(System.getProperty("user.home"), "XYZ.dat");
+                        System.out.println("Results written to file: " + file.getAbsolutePath());
+                        out = new PrintStream(file);
+                        out.println("#time X Y Z Wx Wy Wz");
                     } catch (IOException ioe) {
                         throw new PropagationException(ioe,
                                                        LocalizedFormats.SIMPLE_MESSAGE,
@@ -154,21 +154,15 @@ public class Frames3 {
                         double sunY = sunSat.getY() / sunSat.getNorm();
                         double sunZ = sunSat.getZ() / sunSat.getNorm();
 
-                        fileRes.write(currentState.getDate()
-                                      + "  " + d3.format(sunX)
-                                      + "  " + d3.format(sunY)
-                                      + "  " + d3.format(sunZ)
-                                      + "  " + d7.format(spin.getX())
-                                      + "  " + d7.format(spin.getY())
-                                      + "  " + d7.format(spin.getZ())
-                                      + System.getProperty("line.separator"));
+                        out.format(Locale.US, "%s %12.3f %12.3f %12.3f %12.7f %12.7f %12.7f%n",
+                                   currentState.getDate(), sunX, sunY, sunZ,
+                                   spin.getX(), spin.getY(), spin.getZ());
 
+                        if (isLast) {
+                            out.close();
+                        }
                     } catch (OrekitException oe) {
                         throw new PropagationException(oe);
-                    } catch (IOException ioe) {
-                        throw new PropagationException(ioe,
-                                                       LocalizedFormats.SIMPLE_MESSAGE,
-                                                       ioe.getLocalizedMessage());
                     }
                 }
 
@@ -176,13 +170,9 @@ public class Frames3 {
 
             System.out.println("Running...");
             propagator.propagate(initialDate.shiftedBy(6000));
-            fileRes.close();
-            System.out.println("Results written to file: " + file.getAbsolutePath());
 
         } catch (OrekitException oe) {
             System.err.println(oe.getMessage());
-        } catch (IOException ioe) {
-            System.err.println(ioe.getMessage());
         }
     }
 
