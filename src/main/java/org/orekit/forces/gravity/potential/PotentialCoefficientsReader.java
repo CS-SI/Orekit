@@ -217,6 +217,20 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         // normalization indicator
         normalized = rawNormalized;
 
+        // set known constant values, if they were not defined in the file.
+        // See Hofmann-Wellenhof and Moritz, "Physical Geodesy",
+        // section 2.6 Harmonics of Lower Degree.
+        // All S_i,0 are irrelevant because they are multiplied by zero.
+        // C0,0 is 1, the central part, since all coefficients are normalized by GM.
+        setIfUnset(c, 0, 0, 1);
+        setIfUnset(s, 0, 0, 0);
+        // C1,0, C1,1, and S1,1 are the x,y,z coordinates of the center of mass,
+        // which are 0 since all coefficients are given in an Earth centered frame
+        setIfUnset(c, 1, 0, 0);
+        setIfUnset(s, 1, 0, 0);
+        setIfUnset(c, 1, 1, 0);
+        setIfUnset(s, 1, 1, 0);
+
         // cosine part
         for (int i = 0; i < c.length; ++i) {
             for (int j = 0; j < c[i].length; ++j) {
@@ -239,6 +253,37 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
         }
         rawS = s;
 
+    }
+
+    /**
+     * Set a coefficient if it has not been set already.
+     * <p>
+     * If {@code array[i][j]} is 0 or NaN this method sets it to {@code value} and returns
+     * {@code true}. Otherwise the original value of {@code array[i][j]} is preserved and
+     * this method return {@code false}.
+     * <p>
+     * If {@code array[i][j]} does not exist then this method returns {@code false}.
+     *
+     * @param array the coefficient array.
+     * @param i     degree, the first index to {@code array}.
+     * @param j     order, the second index to {@code array}.
+     * @param value the new value to set.
+     * @return {@code true} if the coefficient was set to {@code value}, {@code false} if
+     * the coefficient was not set to {@code value}. A {@code false} return indicates the
+     * coefficient has previously been set to a non-NaN, non-zero value.
+     */
+    private boolean setIfUnset(final double[][] array,
+                               final int i,
+                               final int j,
+                               final double value) {
+        if (array.length > i && array[i].length > j &&
+                (Double.isNaN(array[i][j]) || Precision.equals(array[i][j], 0.0, 1))) {
+            // the coefficient was not already initialized
+            array[i][j] = value;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /** Get the maximal degree available in the last file parsed.
