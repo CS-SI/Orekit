@@ -241,48 +241,6 @@ public abstract class PotentialCoefficientsReader implements DataLoader {
 
     }
 
-    /** Set the normalized tesseral-sectorial coefficients matrix.
-     * @param normalizedS tesseral-sectorial coefficients matrix
-     * (a reference to the array will be stored, <em>and</em>
-     * the elements will be un-normalized in-place)
-     * @param name name of the file (or zip entry)
-     * @exception OrekitException if a coefficient is missing
-     */
-    protected void setNormalizedS(final double[][] normalizedS, final String name)
-        throws OrekitException {
-        final int degree = normalizedS.length - 1;
-        final int order  = normalizedS[degree].length - 1;
-        final double[][] factors = GravityFieldFactory.getUnnormalizationFactors(degree, order);
-        for (int i = 0; i < normalizedS.length; ++i) {
-            for (int j = 0; j < normalizedS[i].length; ++j) {
-                normalizedS[i][j] *= factors[i][j];
-            }
-        }
-        setUnNormalizedS(normalizedS, name);
-    }
-
-    /** Set the un-normalized tesseral-sectorial coefficients matrix.
-     * @param unNormalizedS un-normalized tesseral-sectorial coefficients matrix
-     * (a reference to the array will be stored)
-     * @param name name of the file (or zip entry)
-     * @exception OrekitException if a coefficient is missing
-     */
-    protected void setUnNormalizedS(final double[][] unNormalizedS, final String name)
-        throws OrekitException {
-
-        for (int i = 0; i < unNormalizedS.length; ++i) {
-            for (int j = 0; j < unNormalizedS[i].length; ++j) {
-                if (Double.isNaN(unNormalizedS[i][j])) {
-                    throw new OrekitException(OrekitMessages.MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE,
-                                              'S', i, j, name);
-                }
-            }
-        }
-
-        this.rawS = unNormalizedS;
-
-    }
-
     /** Get the maximal degree available in the last file parsed.
      * @return maximal degree available in the last file parsed
      * @since 6.0
