@@ -50,8 +50,9 @@ Orbit initialOrbit = new KeplerianOrbit(new PVCoordinates(position, velocity),
   Let's define a couple of <AttitudeLaw>, built upon <LofOffset> laws for instance.
 
 +---------------------
-AttitudeLaw dayObservationLaw = new LofOffset(RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
-AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
+AttitudeLaw dayObservationLaw = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH,
+                                              RotationOrder.XYZ, Math.toRadians(20), Math.toRadians(40), 0);
+AttitudeLaw nightRestingLaw   = new LofOffset(initialOrbit.getFrame(), LOFType.VVLH);
 +---------------------
 
   Let's also define some <EventDetector>. For this tutorial's requirements,
@@ -69,20 +70,28 @@ AttitudeLaw nightRestingLaw   = LofOffset.LOF_ALIGNED;
 +---------------------
 PVCoordinatesProvider sun = CelestialBodyFactory.getSun();
 PVCoordinatesProvider earth = CelestialBodyFactory.getEarth();
-EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
-    public int eventOccurred(final SpacecraftState s, final boolean increasing) {
+EventDetector dayNightEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                              withHandler(new EventHandler<EclipseDetector>() {
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
         if (!increasing) {
             output.add(s.getDate() + " : event occurred, entering eclipse => switching to night law");
         }
-        return CONTINUE;
+        return Action.CONTINUE;
     }
-};
-EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS) {
-    public int eventOccurred(final SpacecraftState s, final boolean increasing) {
-        if (increasing) {
+    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+        return oldState;
+    }
+});
+EventDetector nightDayEvent = new EclipseDetector(sun, 696000000., earth, Constants.WGS84_EARTH_EQUATORIAL_RADIUS).
+                              withHandler(new EventHandler<EclipseDetector>() {
+    public Action eventOccurred(final SpacecraftState s, final boolean increasing) {
+        if (!increasing) {
             output.add(s.getDate() + " : event occurred, exiting eclipse => switching to day law");
         }
         return CONTINUE;
+    }
+    public SpacecraftState resetState(EclipseDetector detector, SpacecraftState oldState) {
+        return oldState;
     }
 };
 +---------------------
@@ -154,8 +163,13 @@ attitudesSequence.registerSwitchEvents(propagator);
 
 +---------------------
 propagator.setMasterMode(180., new OrekitFixedStepHandler() {
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+    }
     public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
         try {
+            DecimalFormatSymbols angleDegree = new DecimalFormatSymbols(Locale.US);
+            angleDegree.setDecimalSeparator('\u00b0');
+            DecimalFormat ad = new DecimalFormat(" 00.000;-00.000", angleDegree);
             // the g function is the eclipse indicator, its an angle between Sun and Earth limb,
             // positive when Sun is outside of Earth limb, negative when Sun is hidden by Earth limb
             final double eclipseAngle = dayNightEvent.g(currentState);
@@ -165,10 +179,11 @@ propagator.setMasterMode(180., new OrekitFixedStepHandler() {
             final Vector3D earth = currentState.toTransform().transformPosition(Vector3D.ZERO);
             final double pointingOffset = Vector3D.angle(earth, Vector3D.PLUS_K);
 
-            output.add(currentState.getDate() + " " + Math.toDegrees(eclipseAngle)
-                                              + " " + Math.toDegrees(pointingOffset));
+            output.add(currentState.getDate() +
+                       " " + ad.format(FastMath.toDegrees(eclipseAngle) +
+                       " " + vFastMath.toDegrees(pointingOffset));
         } catch (OrekitException oe) {
-                        throw new PropagationException(oe.getLocalizedMessage(), oe);
+            throw new PropagationException(oe.getLocalizedMessage(), oe);
         }
     }
 });

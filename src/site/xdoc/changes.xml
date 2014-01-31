@@ -22,6 +22,9 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" due-to="Lucian Barbulescu">
+        Avoid recomputing Chi and Chi^2 in Hansen coefficients for tesseral.
+      </action>
       <action dev="luc" type="update" due-to="Nicolas Bernard">
         Added better handling of Hansen kernel computation through use of PolynomialFunction.
       </action>

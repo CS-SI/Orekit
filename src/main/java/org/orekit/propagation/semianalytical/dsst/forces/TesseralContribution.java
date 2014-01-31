@@ -587,7 +587,7 @@ class TesseralContribution implements DSSTForceModel {
         final HansenTesseralLinear hans = this.hansenObjects[maxDegree + s][j];
 
         //Compute the initial values using newComb operators
-        hans.computeInitValues(ecc * ecc, chi, chi2, maxHansen);
+        hans.computeInitValues(ecc * ecc, chi, chi2);
 
         // n-SUM from nmin to N
         for (int n = nmin; n <= maxDegree; n++) {

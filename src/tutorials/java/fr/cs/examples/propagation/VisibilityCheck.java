@@ -36,6 +36,7 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.handlers.EventHandler;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 
@@ -69,10 +70,10 @@ public class VisibilityCheck {
             Propagator kepler = new KeplerianPropagator(initialOrbit);
 
             // Earth and frame
-            double ae =  6378137.0; // equatorial radius in meter
-            double f  =  1.0 / 298.257223563; // flattening
-            Frame ITRF2005 = FramesFactory.getITRF(IERSConventions.IERS_2010, true); // terrestrial frame at an arbitrary date
-            BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+            Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+            BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                                   Constants.WGS84_EARTH_FLATTENING,
+                                                   earthFrame);
 
             // Station
             final double longitude = FastMath.toRadians(45.);
@@ -112,7 +113,7 @@ public class VisibilityCheck {
             } else {
                 System.out.println(" Visibility on " + detector.getTopocentricFrame().getName()
                                                      + " ends at " + s.getDate());
-                return Action.CONTINUE;//STOP;
+                return Action.STOP;
             }
         }
 
