@@ -31,6 +31,7 @@ import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.utils.PVCoordinates;
 
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
  * <p>
@@ -220,7 +221,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  @return the perturbing acceleration
      *  @exception OrekitException if some specific error occurs
      */
-    private Vector3D getAcceleration(final SpacecraftState state)
+    protected Vector3D getAcceleration(final SpacecraftState state, Vector3D pos, Vector3D vel)
             throws OrekitException {
         AccelerationRetriever retriever = new AccelerationRetriever(state);
         contribution.addContribution(state, retriever);
@@ -343,12 +344,28 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double naob = n * a / B;
             final double Xdot = -naob * (h + sinL);
             final double Ydot =  naob * (k + cosL);
-            //final Vector3D pos = new Vector3D(X, f, Y, g);
+            final Vector3D pos = new Vector3D(X, f, Y, g);
             final Vector3D vel = new Vector3D(Xdot, f, Ydot, g);
+
+            final EquinoctialOrbit orb = new EquinoctialOrbit(
+                    state.getA(),
+                    state.getEquinoctialEx(),
+                    state.getEquinoctialEy(),
+                    state.getHx(),
+                    state.getHy(),
+                    x, PositionAngle.TRUE,
+                    state.getFrame(), state.getDate(), state.getMu());
+
+           final Vector3D pos1 = orb.getPVCoordinates().getPosition();
+           final Vector3D vel1 = orb.getPVCoordinates().getVelocity();
+
+           System.out.println("EO: " +pos1);
+           System.out.println("di: " +pos);
+
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
             try {
-                acc = getAcceleration(state.shiftedBy(dt));
+                //acc = getAcceleration(state.shiftedBy(dt), pos, vel);
                 /*acc = getAcceleration(new SpacecraftState(
                         new EquinoctialOrbit(
                                 state.getA(),
@@ -358,7 +375,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                 state.getHy(),
                                 x, PositionAngle.TRUE,
                                 state.getFrame(), state.getDate(), state.getMu()),
-                                state.getMass()));*/
+                                state.getMass()), pos, vel);*/
+                acc = getAcceleration(new SpacecraftState(
+                        new EquinoctialOrbit(new PVCoordinates(pos, vel),
+                                state.getFrame(), state.getDate(), state.getMu()),
+                                state.getMass()), pos, vel);//*/
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -379,6 +400,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
             return val;
         }
+
 
         private double TrueToEccentric (double lv) {
             final double cosLv   = FastMath.cos(lv);
