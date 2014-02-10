@@ -36,10 +36,12 @@ import org.orekit.forces.ForceModel;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
 import org.orekit.forces.drag.DragForce;
+import org.orekit.forces.drag.DragSensitive;
 import org.orekit.forces.gravity.HolmesFeatherstoneAttractionModel;
 import org.orekit.forces.gravity.ThirdBodyAttraction;
 import org.orekit.forces.gravity.potential.GravityFieldFactory;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
+import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
@@ -498,20 +500,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 } else if (force instanceof DSSTAtmosphericDrag) {
                     // Atmospheric drag
                     final Atmosphere atm = ((DSSTAtmosphericDrag) force).getAtmosphere();
-                    final double area    = ((DSSTAtmosphericDrag) force).getArea();
-                    final double cd      = ((DSSTAtmosphericDrag) force).getCd();
-                    final SphericalSpacecraft scr = new SphericalSpacecraft(area, cd, 0., 0.);
-                    final ForceModel drag = new DragForce(atm, scr);
+                    final DragSensitive spacecraft = ((DSSTAtmosphericDrag) force).getSpacecraft();
+                    final ForceModel drag = new DragForce(atm, spacecraft);
                     propagator.addForceModel(drag);
                 } else if (force instanceof DSSTSolarRadiationPressure) {
                     // Solar radiation pressure
                     final double ae   = ((DSSTSolarRadiationPressure) force).getEquatorialRadius();
-                    final double area = ((DSSTSolarRadiationPressure) force).getArea();
-                    final double cr   = ((DSSTSolarRadiationPressure) force).getCr();
-                    // Convert DSST SRP coefficient convention to numerical's one
-                    final double kr   = 3.25 - 2.25 * cr;
-                    final SphericalSpacecraft scr = new SphericalSpacecraft(area, 0., 0., kr);
-                    final ForceModel pressure = new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, scr);
+                    final RadiationSensitive spacecraft = ((DSSTSolarRadiationPressure) force).getSpacecraft();
+                    final ForceModel pressure = new SolarRadiationPressure(CelestialBodyFactory.getSun(), ae, spacecraft);
                     propagator.addForceModel(pressure);
                 }
             }

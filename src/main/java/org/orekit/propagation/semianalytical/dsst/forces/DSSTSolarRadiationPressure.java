@@ -20,10 +20,12 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
+import org.orekit.forces.SphericalSpacecraft;
+import org.orekit.forces.radiation.RadiationSensitive;
+import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Solar radiation pressure contribution to the
@@ -53,19 +55,11 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** Sun model. */
     private final PVCoordinatesProvider sun;
 
-    /** Flux on satellite:
-     * kRef = C<sub>R</sub> * Area * P<sub>Ref</sub> * D<sub>Ref</sub><sup>2</sup>.
-     */
-    private final double                kRef;
-
     /** Central Body radius. */
     private final double                ae;
 
-    /** satellite radiation pressure coefficient (assuming total specular reflection). */
-    private final double                cr;
+    private final RadiationSensitive spacecraft;
 
-    /** Cross sectional area of satellite. */
-    private final double                area;
 
     /**
      * Simple constructor with default reference values.
@@ -83,9 +77,15 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param equatorialRadius central body equatorial radius (for shadow computation)
      */
     public DSSTSolarRadiationPressure(final double cr, final double area,
-                                      final PVCoordinatesProvider sun,
-                                      final double equatorialRadius) {
+            final PVCoordinatesProvider sun,
+            final double equatorialRadius) {
         this(D_REF, P_REF, cr, area, sun, equatorialRadius);
+    }
+
+    public DSSTSolarRadiationPressure(final PVCoordinatesProvider sun,
+            final double equatorialRadius,
+            final RadiationSensitive spacecraft) {
+        this(D_REF, P_REF, sun, equatorialRadius, spacecraft);
     }
 
     /**
@@ -105,21 +105,40 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * @param equatorialRadius central body equatrial radius (for shadow computation)
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
-                                      final double cr, final double area,
-                                      final PVCoordinatesProvider sun,
-                                      final double equatorialRadius) {
-        super(GAUSS_THRESHOLD);
-        this.kRef = pRef * dRef * dRef * cr * area;
-        this.area = area;
-        this.cr   = cr;
+            final double cr, final double area,
+            final PVCoordinatesProvider sun,
+            final double equatorialRadius) {
+
+        // cR being the DSST SRP coef and assuming a spherical spacecraft,
+        // the conversion is:
+        // cR = 1 + (1 - kA) * (1 - kR) * 4 / 9
+        // with kA arbitrary sets to 0
+        this(dRef, pRef, sun, equatorialRadius, new SphericalSpacecraft(
+                area, 0.0, 0.0, 3.25 - 2.25 * cr));
+    }
+
+    public DSSTSolarRadiationPressure(final double dRef, final double pRef,
+            final PVCoordinatesProvider sun, final double equatorialRadius,
+            RadiationSensitive spacecraft) {
+        super(GAUSS_THRESHOLD, new SolarRadiationPressure(
+                dRef, pRef, sun, equatorialRadius, spacecraft));
+
         this.sun  = sun;
         this.ae   = equatorialRadius;
+        this.spacecraft = spacecraft;
+    }
+
+    /**
+     * @return the spacecraft
+     */
+    public RadiationSensitive getSpacecraft() {
+        return spacecraft;
     }
 
     /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
-                                               final double[] meanElements)
-        throws OrekitException {
+            final double[] meanElements)
+                    throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
     }
@@ -128,19 +147,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     public EventDetector[] getEventsDetectors() {
         // TODO: add eclipses handling
         return null;
-    }
-
-    /** {@inheritDoc} */
-    protected Vector3D getAcceleration(final SpacecraftState state,
-                                       final Vector3D position, final Vector3D velocity)
-        throws OrekitException {
-
-        final Vector3D sunSat = getSunSatVector(state, position);
-        final double R = sunSat.getNorm();
-        final double R3 = R * R * R;
-        final double T = kRef / state.getMass();
-        // raw radiation pressure
-        return new Vector3D(T / R3, sunSat);
     }
 
     /** {@inheritDoc} */
@@ -235,33 +241,6 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      */
     public double getEquatorialRadius() {
         return ae;
-    }
-
-    /** Get the satellite radiation pressure coefficient (assuming total specular reflection).
-     *  @return satellite radiation pressure coefficient
-     */
-    public double getCr() {
-        return cr;
-    }
-
-    /** Get the cross sectional area of satellite.
-     *  @return cross sectional section (m<sup>2</sup>
-     */
-    public double getArea() {
-        return area;
-    }
-
-    /**
-     * Compute Sun-sat vector in SpacecraftState frame.
-     * @param state current spacecraft state
-     * @param position spacecraft position
-     * @return Sun-sat vector in SpacecraftState frame
-     * @exception OrekitException if sun position cannot be computed
-     */
-    private Vector3D getSunSatVector(final SpacecraftState state,
-                                     final Vector3D position) throws OrekitException {
-        final PVCoordinates sunPV = sun.getPVCoordinates(state.getDate(), state.getFrame());
-        return position.subtract(sunPV.getPosition());
     }
 
     /**

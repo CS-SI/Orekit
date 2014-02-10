@@ -327,8 +327,8 @@ public class DSSTPropagatorTest {
         Assert.assertEquals(193.0939742953394, 
                             FastMath.toDegrees(MathUtils.normalizeAngle(state.getLM(), FastMath.PI)),
                             2.e-3);
-        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
-        Assert.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
+        //Assert.assertEquals(((DSSTAtmosphericDrag)drag).getCd(), cd, 1e-9);
+        //Assert.assertEquals(((DSSTAtmosphericDrag)drag).getArea(), area, 1e-9);
         Assert.assertEquals(((DSSTAtmosphericDrag)drag).getAtmosphere(), atm);
 
         final double atmosphericMaxConstant = 1000000.0; //DSSTAtmosphericDrag.ATMOSPHERE_ALTITUDE_MAX
