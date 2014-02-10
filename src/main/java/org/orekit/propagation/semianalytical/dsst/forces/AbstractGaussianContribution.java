@@ -20,11 +20,14 @@ import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.analysis.function.Atan2;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -346,6 +349,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             Vector3D acc = Vector3D.ZERO;
             try {
                 acc = getAcceleration(state.shiftedBy(dt));
+                /*acc = getAcceleration(new SpacecraftState(
+                        new EquinoctialOrbit(
+                                state.getA(),
+                                state.getEquinoctialEx(),
+                                state.getEquinoctialEy(),
+                                state.getHx(),
+                                state.getHy(),
+                                x, PositionAngle.TRUE,
+                                state.getFrame(), state.getDate(), state.getMu()),
+                                state.getMass()));*/
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
