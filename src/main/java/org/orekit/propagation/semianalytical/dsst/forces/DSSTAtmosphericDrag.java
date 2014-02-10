@@ -132,34 +132,4 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         return spacecraft;
     }
 
-    @Override
-    protected Vector3D getAcceleration(final SpacecraftState state,
-                                       final Vector3D position, final Vector3D velocity)
-        throws OrekitException {
-        double area = 0.4;
-        double cd = 2.0;
-        double kRef = 0.5 * cd * area;
-
-        Vector3D acc1  = super.getAcceleration(state, position, velocity);
-
-        final AbsoluteDate date = state.getDate();
-        final Frame frame = state.getFrame();
-        // compute atmospheric density (assuming it doesn't depend on the date)
-        final double rho = atmosphere.getDensity(date, position, frame);
-        // compute atmospheric velocity (assuming it doesn't depend on the date)
-        final Vector3D vAtm = atmosphere.getVelocity(date, position, frame);
-        // compute relative velocity
-        final Vector3D vRel = vAtm.subtract(velocity);
-        // compute compound drag coefficient
-        final double bc = kRef / state.getMass();
-        // compute drag acceleration
-        Vector3D acc2 = new Vector3D(bc * rho * vRel.getNorm(), vRel);
-
-        //System.out.println("acc1: " + acc1.scalarMultiply(1e12));
-        //System.out.println("acc2: " + acc2.scalarMultiply(1e12));
-
-
-        return new Vector3D(bc * rho * vRel.getNorm(), vRel);
-    }
-
 }
