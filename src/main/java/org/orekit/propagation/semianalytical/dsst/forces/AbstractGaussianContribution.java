@@ -351,10 +351,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             Vector3D acc = Vector3D.ZERO;
             try {
                 acc = getAcceleration(state.shiftedBy(dt));
-                /*acc = getAcceleration(new SpacecraftState(
-                        new EquinoctialOrbit(new PVCoordinates(pos, vel),
-                                state.getFrame(), state.getDate(), state.getMu()),
-                                state.getMass()));*/
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
