@@ -137,7 +137,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         this.threshold  = threshold;
         this.integrator = new GaussQuadrature(GAUSS_ORDER[MAX_ORDER_RANK]);
         this.isDirty    = true;
-        this.attitudeProvider = Propagator.DEFAULT_LAW;
     }
 
     /** {@inheritDoc} */

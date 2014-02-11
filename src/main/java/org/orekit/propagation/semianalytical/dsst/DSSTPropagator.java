@@ -269,6 +269,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
     @Override
     public void setAttitudeProvider(AttitudeProvider attitudeProvider) {
         super.setAttitudeProvider(attitudeProvider);
+
+        //Register the attitude provider for each force model
         for (final DSSTForceModel force : mapper.getForceModels()) {
             force.registerAttitudeProvider(attitudeProvider);
         }
