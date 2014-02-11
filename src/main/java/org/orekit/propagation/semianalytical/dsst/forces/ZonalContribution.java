@@ -19,6 +19,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import java.util.TreeMap;
 
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
@@ -446,5 +447,10 @@ class ZonalContribution implements DSSTForceModel {
             dUdBe * -muoa,
             dUdGa * -muoa
         };
+    }
+
+    @Override
+    public void registerAttitudeProvider(AttitudeProvider provider) {
+        //nothing is done since this contribution is not sensitive to attitude
     }
 }

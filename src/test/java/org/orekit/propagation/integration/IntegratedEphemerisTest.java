@@ -32,6 +32,7 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.PropagationException;
 import org.orekit.frames.FramesFactory;
@@ -240,6 +241,10 @@ public class IntegratedEphemerisTest {
 
             public EventDetector[] getEventsDetectors() {
                 return null;
+            }
+
+            @Override
+            public void registerAttitudeProvider(AttitudeProvider provider) {
             }
         });
 

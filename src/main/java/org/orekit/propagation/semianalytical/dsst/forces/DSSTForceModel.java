@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
@@ -99,5 +100,14 @@ public interface DSSTForceModel {
      * related to any discrete events
      */
     EventDetector[] getEventsDetectors();
+
+
+    /** Register an attitude provider.
+     * <p>
+     * Register an attitude provider that can be used by the force model.
+     * </p>
+     * @param provider the {@link #AttitudeProvider}
+     */
+    void registerAttitudeProvider(AttitudeProvider provider);
 
 }

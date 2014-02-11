@@ -17,21 +17,18 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
-import org.apache.commons.math3.analysis.function.Atan2;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.MathUtils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.frames.Transform;
-import org.orekit.orbits.EquinoctialOrbit;
-import org.orekit.orbits.PositionAngle;
+import org.orekit.orbits.Orbit;
+import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.utils.PVCoordinates;
 
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
  * <p>
@@ -127,6 +124,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Flag for Gauss order computation. */
     private boolean isDirty;
 
+    /** Attitude provider. */
+    private AttitudeProvider attitudeProvider;
+
     /** Build a new instance.
      *
      *  @param threshold tolerance for the choice of the Gauss quadrature order
@@ -137,6 +137,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         this.threshold  = threshold;
         this.integrator = new GaussQuadrature(GAUSS_ORDER[MAX_ORDER_RANK]);
         this.isDirty    = true;
+        this.attitudeProvider = Propagator.DEFAULT_LAW;
     }
 
     /** {@inheritDoc} */
@@ -276,6 +277,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         return maxDiff;
     }
 
+    @Override
+    public void registerAttitudeProvider(AttitudeProvider provider) {
+        this.attitudeProvider = provider;
+    }
+
     /** Internal class for retrieving acceleration from a force model. */
     private class AccelerationRetriever implements TimeDerivativesEquations {
 
@@ -330,6 +336,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** {@inheritDoc} */
         public double[] value(final double x) {
 
+            //Compute the time difference from the true longitude difference
             final double shiftedLm = TrueToMean(x);
             final double dLm = shiftedLm - lm;
             final double dt = dLm / n;
@@ -350,7 +357,16 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
             try {
-                acc = getAcceleration(state.shiftedBy(dt));
+                // shift the orbit of dt
+                final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
+
+                // create shifted SpacecraftState with attitude at specified time
+                final SpacecraftState shiftedState = new SpacecraftState(
+                        shiftedOrbit, attitudeProvider.getAttitude(
+                                shiftedOrbit, shiftedOrbit.getDate(),
+                                shiftedOrbit.getFrame()), state.getMass());
+
+                acc = getAcceleration(shiftedState);
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }

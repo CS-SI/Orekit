@@ -232,6 +232,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public void addForceModel(final DSSTForceModel force) {
         mapper.addForceModel(force);
+        force.registerAttitudeProvider(getAttitudeProvider());
     }
 
     /** Remove all perturbing force models from the global perturbation model.
@@ -263,6 +264,14 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      */
     public int getSatelliteRevolution() {
         return mapper.getSatelliteRevolution();
+    }
+
+    @Override
+    public void setAttitudeProvider(AttitudeProvider attitudeProvider) {
+        super.setAttitudeProvider(attitudeProvider);
+        for (final DSSTForceModel force : mapper.getForceModels()) {
+            force.registerAttitudeProvider(attitudeProvider);
+        }
     }
 
     /** Method called just before integration.

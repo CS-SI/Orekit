@@ -23,6 +23,7 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider.UnnormalizedSphericalHarmonics;
@@ -677,6 +678,11 @@ class TesseralContribution implements DSSTForceModel {
                                {dUdAlCos, dUdAlSin},
                                {dUdBeCos, dUdBeSin},
                                {dUdGaCos, dUdGaSin}};
+    }
+
+    @Override
+    public void registerAttitudeProvider(AttitudeProvider provider) {
+        //nothing is done since this contribution is not sensitive to attitude
     }
 
 }

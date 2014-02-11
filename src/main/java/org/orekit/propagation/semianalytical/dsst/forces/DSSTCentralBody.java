@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.semianalytical.dsst.forces;
 
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.gravity.potential.UnnormalizedSphericalHarmonicsProvider;
 import org.orekit.frames.Frame;
@@ -138,4 +139,8 @@ public class DSSTCentralBody implements DSSTForceModel {
         return zonal.getProvider();
     }
 
+    @Override
+    public void registerAttitudeProvider(AttitudeProvider provider) {
+        //nothing is done since this contribution is not sensitive to attitude
+    }
 }

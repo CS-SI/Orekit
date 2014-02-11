@@ -20,6 +20,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.SpacecraftState;
@@ -430,5 +431,10 @@ public class DSSTThirdBody  implements DSSTForceModel {
             dUdGa * muoR3
         };
 
+    }
+
+    @Override
+    public void registerAttitudeProvider(AttitudeProvider provider) {
+        //nothing is done since this contribution is not sensitive to attitude
     }
 }
