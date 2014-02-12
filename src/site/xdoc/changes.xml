@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add" >
+        Added a GeographicZoneDetector event detector for complex geographic zones traversal.
+        Fixes issue #163.
+      </action>
       <action dev="luc" type="update" due-to="Lucian Barbulescu">
         Avoid recomputing Chi and Chi^2 in Hansen coefficients for tesseral.
       </action>

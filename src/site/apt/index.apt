@@ -168,6 +168,8 @@ Overview
 
       * target detection in sensor field of view (circular or dihedral)
 
+      * complex geographic zones traversal
+
       * impulse maneuvers occurrence
 
     * possibility of slightly shifting events in time (for example to switch from
