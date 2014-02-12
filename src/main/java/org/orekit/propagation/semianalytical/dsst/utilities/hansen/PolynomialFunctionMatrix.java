@@ -117,7 +117,7 @@ public class PolynomialFunctionMatrix {
     }
 
     /**
-     * Get a line of the matrix as a {@link PolynomialFunctionVector}.
+     * Get a line of the matrix.
      *
      * @param line
      *            the line number

@@ -205,12 +205,12 @@ AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
 // Central attraction coefficient
 double mu =  3.986004415e+14;
 // Initial orbit
-double a = 24396159;                // semi major axis in meters
-double e = 0.72831215;              // eccentricity
-double i = Math.toRadians(7);       // inclination
-double omega = Math.toRadians(180); // perigee argument
-double raan = Math.toRadians(261);  // right ascention of ascending node
-double lM = 0;                      // mean anomaly
+double a = 24396159;                    // semi major axis in meters
+double e = 0.72831215;                  // eccentricity
+double i = FastMath.toRadians(7);       // inclination
+double omega = FastMath.toRadians(180); // perigee argument
+double raan = FastMath.toRadians(261);  // right ascention of ascending node
+double lM = 0;                          // mean anomaly
 Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, 
                                         inertialFrame, initialDate, mu);
 // Initial state definition
@@ -247,8 +247,12 @@ propagator.setOrbitType(propagationType);
   of the library architecture documentation.
 
 +---------------------
-NormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getNormalizedProvider(10, 10);
-ForceModel holmesFeatherstone = new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF2005(), provider);
+NormalizedSphericalHarmonicsProvider provider =
+    GravityFieldFactory.getNormalizedProvider(10, 10);
+ForceModel holmesFeatherstone =
+    new HolmesFeatherstoneAttractionModel(FramesFactory.getITRF(IERSConventions.IERS_2010,
+                                                                true),
+                                          provider)
 +---------------------
 
   This force model is simply added to the propagator:
@@ -289,11 +293,24 @@ SpacecraftState finalState =
 +---------------------
 private static class TutorialStepHandler implements OrekitFixedStepHandler {
 
+    public void init(final SpacecraftState s0, final AbsoluteDate t) {
+        System.out.println("          date                a           e" +
+                           "           i         \u03c9          \u03a9" +
+                           "          \u03bd");
+    }
+
     public void handleStep(SpacecraftState currentState, boolean isLast) {
-        System.out.println(" time : " + currentState.getDate());
-        System.out.println(" " + currentState.getOrbit());
+        KeplerianOrbit o = (KeplerianOrbit) OrbitType.KEPLERIAN.convertType(currentState.getOrbit());
+        System.out.format(Locale.US, "%s %12.3f %10.8f %10.6f %10.6f %10.6f %10.6f%n",
+                          currentState.getDate(),
+                          o.getA(), o.getE(),
+                          FastMath.toDegrees(o.getI()),
+                          FastMath.toDegrees(o.getPerigeeArgument()),
+                          FastMath.toDegrees(o.getRightAscensionOfAscendingNode()),
+                          FastMath.toDegrees(o.getTrueAnomaly()));
         if (isLast) {
-            System.out.println(" this was the last step ");
+            System.out.println("this was the last step ");
+            System.out.println();
         }
     }
 
@@ -305,31 +322,22 @@ private static class TutorialStepHandler implements OrekitFixedStepHandler {
   The printed results are shown below:
 
 +---------------------
-  time : 2004-01-01T23:30:00.000
- keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 0.0;}
- time : 2004-01-01T23:31:00.000
- keplerian parameters: {a: 2.439567294825084E7; e: 0.7283057298312567; i: 6.999926685028417; pa: 180.01099164196964; raan: 260.99996584983745; v: 5.270439090625698;}
- time : 2004-01-01T23:32:00.000
- keplerian parameters: {a: 2.4394149109752804E7; e: 0.7282857977588459; i: 6.99975751751188; pa: 180.02188512355906; raan: 260.99976714716615; v: 10.503709968446776;}
- time : 2004-01-01T23:33:00.000
- keplerian parameters: {a: 2.4391676555104487E7; e: 0.7282535195349812; i: 6.999506209571202; pa: 180.03255680755524; raan: 260.9992813856247; v: 15.664370104675593;}
- time : 2004-01-01T23:34:00.000
- keplerian parameters: {a: 2.4388396500723846E7; e: 0.7282107346735237; i: 6.999190042362488; pa: 180.0428888146681; raan: 260.99842196418786; v: 20.72021960510703;}
- time : 2004-01-01T23:35:00.000
- keplerian parameters: {a: 2.4384487471361116E7; e: 0.7281597572442904; i: 6.998827000702349; pa: 180.05278514952087; raan: 260.9971388510754; v: 25.64346271824545;}
- time : 2004-01-01T23:36:00.000
- keplerian parameters: {a: 2.4380142510199904E7; e: 0.7281030828502557; i: 6.998434411462986; pa: 180.06218152381527; raan: 260.99541571200984; v: 30.411432652540466;}
- time : 2004-01-01T23:37:00.000
- keplerian parameters: {a: 2.4375546778893556E7; e: 0.7280431044846278; i: 6.998028559931812; pa: 180.07104290690677; raan: 260.99326768361715; v: 35.00686637309839;}
- time : 2004-01-01T23:38:00.000
- keplerian parameters: {a: 2.4370861667637732E7; e: 0.7279819115221708; i: 6.997624284331928; pa: 180.07935436842862; raan: 260.99073821046767; v: 39.41778587831865;}
- time : 2004-01-01T23:39:00.000
- keplerian parameters: {a: 2.436621695941882E7; e: 0.7279211902927675; i: 6.997234270379576; pa: 180.08711236321756; raan: 260.98789263896447; v: 43.637076468122785;}
- time : 2004-01-01T23:40:00.000
- keplerian parameters: {a: 2.4361709735003237E7; e: 0.7278622093554471; i: 6.996868366835913; pa: 180.0943202041507; raan: 260.9848087367962; v: 47.661864572695;}
- this was the last step 
- Final date  : 2004-01-01T23:40:30.000
- Final state : keplerian parameters: {a: 2.4359529815906595E7; e: 0.7278336627402863; i: 6.9966966687030006; pa: 180.09772043784898; raan: 260.98320261084; v: 49.60140721108459;}
+          date                a           e           i         ω          Ω          ν
+2004-01-01T23:30:00.000 24396159.000 0.72831215   7.000000 180.000000 261.000000   0.000000
+2004-01-01T23:31:00.000 24395672.948 0.72830573   6.999927 180.010992 260.999966   5.270439
+2004-01-01T23:32:00.000 24394149.110 0.72828580   6.999758 180.021885 260.999767  10.503710
+2004-01-01T23:33:00.000 24391676.555 0.72825352   6.999506 180.032557 260.999281  15.664370
+2004-01-01T23:34:00.000 24388396.501 0.72821073   6.999190 180.042889 260.998422  20.720220
+2004-01-01T23:35:00.000 24384487.471 0.72815976   6.998827 180.052785 260.997139  25.643463
+2004-01-01T23:36:00.000 24380142.510 0.72810308   6.998434 180.062182 260.995416  30.411433
+2004-01-01T23:37:00.000 24375546.779 0.72804310   6.998029 180.071043 260.993268  35.006866
+2004-01-01T23:38:00.000 24370861.668 0.72798191   6.997624 180.079354 260.990738  39.417786
+2004-01-01T23:39:00.000 24366216.959 0.72792119   6.997234 180.087112 260.987893  43.637076
+2004-01-01T23:40:00.000 24361709.735 0.72786221   6.996868 180.094320 260.984809  47.661865
+this was the last step 
+
+Final state:
+2004-01-01T23:40:30.000 24359529.816 0.72783366   6.996697 180.097720 260.983203  49.601407
 +---------------------
 
 *** Source code
@@ -363,12 +371,12 @@ AbsoluteDate initialDate = new AbsoluteDate(2004, 01, 01, 23, 30, 00.000,utc);
 // Central attraction coefficient
 double mu =  3.986004415e+14;
 // Initial orbit
-double a = 24396159;                // semi major axis in meters
-double e = 0.72831215;              // eccentricity
-double i = Math.toRadians(7);       // inclination
-double omega = Math.toRadians(180); // perigee argument
-double raan = Math.toRadians(261);  // right ascention of ascending node
-double lM = 0;                      // mean anomaly
+double a = 24396159;                    // semi major axis in meters
+double e = 0.72831215;                  // eccentricity
+double i = FastMath.toRadians(7);       // inclination
+double omega = FastMath.toRadians(180); // perigee argument
+double raan = FastMath.toRadians(261);  // right ascention of ascending node
+double lM = 0;                          // mean anomaly
 Orbit initialOrbit = new KeplerianOrbit(a, e, i, omega, raan, lM, PositionAngle.MEAN, 
                                         inertialFrame, initialDate, mu);
 // Initial state definition
@@ -400,8 +408,7 @@ propagator.setEphemerisMode();
   And the propagation is performed for a given duration.
 
 +---------------------
-SpacecraftState finalState =
-    propagator.propagate(new AbsoluteDate(initialDate, 6000));
+SpacecraftState finalState = propagator.propagate(initialDate.shiftedBy(6000));
 +---------------------
 
   This <finalState> can be used for anything, to be printed, for example as shown below:
@@ -513,8 +520,8 @@ Propagator kepler = new KeplerianPropagator(initialOrbit);
   Then, let's define the ground station by its coordinates as a <GeodeticPoint>:
 
 +---------------------
-double longitude = Math.toRadians(45.);
-double latitude  = Math.toRadians(25.);
+double longitude = FastMath.toRadians(45.);
+double latitude  = FastMath.toRadians(25.);
 double altitude  = 0.;
 GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
 +---------------------
@@ -522,10 +529,10 @@ GeodeticPoint station1 = new GeodeticPoint(latitude, longitude, altitude);
   And let's associate to it a <TopocentricFrame> related to a <BodyShape> in some terrestrial frame.
 
 +---------------------
-double ae =  6378137.0;                // equatorial radius in meter
-double f  =  1.0 / 298.257223563;      // flattening
-Frame ITRF2005 = FramesFactory.getITRF2005();  // terrestrial frame at an arbitrary date
-BodyShape earth = new OneAxisEllipsoid(ae, f, ITRF2005);
+Frame earthFrame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+BodyShape earth = new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                       Constants.WGS84_EARTH_FLATTENING,
+                                       earthFrame);
 TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 +---------------------
 
@@ -541,8 +548,9 @@ TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
 +---------------------
 double maxcheck  = 1.;
-double elevation = Math.toRadians(5.);
-EventDetector sta1Visi = new VisibilityDetector(maxcheck, elevation, sta1Frame);
+double elevation = FastMath.toRadians(5.);
+EventDetector sta1Visi = new ElevationDetector(maxcheck, elevation, sta1Frame).
+                         withHandler(new VisibilityHandler());
 +---------------------
 
   This <EventDetector> is added to the propagator:
@@ -555,28 +563,53 @@ kepler.addEventDetector(sta1Visi);
   in slave mode by default.
 
   It will propagate from the initial date to the first raising or for the fixed duration
-  according to the behavior implemented in the <VisibilityDetector> class.
+  according to the behavior implemented in the <VisibilityHandler> class.
 
 +---------------------
 SpacecraftState finalState =
     kepler.propagate(new AbsoluteDate(initialDate, 1500.));
+System.out.println(" Final state : " + finalState.getDate().durationFrom(initialDate));
 +---------------------
 
   The main application code is very simple, all the work is done inside the propagator
-  thanks to the <VisibilityDetector> class especially created for the purpose.
+  thanks to the <VisibilityHandler> class especially created for the purpose.
 
-  This class extends the <ElevationDetector> class, furnished by OREKIT, by overriding the
-  <eventOccurred> method with the special ability to print the results of the visibility
-  check, both the raising and the setting time, and to stop the propagation just after
-  the setting detection.
+  This class implements the <EventHandler> interface and is registered as the handler
+  to be called by the <ElevationDetector> class already provided by OREKIT. It defines
+  the behaviour to have at events occurrences, here printing the results of the visibility
+  check, both the raising and the setting time, and to stop propagation after the setting
+  event.
+
++---------------------
+private static class VisibilityHandler implements EventHandler<ElevationDetector> {
+
+    public Action eventOccurred(final SpacecraftState s, final ElevationDetector detector,
+                                final boolean increasing) {
+        if (increasing) {
+            System.out.println(" Visibility on " + detector.getTopocentricFrame().getName()
+                                                 + " begins at " + s.getDate());
+            return Action.CONTINUE;
+        } else {
+            System.out.println(" Visibility on " + detector.getTopocentricFrame().getName()
+                                                 + " ends at " + s.getDate());
+            return Action.STOP;
+            }
+    }
+
+    public SpacecraftState resetState(final ElevationDetector detector, final SpacecraftState oldState) {
+        return oldState;
+    }
+
+}
++---------------------
 
   The printed result is shown below.
   We can see that the propagation stopped just after detecting the raising:
 
 +---------------------
-Visibility on station1 begins at 2004-01-01T23:31:52.097
-Visibility on station1 ends at 2004-01-01T23:42:48.850
-Final state : 2004-01-01T23:42:48.850
+ Visibility on station1 begins at 2004-01-01T23:30:36.500
+ Visibility on station1 ends at 2004-01-01T23:44:05.255
+ Final state : 845.2550594036229
 +---------------------
 
 ** Source code

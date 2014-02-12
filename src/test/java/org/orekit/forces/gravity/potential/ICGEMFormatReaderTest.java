@@ -199,6 +199,21 @@ public class ICGEMFormatReaderTest {
                 0.0);
     }
 
+    /** check files without 1,0 and 1,1 can be parsed. */
+    @Test
+    public void testMissingDegree1() throws OrekitException {
+        Utils.setDataRoot("potential");
+        GravityFieldFactory.addPotentialCoefficientsReader(new ICGEMFormatReader("dummy_missing_degree_1", false));
+        UnnormalizedSphericalHarmonics harmonics = GravityFieldFactory
+                .getUnnormalizedProvider(2, 2)
+                .onDate(AbsoluteDate.J2000_EPOCH);
+        //check coefficients not in the file are initialized correctly
+        Assert.assertEquals(0.0, harmonics.getUnnormalizedCnm(1, 0), 0.0);
+        Assert.assertEquals(0.0, harmonics.getUnnormalizedCnm(1, 1), 0.0);
+        //check a coefficient is read correctly
+        Assert.assertEquals(10.0, harmonics.getUnnormalizedCnm(2, 2), 0.0);
+    }
+
     private void checkValue(final double value,
                             final AbsoluteDate date, final int n, final int m,
                             final int refYear, final int refMonth, final int refDay,
