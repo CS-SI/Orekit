@@ -117,7 +117,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final double apogee  = a * (1. + ecc);
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
-            return new double[] {-FastMath.PI, FastMath.PI};
+            return new double[] {-FastMath.PI + state.getLv(), FastMath.PI + state.getLv()};
         }
         // Else, trajectory partialy within of the atmosphere
         final double fb = FastMath.acos(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc);

@@ -24,7 +24,9 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
+import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
@@ -356,8 +358,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
             try {
-                // shift the orbit of dt
-                final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
+                // shift the orbit to the longitude grid point, but not the date
+                final Orbit shiftedOrbit = new EquinoctialOrbit(a, k, h, q, p,
+                        x, PositionAngle.TRUE,
+                        state.getFrame(), state.getDate(), state.getMu());
+
 
                 // create shifted SpacecraftState with attitude at specified time
                 final SpacecraftState shiftedState = new SpacecraftState(

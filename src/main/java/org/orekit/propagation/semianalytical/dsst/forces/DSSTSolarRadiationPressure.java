@@ -152,7 +152,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
         // Default bounds without shadow [-PI, PI]
-        final double[] ll = {-FastMath.PI, FastMath.PI};
+        final double[] ll = {-FastMath.PI + state.getLv(), FastMath.PI + state.getLv()};
 
         // Direction cosines of the Sun in the equinoctial frame
         final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();
