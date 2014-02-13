@@ -358,11 +358,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
             try {
-                // shift the orbit to the longitude grid point, but not the date
-                final Orbit shiftedOrbit = new EquinoctialOrbit(a, k, h, q, p,
-                        x, PositionAngle.TRUE,
-                        state.getFrame(), state.getDate(), state.getMu());
-
+                // shift the orbit to dt
+                final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
                 // create shifted SpacecraftState with attitude at specified time
                 final SpacecraftState shiftedState = new SpacecraftState(
