@@ -27,6 +27,11 @@
         Fixes issue #163.
       </action>
       <action dev="luc" type="update" due-to="Lucian Barbulescu">
+        Prepare generation of either mean or osculating orbits by DSST propagator.
+        The short periodics terms are not computed yet, but there is ongoing work
+        to add them.
+      </action>
+      <action dev="luc" type="update" due-to="Lucian Barbulescu">
         Avoid recomputing Chi and Chi^2 in Hansen coefficients for tesseral.
       </action>
       <action dev="luc" type="update" due-to="Nicolas Bernard">

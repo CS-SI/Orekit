@@ -154,7 +154,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
      * @param integrator numerical integrator to use for propagation.
      */
     public NumericalPropagator(final AbstractIntegrator integrator) {
-        super(integrator);
+        super(integrator, true);
         forceModels = new ArrayList<ForceModel>();
         initMapper();
         setAttitudeProvider(DEFAULT_LAW);
@@ -312,8 +312,9 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
         }
 
         /** {@inheritDoc} */
-        public SpacecraftState mapArrayToState(final double t, final double[] y)
+        public SpacecraftState mapArrayToState(final double t, final double[] y, final boolean meanOnly)
             throws OrekitException {
+            // the parameter meanOnly is ignored for the Numerical Propagator
 
             final double mass = y[6];
             if (mass <= 0.0) {
