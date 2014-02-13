@@ -312,7 +312,7 @@ public abstract class Orbit
     /** Compute the Jacobian of the orbital parameters with respect to the Cartesian parameters.
      * <p>
      * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
+     * respect to Cartesian coordinate j. This means each row corresponds to one orbital parameter
      * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
      * </p>
      * @param type type of the position angle to use
@@ -359,9 +359,9 @@ public abstract class Orbit
 
     /** Compute the Jacobian of the Cartesian parameters with respect to the orbital parameters.
      * <p>
-     * Element {@code jacobian[i][j]} is the derivative of parameter i of the orbit with
-     * respect to Cartesian coordinate j. This means each row correspond to one orbital parameter
-     * whereas columns 0 to 5 correspond to the Cartesian coordinates x, y, z, xDot, yDot and zDot.
+     * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i of the orbit with
+     * respect to orbital parameter j. This means each row corresponds to one Cartesian coordinate
+     * x, y, z, xdot, ydot, zdot whereas columns 0 to 5 correspond to the orbital parameters.
      * </p>
      * @param type type of the position angle to use
      * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
