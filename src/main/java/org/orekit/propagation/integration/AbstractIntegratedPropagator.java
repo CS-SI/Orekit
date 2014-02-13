@@ -86,13 +86,23 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** Underlying raw rawInterpolator. */
     private StepInterpolator mathInterpolator;
 
+    /** Output only the mean orbit. <br/>
+     * <p>
+     * This is used only in the case of semianalitical propagators where there is a clear separation between
+     * mean and short periodic elements. It is ignored by the Numerical propagator.
+     * </p>
+     */
+    private boolean meanOrbit;
+
     /** Build a new instance.
      * @param integrator numerical integrator to use for propagation.
+     * @param meanOrbit output only the mean orbit.
      */
-    protected AbstractIntegratedPropagator(final AbstractIntegrator integrator) {
+    protected AbstractIntegratedPropagator(final AbstractIntegrator integrator, final boolean meanOrbit) {
         detectors           = new ArrayList<EventDetector>();
         additionalEquations = new ArrayList<AdditionalEquations>();
         this.integrator     = integrator;
+        this.meanOrbit      = meanOrbit;
     }
 
     /** Initialize the mapper. */
@@ -446,7 +456,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
             // get final state
             SpacecraftState finalState =
-                    stateMapper.mapArrayToState(mathODE.getTime(), mathODE.getPrimaryState());
+                    stateMapper.mapArrayToState(mathODE.getTime(), mathODE.getPrimaryState(), meanOrbit);
             finalState = updateAdditionalStates(finalState);
             for (int i = 0; i < additionalEquations.size(); ++i) {
                 final double[] secondary = mathODE.getSecondaryState(i);
@@ -544,7 +554,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         throws OrekitException {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y);
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, meanOrbit);
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);
@@ -647,7 +657,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, y);
+                // use only ODE elements
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, y, true);
                 currentState = updateAdditionalStates(currentState);
 
                 // compute main state differentials
@@ -699,7 +710,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
             try {
 
                 // update space dynamics view
-                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary);
+                // the state contains only the ODE elements
+                SpacecraftState currentState = stateMapper.mapArrayToState(t, primary, true);
                 currentState = updateAdditionalStates(currentState);
                 currentState = currentState.addAdditionalState(equations.getName(), secondary);
 
@@ -930,7 +942,8 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                 SpacecraftState s =
                         stateMapper.mapArrayToState(mathInterpolator.getInterpolatedTime(),
-                                                    mathInterpolator.getInterpolatedState());
+                                                    mathInterpolator.getInterpolatedState(),
+                                                    meanOrbit);
                 s = updateAdditionalStates(s);
                 for (int i = 0; i < additionalEquations.size(); ++i) {
                     final double[] secondary = mathInterpolator.getInterpolatedSecondaryState(i);
@@ -1027,7 +1040,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
                         // create the ephemeris
                         ephemeris = new IntegratedEphemeris(startDate, minDate, maxDate,
-                                                            stateMapper, model, unmanaged,
+                                                            stateMapper, meanOrbit, model, unmanaged,
                                                             getAdditionalStateProviders(), names);
 
                     }
