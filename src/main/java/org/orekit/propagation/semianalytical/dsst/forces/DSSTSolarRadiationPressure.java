@@ -18,6 +18,7 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.apache.commons.math3.util.Precision;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
@@ -152,7 +153,8 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** {@inheritDoc} */
     protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
         // Default bounds without shadow [-PI, PI]
-        final double[] ll = {-FastMath.PI + state.getLv(), FastMath.PI + state.getLv()};
+        final double[] ll = {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
 
         // Direction cosines of the Sun in the equinoctial frame
         final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();

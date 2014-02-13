@@ -17,6 +17,7 @@
 package org.orekit.propagation.semianalytical.dsst.forces;
 
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathUtils;
 import org.orekit.errors.OrekitException;
 import org.orekit.forces.SphericalSpacecraft;
 import org.orekit.forces.drag.Atmosphere;
@@ -117,7 +118,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final double apogee  = a * (1. + ecc);
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
-            return new double[] {-FastMath.PI + state.getLv(), FastMath.PI + state.getLv()};
+            return new double[] {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                    FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
         }
         // Else, trajectory partialy within of the atmosphere
         final double fb = FastMath.acos(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc);
