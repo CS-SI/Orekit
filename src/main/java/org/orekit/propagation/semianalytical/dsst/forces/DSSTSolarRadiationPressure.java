@@ -95,7 +95,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * <ul>
      * <li>d<sub>ref</sub> = 149597870000.0 m</li>
      * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
-     * </u>
+     * </ul>
      *
      * @param sun Sun model
      * @param equatorialRadius central body equatorial radius (for shadow computation)
@@ -153,7 +153,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
             final PVCoordinatesProvider sun, final double equatorialRadius,
-            RadiationSensitive spacecraft) {
+            final RadiationSensitive spacecraft) {
 
         //Call to the constructor from superclass using the numerical SRP model as ForceModel
         super(GAUSS_THRESHOLD, new SolarRadiationPressure(
@@ -174,7 +174,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
             final double[] meanElements)
-                    throws OrekitException {
+        throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
     }
@@ -189,7 +189,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     protected double[] getLLimits(final SpacecraftState state) throws OrekitException {
         // Default bounds without shadow [-PI, PI]
         final double[] ll = {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
-                FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
+                             FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
 
         // Direction cosines of the Sun in the equinoctial frame
         final Vector3D sunDir = sun.getPVCoordinates(state.getDate(), state.getFrame()).getPosition().normalize();

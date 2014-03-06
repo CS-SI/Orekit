@@ -84,6 +84,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Kepler mean motion: n = sqrt(&mu; / a<sup>3</sup>). */
     protected double n;
 
+    /** Mean longitude. */
     protected double lm;
 
     /** Equinoctial frame f vector. */
@@ -133,6 +134,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     /** Build a new instance.
      *
      *  @param threshold tolerance for the choice of the Gauss quadrature order
+     *  @param contribution the {@link ForceModel} to be numerically averaged
      */
     protected AbstractGaussianContribution(final double threshold,
             final ForceModel contribution) {
@@ -144,13 +146,13 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     public void initialize(final AuxiliaryElements aux)
-            throws OrekitException {
+        throws OrekitException {
         // Nothing to do for gaussian contributions at the beginning of the propagation.
     }
 
     /** {@inheritDoc} */
     public void initializeStep(final AuxiliaryElements aux)
-            throws OrekitException {
+        throws OrekitException {
 
         // Equinoctial elements
         a  = aux.getSma();
@@ -178,6 +180,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         // Kepler mean motion
         n = A / (a * a);
 
+        // Mean longitude
         lm = aux.getLM();
 
         // 1 / A
@@ -225,8 +228,8 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
      *  @exception OrekitException if some specific error occurs
      */
     protected Vector3D getAcceleration(final SpacecraftState state)
-            throws OrekitException {
-        AccelerationRetriever retriever = new AccelerationRetriever(state);
+        throws OrekitException {
+        final AccelerationRetriever retriever = new AccelerationRetriever(state);
         contribution.addContribution(state, retriever);
 
         return retriever.getAcceleration();
@@ -281,12 +284,12 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
     /** {@inheritDoc} */
     @Override
-    public void registerAttitudeProvider(AttitudeProvider provider) {
+    public void registerAttitudeProvider(final AttitudeProvider provider) {
         this.attitudeProvider = provider;
     }
 
     /** Internal class for retrieving acceleration from a {@link ForceModel}. */
-    private class AccelerationRetriever implements TimeDerivativesEquations {
+    private static class AccelerationRetriever implements TimeDerivativesEquations {
 
         /** acceleration vector. */
         private Vector3D acceleration;
@@ -294,7 +297,9 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** state. */
         private SpacecraftState state;
 
-        /** Simple constructor. */
+        /** Simple constructor.
+         *  @param state input state
+         */
         public AccelerationRetriever(final SpacecraftState state) {
             this.acceleration = Vector3D.ZERO;
             this.state = state;
@@ -302,7 +307,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
 
         /** {@inheritDoc} */
         @Override
-        public void addKeplerContribution(double mu) {
+        public void addKeplerContribution(final double mu) {
         }
 
         /** {@inheritDoc} */
@@ -316,14 +321,14 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         /** {@inheritDoc} */
         @Override
         public void addAcceleration(final Vector3D gamma, final Frame frame)
-                throws OrekitException {
+            throws OrekitException {
             acceleration = frame.getTransformTo(state.getFrame(),
                     state.getDate()).transformVector(gamma);
         }
 
         /** {@inheritDoc} */
         @Override
-        public void addMassDerivative(double q) {
+        public void addMassDerivative(final double q) {
         }
 
         /** Get the acceleration vector.
@@ -366,7 +371,6 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             final double naob = n * a / B;
             final double Xdot = -naob * (h + sinL);
             final double Ydot =  naob * (k + cosL);
-            final Vector3D pos = new Vector3D(X, f, Y, g);
             final Vector3D vel = new Vector3D(Xdot, f, Ydot, g);
 
             // Compute acceleration
@@ -408,7 +412,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param lv True longitude
          * @return Eccentric longitude
          */
-        private double trueToEccentric (double lv) {
+        private double trueToEccentric (final double lv) {
             final double cosLv   = FastMath.cos(lv);
             final double sinLv   = FastMath.sin(lv);
             final double num     = h * cosLv - k * sinLv;
@@ -420,7 +424,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param le Eccentric longitude
          * @return Mean longitude
          */
-        private double eccentricToMean (double le) {
+        private double eccentricToMean (final double le) {
             return le - k * FastMath.sin(le) + h * FastMath.cos(le);
         }
 
@@ -428,7 +432,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
          * @param lv True longitude
          * @return Eccentric longitude
          */
-        private double trueToMean (double lv) {
+        private double trueToMean (final double lv) {
             return eccentricToMean(trueToEccentric(lv));
         }
 

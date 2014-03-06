@@ -67,8 +67,6 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** Simple constructor with custom spacecraft.
      * @param atmosphere atmospheric model
-     * @param cd drag coefficient
-     * @param area cross sectionnal area of satellite
      * @param spacecraft spacecraft model
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
@@ -101,7 +99,7 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
 
     /** {@inheritDoc} */
     public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
-            throws OrekitException {
+        throws OrekitException {
         // TODO: not implemented yet, Short Periodic Variations are set to null
         return new double[] {0., 0., 0., 0., 0., 0.};
     }
@@ -121,8 +119,8 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         final double apogee  = a * (1. + ecc);
         // Trajectory entirely within of the atmosphere
         if (apogee < rbar) {
-            return new double[] {-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
-                    FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
+            return new double[]{-FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0),
+                                FastMath.PI + MathUtils.normalizeAngle(state.getLv(), 0)};
         }
         // Else, trajectory partialy within of the atmosphere
         final double fb = FastMath.acos(((a * (1. - ecc * ecc) / rbar) - 1.) / ecc);

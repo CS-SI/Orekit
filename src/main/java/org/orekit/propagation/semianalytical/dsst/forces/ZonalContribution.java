@@ -449,8 +449,9 @@ class ZonalContribution implements DSSTForceModel {
         };
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void registerAttitudeProvider(AttitudeProvider provider) {
+    public void registerAttitudeProvider(final AttitudeProvider attitudeProvider) {
         //nothing is done since this contribution is not sensitive to attitude
     }
 }
