@@ -266,6 +266,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         return mapper.getSatelliteRevolution();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setAttitudeProvider(AttitudeProvider attitudeProvider) {
         super.setAttitudeProvider(attitudeProvider);

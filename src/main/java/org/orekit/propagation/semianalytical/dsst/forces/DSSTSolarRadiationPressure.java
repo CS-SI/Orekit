@@ -32,9 +32,9 @@ import org.orekit.utils.PVCoordinatesProvider;
 /** Solar radiation pressure contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
  *  <p>
- *  The solar radiation pressure acceleration is computed as follows:<br>
- *  &gamma; = (C<sub>R</sub> A / m) * (p<sub>ref</sub> * d<sup>2</sup><sub>ref</sub>) *
- *  (r<sub>sat</sub> - R<sub>sun</sub>) / |r<sub>sat</sub> - R<sub>sun</sub>|<sup>3</sup>
+ *  The solar radiation pressure acceleration is computed through the
+ *  acceleration model of
+ *  {@link org.orekit.forces.radiation.SolarRadiationPressure SolarRadiationPressure}.
  *  </p>
  *
  *  @author Pascal Parraud
@@ -59,11 +59,12 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     /** Central Body radius. */
     private final double                ae;
 
+    /** Spacecraft model for radiation acceleration computation. */
     private final RadiationSensitive spacecraft;
 
 
     /**
-     * Simple constructor with default reference values.
+     * Simple constructor with default reference values and spherical spacecraft.
      * <p>
      * When this constructor is used, the reference values are:
      * </p>
@@ -71,6 +72,9 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
      * <li>d<sub>ref</sub> = 149597870000.0 m</li>
      * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
      * </ul>
+     * <p>
+     * The spacecraft has a spherical shape.
+     * </p>
      *
      * @param cr satellite radiation pressure coefficient (assuming total specular reflection)
      * @param area cross sectionnal area of satellite
@@ -83,6 +87,20 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         this(D_REF, P_REF, cr, area, sun, equatorialRadius);
     }
 
+    /**
+     * Simple constructor with default reference values, but custom spacecraft.
+     * <p>
+     * When this constructor is used, the reference values are:
+     * </p>
+     * <ul>
+     * <li>d<sub>ref</sub> = 149597870000.0 m</li>
+     * <li>p<sub>ref</sub> = 4.56 10<sup>-6</sup> N/m<sup>2</sup></li>
+     * </u>
+     *
+     * @param sun Sun model
+     * @param equatorialRadius central body equatorial radius (for shadow computation)
+     * @param spacecraft spacecraft model
+     */
     public DSSTSolarRadiationPressure(final PVCoordinatesProvider sun,
             final double equatorialRadius,
             final RadiationSensitive spacecraft) {
@@ -90,7 +108,7 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
     }
 
     /**
-     * Complete constructor.
+     * Constructor with customizable reference values but spherical spacecraft.
      * <p>
      * Note that reference solar radiation pressure <code>pRef</code> in N/m<sup>2</sup> is linked
      * to solar flux SF in W/m<sup>2</sup> using formula pRef = SF/c where c is the speed of light
@@ -118,9 +136,26 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
                 area, 0.0, 0.0, 3.25 - 2.25 * cr));
     }
 
+    /**
+     * Complete constructor.
+     * <p>
+     * Note that reference solar radiation pressure <code>pRef</code> in N/m<sup>2</sup> is linked
+     * to solar flux SF in W/m<sup>2</sup> using formula pRef = SF/c where c is the speed of light
+     * (299792458 m/s). So at 1UA a 1367 W/m<sup>2</sup> solar flux is a 4.56 10<sup>-6</sup>
+     * N/m<sup>2</sup> solar radiation pressure.
+     * </p>
+     *
+     * @param dRef reference distance for the solar radiation pressure (m)
+     * @param pRef reference solar radiation pressure at dRef (N/m<sup>2</sup>)
+     * @param sun Sun model
+     * @param equatorialRadius central body equatrial radius (for shadow computation)
+     * @param spacecraft spacecraft model
+     */
     public DSSTSolarRadiationPressure(final double dRef, final double pRef,
             final PVCoordinatesProvider sun, final double equatorialRadius,
             RadiationSensitive spacecraft) {
+
+        //Call to the constructor from superclass using the numerical SRP model as ForceModel
         super(GAUSS_THRESHOLD, new SolarRadiationPressure(
                 dRef, pRef, sun, equatorialRadius, spacecraft));
 

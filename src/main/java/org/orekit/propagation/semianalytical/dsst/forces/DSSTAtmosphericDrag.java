@@ -31,9 +31,8 @@ import org.orekit.utils.Constants;
 /** Atmospheric drag contribution to the
  *  {@link org.orekit.propagation.semianalytical.dsst.DSSTPropagator DSSTPropagator}.
  *  <p>
- *  The drag acceleration is computed as follows:<br>
- *  &gamma; = (1/2 &rho; C<sub>D</sub> A<sub>Ref</sub> / m) * |v<sub>atm</sub> - v<sub>sat</sub>| *
- *  (v<sub>atm</sub> - v<sub>sat</sub>)
+ *  The drag acceleration is computed through the acceleration model of
+ *  {@link org.orekit.forces.drag.DragForce DragForce}.
  *  </p>
  *
  * @author Pascal Parraud
@@ -49,13 +48,13 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     /** Atmospheric model. */
     private final Atmosphere atmosphere;
 
-    /** spacecraft shape. */
+    /** Spacecraft shape. */
     private final DragSensitive spacecraft;
 
     /** Critical distance from the center of the central body for entering/leaving the atmosphere. */
     private final double     rbar;
 
-    /** Simple constructor.
+    /** Simple constructor assuming spherical spacecraft.
      * @param atmosphere atmospheric model
      * @param cd drag coefficient
      * @param area cross sectionnal area of satellite
@@ -66,13 +65,17 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
                 area, cd, 0.0, 0.0));
     }
 
-    /** Simple constructor.
+    /** Simple constructor with custom spacecraft.
      * @param atmosphere atmospheric model
      * @param cd drag coefficient
      * @param area cross sectionnal area of satellite
+     * @param spacecraft spacecraft model
      */
     public DSSTAtmosphericDrag(final Atmosphere atmosphere, final DragSensitive spacecraft) {
+
+        //Call to the constructor from superclass using the numerical drag model as ForceModel
         super(GAUSS_THRESHOLD, new DragForce(atmosphere, spacecraft));
+
         this.atmosphere = atmosphere;
         this.spacecraft = spacecraft;
         this.rbar = ATMOSPHERE_ALTITUDE_MAX + Constants.WGS84_EARTH_EQUATORIAL_RADIUS;

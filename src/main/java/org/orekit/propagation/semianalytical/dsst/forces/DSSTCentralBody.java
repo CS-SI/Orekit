@@ -139,6 +139,7 @@ public class DSSTCentralBody implements DSSTForceModel {
         return zonal.getProvider();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void registerAttitudeProvider(AttitudeProvider provider) {
         //nothing is done since this contribution is not sensitive to attitude

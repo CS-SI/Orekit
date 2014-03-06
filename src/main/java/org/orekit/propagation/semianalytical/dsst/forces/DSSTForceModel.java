@@ -101,7 +101,6 @@ public interface DSSTForceModel {
      */
     EventDetector[] getEventsDetectors();
 
-
     /** Register an attitude provider.
      * <p>
      * Register an attitude provider that can be used by the force model.

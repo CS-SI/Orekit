@@ -433,6 +433,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
     }
 
+    /** {@inheritDoc} */
     @Override
     public void registerAttitudeProvider(AttitudeProvider provider) {
         //nothing is done since this contribution is not sensitive to attitude

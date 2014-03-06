@@ -24,10 +24,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
-import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
-import org.orekit.orbits.PositionAngle;
-import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.numerical.TimeDerivativesEquations;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
@@ -35,7 +32,11 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 /** Common handling of {@link DSSTForceModel} methods for Gaussian contributions to DSST propagation.
  * <p>
  * This abstract class allows to provide easily a subset of {@link DSSTForceModel} methods
- * for specific Gaussian contributions (i.e. atmospheric drag and solar radiation pressure).
+ * for specific Gaussian contributions.
+ * </p><p>
+ * This class implements the notion of numerical averaging of the DSST theory.
+ * Numerical averaging is mainly used for non-conservative disturbing forces such as
+ * atmospheric drag and solar radiation pressure.
  * </p><p>
  * Gaussian contributions can be expressed as: da<sub>i</sub>/dt = &delta;a<sub>i</sub>/&delta;v . q<br>
  * where:
@@ -47,8 +48,8 @@ import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
  * The averaging process and other considerations lead to integrate this contribution
  * over the true longitude L possibly taking into account some limits.
  * </p><p>
- * Only two methods must be implemented by derived classes:
- * {@link #getAcceleration(SpacecraftState, Vector3D, Vector3D)} and
+ * To create a numerically averaged contribution, one needs only to provide a
+ * {@link ForceModel} and to implement in the derived class the method:
  * {@link #getLLimits(SpacecraftState)}.
  * </p>
  * @author Pascal Parraud
@@ -278,43 +279,56 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         return maxDiff;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void registerAttitudeProvider(AttitudeProvider provider) {
         this.attitudeProvider = provider;
     }
 
-    /** Internal class for retrieving acceleration from a force model. */
+    /** Internal class for retrieving acceleration from a {@link ForceModel}. */
     private class AccelerationRetriever implements TimeDerivativesEquations {
 
+        /** acceleration vector. */
         private Vector3D acceleration;
+
+        /** state. */
         private SpacecraftState state;
 
-        public AccelerationRetriever(SpacecraftState state) {
+        /** Simple constructor. */
+        public AccelerationRetriever(final SpacecraftState state) {
             this.acceleration = Vector3D.ZERO;
             this.state = state;
         }
 
+        /** {@inheritDoc} */
         @Override
         public void addKeplerContribution(double mu) {
         }
 
+        /** {@inheritDoc} */
         @Override
-        public void addXYZAcceleration(double x, double y, double z) {
+        public void addXYZAcceleration(final double x, final double y,
+                final double z) {
             //TODO How to be sure we are in the good frame ???
             acceleration = new Vector3D(x, y, z);
         }
 
+        /** {@inheritDoc} */
         @Override
-        public void addAcceleration(Vector3D gamma, Frame frame)
+        public void addAcceleration(final Vector3D gamma, final Frame frame)
                 throws OrekitException {
             acceleration = frame.getTransformTo(state.getFrame(),
                     state.getDate()).transformVector(gamma);
         }
 
+        /** {@inheritDoc} */
         @Override
         public void addMassDerivative(double q) {
         }
 
+        /** Get the acceleration vector.
+         * @return acceleration vector
+         */
         public Vector3D getAcceleration() {
             return acceleration;
         }
@@ -338,7 +352,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         public double[] value(final double x) {
 
             //Compute the time difference from the true longitude difference
-            final double shiftedLm = TrueToMean(x);
+            final double shiftedLm = trueToMean(x);
             final double dLm = shiftedLm - lm;
             final double dt = dLm / n;
 
@@ -368,6 +382,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
                                 shiftedOrbit.getFrame()), state.getMass());
 
                 acc = getAcceleration(shiftedState);
+
             } catch (OrekitException oe) {
                 throw new OrekitExceptionWrapper(oe);
             }
@@ -389,8 +404,11 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             return val;
         }
 
-
-        private double TrueToEccentric (double lv) {
+        /** Converts true longitude to eccentric longitude.
+         * @param lv True longitude
+         * @return Eccentric longitude
+         */
+        private double trueToEccentric (double lv) {
             final double cosLv   = FastMath.cos(lv);
             final double sinLv   = FastMath.sin(lv);
             final double num     = h * cosLv - k * sinLv;
@@ -398,13 +416,22 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             return lv + 2 * FastMath.atan(num / den);
         }
 
-        private double EccentricToMean (double le) {
+        /** Converts eccentric longitude to mean longitude.
+         * @param le Eccentric longitude
+         * @return Mean longitude
+         */
+        private double eccentricToMean (double le) {
             return le - k * FastMath.sin(le) + h * FastMath.cos(le);
         }
 
-        private double TrueToMean (double lv) {
-            return EccentricToMean(TrueToEccentric(lv));
+        /** Converts true longitude to mean longitude.
+         * @param lv True longitude
+         * @return Eccentric longitude
+         */
+        private double trueToMean (double lv) {
+            return eccentricToMean(trueToEccentric(lv));
         }
+
         /** Compute &delta;a/&delta;v.
          *  @param vel satellite velocity
          *  @return &delta;a/&delta;v
