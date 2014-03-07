@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
 import org.orekit.errors.OrekitException;
@@ -74,6 +75,12 @@ public class SpacecraftState
 
     /** Default mass. */
     private static final double DEFAULT_MASS = 1000.0;
+
+    /**
+     * tolerance on date comparison in {@link #checkConsistency(Orbit, Attitude)}. 100 ns
+     * corresponds to sub-mm accuracy at LEO orbital velocities.
+     */
+    private static final double DATE_INCONSISTENCY_THRESHOLD = 100e-9;
 
     /** Orbital state. */
     private final Orbit orbit;
@@ -234,7 +241,8 @@ public class SpacecraftState
      */
     private static void checkConsistency(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        if (!orbit.getDate().equals(attitude.getDate())) {
+        if (FastMath.abs(orbit.getDate().durationFrom(attitude.getDate()))
+                > DATE_INCONSISTENCY_THRESHOLD) {
             throw OrekitException.createIllegalArgumentException(
                   OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
                   orbit.getDate(), attitude.getDate());

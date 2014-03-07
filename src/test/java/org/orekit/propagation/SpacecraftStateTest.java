@@ -28,6 +28,7 @@ import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Precision;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -152,6 +153,31 @@ public class SpacecraftStateTest {
     public void testDatesConsistency() throws OrekitException {
         new SpacecraftState(orbit, attitudeLaw.getAttitude(orbit.shiftedBy(10.0),
                                                            orbit.getDate().shiftedBy(10.0), orbit.getFrame()));
+    }
+
+    /**
+     * Check orbit and attitude dates can be off by a few ulps. I see this when using
+     * FixedRate attitude provider.
+     */
+    @Test
+    public void testDateConsistencyClose() throws OrekitException {
+        //setup
+        Orbit orbit10Shifts = orbit;
+        for (int i = 0; i < 10; i++) {
+            orbit10Shifts = orbit10Shifts.shiftedBy(0.1);
+        }
+        final Orbit orbit1Shift = orbit.shiftedBy(1);
+        Attitude shiftedAttitude = attitudeLaw
+                .getAttitude(orbit1Shift, orbit1Shift.getDate(), orbit.getFrame());
+
+        //verify dates are very close, but not equal
+        Assert.assertNotEquals(shiftedAttitude.getDate(), orbit10Shifts.getDate());
+        Assert.assertEquals(
+                shiftedAttitude.getDate().durationFrom(orbit10Shifts.getDate()),
+                0, Precision.EPSILON);
+
+        //action + verify no exception is thrown
+        new SpacecraftState(orbit10Shifts, shiftedAttitude);
     }
 
     @Test(expected=IllegalArgumentException.class)

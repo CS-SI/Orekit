@@ -22,6 +22,9 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="evan" type="fix">
+        Fixed SpacecraftState date mismatch exception with some attitude providers.
+      </action>
       <action dev="luc" type="fix" >
         Fixed wrong scaling in JPL ephemeris when retrieving coordinates in a frame
         that is not the defining frame of the celestial body.
