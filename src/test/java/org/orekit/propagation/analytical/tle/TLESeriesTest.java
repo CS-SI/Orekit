@@ -71,6 +71,24 @@ public class TLESeriesTest {
             Assert.assertTrue(available.contains(ref));
         }
     }
+    
+
+    @Test
+    public void testDefaultSearchAndLoad() throws IOException, OrekitException {
+        TLESeries series = new TLESeries(null, true);
+        Assert.assertNotNull(series);
+        Set<Integer> available = series.getAvailableSatelliteNumbers();
+        Assert.assertNotNull(available);
+        
+        int expectedSatId = 27421;
+        Assert.assertTrue(available.contains(expectedSatId));
+        
+        //test what happens if already loaded...
+        available = series.getAvailableSatelliteNumbers();
+        Assert.assertNotNull(available);
+        Assert.assertTrue(available.contains(expectedSatId));
+
+    }    
 
     @Test
     public void testSpot5Available() throws IOException, OrekitException {
@@ -91,6 +109,18 @@ public class TLESeriesTest {
         AbsoluteDate referenceLast =
             new AbsoluteDate(2002, 5, 4, 19, 10, 59.114784, TimeScalesFactory.getUTC());
         Assert.assertEquals(0, series.getLastDate().durationFrom(referenceLast), 1e-13);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testSpot5WithExtraLinesExpectException() throws IOException, OrekitException {
+        TLESeries series = new TLESeries("^spot-5-with-extra-lines\\.tle$", false);
+        series.loadTLEData(-1);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testSpot5OneLineExpectException() throws IOException, OrekitException {
+        TLESeries series = new TLESeries("^spot-5-one-line\\.tle$", false);
+        series.loadTLEData(-1);
     }
 
     @Test
@@ -176,7 +206,36 @@ public class TLESeriesTest {
 
         AbsoluteDate oneYearAfter = new AbsoluteDate(2003, 06, 02, 11, 12, 15, TimeScalesFactory.getUTC());
         Assert.assertTrue(series.getClosestTLE(oneYearAfter).getDate().equals(series.getLastDate()));
+        
+        
+        series.loadTLEData(2002, 21, null);
+        TLE currentTle = series.getFirst();
+        Assert.assertEquals(27421, currentTle.getSatelliteNumber());
+        Assert.assertEquals(2002, currentTle.getLaunchYear());
+        Assert.assertEquals(21, currentTle.getLaunchNumber());
+        Assert.assertEquals("A", currentTle.getLaunchPiece());
 
+        series.loadTLEData(2002, 21, "");
+        currentTle = series.getFirst();
+        Assert.assertEquals(27421, currentTle.getSatelliteNumber());
+        Assert.assertEquals(2002, currentTle.getLaunchYear());
+        Assert.assertEquals(21, currentTle.getLaunchNumber());
+        Assert.assertEquals("A", currentTle.getLaunchPiece());
+
+        try {
+            series.loadTLEData(2002, 22, "A");
+            Assert.fail("Should have thrown exception about not having any TLE data for this combination");
+        }
+        catch(OrekitException exception) {
+        }
+
+        try {
+            series.loadTLEData(2002, 21, "B");
+            Assert.fail("Should have thrown exception about not having any TLE data for this combination");
+        }
+        catch(OrekitException exception) {
+
+        }
     }
 
     @Test

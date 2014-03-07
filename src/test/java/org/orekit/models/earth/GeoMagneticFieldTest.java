@@ -201,6 +201,10 @@ public class GeoMagneticFieldTest {
             if (!heightType.startsWith("C")) {
                 validate(ge, validateLine);
             }
+
+            String geString = ge.toString();
+            Assert.assertNotNull(geString);
+            Assert.assertFalse(geString.isEmpty());
         }
     }
 
