@@ -22,6 +22,11 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" >
+        Fixed wrong scaling in JPL ephemeris when retrieving coordinates in a frame
+        that is not the defining frame of the celestial body.
+        Fixes issue #165.
+      </action>
       <action dev="luc" type="update" due-to="Lucian Barbulescu">
         Prepare generation of either mean or osculating orbits by DSST propagator.
         The short periodics terms are not computed yet, but there is ongoing work

@@ -95,14 +95,15 @@ class JPLCelestialBody implements CelestialBody {
     public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // get raw position-velocity
-        final PVCoordinates pv = rawPVProvider.getRawPV(date);
+        // apply the scale factor to raw position-velocity
+        final PVCoordinates rawPV    = rawPVProvider.getRawPV(date);
+        final PVCoordinates scaledPV = new PVCoordinates(scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
         final Transform transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);
 
-        // apply the scale factor
-        return new PVCoordinates(scale, transform.transformPVCoordinates(pv));
+        // convert to requested frame
+        return transform.transformPVCoordinates(scaledPV);
 
     }
 
