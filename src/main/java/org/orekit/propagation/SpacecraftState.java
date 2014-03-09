@@ -241,8 +241,8 @@ public class SpacecraftState
      */
     private static void checkConsistency(final Orbit orbit, final Attitude attitude)
         throws IllegalArgumentException {
-        if (FastMath.abs(orbit.getDate().durationFrom(attitude.getDate()))
-                > DATE_INCONSISTENCY_THRESHOLD) {
+        if (FastMath.abs(orbit.getDate().durationFrom(attitude.getDate())) >
+            DATE_INCONSISTENCY_THRESHOLD) {
             throw OrekitException.createIllegalArgumentException(
                   OrekitMessages.ORBIT_AND_ATTITUDE_DATES_MISMATCH,
                   orbit.getDate(), attitude.getDate());
