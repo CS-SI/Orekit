@@ -367,11 +367,5 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des donnée avant l
 # unable to generate new data after {0}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des donnée après le {0}
 
-# abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = l''abscisse {0} est dupliquée
-
-# sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = échantillon d''interpolation vide
-
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
