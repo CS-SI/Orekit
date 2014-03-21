@@ -29,6 +29,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
@@ -281,9 +282,11 @@ public class Transform
      * boolean, Collection)} with both {@code useVelocities} and {@code useRotationRates}
      * set to true.
      * </p>
+     * @exception OrekitException if the number of point is too small for interpolating
      */
     public Transform interpolate(final AbsoluteDate interpolationDate,
-                                 final Collection<Transform> sample) {
+                                 final Collection<Transform> sample)
+        throws OrekitException {
         return interpolate(interpolationDate, true, true, sample);
     }
 
@@ -311,10 +314,12 @@ public class Transform
      * otherwise ignore them and use only rotations
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
      */
     public static Transform interpolate(final AbsoluteDate date,
                                         final boolean useVelocities, final boolean useRotationRates,
-                                        final Collection<Transform> sample) {
+                                        final Collection<Transform> sample)
+        throws OrekitException {
         final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
                 new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
         final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =

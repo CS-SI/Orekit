@@ -29,6 +29,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
@@ -590,7 +591,7 @@ public class TransformTest {
     }
 
     @Test
-    public void testInterpolation() {
+    public void testInterpolation() throws OrekitException {
 
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         List<Transform> sample = new ArrayList<Transform>();

@@ -324,6 +324,7 @@ DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = la órbita tiene una excentricidad ({0}
 
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = versión de formato sp3 {0} no reconocida
+
 # unsupported time system {0}
 SP3_UNSUPPORTED_TIMESYSTEM = versión de sistema temporal {0} no reconocida
 
@@ -338,6 +339,9 @@ UNSUPPORTED_TIME_TRANSFORM = el modelo geomagnético {0} en la época {1} no tie
 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = la transformación temporal del modelo geomagnético {0} en la época {1} está fuera del dominio de validez: {2} != [{3}, {4}]
+
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
 
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = número de vecinos almacenados demasiado pequeño : {0} (debe ser por lo menos {1})

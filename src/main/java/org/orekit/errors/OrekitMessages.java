@@ -161,6 +161,7 @@ public enum OrekitMessages implements Localizable {
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM("geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
     OUT_OF_RANGE_TIME_TRANSFORM("time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]"),
+    NOT_ENOUGH_DATA_FOR_INTERPOLATION("not enough data for interpolation (sample size = {0})"),
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
     NO_CACHED_ENTRIES("no cached entries"),
     NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),

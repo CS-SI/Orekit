@@ -202,8 +202,10 @@ public class Attitude
      * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
      * and numerical problems (including NaN appearing).
      * </p>
+     * @exception OrekitException if the number of point is too small for interpolating
      */
-    public Attitude interpolate(final AbsoluteDate interpolationDate, final Collection<Attitude> sample) {
+    public Attitude interpolate(final AbsoluteDate interpolationDate, final Collection<Attitude> sample)
+        throws OrekitException {
         final List<Pair<AbsoluteDate, AngularCoordinates>> datedPV =
                 new ArrayList<Pair<AbsoluteDate, AngularCoordinates>>(sample.size());
         for (final Attitude attitude : sample) {

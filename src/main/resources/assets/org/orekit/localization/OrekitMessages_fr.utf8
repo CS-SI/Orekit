@@ -349,6 +349,9 @@ SP3_UNSUPPORTED_TIMESYSTEM = version de système temporel {0} non prise en compt
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = fin inattendue d''un fichier sp3 (après la ligne {0})
 
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = données insuffisnates pour réaliser une interpolation (taille de l''échantillon : {0})
+
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS =  nombre de voisins en cache trop petit : {0} (il faut au moins {1} voisins)
 

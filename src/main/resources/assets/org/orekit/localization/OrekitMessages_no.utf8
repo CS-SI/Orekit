@@ -340,6 +340,9 @@ UNSUPPORTED_TIME_TRANSFORM = geomagnetisk model {0} med epoke {1} støtter ikke 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = tidstransformasjonen av den geomagnetiske modelen {0} med epoke {1} er utenfor sitt gyldighetsområde: {2} != [{3}, {4}]
 
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = for få bufrete naboer: {0} (må i allefall være {1})
 
