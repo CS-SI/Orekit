@@ -22,6 +22,9 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" due-to="Lucian Barbulescu, Nicolas Bernard">
+        Added short periodics for DSST propagation.
+      </action>
       <action dev="luc" type="fix">
         Trigger an exception when attempting to interpolate attitudes without rotation rate
         using only one data point.
