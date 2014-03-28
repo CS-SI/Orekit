@@ -26,6 +26,7 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
@@ -475,6 +476,13 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             y[1] = b;
             return 2;
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux)
+        throws OrekitException {
+        // TODO Auto-generated method stub
     }
 
 }

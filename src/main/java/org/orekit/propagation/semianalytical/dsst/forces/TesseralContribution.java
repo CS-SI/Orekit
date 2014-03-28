@@ -382,6 +382,11 @@ class TesseralContribution implements DSSTForceModel {
         return null;
     }
 
+    /** {@inheritDoc} */
+    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
+        //TODO: to be implemented
+    }
+
     /** Get the resonant tesseral terms in the central body spherical harmonic field.
      */
     private void getResonantTerms() {
@@ -684,6 +689,11 @@ class TesseralContribution implements DSSTForceModel {
     @Override
     public void registerAttitudeProvider(final AttitudeProvider attitudeProvider) {
         //nothing is done since this contribution is not sensitive to attitude
+    }
+
+    @Override
+    public void resetShortPeriodicsCoefficients() {
+        // TODO Auto-generated method stub
     }
 
 }

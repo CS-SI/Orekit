@@ -20,16 +20,20 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.nonstiff.AdaptiveStepsizeIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.ode.sampling.StepHandler;
+import org.apache.commons.math3.ode.sampling.StepInterpolator;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.bodies.CelestialBody;
 import org.orekit.bodies.CelestialBodyFactory;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
 import org.orekit.forces.ForceModel;
@@ -61,6 +65,8 @@ import org.orekit.propagation.semianalytical.dsst.forces.DSSTForceModel;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTSolarRadiationPressure;
 import org.orekit.propagation.semianalytical.dsst.forces.DSSTThirdBody;
 import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
+import org.orekit.propagation.semianalytical.dsst.utilities.InterpolationGrid;
+import org.orekit.propagation.semianalytical.dsst.utilities.VariableStepInterpolationGrid;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.IERSConventions;
 
@@ -140,6 +146,9 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *  </p>
      */
     private static final int I = 1;
+
+    /** Number of grid points per integration step to be used in interpolation of short periodics coefficients.*/
+    private static final int INTERPOLATION_POINTS_PER_STEP = 3;
 
     /** State mapper holding the force models. */
     private MeanPlusShortPeriodicMapper mapper;
@@ -296,6 +305,45 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             force.initialize(aux);
         }
 
+        // if required, insert the special short periodics step handler
+        if (!isMeanOrbit()) {
+            final InterpolationGrid grid = new VariableStepInterpolationGrid(INTERPOLATION_POINTS_PER_STEP);
+            final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(grid);
+            final Collection<StepHandler> stepHandlers = new ArrayList<StepHandler>();
+            stepHandlers.add(spHandler);
+            final AbstractIntegrator integrator = getIntegrator();
+            final Collection<StepHandler> existing = integrator.getStepHandlers();
+            stepHandlers.addAll(existing);
+
+            integrator.clearStepHandlers();
+
+            // add back the existing handlers after the short periodics one
+            for (final StepHandler sp : stepHandlers) {
+                integrator.addStepHandler(sp);
+            }
+        }
+    }
+
+    /** {@inheritDoc} */
+    protected void afterIntegration() throws OrekitException {
+        // remove the special short periodics step handler if added before
+        if (!isMeanOrbit()) {
+            final List<StepHandler> preserved = new ArrayList<StepHandler>();
+            final AbstractIntegrator integrator = getIntegrator();
+            for (final StepHandler sp : integrator.getStepHandlers()) {
+                if (!(sp instanceof ShortPeriodicsHandler)) {
+                    preserved.add(sp);
+                }
+            }
+
+            // clear the list
+            integrator.clearStepHandlers();
+
+            // add back the step handlers that were important for the user
+            for (final StepHandler sp : preserved) {
+                integrator.addStepHandler(sp);
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -697,12 +745,69 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      *                       and row 1 being the relative tolerance error
      * @exception PropagationException if Jacobian is singular
      */
-    public static double[][] tolerances(final double dP,
-                                        final Orbit orbit)
+    public static double[][] tolerances(final double dP, final Orbit orbit)
         throws PropagationException {
 
         return NumericalPropagator.tolerances(dP, orbit, OrbitType.EQUINOCTIAL);
 
     }
 
+    /** Step handler used to compute the parameters for the short periodic contributions.
+     * @author Lucian Barbulescu
+     */
+    private class ShortPeriodicsHandler implements StepHandler {
+
+        /** Grid for interpolation of the short periodics coefficients. */
+        private InterpolationGrid grid;
+
+        /** Constructor.
+         * @param grid for interpolation of the short periodics coefficients
+         */
+        public ShortPeriodicsHandler(final InterpolationGrid grid) {
+            this.grid = grid;
+        }
+
+        @Override
+        public void init(final double t0, final double[] y0, final double t) {
+            //No particular initialization is necessary
+        }
+
+        /** {@inheritDoc} */
+        public void handleStep(final StepInterpolator interpolator, final boolean isLast) {
+
+            // Reset the short periodics coefficients in order to ensure that interpolation
+            // will be based on current step only
+            for (DSSTForceModel force : mapper.getForceModels()) {
+                force.resetShortPeriodicsCoefficients();
+            }
+
+            // Get the grid points to compute
+            final double[] interpolationPoints = grid.getGridPoints(
+                    interpolator.getPreviousTime(), interpolator.getCurrentTime());
+
+            for (final double time : interpolationPoints) {
+                // Move the interpolator to the grid point
+                interpolator.setInterpolatedTime(time);
+
+                // Build an Orbit object
+                final Orbit orbit =
+                        OrbitType.EQUINOCTIAL.mapArrayToOrbit(interpolator.getInterpolatedState(),
+                                                              PositionAngle.MEAN,
+                                                              mapper.mapDoubleToDate(time),
+                                                              getMu(), getFrame());
+
+                // Build an auxiliary object
+                final AuxiliaryElements aux = new AuxiliaryElements(orbit, I);
+
+                try {
+                    // Tell each force to compute the coefficients
+                    for (DSSTForceModel force : mapper.getForceModels()) {
+                        force.computeShortPeriodicsCoefficients(aux);
+                    }
+                } catch (OrekitException oex) {
+                    throw new OrekitExceptionWrapper(oex);
+                }
+            }
+        }
+    }
 }

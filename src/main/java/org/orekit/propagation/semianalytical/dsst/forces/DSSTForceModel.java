@@ -105,8 +105,22 @@ public interface DSSTForceModel {
      * <p>
      * Register an attitude provider that can be used by the force model.
      * </p>
-     * @param provider the {@link #AttitudeProvider}
+     * @param provider the {@link AttitudeProvider}
      */
     void registerAttitudeProvider(AttitudeProvider provider);
 
+    /** Compute the coefficients used for short periodic variations.
+     *
+     * @param aux auxiliary elements related to the current orbit
+     * @throws OrekitException if some specific error occurs
+     */
+    void computeShortPeriodicsCoefficients(AuxiliaryElements aux) throws OrekitException;
+
+    /** Reset the coefficients used for short periodic variations.
+     * <p>
+     * This method is aimed to reset short periodics coefficients.
+     * It is called when one goes from a interpolation step to the next one.
+     * </p>
+     */
+    void resetShortPeriodicsCoefficients();
 }

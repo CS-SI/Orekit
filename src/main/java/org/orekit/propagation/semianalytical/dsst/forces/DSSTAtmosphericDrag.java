@@ -25,6 +25,7 @@ import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
+import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
@@ -133,4 +134,10 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         return spacecraft;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux)
+        throws OrekitException {
+        // TODO Auto-generated method stub
+    }
 }

@@ -134,6 +134,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         return stateMapper.getOrbitType();
     }
 
+    /** Check if only the mean elements should be used in a semianalitical propagation.
+     * @return true if only mean elements have to be used
+     */
+    protected boolean isMeanOrbit() {
+        return meanOrbit;
+    }
+
     /** Set position angle type.
      * <p>
      * The position parameter type is meaningful only if {@link
@@ -271,7 +278,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -285,7 +292,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -299,7 +306,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {
@@ -544,6 +551,13 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
 
     }
 
+    /** Get the integrator used by the propagator.
+     * @return the integrator.
+     */
+    protected AbstractIntegrator getIntegrator() {
+        return integrator;
+    }
+
     /** Get a complete state with all additional equations.
      * @param t current value of the independent <I>time</I> variable
      * @param y array containing the current value of the state vector
@@ -554,7 +568,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
         throws OrekitException {
 
         // main state
-        SpacecraftState state = stateMapper.mapArrayToState(t, y, meanOrbit);
+        SpacecraftState state = stateMapper.mapArrayToState(t, y, true);  //not sure of the mean orbit, should be true
 
         // pre-integrated additional states
         state = updateAdditionalStates(state);

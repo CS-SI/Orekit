@@ -336,6 +336,11 @@ public class DSSTThirdBody  implements DSSTForceModel {
         return null;
     }
 
+    /** {@inheritDoc} */
+    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
+        //TODO: to be implemented
+    }
+
     /** Compute potential derivatives.
      *  @return derivatives of the potential with respect to orbital parameters
      *  @throws OrekitException if Hansen coefficients cannot be computed
@@ -437,5 +442,10 @@ public class DSSTThirdBody  implements DSSTForceModel {
     @Override
     public void registerAttitudeProvider(final AttitudeProvider provider) {
         //nothing is done since this contribution is not sensitive to attitude
+    }
+
+    @Override
+    public void resetShortPeriodicsCoefficients() {
+        // TODO Auto-generated method stub
     }
 }

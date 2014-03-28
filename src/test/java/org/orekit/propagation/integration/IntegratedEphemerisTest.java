@@ -246,6 +246,14 @@ public class IntegratedEphemerisTest {
             @Override
             public void registerAttitudeProvider(AttitudeProvider provider) {
             }
+
+            public void computeShortPeriodicsCoefficients(AuxiliaryElements aux) {
+            }
+
+            @Override
+            public void resetShortPeriodicsCoefficients() {
+            }
+
         });
 
         dsstProp.setEphemerisMode();

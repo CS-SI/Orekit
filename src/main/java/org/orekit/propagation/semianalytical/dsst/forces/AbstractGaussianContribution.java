@@ -288,6 +288,17 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         this.attitudeProvider = provider;
     }
 
+
+
+    /** {@inheritDoc} */
+    @Override
+    public void resetShortPeriodicsCoefficients() {
+        // TODO Auto-generated method stub
+
+    }
+
+
+
     /** Internal class for retrieving acceleration from a {@link ForceModel}. */
     private static class AccelerationRetriever implements TimeDerivativesEquations {
 

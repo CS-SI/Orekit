@@ -132,6 +132,25 @@ public class DSSTCentralBody implements DSSTForceModel {
         return null;
     }
 
+    /** {@inheritDoc} */
+    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
+        //relay the call to the Zonal and Tesseral contributions
+        zonal.computeShortPeriodicsCoefficients(aux);
+        if (tesseral != null) {
+            tesseral.computeShortPeriodicsCoefficients(aux);
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void resetShortPeriodicsCoefficients() {
+      //relay the call to the Zonal and Tesseral contributions
+        zonal.resetShortPeriodicsCoefficients();
+        if (tesseral != null) {
+            tesseral.resetShortPeriodicsCoefficients();
+        }
+    }
+
     /** Get the spherical harmonics provider.
      *  @return the spherical harmonics provider
      */
