@@ -161,14 +161,13 @@ public enum OrekitMessages implements Localizable {
     NON_EXISTENT_GEOMAGNETIC_MODEL("non-existent geomagnetic model {0} for year {1}"),
     UNSUPPORTED_TIME_TRANSFORM("geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined"),
     OUT_OF_RANGE_TIME_TRANSFORM("time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]"),
+    NOT_ENOUGH_DATA_FOR_INTERPOLATION("not enough data for interpolation (sample size = {0})"),
     NOT_ENOUGH_CACHED_NEIGHBORS("too small number of cached neighbors: {0} (must be at least {1})"),
     NO_CACHED_ENTRIES("no cached entries"),
     NON_CHRONOLOGICALLY_SORTED_ENTRIES("generated entries not sorted: {0} > {1}"),
     NO_DATA_GENERATED("no data generated around date: {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}"),
-    DUPLICATED_ABSCISSA("abscissa {0} is duplicated"),
-    EMPTY_INTERPOLATION_SAMPLE("sample for interpolation is empty"),
     UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations");
 
     // CHECKSTYLE: resume JavadocVariable check

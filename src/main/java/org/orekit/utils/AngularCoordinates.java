@@ -27,6 +27,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
@@ -211,9 +212,11 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * otherwise ignore them and use only rotations
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
      */
     public static AngularCoordinates interpolate(final AbsoluteDate date, final boolean useRotationRates,
-                                                 final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample) {
+                                                 final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample)
+        throws OrekitException {
 
         // set up safety elements for 2PI singularity avoidance
         final double epsilon   = 2 * FastMath.PI / sample.size();
@@ -228,6 +231,10 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             }
             meanRate = new Vector3D(1.0 / sample.size(), sum);
         } else {
+            if (sample.size() < 2) {
+                throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                                          sample.size());
+            }
             Vector3D sum = Vector3D.ZERO;
             Pair<AbsoluteDate, AngularCoordinates> previous = null;
             for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {

@@ -340,6 +340,9 @@ UNSUPPORTED_TIME_TRANSFORM = geo-magnetisches Feldmodell {0} mit Epoche {1} unte
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = Zeittransformation des geo-magnetischen Feldmodells {0} mit Epoche {1} liegt ausserhalb des gültigen Bereichs: {2} != [{3}, {4}]
 
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = <MISSING TRANSLATION>
+
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS = nicht genug Nachbareinträge im Cache verfügbar: {0} (minimum {1})
 
@@ -357,12 +360,6 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE = nicht möglich Daten vor {0} zu generieren
 
 # unable to generate new data after {0}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = nicht möglich Daten nach {0} zu generieren
-
-# abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = Abszisse {0} ist dupliziert
-
-# sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = leere Interpolationsprobe
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = die hyperbolisch-exzentrische Anomalie kann nicht aus der mittleren Anomalie berechnet werden nach {0} Iterationen

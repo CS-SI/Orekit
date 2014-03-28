@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix">
+        Trigger an exception when attempting to interpolate attitudes without rotation rate
+        using only one data point.
+      </action>
       <action dev="evan" type="fix">
         Fixed SpacecraftState date mismatch exception with some attitude providers.
       </action>
