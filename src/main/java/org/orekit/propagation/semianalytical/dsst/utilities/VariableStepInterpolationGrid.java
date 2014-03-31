@@ -42,7 +42,7 @@ public class VariableStepInterpolationGrid implements InterpolationGrid {
     public double[] getGridPoints(final double stepStart, final double stepEnd) {
         final double[] grid = new double[pointsPerStep];
 
-        final double stepSize = stepEnd - stepStart;
+        final double stepSize = (stepEnd - stepStart) / (pointsPerStep - 1);
         for (int i = 0; i < pointsPerStep; i++) {
             grid[i] = stepSize * i + stepStart;
         }
