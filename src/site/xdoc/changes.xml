@@ -22,6 +22,11 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="evan" type="fix">
+        Fix cache exception when propagating backwards with an interpolated
+        gravity force model.
+        Fixes issue #169.
+      </action>
       <action dev="luc" type="fix">
         Trigger an exception when attempting to interpolate attitudes without rotation rate
         using only one data point.
