@@ -23,13 +23,14 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
-/** Simple container for Position/Velocity pairs.
+/** Simple container for Position/Velocity/Acceleration triplets.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
- * a simple linear model. It is <em>not</em> intended as a replacement for
+ * a simple quadratic model. It is <em>not</em> intended as a replacement for
  * proper orbit propagation (it is not even Keplerian!) but should be sufficient
  * for either small time shifts or coarse accuracy.
  * </p>
@@ -42,11 +43,11 @@ import org.orekit.time.TimeShiftable;
  */
 public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable {
 
-    /** Fixed position/velocity at origin (both p and v are zero vectors). */
-    public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO);
+    /** Fixed position/velocity at origin (both p, v and a are zero vectors). */
+    public static final PVCoordinates ZERO = new PVCoordinates(Vector3D.ZERO, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 4157449919684833834L;
+    private static final long serialVersionUID = 20140407L;
 
     /** The position. */
     private final Vector3D position;
@@ -54,21 +55,38 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
     /** The velocity. */
     private final Vector3D velocity;
 
+    /** The acceleration. */
+    private final Vector3D acceleration;
+
     /** Simple constructor.
-     * <p> Sets the Coordinates to default : (0 0 0) (0 0 0).</p>
+     * <p> Set the Coordinates to default : (0 0 0), (0 0 0), (0 0 0).</p>
      */
     public PVCoordinates() {
-        position = Vector3D.ZERO;
-        velocity = Vector3D.ZERO;
+        position     = Vector3D.ZERO;
+        velocity     = Vector3D.ZERO;
+        acceleration = Vector3D.ZERO;
+    }
+
+    /** Builds a PVCoordinates triplet with zero acceleration.
+     * <p>Acceleration is set to zero</p>
+     * @param position the position vector (m)
+     * @param velocity the velocity vector (m/s)
+     */
+    public PVCoordinates(final Vector3D position, final Vector3D velocity) {
+        this.position     = position;
+        this.velocity     = velocity;
+        this.acceleration = Vector3D.ZERO;
     }
 
     /** Builds a PVCoordinates pair.
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
+     * @param acceleration the acceleration vector (m/s²)
      */
-    public PVCoordinates(final Vector3D position, final Vector3D velocity) {
-        this.position = position;
-        this.velocity = velocity;
+    public PVCoordinates(final Vector3D position, final Vector3D velocity, final Vector3D acceleration) {
+        this.position     = position;
+        this.velocity     = velocity;
+        this.acceleration = acceleration;
     }
 
     /** Multiplicative constructor
@@ -78,8 +96,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @param pv base (unscaled) PVCoordinates
      */
     public PVCoordinates(final double a, final PVCoordinates pv) {
-        position = new Vector3D(a, pv.position);
-        velocity = new Vector3D(a, pv.velocity);
+        position     = new Vector3D(a, pv.position);
+        velocity     = new Vector3D(a, pv.velocity);
+        acceleration = new Vector3D(a, pv.acceleration);
     }
 
     /** Subtractive constructor
@@ -89,8 +108,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @param end ending PVCoordinates
      */
     public PVCoordinates(final PVCoordinates start, final PVCoordinates end) {
-        this.position = end.position.subtract(start.position);
-        this.velocity = end.velocity.subtract(start.velocity);
+        this.position     = end.position.subtract(start.position);
+        this.velocity     = end.velocity.subtract(start.velocity);
+        this.acceleration = end.acceleration.subtract(start.acceleration);
     }
 
     /** Linear constructor
@@ -103,8 +123,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     public PVCoordinates(final double a1, final PVCoordinates pv1,
                          final double a2, final PVCoordinates pv2) {
-        position = new Vector3D(a1, pv1.position, a2, pv2.position);
-        velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity);
+        position     = new Vector3D(a1, pv1.position,     a2, pv2.position);
+        velocity     = new Vector3D(a1, pv1.velocity,     a2, pv2.velocity);
+        acceleration = new Vector3D(a1, pv1.acceleration, a2, pv2.acceleration);
     }
 
     /** Linear constructor
@@ -120,8 +141,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
     public PVCoordinates(final double a1, final PVCoordinates pv1,
                          final double a2, final PVCoordinates pv2,
                          final double a3, final PVCoordinates pv3) {
-        position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position);
-        velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
+        position     = new Vector3D(a1, pv1.position,     a2, pv2.position,     a3, pv3.position);
+        velocity     = new Vector3D(a1, pv1.velocity,     a2, pv2.velocity,     a3, pv3.velocity);
+        acceleration = new Vector3D(a1, pv1.acceleration, a2, pv2.acceleration, a3, pv3.acceleration);
     }
 
     /** Linear constructor
@@ -140,8 +162,12 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                          final double a2, final PVCoordinates pv2,
                          final double a3, final PVCoordinates pv3,
                          final double a4, final PVCoordinates pv4) {
-        position = new Vector3D(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
-        velocity = new Vector3D(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
+        position     = new Vector3D(a1, pv1.position,     a2, pv2.position,
+                                    a3, pv3.position,     a4, pv4.position);
+        velocity     = new Vector3D(a1, pv1.velocity,     a2, pv2.velocity,
+                                    a3, pv3.velocity,     a4, pv4.velocity);
+        acceleration = new Vector3D(a1, pv1.acceleration, a2, pv2.acceleration,
+                                    a3, pv3.acceleration, a4, pv4.acceleration);
     }
 
     /** Estimate velocity between two positions.
@@ -160,7 +186,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * a simple quadratic model. It is <em>not</em> intended as a replacement for
      * proper orbit propagation (it is not even Keplerian!) but should be sufficient
      * for either small time shifts or coarse accuracy.
      * </p>
@@ -168,8 +194,24 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public PVCoordinates shiftedBy(final double dt) {
-        return new PVCoordinates(new Vector3D(1, position, dt, velocity), velocity);
+        return new PVCoordinates(new Vector3D(1, position, dt, velocity, 0.5 * dt * dt, acceleration),
+                                 new Vector3D(1, velocity, dt, acceleration),
+                                 acceleration);
     }
+
+    /** Enumerate for components to use in interpolation. */
+    public enum SampleFilter {
+
+        /** Use only positions from sample, ignoring velocities and accelerations. */
+        SAMPLE_P,
+
+        /** Use positions and velocities from sample, ignoring accelerations. */
+        SAMPLE_PV,
+
+        /** Use positions, velocities and accelerations from sample. */
+        SAMPLE_PVA;
+
+    };
 
     /** Interpolate position-velocity.
      * <p>
@@ -190,15 +232,60 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * otherwise ignore them and use only positions
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
+     * @deprecated as of 7.1, replaced with {@link #interpolate(AbsoluteDate, SampleFilter, Collection)}
      */
+    @Deprecated
     public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
+                                            final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
+        return interpolate(date,
+                           useVelocities ? SampleFilter.SAMPLE_PV : SampleFilter.SAMPLE_P,
+                           sample);
+    }
+
+    /** Interpolate position-velocity-acceleration.
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * ensuring velocity remains the exact derivative of position.
+     * </p>
+     * <p>
+     * Note that even if first time derivatives (velocities) or second time
+     * derivatives (accelerations) from sample can be ignored, the interpolated
+     * instance always includes interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the positions.
+     * </p>
+     * @param date interpolation date
+     * @param filter filter for derivatives to extract from sample
+     * @param sample sample points on which interpolation should be done
+     * @return a new position-velocity, interpolated at specified date
+     */
+    public static PVCoordinates interpolate(final AbsoluteDate date, final SampleFilter filter,
                                             final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
 
         // set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
         // add sample points
-        if (useVelocities) {
+        switch (filter) {
+        case SAMPLE_PVA :
+            // populate sample with position, velocity and acceleration data
+            for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
+                final Vector3D position     = datedPV.getValue().getPosition();
+                final Vector3D velocity     = datedPV.getValue().getVelocity();
+                final Vector3D acceleration = datedPV.getValue().getAcceleration();
+                interpolator.addSamplePoint(datedPV.getKey().getDate().durationFrom(date),
+                                            new double[] {
+                                                position.getX(), position.getY(), position.getZ()
+                                            }, new double[] {
+                                                velocity.getX(), velocity.getY(), velocity.getZ()
+                                            }, new double[] {
+                                                acceleration.getX(), acceleration.getY(), acceleration.getZ()
+                                            });
+            }
+            break;
+        case SAMPLE_PV :
             // populate sample with position and velocity data
             for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
                 final Vector3D position = datedPV.getValue().getPosition();
@@ -210,7 +297,8 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                                 velocity.getX(), velocity.getY(), velocity.getZ()
                                             });
             }
-        } else {
+            break;
+        case SAMPLE_P :
             // populate sample with position data, ignoring velocity
             for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
                 final Vector3D position = datedPV.getValue().getPosition();
@@ -219,10 +307,14 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                                 position.getX(), position.getY(), position.getZ()
                                             });
             }
+            break;
+        default :
+            // this should never happen
+            throw OrekitException.createInternalError(null);
         }
 
         // interpolate
-        final DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
+        final DerivativeStructure zero = new DerivativeStructure(1, 2, 0, 0.0);
         final DerivativeStructure[] p  = interpolator.value(zero);
 
         // build a new interpolated instance
@@ -231,7 +323,10 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                               p[2].getValue()),
                                  new Vector3D(p[0].getPartialDerivative(1),
                                               p[1].getPartialDerivative(1),
-                                              p[2].getPartialDerivative(1)));
+                                              p[2].getPartialDerivative(1)),
+                                 new Vector3D(p[0].getPartialDerivative(2),
+                                              p[1].getPartialDerivative(2),
+                                              p[2].getPartialDerivative(2)));
 
     }
 
@@ -247,6 +342,13 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      */
     public Vector3D getVelocity() {
         return velocity;
+    }
+
+    /** Gets the acceleration.
+     * @return the acceleration vector (m/s²).
+     */
+    public Vector3D getAcceleration() {
+        return acceleration;
     }
 
     /** Gets the momentum.
@@ -279,7 +381,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @return a new position-velocity which is opposite to the instance
      */
     public PVCoordinates negate() {
-        return new PVCoordinates(position.negate(), velocity.negate());
+        return new PVCoordinates(position.negate(), velocity.negate(), acceleration.negate());
     }
 
     /** Return a string representation of this position/velocity pair.
@@ -288,12 +390,15 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
     public String toString() {
         final String comma = ", ";
         return new StringBuffer().append('{').append("P(").
-                                  append(position.getX()).append(comma).
-                                  append(position.getY()).append(comma).
-                                  append(position.getZ()).append("), V(").
-                                  append(velocity.getX()).append(comma).
-                                  append(velocity.getY()).append(comma).
-                                  append(velocity.getZ()).append(")}").toString();
+                append(getPosition().getX()).append(comma).
+                append(getPosition().getY()).append(comma).
+                append(getPosition().getZ()).append("), V(").
+                append(getVelocity().getX()).append(comma).
+                append(getVelocity().getY()).append(comma).
+                append(getVelocity().getZ()).append("), A(").
+                append(acceleration.getX()).append(comma).
+                append(acceleration.getY()).append(comma).
+                append(acceleration.getZ()).append(")}").toString();
     }
 
 }

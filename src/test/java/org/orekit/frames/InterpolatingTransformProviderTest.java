@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVCoordinates;
 
 
 public class InterpolatingTransformProviderTest {
@@ -42,7 +43,8 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider, true, true,
+                new InterpolatingTransformProvider(rawProvider,
+                                                   PVCoordinates.SampleFilter.SAMPLE_PVA, true,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -68,7 +70,8 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider referenceProvider = new CirclingProvider(t0, 0.2);
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider, false, false,
+                new InterpolatingTransformProvider(rawProvider,
+                                                   PVCoordinates.SampleFilter.SAMPLE_P, false,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -95,7 +98,7 @@ public class InterpolatingTransformProviderTest {
                     public Transform getTransform(AbsoluteDate date) throws OrekitException {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                     }
-                }, true, true,
+                }, PVCoordinates.SampleFilter.SAMPLE_PVA, true,
                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                 5, 0.8, 10, 60.0, 60.0);
         interpolatingProvider.getTransform(AbsoluteDate.J2000_EPOCH);
@@ -107,7 +110,8 @@ public class InterpolatingTransformProviderTest {
         AbsoluteDate t0 = AbsoluteDate.GALILEO_EPOCH;
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
-                new InterpolatingTransformProvider(rawProvider, true, true,
+                new InterpolatingTransformProvider(rawProvider,
+                                                   PVCoordinates.SampleFilter.SAMPLE_PVA, true,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -120,8 +124,8 @@ public class InterpolatingTransformProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(interpolatingProvider);
 
-        Assert.assertTrue(bos.size () >  500);
-        Assert.assertTrue(bos.size () <  600);
+        Assert.assertTrue(bos.size () >  700);
+        Assert.assertTrue(bos.size () <  800);
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream ois = new ObjectInputStream(bis);
@@ -168,7 +172,10 @@ public class InterpolatingTransformProviderTest {
             final double cos = FastMath.cos(omega * dt);
             final double sin = FastMath.sin(omega * dt);
             return new Transform(date,
-                                 new Transform(date, new Vector3D(-cos, -sin, 0), new Vector3D(omega * sin, -omega * cos, 0)),
+                                 new Transform(date,
+                                               new Vector3D(-cos, -sin, 0),
+                                               new Vector3D(omega * sin, -omega * cos, 0),
+                                               new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
                                  new Transform(date,
                                                new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt),
                                                new Vector3D(omega, Vector3D.PLUS_K)));

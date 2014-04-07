@@ -25,6 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.GenericTimeStampedCache;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedGenerator;
 
 /** Transform provider using thread-safe interpolation on transforms sample.
@@ -47,7 +48,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     private final TransformProvider rawProvider;
 
     /** Flag for use of sample transforms velocities. */
-    private final boolean useVelocities;
+    private final PVCoordinates.SampleFilter usedDerivatives;
 
     /** Flag for use sample points rotation rates. */
     private final boolean useRotationRates;
@@ -66,8 +67,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
-     * @param useVelocities if true, use sample transforms velocities,
-     * otherwise ignore them and use only positions
+     * @param usedDerivatives derivatives to use from sample
      * @param useRotationRates if true, use sample points rotation rates,
      * otherwise ignore them and use only rotations
      * @param earliest earliest supported date
@@ -82,12 +82,12 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * in the {@link GenericTimeStampedCache time-stamped cache}
      */
     public InterpolatingTransformProvider(final TransformProvider rawProvider,
-                                          final boolean useVelocities, final boolean useRotationRates,
+                                          final PVCoordinates.SampleFilter usedDerivatives, final boolean useRotationRates,
                                           final AbsoluteDate earliest, final AbsoluteDate latest,
                                           final int gridPoints, final double step,
                                           final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.rawProvider      = rawProvider;
-        this.useVelocities    = useVelocities;
+        this.usedDerivatives  = usedDerivatives;
         this.useRotationRates = useRotationRates;
         this.earliest         = earliest;
         this.latest           = latest;
@@ -125,7 +125,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
             final List<Transform> sample = cache.getNeighbors(date);
 
             // interpolate to specified date
-            return Transform.interpolate(date, useVelocities, useRotationRates, sample);
+            return Transform.interpolate(date, usedDerivatives, useRotationRates, sample);
 
         } catch (OrekitExceptionWrapper oew) {
             // something went wrong while generating the sample,
@@ -143,7 +143,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DataTransferObject(rawProvider, useVelocities, useRotationRates,
+        return new DataTransferObject(rawProvider, usedDerivatives, useRotationRates,
                                       earliest, latest, cache.getNeighborsSize(), step,
                                       cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
     }
@@ -158,7 +158,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         private final TransformProvider rawProvider;
 
         /** Flag for use of sample transforms velocities. */
-        private final boolean useVelocities;
+        private final PVCoordinates.SampleFilter usedDerivatives;
 
         /** Flag for use sample points rotation rates. */
         private final boolean useRotationRates;
@@ -186,8 +186,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
         /** Simple constructor.
          * @param rawProvider provider for raw (non-interpolated) transforms
-         * @param useVelocities if true, use sample transforms velocities,
-         * otherwise ignore them and use only positions
+         * @param usedDerivatives derivatives to use from sample
          * @param useRotationRates if true, use sample points rotation rates,
          * otherwise ignore them and use only rotations
          * @param earliest earliest supported date
@@ -202,12 +201,12 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * in the {@link GenericTimeStampedCache time-stamped cache}
          */
         private DataTransferObject(final TransformProvider rawProvider,
-                                   final boolean useVelocities, final boolean useRotationRates,
+                                   final PVCoordinates.SampleFilter usedDerivatives, final boolean useRotationRates,
                                    final AbsoluteDate earliest, final AbsoluteDate latest,
                                    final int gridPoints, final double step,
                                    final int maxSlots, final double maxSpan, final double newSlotInterval) {
             this.rawProvider      = rawProvider;
-            this.useVelocities    = useVelocities;
+            this.usedDerivatives  = usedDerivatives;
             this.useRotationRates = useRotationRates;
             this.earliest         = earliest;
             this.latest           = latest;
@@ -223,7 +222,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
          */
         private Object readResolve() {
             // build a new provider, with an empty cache
-            return new InterpolatingTransformProvider(rawProvider, useVelocities, useRotationRates,
+            return new InterpolatingTransformProvider(rawProvider, usedDerivatives, useRotationRates,
                                                       earliest, latest, gridPoints, step,
                                                       maxSlots, maxSpan, newSlotInterval);
         }

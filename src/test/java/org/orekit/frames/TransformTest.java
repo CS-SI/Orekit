@@ -118,7 +118,8 @@ public class TransformTest {
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
             Transform rebuilt  = new Transform(combined.getDate(),
-                                               new Transform(combined.getDate(), combined.getTranslation(), combined.getVelocity()),
+                                               new Transform(combined.getDate(), combined.getTranslation(),
+                                                             combined.getVelocity(), combined.getAcceleration()),
                                                new Transform(combined.getDate(), combined.getRotation(), combined.getRotationRate()));
 
             checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, combined, rebuilt.getInverse()), random);
@@ -148,11 +149,11 @@ public class TransformTest {
     @Test
     public void testRoughTransPV() {
 
-        PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I);
+        PVCoordinates pointP1 = new PVCoordinates(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_I);
 
         // translation transform test
         PVCoordinates pointP2 = new PVCoordinates(new Vector3D(0, 0, 0), new Vector3D(0, 0, 0));
-        Transform R1toR2 = new Transform(AbsoluteDate.J2000_EPOCH, Vector3D.MINUS_I, Vector3D.MINUS_I);
+        Transform R1toR2 = new Transform(AbsoluteDate.J2000_EPOCH, Vector3D.MINUS_I, Vector3D.MINUS_I, Vector3D.MINUS_I);
         PVCoordinates result1 = R1toR2.transformPVCoordinates(pointP1);
         checkVectors(pointP2.getPosition(), result1.getPosition());
         checkVectors(pointP2.getVelocity(), result1.getVelocity());
@@ -178,15 +179,15 @@ public class TransformTest {
         checkVectors(pointP1.getVelocity(), invResult2.getVelocity());
 
         // combine 2 velocity transform
-        Transform R1toR4 = new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(-2,0,0),new Vector3D(-2,0,0));
-        PVCoordinates pointP4 = new PVCoordinates(new Vector3D(-1,0,0),new Vector3D(-1,0,0));
+        Transform R1toR4 = new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(-2, 0, 0), new Vector3D(-2, 0, 0), new Vector3D(-2, 0, 0));
+        PVCoordinates pointP4 = new PVCoordinates(new Vector3D(-1, 0, 0), new Vector3D(-1, 0, 0), new Vector3D(-1, 0, 0));
         Transform R2toR4 = new Transform(AbsoluteDate.J2000_EPOCH, R2toR1, R1toR4);
         PVCoordinates compResult = R2toR4.transformPVCoordinates(pointP2);
         checkVectors(pointP4.getPosition() , compResult.getPosition());
         checkVectors(pointP4.getVelocity() , compResult.getVelocity());
 
         // combine 2 rotation tranform
-        PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1,0,0),new Vector3D(-1 , 0 , 3));
+        PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1, 0, 0), new Vector3D(-1 , 0 , 3));
         Rotation R2 = new Rotation( new Vector3D(0,0,1), FastMath.PI );
         Transform R1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R2 , new Vector3D(0, -3, 0));
         Transform R3toR5 = new Transform (AbsoluteDate.J2000_EPOCH, R3toR1, R1toR5);
@@ -282,7 +283,8 @@ public class TransformTest {
             // random transform
             Vector3D trans = randomVector(rnd);
             Vector3D transVel = randomVector(rnd);
-            Transform tr = new Transform(AbsoluteDate.J2000_EPOCH, trans , transVel);
+            Vector3D transAcc = randomVector(rnd);
+            Transform tr = new Transform(AbsoluteDate.J2000_EPOCH, trans , transVel, transAcc);
 
             double dt = 1;
 
@@ -475,7 +477,7 @@ public class TransformTest {
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
         Transform t   = new Transform(date,
-                                      new Transform(date, Vector3D.MINUS_I, Vector3D.MINUS_J),
+                                      new Transform(date, Vector3D.MINUS_I, Vector3D.MINUS_J, Vector3D.ZERO),
                                       new Transform(date,
                                                     new Rotation(Vector3D.PLUS_K, alpha0),
                                                     new Vector3D(omega, Vector3D.MINUS_K)));
@@ -620,7 +622,10 @@ public class TransformTest {
         final double cos = FastMath.cos(omega * dt);
         final double sin = FastMath.sin(omega * dt);
         return new Transform(date,
-                             new Transform(date, new Vector3D(-cos, -sin, 0), new Vector3D(omega * sin, -omega * cos, 0)),
+                             new Transform(date,
+                                           new Vector3D(-cos, -sin, 0),
+                                           new Vector3D(omega * sin, -omega * cos, 0),
+                                           new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
                              new Transform(date,
                                            new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt),
                                            new Vector3D(omega, Vector3D.PLUS_K)));
@@ -638,7 +643,7 @@ public class TransformTest {
         Transform combined = Transform.IDENTITY;
         for (int k = 0; k < 20; ++k) {
             Transform t = random.nextBoolean() ?
-                          new Transform(AbsoluteDate.J2000_EPOCH, randomVector(random), randomVector(random)) :
+                          new Transform(AbsoluteDate.J2000_EPOCH, randomVector(random), randomVector(random), randomVector(random)) :
                           new Transform(AbsoluteDate.J2000_EPOCH, randomRotation(random), randomVector(random));
             combined = new Transform(AbsoluteDate.J2000_EPOCH, combined, t);
         }

@@ -254,7 +254,7 @@ public class KeplerianOrbit extends Orbit {
     }
 
     /** Constructor from cartesian parameters.
-     * @param pvCoordinates the PVCoordinates of the satellite
+     * @param pvaCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -262,13 +262,13 @@ public class KeplerianOrbit extends Orbit {
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public KeplerianOrbit(final PVCoordinates pvCoordinates,
+    public KeplerianOrbit(final PVCoordinates pvaCoordinates,
                           final Frame frame, final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
+        super(pvaCoordinates, frame, date, mu);
 
         // compute inclination
-        final Vector3D momentum = pvCoordinates.getMomentum();
+        final Vector3D momentum = pvaCoordinates.getMomentum();
         final double m2 = momentum.getNormSq();
         i = Vector3D.angle(momentum, Vector3D.PLUS_K);
 
@@ -276,8 +276,8 @@ public class KeplerianOrbit extends Orbit {
         raan = Vector3D.crossProduct(Vector3D.PLUS_K, momentum).getAlpha();
 
         // preliminary computations for parameters depending on orbit shape (elliptic or hyperbolic)
-        final Vector3D pvP     = pvCoordinates.getPosition();
-        final Vector3D pvV     = pvCoordinates.getVelocity();
+        final Vector3D pvP     = pvaCoordinates.getPosition();
+        final Vector3D pvV     = pvaCoordinates.getVelocity();
         final double   r       = pvP.getNorm();
         final double   V2      = pvV.getNormSq();
         final double   rV2OnMu = r * V2 / mu;
@@ -626,7 +626,7 @@ public class KeplerianOrbit extends Orbit {
 
     /** Initialize the position/velocity coordinates, elliptic case.
      * @param p unit vector in the orbital plane pointing towards perigee
-     * @param q unit vector in the orbital plane in quadrature with q
+     * @param q unit vector in the orbital plane in quadrature with p
      * @return computed position/velocity coordinates
      */
     private PVCoordinates initPVCoordinatesElliptical(final Vector3D p, final Vector3D q) {
@@ -645,13 +645,17 @@ public class KeplerianOrbit extends Orbit {
         final double xDot   = -sinE * factor;
         final double yDot   =  cosE * s1Me2 * factor;
 
-        return new PVCoordinates(new Vector3D(x, p, y, q), new Vector3D(xDot, p, yDot, q));
+        final Vector3D position = new Vector3D(x, p, y, q);
+        final double r2 = x * x + y * y;
+        final Vector3D velocity = new Vector3D(xDot, p, yDot, q);
+        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+        return new PVCoordinates(position, velocity, acceleration);
 
     }
 
     /** Initialize the position/velocity coordinates, hyperbolic case.
      * @param p unit vector in the orbital plane pointing towards perigee
-     * @param q unit vector in the orbital plane in quadrature with q
+     * @param q unit vector in the orbital plane in quadrature with p
      * @return computed position/velocity coordinates
      */
     private PVCoordinates initPVCoordinatesHyperbolic(final Vector3D p, final Vector3D q) {
@@ -663,8 +667,10 @@ public class KeplerianOrbit extends Orbit {
         final double posFactor = f / (1 + e * cosV);
         final double velFactor = FastMath.sqrt(getMu() / f);
 
-        return new PVCoordinates(new Vector3D( posFactor * cosV, p, posFactor * sinV, q),
-                                 new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q));
+        final Vector3D position     = new Vector3D( posFactor * cosV, p, posFactor * sinV, q);
+        final Vector3D velocity     = new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q);
+        final Vector3D acceleration = new Vector3D(-getMu() / (posFactor * posFactor * posFactor), position);
+        return new PVCoordinates(position, velocity, acceleration);
 
     }
 

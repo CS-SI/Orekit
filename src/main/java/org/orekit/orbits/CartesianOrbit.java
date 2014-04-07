@@ -75,7 +75,7 @@ public class CartesianOrbit extends Orbit {
     private transient EquinoctialOrbit equinoctial;
 
     /** Constructor from cartesian parameters.
-     * @param pvCoordinates the position and velocity of the satellite.
+     * @param pvaCoordinates the position, velocity and acceleration of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -83,10 +83,10 @@ public class CartesianOrbit extends Orbit {
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public CartesianOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+    public CartesianOrbit(final PVCoordinates pvaCoordinates, final Frame frame,
                           final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
+        super(pvaCoordinates, frame, date, mu);
         equinoctial = null;
     }
 
@@ -221,12 +221,14 @@ public class CartesianOrbit extends Orbit {
      * </p>
      */
     public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
-        final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
+        final List<Pair<AbsoluteDate, PVCoordinates>> datedPVA =
                 new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
         for (final Orbit orbit : sample) {
-            datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(orbit.getDate(), orbit.getPVCoordinates()));
+            datedPVA.add(new Pair<AbsoluteDate, PVCoordinates>(orbit.getDate(), orbit.getPVCoordinates()));
         }
-        final PVCoordinates interpolated = PVCoordinates.interpolate(date, true, datedPV);
+        final PVCoordinates interpolated = PVCoordinates.interpolate(date,
+                                                                     PVCoordinates.SampleFilter.SAMPLE_PVA,
+                                                                     datedPVA);
         return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 
@@ -274,7 +276,11 @@ public class CartesianOrbit extends Orbit {
         final double xDot   = factor * (-sTE + beta * ey * exCeyS);
         final double yDot   = factor * ( cTE - beta * ex * exCeyS);
 
-        return new PVCoordinates(new Vector3D(x, u, y, v), new Vector3D(xDot, u, yDot, v));
+        final Vector3D shiftedP = new Vector3D(x, u, y, v);
+        final double   r2       = x * x + y * y;
+        final Vector3D shiftedV = new Vector3D(xDot, u, yDot, v);
+        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
+        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
 
     }
 
@@ -322,7 +328,11 @@ public class CartesianOrbit extends Orbit {
         final double xDot   = -factor * sH;
         final double yDot   =  factor * sE2m1 * cH;
 
-        return new PVCoordinates(new Vector3D(x, p, y, q), new Vector3D(xDot, p, yDot, q));
+        final Vector3D shiftedP = new Vector3D(x, p, y, q);
+        final double   r2       = x * x + y * y;
+        final Vector3D shiftedV = new Vector3D(xDot, p, yDot, q);
+        final Vector3D shiftedA = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), shiftedP);
+        return new PVCoordinates(shiftedP, shiftedV, shiftedA);
 
     }
 
@@ -492,10 +502,10 @@ public class CartesianOrbit extends Orbit {
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 4184412866917874790L;
+        private static final long serialVersionUID = 20140406L;
 
         /** Computed PVCoordinates. */
-        private PVCoordinates pvCoordinates;
+        private PVCoordinates pvaCoordinates;
 
         /** Frame in which are defined the orbital parameters. */
         private final Frame frame;
@@ -507,18 +517,18 @@ public class CartesianOrbit extends Orbit {
         private final double mu;
 
         /** Simple constructor.
-         * @param pvCoordinates the position and velocity of the satellite.
+         * @param pvaCoordinates the position, velocity and acceleration of the satellite.
          * @param frame the frame in which the {@link PVCoordinates} are defined
          * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
          * @param date date of the orbital parameters
          * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
          */
-        private DataTransferObject(final PVCoordinates pvCoordinates, final Frame frame,
+        private DataTransferObject(final PVCoordinates pvaCoordinates, final Frame frame,
                                    final AbsoluteDate date, final double mu) {
-            this.pvCoordinates = pvCoordinates;
-            this.frame         = frame;
-            this.date          = date;
-            this.mu            = mu;
+            this.pvaCoordinates = pvaCoordinates;
+            this.frame          = frame;
+            this.date           = date;
+            this.mu             = mu;
         }
 
         /** Replace the deserialized data transfer object with a {@link CartesianOrbit}.
@@ -526,7 +536,7 @@ public class CartesianOrbit extends Orbit {
          */
         private Object readResolve() {
             // build a new provider, with an empty cache
-            return new CartesianOrbit(pvCoordinates, frame, date, mu);
+            return new CartesianOrbit(pvaCoordinates, frame, date, mu);
         }
 
     }

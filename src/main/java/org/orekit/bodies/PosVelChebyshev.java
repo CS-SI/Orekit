@@ -104,11 +104,11 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         return (dt >= -0.001) && (dt <= duration + 0.001);
     }
 
-    /** Get the position-velocity at a specified date.
-     * @param date date at which position-velocity is requested
-     * @return position-velocity at specified date
+    /** Get the position-velocity-acceleration at a specified date.
+     * @param date date at which position-velocity-acceleration is requested
+     * @return position-velocity-acceleration at specified date
      */
-    public PVCoordinates getPositionVelocity(final AbsoluteDate date) {
+    public PVCoordinates getPositionVelocityAcceleration(final AbsoluteDate date) {
 
         // normalize date
         final double t = (2 * date.durationFrom(start) - duration) / duration;
@@ -121,12 +121,19 @@ class PosVelChebyshev implements TimeStamped, Serializable {
         double yP   = yCoeffs[0];
         double zP   = zCoeffs[0];
 
-        // initialize Chebishev polynomials derivatives recursion
+        // initialize Chebyshev polynomials derivatives recursion
         double qKm1 = 0;
         double qK   = 1;
         double xV   = 0;
         double yV   = 0;
         double zV   = 0;
+
+        // initialize Chebyshev polynomials second derivatives recursion
+        double rKm1 = 0;
+        double rK   = 0;
+        double xA   = 0;
+        double yA   = 0;
+        double zA   = 0;
 
         // combine polynomials by applying coefficients
         for (int k = 1; k < xCoeffs.length; ++k) {
@@ -141,6 +148,11 @@ class PosVelChebyshev implements TimeStamped, Serializable {
             yV += yCoeffs[k] * qK;
             zV += zCoeffs[k] * qK;
 
+            // consider last computed polynomials on acceleration
+            xA += xCoeffs[k] * rK;
+            yA += yCoeffs[k] * rK;
+            zA += zCoeffs[k] * rK;
+
             // compute next Chebyshev polynomial value
             final double pKm2 = pKm1;
             pKm1 = pK;
@@ -151,11 +163,18 @@ class PosVelChebyshev implements TimeStamped, Serializable {
             qKm1 = qK;
             qK   = twoT * qKm1 + 2 * pKm1 - qKm2;
 
+            // compute next Chebyshev polynomial second derivative
+            final double rKm2 = rKm1;
+            rKm1 = rK;
+            rK   = twoT * rKm1 + 4 * qKm1 - rKm2;
+
         }
 
         final double vScale = 2 / duration;
+        final double aScale = vScale * vScale;
         return new PVCoordinates(new Vector3D(xP, yP, zP),
-                                 new Vector3D(xV * vScale, yV * vScale, zV * vScale));
+                                 new Vector3D(xV * vScale, yV * vScale, zV * vScale),
+                                 new Vector3D(xA * aScale, yA * aScale, zA * aScale));
 
     }
 

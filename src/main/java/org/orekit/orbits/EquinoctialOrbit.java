@@ -217,7 +217,7 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** Constructor from cartesian parameters.
-     * @param pvCoordinates the position end velocity
+     * @param pvaCoordinates the position, velocity and acceleration
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -225,14 +225,14 @@ public class EquinoctialOrbit extends Orbit {
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
-                                 final AbsoluteDate date, final double mu)
+    public EquinoctialOrbit(final PVCoordinates pvaCoordinates, final Frame frame,
+                            final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
+        super(pvaCoordinates, frame, date, mu);
 
         //  compute semi-major axis
-        final Vector3D pvP = pvCoordinates.getPosition();
-        final Vector3D pvV = pvCoordinates.getVelocity();
+        final Vector3D pvP = pvaCoordinates.getPosition();
+        final Vector3D pvV = pvaCoordinates.getVelocity();
         final double r = pvP.getNorm();
         final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
@@ -243,7 +243,7 @@ public class EquinoctialOrbit extends Orbit {
         }
 
         // compute inclination vector
-        final Vector3D w = pvCoordinates.getMomentum().normalize();
+        final Vector3D w = pvaCoordinates.getMomentum().normalize();
         final double d = 1.0 / (1 + w.getZ());
         hx = -d * w.getY();
         hy =  d * w.getX();
@@ -441,9 +441,11 @@ public class EquinoctialOrbit extends Orbit {
 
         final Vector3D position =
             new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+        final double r2 = position.getNormSq();
         final Vector3D velocity =
             new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        return new PVCoordinates(position, velocity);
+        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+        return new PVCoordinates(position, velocity, acceleration);
 
     }
 

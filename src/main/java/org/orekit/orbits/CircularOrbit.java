@@ -220,7 +220,7 @@ public class CircularOrbit
     }
 
     /** Constructor from cartesian parameters.
-     * @param pvCoordinates the {@link PVCoordinates} in inertial frame
+     * @param pvaCoordinates the {@link PVCoordinates} in inertial frame
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
@@ -228,14 +228,14 @@ public class CircularOrbit
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public CircularOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+    public CircularOrbit(final PVCoordinates pvaCoordinates, final Frame frame,
                               final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
+        super(pvaCoordinates, frame, date, mu);
 
         // compute semi-major axis
-        final Vector3D pvP = pvCoordinates.getPosition();
-        final Vector3D pvV = pvCoordinates.getVelocity();
+        final Vector3D pvP = pvaCoordinates.getPosition();
+        final Vector3D pvV = pvaCoordinates.getVelocity();
         final double r  = pvP.getNorm();
         final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
@@ -248,7 +248,7 @@ public class CircularOrbit
         a = r / (2 - rV2OnMu);
 
         // compute inclination
-        final Vector3D momentum = pvCoordinates.getMomentum();
+        final Vector3D momentum = pvaCoordinates.getMomentum();
         i = Vector3D.angle(momentum, Vector3D.PLUS_K);
 
         // compute right ascension of ascending node
@@ -503,9 +503,11 @@ public class CircularOrbit
 
         final Vector3D position =
             new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
+        final double r2         = position.getNormSq();
         final Vector3D velocity =
             new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        return new PVCoordinates(position, velocity);
+        final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
+        return new PVCoordinates(position, velocity, acceleration);
 
     }
 
