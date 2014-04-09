@@ -48,7 +48,7 @@ import org.orekit.utils.PVCoordinates;
  * <p> The convention used in OREKIT is vectorial transformation. It means
  * that a transformation is defined as a transform to apply to the
  * coordinates of a vector expressed in the old frame to obtain the
- * same vector expressed in the new frame. <p>
+ * same vector expressed in the new frame.<p>
  *
  * <p>Instances of this class are guaranteed to be immutable.</p>
  *
@@ -64,10 +64,10 @@ import org.orekit.utils.PVCoordinates;
  *
  * The transform to apply then is defined as follows :
  *
- * Vector3D translation = new Vector3D(-1,0,0);
- * Vector3D velocity = new Vector3D(-1,0,0);
+ * Vector3D translation = new Vector3D(-1, 0, 0);
+ * Vector3D velocity = new Vector3D(-1, 0, 0);
  *
- * Transform R1toR2 = new Transform(translation, Velocity);
+ * Transform R1toR2 = new Transform(translation, velocity);
  *
  * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
  *
@@ -258,8 +258,15 @@ public class Transform
      * @return acceleration part of the composite transform
      */
     private static Vector3D compositeAcceleration(final Transform first, final Transform second) {
-        // TODO: compose acceleration
-        return Vector3D.ZERO;
+
+        final Vector3D a1 = first.cartesian.getAcceleration();
+        final Rotation r1 = first.angular.getRotation();
+        final Vector3D o1 = first.angular.getRotationRate();
+        final Vector3D v2 = second.cartesian.getVelocity();
+        final Vector3D a2 = second.cartesian.getAcceleration();
+
+        return a1.add(r1.applyInverseTo(a2.add(new Vector3D(2.0, Vector3D.crossProduct(o1, v2)))));
+
     }
 
     /** Compute a composite rotation.
@@ -438,8 +445,8 @@ public class Transform
     }
 
     /** Transform {@link PVCoordinates} including kinematic effects.
-     * @param pva the triplet position-velocity-acceleration to transform.
-     * @return transformed position/velocity
+     * @param pva the position-velocity-acceleration triplet to transform.
+     * @return transformed position-velocity-acceleration
      */
     public PVCoordinates transformPVCoordinates(final PVCoordinates pva) {
         final Vector3D p = pva.getPosition();
@@ -459,6 +466,7 @@ public class Transform
      * @return transformed position/velocity
      */
     public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
+        // TODO: add acceleration
         final FieldVector3D<T> p = pv.getPosition();
         final FieldVector3D<T> v = pv.getVelocity();
         final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(),
