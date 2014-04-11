@@ -35,50 +35,50 @@ public class PVCoordinatesDSTest {
 
     @Test
     public void testLinearConstructors() {
-        FieldPVCoordinates<DerivativeStructure> pv1 = new FieldPVCoordinates<DerivativeStructure>(createVector(1, 0.1, 10, 6),
-                                                  createVector(-1, -0.1, -10, 6));
-        FieldPVCoordinates<DerivativeStructure> pv2 = new FieldPVCoordinates<DerivativeStructure>(createVector(2, 0.2, 20, 6),
-                                                  createVector(-2, -0.2, -20, 6));
-        FieldPVCoordinates<DerivativeStructure> pv3 = new FieldPVCoordinates<DerivativeStructure>(createVector(3, 0.3, 30, 6),
-                                                  createVector(-3, -0.3, -30, 6));
-        FieldPVCoordinates<DerivativeStructure> pv4 = new FieldPVCoordinates<DerivativeStructure>(createVector(4, 0.4, 40, 6),
-                                                  createVector(-4, -0.4, -40, 6));
+        FieldPVCoordinates<DerivativeStructure> pv1 = new FieldPVCoordinates<DerivativeStructure>(createVector( 1,  0.1,  10, 6),
+                                                                                                  createVector(-1, -0.1, -10, 6));
+        FieldPVCoordinates<DerivativeStructure> pv2 = new FieldPVCoordinates<DerivativeStructure>(createVector( 2,  0.2,  20, 6),
+                                                                                                  createVector(-2, -0.2, -20, 6));
+        FieldPVCoordinates<DerivativeStructure> pv3 = new FieldPVCoordinates<DerivativeStructure>(createVector( 3,  0.3,  30, 6),
+                                                                                                  createVector(-3, -0.3, -30, 6));
+        FieldPVCoordinates<DerivativeStructure> pv4 = new FieldPVCoordinates<DerivativeStructure>(createVector( 4,  0.4,  40, 6),
+                                                                                                  createVector(-4, -0.4, -40, 6));
         checkPV(pv4, new FieldPVCoordinates<DerivativeStructure>(4, pv1), 1.0e-15);
         checkPV(pv4, new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 4), pv1), 1.0e-15);
         checkPV(pv4, new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 4), pv1.toPVCoordinates()), 1.0e-15);
         checkPV(pv2, new FieldPVCoordinates<DerivativeStructure>(pv1, pv3), 1.0e-15);
         checkPV(pv3, new FieldPVCoordinates<DerivativeStructure>(1, pv1, 1, pv2), 1.0e-15);
         checkPV(pv3, new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 1), pv1,
-                                         new DerivativeStructure(6, 1, 1), pv2),
+                                                                 new DerivativeStructure(6, 1, 1), pv2),
                 1.0e-15);
         checkPV(pv3, new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 1), pv1.toPVCoordinates(),
-                                         new DerivativeStructure(6, 1, 1), pv2.toPVCoordinates()),
+                                                                 new DerivativeStructure(6, 1, 1), pv2.toPVCoordinates()),
                 1.0e-15);
         checkPV(new FieldPVCoordinates<DerivativeStructure>(2, pv4), new FieldPVCoordinates<DerivativeStructure>(3, pv1, 1, pv2, 1, pv3), 1.0e-15);
         checkPV(new FieldPVCoordinates<DerivativeStructure>(3, pv3), new FieldPVCoordinates<DerivativeStructure>(3, pv1, 1, pv2, 1, pv4), 1.0e-15);
         checkPV(new FieldPVCoordinates<DerivativeStructure>(3, pv3),
                 new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 3), pv1,
-                                    new DerivativeStructure(6, 1, 1), pv2,
-                                    new DerivativeStructure(6, 1, 1), pv4),
+                                                            new DerivativeStructure(6, 1, 1), pv2,
+                                                            new DerivativeStructure(6, 1, 1), pv4),
                 1.0e-15);
         checkPV(new FieldPVCoordinates<DerivativeStructure>(3, pv3),
                 new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 3), pv1.toPVCoordinates(),
-                                    new DerivativeStructure(6, 1, 1), pv2.toPVCoordinates(),
-                                    new DerivativeStructure(6, 1, 1), pv4.toPVCoordinates()),
+                                                            new DerivativeStructure(6, 1, 1), pv2.toPVCoordinates(),
+                                                            new DerivativeStructure(6, 1, 1), pv4.toPVCoordinates()),
                 1.0e-15);
         checkPV(new FieldPVCoordinates<DerivativeStructure>(5, pv4),
                 new FieldPVCoordinates<DerivativeStructure>(4, pv1, 3, pv2, 2, pv3, 1, pv4), 1.0e-15);
         checkPV(new FieldPVCoordinates<DerivativeStructure>(5, pv4),
                 new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 4), pv1,
-                                    new DerivativeStructure(6, 1, 3), pv2,
-                                    new DerivativeStructure(6, 1, 2), pv3,
-                                    new DerivativeStructure(6, 1, 1), pv4),
+                                                            new DerivativeStructure(6, 1, 3), pv2,
+                                                            new DerivativeStructure(6, 1, 2), pv3,
+                                                            new DerivativeStructure(6, 1, 1), pv4),
                 1.0e-15);
         checkPV(new FieldPVCoordinates<DerivativeStructure>(5, pv4),
                 new FieldPVCoordinates<DerivativeStructure>(new DerivativeStructure(6, 1, 4), pv1.toPVCoordinates(),
-                                    new DerivativeStructure(6, 1, 3), pv2.toPVCoordinates(),
-                                    new DerivativeStructure(6, 1, 2), pv3.toPVCoordinates(),
-                                    new DerivativeStructure(6, 1, 1), pv4.toPVCoordinates()),
+                                                            new DerivativeStructure(6, 1, 3), pv2.toPVCoordinates(),
+                                                            new DerivativeStructure(6, 1, 2), pv3.toPVCoordinates(),
+                                                            new DerivativeStructure(6, 1, 1), pv4.toPVCoordinates()),
                 1.0e-15);
     }
 
@@ -183,7 +183,7 @@ public class PVCoordinatesDSTest {
     public void testToString() {
         FieldPVCoordinates<DerivativeStructure> pv =
             new FieldPVCoordinates<DerivativeStructure>(createVector(1, 0.1, 10, 6), createVector(-1, -0.1, -10, 6));
-        Assert.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0)}", pv.toString());
+        Assert.assertEquals("{P(1.0, 0.1, 10.0), V(-1.0, -0.1, -10.0), A(0.0, 0.0, 0.0)}", pv.toString());
     }
 
     @Test
@@ -212,7 +212,8 @@ public class PVCoordinatesDSTest {
             }
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
-                FieldPVCoordinates<DerivativeStructure> interpolated = FieldPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                FieldPVCoordinates<DerivativeStructure> interpolated =
+                        FieldPVCoordinates.interpolate(t0.shiftedBy(dt), PVASampleFilter.SAMPLE_PV, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 Assert.assertEquals(px.value(dt),    p.getX().getValue(), 1.0e-15 * p.getNorm().getValue());
@@ -257,7 +258,8 @@ public class PVCoordinatesDSTest {
             }
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
-                FieldPVCoordinates<DerivativeStructure> interpolated = FieldPVCoordinates.interpolate(t0.shiftedBy(dt), false, sample);
+                FieldPVCoordinates<DerivativeStructure> interpolated =
+                        FieldPVCoordinates.interpolate(t0.shiftedBy(dt), PVASampleFilter.SAMPLE_P, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 Assert.assertEquals(px.value(dt),    p.getX().getValue(), 1.0e-14 * p.getNorm().getValue());
@@ -284,7 +286,8 @@ public class PVCoordinatesDSTest {
             }
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
-                FieldPVCoordinates<DerivativeStructure> interpolated = FieldPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                FieldPVCoordinates<DerivativeStructure> interpolated =
+                        FieldPVCoordinates.interpolate(t0.shiftedBy(dt), PVASampleFilter.SAMPLE_PV, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 Assert.assertEquals(FastMath.cos(dt),    p.getX().getValue(), 3.0e-6 * p.getNorm().getValue());
@@ -307,8 +310,8 @@ public class PVCoordinatesDSTest {
 
     private FieldVector3D<DerivativeStructure> createVector(double x, double y, double z, int params) {
         return new FieldVector3D<DerivativeStructure>(new DerivativeStructure(params, 1, 0, x),
-                              new DerivativeStructure(params, 1, 1, y),
-                              new DerivativeStructure(params, 1, 2, z));
+                                                      new DerivativeStructure(params, 1, 1, y),
+                                                      new DerivativeStructure(params, 1, 2, z));
     }
 
     private void checkPV(FieldPVCoordinates<DerivativeStructure> expected, FieldPVCoordinates<DerivativeStructure> real, double epsilon) {
