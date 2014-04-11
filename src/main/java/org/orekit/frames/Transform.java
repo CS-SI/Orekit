@@ -36,6 +36,7 @@ import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVASampleFilter;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -59,15 +60,16 @@ import org.orekit.utils.PVCoordinates;
  * 1 ) Example of translation from R<sub>A</sub> to R<sub>B</sub>:
  * We want to transform the {@link PVCoordinates} PV<sub>A</sub> to PV<sub>B</sub>.
  *
- * With :  PV<sub>A</sub> = ({1, 0, 0} , {1, 0, 0});
- * and  :  PV<sub>B</sub> = ({0, 0, 0} , {0, 0, 0});
+ * With :  PV<sub>A</sub> = ({1, 0, 0}, {2, 0, 0}, {3, 0, 0});
+ * and  :  PV<sub>B</sub> = ({0, 0, 0}, {0, 0, 0}, {0, 0, 0});
  *
  * The transform to apply then is defined as follows :
  *
- * Vector3D translation = new Vector3D(-1, 0, 0);
- * Vector3D velocity = new Vector3D(-1, 0, 0);
+ * Vector3D translation  = new Vector3D(-1, 0, 0);
+ * Vector3D velocity     = new Vector3D(-2, 0, 0);
+ * Vector3D acceleration = new Vector3D(-3, 0, 0);
  *
- * Transform R1toR2 = new Transform(translation, velocity);
+ * Transform R1toR2 = new Transform(date, translation, velocity, acceleration);
  *
  * PV<sub>B</sub> = R1toR2.transformPVCoordinates(PV<sub>A</sub>);
  *
@@ -99,7 +101,7 @@ public class Transform
     public static final Transform IDENTITY = new IdentityTransform();
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -8809893979516295102L;
+    private static final long serialVersionUID = 210140410L;
 
     /** Date of the transform. */
     private final AbsoluteDate date;
@@ -129,7 +131,9 @@ public class Transform
      * old frame in the new frame)
      */
     public Transform(final AbsoluteDate date, final Vector3D translation) {
-        this(date, new PVCoordinates(translation, Vector3D.ZERO, Vector3D.ZERO), AngularCoordinates.IDENTITY);
+        this(date,
+             new PVCoordinates(translation, Vector3D.ZERO, Vector3D.ZERO),
+             AngularCoordinates.IDENTITY);
     }
 
     /** Build a rotation transform.
@@ -139,7 +143,9 @@ public class Transform
      * same vector expressed in the new frame )
      */
     public Transform(final AbsoluteDate date, final Rotation rotation) {
-        this(date, PVCoordinates.ZERO, new AngularCoordinates(rotation, Vector3D.ZERO));
+        this(date,
+             PVCoordinates.ZERO,
+             new AngularCoordinates(rotation, Vector3D.ZERO));
     }
 
     /** Build a translation transform, with its first time derivative.
@@ -150,8 +156,11 @@ public class Transform
      * @param velocity the velocity of the translation (i.e. origin
      * of the old frame velocity in the new frame)
      */
-    public Transform(final AbsoluteDate date, final Vector3D translation, final Vector3D velocity) {
-        this(date, new PVCoordinates(translation, velocity, Vector3D.ZERO), AngularCoordinates.IDENTITY);
+    public Transform(final AbsoluteDate date, final Vector3D translation,
+                     final Vector3D velocity) {
+        this(date,
+             new PVCoordinates(translation, velocity, Vector3D.ZERO),
+             AngularCoordinates.IDENTITY);
     }
 
     /** Build a translation transform, with its first and second time derivatives.
@@ -164,8 +173,11 @@ public class Transform
      * @param acceleration the acceleration of the translation (i.e. origin
      * of the old frame acceleration in the new frame)
      */
-    public Transform(final AbsoluteDate date, final Vector3D translation, final Vector3D velocity, final Vector3D acceleration) {
-        this(date, new PVCoordinates(translation, velocity, acceleration), AngularCoordinates.IDENTITY);
+    public Transform(final AbsoluteDate date, final Vector3D translation,
+                     final Vector3D velocity, final Vector3D acceleration) {
+        this(date,
+             new PVCoordinates(translation, velocity, acceleration),
+             AngularCoordinates.IDENTITY);
     }
 
     /** Build a translation transform, with its first time derivative.
@@ -175,7 +187,9 @@ public class Transform
      * old frame in the new frame, with their derivatives)
      */
     public Transform(final AbsoluteDate date, final PVCoordinates cartesian) {
-        this(date, cartesian, AngularCoordinates.IDENTITY);
+        this(date,
+             cartesian,
+             AngularCoordinates.IDENTITY);
     }
 
     /** Build a rotation transform.
@@ -187,7 +201,9 @@ public class Transform
      * expressed in the new frame. (norm representing angular rate)
      */
     public Transform(final AbsoluteDate date, final Rotation rotation, final Vector3D rotationRate) {
-        this(date, PVCoordinates.ZERO, new AngularCoordinates(rotation, rotationRate));
+        this(date,
+             PVCoordinates.ZERO,
+             new AngularCoordinates(rotation, rotationRate));
     }
 
     /** Build a rotation transform.
@@ -214,8 +230,8 @@ public class Transform
     public Transform(final AbsoluteDate date, final Transform first, final Transform second) {
         this(date,
              new PVCoordinates(compositeTranslation(first, second),
-                                compositeVelocity(first, second),
-                                compositeAcceleration(first, second)),
+                               compositeVelocity(first, second),
+                               compositeAcceleration(first, second)),
              new AngularCoordinates(compositeRotation(first, second),
                                     compositeRotationRate(first, second)));
     }
@@ -248,7 +264,9 @@ public class Transform
         final Vector3D p2 = second.cartesian.getPosition();
         final Vector3D v2 = second.cartesian.getVelocity();
 
-        return v1.add(r1.applyInverseTo(v2.add(Vector3D.crossProduct(o1, p2))));
+        final Vector3D crossP = Vector3D.crossProduct(o1, p2);
+
+        return v1.add(r1.applyInverseTo(v2.add(crossP)));
 
     }
 
@@ -262,10 +280,14 @@ public class Transform
         final Vector3D a1 = first.cartesian.getAcceleration();
         final Rotation r1 = first.angular.getRotation();
         final Vector3D o1 = first.angular.getRotationRate();
+        final Vector3D p2 = second.cartesian.getPosition();
         final Vector3D v2 = second.cartesian.getVelocity();
         final Vector3D a2 = second.cartesian.getAcceleration();
 
-        return a1.add(r1.applyInverseTo(a2.add(new Vector3D(2.0, Vector3D.crossProduct(o1, v2)))));
+        final Vector3D crossCrossP = Vector3D.crossProduct(o1, Vector3D.crossProduct(o1, p2));
+        final Vector3D crossV      = Vector3D.crossProduct(o1, v2);
+
+        return a1.add(r1.applyInverseTo(new Vector3D(1, a2, 2, crossV, 1, crossCrossP)));
 
     }
 
@@ -311,8 +333,8 @@ public class Transform
     /** {@inheritDoc}
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
-     * PVCoordinates.SampleFilter, boolean, Collection)} with
-     * {@code pvaMode} set to {@link PVCoordinates.SampleFilter#SAMPLE_PVA}
+     * PVCoordinates.PVASampleFilter, boolean, Collection)} with
+     * {@code pvaMode} set to {@link PVASampleFilter#SAMPLE_PVA}
      * and {@code useRotationRates} set to true.
      * </p>
      * @exception OrekitException if the number of point is too small for interpolating
@@ -320,7 +342,7 @@ public class Transform
     public Transform interpolate(final AbsoluteDate interpolationDate,
                                  final Collection<Transform> sample)
         throws OrekitException {
-        return interpolate(interpolationDate, PVCoordinates.SampleFilter.SAMPLE_PVA, true, sample);
+        return interpolate(interpolationDate, PVASampleFilter.SAMPLE_PVA, true, sample);
     }
 
     /** Interpolate a transform from a sample set of existing transforms.
@@ -349,7 +371,7 @@ public class Transform
      * @exception OrekitException if the number of point is too small for interpolating
      */
     public static Transform interpolate(final AbsoluteDate date,
-                                        final PVCoordinates.SampleFilter pvaFilter, final boolean useRotationRates,
+                                        final PVASampleFilter pvaFilter, final boolean useRotationRates,
                                         final Collection<Transform> sample)
         throws OrekitException {
         final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
@@ -374,23 +396,25 @@ public class Transform
 
         final Vector3D p = cartesian.getPosition();
         final Vector3D v = cartesian.getVelocity();
+        final Vector3D a = cartesian.getAcceleration();
         final Rotation r = angular.getRotation();
         final Vector3D o = angular.getRotationRate();
 
-        final Vector3D rT = r.applyTo(p);
-        return new Transform(date,
-                             new PVCoordinates(rT.negate(),
-                                                Vector3D.crossProduct(o, rT).subtract(r.applyTo(v)),
-                                                // TODO: compute acceleration
-                                                Vector3D.ZERO),
-                             angular.revert());
+        final Vector3D pInv        = new Vector3D(-1, r.applyTo(p));
+        final Vector3D crossP      = Vector3D.crossProduct(o, pInv);
+        final Vector3D vInv        = new Vector3D(-1, r.applyTo(v), -1, crossP);
+        final Vector3D crossV      = Vector3D.crossProduct(o, vInv);
+        final Vector3D crossCrossP = Vector3D.crossProduct(o, crossP);
+        final Vector3D aInv        = new Vector3D(-1, r.applyTo(a), -2, crossV, -1, crossCrossP);
+
+        return new Transform(date, new PVCoordinates(pInv, vInv, aInv), angular.revert());
 
     }
 
-    /** Get a freezed transform.
+    /** Get a frozen transform.
      * <p>
      * This method creates a copy of the instance but frozen in time,
-     * i.e. with velocity and rotation rate forced to zero.
+     * i.e. with velocity, acceleration and rotation rate forced to zero.
      * </p>
      * @return a new transform, without any time-dependent parts
      */
@@ -449,15 +473,25 @@ public class Transform
      * @return transformed position-velocity-acceleration
      */
     public PVCoordinates transformPVCoordinates(final PVCoordinates pva) {
-        final Vector3D p = pva.getPosition();
-        final Vector3D v = pva.getVelocity();
-        final Vector3D a = pva.getVelocity();
-        final Vector3D transformedP = angular.getRotation().applyTo(p.add(cartesian.getPosition()));
-        final Vector3D crossP       = Vector3D.crossProduct(angular.getRotationRate(), transformedP);
-        final Vector3D transformedV = angular.getRotation().applyTo(v.add(cartesian.getVelocity())).subtract(crossP);
-        final Vector3D crossV       = Vector3D.crossProduct(angular.getRotationRate(), transformedV);
-        final Vector3D transformedA = angular.getRotation().applyTo(a.add(cartesian.getAcceleration())).subtract(crossV.add(crossV));
+
+        // apply translation
+        final Vector3D intermediateP = pva.getPosition().add(cartesian.getPosition());
+        final Vector3D intermediateV = pva.getVelocity().add(cartesian.getVelocity());
+        final Vector3D intermediateA = pva.getAcceleration().add(cartesian.getAcceleration());
+
+        // apply rotation
+        final Rotation r = angular.getRotation();
+        final Vector3D o = angular.getRotationRate();
+        final Vector3D transformedP = r.applyTo(intermediateP);
+        final Vector3D crossP       = Vector3D.crossProduct(o, transformedP);
+        final Vector3D transformedV = r.applyTo(intermediateV).subtract(crossP);
+        final Vector3D crossV       = Vector3D.crossProduct(o, transformedV);
+        final Vector3D crossCrossP  = Vector3D.crossProduct(o, crossP);
+        final Vector3D transformedA = new Vector3D(1, r.applyTo(intermediateA), -2, crossV, -1, crossCrossP);
+
+        // build transformed object
         return new PVCoordinates(transformedP, transformedV, transformedA);
+
     }
 
     /** Transform {@link FieldPVCoordinates} including kinematic effects.
@@ -466,15 +500,26 @@ public class Transform
      * @return transformed position/velocity
      */
     public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
-        // TODO: add acceleration
-        final FieldVector3D<T> p = pv.getPosition();
-        final FieldVector3D<T> v = pv.getVelocity();
-        final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(),
-                                                                    p.add(cartesian.getPosition()));
-        final FieldVector3D<T> cross = FieldVector3D.crossProduct(angular.getRotationRate(), transformedP);
-        return new FieldPVCoordinates<T>(transformedP,
-                                         FieldRotation.applyTo(angular.getRotation(),
-                                                               v.add(cartesian.getVelocity())).subtract(cross));
+
+        // apply translation
+        final FieldVector3D<T> intermediateP = pv.getPosition().add(cartesian.getPosition());
+        final FieldVector3D<T> intermediateV = pv.getVelocity().add(cartesian.getVelocity());
+        final FieldVector3D<T> intermediateA = pv.getAcceleration().add(cartesian.getAcceleration());
+
+        // apply rotation
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(), intermediateP);
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(angular.getRotation(), intermediateV).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(angular.getRotationRate(), crossP);
+        final FieldVector3D<T> transformedA =
+                new FieldVector3D<T>( 1, FieldRotation.applyTo(angular.getRotation(), intermediateA),
+                                     -2, crossV,
+                                     -1, crossCrossP);
+
+        // build transformed object
+        return new FieldPVCoordinates<T>(transformedP, transformedV, transformedA);
+
     }
 
     /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}

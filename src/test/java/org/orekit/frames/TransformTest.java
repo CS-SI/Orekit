@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
+import org.orekit.utils.PVASampleFilter;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -65,36 +66,26 @@ public class TransformTest {
     @Test
     public void testAcceleration() {
 
-        PVCoordinates initPV = new PVCoordinates(new Vector3D(1, 2, 3), new Vector3D(4, 5, 6), new Vector3D(7, 8, 9));
+        PVCoordinates initPV = new PVCoordinates(new Vector3D(9, 8, 7), new Vector3D(6, 5, 4), new Vector3D(3, 2, 1));
         for (double dt = 0; dt < 1; dt += 0.01) {
             PVCoordinates basePV        = initPV.shiftedBy(dt);
             PVCoordinates transformedPV = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt).transformPVCoordinates(basePV);
 
-            // rebuild transformPV velocity and acceleration, relying only transformed position
-            // in order to validate consistency of velocity/acceleration
+            // rebuild transformed acceleration, relying only on transformed position and velocity
             List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
-            double h = 1.0e-3;
+            double h = 1.0e-2;
             for (int i = -3; i < 4; ++i) {
                 Transform t = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt + i * h);
                 sample.add(new Pair<AbsoluteDate, PVCoordinates>(t.getDate(),
                                                                  t.transformPVCoordinates(initPV.shiftedBy(dt + i * h))));
             }
             PVCoordinates rebuiltPV = PVCoordinates.interpolate(AbsoluteDate.J2000_EPOCH.shiftedBy(dt),
-                                                                PVCoordinates.SampleFilter.SAMPLE_P,
+                                                                PVASampleFilter.SAMPLE_PV,
                                                                 sample);
 
-            Assert.assertEquals(0.0,
-                                transformedPV.getPosition().distance(rebuiltPV.getPosition()),
-                                1.0e-18 * rebuiltPV.getPosition().getNorm());
-            Assert.assertEquals(0.0,
-                                transformedPV.getVelocity().distance(rebuiltPV.getVelocity()),
-                                1.0e-12 * rebuiltPV.getVelocity().getNorm());
-            System.out.println(transformedPV.getAcceleration() + " " +
-                               rebuiltPV.getAcceleration() + " " +
-                               (transformedPV.getAcceleration().distance(rebuiltPV.getAcceleration()) / rebuiltPV.getAcceleration().getNorm()));
-//            Assert.assertEquals(0.0,
-//                                transformedPV.getAcceleration().distance(rebuiltPV.getAcceleration()),
-//                                1.0e-10 * rebuiltPV.getAcceleration().getNorm());
+            checkVector(rebuiltPV.getPosition(),     transformedPV.getPosition(),     4.0e-16);
+            checkVector(rebuiltPV.getVelocity(),     transformedPV.getVelocity(),     2.0e-16);
+            checkVector(rebuiltPV.getAcceleration(), transformedPV.getAcceleration(), 9.0e-11);
 
         }
 
@@ -106,7 +97,7 @@ public class TransformTest {
         Random random = new Random(0x171c79e323a1123l);
         for (int i = 0; i < 20; ++i) {
 
-            // build a complex transform by compositing primitive ones
+            // build a complex transform by composing primitive ones
             int n = random.nextInt(20);
             Transform[] transforms = new Transform[n];
             Transform combined = Transform.IDENTITY;
@@ -134,14 +125,11 @@ public class TransformTest {
                 Vector3D aCombined = combined.transformVector(a);
                 Vector3D bCombined = combined.transformPosition(b);
                 PVCoordinates cCombined = combined.transformPVCoordinates(c);
-                System.out.println((cCombined.getPosition().subtract(cRef.getPosition()).getNorm() / cRef.getPosition().getNorm()) + " " +
-                                   (cCombined.getVelocity().subtract(cRef.getVelocity()).getNorm() / cRef.getVelocity().getNorm()) + " " +
-                                   (cCombined.getAcceleration().subtract(cRef.getAcceleration()).getNorm() / cRef.getAcceleration().getNorm()));
-                Assert.assertEquals(0, aCombined.subtract(aRef).getNorm(), 3.0e-15 * aRef.getNorm());
-                Assert.assertEquals(0, bCombined.subtract(bRef).getNorm(), 5.0e-15 * bRef.getNorm());
-//                Assert.assertEquals(0, cCombined.getPosition().subtract(cRef.getPosition()).getNorm(), 1.0e-10);
-//                Assert.assertEquals(0, cCombined.getVelocity().subtract(cRef.getVelocity()).getNorm(), 1.0e-10);
-//                Assert.assertEquals(0, cCombined.getAcceleration().subtract(cRef.getAcceleration()).getNorm(), 1.0e-10);
+                checkVector(aRef, aCombined, 3.0e-15);
+                checkVector(bRef, bCombined, 5.0e-15);
+                checkVector(cRef.getPosition(),     cCombined.getPosition(),     1.0e-10);
+                checkVector(cRef.getVelocity(),     cCombined.getVelocity(),     1.0e-10);
+                checkVector(cRef.getAcceleration(), cCombined.getAcceleration(), 1.0e-10);
 
             }
         }
@@ -203,36 +191,36 @@ public class TransformTest {
         PVCoordinates pointP2 = new PVCoordinates(new Vector3D(0, 0, 0), new Vector3D(0, 0, 0));
         Transform R1toR2 = new Transform(AbsoluteDate.J2000_EPOCH, Vector3D.MINUS_I, Vector3D.MINUS_I, Vector3D.MINUS_I);
         PVCoordinates result1 = R1toR2.transformPVCoordinates(pointP1);
-        checkVectors(pointP2.getPosition(), result1.getPosition());
-        checkVectors(pointP2.getVelocity(), result1.getVelocity());
+        checkVector(pointP2.getPosition(), result1.getPosition(), 1.0e-10);
+        checkVector(pointP2.getVelocity(), result1.getVelocity(), 1.0e-10);
 
         // test inverse translation
         Transform R2toR1 = R1toR2.getInverse();
         PVCoordinates invResult1 = R2toR1.transformPVCoordinates(pointP2);
-        checkVectors(pointP1.getPosition(), invResult1.getPosition());
-        checkVectors(pointP1.getVelocity(), invResult1.getVelocity());
+        checkVector(pointP1.getPosition(), invResult1.getPosition(), 1.0e-10);
+        checkVector(pointP1.getVelocity(), invResult1.getVelocity(), 1.0e-10);
 
         // rotation transform test
         PVCoordinates pointP3 = new PVCoordinates(Vector3D.PLUS_J, new Vector3D(-2, 1, 0));
         Rotation R = new Rotation(Vector3D.PLUS_K, FastMath.PI/2);
         Transform R1toR3 = new Transform(AbsoluteDate.J2000_EPOCH, R, new Vector3D(0, 0, -2));
         PVCoordinates result2 = R1toR3.transformPVCoordinates(pointP1);
-        checkVectors(pointP3.getPosition(), result2.getPosition());
-        checkVectors(pointP3.getVelocity(), result2.getVelocity());
+        checkVector(pointP3.getPosition(), result2.getPosition(), 1.0e-10);
+        checkVector(pointP3.getVelocity(), result2.getVelocity(), 1.0e-10);
 
         // test inverse rotation
         Transform R3toR1 = R1toR3.getInverse();
         PVCoordinates invResult2 = R3toR1.transformPVCoordinates(pointP3);
-        checkVectors(pointP1.getPosition(), invResult2.getPosition());
-        checkVectors(pointP1.getVelocity(), invResult2.getVelocity());
+        checkVector(pointP1.getPosition(), invResult2.getPosition(), 1.0e-10);
+        checkVector(pointP1.getVelocity(), invResult2.getVelocity(), 1.0e-10);
 
         // combine 2 velocity transform
         Transform R1toR4 = new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(-2, 0, 0), new Vector3D(-2, 0, 0), new Vector3D(-2, 0, 0));
         PVCoordinates pointP4 = new PVCoordinates(new Vector3D(-1, 0, 0), new Vector3D(-1, 0, 0), new Vector3D(-1, 0, 0));
         Transform R2toR4 = new Transform(AbsoluteDate.J2000_EPOCH, R2toR1, R1toR4);
         PVCoordinates compResult = R2toR4.transformPVCoordinates(pointP2);
-        checkVectors(pointP4.getPosition() , compResult.getPosition());
-        checkVectors(pointP4.getVelocity() , compResult.getVelocity());
+        checkVector(pointP4.getPosition() , compResult.getPosition(), 1.0e-10);
+        checkVector(pointP4.getVelocity() , compResult.getVelocity(), 1.0e-10);
 
         // combine 2 rotation tranform
         PVCoordinates pointP5 = new PVCoordinates(new Vector3D(-1, 0, 0), new Vector3D(-1 , 0 , 3));
@@ -240,25 +228,25 @@ public class TransformTest {
         Transform R1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R2 , new Vector3D(0, -3, 0));
         Transform R3toR5 = new Transform (AbsoluteDate.J2000_EPOCH, R3toR1, R1toR5);
         PVCoordinates combResult = R3toR5.transformPVCoordinates(pointP3);
-        checkVectors(pointP5.getPosition() , combResult.getPosition());
-        checkVectors(pointP5.getVelocity() , combResult.getVelocity());
+        checkVector(pointP5.getPosition() , combResult.getPosition(), 1.0e-10);
+        checkVector(pointP5.getVelocity() , combResult.getVelocity(), 1.0e-10);
 
         // combine translation and rotation
         Transform R2toR3 = new Transform (AbsoluteDate.J2000_EPOCH, R2toR1,R1toR3);
         PVCoordinates Result = R2toR3.transformPVCoordinates(pointP2);
-        checkVectors(pointP3.getPosition() , Result.getPosition());
-        checkVectors(pointP3.getVelocity() , Result.getVelocity());
+        checkVector(pointP3.getPosition() , Result.getPosition(), 1.0e-10);
+        checkVector(pointP3.getVelocity() , Result.getVelocity(), 1.0e-10);
 
         Transform R3toR2 = new Transform (AbsoluteDate.J2000_EPOCH, R3toR1, R1toR2);
         Result = R3toR2.transformPVCoordinates(pointP3);
-        checkVectors(pointP2.getPosition() , Result.getPosition());
-        checkVectors(pointP2.getVelocity() , Result.getVelocity());
+        checkVector(pointP2.getPosition() , Result.getPosition(), 1.0e-10);
+        checkVector(pointP2.getVelocity() , Result.getVelocity(), 1.0e-10);
 
         Transform newR1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R1toR2, R2toR3);
         newR1toR5 = new   Transform(AbsoluteDate.J2000_EPOCH, newR1toR5,R3toR5);
         Result = newR1toR5.transformPVCoordinates(pointP1);
-        checkVectors(pointP5.getPosition() , Result.getPosition());
-        checkVectors(pointP5.getVelocity() , Result.getVelocity());
+        checkVector(pointP5.getPosition() , Result.getPosition(), 1.0e-10);
+        checkVector(pointP5.getVelocity() , Result.getVelocity(), 1.0e-10);
 
         // more tests
 
@@ -268,8 +256,8 @@ public class TransformTest {
         Transform R4toR5 = new Transform(AbsoluteDate.J2000_EPOCH, R1toR4.getInverse(), R1toR5);
         newR1toR5 = new Transform(AbsoluteDate.J2000_EPOCH, newR1toR5, R4toR5);
         Result = newR1toR5.transformPVCoordinates(pointP1);
-        checkVectors(pointP5.getPosition() , Result.getPosition());
-        checkVectors(pointP5.getVelocity() , Result.getVelocity());
+        checkVector(pointP5.getPosition() , Result.getPosition(), 1.0e-10);
+        checkVector(pointP5.getVelocity() , Result.getVelocity(), 1.0e-10);
 
     }
 
@@ -308,7 +296,7 @@ public class TransformTest {
 
             Vector3D resultvel = tr.getInverse().transformPVCoordinates(pvTwo).getVelocity();
 
-            checkVectors(resultvel , vel);
+            checkVector(resultvel , vel, 1.0e-10);
 
         }
 
@@ -343,12 +331,12 @@ public class TransformTest {
             // we have
             PVCoordinates pvTwo = tr.transformPVCoordinates(pvOne);
             Vector3D result  = pvTwo.getPosition().add(new Vector3D(dt, pvTwo.getVelocity()));
-            checkVectors(good, result);
+            checkVector(good, result, 1.0e-10);
 
             // test inverse
             Vector3D resultvel = tr.getInverse().
             transformPVCoordinates(pvTwo).getVelocity();
-            checkVectors(resultvel, vel);
+            checkVector(resultvel, vel, 1.0e-10);
 
         }
 
@@ -533,8 +521,8 @@ public class TransformTest {
             // the following point should always remain at moving frame origin
             PVCoordinates expectedFixedPoint =
                     shifted.transformPVCoordinates(new PVCoordinates(new Vector3D(1, dt, 0), Vector3D.PLUS_J));
-            checkVectors(expectedFixedPoint.getPosition(), Vector3D.ZERO);
-            checkVectors(expectedFixedPoint.getVelocity(), Vector3D.ZERO);
+            checkVector(expectedFixedPoint.getPosition(), Vector3D.ZERO, 1.0e-10);
+            checkVector(expectedFixedPoint.getVelocity(), Vector3D.ZERO, 1.0e-10);
 
             // fixed frame origin apparent motion in moving frame
             PVCoordinates expectedApparentMotion = shifted.transformPVCoordinates(PVCoordinates.ZERO);
@@ -543,8 +531,8 @@ public class TransformTest {
             Vector3D referencePosition = new Vector3D(-c + dt * s, -s - dt * c, 0);
             Vector3D referenceVelocity =
                     new Vector3D( (1 + omega) * s + dt * omega * c, -(1 + omega) * c + dt * omega * s, 0);
-            checkVectors(expectedApparentMotion.getPosition(), referencePosition);
-            checkVectors(expectedApparentMotion.getVelocity(), referenceVelocity);
+            checkVector(expectedApparentMotion.getPosition(), referencePosition, 1.0e-10);
+            checkVector(expectedApparentMotion.getVelocity(), referenceVelocity, 1.0e-10);
 
         }
 
@@ -671,10 +659,9 @@ public class TransformTest {
                                            new Vector3D(-cos, -sin, 0),
                                            new Vector3D(omega * sin, -omega * cos, 0),
                                            new Vector3D(omega * omega * cos, omega * omega * sin, 0)),
-                                           Transform.IDENTITY);
-//                             new Transform(date,
-//                                           new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt),
-//                                           new Vector3D(omega, Vector3D.PLUS_K)));
+                             new Transform(date,
+                                           new Rotation(Vector3D.PLUS_K, FastMath.PI - omega * dt),
+                                           new Vector3D(omega, Vector3D.PLUS_K)));
     }
 
     private double derivative(double h,
@@ -694,23 +681,6 @@ public class TransformTest {
             combined = new Transform(AbsoluteDate.J2000_EPOCH, combined, t);
         }
         return combined;
-    }
-
-    private void checkVectors(Vector3D v1 , Vector3D v2) {
-
-        Vector3D d = v1.subtract(v2);
-
-        Assert.assertEquals(0,d.getX(),1.0e-8);
-        Assert.assertEquals(0,d.getY(),1.0e-8);
-        Assert.assertEquals(0,d.getZ(),1.0e-8);
-
-        Assert.assertEquals(0,d.getNorm(),1.0e-8);
-
-        if ((v1.getNorm() > 1.0e-10) && (v2.getNorm() > 1.0e-10)) {
-            Rotation r = new Rotation(v1, v2);
-            Assert.assertEquals(0,r.getAngle(),1.0e-8);
-        }
-
     }
 
     private Vector3D randomVector(Random random) {
@@ -738,11 +708,18 @@ public class TransformTest {
             Assert.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * a.getNorm());
             PVCoordinates pv  = new PVCoordinates(randomVector(random), randomVector(random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
-            Assert.assertEquals(0, pv.getPosition().subtract(tPv.getPosition()).getNorm(),
-                                1.0e-10 * pv.getPosition().getNorm());
-            Assert.assertEquals(0, pv.getVelocity().subtract(tPv.getVelocity()).getNorm(),
-                                3.0e-9 * pv.getVelocity().getNorm());
+            checkVector(pv.getPosition(), tPv.getPosition(), 1.0e-10);
+            checkVector(pv.getVelocity(), tPv.getVelocity(), 3.0e-9);
         }
+    }
+
+    private void checkVector(Vector3D reference, Vector3D result, double relativeTolerance) {
+        double refNorm = reference.getNorm();
+        double resNorm = result.getNorm();
+        double tolerance = relativeTolerance * (1 + FastMath.max(refNorm, resNorm));
+        Assert.assertEquals("ref = " + reference + ", res = " + result + " -> " +
+                            (Vector3D.distance(reference, result) / (1 + FastMath.max(refNorm, resNorm))),
+                            0, Vector3D.distance(reference, result), tolerance);
     }
 
 }
