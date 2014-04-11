@@ -29,6 +29,7 @@ import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.PVASampleFilter;
 import org.orekit.utils.PVCoordinates;
 
 
@@ -227,7 +228,7 @@ public class CartesianOrbit extends Orbit {
             datedPVA.add(new Pair<AbsoluteDate, PVCoordinates>(orbit.getDate(), orbit.getPVCoordinates()));
         }
         final PVCoordinates interpolated = PVCoordinates.interpolate(date,
-                                                                     PVCoordinates.SampleFilter.SAMPLE_PVA,
+                                                                     PVASampleFilter.SAMPLE_PVA,
                                                                      datedPVA);
         return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }

@@ -78,7 +78,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         this.acceleration = Vector3D.ZERO;
     }
 
-    /** Builds a PVCoordinates pair.
+    /** Builds a PVCoordinates triplet.
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
      * @param acceleration the acceleration vector (m/s²)
@@ -199,20 +199,6 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                  acceleration);
     }
 
-    /** Enumerate for components to use in interpolation. */
-    public enum SampleFilter {
-
-        /** Use only positions from sample, ignoring velocities and accelerations. */
-        SAMPLE_P,
-
-        /** Use positions and velocities from sample, ignoring accelerations. */
-        SAMPLE_PV,
-
-        /** Use positions, velocities and accelerations from sample. */
-        SAMPLE_PVA;
-
-    };
-
     /** Interpolate position-velocity.
      * <p>
      * The interpolated instance is created by polynomial Hermite interpolation
@@ -232,13 +218,13 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * otherwise ignore them and use only positions
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
-     * @deprecated as of 7.1, replaced with {@link #interpolate(AbsoluteDate, SampleFilter, Collection)}
+     * @deprecated as of 7.1, replaced with {@link #interpolate(AbsoluteDate, PVASampleFilter, Collection)}
      */
     @Deprecated
     public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
                                             final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
         return interpolate(date,
-                           useVelocities ? SampleFilter.SAMPLE_PV : SampleFilter.SAMPLE_P,
+                           useVelocities ? PVASampleFilter.SAMPLE_PV : PVASampleFilter.SAMPLE_P,
                            sample);
     }
 
@@ -261,7 +247,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      */
-    public static PVCoordinates interpolate(final AbsoluteDate date, final SampleFilter filter,
+    public static PVCoordinates interpolate(final AbsoluteDate date, final PVASampleFilter filter,
                                             final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
 
         // set up an interpolator taking derivatives into account
@@ -390,12 +376,12 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
     public String toString() {
         final String comma = ", ";
         return new StringBuffer().append('{').append("P(").
-                append(getPosition().getX()).append(comma).
-                append(getPosition().getY()).append(comma).
-                append(getPosition().getZ()).append("), V(").
-                append(getVelocity().getX()).append(comma).
-                append(getVelocity().getY()).append(comma).
-                append(getVelocity().getZ()).append("), A(").
+                append(position.getX()).append(comma).
+                append(position.getY()).append(comma).
+                append(position.getZ()).append("), V(").
+                append(velocity.getX()).append(comma).
+                append(velocity.getY()).append(comma).
+                append(velocity.getZ()).append("), A(").
                 append(acceleration.getX()).append(comma).
                 append(acceleration.getY()).append(comma).
                 append(acceleration.getZ()).append(")}").toString();

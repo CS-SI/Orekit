@@ -25,7 +25,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.GenericTimeStampedCache;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVASampleFilter;
 import org.orekit.utils.TimeStampedGenerator;
 
 /** Transform provider using thread-safe interpolation on transforms sample.
@@ -48,7 +48,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
     private final TransformProvider rawProvider;
 
     /** Flag for use of sample transforms velocities. */
-    private final PVCoordinates.SampleFilter usedDerivatives;
+    private final PVASampleFilter usedDerivatives;
 
     /** Flag for use sample points rotation rates. */
     private final boolean useRotationRates;
@@ -82,7 +82,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * in the {@link GenericTimeStampedCache time-stamped cache}
      */
     public InterpolatingTransformProvider(final TransformProvider rawProvider,
-                                          final PVCoordinates.SampleFilter usedDerivatives, final boolean useRotationRates,
+                                          final PVASampleFilter usedDerivatives, final boolean useRotationRates,
                                           final AbsoluteDate earliest, final AbsoluteDate latest,
                                           final int gridPoints, final double step,
                                           final int maxSlots, final double maxSpan, final double newSlotInterval) {
@@ -158,7 +158,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
         private final TransformProvider rawProvider;
 
         /** Flag for use of sample transforms velocities. */
-        private final PVCoordinates.SampleFilter usedDerivatives;
+        private final PVASampleFilter usedDerivatives;
 
         /** Flag for use sample points rotation rates. */
         private final boolean useRotationRates;
@@ -201,7 +201,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * in the {@link GenericTimeStampedCache time-stamped cache}
          */
         private DataTransferObject(final TransformProvider rawProvider,
-                                   final PVCoordinates.SampleFilter usedDerivatives, final boolean useRotationRates,
+                                   final PVASampleFilter usedDerivatives, final boolean useRotationRates,
                                    final AbsoluteDate earliest, final AbsoluteDate latest,
                                    final int gridPoints, final double step,
                                    final int maxSlots, final double maxSpan, final double newSlotInterval) {

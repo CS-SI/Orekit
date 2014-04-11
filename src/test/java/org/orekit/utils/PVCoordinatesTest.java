@@ -99,7 +99,7 @@ public class PVCoordinatesTest {
             for (double dt = 0; dt < 1.0; dt += 0.01) {
                 PVCoordinates interpolated =
                         PVCoordinates.interpolate(t0.shiftedBy(dt),
-                                                  PVCoordinates.SampleFilter.SAMPLE_PVA,
+                                                  PVASampleFilter.SAMPLE_PVA,
                                                   sample);
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
@@ -140,7 +140,7 @@ public class PVCoordinatesTest {
             for (double dt = 0; dt < 1.0; dt += 0.01) {
                 PVCoordinates interpolated =
                         PVCoordinates.interpolate(t0.shiftedBy(dt),
-                                                  PVCoordinates.SampleFilter.SAMPLE_P,
+                                                  PVASampleFilter.SAMPLE_P,
                                                   sample);
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
@@ -171,7 +171,7 @@ public class PVCoordinatesTest {
             for (double dt = 0; dt < 1.0; dt += 0.01) {
                 PVCoordinates interpolated =
                         PVCoordinates.interpolate(t0.shiftedBy(dt),
-                                                  PVCoordinates.SampleFilter.SAMPLE_PVA,
+                                                  PVASampleFilter.SAMPLE_PVA,
                                                   sample);
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
