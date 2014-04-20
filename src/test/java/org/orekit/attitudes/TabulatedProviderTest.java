@@ -43,6 +43,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.RRASampleFilter;
 
 
 public class TabulatedProviderTest {
@@ -61,15 +62,20 @@ public class TabulatedProviderTest {
 
     @Test
     public void testWithoutRate() throws OrekitException {
-        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, false), 1.0e-11);
+        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, RRASampleFilter.SAMPLE_R), 1.0e-11);
     }
 
     @Test
     public void testWithRate() throws OrekitException {
-        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, true), 1.0e-12);
+        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, RRASampleFilter.SAMPLE_RR), 1.0e-12);
     }
 
-    private double checkError(double samplingRate, double checkingRate, int n, boolean userRotationRate)
+    @Test
+    public void testWithAcceleration() throws OrekitException {
+        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, RRASampleFilter.SAMPLE_RRA), 1.0e-12);
+    }
+
+    private double checkError(double samplingRate, double checkingRate, int n, RRASampleFilter filter)
         throws PropagationException {
 
         // reference propagator, using a yaw compensation law
@@ -96,7 +102,7 @@ public class TabulatedProviderTest {
         final AbsoluteDate start = sample.get(0).getDate().shiftedBy(margin);
         final AbsoluteDate end   = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         Propagator interpolatingPropagator = new KeplerianPropagator(circOrbit.shiftedBy(start.durationFrom(circOrbit.getDate())));
-        interpolatingPropagator.setAttitudeProvider(new TabulatedProvider(sample, n, userRotationRate));
+        interpolatingPropagator.setAttitudeProvider(new TabulatedProvider(sample, n, filter));
  
         // compute interpolation error on the internal steps .
         final double[] error = new double[1];

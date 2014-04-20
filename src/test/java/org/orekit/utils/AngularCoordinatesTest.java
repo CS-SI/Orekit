@@ -23,9 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.util.Pair;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -66,7 +70,7 @@ public class AngularCoordinatesTest {
         double alpha = rate * dt;
         AngularCoordinates shifted = AngularCoordinates.shiftedBy(dt);
         Assert.assertEquals(rate, shifted.getRotationRate().getNorm(), 1.0e-10);
-        Assert.assertEquals(alpha, Rotation.distance(AngularCoordinates.getRotation(), shifted.getRotation()), 1.0e-10);
+        Assert.assertEquals(alpha, Rotation.distance(AngularCoordinates.getRotation(), shifted.getRotation()), 4.0e-13);
 
         Vector3D xSat = shifted.getRotation().applyInverseTo(Vector3D.PLUS_I);
         Assert.assertEquals(0.0, xSat.subtract(new Vector3D(FastMath.cos(alpha), FastMath.sin(alpha), 0)).getNorm(), 1.0e-10);
@@ -123,6 +127,7 @@ public class AngularCoordinatesTest {
             AngularCoordinates sum = ac.addOffset(ac.revert());
             Assert.assertEquals(0.0, sum.getRotation().getAngle(), 1.0e-15);
             Assert.assertEquals(0.0, sum.getRotationRate().getNorm(), 1.0e-15);
+            Assert.assertEquals(0.0, sum.getRotationAcceleration().getNorm(), 1.0e-15);
         }
     }
 
@@ -146,20 +151,25 @@ public class AngularCoordinatesTest {
         Random random = new Random(0x1e610cfe89306669l);
         for (int i = 0; i < 100; ++i) {
 
-            Rotation r1 = randomRotation(random);
-            Vector3D o1 = randomVector(random, 1.0e-2);
-            AngularCoordinates ac1 = new AngularCoordinates(r1, o1);
-            Rotation r2 = randomRotation(random);
-            Vector3D o2 = randomVector(random, 1.0e-2);
+            Rotation r1    = randomRotation(random);
+            Vector3D o1    = randomVector(random, 1.0e-2);
+            Vector3D oDot1 = randomVector(random, 1.0e-2);
+            AngularCoordinates ac1 = new AngularCoordinates(r1, o1, oDot1);
 
-            AngularCoordinates ac2 = new AngularCoordinates(r2, o2);
+            Rotation r2    = randomRotation(random);
+            Vector3D o2    = randomVector(random, 1.0e-2);
+            Vector3D oDot2 = randomVector(random, 1.0e-2);
+            AngularCoordinates ac2 = new AngularCoordinates(r2, o2, oDot2);
+
             AngularCoordinates roundTripSA = ac1.subtractOffset(ac2).addOffset(ac2);
-            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripSA.getRotation()), 1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()), 1.0e-17);
+            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripSA.getRotation()), 5.0e-16);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()), 2.0e-17);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripSA.getRotationAcceleration()), 2.0e-17);
 
             AngularCoordinates roundTripAS = ac1.addOffset(ac2).subtractOffset(ac2);
-            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 1.0e-17);
+            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 5.0e-16);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 2.0e-17);
+            Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()), 2.0e-17);
 
         }
     }
@@ -171,36 +181,35 @@ public class AngularCoordinatesTest {
         // use reflection to test the private static methods
         Method getter  = AngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
                                                                     new Class<?>[] {
-                                                                         AbsoluteDate.class, AngularCoordinates.class,
-                                                                         AbsoluteDate.class, AngularCoordinates.class,
-                                                                         double.class
+                                                                         AngularCoordinates.class,
+                                                                         Rotation.class, Vector3D.class,
+                                                                         double.class, double.class
                                                                     });
         getter.setAccessible(true);
         Method factory = AngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
                                                                     new Class<?>[] {
                                                                         double[].class,
-                                                                        AngularCoordinates.class
+                                                                        Rotation.class, Vector3D.class
                                                                     });
         factory.setAccessible(true);
 
         // check the two-way conversion result in identity
         Random random = new Random(0xb1e615aaa8236b52l);
         for (int i = 0; i < 1000; ++i) {
-            Rotation offsetRotation    = randomRotation(random);
-            Vector3D offsetRate        = randomVector(random, 0.01);
-            AngularCoordinates offset  = new AngularCoordinates(offsetRotation, offsetRate);
-            Rotation rotation          = randomRotation(random);
-            Vector3D rotationRate      = randomVector(random, 0.01);
-            AngularCoordinates ac      = new AngularCoordinates(rotation, rotationRate);
-            double dt                  = 10.0 * random.nextDouble();
-            double[] rodrigues =
-                    (double[]) getter.invoke(null,
-                                             AbsoluteDate.J2000_EPOCH.shiftedBy(dt), ac,
-                                             AbsoluteDate.J2000_EPOCH, offset,
-                                             -0.9999);
-            AngularCoordinates rebuilt = (AngularCoordinates) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
-            Assert.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
-            Assert.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
+            Rotation offsetRotation       = randomRotation(random);
+            Vector3D offsetRate           = randomVector(random, 0.01);
+            Rotation rotation             = randomRotation(random);
+            Vector3D rotationRate         = randomVector(random, 0.01);
+            Vector3D rotationAcceleration = randomVector(random, 0.01);
+            AngularCoordinates ac         = new AngularCoordinates(rotation, rotationRate, rotationAcceleration);
+            double dt                     = 10.0 * random.nextDouble();
+            double[] rodrigues            = (double[]) getter.invoke(null, ac, offsetRotation, offsetRate, dt, -0.9999);
+            AngularCoordinates rebuilt = (AngularCoordinates) factory.invoke(null, rodrigues,
+                                                                             offsetRotation,
+                                                                             offsetRate);
+            Assert.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 2.0e-15);
+            Assert.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 2.0e-17);
+            Assert.assertEquals(0.0, Vector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()), 7.0e-18);
         }
 
     }
@@ -212,25 +221,25 @@ public class AngularCoordinatesTest {
         // use reflection to test the private static methods
         Method getter  = AngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
                                                                     new Class<?>[] {
-                                                                        AbsoluteDate.class, AngularCoordinates.class,
-                                                                        AbsoluteDate.class, AngularCoordinates.class,
-                                                                        double.class
+                                                                        AngularCoordinates.class,
+                                                                        Rotation.class, Vector3D.class,
+                                                                        double.class, double.class
                                                                     });
         getter.setAccessible(true);
         Method factory = AngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
                                                                     new Class<?>[] {
                                                                         double[].class,
-                                                                        AngularCoordinates.class
+                                                                        Rotation.class, Vector3D.class
                                                                     });
         factory.setAccessible(true);
 
         // identity
         double[] identity =
                 (double[]) getter.invoke(null,
-                                         AbsoluteDate.J2000_EPOCH, AngularCoordinates.IDENTITY,
-                                         AbsoluteDate.J2000_EPOCH, AngularCoordinates.IDENTITY.revert(),
-                                         -0.9999);
-        AngularCoordinates acId = (AngularCoordinates) factory.invoke(null, identity, AngularCoordinates.IDENTITY);
+                                         AngularCoordinates.IDENTITY,
+                                         Rotation.IDENTITY.revert(), Vector3D.ZERO,
+                                         0.0, -0.9999);
+        AngularCoordinates acId = (AngularCoordinates) factory.invoke(null, identity, Rotation.IDENTITY, Vector3D.ZERO);
         for (double element : identity) {
             Assert.assertEquals(0.0, element, Precision.SAFE_MIN);
         }
@@ -243,13 +252,11 @@ public class AngularCoordinatesTest {
             Vector3D axis = randomVector(random, 1.0);
             double[] piRotation =
                     (double[]) getter.invoke(null,
-                                             AbsoluteDate.J2000_EPOCH, 
-                                             new AngularCoordinates(new Rotation(axis, FastMath.PI),
-                                                                    Vector3D.ZERO),
-                                                                    AbsoluteDate.J2000_EPOCH,
-                                                                    AngularCoordinates.IDENTITY,
-                                                                    -0.9999);
-            AngularCoordinates acPi = (AngularCoordinates) factory.invoke(null, piRotation, AngularCoordinates.IDENTITY);
+                                             new AngularCoordinates(new Rotation(axis, FastMath.PI), Vector3D.ZERO),
+                                             Rotation.IDENTITY, Vector3D.ZERO,
+                                             0.0, -0.9999);
+            AngularCoordinates acPi = (AngularCoordinates) factory.invoke(null, piRotation,
+                                                                          Rotation.IDENTITY, Vector3D.ZERO);
             Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle(), 1.0e-15);
             Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, acPi.getRotation().getAxis())), 1.0e-15);
             Assert.assertEquals(0.0, acPi.getRotationRate().getNorm(), 1.0e-16);
@@ -258,14 +265,85 @@ public class AngularCoordinatesTest {
         // 2 PI angle rotation (which is singular for modified Rodrigues vector)
         AngularCoordinates ac = new AngularCoordinates(Rotation.IDENTITY.revert(), Vector3D.PLUS_I);
         Assert.assertNull(getter.invoke(null,
-                                        AbsoluteDate.J2000_EPOCH.shiftedBy(10.0), ac,
-                                        AbsoluteDate.J2000_EPOCH, AngularCoordinates.IDENTITY.revert(),
-                                        -0.9999));
+                                        ac, Rotation.IDENTITY.revert(), Vector3D.ZERO,
+                                        10.0, -0.9999));
         Assert.assertNotNull(getter.invoke(null,
-                                           AbsoluteDate.J2000_EPOCH.shiftedBy(10.0), ac,
-                                           AbsoluteDate.J2000_EPOCH,
-                                           new AngularCoordinates(new Rotation(Vector3D.PLUS_I, 0.1), Vector3D.ZERO),
-                                           -0.9999));
+                                           ac, new Rotation(Vector3D.PLUS_I, 0.1), Vector3D.ZERO,
+                                           10.0, -0.9999));
+
+    }
+
+    @Test
+    public void testInterpolationFull() throws OrekitException {
+        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
+        double theta0   = 0.1;
+        double thetaDot = 1.0e-3;            // one rotation each 6283 seconds
+        double phi0     = 0;
+        double phiDot   = FastMath.PI / 360; // one rotation each 12 minutes
+
+        List<Pair<AbsoluteDate, AngularCoordinates>> sample =
+                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
+        for (double dt : new double[] { 0.0, 2.5, 5.0, 7.5, 10.0 }) {
+            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(
+                    date.shiftedBy(dt),
+                    doubleRotation(theta0, thetaDot, phi0, phiDot, dt)));
+        }
+
+        for (double dt = 0; dt < 10; dt += 0.01) {
+            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt),
+                                                                             RRASampleFilter.SAMPLE_RRA,
+                                                                             sample);
+            Rotation r            = interpolated.getRotation();
+            Vector3D rate         = interpolated.getRotationRate();
+            Vector3D acceleration = interpolated.getRotationAcceleration();
+            AngularCoordinates reference = doubleRotation(theta0, thetaDot, phi0, phiDot, dt);
+            System.out.println(dt + " " +
+                    (Rotation.distance(reference.getRotation(), r) / reference.getRotation().getAngle()) + " " +
+                    (Vector3D.distance(reference.getRotationRate(), rate) / reference.getRotationRate().getNorm())+ " " +
+                    (Vector3D.distance(reference.getRotationAcceleration(), acceleration) / reference.getRotationAcceleration().getNorm()));
+//            Assert.assertEquals(0.0, Rotation.distance(reference.getRotation(), r), 1.2e-15);
+//            Assert.assertEquals(0.0, Vector3D.distance(reference.getRotationRate(), rate), 4.0e-15);
+//            Assert.assertEquals(0.0, Vector3D.distance(reference.getRotationAcceleration(), acceleration), 3.0e-14);
+        }
+
+    }
+
+    private AngularCoordinates doubleRotation(double theta0, double thetaDot, double phi0, double phiDot, double t) {
+
+        DerivativeStructure tDS  = new DerivativeStructure(1, 2, 0, t);
+        DerivativeStructure zero = tDS.getField().getZero();
+        DerivativeStructure one  = tDS.getField().getOne();
+        FieldRotation<DerivativeStructure> r1 =
+                new FieldRotation<DerivativeStructure>(new FieldVector3D<DerivativeStructure>(zero, zero, one),
+                                                       tDS.multiply(thetaDot).add(theta0));
+        FieldRotation<DerivativeStructure> r2 =
+                new FieldRotation<DerivativeStructure>(new FieldVector3D<DerivativeStructure>(one, zero, zero),
+                                                       tDS.multiply(phiDot).add(phi0));
+        FieldRotation<DerivativeStructure> r12 = r1.applyTo(r2);
+        double q0       = r12.getQ0().getValue(); 
+        double q1       = r12.getQ1().getValue(); 
+        double q2       = r12.getQ2().getValue(); 
+        double q3       = r12.getQ3().getValue(); 
+        double q0Dot    = r12.getQ0().getPartialDerivative(1); 
+        double q1Dot    = r12.getQ1().getPartialDerivative(1); 
+        double q2Dot    = r12.getQ2().getPartialDerivative(1); 
+        double q3Dot    = r12.getQ3().getPartialDerivative(1); 
+        double q0DotDot = r12.getQ0().getPartialDerivative(2); 
+        double q1DotDot = r12.getQ1().getPartialDerivative(2); 
+        double q2DotDot = r12.getQ2().getPartialDerivative(2); 
+        double q3DotDot = r12.getQ3().getPartialDerivative(2); 
+
+        final double oX       = 2 * MathArrays.linearCombination(-q1, q0Dot,  q0, q1Dot,  q3, q2Dot, -q2, q3Dot);
+        final double oY       = 2 * MathArrays.linearCombination(-q2, q0Dot, -q3, q1Dot,  q0, q2Dot,  q1, q3Dot);
+        final double oZ       = 2 * MathArrays.linearCombination(-q3, q0Dot,  q2, q1Dot, -q1, q2Dot,  q0, q3Dot);
+
+        final double oXDot    = 2 * MathArrays.linearCombination(-q1, q0DotDot,  q0, q1DotDot,  q3, q2DotDot, -q2, q3DotDot);
+        final double oYDot    = 2 * MathArrays.linearCombination(-q2, q0DotDot, -q3, q1DotDot,  q0, q2DotDot,  q1, q3DotDot);
+        final double oZDot    = 2 * MathArrays.linearCombination(-q3, q0DotDot,  q2, q1DotDot, -q1, q2DotDot,  q0, q3DotDot);
+
+        return new AngularCoordinates(new Rotation(q0, q1, q2, q3, true),
+                                      new Vector3D(oX, oY, oZ),
+                                      new Vector3D(oXDot, oYDot, oZDot));
 
     }
 
@@ -274,22 +352,24 @@ public class AngularCoordinatesTest {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
-        AngularCoordinates reference = new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
-                                                              new Vector3D(omega, Vector3D.MINUS_K));
 
-        List<Pair<AbsoluteDate, AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
+        List<Pair<AbsoluteDate, AngularCoordinates>> sample =
+                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
         for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            Rotation r = reference.shiftedBy(dt).getRotation();
-            Vector3D rate = reference.shiftedBy(dt).getRotationRate();
-            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(dt), new AngularCoordinates(r, rate)));
+            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(
+                    date.shiftedBy(dt),
+                    new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0 + omega * dt),
+                                           new Vector3D(omega, Vector3D.MINUS_K))));
         }
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
-            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt), true, sample);
+            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt),
+                                                                             RRASampleFilter.SAMPLE_RR,
+                                                                             sample);
             Rotation r    = interpolated.getRotation();
             Vector3D rate = interpolated.getRotationRate();
-            Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate), 5.0e-15);
+            Assert.assertEquals(0.0, Rotation.distance(new Rotation(Vector3D.PLUS_K, alpha0 + omega * dt), r), 1.0e-15);
+            Assert.assertEquals(0.0, Vector3D.distance(new Vector3D(omega, Vector3D.MINUS_K), rate), 5.0e-15);
         }
 
     }
@@ -302,14 +382,18 @@ public class AngularCoordinatesTest {
         AngularCoordinates reference = new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
                                                               new Vector3D(omega, Vector3D.MINUS_K));
 
-        List<Pair<AbsoluteDate, AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
+        List<Pair<AbsoluteDate, AngularCoordinates>> sample =
+                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
         for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
             Rotation r = reference.shiftedBy(dt).getRotation();
-            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(dt), new AngularCoordinates(r, Vector3D.ZERO)));
+            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(dt),
+                                                                  new AngularCoordinates(r, Vector3D.ZERO)));
         }
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
-            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt), false, sample);
+            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt),
+                                                                             RRASampleFilter.SAMPLE_R,
+                                                                             sample);
             Rotation r    = interpolated.getRotation();
             Vector3D rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 3.0e-4);
@@ -326,12 +410,14 @@ public class AngularCoordinatesTest {
         AngularCoordinates reference = new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
                                                               new Vector3D(omega, Vector3D.MINUS_K));
 
-        List<Pair<AbsoluteDate, AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
+        List<Pair<AbsoluteDate, AngularCoordinates>> sample =
+                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
         Rotation r = reference.shiftedBy(0.2).getRotation();
-        sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(0.2), new AngularCoordinates(r, Vector3D.ZERO)));
+        sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(0.2),
+                                                              new AngularCoordinates(r, Vector3D.ZERO)));
 
         try {
-            AngularCoordinates.interpolate(date.shiftedBy(0.3), false, sample);
+            AngularCoordinates.interpolate(date.shiftedBy(0.3), RRASampleFilter.SAMPLE_R, sample);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oe.getSpecifier());
@@ -348,7 +434,8 @@ public class AngularCoordinatesTest {
             { 4.0,  0.1345716955788532, -0.990903859488413,  7.292115033301528e-5 },
             { 8.0, -0.613127541102373,   0.7899839354960061, 7.292115037371062e-5 }
         };
-        List<Pair<AbsoluteDate,AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
+        List<Pair<AbsoluteDate,AngularCoordinates>> sample =
+                new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
         for (double[] row : params) {
             AbsoluteDate t = t0.shiftedBy(row[0] * 3600.0);
             Rotation     r = new Rotation(row[1], 0.0, 0.0, row[2], false);
@@ -357,7 +444,10 @@ public class AngularCoordinatesTest {
         }
         for (double dt = 0; dt < 29000; dt += 120) {
             AngularCoordinates shifted      = sample.get(0).getValue().shiftedBy(dt);
-            AngularCoordinates interpolated = AngularCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+
+            AngularCoordinates interpolated = AngularCoordinates.interpolate(t0.shiftedBy(dt),
+                                                                             RRASampleFilter.SAMPLE_RR,
+                                                                             sample);
             Assert.assertEquals(0.0,
                                 Rotation.distance(shifted.getRotation(), interpolated.getRotation()),
                                 1.3e-7);

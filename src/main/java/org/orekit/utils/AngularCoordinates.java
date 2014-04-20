@@ -23,6 +23,9 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math3.ode.nonstiff.LutherIntegrator;
+import org.apache.commons.math3.ode.nonstiff.RungeKuttaIntegrator;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.util.Pair;
@@ -34,9 +37,9 @@ import org.orekit.time.TimeShiftable;
 /** Simple container for rotation/rotation rate pairs.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
- * a simple linear model. It is <em>not</em> intended as a replacement for
- * proper attitude propagation but should be sufficient for either small
- * time shifts or coarse accuracy.
+ * an approximate solution of the fixed acceleration motion. It is <em>not</em>
+ * intended as a replacement for proper attitude propagation but should be
+ * sufficient for either small time shifts or coarse accuracy.
  * </p>
  * <p>
  * This class is the angular counterpart to {@link PVCoordinates}.
@@ -46,12 +49,15 @@ import org.orekit.time.TimeShiftable;
  */
 public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Serializable {
 
-    /** Fixed orientation parallel with reference frame (identity rotation and zero rotation rate). */
+    /** Fixed orientation parallel with reference frame (identity rotation, zero rotation rate and acceleration). */
     public static final AngularCoordinates IDENTITY =
-            new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO);
+            new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 3750363056414336775L;
+    private static final long serialVersionUID = 20140414L;
+
+    /** Integrator used for shifting instances. */
+    private static final RungeKuttaIntegrator LUTHER = new LutherIntegrator(Double.NaN);
 
     /** Rotation. */
     private final Rotation rotation;
@@ -59,12 +65,14 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     /** Rotation rate. */
     private final Vector3D rotationRate;
 
+    /** Rotation acceleration. */
+    private final Vector3D rotationAcceleration;
+
     /** Simple constructor.
-     * <p> Sets the Coordinates to default : Identity (0 0 0).</p>
+     * <p> Sets the Coordinates to default : Identity, Ω = (0 0 0), dΩ/dt = (0 0 0).</p>
      */
     public AngularCoordinates() {
-        rotation     = Rotation.IDENTITY;
-        rotationRate = Vector3D.ZERO;
+        this(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
     }
 
     /** Builds a rotation/rotation rate pair.
@@ -72,8 +80,18 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param rotationRate rotation rate (rad/s)
      */
     public AngularCoordinates(final Rotation rotation, final Vector3D rotationRate) {
-        this.rotation     = rotation;
-        this.rotationRate = rotationRate;
+        this(rotation, rotationRate, Vector3D.ZERO);
+    }
+
+    /** Builds a rotation/rotation rate/rotation acceleration triplet.
+     * @param rotation rotation
+     * @param rotationRate rotation rate Ω (rad/s)
+     * @param rotationAcceleration rotation acceleration dΩ/dt (rad²/s²)
+     */
+    public AngularCoordinates(final Rotation rotation, final Vector3D rotationRate, final Vector3D rotationAcceleration) {
+        this.rotation             = rotation;
+        this.rotationRate         = rotationRate;
+        this.rotationAcceleration = rotationAcceleration;
     }
 
     /** Estimate rotation rate between two orientations.
@@ -89,39 +107,72 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         return new Vector3D(evolution.getAngle() / dt, evolution.getAxis());
     }
 
-    /** Revert a rotation/rotation rate pair.
-     * Build a pair which reverse the effect of another pair.
-     * @return a new pair whose effect is the reverse of the effect
+    /** Revert a rotation/rotation rate/ rotation acceleration triplet.
+     * Build a triplet which reverse the effect of another triplet.
+     * @return a new triplet whose effect is the reverse of the effect
      * of the instance
      */
     public AngularCoordinates revert() {
-        return new AngularCoordinates(rotation.revert(), rotation.applyInverseTo(rotationRate.negate()));
+        return new AngularCoordinates(rotation.revert(),
+                                      rotation.applyInverseTo(rotationRate.negate()),
+                                      rotation.applyInverseTo(rotationAcceleration.negate()));
     }
 
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple linear model. It is <em>not</em> intended as a replacement for
-     * proper attitude propagation but should be sufficient for either small
-     * time shifts or coarse accuracy.
+     * an approximate solution of the fixed acceleration motion. It is <em>not</em>
+     * intended as a replacement for proper attitude propagation but should be
+     * sufficient for either small time shifts or coarse accuracy.
      * </p>
      * @param dt time shift in seconds
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public AngularCoordinates shiftedBy(final double dt) {
-        final double rate = rotationRate.getNorm();
-        if (rate == 0.0) {
+
+        if (rotationRate.getNormSq() == 0.0 && rotationAcceleration.getNormSq() == 0.0) {
             // special case for fixed rotations
             return this;
         }
 
-        // BEWARE: there is really a minus sign here, because if
-        // the target frame rotates in one direction, the vectors in the origin
-        // frame seem to rotate in the opposite direction
-        final Rotation evolution = new Rotation(rotationRate, -rate * dt);
+        // perform a few steps of 6th order Luther integrator with large step sizes
+        final FirstOrderDifferentialEquations ode = new FirstOrderDifferentialEquations() {
 
-        return new AngularCoordinates(evolution.applyTo(rotation), rotationRate);
+            /** {@inheritDoc} */
+            @Override
+            public int getDimension() {
+                return 4;
+            }
 
+            /** {@inheritDoc} */
+            @Override
+            public void computeDerivatives(final double t, final double[] q, final double[] qDot) {
+                final double omegaX = rotationRate.getX() + t * rotationAcceleration.getX();
+                final double omegaY = rotationRate.getY() + t * rotationAcceleration.getY();
+                final double omegaZ = rotationRate.getZ() + t * rotationAcceleration.getZ();
+                qDot[0] = 0.5 * MathArrays.linearCombination(-q[1], omegaX, -q[2], omegaY, -q[3], omegaZ);
+                qDot[1] = 0.5 * MathArrays.linearCombination( q[0], omegaX, -q[3], omegaY,  q[2], omegaZ);
+                qDot[2] = 0.5 * MathArrays.linearCombination( q[3], omegaX,  q[0], omegaY, -q[1], omegaZ);
+                qDot[3] = 0.5 * MathArrays.linearCombination(-q[2], omegaX,  q[1], omegaY,  q[0], omegaZ);
+            }
+
+        };
+
+        double[] q = new double[] {
+            rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3()
+        };
+
+        // limit single steps to (large) π/12 angles
+        final double dtMax = FastMath.PI / (12 * rotationRate.getNorm());
+        final int    n     = FastMath.max(1, (int) FastMath.ceil(dt / dtMax));
+        final double h     = dt / n;
+        for (int i = 0; i < n; ++i) {
+            q = LUTHER.singleStep(ode, i * h, q, (i + 1) * h);
+        }
+
+        return new AngularCoordinates(new Rotation(q[0], q[1], q[2], q[3], true),
+                                      new Vector3D(1, rotationRate, dt, rotationAcceleration),
+                                      rotationAcceleration);
     }
 
     /** Get the rotation.
@@ -132,10 +183,17 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
     }
 
     /** Get the rotation rate.
-     * @return the rotation rate vector (rad/s).
+     * @return the rotation rate vector Ω (rad/s).
      */
     public Vector3D getRotationRate() {
         return rotationRate;
+    }
+
+    /** Get the rotation acceleration.
+     * @return the rotation acceleration vector dΩ/dt (rad²/s²).
+     */
+    public Vector3D getRotationAcceleration() {
+        return rotationAcceleration;
     }
 
     /** Add an offset from the instance.
@@ -158,7 +216,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      */
     public AngularCoordinates addOffset(final AngularCoordinates offset) {
         return new AngularCoordinates(rotation.applyTo(offset.rotation),
-                                      rotationRate.add(rotation.applyTo(offset.rotationRate)));
+                                      rotationRate.add(rotation.applyTo(offset.rotationRate)),
+                                      rotationAcceleration.add(rotation.applyTo(offset.rotationAcceleration)));
     }
 
     /** Subtract an offset from the instance.
@@ -194,8 +253,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
      * vector as described in Malcolm D. Shuster's paper <a
      * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
-     * Survey of Attitude Representations</a>. This change avoids the singularity at &pi;.
-     * There is still a singularity at 2&pi;, which is handled by slightly offsetting all rotations
+     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
+     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
      * when this singularity is detected.
      * </p>
      * <p>
@@ -213,24 +272,58 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
+     * @deprecated as of 7.1, replaced with {@link #interpolate(AbsoluteDate, RRASampleFilter, Collection)}
      */
+    @Deprecated
     public static AngularCoordinates interpolate(final AbsoluteDate date, final boolean useRotationRates,
                                                  final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample)
         throws OrekitException {
+        return interpolate(date,
+                           useRotationRates ? RRASampleFilter.SAMPLE_R : RRASampleFilter.SAMPLE_RR,
+                           sample);
+    }
 
-        // set up safety elements for 2PI singularity avoidance
+    /** Interpolate angular coordinates.
+     * <p>
+     * The interpolated instance is created by polynomial Hermite interpolation
+     * on Rodrigues vector ensuring rotation rate remains the exact derivative of rotation.
+     * </p>
+     * <p>
+     * This method is based on Sergei Tanygin's paper <a
+     * href="http://www.agi.com/downloads/resources/white-papers/Attitude-interpolation.pdf">Attitude
+     * Interpolation</a>, changing the norm of the vector to match the modified Rodrigues
+     * vector as described in Malcolm D. Shuster's paper <a
+     * href="http://www.ladispe.polito.it/corsi/Meccatronica/02JHCOR/2011-12/Slides/Shuster_Pub_1993h_J_Repsurv_scan.pdf">A
+     * Survey of Attitude Representations</a>. This change avoids the singularity at π.
+     * There is still a singularity at 2π, which is handled by slightly offsetting all rotations
+     * when this singularity is detected.
+     * </p>
+     * <p>
+     * Note that even if first time derivatives (rotation rates)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the rotations.
+     * </p>
+     * @param date interpolation date
+     * @param filter filter for derivatives to extract from sample
+     * @param sample sample points on which interpolation should be done
+     * @return a new position-velocity, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
+     */
+    public static AngularCoordinates interpolate(final AbsoluteDate date, final RRASampleFilter filter,
+                                                 final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample)
+        throws OrekitException {
+
+        // set up safety elements for 2π singularity avoidance
         final double epsilon   = 2 * FastMath.PI / sample.size();
         final double threshold = FastMath.min(-(1.0 - 1.0e-4), -FastMath.cos(epsilon / 4));
 
         // set up a linear offset model canceling mean rotation rate
         final Vector3D meanRate;
-        if (useRotationRates) {
-            Vector3D sum = Vector3D.ZERO;
-            for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
-                sum = sum.add(datedAC.getValue().getRotationRate());
-            }
-            meanRate = new Vector3D(1.0 / sample.size(), sum);
-        } else {
+        if (filter == RRASampleFilter.SAMPLE_R) {
             if (sample.size() < 2) {
                 throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
                                           sample.size());
@@ -240,14 +333,20 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
                 if (previous != null) {
                     sum = sum.add(estimateRate(previous.getValue().getRotation(),
-                                                         datedAC.getValue().getRotation(),
-                                                         datedAC.getKey().durationFrom(previous.getKey().getDate())));
+                                               datedAC.getValue().getRotation(),
+                                               datedAC.getKey().durationFrom(previous.getKey().getDate())));
                 }
                 previous = datedAC;
             }
             meanRate = new Vector3D(1.0 / (sample.size() - 1), sum);
+        } else {
+            Vector3D sum = Vector3D.ZERO;
+            for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
+                sum = sum.add(datedAC.getValue().getRotationRate());
+            }
+            meanRate = new Vector3D(1.0 / sample.size(), sum);
         }
-        AngularCoordinates offset = new AngularCoordinates(Rotation.IDENTITY, meanRate);
+        Rotation bias = Rotation.IDENTITY;
 
         boolean restart = true;
         for (int i = 0; restart && i < sample.size() + 2; ++i) {
@@ -259,11 +358,13 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final HermiteInterpolator interpolator = new HermiteInterpolator();
 
             // add sample points
-            if (useRotationRates) {
+            switch (filter) {
+            case SAMPLE_RRA: {
                 // populate sample with rotation and rotation rate data
                 for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
-                    final double[] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
-                                                                    date, offset, threshold);
+                    final double[] rodrigues = getModifiedRodrigues(datedAC.getValue(),
+                                                                    bias, meanRate, datedAC.getKey().durationFrom(date),
+                                                                    threshold);
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -272,21 +373,23 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                     }
                     interpolator.addSamplePoint(datedAC.getKey().getDate().durationFrom(date),
                                                 new double[] {
-                                                    rodrigues[0],
-                                                    rodrigues[1],
-                                                    rodrigues[2]
+                                                    rodrigues[0], rodrigues[1], rodrigues[2]
                                                 },
                                                 new double[] {
-                                                    rodrigues[3],
-                                                    rodrigues[4],
-                                                    rodrigues[5]
+                                                    rodrigues[3], rodrigues[4], rodrigues[5]
+                                                },
+                                                new double[] {
+                                                    rodrigues[6], rodrigues[7], rodrigues[8]
                                                 });
                 }
-            } else {
-                // populate sample with rotation data only, ignoring rotation rate
+                break;
+            }
+            case SAMPLE_RR: {
+                // populate sample with rotation and rotation rate data
                 for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
-                    final double[] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
-                                                                    date, offset, threshold);
+                    final double[] rodrigues = getModifiedRodrigues(datedAC.getValue(),
+                                                                    bias, meanRate, datedAC.getKey().durationFrom(date),
+                                                                    threshold);
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -295,26 +398,51 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
                     }
                     interpolator.addSamplePoint(datedAC.getKey().getDate().durationFrom(date),
                                                 new double[] {
-                                                    rodrigues[0],
-                                                    rodrigues[1],
-                                                    rodrigues[2]
+                                                    rodrigues[0], rodrigues[1], rodrigues[2]
+                                                },
+                                                new double[] {
+                                                    rodrigues[3], rodrigues[4], rodrigues[5]
                                                 });
                 }
+                break;
+            }
+            case SAMPLE_R: {
+                // populate sample with rotation data only, ignoring rotation rate
+                for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
+                    final double[] rodrigues = getModifiedRodrigues(datedAC.getValue(),
+                                                                    bias, meanRate, datedAC.getKey().durationFrom(date),
+                                                                    threshold);
+                    if (rodrigues == null) {
+                        // the sample point is close to a modified Rodrigues vector singularity
+                        // we need to change the linear offset model to avoid this
+                        restart = true;
+                        break;
+                    }
+                    interpolator.addSamplePoint(datedAC.getKey().getDate().durationFrom(date),
+                                                new double[] {
+                                                    rodrigues[0], rodrigues[1], rodrigues[2]
+                                                });
+                }
+                break;
+            }
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
             }
 
             if (restart) {
-                // interpolation failed, some intermediate rotation was too close to 2PI
+                // interpolation failed, some intermediate rotation was too close to 2π
                 // we need to offset all rotations to avoid the singularity
-                offset = offset.addOffset(new AngularCoordinates(new Rotation(Vector3D.PLUS_I, epsilon),
-                                                                 Vector3D.ZERO));
+                bias = bias.applyTo(new Rotation(Vector3D.PLUS_I, epsilon));
             } else {
                 // interpolation succeeded with the current offset
-                final DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
+                final DerivativeStructure zero = new DerivativeStructure(1, 2, 0, 0.0);
                 final DerivativeStructure[] p = interpolator.value(zero);
                 return createFromModifiedRodrigues(new double[] {
                     p[0].getValue(), p[1].getValue(), p[2].getValue(),
-                    p[0].getPartialDerivative(1), p[1].getPartialDerivative(1), p[2].getPartialDerivative(1)
-                }, offset);
+                    p[0].getPartialDerivative(1), p[1].getPartialDerivative(1), p[2].getPartialDerivative(1),
+                    p[0].getPartialDerivative(2), p[1].getPartialDerivative(2), p[2].getPartialDerivative(2)
+                }, bias, meanRate);
             }
 
         }
@@ -324,33 +452,41 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
     }
 
-    /** Convert rotation and rate to modified Rodrigues vector and derivative.
+    /** Convert rotation, rate and acceleration to modified Rodrigues vector and derivatives.
      * <p>
-     * The modified Rodrigues vector is tan(&theta;/4) u where &theta; and u are the
+     * The modified Rodrigues vector is tan(θ/4) u where θ and u are the
      * rotation angle and axis respectively.
      * </p>
-     * @param date date of the angular coordinates
      * @param ac coordinates to convert
-     * @param offsetDate date of the linear offset model to remove
-     * @param offset linear offset model to remove
-     * @param threshold threshold for rotations too close to 2&pi;
-     * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2&pi;
+     * @param bias rotation bias to remove
+     * @param meanRate rotation rate to remove
+     * @param dateOffset date shift of the linear offset model to remove
+     * @param threshold threshold for rotations too close to 2π
+     * @return modified Rodrigues vector and derivatives, or null if rotation is too close to 2π
      */
-    private static double[] getModifiedRodrigues(final AbsoluteDate date, final AngularCoordinates ac,
-                                                 final AbsoluteDate offsetDate, final AngularCoordinates offset,
+    private static double[] getModifiedRodrigues(final AngularCoordinates ac,
+                                                 final Rotation bias, final Vector3D meanRate, final double dateOffset,
                                                  final double threshold) {
 
         // remove linear offset from the current coordinates
-        final double dt = date.durationFrom(offsetDate);
-        final AngularCoordinates fixed = ac.subtractOffset(offset.shiftedBy(dt));
+        final double meanRateNorm = meanRate.getNorm();
+        final Rotation offset;
+        if (meanRateNorm == 0.0) {
+            offset = bias;
+        } else {
+            offset = new Rotation(meanRate, -dateOffset * meanRateNorm).applyTo(bias);
+        }
+        final Rotation fixedRotation     = ac.getRotation().applyTo(offset.revert());
+        final Vector3D fixedRotationRate = ac.getRotationRate().subtract(meanRate);
+        final Vector3D fixedAcceleration = ac.getRotationAcceleration();
 
         // check modified Rodrigues vector singularity
-        double q0 = fixed.getRotation().getQ0();
-        double q1 = fixed.getRotation().getQ1();
-        double q2 = fixed.getRotation().getQ2();
-        double q3 = fixed.getRotation().getQ3();
-        if (q0 < threshold && FastMath.abs(dt) * fixed.getRotationRate().getNorm() > 1.0e-3) {
-            // this is an intermediate point that happens to be 2PI away from reference
+        double q0 = fixedRotation.getQ0();
+        double q1 = fixedRotation.getQ1();
+        double q2 = fixedRotation.getQ2();
+        double q3 = fixedRotation.getQ3();
+        if (q0 < threshold && FastMath.abs(dateOffset) * fixedRotationRate.getNorm() > 1.0e-3) {
+            // this is an intermediate point that happens to be 2π away from reference
             // we need to change the linear offset model to avoid this point
             return null;
         }
@@ -363,51 +499,114 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             q3 = -q3;
         }
 
-        final double x  = fixed.getRotationRate().getX();
-        final double y  = fixed.getRotationRate().getY();
-        final double z  = fixed.getRotationRate().getZ();
+        final double oX    = fixedRotationRate.getX();
+        final double oY    = fixedRotationRate.getY();
+        final double oZ    = fixedRotationRate.getZ();
+        final double oXDot = fixedAcceleration.getX();
+        final double oYDot = fixedAcceleration.getY();
+        final double oZDot = fixedAcceleration.getZ();
 
-        // derivatives of the quaternion
-        final double q0Dot = -0.5 * MathArrays.linearCombination(q1, x, q2, y,  q3, z);
-        final double q1Dot =  0.5 * MathArrays.linearCombination(q0, x, q2, z, -q3, y);
-        final double q2Dot =  0.5 * MathArrays.linearCombination(q0, y, q3, x, -q1, z);
-        final double q3Dot =  0.5 * MathArrays.linearCombination(q0, z, q1, y, -q2, x);
+        // first time-derivatives of the quaternion
+        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
+        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
+        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
+        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
 
-        final double inv = 1.0 / (1.0 + q0);
+        // second time-derivatives of the quaternion
+        final double q0DotDot = -0.5 * MathArrays.linearCombination(new double[] {
+            q1, q2,  q3, q1Dot, q2Dot,  q3Dot
+        }, new double[] {
+            oXDot, oYDot, oZDot, oX, oY, oZ
+        });
+        final double q1DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q2, -q3, q0Dot, q2Dot, -q3Dot
+        }, new double[] {
+            oXDot, oZDot, oYDot, oX, oZ, oY
+        });
+        final double q2DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q3, -q1, q0Dot, q3Dot, -q1Dot
+        }, new double[] {
+            oYDot, oXDot, oZDot, oY, oX, oZ
+        });
+        final double q3DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q1, -q2, q0Dot, q1Dot, -q2Dot
+        }, new double[] {
+            oZDot, oYDot, oXDot, oZ, oY, oX
+        });
+
+        // the modified Rodrigues is tan(θ/4) u where θ and u are the rotation angle and axis respectively
+        // this can be rewritten using quaternion components:
+        //      r (q₁ / (1+q₀), q₂ / (1+q₀), q₃ / (1+q₀))
+        // applying the derivation chain rule to previous expression gives rDot and rDotDot
+        final double inv          = 1.0 / (1.0 + q0);
+        final double mTwoInvQ0Dot = -2 * inv * q0Dot;
+
+        final double r1       = inv * q1;
+        final double r2       = inv * q2;
+        final double r3       = inv * q3;
+
+        final double mInvR1   = -inv * r1;
+        final double mInvR2   = -inv * r2;
+        final double mInvR3   = -inv * r3;
+
+        final double r1Dot    = MathArrays.linearCombination(inv, q1Dot, mInvR1, q0Dot);
+        final double r2Dot    = MathArrays.linearCombination(inv, q2Dot, mInvR2, q0Dot);
+        final double r3Dot    = MathArrays.linearCombination(inv, q3Dot, mInvR3, q0Dot);
+
+        final double r1DotDot = MathArrays.linearCombination(inv, q1DotDot, mTwoInvQ0Dot, r1Dot, mInvR1, q0DotDot);
+        final double r2DotDot = MathArrays.linearCombination(inv, q2DotDot, mTwoInvQ0Dot, r2Dot, mInvR2, q0DotDot);
+        final double r3DotDot = MathArrays.linearCombination(inv, q3DotDot, mTwoInvQ0Dot, r3Dot, mInvR3, q0DotDot);
+
         return new double[] {
-            inv * q1,
-            inv * q2,
-            inv * q3,
-            inv * (q1Dot - inv * q1 * q0Dot),
-            inv * (q2Dot - inv * q2 * q0Dot),
-            inv * (q3Dot - inv * q3 * q0Dot)
+            r1,       r2,       r3,
+            r1Dot,    r2Dot,    r3Dot,
+            r1DotDot, r2DotDot, r3DotDot
         };
 
     }
 
-    /** Convert a modified Rodrigues vector and derivative to angular coordinates.
-     * @param r modified Rodrigues vector (with first derivatives)
-     * @param offset linear offset model to add (its date must be consistent with the modified Rodrigues vector)
+    /** Convert a modified Rodrigues vector and derivatives to angular coordinates.
+     * @param r modified Rodrigues vector (with first and second times derivatives)
+     * @param bias rotation bias to remove (may be null for no offset)
+     * (its date must be consistent with the modified Rodrigues vector)
+     * @param meanRate rotation rate to remove (may be null for no offset)
      * @return angular coordinates
      */
     private static AngularCoordinates createFromModifiedRodrigues(final double[] r,
-                                                                  final AngularCoordinates offset) {
+                                                                  final Rotation bias, final Vector3D meanRate) {
 
         // rotation
         final double rSquared = r[0] * r[0] + r[1] * r[1] + r[2] * r[2];
-        final double inv      = 1.0 / (1 + rSquared);
-        final double ratio    = inv * (1 - rSquared);
-        final Rotation rotation =
-                new Rotation(ratio, 2 * inv * r[0], 2 * inv * r[1], 2 * inv * r[2], false);
+        final double oPQ0     = 2 / (1 + rSquared);
+        final double q0       = oPQ0 - 1;
+        final double q1       = oPQ0 * r[0];
+        final double q2       = oPQ0 * r[1];
+        final double q3       = oPQ0 * r[2];
 
         // rotation rate
-        final Vector3D p    = new Vector3D(r[0], r[1], r[2]);
-        final Vector3D pDot = new Vector3D(r[3], r[4], r[5]);
-        final Vector3D rate = new Vector3D( 4 * ratio * inv, pDot,
-                                           -8 * inv * inv, p.crossProduct(pDot),
-                                            8 * inv * inv * p.dotProduct(pDot), p);
+        final double oPQ02    = oPQ0 * oPQ0;
+        final double q0Dot    = -oPQ02 * MathArrays.linearCombination(r[0], r[3], r[1], r[4],  r[2], r[5]);
+        final double q1Dot    = oPQ0 * r[3] + r[0] * q0Dot;
+        final double q2Dot    = oPQ0 * r[4] + r[1] * q0Dot;
+        final double q3Dot    = oPQ0 * r[5] + r[2] * q0Dot;
+        final double oX       = 2 * MathArrays.linearCombination(-q1, q0Dot,  q0, q1Dot,  q3, q2Dot, -q2, q3Dot);
+        final double oY       = 2 * MathArrays.linearCombination(-q2, q0Dot, -q3, q1Dot,  q0, q2Dot,  q1, q3Dot);
+        final double oZ       = 2 * MathArrays.linearCombination(-q3, q0Dot,  q2, q1Dot, -q1, q2Dot,  q0, q3Dot);
 
-        return new AngularCoordinates(rotation, rate).addOffset(offset);
+        // rotation acceleration
+        final double q0DotDot = (1 - q0) / oPQ0 * q0Dot * q0Dot -
+                                oPQ02 * MathArrays.linearCombination(r[0], r[6], r[1], r[7], r[2], r[8]) -
+                                (q1Dot * q1Dot + q2Dot * q2Dot + q3Dot * q3Dot);
+        final double q1DotDot = MathArrays.linearCombination(oPQ0, r[6], 2 * r[3], q0Dot, r[0], q0DotDot);
+        final double q2DotDot = MathArrays.linearCombination(oPQ0, r[7], 2 * r[4], q0Dot, r[1], q0DotDot);
+        final double q3DotDot = MathArrays.linearCombination(oPQ0, r[8], 2 * r[5], q0Dot, r[2], q0DotDot);
+        final double oXDot    = 2 * MathArrays.linearCombination(-q1, q0DotDot,  q0, q1DotDot,  q3, q2DotDot, -q2, q3DotDot);
+        final double oYDot    = 2 * MathArrays.linearCombination(-q2, q0DotDot, -q3, q1DotDot,  q0, q2DotDot,  q1, q3DotDot);
+        final double oZDot    = 2 * MathArrays.linearCombination(-q3, q0DotDot,  q2, q1DotDot, -q1, q2DotDot,  q0, q3DotDot);
+
+        return new AngularCoordinates(new Rotation(q0, q1, q2, q3, false).applyTo(bias),
+                                       new Vector3D(oX + meanRate.getX(), oY + meanRate.getY(), oZ + meanRate.getZ()),
+                                       new Vector3D(oXDot, oYDot, oZDot));
 
     }
 

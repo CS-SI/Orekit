@@ -26,6 +26,7 @@ import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.GenericTimeStampedCache;
 import org.orekit.utils.PVASampleFilter;
+import org.orekit.utils.RRASampleFilter;
 import org.orekit.utils.TimeStampedGenerator;
 
 /** Transform provider using thread-safe interpolation on transforms sample.
@@ -42,16 +43,16 @@ import org.orekit.utils.TimeStampedGenerator;
 public class InterpolatingTransformProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -1750070230136582364L;
+    private static final long serialVersionUID = 20140414L;
 
     /** Provider for raw (non-interpolated) transforms. */
     private final TransformProvider rawProvider;
 
-    /** Flag for use of sample transforms velocities. */
-    private final PVASampleFilter usedDerivatives;
+    /** Filter for derivatives to extract from sample. */
+    private final PVASampleFilter pvaFilter;
 
-    /** Flag for use sample points rotation rates. */
-    private final boolean useRotationRates;
+    /** Filter for derivatives to extract from sample. */
+    private final RRASampleFilter rraFilter;
 
     /** Earliest supported date. */
     private final AbsoluteDate earliest;
@@ -67,9 +68,8 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
-     * @param usedDerivatives derivatives to use from sample
-     * @param useRotationRates if true, use sample points rotation rates,
-     * otherwise ignore them and use only rotations
+     * @param pvaFilter filter for translation derivatives to extract from sample
+     * @param rraFilter filter for rotation derivatives to extract from sample
      * @param earliest earliest supported date
      * @param latest latest supported date
      * @param gridPoints number of interpolation grid points
@@ -82,18 +82,18 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * in the {@link GenericTimeStampedCache time-stamped cache}
      */
     public InterpolatingTransformProvider(final TransformProvider rawProvider,
-                                          final PVASampleFilter usedDerivatives, final boolean useRotationRates,
+                                          final PVASampleFilter pvaFilter, final RRASampleFilter rraFilter,
                                           final AbsoluteDate earliest, final AbsoluteDate latest,
                                           final int gridPoints, final double step,
                                           final int maxSlots, final double maxSpan, final double newSlotInterval) {
-        this.rawProvider      = rawProvider;
-        this.usedDerivatives  = usedDerivatives;
-        this.useRotationRates = useRotationRates;
-        this.earliest         = earliest;
-        this.latest           = latest;
-        this.step             = step;
-        this.cache            = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
-                                                                new Generator(), Transform.class);
+        this.rawProvider = rawProvider;
+        this.pvaFilter   = pvaFilter;
+        this.rraFilter   = rraFilter;
+        this.earliest    = earliest;
+        this.latest      = latest;
+        this.step        = step;
+        this.cache       = new GenericTimeStampedCache<Transform>(gridPoints, maxSlots, maxSpan, newSlotInterval,
+                                                                  new Generator(), Transform.class);
     }
 
     /** Get the underlying provider for raw (non-interpolated) transforms.
@@ -125,7 +125,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
             final List<Transform> sample = cache.getNeighbors(date);
 
             // interpolate to specified date
-            return Transform.interpolate(date, usedDerivatives, useRotationRates, sample);
+            return Transform.interpolate(date, pvaFilter, rraFilter, sample);
 
         } catch (OrekitExceptionWrapper oew) {
             // something went wrong while generating the sample,
@@ -143,7 +143,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DataTransferObject(rawProvider, usedDerivatives, useRotationRates,
+        return new DataTransferObject(rawProvider, pvaFilter, rraFilter,
                                       earliest, latest, cache.getNeighborsSize(), step,
                                       cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
     }
@@ -157,11 +157,11 @@ public class InterpolatingTransformProvider implements TransformProvider {
         /** Provider for raw (non-interpolated) transforms. */
         private final TransformProvider rawProvider;
 
-        /** Flag for use of sample transforms velocities. */
-        private final PVASampleFilter usedDerivatives;
+        /** Filter for derivatives to extract from sample. */
+        private final PVASampleFilter pvaFilter;
 
-        /** Flag for use sample points rotation rates. */
-        private final boolean useRotationRates;
+        /** Filter for derivatives to extract from sample. */
+        private final RRASampleFilter rraFilter;
 
         /** Earliest supported date. */
         private final AbsoluteDate earliest;
@@ -186,9 +186,8 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
         /** Simple constructor.
          * @param rawProvider provider for raw (non-interpolated) transforms
-         * @param usedDerivatives derivatives to use from sample
-         * @param useRotationRates if true, use sample points rotation rates,
-         * otherwise ignore them and use only rotations
+     * @param pvaFilter filter for translation derivatives to extract from sample
+     * @param rraFilter filter for rotation derivatives to extract from sample
          * @param earliest earliest supported date
          * @param latest latest supported date
          * @param gridPoints number of interpolation grid points
@@ -201,20 +200,20 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * in the {@link GenericTimeStampedCache time-stamped cache}
          */
         private DataTransferObject(final TransformProvider rawProvider,
-                                   final PVASampleFilter usedDerivatives, final boolean useRotationRates,
+                                   final PVASampleFilter pvaFilter, final RRASampleFilter rraFilter,
                                    final AbsoluteDate earliest, final AbsoluteDate latest,
                                    final int gridPoints, final double step,
                                    final int maxSlots, final double maxSpan, final double newSlotInterval) {
-            this.rawProvider      = rawProvider;
-            this.usedDerivatives  = usedDerivatives;
-            this.useRotationRates = useRotationRates;
-            this.earliest         = earliest;
-            this.latest           = latest;
-            this.gridPoints       = gridPoints;
-            this.step             = step;
-            this.maxSlots         = maxSlots;
-            this.maxSpan          = maxSpan;
-            this.newSlotInterval  = newSlotInterval;
+            this.rawProvider     = rawProvider;
+            this.pvaFilter       = pvaFilter;
+            this.rraFilter       = rraFilter;
+            this.earliest        = earliest;
+            this.latest          = latest;
+            this.gridPoints      = gridPoints;
+            this.step            = step;
+            this.maxSlots        = maxSlots;
+            this.maxSpan         = maxSpan;
+            this.newSlotInterval = newSlotInterval;
         }
 
         /** Replace the deserialized data transfer object with a {@link InterpolatingTransformProvider}.
@@ -222,7 +221,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
          */
         private Object readResolve() {
             // build a new provider, with an empty cache
-            return new InterpolatingTransformProvider(rawProvider, usedDerivatives, useRotationRates,
+            return new InterpolatingTransformProvider(rawProvider, pvaFilter, rraFilter,
                                                       earliest, latest, gridPoints, step,
                                                       maxSlots, maxSpan, newSlotInterval);
         }

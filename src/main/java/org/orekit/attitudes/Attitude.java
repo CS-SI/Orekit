@@ -32,6 +32,7 @@ import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.RRASampleFilter;
 
 
 /** This class handles attitude definition at a given date.
@@ -211,7 +212,9 @@ public class Attitude
         for (final Attitude attitude : sample) {
             datedPV.add(new Pair<AbsoluteDate, AngularCoordinates>(attitude.getDate(), attitude.getOrientation()));
         }
-        final AngularCoordinates interpolated = AngularCoordinates.interpolate(interpolationDate, true, datedPV);
+        final AngularCoordinates interpolated = AngularCoordinates.interpolate(interpolationDate,
+                                                                               RRASampleFilter.SAMPLE_RRA,
+                                                                               datedPV);
         return new Attitude(interpolationDate, referenceFrame, interpolated);
     }
 

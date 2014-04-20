@@ -31,6 +31,7 @@ import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
 import org.orekit.utils.PVASampleFilter;
+import org.orekit.utils.RRASampleFilter;
 
 
 /** Factory for predefined reference frames.
@@ -922,7 +923,7 @@ public class FramesFactory {
                 final EOPHistory eopHistory = FramesFactory.getEOPHistory(conventions, simpleEOP);
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(new CIRFProvider(eopHistory),
-                                                           PVASampleFilter.SAMPLE_PVA, false,
+                                                           PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            6, Constants.JULIAN_DAY / 24,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
@@ -1126,7 +1127,7 @@ public class FramesFactory {
                 final GTODProvider      gtodRaw    = new GTODProvider(conventions, eopHistory);
                 final TransformProvider gtodInterpolating =
                         new InterpolatingTransformProvider(gtodRaw,
-                                                           PVASampleFilter.SAMPLE_PVA, false,
+                                                           PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            todInterpolating.getGridPoints(), todInterpolating.getStep(),
                                                            OrekitConfiguration.getCacheSlotsNumber(),
@@ -1265,7 +1266,7 @@ public class FramesFactory {
                 final EOPHistory eopHistory = applyEOPCorr ? getEOPHistory(conventions, simpleEOP) : null;
                 final TransformProvider interpolating =
                         new InterpolatingTransformProvider(new TODProvider(conventions, eopHistory),
-                                                           PVASampleFilter.SAMPLE_PVA, false,
+                                                           PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            interpolationPoints, Constants.JULIAN_DAY / pointsPerDay,
                                                            OrekitConfiguration.getCacheSlotsNumber(),
@@ -1414,7 +1415,7 @@ public class FramesFactory {
                 final TEMEProvider temeRaw = new TEMEProvider(IERSConventions.IERS_1996, null);
                 final TransformProvider temeInterpolating =
                         new InterpolatingTransformProvider(temeRaw,
-                                                           PVASampleFilter.SAMPLE_PVA, false,
+                                                           PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            todInterpolating.getGridPoints(), todInterpolating.getStep(),
                                                            OrekitConfiguration.getCacheSlotsNumber(),

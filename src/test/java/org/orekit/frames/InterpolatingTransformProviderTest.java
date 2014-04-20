@@ -32,6 +32,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVASampleFilter;
+import org.orekit.utils.RRASampleFilter;
 
 
 public class InterpolatingTransformProviderTest {
@@ -44,7 +45,7 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   PVASampleFilter.SAMPLE_PVA, true,
+                                                   PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -71,7 +72,7 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   PVASampleFilter.SAMPLE_P, false,
+                                                   PVASampleFilter.SAMPLE_P, RRASampleFilter.SAMPLE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -98,7 +99,7 @@ public class InterpolatingTransformProviderTest {
                     public Transform getTransform(AbsoluteDate date) throws OrekitException {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                     }
-                }, PVASampleFilter.SAMPLE_PVA, true,
+                }, PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_RRA,
                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                 5, 0.8, 10, 60.0, 60.0);
         interpolatingProvider.getTransform(AbsoluteDate.J2000_EPOCH);
@@ -111,7 +112,7 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   PVASampleFilter.SAMPLE_PVA, true,
+                                                   PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_RRA,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 

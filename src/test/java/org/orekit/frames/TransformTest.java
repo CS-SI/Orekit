@@ -19,13 +19,14 @@ package org.orekit.frames;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937a;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
@@ -42,13 +43,13 @@ public class TransformTest {
     @Test
     public void testIdentityTranslation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Vector3D(0, 0, 0)),
-                         new Random(0xfd118eac6b5ec136l));
+                         new Well19937a(0xfd118eac6b5ec136l));
     }
 
     @Test
     public void testIdentityRotation() {
         checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, new Rotation(1, 0, 0, 0, false)),
-                         new Random(0xfd118eac6b5ec136l));
+                         new Well19937a(0xfd118eac6b5ec136l));
     }
 
     @Test
@@ -92,9 +93,55 @@ public class TransformTest {
     }
 
     @Test
+    public void testAccelerationComposition() {
+        RandomGenerator random = new Well19937a(0x41fdd07d6c9e9f65l);
+
+        Vector3D  p1 = randomVector(random);
+        Vector3D  v1 = randomVector(random);
+        Vector3D  a1 = randomVector(random);
+        Rotation  r1 = randomRotation(random);
+        Vector3D  o1 = randomVector(random);
+
+        Vector3D  p2 = randomVector(random);
+        Vector3D  v2 = randomVector(random);
+        Vector3D  a2 = randomVector(random);
+        Rotation  r2 = randomRotation(random);
+        Vector3D  o2 = randomVector(random);
+
+        Transform t1  = new Transform(AbsoluteDate.J2000_EPOCH,
+                                      new Transform(AbsoluteDate.J2000_EPOCH, p1, v1, a1),
+                                      new Transform(AbsoluteDate.J2000_EPOCH, r1, o1));
+        Transform t2  = new Transform(AbsoluteDate.J2000_EPOCH,
+                                      new Transform(AbsoluteDate.J2000_EPOCH, p2, v2, a2),
+                                      new Transform(AbsoluteDate.J2000_EPOCH, r2, o2));
+        Transform t12 = new Transform(AbsoluteDate.J2000_EPOCH, t1, t2);
+
+        Vector3D q       = randomVector(random);
+        Vector3D qDot    = randomVector(random);
+        Vector3D qDotDot = randomVector(random);
+
+        PVCoordinates pva0 = new PVCoordinates(q, qDot, qDotDot);
+        PVCoordinates pva1 = t1.transformPVCoordinates(pva0);
+        PVCoordinates pva2 = t2.transformPVCoordinates(pva1);
+        PVCoordinates pvac = t12.transformPVCoordinates(pva0);
+
+        checkVector(pva2.getPosition(),     pvac.getPosition(),     1.0e-10);
+        checkVector(pva2.getVelocity(),     pvac.getVelocity(),     1.0e-10);
+        checkVector(pva2.getAcceleration(), pvac.getAcceleration(), 1.0e-10);
+
+        // despite neither raw transforms have angular acceleration,
+        // the combination does have an angular acceleration,
+        // it is due to the cross product Ω₁ ⨉ Ω₂
+        Assert.assertEquals(0.0, t1.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, t2.getAngular().getRotationAcceleration().getNorm(), 1.0e-15);
+        Assert.assertTrue(t12.getAngular().getRotationAcceleration().getNorm() > 1e8);
+
+    }
+
+    @Test
     public void testRandomComposition() {
 
-        Random random = new Random(0x171c79e323a1123l);
+        RandomGenerator random = new Well19937a(0x171c79e323a1123l);
         for (int i = 0; i < 20; ++i) {
 
             // build a complex transform by composing primitive ones
@@ -138,7 +185,7 @@ public class TransformTest {
 
     @Test
     public void testReverse() {
-        Random random = new Random(0x9f82ba2b2c98dac5l);
+        RandomGenerator random = new Well19937a(0x9f82ba2b2c98dac5l);
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
 
@@ -150,7 +197,7 @@ public class TransformTest {
 
     @Test
     public void testDecomposeAndRebuild() {
-        Random random = new Random(0xb8ee9da1b05198c9l);
+        RandomGenerator random = new Well19937a(0xb8ee9da1b05198c9l);
         for (int i = 0; i < 20; ++i) {
             Transform combined = randomTransform(random);
             Transform rebuilt  = new Transform(combined.getDate(),
@@ -166,7 +213,7 @@ public class TransformTest {
 
     @Test
     public void testTranslation() {
-        Random rnd = new Random(0x7e9d737ba4147787l);
+        RandomGenerator rnd = new Well19937a(0x7e9d737ba4147787l);
         for (int i = 0; i < 10; ++i) {
             Vector3D delta = randomVector(rnd);
             Transform transform = new Transform(AbsoluteDate.J2000_EPOCH, delta);
@@ -264,7 +311,7 @@ public class TransformTest {
     @Test
     public void testRotPV() {
 
-        Random rnd = new Random(0x73d5554d99427af0l);
+        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
 
         // Instant Rotation only
 
@@ -305,7 +352,7 @@ public class TransformTest {
     @Test
     public void testTransPV() {
 
-        Random rnd = new Random(0x73d5554d99427af0l);
+        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
 
         // translation velocity only :
 
@@ -344,7 +391,7 @@ public class TransformTest {
 
     @Test
     public void testRotation() {
-        Random rnd = new Random(0x73d5554d99427af0l);
+        RandomGenerator rnd = new Well19937a(0x73d5554d99427af0l);
         for (int i = 0; i < 10; ++i) {
 
             Rotation r    = randomRotation(rnd);
@@ -380,7 +427,7 @@ public class TransformTest {
         };
         double h = 0.01;
 
-        Random random = new Random(0xce2bfddfbb9796bel);
+        RandomGenerator random = new Well19937a(0xce2bfddfbb9796bel);
         for (int i = 0; i < 20; ++i) {
 
             // generate a random transform
@@ -431,7 +478,7 @@ public class TransformTest {
 
     @Test
     public void testLine() {
-        Random random = new Random(0x4a5ff67426c5731fl);
+        RandomGenerator random = new Well19937a(0x4a5ff67426c5731fl);
         for (int i = 0; i < 100; ++i) {
             Transform transform = randomTransform(random);
             for (int j = 0; j < 20; ++j) {
@@ -450,7 +497,7 @@ public class TransformTest {
     @Test
     public void testLinear() {
 
-        Random random = new Random(0x14f6411217b148d8l);
+        RandomGenerator random = new Well19937a(0x14f6411217b148d8l);
         for (int n = 0; n < 100; ++n) {
             Transform t = randomTransform(random);
 
@@ -541,7 +588,7 @@ public class TransformTest {
     @Test
     public void testShiftDerivatives() {
 
-        Random random = new Random(0x5acda4f605aadce7l);
+        RandomGenerator random = new Well19937a(0x5acda4f605aadce7l);
         for (int i = 0; i < 10; ++i) {
             Transform t = randomTransform(random);
 
@@ -671,7 +718,7 @@ public class TransformTest {
                (840 * h);
     }
 
-    private Transform randomTransform(Random random) {
+    private Transform randomTransform(RandomGenerator random) {
         // generate a random transform
         Transform combined = Transform.IDENTITY;
         for (int k = 0; k < 20; ++k) {
@@ -683,13 +730,13 @@ public class TransformTest {
         return combined;
     }
 
-    private Vector3D randomVector(Random random) {
+    private Vector3D randomVector(RandomGenerator random) {
         return new Vector3D(random.nextDouble() * 10000.0,
                             random.nextDouble() * 10000.0,
                             random.nextDouble() * 10000.0);
     }
 
-    private Rotation randomRotation(Random random) {
+    private Rotation randomRotation(RandomGenerator random) {
         double q0 = random.nextDouble() * 2 - 1;
         double q1 = random.nextDouble() * 2 - 1;
         double q2 = random.nextDouble() * 2 - 1;
@@ -698,7 +745,7 @@ public class TransformTest {
         return new Rotation(q0 / q, q1 / q, q2 / q, q3 / q, false);
     }
 
-    private void checkNoTransform(Transform transform, Random random) {
+    private void checkNoTransform(Transform transform, RandomGenerator random) {
         for (int i = 0; i < 100; ++i) {
             Vector3D a = randomVector(random);
             Vector3D tA = transform.transformVector(a);
@@ -706,10 +753,11 @@ public class TransformTest {
             Vector3D b = randomVector(random);
             Vector3D tB = transform.transformPosition(b);
             Assert.assertEquals(0, b.subtract(tB).getNorm(), 1.0e-10 * a.getNorm());
-            PVCoordinates pv  = new PVCoordinates(randomVector(random), randomVector(random));
+            PVCoordinates pv  = new PVCoordinates(randomVector(random), randomVector(random), randomVector(random));
             PVCoordinates tPv = transform.transformPVCoordinates(pv);
-            checkVector(pv.getPosition(), tPv.getPosition(), 1.0e-10);
-            checkVector(pv.getVelocity(), tPv.getVelocity(), 3.0e-9);
+            checkVector(pv.getPosition(),     tPv.getPosition(), 1.0e-10);
+            checkVector(pv.getVelocity(),     tPv.getVelocity(), 3.0e-9);
+            checkVector(pv.getAcceleration(), tPv.getAcceleration(), 3.0e-9);
         }
     }
 

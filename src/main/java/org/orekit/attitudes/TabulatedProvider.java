@@ -28,6 +28,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.RRASampleFilter;
 
 
 /**
@@ -45,8 +46,8 @@ public class TabulatedProvider implements AttitudeProvider {
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<Attitude> table;
 
-    /** Indicator for rate use. */
-    private final boolean useRotationRate;
+    /** Filter for derivatives to extract from sample. */
+    private final RRASampleFilter filter;
 
     /** Creates new instance.
      * @param table tabulated attitudes
@@ -54,10 +55,21 @@ public class TabulatedProvider implements AttitudeProvider {
      * @param useRotationRate if true, rotation rate from the tables are used in
      * the interpolation, ortherwise rates present in the table are ignored
      * and rate is reconstructed from the rotation angles only
+     * @deprecated as of 7.0, replaced with {@link #TabulatedProvider(List, int, RRASampleFilter)}
      */
+    @Deprecated
     public TabulatedProvider(final List<Attitude> table, final int n, final boolean useRotationRate) {
-        this.table           = new ImmutableTimeStampedCache<Attitude>(n, table);
-        this.useRotationRate = useRotationRate;
+        this(table, n, useRotationRate ? RRASampleFilter.SAMPLE_RR : RRASampleFilter.SAMPLE_R);
+    }
+
+    /** Creates new instance.
+     * @param table tabulated attitudes
+     * @param n number of attitude to use for interpolation
+     * @param filter filter for derivatives to extract from sample
+     */
+    public TabulatedProvider(final List<Attitude> table, final int n, final RRASampleFilter filter) {
+        this.table  = new ImmutableTimeStampedCache<Attitude>(n, table);
+        this.filter = filter;
     }
 
     /** {@inheritDoc} */
@@ -74,7 +86,7 @@ public class TabulatedProvider implements AttitudeProvider {
         for (final Attitude attitude : sample) {
             datedAC.add(new Pair<AbsoluteDate, AngularCoordinates>(attitude.getDate(), attitude.getOrientation()));
         }
-        final AngularCoordinates interpolated = AngularCoordinates.interpolate(date, useRotationRate, datedAC);
+        final AngularCoordinates interpolated = AngularCoordinates.interpolate(date, filter, datedAC);
 
         // build the attitude
         return new Attitude(date, sample.get(0).getReferenceFrame(), interpolated);
@@ -86,14 +98,14 @@ public class TabulatedProvider implements AttitudeProvider {
      * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
      */
     private Object writeReplace() throws NotSerializableException {
-        return new DataTransferObject(table.getAll(), table.getNeighborsSize(), useRotationRate);
+        return new DataTransferObject(table.getAll(), table.getNeighborsSize(), filter);
     }
 
     /** Internal class used only for serialization. */
     private static class DataTransferObject implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 20131205L;
+        private static final long serialVersionUID = 20140414L;
 
         /** Tabulated attitudes. */
         private final List<Attitude> list;
@@ -101,25 +113,25 @@ public class TabulatedProvider implements AttitudeProvider {
         /** Number of attitude to use for interpolation. */
         private final int n;
 
-        /** Indicator for rate use. */
-        private final boolean useRotationRate;
+        /** Filter for derivatives to extract from sample. */
+        private final RRASampleFilter filter;
 
         /** Simple constructor.
          * @param list tabulated attitudes
          * @param n number of attitude to use for interpolation
-         * @param useRotationRate indicator for rate use
+     * @param filter filter for derivatives to extract from sample
          */
-        public DataTransferObject(final List<Attitude> list, final int n, final boolean useRotationRate) {
-            this.list            = list;
-            this.n               = n;
-            this.useRotationRate = useRotationRate;
+        public DataTransferObject(final List<Attitude> list, final int n, final RRASampleFilter filter) {
+            this.list   = list;
+            this.n      = n;
+            this.filter = filter;
         }
 
         /** Replace the deserialized data transfer object with a {@link TabulatedProvider}.
          * @return replacement {@link TabulatedProvider}
          */
         private Object readResolve() {
-            return new TabulatedProvider(list, n, useRotationRate);
+            return new TabulatedProvider(list, n, filter);
         }
 
     }
