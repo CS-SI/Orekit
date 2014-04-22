@@ -34,7 +34,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
-/** Simple container for rotation/rotation rate pairs.
+/** Simple container for rotation/rotation rate/rotation acceleration triplets.
  * <p>
  * The state can be slightly shifted to close dates. This shift is based on
  * an approximate solution of the fixed acceleration motion. It is <em>not</em>
@@ -321,34 +321,11 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         final double epsilon   = 2 * FastMath.PI / sample.size();
         final double threshold = FastMath.min(-(1.0 - 1.0e-4), -FastMath.cos(epsilon / 4));
 
-        // set up a linear offset model canceling mean rotation rate
-        final Vector3D meanRate;
-        if (filter == RRASampleFilter.SAMPLE_R) {
-            if (sample.size() < 2) {
-                throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
-                                          sample.size());
-            }
-            Vector3D sum = Vector3D.ZERO;
-            Pair<AbsoluteDate, AngularCoordinates> previous = null;
-            for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
-                if (previous != null) {
-                    sum = sum.add(estimateRate(previous.getValue().getRotation(),
-                                               datedAC.getValue().getRotation(),
-                                               datedAC.getKey().durationFrom(previous.getKey().getDate())));
-                }
-                previous = datedAC;
-            }
-            meanRate = new Vector3D(1.0 / (sample.size() - 1), sum);
-        } else {
-            Vector3D sum = Vector3D.ZERO;
-            for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
-                sum = sum.add(datedAC.getValue().getRotationRate());
-            }
-            meanRate = new Vector3D(1.0 / sample.size(), sum);
-        }
-        Rotation bias = Rotation.IDENTITY;
+        // set up a linear model canceling mean rotation rate
+        final Vector3D meanRate = meanRate(sample, filter != RRASampleFilter.SAMPLE_R);
 
         boolean restart = true;
+        Rotation bias   = Rotation.IDENTITY;
         for (int i = 0; restart && i < sample.size() + 2; ++i) {
 
             // offset adaptation parameters
@@ -450,6 +427,42 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         // this should never happen
         throw OrekitException.createInternalError(null);
 
+    }
+
+    /** Get mean rotation rate from a sample.
+     * @param sample sample points
+     * @param useSampledRate if true the rate from the samples are used (and
+     * averaged), otherwise only rotations are used, rates being ignored
+     * @return mean rotation rate over the sample
+     * @exception OrekitException if the number of point is too small for extracting mean rate
+     */
+    private static Vector3D meanRate(final Collection<Pair<AbsoluteDate, AngularCoordinates>> sample,
+                                     final boolean useSampledRate)
+        throws OrekitException {
+        // set up a linear offset model canceling mean rotation rate
+        if (useSampledRate) {
+            Vector3D sum = Vector3D.ZERO;
+            for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
+                sum = sum.add(datedAC.getValue().getRotationRate());
+            }
+            return new Vector3D(1.0 / sample.size(), sum);
+        } else {
+            if (sample.size() < 2) {
+                throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                                          sample.size());
+            }
+            Vector3D sum = Vector3D.ZERO;
+            Pair<AbsoluteDate, AngularCoordinates> previous = null;
+            for (final Pair<AbsoluteDate, AngularCoordinates> datedAC : sample) {
+                if (previous != null) {
+                    sum = sum.add(estimateRate(previous.getValue().getRotation(),
+                                               datedAC.getValue().getRotation(),
+                                               datedAC.getKey().durationFrom(previous.getKey().getDate())));
+                }
+                previous = datedAC;
+            }
+            return new Vector3D(1.0 / (sample.size() - 1), sum);
+        }
     }
 
     /** Convert rotation, rate and acceleration to modified Rodrigues vector and derivatives.

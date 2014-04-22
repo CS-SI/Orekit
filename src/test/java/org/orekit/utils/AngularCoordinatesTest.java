@@ -17,6 +17,7 @@
 package org.orekit.utils;
 
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -202,11 +203,8 @@ public class AngularCoordinatesTest {
             Vector3D rotationRate         = randomVector(random, 0.01);
             Vector3D rotationAcceleration = randomVector(random, 0.01);
             AngularCoordinates ac         = new AngularCoordinates(rotation, rotationRate, rotationAcceleration);
-            double dt                     = 10.0 * random.nextDouble();
-            double[] rodrigues            = (double[]) getter.invoke(null, ac, offsetRotation, offsetRate, dt, -0.9999);
-            AngularCoordinates rebuilt = (AngularCoordinates) factory.invoke(null, rodrigues,
-                                                                             offsetRotation,
-                                                                             offsetRate);
+            double[] rodrigues            = (double[]) getter.invoke(null, ac, offsetRotation, offsetRate, 0.0, -0.9999);
+            AngularCoordinates rebuilt    = ((AngularCoordinates) factory.invoke(null, rodrigues, offsetRotation, offsetRate));
             Assert.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 2.0e-15);
             Assert.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 2.0e-17);
             Assert.assertEquals(0.0, Vector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()), 7.0e-18);
@@ -289,6 +287,8 @@ public class AngularCoordinatesTest {
                     doubleRotation(theta0, thetaDot, phi0, phiDot, dt)));
         }
 
+        try {
+        java.io.PrintStream out = new java.io.PrintStream("/home/luc/x.dat");
         for (double dt = 0; dt < 10; dt += 0.01) {
             AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt),
                                                                              RRASampleFilter.SAMPLE_RRA,
@@ -297,13 +297,17 @@ public class AngularCoordinatesTest {
             Vector3D rate         = interpolated.getRotationRate();
             Vector3D acceleration = interpolated.getRotationAcceleration();
             AngularCoordinates reference = doubleRotation(theta0, thetaDot, phi0, phiDot, dt);
-            System.out.println(dt + " " +
+            out.println(dt + " " +
                     (Rotation.distance(reference.getRotation(), r) / reference.getRotation().getAngle()) + " " +
                     (Vector3D.distance(reference.getRotationRate(), rate) / reference.getRotationRate().getNorm())+ " " +
                     (Vector3D.distance(reference.getRotationAcceleration(), acceleration) / reference.getRotationAcceleration().getNorm()));
 //            Assert.assertEquals(0.0, Rotation.distance(reference.getRotation(), r), 1.2e-15);
 //            Assert.assertEquals(0.0, Vector3D.distance(reference.getRotationRate(), rate), 4.0e-15);
 //            Assert.assertEquals(0.0, Vector3D.distance(reference.getRotationAcceleration(), acceleration), 3.0e-14);
+        }
+        out.close();
+        } catch (IOException ioe) {
+            Assert.fail(ioe.getLocalizedMessage());
         }
 
     }
