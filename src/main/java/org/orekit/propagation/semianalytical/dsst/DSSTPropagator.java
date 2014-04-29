@@ -309,7 +309,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         }
 
         // if required, insert the special short periodics step handler
-        if (meanOnly) {
+        if (!meanOnly) {
             final InterpolationGrid grid = new VariableStepInterpolationGrid(INTERPOLATION_POINTS_PER_STEP);
             final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(grid);
             final Collection<StepHandler> stepHandlers = new ArrayList<StepHandler>();
