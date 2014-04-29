@@ -62,9 +62,10 @@ public interface DSSTForceModel {
      *  This method aims at being called at the very beginning of a propagation.
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
+     *  @param meanOnly only mean elements are used during the propagation
      *  @throws OrekitException if some specific error occurs
      */
-    void initialize(AuxiliaryElements aux)
+    void initialize(AuxiliaryElements aux, boolean meanOnly)
         throws OrekitException;
 
     /** Performs initialization at each integration step for the current force model.

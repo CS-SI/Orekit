@@ -145,7 +145,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public void initialize(final AuxiliaryElements aux)
+    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
         // Nothing to do for gaussian contributions at the beginning of the propagation.
     }

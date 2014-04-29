@@ -196,26 +196,34 @@ class ZonalContribution implements DSSTForceModel {
      *  terms bigger than a defined tolerance.
      *  </p>
      *  @param aux auxiliary elements related to the current orbit
+     *  @param meanOnly only mean elements will be used during the propagation
      *  @throws OrekitException if some specific error occurs
      */
-    public void initialize(final AuxiliaryElements aux)
+    public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
         computeMeanElementsTruncations(aux);
-        computeShortPeriodicsTruncations();
 
-        maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+        if (!meanOnly) {
+            computeShortPeriodicsTruncations();
+            maxEccPow = FastMath.max(maxEccPowMeanElements, maxEccPowShortPeriodics);
+        }
+        else {
+            maxEccPow = maxEccPowMeanElements;
+        }
 
-        //Initialise the HansenCoefficient generator
+        //Initialize the HansenCoefficient generator
         this.hansenObjects = new HansenZonalLinear[maxEccPow + 1];
 
         for (int s = 0; s <= maxEccPow; s++) {
             this.hansenObjects[s] = new HansenZonalLinear(maxDegree, s);
         }
 
-        //Initialise the Zonal Short Periodics coefficient class
-        zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics,
-                maxEccPowShortPeriodics, INTERPOLATION_POINTS);
+        if (!meanOnly) {
+            //Initialize the Zonal Short Periodics coefficient class
+            zonalSPCoefs = new ZonalShortPeriodicCoefficients(maxDegreeShortPeriodics,
+                    maxEccPowShortPeriodics, INTERPOLATION_POINTS);
+        }
     }
 
     /** Compute indices truncations for mean elements computations.
@@ -402,7 +410,7 @@ class ZonalContribution implements DSSTForceModel {
         final int maxJ = 2 * maxDegree + 1;
 
         // Compute the center
-        final double center =  computeCenter(L, maxJ, date);
+        final double center = computeCenter(L, maxJ, date);
 
         // Initialize short periodic variations
         final double[] shortPeriodicVariation = new double[6];
@@ -1164,7 +1172,7 @@ class ZonalContribution implements DSSTForceModel {
      *  Those coefficients are given in Danielson paper by expressions 4.1-(13) to 4.1.-(16b)
      *  </p>
      */
-    public class FourierCjSjCoefficients {
+    private class FourierCjSjCoefficients {
 
         /** The G<sub>js</sub>, H<sub>js</sub>, I<sub>js</sub> and J<sub>js</sub> polynomials. */
         private final GHIJjsPolynomials ghijCoef;
@@ -1232,8 +1240,8 @@ class ZonalContribution implements DSSTForceModel {
             this.jMax = 2 * nMax - 1;
 
             // compute the common factors that depends on the mean elements
-            this.hXXX = 2 * h; //h * XXX;
-            this.kXXX = 2 * k; //k * XXX;
+            this.hXXX = h * XXX;
+            this.kXXX = k * XXX;
 
             this.cCoef = new double[7][jMax + 1];
             this.sCoef = new double[7][jMax + 1];

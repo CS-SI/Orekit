@@ -227,7 +227,7 @@ public class IntegratedEphemerisTest {
             public void initializeStep(AuxiliaryElements aux) {
             }
 
-            public void initialize(AuxiliaryElements aux) {
+            public void initialize(AuxiliaryElements aux, boolean meanOnly) {
             }
 
             public double[] getShortPeriodicVariations(AbsoluteDate date,

@@ -71,6 +71,9 @@ public class AuxiliaryElements {
     /** True longitude. */
     private final double lv;
 
+    /** Eccentric longitude. */
+    private final double le;
+
     /** Retrograde factor I.
      *  <p>
      *  DSST model needs equinoctial orbit as internal representation.
@@ -144,6 +147,7 @@ public class AuxiliaryElements {
         p   = orbit.getHy();
         lm  = MathUtils.normalizeAngle(orbit.getLM(), FastMath.PI);
         lv  = MathUtils.normalizeAngle(orbit.getLv(), FastMath.PI);
+        le  = MathUtils.normalizeAngle(orbit.getLE(), FastMath.PI);
 
         // Retrograde factor [Eq. 2.1.2-(2)]
         I = retrogradeFactor;
@@ -278,6 +282,13 @@ public class AuxiliaryElements {
      */
     public double getLv() {
         return lv;
+    }
+
+    /** Get the eccentric longitude.
+     * @return lf
+     */
+    public double getLf() {
+        return le;
     }
 
     /** Get the retrograde factor.

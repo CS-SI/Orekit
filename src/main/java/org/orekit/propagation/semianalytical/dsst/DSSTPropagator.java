@@ -300,13 +300,16 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // compute common auxiliary elements
         final AuxiliaryElements aux = new AuxiliaryElements(initialState.getOrbit(), I);
 
+        // check if only mean elements must be used
+        final boolean meanOnly = isMeanOrbit();
+
         // initialize all perturbing forces
         for (final DSSTForceModel force : mapper.getForceModels()) {
-            force.initialize(aux);
+            force.initialize(aux, meanOnly);
         }
 
         // if required, insert the special short periodics step handler
-        if (!isMeanOrbit()) {
+        if (meanOnly) {
             final InterpolationGrid grid = new VariableStepInterpolationGrid(INTERPOLATION_POINTS_PER_STEP);
             final ShortPeriodicsHandler spHandler = new ShortPeriodicsHandler(grid);
             final Collection<StepHandler> stepHandlers = new ArrayList<StepHandler>();
