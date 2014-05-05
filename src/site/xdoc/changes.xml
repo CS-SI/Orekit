@@ -23,6 +23,10 @@
     <release version="7.0" date="TBD"
              description="TBD">
       <action dev="evan" type="fix">
+        Add Ecliptic frame. Agrees with JPL ephemerides to within 0.5 arcsec.
+        Issue #166.
+      </action>
+      <action dev="evan" type="fix">
         Fix cache exception when propagating backwards with an interpolated
         gravity force model.
         Fixes issue #169.
