@@ -32,8 +32,8 @@ import org.orekit.time.AbsoluteDate;
  *  </p>
  *  <p>
  *  The propagator will call at the very beginning of a propagation the {@link
- *  #initialize(AuxiliaryElements)} method allowing preliminary computation such
- *  as truncation if needed.
+ *  #initialize(AuxiliaryElements, boolean)} method allowing preliminary computation
+ *  such as truncation if needed.
  *  </p>
  *  <p>
  *  Then the propagator will call at each step:
