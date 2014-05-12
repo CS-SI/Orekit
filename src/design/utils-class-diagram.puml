@@ -20,10 +20,11 @@
   skinparam ClassBackgroundColor  #F3EFEB/CCC9C5
   skinparam ClassArrowColor       #691616
   skinparam ClassBorderColor      #691616
-  skinparam ClassFontSize         11
   skinparam NoteBackgroundColor   #F3EFEB
   skinparam NoteBorderColor       #691616
   skinparam NoteFontColor         #691616
+  skinparam ClassFontSize         11
+  skinparam PackageFontSize       12
 
   package org.orekit #ECEBD8
 
