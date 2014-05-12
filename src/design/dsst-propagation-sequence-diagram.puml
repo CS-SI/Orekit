@@ -36,7 +36,8 @@
   end box
   participant DSSTPropagator
   participant Integrator
-  participant DifferentialEquations
+  participant MainStateEquations
+  participant StateMapper
   participant Orbit
   participant "DSST Force Model 1" as F1
   participant "DSST Force Model 2" as F2
@@ -44,47 +45,64 @@
   activate M
   M          -> DSSTPropagator : propagate
     activate DSSTPropagator
-    DSSTPropagator -> DifferentialEquations : create
-      activate DifferentialEquations
-      deactivate DifferentialEquations
+    DSSTPropagator -> MainStateEquations : create
+      activate MainStateEquations
+      deactivate MainStateEquations
+    DSSTPropagator -> StateMapper : create
+      activate StateMapper
+      deactivate StateMapper
     DSSTPropagator -> Integrator : integrate
       activate Integrator
-      Integrator -> DifferentialEquations : computeDerivatives
-        activate DifferentialEquations
-        DifferentialEquations -> Orbit : mapArrayToOrbit
-          activate Orbit
-          deactivate Orbit
-        DifferentialEquations -> F1 : getMeanElementRate
+      Integrator -> MainStateEquations : computeDerivatives
+        activate MainStateEquations
+        MainStateEquations -> StateMapper : mapArrayToOrbit(mean only)
+          activate StateMapper
+          StateMapper -> Orbit : create
+            activate Orbit
+            deactivate Orbit
+          deactivate StateMapper
+        MainStateEquations -> F1 : getMeanElementRate
           activate F1
           deactivate F1
-        DifferentialEquations -> F2 : getMeanElementRate
+        MainStateEquations -> F2 : getMeanElementRate
           activate F2
           deactivate F2
-        DifferentialEquations -> Orbit : addKeplerContribution
+        MainStateEquations -> Orbit : addKeplerContribution
           activate Orbit
           deactivate Orbit
-        deactivate DifferentialEquations
-      Integrator -> DifferentialEquations : computeDerivatives
-        activate DifferentialEquations
-        DifferentialEquations -> F1 : getMeanElementRate
+        MainStateEquations --> Integrator : state derivatives
+        deactivate MainStateEquations
+      Integrator -> MainStateEquations : computeDerivatives
+        activate MainStateEquations
+        MainStateEquations -> Orbit : mapArrayToOrbit(mean only)
+          activate Orbit
+          deactivate Orbit
+        MainStateEquations -> F1 : getMeanElementRate
           activate F1
           deactivate F1
-        DifferentialEquations -> F2 : getMeanElementRate
+        MainStateEquations -> F2 : getMeanElementRate
           activate F2
           deactivate F2
-        DifferentialEquations -> Orbit : addKeplerContribution
+        MainStateEquations -> Orbit : addKeplerContribution
           activate Orbit
           deactivate Orbit
-        DifferentialEquations --> Integrator : final mean state
-        deactivate DifferentialEquations
-      Integrator --> DSSTPropagator : final mean state
+        MainStateEquations --> Integrator : state derivatives
+        deactivate MainStateEquations
+      Integrator --> DSSTPropagator : mean state
       deactivate Integrator
-    DSSTPropagator -> F1 : getShortPeriodicVariations
-      activate F1
-      deactivate F1
-    DSSTPropagator -> F2 : getShortPeriodicVariations
-      activate F2
-      deactivate F2
+      DSSTPropagator -> StateMapper : mapArrayToOrbit(mean only or mean and short periodics)
+        activate StateMapper
+        StateMapper -> F1 : getShortPeriodicVariations
+          activate F1
+          deactivate F1
+        StateMapper -> F2 : getShortPeriodicVariations
+          activate F2
+          deactivate F2
+        StateMapper -> Orbit : create
+          activate Orbit
+          deactivate Orbit
+        StateMapper --> DSSTPropagator : complete state
+        deactivate StateMapper
     DSSTPropagator --> M : final state
     deactivate DSSTPropagator
   deactivate M

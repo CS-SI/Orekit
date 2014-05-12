@@ -94,22 +94,23 @@
          +void setInitialAdditionalState(String name, double[] addState)
        }
 
-       BoundedPropagator            <|.. IntegratedEphemeris
-       AbstractIntegratedPropagator o-down-> IntegratedEphemeris : creates
-       AbstractPropagator           <|-- AbstractIntegratedPropagator
+       BoundedPropagator <|.. IntegratedEphemeris
+       IntegratedEphemeris --|> AbstractAnalyticalPropagator
+       AbstractIntegratedPropagator o--> IntegratedEphemeris : creates
+       AbstractPropagator  <|-- AbstractIntegratedPropagator
 
      end package
 
      package semianalytical #ECEBD8
 
        package dsst #DDEBD8
-         AbstractIntegratedPropagator <|-right- DSSTPropagator
+         DSSTPropagator --|> AbstractIntegratedPropagator
        end package
 
      end package
 
      package numerical #ECEBD8
-       AbstractIntegratedPropagator <|-right- NumericalPropagator
+       NumericalPropagator --|> AbstractIntegratedPropagator
      end package
 
    end package
