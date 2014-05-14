@@ -83,10 +83,13 @@ public class VisibilityCheck {
             final TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
 
             // Event definition
-            final double maxcheck  = 1.;
-            final double elevation = FastMath.toRadians(5.);
+            final double maxcheck  = 60.0;
+            final double threshold =  0.001;
+            final double elevation = FastMath.toRadians(5.0);
             final EventDetector sta1Visi =
-                    new ElevationDetector(maxcheck, elevation, sta1Frame).withHandler(new VisibilityHandler());
+                    new ElevationDetector(maxcheck, threshold, sta1Frame).
+                    withConstantElevation(elevation).
+                    withHandler(new VisibilityHandler());
 
             // Add event to be detected
             kepler.addEventDetector(sta1Visi);

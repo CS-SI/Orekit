@@ -543,14 +543,18 @@ TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
   in the {{{../architecture/frames.html}frames section}}
   of the library architecture documentation.
 
-  An <EventDetector> is defined as a <VisibilityDetector> which is derived
-  from an <ElevationDetector> with the same specific parameters.
+  An <EventDetector> is defined as a <VisibilityDetector> an
+  <ElevationDetector> with constant limit elevation and a dedicated
+  handler.
 
 +---------------------
-double maxcheck  = 1.;
+double maxcheck  = 60.0;
+double threshold =  0.001;
 double elevation = FastMath.toRadians(5.);
-EventDetector sta1Visi = new ElevationDetector(maxcheck, elevation, sta1Frame).
-                         withHandler(new VisibilityHandler());
+EventDetector sta1Visi =
+  new ElevationDetector(maxcheck, threshold, sta1Frame).
+  withConstantElevation(elevation).
+  withHandler(new VisibilityHandler());
 +---------------------
 
   This <EventDetector> is added to the propagator:
@@ -607,9 +611,9 @@ private static class VisibilityHandler implements EventHandler<ElevationDetector
   We can see that the propagation stopped just after detecting the raising:
 
 +---------------------
- Visibility on station1 begins at 2004-01-01T23:30:36.500
- Visibility on station1 ends at 2004-01-01T23:44:05.255
- Final state : 845.2550594036229
+ Visibility on station1 begins at 2004-01-01T23:31:52.098
+ Visibility on station1 ends at 2004-01-01T23:42:48.850
+ Final state : 768.850266549196
 +---------------------
 
 ** Source code
