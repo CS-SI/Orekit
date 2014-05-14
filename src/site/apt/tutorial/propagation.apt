@@ -543,7 +543,7 @@ TopocentricFrame sta1Frame = new TopocentricFrame(earth, station1, "station1");
   in the {{{../architecture/frames.html}frames section}}
   of the library architecture documentation.
 
-  An <EventDetector> is defined as a <VisibilityDetector> an
+  An <EventDetector> is defined as a an
   <ElevationDetector> with constant limit elevation and a dedicated
   handler.
 
@@ -608,7 +608,7 @@ private static class VisibilityHandler implements EventHandler<ElevationDetector
 +---------------------
 
   The printed result is shown below.
-  We can see that the propagation stopped just after detecting the raising:
+  We can see that the propagation stopped just after detecting the setting:
 
 +---------------------
  Visibility on station1 begins at 2004-01-01T23:31:52.098
