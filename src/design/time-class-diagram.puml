@@ -25,8 +25,8 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit #ECEBD8
-  package time #DDEBD8
+  package org.orekit #ECEBD8 {
+  package time #DDEBD8 {
 
     interface TimeStamped {
       +AbsoluteDate getDate()
@@ -135,6 +135,6 @@
     TimeScale  <|-- TCBScale
     TimeScale  <|-- GMSTScale
 
-  end package
-  end package
+  }
+  }
 @enduml

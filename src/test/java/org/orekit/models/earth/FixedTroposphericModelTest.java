@@ -32,10 +32,10 @@ public class FixedTroposphericModelTest {
     @Test
     public void testModel() {
         // check with (artificial) test values from tropospheric-delay.txt
-        Assert.assertEquals(2.5d, model.calculatePathDelay(90d, 0d), epsilon);
+        Assert.assertEquals(2.6d, model.calculatePathDelay(90d, 0d), epsilon);
         Assert.assertEquals(20.8d, model.calculatePathDelay(0d, 0d), epsilon);
 
-        Assert.assertEquals(12.1d, model.calculatePathDelay(0d, 5000d), epsilon);
+        Assert.assertEquals(14.2d, model.calculatePathDelay(0d, 5000d), epsilon);
         Assert.assertEquals(2.5d, model.calculatePathDelay(90d, 5000d), epsilon);
 
         // interpolation between two elevation angles in the table
@@ -44,7 +44,7 @@ public class FixedTroposphericModelTest {
         Assert.assertTrue(Precision.compareTo(delay, 3.2d, epsilon) > 0);
 
         // sanity checks
-        Assert.assertEquals(12.1d, model.calculatePathDelay(-20d, 5000d), epsilon);
+        Assert.assertEquals(14.2d, model.calculatePathDelay(-20d, 5000d), epsilon);
         Assert.assertEquals(2.5d, model.calculatePathDelay(90d, 100000d), epsilon);
     }
 

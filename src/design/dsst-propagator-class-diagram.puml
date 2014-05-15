@@ -25,15 +25,15 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.apache.commons.math3.ode #DDEBD8
+  package org.apache.commons.math3.ode #DDEBD8 {
 
     interface FirstOrderIntegrator
 
-  end package
+  }
 
-  package org.orekit.propagation #DDEBD8
+  package org.orekit.propagation #DDEBD8 {
 
-    package semianalytical.dsst #ECEBD8
+    package semianalytical.dsst #ECEBD8 {
 
       class DSSTPropagator {
         +void setInitialState(SpacecraftState state)
@@ -45,7 +45,7 @@
 
       FirstOrderIntegrator <--* "1" DSSTPropagator
 
-      package forces #DDEBD8
+      package forces #DDEBD8 {
 
         class AuxiliaryElements
 
@@ -68,7 +68,7 @@
         DSSTCentralBody *--> ZonalContribution
         DSSTCentralBody *--> TesseralContribution
 
-        package utilities #ECEBD8
+        package utilities #ECEBD8 {
 
           ZonalContribution --> UpperBounds
           ZonalContribution --> CoefficientFactory
@@ -77,16 +77,16 @@
           DSSTThirdBody --> UpperBounds
           DSSTThirdBody --> CoefficientFactory
           
-        end package
+        }
 
-      end package
+      }
 
       DSSTPropagator "0..*" *--> DSSTForceModel
       DSSTPropagator --> AuxiliaryElements
 
-    end package
+    }
 
-  end package
+  }
 
 
 @enduml
