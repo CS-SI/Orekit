@@ -25,19 +25,19 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package frames #DDEBD8
+    package frames #DDEBD8 {
       class Frame
-    end package
+    }
 
-    package time #DDEBD8
+    package time #DDEBD8 {
       interface TimeStamped
       interface "TimeShiftable<T>" as TimeShiftable_T_
       interface "TimeInterpolable<T>" as TimeInterpolable_T_
-    end package
+    }
 
-    package attitude #DDEBD8
+    package attitude #DDEBD8 {
 
       class Attitude {
 	    +Vector3D estimateSpin
@@ -106,8 +106,8 @@
       AttitudeProvider             <|-- LofOffset
       AttitudeProvider             <|-- TabulatedProvider
 
-    end package
+    }
 
-  end package
+  }
 
 @enduml

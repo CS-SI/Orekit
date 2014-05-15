@@ -25,7 +25,7 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit.propagation #ECEBD8
+  package org.orekit.propagation #ECEBD8 {
 
     interface Propagator {
       +int getMode()
@@ -36,7 +36,7 @@
       +BoundedPropagator getGeneratedEphemeris()
     }
 
-    package sampling #DDEBD8
+    package sampling #DDEBD8 {
 
       interface OrekitStepHandler {
         +void init(SpacecraftState s0, AbsoluteDate t)
@@ -62,8 +62,8 @@
       OrekitStepInterpolator <-down- OrekitStepHandler : interpolator
       OrekitFixedStepHandler <-- Propagator : step handler
 
-    end package
+    }
 
-  end package
+  }
 
 @enduml

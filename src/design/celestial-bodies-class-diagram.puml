@@ -25,21 +25,21 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-  package data #DDEBD8
+  package data #DDEBD8 {
     interface DataLoader
-  end package
+  }
 
-  package frames #DDEBD8
+  package frames #DDEBD8 {
     class Frame
-  end package
+  }
 
-  package utils #DDEBD8
+  package utils #DDEBD8 {
     interface PVCoordinatesProvider
-  end package
+  }
 
-  package bodies #DDEBD8
+  package bodies #DDEBD8 {
     interface CelestialBody {
       +Frame getFrame()
       +Frame getInertiallyOrientedFrame()
@@ -93,8 +93,8 @@
     AbstractCelestialBody "1" *--> IAUPole
     AbstractCelestialBody <-left- JPLEphemeridesLoader : creates
 
-  end package
+  }
 
-end package
+}
 
 @enduml

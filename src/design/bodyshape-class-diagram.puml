@@ -25,8 +25,8 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit #ECEBD8
-    package bodies #DDEBD8
+  package org.orekit #ECEBD8 {
+    package bodies #DDEBD8 {
 
     class GeodeticPoint {
       +double getLatitude()
@@ -51,7 +51,7 @@
     BodyShape <|-- OneAxisEllipsoid
     BodyShape --> GeodeticPoint
 
-  end package
-  end package
+  }
+  }
 
 @enduml

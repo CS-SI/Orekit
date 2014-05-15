@@ -25,15 +25,15 @@
   skinparam NoteFontColor         #691616
   skinparam ClassFontSize         11
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package time #DDEBD8
+    package time #DDEBD8 {
       interface TimeStamped
       interface "TimeShiftable<T>" as TimeShiftable_T_
       interface "TimeInterpolable<T>" as TimeInterpolable_T_
-    end package
+    }
 
-    package frames #DDEBD8
+    package frames #DDEBD8 {
 
     class Frame {
       +String getName()
@@ -114,21 +114,21 @@
     MODProvider            --|> TransformProvider
     DummyProvider          --|> TransformProvider
 
-  end package
+  }
 
   TimeStamped         <|-- Transform
   TimeShiftable_T_    <|-- Transform
   TimeInterpolable_T_ <|-- Transform
 
-    package utils #DDEBD8
+    package utils #DDEBD8 {
       enum IERSConventions {
         +IERS_1996
         +IERS_2003
         +IERS_2010
       }
       FramesFactory --> IERSConventions
-    end package
+    }
 
-  end package
+  }
 
 @enduml
