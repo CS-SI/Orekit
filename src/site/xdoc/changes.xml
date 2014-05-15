@@ -22,9 +22,32 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" >
+        Updated dependency to Apache Commons Math 3.3.
+      </action>
       <action dev="luc" type="add" >
         Added a GeographicZoneDetector event detector for complex geographic zones traversal.
         Fixes issue #163.
+      </action>
+      <action dev="evan" type="fix">
+        Add Ecliptic frame. Agrees with JPL ephemerides to within 0.5 arcsec.
+        Issue #166.
+      </action>
+      <action dev="evan" type="fix">
+        Fix cache exception when propagating backwards with an interpolated
+        gravity force model.
+        Fixes issue #169.
+      </action>
+      <action dev="luc" type="fix">
+        Fixed parsing of dates very far in the future.
+        Fixes issue #171.
+      </action>
+      <action dev="luc" type="fix">
+        Trigger an exception when attempting to interpolate attitudes without rotation rate
+        using only one data point.
+      </action>
+      <action dev="evan" type="fix">
+        Fixed SpacecraftState date mismatch exception with some attitude providers.
       </action>
       <action dev="luc" type="fix" >
         Fixed wrong scaling in JPL ephemeris when retrieving coordinates in a frame

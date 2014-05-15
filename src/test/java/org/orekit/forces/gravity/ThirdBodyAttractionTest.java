@@ -160,7 +160,7 @@ public class ThirdBodyAttractionTest extends AbstractForceModelTest {
         final CelestialBody moon = CelestialBodyFactory.getMoon();
         final ThirdBodyAttraction forceModel = new ThirdBodyAttraction(moon);
         final String name = moon.getName() + ThirdBodyAttraction.ATTRACTION_COEFFICIENT_SUFFIX;
-        checkParameterDerivative(state, forceModel, name, 1.0, 4.0e-15);
+        checkParameterDerivative(state, forceModel, name, 1.0, 7.0e-15);
 
     }
 

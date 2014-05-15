@@ -31,6 +31,7 @@ import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeScalesFactory;
 
@@ -269,7 +270,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationSimple() {
+    public void testInterpolationSimple() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
@@ -294,7 +295,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationRotationOnly() {
+    public void testInterpolationRotationOnly() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
         double omega  = 0.5 * FastMath.PI;
@@ -318,7 +319,29 @@ public class AngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationGTODIssue() {
+    public void testInterpolationTooSmallSample() throws OrekitException {
+        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
+        double alpha0 = 0.5 * FastMath.PI;
+        double omega  = 0.5 * FastMath.PI;
+        AngularCoordinates reference = new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
+                                                              new Vector3D(omega, Vector3D.MINUS_K));
+
+        List<Pair<AbsoluteDate, AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
+        Rotation r = reference.shiftedBy(0.2).getRotation();
+        sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(0.2), new AngularCoordinates(r, Vector3D.ZERO)));
+
+        try {
+            AngularCoordinates.interpolate(date.shiftedBy(0.3), false, sample);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oe.getSpecifier());
+            Assert.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
+        }
+
+    }
+
+    @Test
+    public void testInterpolationGTODIssue() throws OrekitException {
         AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
         double[][] params = new double[][] {
             { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },

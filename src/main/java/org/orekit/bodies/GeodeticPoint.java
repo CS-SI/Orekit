@@ -63,14 +63,11 @@ public class GeodeticPoint implements Serializable {
 
     /**
      * Build a new instance. The angular coordinates will be normalized so that
-     * the latitude is between &pm;&pi;/2 and the longitude is between &pm;&pi;.
+     * the latitude is between ±π/2 and the longitude is between ±π.
      *
-     * @param latitude
-     *            of the point
-     * @param longitude
-     *            longitude of the point
-     * @param altitude
-     *            altitude of the point
+     * @param latitude latitude of the point
+     * @param longitude longitude of the point
+     * @param altitude altitude of the point
      */
     public GeodeticPoint(final double latitude, final double longitude,
                          final double altitude) {
@@ -82,20 +79,20 @@ public class GeodeticPoint implements Serializable {
             lon = MathUtils.normalizeAngle(longitude + FastMath.PI, 0);
 
         }
-        this.latitude = lat;
+        this.latitude  = lat;
         this.longitude = lon;
         this.altitude  = altitude;
     }
 
     /** Get the latitude.
-     * @return latitude, an angular value in the range [-&pi;/2, &pi;/2]
+     * @return latitude, an angular value in the range [-π/2, π/2]
      */
     public double getLatitude() {
         return latitude;
     }
 
     /** Get the longitude.
-     * @return longitude, an angular value in the range [-&pi;, &pi;]
+     * @return longitude, an angular value in the range [-π, π]
      */
     public double getLongitude() {
         return longitude;

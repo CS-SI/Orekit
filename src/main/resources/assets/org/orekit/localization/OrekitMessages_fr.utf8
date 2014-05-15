@@ -349,6 +349,9 @@ SP3_UNSUPPORTED_TIMESYSTEM = version de système temporel {0} non prise en compt
 # unexpected end of file in sp3 file (after line {0})
 SP3_UNEXPECTED_END_OF_FILE = fin inattendue d''un fichier sp3 (après la ligne {0})
 
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = données insuffisnates pour réaliser une interpolation (taille de l''échantillon : {0})
+
 # too small number of cached neighbors: {0} (must be at least {1})
 NOT_ENOUGH_CACHED_NEIGHBORS =  nombre de voisins en cache trop petit : {0} (il faut au moins {1} voisins)
 
@@ -366,12 +369,6 @@ UNABLE_TO_GENERATE_NEW_DATA_BEFORE = impossible de générer des donnée avant l
 
 # unable to generate new data after {0}
 UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des donnée après le {0}
-
-# abscissa {0} is duplicated
-DUPLICATED_ABSCISSA = l''abscisse {0} est dupliquée
-
-# sample for interpolation is empty
-EMPTY_INTERPOLATION_SAMPLE = échantillon d''interpolation vide
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
