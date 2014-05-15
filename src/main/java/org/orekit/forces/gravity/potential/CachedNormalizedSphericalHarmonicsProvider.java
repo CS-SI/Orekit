@@ -19,6 +19,7 @@ package org.orekit.forces.gravity.potential;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
@@ -196,6 +197,8 @@ public class CachedNormalizedSphericalHarmonicsProvider implements NormalizedSph
                             fillArray(rawProvider.onDate(t), cnmsnm);
                             generated.add(new TimeStampedSphericalHarmonics(t, cnmsnm));
                         } while (t.compareTo(date) >= 0);
+                        // ensure forward chronological order
+                        Collections.reverse(generated);
                     }
 
                 }

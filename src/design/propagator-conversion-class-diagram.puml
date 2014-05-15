@@ -26,7 +26,7 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.apache.commons.math3.ode #ECEBD8
+  package org.apache.commons.math3.ode #ECEBD8 {
 
     interface Parameterizable {
       +Collection<String> getParametersNames()
@@ -40,9 +40,9 @@
     
     Parameterizable <|.. ParameterizedODE
 
-  end package
+  }
 
-  package org.orekit.propagation.conversion #DDEBD8
+  package org.orekit.propagation.conversion #DDEBD8 {
 
     interface PropagatorBuilder {
       +Propagator buildPropagator(AbsoluteDate date, double[] parameters)
@@ -98,7 +98,7 @@
 
     NumericalPropagatorBuilder "1" *--> IntegratorBuilder
 
-  end package
+  }
 
 
 @enduml

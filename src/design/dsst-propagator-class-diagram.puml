@@ -26,17 +26,17 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.apache.commons.math3.ode #DDEBD8
+  package org.apache.commons.math3.ode #DDEBD8 {
 
     interface FirstOrderIntegrator
 
-  end package
+  }
 
-  package org.orekit.forces #DDEBD8
+  package org.orekit.forces #DDEBD8 {
     class ForceModel
-  end package
+  }
 
-  package org.orekit.propagation.semianalytical.dsst #DDEBD8
+  package org.orekit.propagation.semianalytical.dsst #DDEBD8 {
 
     class DSSTPropagator {
       +void setInitialState(SpacecraftState state)
@@ -48,7 +48,7 @@
 
     FirstOrderIntegrator <--* "1" DSSTPropagator
 
-    package forces #ECEBD8
+    package forces #ECEBD8 {
 
       class AuxiliaryElements
 
@@ -73,12 +73,12 @@
       DSSTCentralBody *--> ZonalContribution
       DSSTCentralBody *--> TesseralContribution
 
-    end package
+    }
 
     DSSTPropagator "0..*" *--> DSSTForceModel
     DSSTPropagator --> AuxiliaryElements
 
-  end package
+  }
 
 
 @enduml

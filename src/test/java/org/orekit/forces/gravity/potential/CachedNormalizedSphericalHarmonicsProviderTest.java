@@ -71,6 +71,28 @@ public class CachedNormalizedSphericalHarmonicsProviderTest {
         }
     }
 
+    @Test
+    public void testReverseEntryGeneration() throws OrekitException {
+        //setup
+        //generate points on grid with date as the origin
+        cache.onDate(date);
+        //sample before the current cached values
+        AbsoluteDate sampleDate = date.shiftedBy(-step * 3);
+        NormalizedSphericalHarmonics expected = raw.onDate(sampleDate);
+
+        //action
+        NormalizedSphericalHarmonics actual = cache.onDate(sampleDate);
+
+        //verify
+        double tol = Precision.EPSILON;
+        for (int n = 0; n < raw.getMaxDegree(); n++) {
+            for (int m = 0; m < n; m++) {
+                Assert.assertEquals(expected.getNormalizedCnm(n,m), actual.getNormalizedCnm(n,m), tol);
+                Assert.assertEquals(expected.getNormalizedSnm(n,m), actual.getNormalizedSnm(n,m), tol);
+            }
+        }
+    }
+
     private static class QuadraticProvider implements NormalizedSphericalHarmonicsProvider {
 
         private final AbsoluteDate date;

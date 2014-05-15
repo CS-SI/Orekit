@@ -26,9 +26,9 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package time #DDEBD8
+    package time #DDEBD8 {
       interface TimeStamped {
         +AbsoluteDate getDate()
       }
@@ -38,9 +38,9 @@
       interface "TimeInterpolable<T>" as TimeInterpolable_T_ {
         +T interpolate(AbsoluteDate date, Collection<T> sample)
       }
-    end package
+    }
 
-    package utils #DDEBD8
+    package utils #DDEBD8 {
 
       interface "TimeStampedCache<T extends TimeStamped>" as TimeStamptedCache_T_ {
         +List<T> getNeighbours(AbsoluteDate central)
@@ -94,30 +94,30 @@
         +IERS_2010
       }
 
-    end package
+    }
 
-    package frames #DDEBD8
+    package frames #DDEBD8 {
       class SpacecraftFrame
       class TopocentricFrame
       PVCoordinatesProvider <|-- SpacecraftFrame
       PVCoordinatesProvider <|-- TopocentricFrame
-   end package
+   }
 
-    package orbits #DDEBD8
+    package orbits #DDEBD8 {
       abstract class Orbit
       PVCoordinatesProvider <|.. Orbit
-    end package
+    }
 
-    package propagation #DDEBD8
+    package propagation #DDEBD8 {
       interface Propagator
       PVCoordinatesProvider <|.. Propagator
-    end package
+    }
 
-    package bodies #DDEBD8
+    package bodies #DDEBD8 {
       class CelestialBody
       PVCoordinatesProvider <|.. CelestialBody
-    end package
+    }
 
- end package
+ }
 
 @enduml

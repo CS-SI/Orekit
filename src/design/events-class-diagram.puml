@@ -26,11 +26,11 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit.propagation #ECEBD8
+  package org.orekit.propagation #ECEBD8 {
 
-    package events #DDEBD8
+    package events #DDEBD8 {
 
-      package handlers #CEEBD8
+      package handlers #CEEBD8 {
 
         interface "EventHandler<T extends EventDetector>" as EventHandler_T_ {
           +Action eventOccurred(SpacecraftState s, T detector, boolean increasing)
@@ -49,7 +49,7 @@
         StopOnDecreasingEvent --|> EventHandler_T_
         StopOnIncreasingEvent --|> EventHandler_T_
 
-      end package
+      }
 
       class EventsLogger
 
@@ -110,7 +110,7 @@
 
       EventHandler_T_ "1" <--o AbstractReconfigurableDetector_T_ : handler
 
-    end package
+    }
 
     interface Propagator {
       +void addEventDetector(EventDetector detector)
@@ -119,6 +119,6 @@
     }
     EventDetector "*" <--o "1" Propagator : detectors
 
-  end package
+  }
 
 @enduml

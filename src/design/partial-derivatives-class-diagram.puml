@@ -26,9 +26,9 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package forces #DDEBD8
+    package forces #DDEBD8 {
 
       interface ForceModel {
         +void addContribution()
@@ -36,19 +36,19 @@
         +EventDetector[] getEventsDetectors()
       }
 
-      package complex #DDDBD8
+      package complex #DDDBD8 {
         class ComplexForceModel
         ForceModel <|.. ComplexForceModel
-      end package
+      }
 
-      package radiation #DDDBD8
+      package radiation #DDDBD8 {
         class SolarRadiationPressure
         ForceModel <|.. SolarRadiationPressure
-      end package
+      }
 
-    end package
+    }
  
-    package propagation #DDEBD8
+    package propagation #DDEBD8 {
 
       interface Propagator {
         + SpacecraftState propagate(AbsoluteDate target)
@@ -56,7 +56,7 @@
 
       Propagator <|.. AbstractPropagator
 
-      package integration #DDDBD8
+      package integration #DDDBD8 {
         interface AdditionalEquations {
           +String getName()
           +void computeDerivatives()
@@ -66,9 +66,9 @@
         }
         AbstractPropagator <|-- AbstractIntegratedPropagator
         AdditionalEquations <---o AbstractIntegratedPropagator : additional
-      end package
+      }
 
-      package numerical #DDDBD8
+      package numerical #DDDBD8 {
 
         interface TimeDerivativesEquations {
           +void addKeplerContribution()
@@ -97,9 +97,9 @@
 
        Jacobianizer                  "1" <-->  "1" ComplexForceModel
 
-      end package
-    end package
+      }
+    }
 
-  end package
+  }
 
 @enduml

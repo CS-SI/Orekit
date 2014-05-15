@@ -26,32 +26,32 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package attitude #DDEBD8
-    end package
-    package bodies #DDEBD8
-    end package
-    package data #DDEBD8
-    end package
-    package errors #DDEBD8
-    end package
-    package files #DDEBD8
-    end package
-    package forces #DDEBD8
-    end package
-    package frames #DDEBD8
-    end package
-    package orbits #DDEBD8
-    end package
-    package propagation #DDEBD8
-    end package
-    package time #DDEBD8
-    end package
-    package utils #DDEBD8
-    end package
-    package models #DDEBD8
-    end package
+    package attitude #DDEBD8 {
+    }
+    package bodies #DDEBD8 {
+    }
+    package data #DDEBD8 {
+    }
+    package errors #DDEBD8 {
+    }
+    package files #DDEBD8 {
+    }
+    package forces #DDEBD8 {
+    }
+    package frames #DDEBD8 {
+    }
+    package orbits #DDEBD8 {
+    }
+    package propagation #DDEBD8 {
+    }
+    package time #DDEBD8 {
+    }
+    package utils #DDEBD8 {
+    }
+    package models #DDEBD8 {
+    }
 
     propagation -->      attitude
     propagation -->      forces
@@ -77,6 +77,6 @@
       utils and time
     end note
 
-  end package
+  }
 
 @enduml

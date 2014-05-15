@@ -910,7 +910,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             if ((au < 1.4e11) || (au > 1.6e11)) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
-            if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 0.001) {
+            if (FastMath.abs(getLoadedAstronomicalUnit() - au) >= 10.0) {
                 throw new OrekitException(OrekitMessages.INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES,
                                           getLoadedAstronomicalUnit(), au);
             }
@@ -920,7 +920,7 @@ public class JPLEphemeridesLoader implements CelestialBodyLoader {
             if ((emRat < 80) || (emRat > 82)) {
                 throw new OrekitException(OrekitMessages.NOT_A_JPL_EPHEMERIDES_BINARY_FILE, name);
             }
-            if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-8) {
+            if (FastMath.abs(getLoadedEarthMoonMassRatio() - emRat) >= 1.0e-5) {
                 throw new OrekitException(OrekitMessages.INCONSISTENT_EARTH_MOON_RATIO_IN_FILES,
                                           getLoadedEarthMoonMassRatio(), emRat);
             }

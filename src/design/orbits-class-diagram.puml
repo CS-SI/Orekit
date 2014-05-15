@@ -26,15 +26,15 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package time #DDEBD8
+    package time #DDEBD8 {
       interface TimeStamped
       interface "TimeShiftable<T>" as TimeShiftable_T_
       interface "TimeInterpolable<T>" as TimeInterpolable_T_
-    end package
+    }
 
-    package orbit #DDEBD8
+    package orbit #DDEBD8 {
       class KeplerianOrbit
       class CircularOrbit
       class CartesianOrbit
@@ -76,9 +76,9 @@
       Orbit     <|--      CartesianOrbit
       Orbit     <|--      EquinoctialOrbit
 
-    end package
+    }
 
-  end package
+  }
 
   TimeStamped         <|.. Orbit
   TimeShiftable_T_    <|.. Orbit

@@ -26,8 +26,8 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit #ECEBD8
-  package time #DDEBD8
+  package org.orekit #ECEBD8 {
+  package time #DDEBD8 {
 
     interface TimeStamped {
       +AbsoluteDate getDate()
@@ -136,6 +136,6 @@
     TimeScale  <|-- TCBScale
     TimeScale  <|-- GMSTScale
 
-  end package
-  end package
+  }
+  }
 @enduml

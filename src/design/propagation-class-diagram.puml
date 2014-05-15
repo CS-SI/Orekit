@@ -26,18 +26,18 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package utils #DDEBD8
+    package utils #DDEBD8 {
 
       interface PVCoordinatesProvider {
         +PVCoordinates getPVCoordinates(AbsoluteDate date, Frame frame)
       }
 
-    end package
+    }
 
 
-    package time #DDEBD8
+    package time #DDEBD8 {
 
       interface TimeStamped {
         +AbsoluteDate getDate()
@@ -51,9 +51,9 @@
         +T interpolate(AbsoluteDate date, Collection<T> sample)
       }
 
-    end package
+    }
 
-    package propagation #DDEBD8
+    package propagation #DDEBD8 {
 
       class SpacecraftState {
         +Orbit getOrbit()
@@ -100,8 +100,8 @@
       TimeShiftable_T_      <|.right. SpacecraftState
       TimeInterpolable_T_   <|.right. SpacecraftState
 
-   end package
+   }
 
- end package
+ }
 
 @enduml

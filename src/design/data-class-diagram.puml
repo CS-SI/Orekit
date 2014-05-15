@@ -26,9 +26,9 @@
   skinparam ClassFontSize         11
   skinparam PackageFontSize       12
 
-  package org.orekit #ECEBD8
+  package org.orekit #ECEBD8 {
 
-    package data #DDEBD8
+    package data #DDEBD8 {
 
       interface DataProvider {
         +Pattern GZIP_FILE_PATTERN
@@ -75,25 +75,25 @@
       ZipJarCrawler    --|> DataProvider
       DataProvider --> DataLoader : feeds
 
-    end package
+    }
 
-    package time #DDEBD8
+    package time #DDEBD8 {
       DataLoader <|-- UTCTAIHistoryFilesLoader
-    end package
+    }
 
-    package frames #DDEBD8
+    package frames #DDEBD8 {
       interface EOPHistoryLoader
       DataLoader <|.. EOPHistoryLoader
-    end package
+    }
 
-    package various.other.packages #DDEBD8
+    package various.other.packages #DDEBD8 {
       class "...DataLoader" as DummyDataLoader
       DataLoader <|-- DummyDataLoader
-    end package
+    }
 
-  end package
+  }
 
-  package user.application #F3EDF7
+  package user.application #F3EDF7 {
     class MyProvider #EAE6F7/B9B3D2
     class DataBase   #EAE6F7/B9B3D2
     class Main       #EAE6F7/B9B3D2
@@ -101,6 +101,6 @@
     DataProvidersManager <-- Main : configures
     MyProvider <--* Main
     MyProvider *--> "1" DataBase
-  end package
+  }
 
 @enduml
