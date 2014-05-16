@@ -1,8 +1,7 @@
 package org.orekit.frames;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -108,7 +107,7 @@ public class EclipticFrameTest {
         //action + verify
         Assert.assertThat(
                 frame.getParent().getTransformProvider(),
-                (Matcher) CoreMatchers.isA(MODProvider.class));
+                IsInstanceOf.instanceOf(MODProvider.class));
     }
 
 }
