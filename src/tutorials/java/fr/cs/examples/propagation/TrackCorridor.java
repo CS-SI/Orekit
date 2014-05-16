@@ -283,9 +283,9 @@ public class TrackCorridor {
                 // compute left and right corridor points
                 Vector3D      nadir      = p.normalize().negate();
                 Vector3D      crossTrack = p.crossProduct(v).normalize();
-                Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack));
+                Line          leftLine   = new Line(p, new Vector3D(1.0, p, deltaR, nadir,  deltaC, crossTrack), 1.0e-10);
                 GeodeticPoint left       = earth.getIntersectionPoint(leftLine, p, earth.getBodyFrame(), date);
-                Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack));
+                Line          rightLine  = new Line(p, new Vector3D(1.0, p, deltaR, nadir, -deltaC, crossTrack), 1.0e-10);
                 GeodeticPoint right      = earth.getIntersectionPoint(rightLine, p, earth.getBodyFrame(), date);
 
                 // add the corridor points

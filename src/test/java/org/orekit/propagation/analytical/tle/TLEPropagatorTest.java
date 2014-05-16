@@ -174,7 +174,8 @@ public class TLEPropagatorTest {
                 // Line containing satellite point and following pointing direction
                 Line pointingLine = new Line(pvSatITRF.getPosition(),
                                              pvSatITRF.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                         zSatITRF));
+                                                                         zSatITRF),
+                                             1.0e-10);
 
                 double distance = pointingLine.distance(Vector3D.ZERO);
                 minDistance = FastMath.min(minDistance, distance);

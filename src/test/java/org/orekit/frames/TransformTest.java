@@ -403,7 +403,7 @@ public class TransformTest {
             for (int j = 0; j < 20; ++j) {
                 Vector3D p0 = randomVector(random);
                 Vector3D p1 = randomVector(random);
-                Line l = new Line(p0, p1);
+                Line l = new Line(p0, p1, 1.0e-10);
                 Line transformed = transform.transformLine(l);
                 for (int k = 0; k < 10; ++k) {
                     Vector3D p = l.pointAt(random.nextDouble() * 1.0e6);
