@@ -80,7 +80,7 @@ public class YawCompensation extends GroundPointingWrapper {
         final Vector3D surfacePointVelocity = Vector3D.crossProduct(bodySpin, surfacePointLocation);
         final Vector3D satVelocity = pvProv.getPVCoordinates(date, orbitFrame).getVelocity();
         final Vector3D satPosition = pvProv.getPVCoordinates(date, orbitFrame).getPosition();
-        final Plane sspPlane = new Plane(surfacePointLocation);
+        final Plane sspPlane = new Plane(surfacePointLocation, 1.0e-10);
         final Vector3D satVelocityHorizonal = sspPlane.toSpace(sspPlane.toSubSpace(satVelocity));
         final Vector3D satVelocityAtSurface = satVelocityHorizonal.scalarMultiply(surfacePointLocation.getNorm() / satPosition.getNorm());
 

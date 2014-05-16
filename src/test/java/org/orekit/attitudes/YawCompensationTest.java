@@ -106,7 +106,8 @@ public class YawCompensationTest {
         Vector3D satInert = circOrbit.getPVCoordinates().getPosition();
         Vector3D zInert   = att0.getRotation().applyInverseTo(Vector3D.PLUS_K);
         GeodeticPoint gp  = earthShape.getIntersectionPoint(new Line(satInert,
-                                                                     satInert.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zInert)),
+                                                                     satInert.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, zInert),
+                                                                     1.0e-10),
                                                             satInert,
                                                             inertFrame, circOrbit.getDate());
         Vector3D pEarth   = earthShape.transform(gp);
@@ -128,7 +129,7 @@ public class YawCompensationTest {
         // relative velocity
         Vector3D pSurfaceInertial = earthFrame.getTransformTo(inertFrame, circOrbit.getDate()).transformPosition(pEarth);
         Vector3D vSatInertial = circOrbit.getPVCoordinates().getVelocity();
-        Plane sspPlane = new Plane(pSurfaceInertial);
+        Plane sspPlane = new Plane(pSurfaceInertial, 1.0e-10);
         Vector3D satVelocityHorizonal = sspPlane.toSpace(sspPlane.toSubSpace(vSatInertial));
         Vector3D satVelocityAtSurface = satVelocityHorizonal.scalarMultiply(pSurfaceInertial.getNorm()/satInert.getNorm());
         Vector3D relativeVelocity = vSurfaceInertial.subtract(satVelocityAtSurface);

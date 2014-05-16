@@ -385,6 +385,12 @@ public class FramesFactory {
             return getGCRF();
         case ICRF :
             return getICRF();
+        case ECLIPTIC_CONVENTIONS_1996 :
+            return getEcliptic(IERSConventions.IERS_1996);
+        case ECLIPTIC_CONVENTIONS_2003 :
+            return getEcliptic(IERSConventions.IERS_2003);
+        case ECLIPTIC_CONVENTIONS_2010 :
+            return getEcliptic(IERSConventions.IERS_2010);
         case EME2000 :
             return getEME2000();
         case ITRF_2008_WITHOUT_TIDAL_EFFECTS :
@@ -524,6 +530,52 @@ public class FramesFactory {
      */
     public static Frame getICRF() throws OrekitException {
         return CelestialBodyFactory.getSolarSystemBarycenter().getInertiallyOrientedFrame();
+    }
+
+    /** Get the ecliptic frame.
+     * The IAU defines the ecliptic as "the plane perpendicular to the mean heliocentric
+     * orbital angular momentum vector of the Earth-Moon barycentre in the BCRS (IAU 2006
+     * Resolution B1)." The +z axis is aligned with the angular momentum vector, and the +x
+     * axis is aligned with +x axis of {@link FramesFactory#getMOD(IERSConventions) MOD}.
+     *
+     * <p> This implementation agrees with the JPL 406 ephemerides to within 0.5 arc seconds.
+     * @param conventions IERS conventions to apply
+     * @return the selected reference frame singleton.
+     * @exception OrekitException if data embedded in the library cannot be read
+     */
+    public static Frame getEcliptic(final IERSConventions conventions) throws OrekitException {
+        synchronized (FramesFactory.class) {
+
+            final Predefined factoryKey;
+            switch (conventions) {
+            case IERS_1996 :
+                factoryKey = Predefined.ECLIPTIC_CONVENTIONS_1996;
+                break;
+            case IERS_2003 :
+                factoryKey = Predefined.ECLIPTIC_CONVENTIONS_2003;
+                break;
+            case IERS_2010 :
+                factoryKey = Predefined.ECLIPTIC_CONVENTIONS_2010;
+                break;
+            default :
+                // this should never happen
+                throw OrekitException.createInternalError(null);
+            }
+            final Frame parent = getMOD(conventions);
+
+            // try to find an already built frame
+            FactoryManagedFrame frame = FRAMES.get(factoryKey);
+
+            if (frame == null) {
+                // it's the first time we need this frame, build it and store it
+                frame = new FactoryManagedFrame(parent, new EclipticProvider(conventions),
+                                                true, factoryKey);
+                FRAMES.put(factoryKey, frame);
+            }
+
+            return frame;
+
+        }
     }
 
     /** Get the unique EME2000 frame.

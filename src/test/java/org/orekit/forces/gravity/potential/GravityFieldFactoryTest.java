@@ -20,7 +20,7 @@ package org.orekit.forces.gravity.potential;
 import java.io.File;
 import java.util.Set;
 
-import org.apache.commons.math3.util.ArithmeticUtils;
+import org.apache.commons.math3.util.CombinatoricsUtils;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
@@ -98,8 +98,8 @@ public class GravityFieldFactoryTest {
             Assert.assertEquals(i + 1, factors[i].length);
             for (int j = 0; j <= i; ++j) {
                 double ref = FastMath.sqrt((2 * i + 1) *
-                                           ArithmeticUtils.factorialDouble(i - j) /
-                                           ArithmeticUtils.factorialDouble(i + j));
+                                           CombinatoricsUtils.factorialDouble(i - j) /
+                                           CombinatoricsUtils.factorialDouble(i + j));
                 if (j > 0) {
                     ref *= FastMath.sqrt(2);
                 }

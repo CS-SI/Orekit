@@ -140,6 +140,9 @@ Frames
   In summary, six frames are involved along this path: GCRF, EME2000, MOD, TOD, GTOD
   and equinox-based ITRF.
 
+  In addition to these frames, the ecliptic frame which is defined from the MOD by rotating
+  back to ecliptic plane is also available in Orekit.
+
   The so-called Veis 1950 belongs also to this path, it is defined from the GTOD by the
   application of a modified sidereal time.
   

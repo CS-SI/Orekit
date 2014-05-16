@@ -100,7 +100,8 @@ public class BodyCenterPointingTest {
        // Line containing satellite point and following pointing direction
         Line pointingLine = new Line(pvSatITRF2008C.getPosition(),
                                      pvSatITRF2008C.getPosition().add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                                                      zSatITRF2008C));
+                                                                      zSatITRF2008C),
+                                     1.0e-10);
 
         // Check that the line contains earth center (distance from line to point less than 1.e-8 m)
         double distance = pointingLine.distance(Vector3D.ZERO);

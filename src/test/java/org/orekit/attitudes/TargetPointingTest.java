@@ -249,7 +249,8 @@ public class TargetPointingTest {
         Vector3D p = eme2000ToItrf.transformPosition(pvSatEME2000.getPosition());
         Line pointingLine = new Line(p,
                                      p.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                           eme2000ToItrf.transformVector(zSatEME2000)));
+                                           eme2000ToItrf.transformVector(zSatEME2000)),
+                                     1.0e-10);
 
         // Check that the line contains earth center
         double distance = pointingLine.distance(earthShape.transform(geoTarget));
