@@ -23,16 +23,21 @@ import java.util.List;
 import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.optim.InitialGuess;
-import org.apache.commons.math3.optim.MaxEval;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem.Evaluation;
+import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
+import org.apache.commons.math3.fitting.leastsquares.MultivariateJacobianFunction;
+import org.apache.commons.math3.linear.DiagonalMatrix;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.optim.ConvergenceChecker;
 import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.optim.SimpleVectorValueChecker;
-import org.apache.commons.math3.optim.nonlinear.vector.ModelFunction;
-import org.apache.commons.math3.optim.nonlinear.vector.ModelFunctionJacobian;
-import org.apache.commons.math3.optim.nonlinear.vector.Target;
-import org.apache.commons.math3.optim.nonlinear.vector.Weight;
-import org.apache.commons.math3.optim.nonlinear.vector.jacobian.LevenbergMarquardtOptimizer;
 import org.apache.commons.math3.util.FastMath;
+import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.errors.OrekitMessages;
@@ -93,6 +98,12 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     /** Optimizer for fitting. */
     private final LevenbergMarquardtOptimizer optimizer;
 
+    /** Optimum found. */
+    private LeastSquaresOptimizer.Optimum optimum;
+
+    /** Convergence checker for optimization algorithm. */
+    private final ConvergenceChecker<Evaluation> checker;
+
     /** Maximum number of iterations for optimization. */
     private final int maxIterations;
 
@@ -107,9 +118,27 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         this.builder             = builder;
         this.frame               = builder.getFrame();
         this.availableParameters = builder.getParametersNames();
-        this.optimizer           = new LevenbergMarquardtOptimizer(new SimpleVectorValueChecker(-1.0, threshold));
+        this.optimizer           = new LevenbergMarquardtOptimizer();
         this.maxIterations       = maxIterations;
         this.sample              = new ArrayList<SpacecraftState>();
+
+        final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
+        this.checker = new ConvergenceChecker<Evaluation>() {
+            /** {@inheritDoc} */
+            public boolean converged(final int iteration,
+                                     final Evaluation previous,
+                                     final Evaluation current) {
+                return svvc.converged(iteration,
+                                      new PointVectorValuePair(previous.getPoint().toArray(),
+                                                               previous.getResiduals().toArray(),
+                                                               false),
+                                      new PointVectorValuePair(current.getPoint().toArray(),
+                                                               current.getResiduals().toArray(),
+                                                               false)
+                );
+            }
+        };
+
     }
 
     /** Convert a propagator to another.
@@ -234,7 +263,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
      *  @return the number of objective function evaluations.
      */
     public int getEvaluations() {
-        return optimizer.getEvaluations();
+        return optimum.getEvaluations();
     }
 
     /** Get the function computing position/velocity at sample points.
@@ -408,13 +437,28 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
     private double[] fit(final double[] initial)
         throws OrekitException, MaxCountExceededException {
 
-        final PointVectorValuePair optimum = optimizer.optimize(new MaxEval(maxIterations),
-                                                                new ModelFunction(getObjectiveFunction()),
-                                                                new ModelFunctionJacobian(getObjectiveFunctionJacobian()),
-                                                                new Target(target),
-                                                                new Weight(weight),
-                                                                new InitialGuess(initial));
-        return optimum.getPoint();
+        final MultivariateVectorFunction f = getObjectiveFunction();
+        final MultivariateMatrixFunction jac = getObjectiveFunctionJacobian();
+        final MultivariateJacobianFunction fJac = new MultivariateJacobianFunction() {
+            /** {@inheritDoc} */
+            @Override
+            public Pair<RealVector, RealMatrix> value(final RealVector point) {
+                final double[] p = point.toArray();
+                return new Pair<RealVector, RealMatrix>(MatrixUtils.createRealVector(f.value(p)),
+                        MatrixUtils.createRealMatrix(jac.value(p)));
+            }
+        };
+        final LeastSquaresProblem problem = new LeastSquaresBuilder().
+                                            maxIterations(maxIterations).
+                                            maxEvaluations(Integer.MAX_VALUE).
+                                            model(fJac).
+                                            target(target).
+                                            weight(new DiagonalMatrix(weight)).
+                                            start(initial).
+                                            checker(checker).
+                                            build();
+        optimum = optimizer.optimize(problem);
+        return optimum.getPoint().toArray();
     }
 
     /** Get the Root Mean Square Deviation for a given parameters set.

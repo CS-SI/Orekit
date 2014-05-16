@@ -28,6 +28,15 @@ public enum Predefined {
     /** ICRF frame.*/
     ICRF("ICRF"),
 
+    /** Ecliptic framen IERS 1996 conventions. */
+    ECLIPTIC_CONVENTIONS_1996("Ecliptic/1996"),
+
+    /** Ecliptic framen IERS 2003 conventions. */
+    ECLIPTIC_CONVENTIONS_2003("Ecliptic/2003"),
+
+    /** Ecliptic framen IERS 2010 conventions. */
+    ECLIPTIC_CONVENTIONS_2010("Ecliptic/2010"),
+
     /** EME2000 frame.*/
     EME2000("EME2000"),
 

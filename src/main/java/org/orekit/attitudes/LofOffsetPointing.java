@@ -94,7 +94,8 @@ public class LofOffsetPointing extends GroundPointing {
         // Line from satellite following pointing direction
         // we use arbitrarily the Earth radius as a scaling factor, it could be anything else
         final Line pointingLine = new Line(pBodyFrame,
-                                           pBodyFrame.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, pointingBodyFrame));
+                                           pBodyFrame.add(Constants.WGS84_EARTH_EQUATORIAL_RADIUS, pointingBodyFrame),
+                                           1.0e-10);
 
         // Intersection with body shape
         final GeodeticPoint gpIntersection =
