@@ -848,10 +848,17 @@ class ZonalContribution implements DSSTForceModel {
          */
         private void computeDiCoefficients(final AbsoluteDate date) throws OrekitException {
             final double[] meanElementRates = computeMeanElementRates(date);
+            final double [] currentDi = new double[6];
 
             // Add the coefficients to the interpolation grid
             for (int i = 0; i < 6; i++) {
-                di[i].addGridPoint(date, meanElementRates[i] / meanMotion);
+                currentDi[i] = meanElementRates[i] / meanMotion;
+
+                if (i == 5) {
+                    currentDi[i] += -1.5 * 2 * U * oon2a2;
+                }
+
+                di[i].addGridPoint(date, currentDi[i]);
             }
         }
 
@@ -990,14 +997,14 @@ class ZonalContribution implements DSSTForceModel {
                 // j between 3 and 2N + 1
                 if (isBetween(j, 3, 2 * nMax + 1)) {
                     final double coef1 = ( j - 2 ) * (hk * cjsj.getCj(j - 2) + k2mh2o2 * cjsj.getSj(j - 2));
-                    final double coef2 = ( j - 2 ) * (k2mh2o2 * cjsj.getCj(j - 2) + hk * cjsj.getSj(j - 2));
+                    final double coef2 = ( j - 2 ) * (-k2mh2o2 * cjsj.getCj(j - 2) + hk * cjsj.getSj(j - 2));
                     final double coef3 = ( j - 2 ) * (k * cjsj.getCj(j - 2) - h * cjsj.getSj(j - 2)) / 4;
                     final double coef4 = ( j - 2 ) * (h * cjsj.getCj(j - 2) + k * cjsj.getSj(j - 2)) / 4;
                     final double coef5 = ( j - 2 ) * (k2mh2o2 * cjsj.getCj(j - 2) - hk * cjsj.getSj(j - 2));
 
                     //Coefficients for a
                     currentCij[0] += coef1;
-                    currentSij[0] -= coef2;
+                    currentSij[0] += coef2;
 
                     //Coefficients for k
                     currentCij[1] += coef4;
@@ -1008,8 +1015,8 @@ class ZonalContribution implements DSSTForceModel {
                     currentSij[2] += coef4;
 
                     //Coefficients for &lamda;
-                    currentCij[5] += coef2 / 2;
-                    currentSij[5] += coef5 / 2;
+                    currentCij[5] += coef5 / 2;
+                    currentSij[5] += coef1 / 2;
                 }
 
                 //multiply by the common factor
