@@ -407,10 +407,10 @@ class ZonalContribution implements DSSTForceModel {
         final double L = meanOrbit.getLv();
 
         // Define maxJ
-        final int maxJ = 2 * maxDegree + 1;
+        final int maxJ = 2 * maxDegreeShortPeriodics + 1;
 
         // Compute the center
-        final double center = computeCenter(L, maxJ, date);
+        final double center = L - meanElements[5];
 
         // Initialize short periodic variations
         final double[] shortPeriodicVariation = new double[6];
@@ -604,27 +604,6 @@ class ZonalContribution implements DSSTForceModel {
     @Override
     public void registerAttitudeProvider(final AttitudeProvider attitudeProvider) {
         //nothing is done since this contribution is not sensitive to attitude
-    }
-
-    /** Compute the equation of the center (L-&lambda;) using the formula 2.5.3(2) from Danielson.
-     * @param L the true anomaly
-     * @param maxJ the maximum value for j
-     * @param date target date
-     * @return (L-&lambda;)
-     */
-    private double computeCenter(final double L, final int maxJ, final AbsoluteDate date) {
-        double lmld = 0.;
-        for (int j = 1; j <= maxJ; j++) {
-            // &sigma;<sub>j<sub> * cos(jL)
-            double term = zonalSPCoefs.getSigma(j, date) * FastMath.cos(j * L);
-            // -&rho;<sub>j<sub> * sin(jL)
-            term -= zonalSPCoefs.getRho(j, date) * FastMath.sin(j * L);
-            // 2 / j
-            term *= 2 / (double) j;
-            //add term to sum
-            lmld += term;
-        }
-        return lmld;
     }
 
     /** {@inheritDoc} */
