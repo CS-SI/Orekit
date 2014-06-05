@@ -182,7 +182,7 @@ class TesseralContribution implements DSSTForceModel {
     private double e2;
 
     /** Flag to take into account only M-dailies harmonic tesserals for short periodic perturbations.  */
-    private boolean mDailiesOnly;
+    private final boolean mDailiesOnly;
 
     /** Maximum value for j.
      * <p>
@@ -192,7 +192,7 @@ class TesseralContribution implements DSSTForceModel {
     private final int jMax;
 
     /** List of non resonant orders. */
-    private SortedMap<Integer, List<Integer> > nonResOrders;
+    private final SortedMap<Integer, List<Integer> > nonResOrders;
 
     /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
      * The indexes are s + maxDegree and j */
@@ -250,6 +250,7 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
@@ -352,6 +353,7 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
 
         // Equinoctial elements
@@ -414,6 +416,7 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
 
         // Compute potential derivatives
@@ -445,6 +448,7 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
                                                final double[] meanElements)
         throws OrekitException {
@@ -492,12 +496,20 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public EventDetector[] getEventsDetectors() {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
+
+        //Initialize if it has not been done before
+        if (tesseralSPCoefs == null) {
+            initialize(aux, false);
+        }
+
         // Initialize internal fields
         initializeStep(aux);
 
@@ -845,7 +857,9 @@ class TesseralContribution implements DSSTForceModel {
 
     @Override
     public void resetShortPeriodicsCoefficients() {
-        tesseralSPCoefs.resetCoefficients();
+        if (tesseralSPCoefs != null) {
+            tesseralSPCoefs.resetCoefficients();
+        }
     }
 
 
@@ -859,7 +873,7 @@ class TesseralContribution implements DSSTForceModel {
     public class FourierCjSjCoefficients {
 
         /** Absolute limit for j ( -jMax <= j <= jMax ).  */
-        private int jMax;
+        private final int jMax;
 
         /** The C<sub>i</sub><sup>jm</sup> coefficients.
          * <p>
@@ -1097,7 +1111,7 @@ class TesseralContribution implements DSSTForceModel {
          * - i=5 for &lambda; <br/>
          * </p>
          */
-        private ShortPeriodicsInterpolatedCoefficient[][][] cijm;
+        private final ShortPeriodicsInterpolatedCoefficient[][][] cijm;
 
         /** The coefficients S<sub>i</sub><sup>j</sup><sup>m</sup>.
          * <p>
@@ -1111,13 +1125,13 @@ class TesseralContribution implements DSSTForceModel {
          * - i=5 for &lambda; <br/>
          * </p>
          */
-        private ShortPeriodicsInterpolatedCoefficient[][][] sijm;
+        private final ShortPeriodicsInterpolatedCoefficient[][][] sijm;
 
         /** Absolute limit for j ( -jMax <= j <= jMax ).  */
-        private int jMax;
+        private final int jMax;
 
         /** Maximum value for m.  */
-        private int mMax;
+        private final int mMax;
 
         /** Constructor.
          * @param jMax absolute limit for j ( -jMax <= j <= jMax )

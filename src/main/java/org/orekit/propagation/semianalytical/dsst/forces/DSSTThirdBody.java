@@ -72,7 +72,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
     private final double[]         fact;
 
     /** V<sub>ns</sub> coefficients. */
-    private TreeMap<NSKey, Double> Vns;
+    private final TreeMap<NSKey, Double> Vns;
 
     /** Distance from center of mass of the central body to the 3rd body. */
     private double R3;
@@ -146,7 +146,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
     /** An array that contains the objects needed to build the Hansen coefficients. <br/>
      * The index is s */
-    private HansenThirdBodyLinear[] hansenObjects;
+    private final HansenThirdBodyLinear[] hansenObjects;
 
     /** Central body attraction coefficient. */
     private double mu;
@@ -218,6 +218,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
      *  @param meanOnly only mean elements will be used for the propagation
      *  @throws OrekitException if some specific error occurs
      */
+    @Override
     public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
@@ -301,6 +302,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
 
         // Equinoctial elements
@@ -360,6 +362,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] getMeanElementRate(final SpacecraftState currentState) throws OrekitException {
 
         // Qns coefficients
@@ -401,6 +404,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
                                                final double[] meanElements) throws OrekitException {
         // Build an Orbit object from the mean elements
@@ -435,12 +439,20 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
 
     /** {@inheritDoc} */
+    @Override
     public EventDetector[] getEventsDetectors() {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
+
+        // initialize if it has not been done before
+        if (cjsjCoeficients == null) {
+            initialize(aux, false);
+        }
+
         // initialize internal fields
         initializeStep(aux);
 
@@ -559,7 +571,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
     @Override
     public void resetShortPeriodicsCoefficients() {
-        cjsjCoeficients.resetCoefficients();
+        if (cjsjCoeficients != null) {
+            cjsjCoeficients.resetCoefficients();
+        }
     }
 
     /** Computes the C<sup>j</sup> and S<sup>j</sup> coefficients Danielson 4.2-(15,16)

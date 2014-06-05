@@ -199,6 +199,7 @@ class ZonalContribution implements DSSTForceModel {
      *  @param meanOnly only mean elements will be used during the propagation
      *  @throws OrekitException if some specific error occurs
      */
+    @Override
     public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
@@ -342,6 +343,7 @@ class ZonalContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeStep(final AuxiliaryElements aux) throws OrekitException {
 
         // Equinoctial elements
@@ -391,11 +393,13 @@ class ZonalContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] getMeanElementRate(final SpacecraftState spacecraftState) throws OrekitException {
         return computeMeanElementRates(spacecraftState.getDate());
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] getShortPeriodicVariations(final AbsoluteDate date,
             final double[] meanElements) throws OrekitException {
 
@@ -443,13 +447,19 @@ class ZonalContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public EventDetector[] getEventsDetectors() {
         return null;
     }
 
     /** {@inheritDoc} */
+    @Override
     public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
 
+        // initialise if the initialisation hasn't been done before
+        if (zonalSPCoefs == null) {
+            initialize(aux, false);
+        }
         // initialise the internal fields
         initializeStep(aux);
 
@@ -609,7 +619,9 @@ class ZonalContribution implements DSSTForceModel {
     /** {@inheritDoc} */
     @Override
     public void resetShortPeriodicsCoefficients() {
-        zonalSPCoefs.resetCoefficients();
+        if (zonalSPCoefs != null) {
+            zonalSPCoefs.resetCoefficients();
+        }
     }
 
     /** Check if an index is within the accepted interval.
@@ -651,7 +663,7 @@ class ZonalContribution implements DSSTForceModel {
          * - i=5 for &lambda; <br/>
          * </p>
          */
-        private ShortPeriodicsInterpolatedCoefficient[] di;
+        private final ShortPeriodicsInterpolatedCoefficient[] di;
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
@@ -665,7 +677,7 @@ class ZonalContribution implements DSSTForceModel {
          * - i=5 for &lambda; <br/>
          * </p>
          */
-        private ShortPeriodicsInterpolatedCoefficient[][] cij;
+        private final ShortPeriodicsInterpolatedCoefficient[][] cij;
 
         /** The coefficients S<sub>i</sub><sup>j</sup>.
          * <p>
@@ -679,13 +691,13 @@ class ZonalContribution implements DSSTForceModel {
          * - i=5 for &lambda; <br/>
          * </p>
          */
-        private ShortPeriodicsInterpolatedCoefficient[][] sij;
+        private final ShortPeriodicsInterpolatedCoefficient[][] sij;
 
         /** The coefficients &rho;<sub>j</sub>. */
-        private ShortPeriodicsInterpolatedCoefficient[] rhoj;
+        private final ShortPeriodicsInterpolatedCoefficient[] rhoj;
 
         /** The coefficients &sigma;<sub>j</sub>. */
-        private ShortPeriodicsInterpolatedCoefficient[] sigmaj;
+        private final ShortPeriodicsInterpolatedCoefficient[] sigmaj;
 
         /** N maximum. */
         private final int nMax;
@@ -1204,9 +1216,9 @@ class ZonalContribution implements DSSTForceModel {
         private final double[][] sCoef;
 
         /** h * &Chi;<sup>3</sup>. */
-        private double hXXX;
+        private final double hXXX;
         /** k * &Chi;<sup>3</sup>. */
-        private double kXXX;
+        private final double kXXX;
 
         /** Create a set of C<sup>j</sup> and the S<sup>j</sup> coefficients.
          *  @param aux The auxiliary elements
