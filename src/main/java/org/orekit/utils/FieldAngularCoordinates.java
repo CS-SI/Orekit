@@ -260,11 +260,19 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
             final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
 
             // add sample points
+            final double[] previous = new double[] {
+                1.0, 0.0, 0.0, 0.0
+            };
             if (useRotationRates) {
                 // populate sample with FieldRotation<T> and FieldRotation<T> rate data
                 for (final Pair<AbsoluteDate, FieldAngularCoordinates<T>> datedAC : sample) {
-                    final T[][] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
-                                                                 date, offset, threshold);
+
+                    // remove linear offset from the current coordinates
+                    final double dt = datedAC.getKey().durationFrom(date);
+                    final FieldAngularCoordinates<T> fixed = datedAC.getValue().subtractOffset(offset.shiftedBy(dt));
+
+                    final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
+
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -277,8 +285,13 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
             } else {
                 // populate sample with FieldRotation<T> data only, ignoring FieldRotation<T> rate
                 for (final Pair<AbsoluteDate, FieldAngularCoordinates<T>> datedAC : sample) {
-                    final T[][] rodrigues = getModifiedRodrigues(datedAC.getKey(), datedAC.getValue(),
-                                                                 date, offset, threshold);
+
+                    // remove linear offset from the current coordinates
+                    final double dt = datedAC.getKey().durationFrom(date);
+                    final FieldAngularCoordinates<T> fixed = datedAC.getValue().subtractOffset(offset.shiftedBy(dt));
+
+                    final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
+
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -314,39 +327,39 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * The modified Rodrigues vector is tan(&theta;/4) u where &theta; and u are the
      * rotation angle and axis respectively.
      * </p>
-     * @param date date of the angular coordinates
-     * @param ac coordinates to convert
-     * @param offsetDate date of the linear offset model to remove
-     * @param offset linear offset model to remove
+     * @param fixed coordinates to convert, with offset already fixed
+     * @param previous previous quaternion used
      * @param threshold threshold for rotations too close to 2&pi;
      * @param <T> the type of the field elements
      * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2&pi;
      */
-    private static <T extends RealFieldElement<T>> T[][] getModifiedRodrigues(final AbsoluteDate date, final FieldAngularCoordinates<T> ac,
-                                                                              final AbsoluteDate offsetDate, final FieldAngularCoordinates<T> offset,
-                                                                              final double threshold) {
+    private static <T extends RealFieldElement<T>> T[][] getModifiedRodrigues(final FieldAngularCoordinates<T> fixed,
+                                                                              final double[] previous, final double threshold) {
 
-        // remove linear offset from the current coordinates
-        final double dt = date.durationFrom(offsetDate);
-        final FieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt));
-
-        // check modified Rodrigues vector singularity
+        // make sure all interpolated points will be on the same branch
         T q0 = fixed.getRotation().getQ0();
         T q1 = fixed.getRotation().getQ1();
         T q2 = fixed.getRotation().getQ2();
         T q3 = fixed.getRotation().getQ3();
-        if (q0.getReal() < threshold && FastMath.abs(dt) * fixed.getRotationRate().getNorm().getReal() > 1.0e-3) {
-            // this is an intermediate point that happens to be 2PI away from reference
-            // we need to change the linear offset model to avoid this point
-            return null;
-        }
-
-        // make sure all interpolated points will be on the same branch
-        if (q0.getReal() < 0) {
+        if (MathArrays.linearCombination(q0.getReal(), previous[0],
+                                         q1.getReal(), previous[1],
+                                         q2.getReal(), previous[2],
+                                         q3.getReal(), previous[3]) < 0) {
             q0 = q0.negate();
             q1 = q1.negate();
             q2 = q2.negate();
             q3 = q3.negate();
+        }
+        previous[0] = q0.getReal();
+        previous[1] = q1.getReal();
+        previous[2] = q2.getReal();
+        previous[3] = q3.getReal();
+
+        // check modified Rodrigues vector singularity
+        if (q0.getReal() < threshold) {
+            // this is an intermediate point that happens to be 2PI away from reference
+            // we need to change the linear offset model to avoid this point
+            return null;
         }
 
         final T x  = fixed.getRotationRate().getX();

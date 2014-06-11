@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
+        Fixed wrong rotation interpolation for rotations near π.
+        Fixes issue #173.
+      </action>
       <action dev="luc" type="update" >
         Updated dependency to Apache Commons Math 3.3.
       </action>
