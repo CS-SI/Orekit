@@ -28,15 +28,16 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
+import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Transformation class in three dimensional space.
@@ -320,18 +321,14 @@ public class Transform
                                         final boolean useVelocities, final boolean useRotationRates,
                                         final Collection<Transform> sample)
         throws OrekitException {
-        final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
-        final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =
-                new ArrayList<Pair<AbsoluteDate, AngularCoordinates>>(sample.size());
-        for (final Transform transform : sample) {
-            datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(transform.getDate(),
-                    transform.getCartesian()));
-            datedAC.add(new Pair<AbsoluteDate, AngularCoordinates>(transform.getDate(),
-                    transform.getAngular()));
+        final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
+        final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
+        for (final Transform t : sample) {
+            datedPV.add(new TimeStampedPVCoordinates(t.getDate(), t.getTranslation(), t.getVelocity()));
+            datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getRotation(), t.getRotationRate()));
         }
-        final PVCoordinates      interpolatedPV = PVCoordinates.interpolate(date, useVelocities, datedPV);
-        final AngularCoordinates interpolatedAC = AngularCoordinates.interpolate(date, useRotationRates, datedAC);
+        final TimeStampedPVCoordinates      interpolatedPV = TimeStampedPVCoordinates.interpolate(date, useVelocities, datedPV);
+        final TimeStampedAngularCoordinates interpolatedAC = TimeStampedAngularCoordinates.interpolate(date, useRotationRates, datedAC);
         return new Transform(date, interpolatedPV, interpolatedAC);
     }
 

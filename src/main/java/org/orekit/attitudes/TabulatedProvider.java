@@ -21,13 +21,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 
 /**
@@ -69,15 +68,16 @@ public class TabulatedProvider implements AttitudeProvider {
         final List<Attitude> sample = table.getNeighbors(date);
 
         // interpolate
-        final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =
-                new ArrayList<Pair<AbsoluteDate, AngularCoordinates>>(sample.size());
+        final List<TimeStampedAngularCoordinates> datedAC =
+                new ArrayList<TimeStampedAngularCoordinates>(sample.size());
         for (final Attitude attitude : sample) {
-            datedAC.add(new Pair<AbsoluteDate, AngularCoordinates>(attitude.getDate(), attitude.getOrientation()));
+            datedAC.add(attitude.getOrientation());
         }
-        final AngularCoordinates interpolated = AngularCoordinates.interpolate(date, useRotationRate, datedAC);
+        final TimeStampedAngularCoordinates interpolated =
+                TimeStampedAngularCoordinates.interpolate(date, useRotationRate, datedAC);
 
         // build the attitude
-        return new Attitude(date, sample.get(0).getReferenceFrame(), interpolated);
+        return new Attitude(sample.get(0).getReferenceFrame(), interpolated);
 
     }
 

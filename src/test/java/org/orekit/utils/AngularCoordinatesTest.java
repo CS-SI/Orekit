@@ -17,8 +17,6 @@
 package org.orekit.utils;
 
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -27,7 +25,6 @@ import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
-import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -162,97 +159,6 @@ public class AngularCoordinatesTest {
             Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 1.0e-17);
 
         }
-    }
-
-    @Test
-    public void testRodriguesSymmetry()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = AngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        AngularCoordinates.class,
-                                                                        double[].class, double.class
-                                                                    });
-        getter.setAccessible(true);
-        Method factory = AngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        double[].class,
-                                                                        AngularCoordinates.class
-                                                                    });
-        factory.setAccessible(true);
-
-        // check the two-way conversion result in identity
-        Random random = new Random(0xb1e615aaa8236b52l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 1000; ++i) {
-            Rotation offsetRotation    = randomRotation(random);
-            Vector3D offsetRate        = randomVector(random, 0.01);
-            AngularCoordinates offset  = new AngularCoordinates(offsetRotation, offsetRate);
-            Rotation rotation          = randomRotation(random);
-            Vector3D rotationRate      = randomVector(random, 0.01);
-            AngularCoordinates ac      = new AngularCoordinates(rotation, rotationRate);
-            double dt                  = 10.0 * random.nextDouble();
-            double[] rodrigues =
-                    (double[]) getter.invoke(null,
-                                             ac.subtractOffset(offset.shiftedBy(dt)), previous, -0.9999);
-            AngularCoordinates rebuilt = (AngularCoordinates) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
-            Assert.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
-            Assert.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
-        }
-
-    }
-
-    @Test
-    public void testRodriguesSpecialCases()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = AngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        AngularCoordinates.class,
-                                                                        double[].class, double.class
-                                                                    });
-        getter.setAccessible(true);
-        Method factory = AngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        double[].class,
-                                                                        AngularCoordinates.class
-                                                                    });
-        factory.setAccessible(true);
-
-        // identity
-        double[] identity =
-                (double[]) getter.invoke(null,
-                                         AngularCoordinates.IDENTITY, new double[] { 1.0, 0.0, 0.0, 0.0 }, -0.9999);
-        AngularCoordinates acId = (AngularCoordinates) factory.invoke(null, identity, AngularCoordinates.IDENTITY);
-        for (double element : identity) {
-            Assert.assertEquals(0.0, element, Precision.SAFE_MIN);
-        }
-        Assert.assertEquals(0.0, acId.getRotation().getAngle(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
-
-        // PI angle rotation (which is singular for non-modified Rodrigues vector)
-        Random random = new Random(0x2158523e6accb859l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 100; ++i) {
-            Vector3D axis = randomVector(random, 1.0);
-            double[] piRotation =
-                    (double[]) getter.invoke(null,
-                                             new AngularCoordinates(new Rotation(axis, FastMath.PI), Vector3D.ZERO),
-                                             previous, -0.9999);
-            AngularCoordinates acPi = (AngularCoordinates) factory.invoke(null, piRotation, AngularCoordinates.IDENTITY);
-            Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle(), 1.0e-15);
-            Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, acPi.getRotation().getAxis())), 1.0e-15);
-            Assert.assertEquals(0.0, acPi.getRotationRate().getNorm(), 1.0e-16);
-        }
-
-        // 2 PI angle rotation (which is singular for modified Rodrigues vector)
-        Assert.assertNull(getter.invoke(null,
-                                        AngularCoordinates.IDENTITY, new double[] { -1.0, 0.0, 0.0, 0.0 }, -0.9999));
-        Assert.assertNotNull(getter.invoke(null,
-                                           AngularCoordinates.IDENTITY, new double[] { +1.0, 0.0, 0.0, 0.0 }, -0.9999));
-
     }
 
     @Test

@@ -22,6 +22,9 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add" >
+        Added time-stamped versions of position-velocity and angular coordinates.
+      </action>
       <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
         Fixed wrong rotation interpolation for rotations near π.
         Fixes issue #173.

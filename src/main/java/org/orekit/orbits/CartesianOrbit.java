@@ -25,11 +25,11 @@ import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** This class holds cartesian orbital parameters.
@@ -221,12 +221,13 @@ public class CartesianOrbit extends Orbit {
      * </p>
      */
     public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
-        final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
-        for (final Orbit orbit : sample) {
-            datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(orbit.getDate(), orbit.getPVCoordinates()));
+        final List<TimeStampedPVCoordinates> datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
+        for (final Orbit o : sample) {
+            datedPV.add(new TimeStampedPVCoordinates(o.getDate(),
+                                                     o.getPVCoordinates().getPosition(),
+                                                     o.getPVCoordinates().getVelocity()));
         }
-        final PVCoordinates interpolated = PVCoordinates.interpolate(date, true, datedPV);
+        final TimeStampedPVCoordinates interpolated = TimeStampedPVCoordinates.interpolate(date, true, datedPV);
         return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 

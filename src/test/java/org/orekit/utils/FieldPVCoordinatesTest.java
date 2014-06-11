@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.orekit.time.AbsoluteDate;
 
 
-public class PVCoordinatesDSTest {
+public class FieldPVCoordinatesTest {
 
     @Test
     public void testLinearConstructors() {
