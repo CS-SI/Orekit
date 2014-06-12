@@ -270,7 +270,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param mean Mean state to convert
      * @param forces Forces to take into account
      * @return osculating state in a DSST sense
-     * @throws OrekitException
+     * @throws OrekitException if computation of short periodics fails
      */
     public static SpacecraftState computeOsculatingState(final SpacecraftState mean, final Collection<DSSTForceModel> forces)
         throws OrekitException {
@@ -304,7 +304,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
      * @param osculating Osculating state to convert
      * @param forces Forces to take into account
      * @return mean state in a DSST sense
-     * @throws OrekitException
+     * @throws OrekitException if computation of short periodics fails or iteration algorithm does not converge
      */
     public static SpacecraftState computeMeanState(final SpacecraftState osculating, final Collection<DSSTForceModel> forces)
         throws OrekitException {
