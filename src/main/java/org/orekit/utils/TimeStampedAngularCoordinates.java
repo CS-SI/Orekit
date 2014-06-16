@@ -169,7 +169,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
         throws OrekitException {
 
         // set up safety elements for 2PI singularity avoidance
-        final double epsilon   = 2 * FastMath.PI / sample.size();
+        final double epsilon   = 2 * FastMath.PI / (100 * sample.size());
         final double threshold = FastMath.min(-(1.0 - 1.0e-4), -FastMath.cos(epsilon / 4));
 
         // set up a linear offset model canceling mean rotation rate

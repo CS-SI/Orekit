@@ -25,6 +25,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -87,6 +88,52 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
 
     }
 
+    /** Add an offset from the instance.
+     * <p>
+     * We consider here that the offset FieldRotation<T> is applied first and the
+     * instance is applied afterward. Note that angular coordinates do <em>not</em>
+     * commute under this operation, i.e. {@code a.addOffset(b)} and {@code
+     * b.addOffset(a)} lead to <em>different</em> results in most cases.
+     * </p>
+     * <p>
+     * The two methods {@link #addOffset(FieldAngularCoordinates) addOffset} and
+     * {@link #subtractOffset(FieldAngularCoordinates) subtractOffset} are designed
+     * so that round trip applications are possible. This means that both {@code
+     * ac1.subtractOffset(ac2).addOffset(ac2)} and {@code
+     * ac1.addOffset(ac2).subtractOffset(ac2)} return angular coordinates equal to ac1.
+     * </p>
+     * @param offset offset to subtract
+     * @return new instance, with offset subtracted
+     * @see #subtractOffset(FieldAngularCoordinates)
+     */
+    public TimeStampedFieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
+        return new TimeStampedFieldAngularCoordinates<T>(date,
+                                                         getRotation().applyTo(offset.getRotation()),
+                                                         getRotationRate().add(getRotation().applyTo(offset.getRotationRate())));
+    }
+
+    /** Subtract an offset from the instance.
+     * <p>
+     * We consider here that the offset Rotation is applied first and the
+     * instance is applied afterward. Note that angular coordinates do <em>not</em>
+     * commute under this operation, i.e. {@code a.subtractOffset(b)} and {@code
+     * b.subtractOffset(a)} lead to <em>different</em> results in most cases.
+     * </p>
+     * <p>
+     * The two methods {@link #addOffset(FieldAngularCoordinates) addOffset} and
+     * {@link #subtractOffset(FieldAngularCoordinates) subtractOffset} are designed
+     * so that round trip applications are possible. This means that both {@code
+     * ac1.subtractOffset(ac2).addOffset(ac2)} and {@code
+     * ac1.addOffset(ac2).subtractOffset(ac2)} return angular coordinates equal to ac1.
+     * </p>
+     * @param offset offset to subtract
+     * @return new instance, with offset subtracted
+     * @see #addOffset(FieldAngularCoordinates)
+     */
+    public TimeStampedFieldAngularCoordinates<T> subtractOffset(final FieldAngularCoordinates<T> offset) {
+        return addOffset(offset.revert());
+    }
+
     /** Interpolate angular coordinates.
      * <p>
      * The interpolated instance is created by polynomial Hermite interpolation
@@ -131,7 +178,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
         final T one  = prototype.getField().getOne();
 
         // set up safety elements for 2PI singularity avoidance
-        final double epsilon   = 2 * FastMath.PI / sample.size();
+        final double epsilon   = 2 * FastMath.PI / (100 * sample.size());
         final double threshold = FastMath.min(-(1.0 - 1.0e-4), -FastMath.cos(epsilon / 4));
 
         // set up a linear offset model canceling mean FieldRotation<T> rate
@@ -143,6 +190,10 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             }
             meanRate = new FieldVector3D<T>(1.0 / sample.size(), sum);
         } else {
+            if (sample.size() < 2) {
+                throw new OrekitException(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION,
+                                          sample.size());
+            }
             FieldVector3D<T> sum = new FieldVector3D<T>(zero, zero, zero);
             TimeStampedFieldAngularCoordinates<T> previous = null;
             for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
@@ -154,8 +205,8 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             }
             meanRate = new FieldVector3D<T>(1.0 / (sample.size() - 1), sum);
         }
-        FieldAngularCoordinates<T> offset =
-                new FieldAngularCoordinates<T>(new FieldRotation<T>(one, zero, zero, zero, false), meanRate);
+        TimeStampedFieldAngularCoordinates<T> offset =
+                new TimeStampedFieldAngularCoordinates<T>(date, new FieldRotation<T>(one, zero, zero, zero, false), meanRate);
 
         boolean restart = true;
         for (int i = 0; restart && i < sample.size() + 2; ++i) {
@@ -167,10 +218,18 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
 
             // add sample points
+            final double[] previous = new double[] {
+                1.0, 0.0, 0.0, 0.0
+            };
             if (useRotationRates) {
                 // populate sample with FieldRotation<T> and FieldRotation<T> rate data
                 for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
-                    final T[][] rodrigues = getModifiedRodrigues(datedAC, date, offset, threshold);
+
+                    // remove linear offset from the current coordinates
+                    final double dt = datedAC.date.durationFrom(date);
+                    final TimeStampedFieldAngularCoordinates<T> fixed = datedAC.subtractOffset(offset.shiftedBy(dt));
+
+                    final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -183,7 +242,12 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             } else {
                 // populate sample with FieldRotation<T> data only, ignoring FieldRotation<T> rate
                 for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
-                    final T[][] rodrigues = getModifiedRodrigues(datedAC, date, offset, threshold);
+
+                    // remove linear offset from the current coordinates
+                    final double dt = datedAC.date.durationFrom(date);
+                    final TimeStampedFieldAngularCoordinates<T> fixed = datedAC.subtractOffset(offset.shiftedBy(dt));
+
+                    final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
                     if (rodrigues == null) {
                         // the sample point is close to a modified Rodrigues vector singularity
                         // we need to change the linear offset model to avoid this
@@ -204,7 +268,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             } else {
                 // interpolation succeeded with the current offset
                 final T[][] p = interpolator.derivatives(zero, 1);
-                return createFromModifiedRodrigues(date, p, offset);
+                return createFromModifiedRodrigues(p, offset);
             }
 
         }
@@ -219,39 +283,39 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * The modified Rodrigues vector is tan(&theta;/4) u where &theta; and u are the
      * rotation angle and axis respectively.
      * </p>
-     * @param ac coordinates to convert
-     * @param offsetDate date of the linear offset model to remove
-     * @param offset linear offset model to remove
+     * @param fixed coordinates to convert, with offset already fixed
+     * @param previous previous quaternion used
      * @param threshold threshold for rotations too close to 2&pi;
      * @param <T> the type of the field elements
      * @return modified Rodrigues vector and derivative, or null if rotation is too close to 2&pi;
      */
-    private static <T extends RealFieldElement<T>> T[][] getModifiedRodrigues(final TimeStampedFieldAngularCoordinates<T> ac,
-                                                                              final AbsoluteDate offsetDate,
-                                                                              final FieldAngularCoordinates<T> offset,
-                                                                              final double threshold) {
+    private static <T extends RealFieldElement<T>> T[][] getModifiedRodrigues(final TimeStampedFieldAngularCoordinates<T> fixed,
+                                                                              final double[] previous, final double threshold) {
 
-        // remove linear offset from the current coordinates
-        final double dt = ac.date.durationFrom(offsetDate);
-        final FieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt));
-
-        // check modified Rodrigues vector singularity
+        // make sure all interpolated points will be on the same branch
         T q0 = fixed.getRotation().getQ0();
         T q1 = fixed.getRotation().getQ1();
         T q2 = fixed.getRotation().getQ2();
         T q3 = fixed.getRotation().getQ3();
-        if (q0.getReal() < threshold && FastMath.abs(dt) * fixed.getRotationRate().getNorm().getReal() > 1.0e-3) {
-            // this is an intermediate point that happens to be 2PI away from reference
-            // we need to change the linear offset model to avoid this point
-            return null;
-        }
-
-        // make sure all interpolated points will be on the same branch
-        if (q0.getReal() < 0) {
+        if (MathArrays.linearCombination(q0.getReal(), previous[0],
+                                         q1.getReal(), previous[1],
+                                         q2.getReal(), previous[2],
+                                         q3.getReal(), previous[3]) < 0) {
             q0 = q0.negate();
             q1 = q1.negate();
             q2 = q2.negate();
             q3 = q3.negate();
+        }
+        previous[0] = q0.getReal();
+        previous[1] = q1.getReal();
+        previous[2] = q2.getReal();
+        previous[3] = q3.getReal();
+
+        // check modified Rodrigues vector singularity
+        if (q0.getReal() < threshold) {
+            // this is an intermediate point that happens to be 2PI away from reference
+            // we need to change the linear offset model to avoid this point
+            return null;
         }
 
         final T x  = fixed.getRotationRate().getX();
@@ -278,14 +342,13 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
     }
 
     /** Convert a modified Rodrigues vector and derivative to angular coordinates.
-     * @param date date of the angular coordinates
      * @param r modified Rodrigues vector (with first derivatives)
      * @param offset linear offset model to add (its date must be consistent with the modified Rodrigues vector)
      * @param <T> the type of the field elements
      * @return angular coordinates
      */
     private static <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
-    createFromModifiedRodrigues(final AbsoluteDate date, final T[][] r, final FieldAngularCoordinates<T> offset) {
+    createFromModifiedRodrigues(final T[][] r, final TimeStampedFieldAngularCoordinates<T> offset) {
 
         // rotation
         final T rSquared = r[0][0].multiply(r[0][0]).add(r[0][1].multiply(r[0][1])).add(r[0][2].multiply(r[0][2]));
@@ -305,7 +368,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
                                                            inv.multiply(inv).multiply(8).multiply(FieldVector3D.dotProduct(p, pDot)), p);
 
         final FieldAngularCoordinates<T> ac = new FieldAngularCoordinates<T>(rotation, rate).addOffset(offset);
-        return new TimeStampedFieldAngularCoordinates<T>(date, ac.getRotation(), ac.getRotationRate());
+        return new TimeStampedFieldAngularCoordinates<T>(offset.date, ac.getRotation(), ac.getRotationRate());
 
     }
 
