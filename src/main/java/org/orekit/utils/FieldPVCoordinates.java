@@ -17,10 +17,11 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.time.AbsoluteDate;
@@ -312,42 +313,18 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
+     * @deprecated since 7.0 replaced with {@link TimeStampedFieldPVCoordinates#interpolate(AbsoluteDate, boolean, Collection)}
      */
-    @SuppressWarnings("unchecked")
+    @Deprecated
     public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
                                                                                     final boolean useVelocities,
                                                                                     final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
-
-        // get field properties
-        final T prototype = sample.iterator().next().getValue().getPosition().getX();
-        final T zero      = prototype.getField().getZero();
-
-        // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
-
-        // add sample points
-        if (useVelocities) {
-            // populate sample with position and velocity data
-            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
-                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
-                                            datedPV.getValue().getPosition().toArray(),
-                                            datedPV.getValue().getVelocity().toArray());
-            }
-        } else {
-            // populate sample with position data, ignoring velocity
-            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
-                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
-                                            datedPV.getValue().getPosition().toArray());
-            }
+        final List<TimeStampedFieldPVCoordinates<T>> list = new ArrayList<TimeStampedFieldPVCoordinates<T>>(sample.size());
+        for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> pair : sample) {
+            list.add(new TimeStampedFieldPVCoordinates<T>(pair.getFirst(),
+                    pair.getSecond().getPosition(), pair.getSecond().getVelocity()));
         }
-
-        // interpolate
-        final T[][] p = interpolator.derivatives(zero, 1);
-
-        // build a new interpolated instance
-        return new FieldPVCoordinates<T>(new FieldVector3D<T>(p[0]),
-                                         new FieldVector3D<T>(p[1]));
-
+        return TimeStampedFieldPVCoordinates.interpolate(date, useVelocities, list);
     }
 
     /** Gets the position.

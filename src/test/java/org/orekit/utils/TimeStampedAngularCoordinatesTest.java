@@ -294,9 +294,10 @@ public class TimeStampedAngularCoordinatesTest {
 
         List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
         for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            Rotation r = reference.shiftedBy(dt).getRotation();
-            Vector3D rate = reference.shiftedBy(dt).getRotationRate();
-            sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(dt), r, rate));
+            TimeStampedAngularCoordinates shifted = reference.shiftedBy(dt);
+            sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(dt),
+                                                         shifted.getRotation(),
+                                                         shifted.getRotationRate()));
         }
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
@@ -306,6 +307,34 @@ public class TimeStampedAngularCoordinatesTest {
             Vector3D rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 1.0e-15);
             Assert.assertEquals(0.0, Vector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate), 5.0e-15);
+        }
+
+    }
+
+    @Test
+    public void testInterpolationNeedOffsetWrongRate() throws OrekitException {
+        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
+        double omega  = 2.0 * FastMath.PI;
+        TimeStampedAngularCoordinates reference =
+                new TimeStampedAngularCoordinates(date,
+                                                  Rotation.IDENTITY,
+                                                  new Vector3D(omega, Vector3D.MINUS_K));
+
+        List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        for (double dt : new double[] { 0.0, 0.25, 0.5, 0.75, 1.0 }) {
+            TimeStampedAngularCoordinates shifted = reference.shiftedBy(dt);
+            sample.add(new TimeStampedAngularCoordinates(shifted.getDate(),
+                                                         shifted.getRotation(),
+                                                         Vector3D.ZERO));
+        }
+
+        for (TimeStampedAngularCoordinates s : sample) {
+            TimeStampedAngularCoordinates interpolated =
+                    TimeStampedAngularCoordinates.interpolate(s.getDate(), true, sample);
+            Rotation r    = interpolated.getRotation();
+            Vector3D rate = interpolated.getRotationRate();
+            Assert.assertEquals(0.0, Rotation.distance(s.getRotation(), r), 1.0e-14);
+            Assert.assertEquals(0.0, Vector3D.distance(s.getRotationRate(), rate), 3.0e-14);
         }
 
     }

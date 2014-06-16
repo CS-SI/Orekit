@@ -26,6 +26,7 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
+import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 
 
@@ -43,6 +44,7 @@ public class TimeStampedPVCoordinatesTest {
 
     @Test
     public void testToString() {
+        Utils.setDataRoot("regular-data");
         TimeStampedPVCoordinates pv =
             new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH,
                                          new Vector3D( 1,  0.1,  10), new Vector3D(-1, -0.1, -10));

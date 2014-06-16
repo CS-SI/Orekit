@@ -28,9 +28,7 @@ import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.time.TimeScalesFactory;
 
 public class AngularCoordinatesTest {
 
@@ -162,6 +160,7 @@ public class AngularCoordinatesTest {
     }
 
     @Test
+    @Deprecated  // to be removed when AngularCoordinates.interpolate is removed
     public void testInterpolationSimple() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5 * FastMath.PI;
@@ -182,105 +181,6 @@ public class AngularCoordinatesTest {
             Vector3D rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 1.0e-15);
             Assert.assertEquals(0.0, Vector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate), 5.0e-15);
-        }
-
-    }
-
-    @Test
-    public void testInterpolationRotationOnly() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        AngularCoordinates reference = new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
-                                                              new Vector3D(omega, Vector3D.MINUS_K));
-
-        List<Pair<AbsoluteDate, AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
-        for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
-            Rotation r = reference.shiftedBy(dt).getRotation();
-            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(dt), new AngularCoordinates(r, Vector3D.ZERO)));
-        }
-
-        for (double dt = 0; dt < 1.0; dt += 0.001) {
-            AngularCoordinates interpolated = AngularCoordinates.interpolate(date.shiftedBy(dt), false, sample);
-            Rotation r    = interpolated.getRotation();
-            Vector3D rate = interpolated.getRotationRate();
-            Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 3.0e-4);
-            Assert.assertEquals(0.0, Vector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate), 1.0e-2);
-        }
-
-    }
-
-    @Test
-    public void testInterpolationAroundPI() throws OrekitException {
-
-        List<Pair<AbsoluteDate,AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
-
-        // add angular coordinates at t0: 179.999 degrees rotation along X axis
-        AbsoluteDate t0 = new AbsoluteDate("2012-01-01T00:00:00.000", TimeScalesFactory.getTAI());
-        AngularCoordinates ac0 = new AngularCoordinates(new Rotation(Vector3D.PLUS_I, FastMath.toRadians(179.999)),
-                                                        new Vector3D(FastMath.toRadians(0),0,0));
-        sample.add(new Pair<AbsoluteDate, AngularCoordinates>(t0, ac0));
-
-        // add angular coordinates at t1: -179.999 degrees rotation (= 180.001 degrees) along X axis
-        AbsoluteDate t1 = new AbsoluteDate("2012-01-01T00:00:02.000", TimeScalesFactory.getTAI());
-        AngularCoordinates ac1 = new AngularCoordinates(new Rotation(Vector3D.PLUS_I, FastMath.toRadians(-179.999)),
-                                                        new Vector3D(FastMath.toRadians(0),0,0));
-        sample.add(new Pair<AbsoluteDate, AngularCoordinates>(t1, ac1));
-
-        // get interpolated angular coordinates at mid time between t0 and t1
-        AbsoluteDate t = new AbsoluteDate("2012-01-01T00:00:01.000", TimeScalesFactory.getTAI());
-        AngularCoordinates interpolated = AngularCoordinates.interpolate(t, false, sample);
-
-        Assert.assertEquals(FastMath.toRadians(180), interpolated.getRotation().getAngle(), 1.0e-12);
-
-    }
-
-    @Test
-    public void testInterpolationTooSmallSample() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        AngularCoordinates reference = new AngularCoordinates(new Rotation(Vector3D.PLUS_K, alpha0),
-                                                              new Vector3D(omega, Vector3D.MINUS_K));
-
-        List<Pair<AbsoluteDate, AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
-        Rotation r = reference.shiftedBy(0.2).getRotation();
-        sample.add(new Pair<AbsoluteDate, AngularCoordinates>(date.shiftedBy(0.2), new AngularCoordinates(r, Vector3D.ZERO)));
-
-        try {
-            AngularCoordinates.interpolate(date.shiftedBy(0.3), false, sample);
-            Assert.fail("an exception should have been thrown");
-        } catch (OrekitException oe) {
-            Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oe.getSpecifier());
-            Assert.assertEquals(1, ((Integer) oe.getParts()[0]).intValue());
-        }
-
-    }
-
-    @Test
-    public void testInterpolationGTODIssue() throws OrekitException {
-        AbsoluteDate t0 = new AbsoluteDate("2004-04-06T19:59:28.000", TimeScalesFactory.getTAI());
-        double[][] params = new double[][] {
-            { 0.0, -0.3802356750911964, -0.9248896320037013, 7.292115030462892e-5 },
-            { 4.0,  0.1345716955788532, -0.990903859488413,  7.292115033301528e-5 },
-            { 8.0, -0.613127541102373,   0.7899839354960061, 7.292115037371062e-5 }
-        };
-        List<Pair<AbsoluteDate,AngularCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,AngularCoordinates>>();
-        for (double[] row : params) {
-            AbsoluteDate t = t0.shiftedBy(row[0] * 3600.0);
-            Rotation     r = new Rotation(row[1], 0.0, 0.0, row[2], false);
-            Vector3D     o = new Vector3D(row[3], Vector3D.PLUS_K);
-            sample.add(new Pair<AbsoluteDate, AngularCoordinates>(t, new AngularCoordinates(r, o)));
-        }
-        for (double dt = 0; dt < 29000; dt += 120) {
-            AngularCoordinates shifted      = sample.get(0).getValue().shiftedBy(dt);
-            AngularCoordinates interpolated = AngularCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
-            Assert.assertEquals(0.0,
-                                Rotation.distance(shifted.getRotation(), interpolated.getRotation()),
-                                1.3e-7);
-            Assert.assertEquals(0.0,
-                                Vector3D.distance(shifted.getRotationRate(), interpolated.getRotationRate()),
-                                1.0e-11);
         }
 
     }
