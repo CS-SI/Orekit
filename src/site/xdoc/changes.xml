@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="update" >
+        Tabulated attitude provider can be built directly from time-stamped angular coordinates
+        lists, in addition to attitudes lists.
+      </action>
       <action dev="luc" type="add" >
         Added time-stamped versions of position-velocity and angular coordinates.
       </action>
