@@ -24,7 +24,6 @@ import java.util.Random;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
-import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -187,6 +186,7 @@ public class FieldPVCoordinatesTest {
     }
 
     @Test
+    @Deprecated // to be removed when FieldPVCoordinates.interpolate is removed
     public void testInterpolatePolynomialPV() {
         Random random = new Random(0xae7771c9933407bdl);
         AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
@@ -233,68 +233,6 @@ public class FieldPVCoordinatesTest {
             }
 
         }
-    }
-
-    @Test
-    public void testInterpolatePolynomialPositionOnly() {
-        Random random = new Random(0x88740a12e4299003l);
-        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-        for (int i = 0; i < 20; ++i) {
-
-            PolynomialFunction px    = randomPolynomial(5, random);
-            PolynomialFunction py    = randomPolynomial(5, random);
-            PolynomialFunction pz    = randomPolynomial(5, random);
-            PolynomialFunction pxDot = px.polynomialDerivative();
-            PolynomialFunction pyDot = py.polynomialDerivative();
-            PolynomialFunction pzDot = pz.polynomialDerivative();
-
-            List<Pair<AbsoluteDate, FieldPVCoordinates<DerivativeStructure>>> sample =
-                    new ArrayList<Pair<AbsoluteDate,FieldPVCoordinates<DerivativeStructure>>>();
-            for (double dt : new double[] { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0 }) {
-                FieldVector3D<DerivativeStructure> position = createVector(px.value(dt), py.value(dt), pz.value(dt), 6);
-                sample.add(new Pair<AbsoluteDate, FieldPVCoordinates<DerivativeStructure>>(t0.shiftedBy(dt),
-                        new FieldPVCoordinates<DerivativeStructure>(position, createVector(0, 0, 0, 6))));
-            }
-
-            for (double dt = 0; dt < 1.0; dt += 0.01) {
-                FieldPVCoordinates<DerivativeStructure> interpolated = FieldPVCoordinates.interpolate(t0.shiftedBy(dt), false, sample);
-                FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
-                FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
-                Assert.assertEquals(px.value(dt),    p.getX().getValue(), 1.0e-14 * p.getNorm().getValue());
-                Assert.assertEquals(py.value(dt),    p.getY().getValue(), 1.0e-14 * p.getNorm().getValue());
-                Assert.assertEquals(pz.value(dt),    p.getZ().getValue(), 1.0e-14 * p.getNorm().getValue());
-                Assert.assertEquals(pxDot.value(dt), v.getX().getValue(), 1.0e-14 * v.getNorm().getValue());
-                Assert.assertEquals(pyDot.value(dt), v.getY().getValue(), 1.0e-14 * v.getNorm().getValue());
-                Assert.assertEquals(pzDot.value(dt), v.getZ().getValue(), 1.0e-14 * v.getNorm().getValue());
-            }
-
-        }
-    }
-
-    @Test
-    public void testInterpolateNonPolynomial() {
-        AbsoluteDate t0 = AbsoluteDate.J2000_EPOCH;
-
-            List<Pair<AbsoluteDate, FieldPVCoordinates<DerivativeStructure>>> sample =
-                    new ArrayList<Pair<AbsoluteDate,FieldPVCoordinates<DerivativeStructure>>>();
-            for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-                FieldVector3D<DerivativeStructure> position = createVector( FastMath.cos(dt), FastMath.sin(dt), 0.0, 6);
-                FieldVector3D<DerivativeStructure> velocity = createVector(-FastMath.sin(dt), FastMath.cos(dt), 0.0, 6);
-                sample.add(new Pair<AbsoluteDate, FieldPVCoordinates<DerivativeStructure>>(t0.shiftedBy(dt), new FieldPVCoordinates<DerivativeStructure>(position, velocity)));
-            }
-
-            for (double dt = 0; dt < 1.0; dt += 0.01) {
-                FieldPVCoordinates<DerivativeStructure> interpolated = FieldPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
-                FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
-                FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
-                Assert.assertEquals(FastMath.cos(dt),    p.getX().getValue(), 3.0e-6 * p.getNorm().getValue());
-                Assert.assertEquals(FastMath.sin(dt),    p.getY().getValue(), 3.0e-6 * p.getNorm().getValue());
-                Assert.assertEquals(0,                   p.getZ().getValue(), 3.0e-6 * p.getNorm().getValue());
-                Assert.assertEquals(-FastMath.sin(dt),   v.getX().getValue(), 3.0e-5 * v.getNorm().getValue());
-                Assert.assertEquals( FastMath.cos(dt),   v.getY().getValue(), 3.0e-5 * v.getNorm().getValue());
-                Assert.assertEquals(0,                   v.getZ().getValue(), 3.0e-5 * v.getNorm().getValue());
-            }
-
     }
 
     private PolynomialFunction randomPolynomial(int degree, Random random) {
