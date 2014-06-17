@@ -34,6 +34,75 @@ import org.orekit.time.AbsoluteDate;
 public class TimeStampedFieldPVCoordinatesTest {
 
     @Test
+    public void testLinearConstructors() {
+        TimeStampedFieldPVCoordinates<DerivativeStructure> pv1 =
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.CCSDS_EPOCH,
+                                                                       createVector(1, 0.1, 10, 6),
+                                                                       createVector(-1, -0.1, -10, 6));
+        TimeStampedFieldPVCoordinates<DerivativeStructure> pv2 =
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.FIFTIES_EPOCH,
+                                                                       createVector(2, 0.2, 20, 6),
+                                                                       createVector(-2, -0.2, -20, 6));
+        TimeStampedFieldPVCoordinates<DerivativeStructure> pv3 =
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH,
+                                                                       createVector(3, 0.3, 30, 6),
+                                                                       createVector(-3, -0.3, -30, 6));
+        TimeStampedFieldPVCoordinates<DerivativeStructure> pv4 =
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH,
+                                                                       createVector(4, 0.4, 40, 6),
+                                                                       createVector(-4, -0.4, -40, 6));
+        checkPV(pv4, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH, 4, pv1), 1.0e-15);
+        checkPV(pv4, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH, new DerivativeStructure(6, 1, 4), pv1), 1.0e-15);
+        checkPV(pv4, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.JULIAN_EPOCH, new DerivativeStructure(6, 1, 4), pv1.toPVCoordinates()), 1.0e-15);
+        checkPV(pv2, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.FIFTIES_EPOCH, pv1, pv3), 1.0e-15);
+        checkPV(pv3, new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH, 1, pv1, 1, pv2), 1.0e-15);
+        checkPV(pv3,
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH,
+                                                                       new DerivativeStructure(6, 1, 1), pv1,
+                                                                       new DerivativeStructure(6, 1, 1), pv2),
+                1.0e-15);
+        checkPV(pv3,
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.GALILEO_EPOCH,
+                                                                       new DerivativeStructure(6, 1, 1), pv1.toPVCoordinates(),
+                                                                       new DerivativeStructure(6, 1, 1), pv2.toPVCoordinates()),
+                1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 2, pv4),
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv3),
+                1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv4),
+                1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
+                                                                       new DerivativeStructure(6, 1, 3), pv1,
+                                                                       new DerivativeStructure(6, 1, 1), pv2,
+                                                                       new DerivativeStructure(6, 1, 1), pv4),
+                1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
+                                                                       new DerivativeStructure(6, 1, 3), pv1.toPVCoordinates(),
+                                                                       new DerivativeStructure(6, 1, 1), pv2.toPVCoordinates(),
+                                                                       new DerivativeStructure(6, 1, 1), pv4.toPVCoordinates()),
+                1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4), 1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
+                                                                       new DerivativeStructure(6, 1, 4), pv1,
+                                                                       new DerivativeStructure(6, 1, 3), pv2,
+                                                                       new DerivativeStructure(6, 1, 2), pv3,
+                                                                       new DerivativeStructure(6, 1, 1), pv4),
+                1.0e-15);
+        checkPV(new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new TimeStampedFieldPVCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH,
+                                                                       new DerivativeStructure(6, 1, 4), pv1.toPVCoordinates(),
+                                                                       new DerivativeStructure(6, 1, 3), pv2.toPVCoordinates(),
+                                                                       new DerivativeStructure(6, 1, 2), pv3.toPVCoordinates(),
+                                                                       new DerivativeStructure(6, 1, 1), pv4.toPVCoordinates()),
+                1.0e-15);
+    }
+
+    @Test
     public void testShift() {
         FieldVector3D<DerivativeStructure> p1 = createVector(1, 0.1, 10, 4);
         FieldVector3D<DerivativeStructure> p2 = createVector(2, 0.2, 20, 4);
@@ -167,6 +236,7 @@ public class TimeStampedFieldPVCoordinatesTest {
 
     private void checkPV(TimeStampedFieldPVCoordinates<DerivativeStructure> expected,
                          TimeStampedFieldPVCoordinates<DerivativeStructure> real, double epsilon) {
+        Assert.assertEquals(expected.getDate(), real.getDate());
         Assert.assertEquals(expected.getPosition().getX().getReal(), real.getPosition().getX().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getY().getReal(), real.getPosition().getY().getReal(), epsilon);
         Assert.assertEquals(expected.getPosition().getZ().getReal(), real.getPosition().getZ().getReal(), epsilon);

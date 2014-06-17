@@ -50,6 +50,240 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
         this.date = date;
     }
 
+    /** Multiplicative constructor
+     * <p>Build a PVCoordinates from another one and a scale factor.</p>
+     * <p>The PVCoordinates built will be a * pv</p>
+     * @param date date of the built coordinates
+     * @param a scale factor
+     * @param pv base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final double a, final FieldPVCoordinates<T> pv) {
+        super(new FieldVector3D<T>(a, pv.getPosition()), new FieldVector3D<T>(a, pv.getVelocity()));
+        this.date = date;
+    }
+
+    /** Multiplicative constructor
+     * <p>Build a PVCoordinates from another one and a scale factor.</p>
+     * <p>The PVCoordinates built will be a * pv</p>
+     * @param date date of the built coordinates
+     * @param a scale factor
+     * @param pv base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a, final FieldPVCoordinates<T> pv) {
+        super(new FieldVector3D<T>(a, pv.getPosition()), new FieldVector3D<T>(a, pv.getVelocity()));
+        this.date = date;
+    }
+
+    /** Multiplicative constructor
+     * <p>Build a PVCoordinates from another one and a scale factor.</p>
+     * <p>The PVCoordinates built will be a * pv</p>
+     * @param date date of the built coordinates
+     * @param a scale factor
+     * @param pv base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a, final PVCoordinates pv) {
+        super(new FieldVector3D<T>(a, pv.getPosition()), new FieldVector3D<T>(a, pv.getVelocity()));
+        this.date = date;
+    }
+
+    /** Subtractive constructor
+     * <p>Build a relative PVCoordinates from a start and an end position.</p>
+     * <p>The PVCoordinates built will be end - start.</p>
+     * @param date date of the built coordinates
+     * @param start Starting PVCoordinates
+     * @param end ending PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final FieldPVCoordinates<T> start, final FieldPVCoordinates<T> end) {
+        super(end.getPosition().subtract(start.getPosition()), end.getVelocity().subtract(start.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final double a1, final FieldPVCoordinates<T> pv1,
+                                         final double a2, final FieldPVCoordinates<T> pv2) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a1, final FieldPVCoordinates<T> pv1,
+                                         final T a2, final FieldPVCoordinates<T> pv2) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a1, final PVCoordinates pv1,
+                                         final T a2, final PVCoordinates pv2) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final double a1, final FieldPVCoordinates<T> pv1,
+                                         final double a2, final FieldPVCoordinates<T> pv2,
+                                         final double a3, final FieldPVCoordinates<T> pv3) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a1, final FieldPVCoordinates<T> pv1,
+                                         final T a2, final FieldPVCoordinates<T> pv2,
+                                         final T a3, final FieldPVCoordinates<T> pv3) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a1, final PVCoordinates pv1,
+                                         final T a2, final PVCoordinates pv2,
+                                         final T a3, final PVCoordinates pv3) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     * @param a4 fourth scale factor
+     * @param pv4 fourth base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final double a1, final FieldPVCoordinates<T> pv1,
+                                         final double a2, final FieldPVCoordinates<T> pv2,
+                                         final double a3, final FieldPVCoordinates<T> pv3,
+                                         final double a4, final FieldPVCoordinates<T> pv4) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition(), a4, pv4.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity(), a4, pv4.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     * @param a4 fourth scale factor
+     * @param pv4 fourth base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a1, final FieldPVCoordinates<T> pv1,
+                                         final T a2, final FieldPVCoordinates<T> pv2,
+                                         final T a3, final FieldPVCoordinates<T> pv3,
+                                         final T a4, final FieldPVCoordinates<T> pv4) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition(), a4, pv4.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity(), a4, pv4.getVelocity()));
+        this.date = date;
+    }
+
+    /** Linear constructor
+     * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
+     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
+     * @param date date of the built coordinates
+     * @param a1 first scale factor
+     * @param pv1 first base (unscaled) PVCoordinates
+     * @param a2 second scale factor
+     * @param pv2 second base (unscaled) PVCoordinates
+     * @param a3 third scale factor
+     * @param pv3 third base (unscaled) PVCoordinates
+     * @param a4 fourth scale factor
+     * @param pv4 fourth base (unscaled) PVCoordinates
+     */
+    public TimeStampedFieldPVCoordinates(final AbsoluteDate date,
+                                         final T a1, final PVCoordinates pv1,
+                                         final T a2, final PVCoordinates pv2,
+                                         final T a3, final PVCoordinates pv3,
+                                         final T a4, final PVCoordinates pv4) {
+        super(new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(),
+                                  a3, pv3.getPosition(), a4, pv4.getPosition()),
+              new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(),
+                                  a3, pv3.getVelocity(), a4, pv4.getVelocity()));
+        this.date = date;
+    }
+
     /** {@inheritDoc} */
     public AbsoluteDate getDate() {
         return date;

@@ -29,8 +29,35 @@ import org.junit.Test;
 import org.orekit.Utils;
 import org.orekit.time.AbsoluteDate;
 
-
 public class TimeStampedPVCoordinatesTest {
+
+    @Test
+    public void testLinearConstructors() {
+        TimeStampedPVCoordinates pv1 = new TimeStampedPVCoordinates(AbsoluteDate.CCSDS_EPOCH,
+                                                                    new Vector3D( 1,  0.1,  10),
+                                                                    new Vector3D(-1, -0.1, -10));
+        TimeStampedPVCoordinates pv2 = new TimeStampedPVCoordinates(AbsoluteDate.FIFTIES_EPOCH,
+                                                                    new Vector3D( 2,  0.2,  20),
+                                                                    new Vector3D(-2, -0.2, -20));
+        TimeStampedPVCoordinates pv3 = new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                                                    new Vector3D( 3,  0.3,  30),
+                                                                    new Vector3D(-3, -0.3, -30));
+        TimeStampedPVCoordinates pv4 = new TimeStampedPVCoordinates(AbsoluteDate.JULIAN_EPOCH,
+                                                                    new Vector3D( 4,  0.4,  40),
+                                                                    new Vector3D(-4, -0.4, -40));
+        checkPV(pv4, new TimeStampedPVCoordinates(AbsoluteDate.JULIAN_EPOCH, 4, pv1), 1.0e-15);
+        checkPV(pv2, new TimeStampedPVCoordinates(AbsoluteDate.FIFTIES_EPOCH, pv1, pv3), 1.0e-15);
+        checkPV(pv3, new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, 1, pv1, 1, pv2), 1.0e-15);
+        checkPV(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 2, pv4),
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv3),
+                1.0e-15);
+        checkPV(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv3),
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 3, pv1, 1, pv2, 1, pv4),
+                1.0e-15);
+        checkPV(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 5, pv4),
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4),
+                1.0e-15);
+    }
 
     @Test
     public void testShift() {
@@ -154,6 +181,7 @@ public class TimeStampedPVCoordinatesTest {
     }
 
     private void checkPV(TimeStampedPVCoordinates expected, TimeStampedPVCoordinates real, double epsilon) {
+        Assert.assertEquals(expected.getDate(), real.getDate());
         Assert.assertEquals(expected.getPosition().getX(), real.getPosition().getX(), epsilon);
         Assert.assertEquals(expected.getPosition().getY(), real.getPosition().getY(), epsilon);
         Assert.assertEquals(expected.getPosition().getZ(), real.getPosition().getZ(), epsilon);
