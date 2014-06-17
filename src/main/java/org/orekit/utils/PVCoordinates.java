@@ -264,4 +264,39 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                   append(velocity.getZ()).append(")}").toString();
     }
 
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Double values. */
+        private double[] d;
+
+        /** Simple constructor.
+         * @param pv instance to serialize
+         */
+        private DTO(final PVCoordinates pv) {
+            this.d = new double[] {
+                pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+                pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ(),
+            };
+        }
+
+        /** Replace the deserialized data transfer object with a {@link PVCoordinates}.
+         * @return replacement {@link PVCoordinates}
+         */
+        private Object readResolve() {
+            return new PVCoordinates(new Vector3D(d[0], d[1], d[2]), new Vector3D(d[3], d[4], d[5]));
+        }
+
+    }
+
 }

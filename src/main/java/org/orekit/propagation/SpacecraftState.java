@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.exception.DimensionMismatchException;
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.LofOffset;
@@ -39,6 +41,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -609,6 +612,60 @@ public class SpacecraftState
      */
     public double getMass() {
         return mass;
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Orbit. */
+        private final Orbit orbit;
+
+        /** Attitude and mass double values. */
+        private double[] d;
+
+        /** Additional states. */
+        private final Map<String, double[]> additional;
+
+        /** Simple constructor.
+         * @param state instance to serialize
+         */
+        private DTO(final SpacecraftState state) {
+
+            this.orbit      = state.orbit;
+            this.additional = state.additional.isEmpty() ? null : state.additional;
+
+            final Rotation rotation = state.attitude.getRotation();
+            final Vector3D spin     = state.attitude.getSpin();
+            this.d = new double[] {
+                rotation.getQ0(), rotation.getQ1(), rotation.getQ2(), rotation.getQ3(),
+                spin.getX(), spin.getY(), spin.getZ(),
+                state.mass
+            };
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link SpacecraftState}.
+         * @return replacement {@link SpacecraftState}
+         */
+        private Object readResolve() {
+            return new SpacecraftState(orbit,
+                                       new Attitude(orbit.getFrame(),
+                                                    new TimeStampedAngularCoordinates(orbit.getDate(),
+                                                                                      new Rotation(d[0], d[1], d[2], d[3], false),
+                                                                                      new Vector3D(d[4], d[5], d[6]))),
+                                       d[7], additional);
+        }
+
     }
 
 }

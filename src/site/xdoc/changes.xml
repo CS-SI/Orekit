@@ -23,6 +23,9 @@
     <release version="7.0" date="TBD"
              description="TBD">
       <action dev="luc" type="update" >
+        Significantly reduced size of various serialized objects.
+      </action>
+      <action dev="luc" type="update" >
         PVCoordinatesProvider now produces time-stamped position-velocities.
       </action>
       <action dev="luc" type="update" >

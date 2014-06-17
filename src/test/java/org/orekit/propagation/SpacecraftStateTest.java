@@ -17,6 +17,11 @@
 package org.orekit.propagation;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -266,6 +271,62 @@ public class SpacecraftStateTest {
         Assert.assertEquals(-6.0, sOM.getAdditionalState("test-3")[0], 1.0e-15);
         SpacecraftState sOAM = new SpacecraftState(state.getOrbit(), state.getAttitude(), state.getMass(), map);
         Assert.assertEquals(-6.0, sOAM.getAdditionalState("test-3")[0], 1.0e-15);
+
+    }
+
+    @Test
+    public void testSerialization()
+            throws IOException, ClassNotFoundException, NoSuchFieldException, IllegalAccessException, OrekitException {
+
+        propagator.resetInitialState(propagator.getInitialState().
+                                     addAdditionalState("p1", 12.25).
+                                     addAdditionalState("p2", 1, 2, 3));
+        SpacecraftState state = propagator.propagate(orbit.getDate().shiftedBy(123.456));
+
+        Assert.assertEquals(2, state.getAdditionalStates().size());
+        Assert.assertEquals(1, state.getAdditionalState("p1").length);
+        Assert.assertEquals(12.25, state.getAdditionalState("p1")[0], 1.0e-15);
+        Assert.assertEquals(3, state.getAdditionalState("p2").length);
+        Assert.assertEquals(1.0, state.getAdditionalState("p2")[0], 1.0e-15);
+        Assert.assertEquals(2.0, state.getAdditionalState("p2")[1], 1.0e-15);
+        Assert.assertEquals(3.0, state.getAdditionalState("p2")[2], 1.0e-15);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(state);
+
+        Assert.assertTrue(bos.size() > 600);
+        Assert.assertTrue(bos.size() < 700);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        SpacecraftState deserialized  = (SpacecraftState) ois.readObject();
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(state.getPVCoordinates().getPosition(),
+                                              deserialized.getPVCoordinates().getPosition()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(state.getPVCoordinates().getVelocity(),
+                                              deserialized.getPVCoordinates().getVelocity()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Rotation.distance(state.getAttitude().getRotation(),
+                                              deserialized.getAttitude().getRotation()),
+                            1.0e-10);
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(state.getAttitude().getSpin(),
+                                              deserialized.getAttitude().getSpin()),
+                            1.0e-10);
+        Assert.assertEquals(state.getDate(), deserialized.getDate());
+        Assert.assertEquals(state.getMu(), deserialized.getMu(), 1.0e-10);
+        Assert.assertEquals(state.getFrame().getName(), deserialized.getFrame().getName());
+        Assert.assertEquals(2, deserialized.getAdditionalStates().size());
+        Assert.assertEquals(1, deserialized.getAdditionalState("p1").length);
+        Assert.assertEquals(12.25, deserialized.getAdditionalState("p1")[0], 1.0e-15);
+        Assert.assertEquals(3, deserialized.getAdditionalState("p2").length);
+        Assert.assertEquals(1.0, deserialized.getAdditionalState("p2")[0], 1.0e-15);
+        Assert.assertEquals(2.0, deserialized.getAdditionalState("p2")[1], 1.0e-15);
+        Assert.assertEquals(3.0, deserialized.getAdditionalState("p2")[2], 1.0e-15);
 
     }
 

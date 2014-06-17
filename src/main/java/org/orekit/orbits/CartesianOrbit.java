@@ -501,43 +501,50 @@ public class CartesianOrbit extends Orbit {
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DataTransferObject(getPVCoordinates(), getFrame(), getMu());
+        return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
+    private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 4184412866917874790L;
+        private static final long serialVersionUID = 20140617L;
 
-        /** Computed PVCoordinates. */
-        private TimeStampedPVCoordinates pvCoordinates;
+        /** Double values. */
+        private double[] d;
 
         /** Frame in which are defined the orbital parameters. */
         private final Frame frame;
 
-        /** Value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
-        private final double mu;
-
         /** Simple constructor.
-         * @param pvCoordinates the position and velocity of the satellite.
-         * @param frame the frame in which the {@link PVCoordinates} are defined
-         * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-         * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+         * @param orbit instance to serialize
          */
-        private DataTransferObject(final TimeStampedPVCoordinates pvCoordinates,
-                                   final Frame frame, final double mu) {
-            this.pvCoordinates = pvCoordinates;
-            this.frame         = frame;
-            this.mu            = mu;
+        private DTO(final CartesianOrbit orbit) {
+
+            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+
+            // decompose date
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+
+            this.d = new double[] {
+                epoch, offset, orbit.getMu(),
+                pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+                pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ(),
+            };
+
+            this.frame = orbit.getFrame();
+
         }
 
         /** Replace the deserialized data transfer object with a {@link CartesianOrbit}.
          * @return replacement {@link CartesianOrbit}
          */
         private Object readResolve() {
-            // build a new provider, with an empty cache
-            return new CartesianOrbit(pvCoordinates, frame, mu);
+            return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                                   new Vector3D(d[3], d[4], d[5]),
+                                                                   new Vector3D(d[6], d[7], d[8])),
+                                      frame, d[2]);
         }
 
     }

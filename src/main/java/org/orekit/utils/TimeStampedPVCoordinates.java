@@ -16,11 +16,13 @@
  */
 package org.orekit.utils;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -234,6 +236,50 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
                                   append(getVelocity().getX()).append(comma).
                                   append(getVelocity().getY()).append(comma).
                                   append(getVelocity().getZ()).append(")}").toString();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Double values. */
+        private double[] d;
+
+        /** Simple constructor.
+         * @param pv instance to serialize
+         */
+        private DTO(final TimeStampedPVCoordinates pv) {
+
+            // decompose date
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+
+            this.d = new double[] {
+                epoch, offset,
+                pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+                pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ(),
+            };
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link TimeStampedPVCoordinates}.
+         * @return replacement {@link TimeStampedPVCoordinates}
+         */
+        private Object readResolve() {
+            return new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                new Vector3D(d[2], d[3], d[4]),
+                                                new Vector3D(d[5], d[6], d[7]));
+        }
+
     }
 
 }

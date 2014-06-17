@@ -16,6 +16,7 @@
  */
 package org.orekit.orbits;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
@@ -1235,6 +1236,57 @@ public class KeplerianOrbit extends Orbit {
                                   append("; raan: ").append(FastMath.toDegrees(raan)).
                                   append("; v: ").append(FastMath.toDegrees(v)).
                                   append(";}").toString();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Double values. */
+        private double[] d;
+
+        /** Frame in which are defined the orbital parameters. */
+        private final Frame frame;
+
+        /** Simple constructor.
+         * @param orbit instance to serialize
+         */
+        private DTO(final KeplerianOrbit orbit) {
+
+            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+
+            // decompose date
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+
+            this.d = new double[] {
+                epoch, offset, orbit.getMu(),
+                orbit.a, orbit.e, orbit.i,
+                orbit.pa, orbit.raan, orbit.v
+            };
+
+            this.frame = orbit.getFrame();
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link KeplerianOrbit}.
+         * @return replacement {@link KeplerianOrbit}
+         */
+        private Object readResolve() {
+            return new KeplerianOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                                      frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                      d[2]);
+        }
+
     }
 
 }
