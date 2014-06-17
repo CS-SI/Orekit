@@ -117,7 +117,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv2 second base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
-                           final double a2, final FieldPVCoordinates<T> pv2) {
+                              final double a2, final FieldPVCoordinates<T> pv2) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity);
     }
@@ -131,7 +131,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv2 second base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
-                           final T a2, final FieldPVCoordinates<T> pv2) {
+                              final T a2, final FieldPVCoordinates<T> pv2) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity);
     }
@@ -145,7 +145,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv2 second base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
-                           final T a2, final PVCoordinates pv2) {
+                              final T a2, final PVCoordinates pv2) {
         position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition());
         velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity());
     }
@@ -161,8 +161,8 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv3 third base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
-                           final double a2, final FieldPVCoordinates<T> pv2,
-                           final double a3, final FieldPVCoordinates<T> pv3) {
+                              final double a2, final FieldPVCoordinates<T> pv2,
+                              final double a3, final FieldPVCoordinates<T> pv3) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
@@ -178,8 +178,8 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv3 third base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
-                           final T a2, final FieldPVCoordinates<T> pv2,
-                           final T a3, final FieldPVCoordinates<T> pv3) {
+                              final T a2, final FieldPVCoordinates<T> pv2,
+                              final T a3, final FieldPVCoordinates<T> pv3) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
@@ -195,8 +195,8 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv3 third base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
-                           final T a2, final PVCoordinates pv2,
-                           final T a3, final PVCoordinates pv3) {
+                              final T a2, final PVCoordinates pv2,
+                              final T a3, final PVCoordinates pv3) {
         position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition());
         velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity());
     }
@@ -214,9 +214,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
-                           final double a2, final FieldPVCoordinates<T> pv2,
-                           final double a3, final FieldPVCoordinates<T> pv3,
-                           final double a4, final FieldPVCoordinates<T> pv4) {
+                              final double a2, final FieldPVCoordinates<T> pv2,
+                              final double a3, final FieldPVCoordinates<T> pv3,
+                              final double a4, final FieldPVCoordinates<T> pv4) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
@@ -234,9 +234,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
-                           final T a2, final FieldPVCoordinates<T> pv2,
-                           final T a3, final FieldPVCoordinates<T> pv3,
-                           final T a4, final FieldPVCoordinates<T> pv4) {
+                              final T a2, final FieldPVCoordinates<T> pv2,
+                              final T a3, final FieldPVCoordinates<T> pv3,
+                              final T a4, final FieldPVCoordinates<T> pv4) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
@@ -254,9 +254,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
-                           final T a2, final PVCoordinates pv2,
-                           final T a3, final PVCoordinates pv3,
-                           final T a4, final PVCoordinates pv4) {
+                              final T a2, final PVCoordinates pv2,
+                              final T a3, final PVCoordinates pv3,
+                              final T a4, final PVCoordinates pv4) {
         position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(),
                                   a3, pv3.getPosition(), a4, pv4.getPosition());
         velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(),
