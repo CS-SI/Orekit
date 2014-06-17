@@ -23,6 +23,9 @@
     <release version="7.0" date="TBD"
              description="TBD">
       <action dev="luc" type="update" >
+        PVCoordinatesProvider now produces time-stamped position-velocities.
+      </action>
+      <action dev="luc" type="update" >
         Tabulated attitude provider can be built directly from time-stamped angular coordinates
         lists, in addition to attitudes lists.
       </action>

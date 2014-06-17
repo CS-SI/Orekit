@@ -78,6 +78,21 @@ public class CartesianOrbit extends Orbit {
      * @param pvCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public CartesianOrbit(final TimeStampedPVCoordinates pvCoordinates,
+                          final Frame frame, final double mu)
+        throws IllegalArgumentException {
+        super(pvCoordinates, frame, mu);
+        equinoctial = null;
+    }
+
+    /** Constructor from cartesian parameters.
+     * @param pvCoordinates the position and velocity of the satellite.
+     * @param frame the frame in which the {@link PVCoordinates} are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
@@ -86,15 +101,15 @@ public class CartesianOrbit extends Orbit {
     public CartesianOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                           final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
-        equinoctial = null;
+        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+              frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
      */
     public CartesianOrbit(final Orbit op) {
-        super(op.getPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
+        super(op.getPVCoordinates(), op.getFrame(), op.getMu());
         if (op instanceof EquinoctialOrbit) {
             equinoctial = (EquinoctialOrbit) op;
         } else if (op instanceof CartesianOrbit) {
@@ -190,7 +205,7 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    protected PVCoordinates initPVCoordinates() {
+    protected TimeStampedPVCoordinates initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the cartesian ones
         return getPVCoordinates();
     }
@@ -486,7 +501,7 @@ public class CartesianOrbit extends Orbit {
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DataTransferObject(getPVCoordinates(), getFrame(), getDate(), getMu());
+        return new DataTransferObject(getPVCoordinates(), getFrame(), getMu());
     }
 
     /** Internal class used only for serialization. */
@@ -496,13 +511,10 @@ public class CartesianOrbit extends Orbit {
         private static final long serialVersionUID = 4184412866917874790L;
 
         /** Computed PVCoordinates. */
-        private PVCoordinates pvCoordinates;
+        private TimeStampedPVCoordinates pvCoordinates;
 
         /** Frame in which are defined the orbital parameters. */
         private final Frame frame;
-
-        /** Date of the orbital parameters. */
-        private final AbsoluteDate date;
 
         /** Value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
         private final double mu;
@@ -511,14 +523,12 @@ public class CartesianOrbit extends Orbit {
          * @param pvCoordinates the position and velocity of the satellite.
          * @param frame the frame in which the {@link PVCoordinates} are defined
          * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-         * @param date date of the orbital parameters
          * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
          */
-        private DataTransferObject(final PVCoordinates pvCoordinates, final Frame frame,
-                                   final AbsoluteDate date, final double mu) {
+        private DataTransferObject(final TimeStampedPVCoordinates pvCoordinates,
+                                   final Frame frame, final double mu) {
             this.pvCoordinates = pvCoordinates;
             this.frame         = frame;
-            this.date          = date;
             this.mu            = mu;
         }
 
@@ -527,7 +537,7 @@ public class CartesianOrbit extends Orbit {
          */
         private Object readResolve() {
             // build a new provider, with an empty cache
-            return new CartesianOrbit(pvCoordinates, frame, date, mu);
+            return new CartesianOrbit(pvCoordinates, frame, mu);
         }
 
     }

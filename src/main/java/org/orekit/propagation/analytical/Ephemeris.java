@@ -31,7 +31,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ImmutableTimeStampedCache;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
@@ -133,7 +133,7 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
         throws OrekitException {
         return propagate(date).getPVCoordinates(f);
     }

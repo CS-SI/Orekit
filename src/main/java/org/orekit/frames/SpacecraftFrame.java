@@ -25,8 +25,8 @@ import java.io.ObjectOutput;
 import org.orekit.errors.OrekitException;
 import org.orekit.propagation.Propagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Spacecraft frame.
@@ -71,7 +71,7 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
      * @return position/velocity of the spacecraft frame origin (m and m/s)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return getPropagator().getPVCoordinates(date, frame);
     }

@@ -43,6 +43,7 @@ import org.orekit.propagation.integration.AbstractIntegratedPropagator;
 import org.orekit.propagation.integration.StateMapper;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates {@link org.orekit.orbits.Orbit orbits} using
  * numerical integration.
@@ -273,7 +274,7 @@ public class NumericalPropagator extends AbstractIntegratedPropagator {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return propagate(date).getPVCoordinates(frame);
     }

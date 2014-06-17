@@ -37,6 +37,7 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -409,7 +410,7 @@ public class Transform
 
     /** Transform {@link PVCoordinates} including kinematic effects.
      * @param pv the couple position-velocity to transform.
-     * @return transformed position/velocity
+     * @return transformed position-velocity
      */
     public PVCoordinates transformPVCoordinates(final PVCoordinates pv) {
         final Vector3D p = pv.getPosition();
@@ -420,10 +421,32 @@ public class Transform
                                  angular.getRotation().applyTo(v.add(cartesian.getVelocity())).subtract(cross));
     }
 
+    /** Transform {@link TimeStampedPVCoordinates} including kinematic effects.
+     * <p>
+     * In order to allow the user more flexibility, this method does <em>not</em> check for
+     * consistency between the transform {@link #getDate() date} and the time-stamped
+     * position-velocity {@link TimeStampedPVCoordinates#getDate() date}. The returned
+     * value will always have the same {@link TimeStampedPVCoordinates#getDate() date} as
+     * the input argument, regardless of the instance {@link #getDate() date}.
+     * </p>
+     * @param pv time-stamped  position-velocity to transform.
+     * @return transformed time-stamped position-velocity
+     * @since 7.0
+     */
+    public TimeStampedPVCoordinates transformPVCoordinates(final TimeStampedPVCoordinates pv) {
+        final Vector3D p = pv.getPosition();
+        final Vector3D v = pv.getVelocity();
+        final Vector3D transformedP = angular.getRotation().applyTo(cartesian.getPosition().add(p));
+        final Vector3D cross = Vector3D.crossProduct(angular.getRotationRate(), transformedP);
+        return new TimeStampedPVCoordinates(pv.getDate(),
+                                            transformedP,
+                                            angular.getRotation().applyTo(v.add(cartesian.getVelocity())).subtract(cross));
+    }
+
     /** Transform {@link FieldPVCoordinates} including kinematic effects.
-     * @param pv the couple position-velocity to transform.
-     * @param <T> the type of the field elements
-     * @return transformed position/velocity
+     * @param pv position-velocity to transform.
+     * @param <T> type of the field elements
+     * @return transformed position-velocity
      */
     public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
         final FieldVector3D<T> p = pv.getPosition();
@@ -434,6 +457,31 @@ public class Transform
         return new FieldPVCoordinates<T>(transformedP,
                                          FieldRotation.applyTo(angular.getRotation(),
                                                                v.add(cartesian.getVelocity())).subtract(cross));
+    }
+
+    /** Transform {@link TimeStampedFieldPVCoordinates} including kinematic effects.
+     * <p>
+     * In order to allow the user more flexibility, this method does <em>not</em> check for
+     * consistency between the transform {@link #getDate() date} and the time-stamped
+     * position-velocity {@link TimeStampedFieldPVCoordinates#getDate() date}. The returned
+     * value will always have the same {@link TimeStampedFieldPVCoordinates#getDate() date} as
+     * the input argument, regardless of the instance {@link #getDate() date}.
+     * </p>
+     * @param pv time-stamped position-velocity to transform.
+     * @param <T> type of the field elements
+     * @return transformed time-stamped position-velocity
+     * @since 7.0
+     */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
+        final FieldVector3D<T> p = pv.getPosition();
+        final FieldVector3D<T> v = pv.getVelocity();
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(),
+                                                                    p.add(cartesian.getPosition()));
+        final FieldVector3D<T> cross = FieldVector3D.crossProduct(angular.getRotationRate(), transformedP);
+        return new TimeStampedFieldPVCoordinates<T>(pv.getDate(),
+                                                    transformedP,
+                                                    FieldRotation.applyTo(angular.getRotation(),
+                                                                          v.add(cartesian.getVelocity())).subtract(cross));
     }
 
     /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}

@@ -32,8 +32,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * This class handles orbital parameters.
@@ -75,7 +75,7 @@ public abstract class Orbit
     private final double mu;
 
     /** Computed PVCoordinates. */
-    private transient PVCoordinates pvCoordinates;
+    private transient TimeStampedPVCoordinates pvCoordinates;
 
     /** Jacobian of the orbital parameters with mean angle with respect to the Cartesian coordinates. */
     private transient double[][] jacobianMeanWrtCartesian;
@@ -123,16 +123,14 @@ public abstract class Orbit
      * @param pvCoordinates the position and velocity in the inertial frame
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    protected Orbit(final PVCoordinates pvCoordinates, final Frame frame,
-                    final AbsoluteDate date, final double mu)
+    protected Orbit(final TimeStampedPVCoordinates pvCoordinates, final Frame frame, final double mu)
         throws IllegalArgumentException {
         ensurePseudoInertialFrame(frame);
-        this.date = date;
+        this.date = pvCoordinates.getDate();
         this.mu = mu;
         this.pvCoordinates = pvCoordinates;
         this.frame = frame;
@@ -257,7 +255,7 @@ public abstract class Orbit
      * @exception OrekitException if transformation between frames cannot be computed
      * @see #getPVCoordinates()
      */
-    public PVCoordinates getPVCoordinates(final Frame outputFrame)
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
@@ -275,7 +273,7 @@ public abstract class Orbit
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate otherDate, final Frame otherFrame)
         throws OrekitException {
         return shiftedBy(otherDate.durationFrom(getDate())).getPVCoordinates(otherFrame);
     }
@@ -285,7 +283,7 @@ public abstract class Orbit
      * @return pvCoordinates in the definition frame
      * @see #getPVCoordinates(Frame)
      */
-    public PVCoordinates getPVCoordinates() {
+    public TimeStampedPVCoordinates getPVCoordinates() {
         if (pvCoordinates == null) {
             pvCoordinates = initPVCoordinates();
         }
@@ -295,7 +293,7 @@ public abstract class Orbit
     /** Compute the position/velocity coordinates from the canonical parameters.
      * @return computed position/velocity coordinates
      */
-    protected abstract PVCoordinates initPVCoordinates();
+    protected abstract TimeStampedPVCoordinates initPVCoordinates();
 
     /** Get a time-shifted orbit.
      * <p>

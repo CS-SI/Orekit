@@ -27,6 +27,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -220,15 +221,14 @@ public class EquinoctialOrbit extends Orbit {
      * @param pvCoordinates the position end velocity
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
-                                 final AbsoluteDate date, final double mu)
+    public EquinoctialOrbit(final TimeStampedPVCoordinates pvCoordinates,
+                            final Frame frame, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
+        super(pvCoordinates, frame, mu);
 
         //  compute semi-major axis
         final Vector3D pvP = pvCoordinates.getPosition();
@@ -266,6 +266,22 @@ public class EquinoctialOrbit extends Orbit {
         ex = a * (f * cLv + g * sLv) / r;
         ey = a * (f * sLv - g * cLv) / r;
 
+    }
+
+    /** Constructor from cartesian parameters.
+     * @param pvCoordinates the position end velocity
+     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+                            final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+             frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -399,7 +415,7 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    protected PVCoordinates initPVCoordinates() {
+    protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // get equinoctial parameters
         final double lE = getLE();
@@ -443,7 +459,7 @@ public class EquinoctialOrbit extends Orbit {
             new Vector3D(x * ux + y * vx, x * uy + y * vy, x * uz + y * vz);
         final Vector3D velocity =
             new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
-        return new PVCoordinates(position, velocity);
+        return new TimeStampedPVCoordinates(getDate(), position, velocity);
 
     }
 

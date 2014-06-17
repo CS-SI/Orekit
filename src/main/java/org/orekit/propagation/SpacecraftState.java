@@ -39,7 +39,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** This class is the representation of a complete state holding orbit, attitude
@@ -578,7 +578,7 @@ public class SpacecraftState
      * {@link PVCoordinates} if it needs to keep the value for a while.
      * @return pvCoordinates in orbit definition frame
      */
-    public PVCoordinates getPVCoordinates() {
+    public TimeStampedPVCoordinates getPVCoordinates() {
         return orbit.getPVCoordinates();
     }
 
@@ -592,7 +592,7 @@ public class SpacecraftState
      * @return pvCoordinates in orbit definition frame
      * @exception OrekitException if the transformation between frames cannot be computed
      */
-    public PVCoordinates getPVCoordinates(final Frame outputFrame)
+    public TimeStampedPVCoordinates getPVCoordinates(final Frame outputFrame)
         throws OrekitException {
         return orbit.getPVCoordinates(outputFrame);
     }

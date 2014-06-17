@@ -28,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -257,15 +258,14 @@ public class KeplerianOrbit extends Orbit {
      * @param pvCoordinates the PVCoordinates of the satellite
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
      * Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public KeplerianOrbit(final PVCoordinates pvCoordinates,
-                          final Frame frame, final AbsoluteDate date, final double mu)
+    public KeplerianOrbit(final TimeStampedPVCoordinates pvCoordinates,
+                          final Frame frame, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
+        super(pvCoordinates, frame, mu);
 
         // compute inclination
         final Vector3D momentum = pvCoordinates.getMomentum();
@@ -307,6 +307,22 @@ public class KeplerianOrbit extends Orbit {
         final double py = Vector3D.dotProduct(pvP, Vector3D.crossProduct(momentum, node)) / FastMath.sqrt(m2);
         pa = FastMath.atan2(py, px) - v;
 
+    }
+
+    /** Constructor from cartesian parameters.
+     * @param pvCoordinates the PVCoordinates of the satellite
+     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public KeplerianOrbit(final PVCoordinates pvCoordinates,
+                          final Frame frame, final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+              frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -601,7 +617,7 @@ public class KeplerianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    protected PVCoordinates initPVCoordinates() {
+    protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // preliminary variables
         final double cosRaan = FastMath.cos(raan);
@@ -629,7 +645,7 @@ public class KeplerianOrbit extends Orbit {
      * @param q unit vector in the orbital plane in quadrature with q
      * @return computed position/velocity coordinates
      */
-    private PVCoordinates initPVCoordinatesElliptical(final Vector3D p, final Vector3D q) {
+    private TimeStampedPVCoordinates initPVCoordinatesElliptical(final Vector3D p, final Vector3D q) {
 
         // elliptic eccentric anomaly
         final double uME2   = (1 - e) * (1 + e);
@@ -645,7 +661,7 @@ public class KeplerianOrbit extends Orbit {
         final double xDot   = -sinE * factor;
         final double yDot   =  cosE * s1Me2 * factor;
 
-        return new PVCoordinates(new Vector3D(x, p, y, q), new Vector3D(xDot, p, yDot, q));
+        return new TimeStampedPVCoordinates(getDate(), new Vector3D(x, p, y, q), new Vector3D(xDot, p, yDot, q));
 
     }
 
@@ -654,7 +670,7 @@ public class KeplerianOrbit extends Orbit {
      * @param q unit vector in the orbital plane in quadrature with q
      * @return computed position/velocity coordinates
      */
-    private PVCoordinates initPVCoordinatesHyperbolic(final Vector3D p, final Vector3D q) {
+    private TimeStampedPVCoordinates initPVCoordinatesHyperbolic(final Vector3D p, final Vector3D q) {
 
         // compute position and velocity factors
         final double sinV      = FastMath.sin(v);
@@ -663,8 +679,9 @@ public class KeplerianOrbit extends Orbit {
         final double posFactor = f / (1 + e * cosV);
         final double velFactor = FastMath.sqrt(getMu() / f);
 
-        return new PVCoordinates(new Vector3D( posFactor * cosV, p, posFactor * sinV, q),
-                                 new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q));
+        return new TimeStampedPVCoordinates(getDate(),
+                                            new Vector3D( posFactor * cosV, p, posFactor * sinV, q),
+                                            new Vector3D(-velFactor * sinV, p, velFactor * (e + cosV), q));
 
     }
 
