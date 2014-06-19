@@ -69,6 +69,21 @@ class TesseralContribution implements DSSTForceModel {
     /** Number of points for interpolation. */
     private static final int INTERPOLATION_POINTS = 3;
 
+    /** Maximum possible (absolute) value for j index. */
+    private static final int MAXJ = 12;
+
+    /** The maximum degree used for tesseral short periodics (without m-daily). */
+    private static final int MAX_DEGREE_TESSERAL_SP = 8;
+
+    /** The maximum degree used for m-daily tesseral short periodics. */
+    private static final int MAX_DEGREE_MDAILY_TESSERAL_SP = 12;
+
+    /** The maximum order used for tesseral short periodics (without m-daily). */
+    private static final int MAX_ORDER_TESSERAL_SP = 8;
+
+    /** The maximum order used for m-daily tesseral short periodics. */
+    private static final int MAX_ORDER_MDAILY_TESSERAL_SP = 12;
+
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
@@ -84,8 +99,20 @@ class TesseralContribution implements DSSTForceModel {
     /** Maximal degree to consider for harmonics potential. */
     private final int maxDegree;
 
+    /** Maximal degree to consider for short periodics tesseral harmonics potential (without m-daily). */
+    private final int maxDegreeTesseralSP;
+
+    /** Maximal degree to consider for short periodics m-daily tesseral harmonics potential . */
+    private final int maxDegreeMdailyTesseralSP;
+
     /** Maximal order to consider for harmonics potential. */
     private final int maxOrder;
+
+    /** Maximal order to consider for short periodics tesseral harmonics potential (without m-daily). */
+    private final int maxOrderTesseralSP;
+
+    /** Maximal order to consider for short periodics m-daily tesseral harmonics potential . */
+    private final int maxOrderMdailyTesseralSP;
 
     /** List of resonant orders. */
     private final List<Integer> resOrders;
@@ -181,17 +208,20 @@ class TesseralContribution implements DSSTForceModel {
     /** ecc<sup>2</sup>. */
     private double e2;
 
+    /** The satellite mean motion. */
+    private double meanMotion;
+
     /** Flag to take into account only M-dailies harmonic tesserals for short periodic perturbations.  */
     private final boolean mDailiesOnly;
 
     /** Maximum value for j.
      * <p>
-     * jmax = maxDegree + maxOrder
+     * jmax = maxDegree + maxEccPow
      * </p>
      * */
-    private final int jMax;
+    private int jMax;
 
-    /** List of non resonant orders. */
+    /** List of non resonant orders with j != 0. */
     private final SortedMap<Integer, List<Integer> > nonResOrders;
 
     /** A two dimensional array that contains the objects needed to build the Hansen coefficients. <br/>
@@ -229,7 +259,12 @@ class TesseralContribution implements DSSTForceModel {
         this.provider  = provider;
         this.maxDegree = provider.getMaxDegree();
         this.maxOrder  = provider.getMaxOrder();
-        this.jMax      = this.maxDegree + this.maxOrder;
+
+        //set the maximum degree order for short periodics
+        this.maxDegreeTesseralSP = FastMath.min(maxDegree, MAX_DEGREE_TESSERAL_SP);
+        this.maxDegreeMdailyTesseralSP = FastMath.min(maxDegree, MAX_DEGREE_MDAILY_TESSERAL_SP);
+        this.maxOrderTesseralSP = FastMath.min(maxOrder, MAX_ORDER_TESSERAL_SP);
+        this.maxOrderMdailyTesseralSP = FastMath.min(maxOrder, MAX_ORDER_MDAILY_TESSERAL_SP);
 
         // m-daylies only
         this.mDailiesOnly = mDailiesOnly;
@@ -260,12 +295,6 @@ class TesseralContribution implements DSSTForceModel {
         // orbit frame
         frame = aux.getFrame();
 
-        // Ratio of satellite to central body periods to define resonant terms
-        ratio = orbitPeriod / bodyPeriod;
-
-        // Compute the resonant tesseral harmonic terms if not set by the user
-        getResonantAndNonResonantTerms(meanOnly);
-
         // Set the highest power of the eccentricity in the analytical power
         // series expansion for the averaged high order resonant central body
         // spherical harmonic perturbation
@@ -288,6 +317,13 @@ class TesseralContribution implements DSSTForceModel {
 
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
+        jMax = FastMath.min(MAXJ, maxDegree + maxEccPow);
+
+        // Ratio of satellite to central body periods to define resonant terms
+        ratio = orbitPeriod / bodyPeriod;
+
+        // Compute the resonant tesseral harmonic terms if not set by the user
+        getResonantAndNonResonantTerms(meanOnly);
 
         //initialize the HansenTesseralLinear objects needed
         createHansenObjects(meanOnly);
@@ -295,7 +331,7 @@ class TesseralContribution implements DSSTForceModel {
         if (!meanOnly) {
             //Initialize the Tesseral Short Periodics coefficient class
             tesseralSPCoefs = new TesseralShortPeriodicCoefficients(jMax,
-                    maxOrder, INTERPOLATION_POINTS);
+                    FastMath.max(maxOrderTesseralSP, maxOrderMdailyTesseralSP), INTERPOLATION_POINTS);
         }
     }
 
@@ -413,6 +449,9 @@ class TesseralContribution implements DSSTForceModel {
         // &Chi; = 1 / B
         chi = 1. / B;
         chi2 = chi * chi;
+
+        //mean motion n
+        meanMotion = aux.getMeanMotion();
     }
 
     /** {@inheritDoc} */
@@ -456,8 +495,9 @@ class TesseralContribution implements DSSTForceModel {
         // Initialise the short periodic variations
         final double[] shortPeriodicVariation = new double[] {0., 0., 0., 0., 0., 0.};
 
-        // Compute only if there is at least one non-resonant tesseral
-        if (!nonResOrders.isEmpty()) {
+        // Compute only if there is at least one non-resonant tesseral or
+        // only the m-daily tesseral should be taken into account
+        if (!nonResOrders.isEmpty() || mDailiesOnly) {
 
             // Build an Orbit object from the mean elements
             final Orbit meanOrbit = OrbitType.EQUINOCTIAL.mapArrayToOrbit(
@@ -472,6 +512,20 @@ class TesseralContribution implements DSSTForceModel {
             final Vector3D yB = t.transformVector(Vector3D.PLUS_J);
             final double currentTheta = FastMath.atan2(-f.dotProduct(yB) + I * g.dotProduct(xB),
                                                         f.dotProduct(xB) + I * g.dotProduct(yB));
+
+            //Add the m-daily contribution
+            for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
+                // Phase angle
+                final double jlMmt  = -m * currentTheta;
+                final double sinPhi = FastMath.sin(jlMmt);
+                final double cosPhi = FastMath.cos(jlMmt);
+
+                // compute contribution for each element
+                for (int i = 0; i < 6; i++) {
+                    shortPeriodicVariation[i] += tesseralSPCoefs.getCijm(i, 0, m, date) * cosPhi +
+                                                 tesseralSPCoefs.getSijm(i, 0, m, date) * sinPhi;
+                }
+            }
 
             // loop through all non-resonant (j,m) pairs
             for (int m : nonResOrders.keySet()) {
@@ -488,6 +542,7 @@ class TesseralContribution implements DSSTForceModel {
                         shortPeriodicVariation[i] += tesseralSPCoefs.getCijm(i, j, m, date) * cosPhi +
                                                      tesseralSPCoefs.getSijm(i, j, m, date) * sinPhi;
                     }
+
                 }
             }
         }
@@ -514,22 +569,27 @@ class TesseralContribution implements DSSTForceModel {
         initializeStep(aux);
 
         // Initialise the Hansen coefficients
-        for (int j = 0; j <= jMax; j++) {
-            for (int s = -maxDegree; s <= maxDegree; s++) {
-                this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
+        for (int s = -maxDegree; s <= maxDegree; s++) {
+            // coefficients with j == 0 are always needed
+            this.hansenObjects[s + maxDegree][0].computeInitValues(e2, chi, chi2);
+            if (!mDailiesOnly) {
+                // initialize other objects only if required
+                for (int j = 1; j <= jMax; j++) {
+                    this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
+                }
             }
         }
 
         // Compute coefficients
-        tesseralSPCoefs.computeCoefficients(aux);
+        tesseralSPCoefs.computeCoefficients(aux.getDate());
     }
 
-    /** Get the resonant and non-resonant tesseral terms in the central body spherical harmonic field.
-     *
-     * @param resonantOnly extract only resonant terms
-     */
+     /**
+      * Get the resonant and non-resonant tesseral terms in the central body spherical harmonic field.
+      *
+      * @param resonantOnly extract only resonant terms
+      */
     private void getResonantAndNonResonantTerms(final boolean resonantOnly) {
-
 
         // Compute natural resonant terms
         final double tolerance = 1. / FastMath.max(MIN_PERIOD_IN_SAT_REV,
@@ -542,26 +602,22 @@ class TesseralContribution implements DSSTForceModel {
             final double resonance = ratio * m;
             int jRes = 0;
             final int jComputedRes = (int) FastMath.round(resonance);
-            if (jComputedRes > 0 && FastMath.abs(resonance - jComputedRes) <= tolerance) {
+            if (jComputedRes > 0 && jComputedRes <= jMax && FastMath.abs(resonance - jComputedRes) <= tolerance) {
                 // Store each resonant index and order
                 resOrders.add(m);
                 jRes = jComputedRes;
             }
 
-            if (!resonantOnly) {
+            if (!resonantOnly && !mDailiesOnly && m <= maxOrderTesseralSP) {
                 //compute non resonant orders in the tesseral harmonic field
                 final List<Integer> listJofM = new ArrayList<Integer>();
-                if (mDailiesOnly) {
-                    //for M-dailies we have j = 0 only in the (j,m) pairs
-                    listJofM.add(0);
-                } else {
-                    //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
-                    for (int j = -jMax; j <= jMax; j++) {
-                        if (jRes == 0 || j != jRes) {
-                            listJofM.add(j);
-                        }
+                //for the moment we take only the pairs (j,m) with |j| <= maxDegree + maxEccPow (from |s-j| <= maxEccPow and |s| <= maxDegree)
+                for (int j = -jMax; j <= jMax; j++) {
+                    if (j != 0 && j != jRes) {
+                        listJofM.add(j);
                     }
                 }
+
                 nonResOrders.put(m, listJofM);
             }
         }
@@ -646,7 +702,7 @@ class TesseralContribution implements DSSTForceModel {
                     this.hansenObjects[s + maxDegree][j].computeInitValues(e2, chi, chi2);
 
                     // n-SUM for s positive
-                    final double[][] nSumSpos = computeNSum(date, j, m, s,
+                    final double[][] nSumSpos = computeNSum(date, j, m, s, maxDegree,
                                                             roaPow, ghMSJ, gammaMNS);
                     dUdaCos  += nSumSpos[0][0];
                     dUdaSin  += nSumSpos[0][1];
@@ -668,7 +724,7 @@ class TesseralContribution implements DSSTForceModel {
                         //Compute the initial values for Hansen coefficients using newComb operators
                         this.hansenObjects[maxDegree - s][j].computeInitValues(e2, chi, chi2);
 
-                        final double[][] nSumSneg = computeNSum(date, j, m, -s,
+                        final double[][] nSumSneg = computeNSum(date, j, m, -s, maxDegree,
                                                                 roaPow, ghMSJ, gammaMNS);
                         dUdaCos  += nSumSneg[0][0];
                         dUdaSin  += nSumSneg[0][1];
@@ -714,6 +770,7 @@ class TesseralContribution implements DSSTForceModel {
      *  @param j resonant index <i>j</i>
      *  @param m resonant order <i>m</i>
      *  @param s d'Alembert characteristic <i>s</i>
+     *  @param maxN maximum possible value for <i>n</i> index
      *  @param roaPow powers of R/a up to degree <i>n</i>
      *  @param ghMSJ G<sup>j</sup><sub>m,s</sub> and H<sup>j</sup><sub>m,s</sub> polynomials
      *  @param gammaMNS &Gamma;<sup>m</sup><sub>n,s</sub>(&gamma;) function
@@ -721,7 +778,7 @@ class TesseralContribution implements DSSTForceModel {
      * @throws OrekitException if some error occurred
      */
     private double[][] computeNSum(final AbsoluteDate date,
-                                   final int j, final int m, final int s, final double[] roaPow,
+                                   final int j, final int m, final int s, final int maxN, final double[] roaPow,
                                    final GHmsjPolynomials ghMSJ, final GammaMnsFunction gammaMNS)
         throws OrekitException {
 
@@ -760,7 +817,7 @@ class TesseralContribution implements DSSTForceModel {
         final HansenTesseralLinear hans = this.hansenObjects[sIndex][jIndex];
 
         // n-SUM from nmin to N
-        for (int n = nmin; n <= maxDegree; n++) {
+        for (int n = nmin; n <= maxN; n++) {
             // If (n - s) is odd, the contribution is null because of Vmns
             if ((n - s) % 2 == 0) {
 
@@ -855,6 +912,7 @@ class TesseralContribution implements DSSTForceModel {
         //nothing is done since this contribution is not sensitive to attitude
     }
 
+    /** {@inheritDoc} */
     @Override
     public void resetShortPeriodicsCoefficients() {
         if (tesseralSPCoefs != null) {
@@ -862,15 +920,13 @@ class TesseralContribution implements DSSTForceModel {
         }
     }
 
-
-
     /** Compute the C<sup>j</sup> and the S<sup>j</sup> coefficients.
      *  <p>
      *  Those coefficients are given in Danielson paper by substituting the
      *  disturbing function (2.7.1-16) with m != 0 into (2.2-10)
      *  </p>
      */
-    public class FourierCjSjCoefficients {
+    private class FourierCjSjCoefficients {
 
         /** Absolute limit for j ( -jMax <= j <= jMax ).  */
         private final int jMax;
@@ -905,166 +961,189 @@ class TesseralContribution implements DSSTForceModel {
          */
         private final double[][][] sCoef;
 
+        /** G<sub>ms</sub><sup>j</sup> and H<sub>ms</sub><sup>j</sup> polynomials. */
+        private GHmsjPolynomials ghMSJ;
+
+        /** &Gamma;<sub>ns</sub><sup>m</sup> function. */
+        private GammaMnsFunction gammaMNS;
+
+        /** R / a up to power degree. */
+        private final double[] roaPow;
+
         /** Create a set of C<sub>i</sub><sup>jm</sup> and S<sub>i</sub><sup>jm</sup> coefficients.
-         *  @param aux The auxiliary elements
          *  @param jMax absolute limit for j ( -jMax <= j <= jMax )
          *  @param mMax maximum value for m
-         *  @throws OrekitException if an error occurs while generating the coefficients
          */
-        public FourierCjSjCoefficients(final AuxiliaryElements aux, final int jMax, final int mMax)
-            throws OrekitException {
-
+        public FourierCjSjCoefficients(final int jMax, final int mMax) {
+            // initialise fields
             this.jMax = jMax;
             this.cCoef = new double[mMax + 1][2 * jMax + 1][6];
             this.sCoef = new double[mMax + 1][2 * jMax + 1][6];
-
-            generateCoefficients(aux);
+            this.roaPow = new double[maxDegree + 1];
+            roaPow[0] = 1.;
         }
 
         /**
          * Generate the coefficients.
-         * @param aux The auxiliary elements
+         * @param date the current date
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        private void generateCoefficients(final AuxiliaryElements aux) throws OrekitException {
+        public void generateCoefficients(final AbsoluteDate date) throws OrekitException {
             // Compute only if there is at least one non-resonant tesseral
-            if (!nonResOrders.isEmpty()) {
+            if (!nonResOrders.isEmpty() || mDailiesOnly) {
                 // Gmsj and Hmsj polynomials
-                final GHmsjPolynomials ghMSJ = new GHmsjPolynomials(k, h, alpha, beta, I);
+                ghMSJ = new GHmsjPolynomials(k, h, alpha, beta, I);
 
                 // GAMMAmns function
-                final GammaMnsFunction gammaMNS = new GammaMnsFunction(fact, gamma, I);
+                gammaMNS = new GammaMnsFunction(fact, gamma, I);
+
+                final int maxRoaPower = FastMath.max(maxDegreeTesseralSP, maxDegreeMdailyTesseralSP);
 
                 // R / a up to power degree
-                final double[] roaPow = new double[maxDegree + 1];
-                roaPow[0] = 1.;
-                for (int i = 1; i <= maxDegree; i++) {
+                for (int i = 1; i <= maxRoaPower; i++) {
                     roaPow[i] = roa * roaPow[i - 1];
                 }
 
-                // the date
-                final AbsoluteDate date = aux.getDate();
+                //generate the m-daily coefficients
+                for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
+                    buildFourierCoefficients(date, m, 0, maxDegreeMdailyTesseralSP);
+                }
 
-                // generate the coefficients
-                for (int m: nonResOrders.keySet()) {
-                    final List<Integer> listJ = nonResOrders.get(m);
+                // generate the other coefficients only if required
+                if (!mDailiesOnly) {
+                    for (int m: nonResOrders.keySet()) {
+                        final List<Integer> listJ = nonResOrders.get(m);
 
-                    for (int j: listJ) {
+                        for (int j: listJ) {
 
-                        // Potential derivatives components for a given non-resonant pair {j,m}
-                        double dRdaCos  = 0.;
-                        double dRdaSin  = 0.;
-                        double dRdhCos  = 0.;
-                        double dRdhSin  = 0.;
-                        double dRdkCos  = 0.;
-                        double dRdkSin  = 0.;
-                        double dRdlCos  = 0.;
-                        double dRdlSin  = 0.;
-                        double dRdAlCos = 0.;
-                        double dRdAlSin = 0.;
-                        double dRdBeCos = 0.;
-                        double dRdBeSin = 0.;
-                        double dRdGaCos = 0.;
-                        double dRdGaSin = 0.;
-
-                        // s-SUM from -sMin to sMax
-                        final int sMin = FastMath.min(maxEccPow - j, maxDegree);
-                        final int sMax = FastMath.min(maxEccPow + j, maxDegree);
-                        for (int s = 0; s <= sMax; s++) {
-
-                            // n-SUM for s positive
-                            final double[][] nSumSpos = computeNSum(date, j, m, s,
-                                                                    roaPow, ghMSJ, gammaMNS);
-                            dRdaCos  += nSumSpos[0][0];
-                            dRdaSin  += nSumSpos[0][1];
-                            dRdhCos  += nSumSpos[1][0];
-                            dRdhSin  += nSumSpos[1][1];
-                            dRdkCos  += nSumSpos[2][0];
-                            dRdkSin  += nSumSpos[2][1];
-                            dRdlCos  += nSumSpos[3][0];
-                            dRdlSin  += nSumSpos[3][1];
-                            dRdAlCos += nSumSpos[4][0];
-                            dRdAlSin += nSumSpos[4][1];
-                            dRdBeCos += nSumSpos[5][0];
-                            dRdBeSin += nSumSpos[5][1];
-                            dRdGaCos += nSumSpos[6][0];
-                            dRdGaSin += nSumSpos[6][1];
-
-                            // n-SUM for s negative
-                            if (s > 0 && s <= sMin) {
-                                final double[][] nSumSneg = computeNSum(date, j, m, -s,
-                                                                        roaPow, ghMSJ, gammaMNS);
-                                dRdaCos  += nSumSneg[0][0];
-                                dRdaSin  += nSumSneg[0][1];
-                                dRdhCos  += nSumSneg[1][0];
-                                dRdhSin  += nSumSneg[1][1];
-                                dRdkCos  += nSumSneg[2][0];
-                                dRdkSin  += nSumSneg[2][1];
-                                dRdlCos  += nSumSneg[3][0];
-                                dRdlSin  += nSumSneg[3][1];
-                                dRdAlCos += nSumSneg[4][0];
-                                dRdAlSin += nSumSneg[4][1];
-                                dRdBeCos += nSumSneg[5][0];
-                                dRdBeSin += nSumSneg[5][1];
-                                dRdGaCos += nSumSneg[6][0];
-                                dRdGaSin += nSumSneg[6][1];
-                            }
+                            buildFourierCoefficients(date, m, j, maxDegreeTesseralSP);
                         }
-                        dRdaCos  *= -moa / a;
-                        dRdaSin  *= -moa / a;
-                        dRdhCos  *=  moa;
-                        dRdhSin  *=  moa;
-                        dRdkCos  *=  moa;
-                        dRdkSin *=  moa;
-                        dRdlCos *=  moa;
-                        dRdlSin *=  moa;
-                        dRdAlCos *=  moa;
-                        dRdAlSin *=  moa;
-                        dRdBeCos *=  moa;
-                        dRdBeSin *=  moa;
-                        dRdGaCos *=  moa;
-                        dRdGaSin *=  moa;
-
-                        // Compute the cross derivative operator :
-                        final double RAlphaGammaCos   = alpha * dRdGaCos - gamma * dRdAlCos;
-                        final double RAlphaGammaSin   = alpha * dRdGaSin - gamma * dRdAlSin;
-                        final double RAlphaBetaCos    = alpha * dRdBeCos - beta  * dRdAlCos;
-                        final double RAlphaBetaSin    = alpha * dRdBeSin - beta  * dRdAlSin;
-                        final double RBetaGammaCos    =  beta * dRdGaCos - gamma * dRdBeCos;
-                        final double RBetaGammaSin    =  beta * dRdGaSin - gamma * dRdBeSin;
-                        final double RhkCos           =     h * dRdkCos  -     k * dRdhCos;
-                        final double RhkSin           =     h * dRdkSin  -     k * dRdhSin;
-                        final double pRagmIqRbgoABCos = (p * RAlphaGammaCos - I * q * RBetaGammaCos) * ooAB;
-                        final double pRagmIqRbgoABSin = (p * RAlphaGammaSin - I * q * RBetaGammaSin) * ooAB;
-                        final double RhkmRabmdRdlCos  =  RhkCos - RAlphaBetaCos - dRdlCos;
-                        final double RhkmRabmdRdlSin  =  RhkSin - RAlphaBetaSin - dRdlSin;
-
-                        // da/dt
-                        cCoef[m][j + jMax][0] = ax2oA * dRdlCos;
-                        sCoef[m][j + jMax][0] = ax2oA * dRdlSin;
-
-                        // dk/dt
-                        cCoef[m][j + jMax][1] = -(BoA * dRdhCos + h * pRagmIqRbgoABCos + k * BoABpo * dRdlCos);
-                        sCoef[m][j + jMax][0] = -(BoA * dRdhSin + h * pRagmIqRbgoABSin + k * BoABpo * dRdlSin);
-
-                        // dh/dt
-                        cCoef[m][j + jMax][2] = BoA * dRdkCos + k * pRagmIqRbgoABCos - h * BoABpo * dRdlCos;
-                        sCoef[m][j + jMax][2] = BoA * dRdkSin + k * pRagmIqRbgoABSin - h * BoABpo * dRdlSin;
-
-                        // dq/dt
-                        cCoef[m][j + jMax][3] = Co2AB * (q * RhkmRabmdRdlCos - I * RAlphaGammaCos);
-                        sCoef[m][j + jMax][3] = Co2AB * (q * RhkmRabmdRdlSin - I * RAlphaGammaSin);
-
-                        // dp/dt
-                        cCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlCos - RBetaGammaCos);
-                        sCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlSin - RBetaGammaSin);
-
-                        // d&lambda;/dt
-                        cCoef[m][j + jMax][5] = -ax2oA * dRdaCos + BoABpo * (h * dRdhCos + k * dRdkCos) + pRagmIqRbgoABCos;
-                        sCoef[m][j + jMax][5] = -ax2oA * dRdaSin + BoABpo * (h * dRdhSin + k * dRdkSin) + pRagmIqRbgoABSin;
                     }
                 }
             }
+        }
+
+        /** Build a set of fourier coefficients for a given m and j.
+         *
+         * @param date the date of the coefficients
+         * @param m m index
+         * @param j j index
+         * @param maxN  maximum value for n index
+         * @throws OrekitException in case of Hansen kernel generation error
+         */
+        private void buildFourierCoefficients(final AbsoluteDate date,
+               final int m, final int j, final int maxN) throws OrekitException {
+            // Potential derivatives components for a given non-resonant pair {j,m}
+            double dRdaCos  = 0.;
+            double dRdaSin  = 0.;
+            double dRdhCos  = 0.;
+            double dRdhSin  = 0.;
+            double dRdkCos  = 0.;
+            double dRdkSin  = 0.;
+            double dRdlCos  = 0.;
+            double dRdlSin  = 0.;
+            double dRdAlCos = 0.;
+            double dRdAlSin = 0.;
+            double dRdBeCos = 0.;
+            double dRdBeSin = 0.;
+            double dRdGaCos = 0.;
+            double dRdGaSin = 0.;
+
+            // s-SUM from -sMin to sMax
+            final int sMin = maxN;
+            final int sMax = maxN;
+            for (int s = 0; s <= sMax; s++) {
+
+                // n-SUM for s positive
+                final double[][] nSumSpos = computeNSum(date, j, m, s, maxN,
+                                                        roaPow, ghMSJ, gammaMNS);
+                dRdaCos  += nSumSpos[0][0];
+                dRdaSin  += nSumSpos[0][1];
+                dRdhCos  += nSumSpos[1][0];
+                dRdhSin  += nSumSpos[1][1];
+                dRdkCos  += nSumSpos[2][0];
+                dRdkSin  += nSumSpos[2][1];
+                dRdlCos  += nSumSpos[3][0];
+                dRdlSin  += nSumSpos[3][1];
+                dRdAlCos += nSumSpos[4][0];
+                dRdAlSin += nSumSpos[4][1];
+                dRdBeCos += nSumSpos[5][0];
+                dRdBeSin += nSumSpos[5][1];
+                dRdGaCos += nSumSpos[6][0];
+                dRdGaSin += nSumSpos[6][1];
+
+                // n-SUM for s negative
+                if (s > 0 && s <= sMin) {
+                    final double[][] nSumSneg = computeNSum(date, j, m, -s, maxN,
+                                                            roaPow, ghMSJ, gammaMNS);
+                    dRdaCos  += nSumSneg[0][0];
+                    dRdaSin  += nSumSneg[0][1];
+                    dRdhCos  += nSumSneg[1][0];
+                    dRdhSin  += nSumSneg[1][1];
+                    dRdkCos  += nSumSneg[2][0];
+                    dRdkSin  += nSumSneg[2][1];
+                    dRdlCos  += nSumSneg[3][0];
+                    dRdlSin  += nSumSneg[3][1];
+                    dRdAlCos += nSumSneg[4][0];
+                    dRdAlSin += nSumSneg[4][1];
+                    dRdBeCos += nSumSneg[5][0];
+                    dRdBeSin += nSumSneg[5][1];
+                    dRdGaCos += nSumSneg[6][0];
+                    dRdGaSin += nSumSneg[6][1];
+                }
+            }
+            dRdaCos  *= -moa / a;
+            dRdaSin  *= -moa / a;
+            dRdhCos  *=  moa;
+            dRdhSin  *=  moa;
+            dRdkCos  *=  moa;
+            dRdkSin *=  moa;
+            dRdlCos *=  moa;
+            dRdlSin *=  moa;
+            dRdAlCos *=  moa;
+            dRdAlSin *=  moa;
+            dRdBeCos *=  moa;
+            dRdBeSin *=  moa;
+            dRdGaCos *=  moa;
+            dRdGaSin *=  moa;
+
+            // Compute the cross derivative operator :
+            final double RAlphaGammaCos   = alpha * dRdGaCos - gamma * dRdAlCos;
+            final double RAlphaGammaSin   = alpha * dRdGaSin - gamma * dRdAlSin;
+            final double RAlphaBetaCos    = alpha * dRdBeCos - beta  * dRdAlCos;
+            final double RAlphaBetaSin    = alpha * dRdBeSin - beta  * dRdAlSin;
+            final double RBetaGammaCos    =  beta * dRdGaCos - gamma * dRdBeCos;
+            final double RBetaGammaSin    =  beta * dRdGaSin - gamma * dRdBeSin;
+            final double RhkCos           =     h * dRdkCos  -     k * dRdhCos;
+            final double RhkSin           =     h * dRdkSin  -     k * dRdhSin;
+            final double pRagmIqRbgoABCos = (p * RAlphaGammaCos - I * q * RBetaGammaCos) * ooAB;
+            final double pRagmIqRbgoABSin = (p * RAlphaGammaSin - I * q * RBetaGammaSin) * ooAB;
+            final double RhkmRabmdRdlCos  =  RhkCos - RAlphaBetaCos - dRdlCos;
+            final double RhkmRabmdRdlSin  =  RhkSin - RAlphaBetaSin - dRdlSin;
+
+            // da/dt
+            cCoef[m][j + jMax][0] = ax2oA * dRdlCos;
+            sCoef[m][j + jMax][0] = ax2oA * dRdlSin;
+
+            // dk/dt
+            cCoef[m][j + jMax][1] = -(BoA * dRdhCos + h * pRagmIqRbgoABCos + k * BoABpo * dRdlCos);
+            sCoef[m][j + jMax][1] = -(BoA * dRdhSin + h * pRagmIqRbgoABSin + k * BoABpo * dRdlSin);
+
+            // dh/dt
+            cCoef[m][j + jMax][2] = BoA * dRdkCos + k * pRagmIqRbgoABCos - h * BoABpo * dRdlCos;
+            sCoef[m][j + jMax][2] = BoA * dRdkSin + k * pRagmIqRbgoABSin - h * BoABpo * dRdlSin;
+
+            // dq/dt
+            cCoef[m][j + jMax][3] = Co2AB * (q * RhkmRabmdRdlCos - I * RAlphaGammaCos);
+            sCoef[m][j + jMax][3] = Co2AB * (q * RhkmRabmdRdlSin - I * RAlphaGammaSin);
+
+            // dp/dt
+            cCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlCos - RBetaGammaCos);
+            sCoef[m][j + jMax][4] = Co2AB * (p * RhkmRabmdRdlSin - RBetaGammaSin);
+
+            // d&lambda;/dt
+            cCoef[m][j + jMax][5] = -ax2oA * dRdaCos + BoABpo * (h * dRdhCos + k * dRdkCos) + pRagmIqRbgoABCos;
+            sCoef[m][j + jMax][5] = -ax2oA * dRdaSin + BoABpo * (h * dRdhSin + k * dRdkSin) + pRagmIqRbgoABSin;
         }
 
         /** Get the coefficient C<sub>i</sub><sup>jm</sup>.
@@ -1133,6 +1212,12 @@ class TesseralContribution implements DSSTForceModel {
         /** Maximum value for m.  */
         private final int mMax;
 
+        /** The fourier coefficients. */
+        private final FourierCjSjCoefficients cjsjFourier;
+
+        /** 3n / 2a. */
+        private double tnota;
+
         /** Constructor.
          * @param jMax absolute limit for j ( -jMax <= j <= jMax )
          * @param mMax maximum value for m
@@ -1145,6 +1230,7 @@ class TesseralContribution implements DSSTForceModel {
             this.mMax = mMax;
             this.cijm = new ShortPeriodicsInterpolatedCoefficient[mMax + 1][2 * jMax + 1][6];
             this.sijm = new ShortPeriodicsInterpolatedCoefficient[mMax + 1][2 * jMax + 1][6];
+            this.cjsjFourier = new FourierCjSjCoefficients(jMax, mMax);
 
             for (int m = 1; m <= mMax; m++) {
                 for (int j = -jMax; j <= jMax; j++) {
@@ -1158,58 +1244,74 @@ class TesseralContribution implements DSSTForceModel {
 
         /** Compute the short periodic coefficients.
          *
-         * @param aux the auxiliary data.
+         * @param date the current date
          * @throws OrekitException if an error occurs
          */
-        public void computeCoefficients(final AuxiliaryElements aux)
+        public void computeCoefficients(final AbsoluteDate date)
             throws OrekitException {
             // Compute only if there is at least one non-resonant tesseral
-            if (!nonResOrders.isEmpty()) {
-                // the date
-                final AbsoluteDate date = aux.getDate();
-
-                // Create the fourrier coefficients
-                final FourierCjSjCoefficients cjsjFourier = new FourierCjSjCoefficients(aux, jMax, mMax);
+            if (!nonResOrders.isEmpty() || mDailiesOnly) {
+                // Generate the fourrier coefficients
+                cjsjFourier.generateCoefficients(date);
 
                 // the coefficient 3n / 2a
-                final double coef1 = 1.5 * orbitPeriod / a;
+                tnota = 1.5 * meanMotion / a;
 
-                // generate the coefficients
-                for (int m: nonResOrders.keySet()) {
-                    final List<Integer> listJ = nonResOrders.get(m);
+                // build the mDaily coefficients
+                for (int m = 1; m <= maxOrderMdailyTesseralSP; m++) {
+                    // build the coefficients
+                    buildCoefficients(date, m, 0);
+                }
 
-                    for (int j: listJ) {
-                        // Create local arrays
-                        final double[] currentCijm = new double[] {0., 0., 0., 0., 0., 0.};
-                        final double[] currentSijm = new double[] {0., 0., 0., 0., 0., 0.};
+                if (!mDailiesOnly) {
+                    // generate the other coefficients, if required
+                    for (int m: nonResOrders.keySet()) {
+                        final List<Integer> listJ = nonResOrders.get(m);
 
-                        // compute the term 1 / (jn - m&theta;<sup>.</sup>)
-                        final double oojnmt = 1. / (j * orbitPeriod + m * centralBodyRotationRate);
-
-                        // initialise the coeficients
-                        for (int i = 0; i < 6; i++) {
-                            currentCijm[i] = -cjsjFourier.getSijm(i, j, m);
-                            currentSijm[i] = cjsjFourier.getCijm(i, j, m);
-                        }
-                        // Add the separate part for &delta;<sub>6i</sub>
-                        currentCijm[5] += coef1 * oojnmt * cjsjFourier.getCijm(0, j, m);
-                        currentSijm[5] += coef1 * oojnmt * cjsjFourier.getSijm(0, j, m);
-
-                        //Multiply by 1 / (jn - m&theta;<sup>.</sup>)
-                        for (int i = 0; i < 6; i++) {
-                            currentCijm[i] *= oojnmt;
-                            currentSijm[i] *= oojnmt;
-                        }
-
-                        // Add the coefficients to the interpolation grid
-                        for (int i = 0; i < 6; i++) {
-                            cijm[m][j + jMax][i].addGridPoint(date, currentCijm[i]);
-                            sijm[m][j + jMax][i].addGridPoint(date, currentSijm[i]);
+                        for (int j: listJ) {
+                            // build the coefficients
+                            buildCoefficients(date, m, j);
                         }
                     }
                 }
             }
 
+        }
+
+        /** Build a set of coefficients.
+         *
+         * @param date the current date
+         * @param m m index
+         * @param j j index
+         */
+        private void buildCoefficients(final AbsoluteDate date, final int m, final int j) {
+            // Create local arrays
+            final double[] currentCijm = new double[] {0., 0., 0., 0., 0., 0.};
+            final double[] currentSijm = new double[] {0., 0., 0., 0., 0., 0.};
+
+            // compute the term 1 / (jn - m&theta;<sup>.</sup>)
+            final double oojnmt = 1. / (j * meanMotion - m * centralBodyRotationRate);
+
+            // initialise the coeficients
+            for (int i = 0; i < 6; i++) {
+                currentCijm[i] = -cjsjFourier.getSijm(i, j, m);
+                currentSijm[i] = cjsjFourier.getCijm(i, j, m);
+            }
+            // Add the separate part for &delta;<sub>6i</sub>
+            currentCijm[5] += tnota * oojnmt * cjsjFourier.getCijm(0, j, m);
+            currentSijm[5] += tnota * oojnmt * cjsjFourier.getSijm(0, j, m);
+
+            //Multiply by 1 / (jn - m&theta;<sup>.</sup>)
+            for (int i = 0; i < 6; i++) {
+                currentCijm[i] *= oojnmt;
+                currentSijm[i] *= oojnmt;
+            }
+
+            // Add the coefficients to the interpolation grid
+            for (int i = 0; i < 6; i++) {
+                cijm[m][j + jMax][i].addGridPoint(date, currentCijm[i]);
+                sijm[m][j + jMax][i].addGridPoint(date, currentSijm[i]);
+            }
         }
 
         /** Reset the coefficients.
