@@ -16,7 +16,13 @@
  */
 package org.orekit.propagation.events;
 
+import java.io.Serializable;
+
 import org.apache.commons.math3.geometry.enclosing.EnclosingBall;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.geometry.partitioning.BSPTree;
+import org.apache.commons.math3.geometry.partitioning.BSPTreeVisitor;
+import org.apache.commons.math3.geometry.spherical.twod.Circle;
 import org.apache.commons.math3.geometry.spherical.twod.S2Point;
 import org.apache.commons.math3.geometry.spherical.twod.Sphere2D;
 import org.apache.commons.math3.geometry.spherical.twod.SphericalPolygonsSet;
@@ -43,16 +49,16 @@ import org.orekit.propagation.events.handlers.StopOnIncreasing;
 public class GeographicZoneDetector extends AbstractReconfigurableDetector<GeographicZoneDetector> {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140123L;
+    private static final long serialVersionUID = 20140619L;
 
     /** Body on which the geographic zone is defined. */
     private BodyShape body;
 
     /** Zone definition. */
-    private final SphericalPolygonsSet zone;
+    private final transient SphericalPolygonsSet zone;
 
     /** Spherical cap surrounding the zone. */
-    private final EnclosingBall<Sphere2D, S2Point> cap;
+    private final transient EnclosingBall<Sphere2D, S2Point> cap;
 
     /** Margin to apply to the zone. */
     private final double margin;
@@ -170,7 +176,7 @@ public class GeographicZoneDetector extends AbstractReconfigurableDetector<Geogr
         final S2Point s2p = new S2Point(gp.getLongitude(), 0.5 * FastMath.PI - gp.getLatitude());
 
         // for faster computation, we start using only the surrounding cap, to filter out
-        // far away points (which corresponds to most of the points if the zone is small)
+        // far away points (which correspond to most of the points if the zone is small)
         final double crudeDistance = cap.getCenter().distance(s2p) - cap.getRadius();
         if (crudeDistance - margin > FastMath.max(FastMath.abs(margin), 0.01)) {
             // we know we are strictly outside of the zone,
@@ -181,6 +187,170 @@ public class GeographicZoneDetector extends AbstractReconfigurableDetector<Geogr
         // we are close, we need to compute carefully the exact offset
         // project the point to the closest zone boundary
         return zone.projectToBoundary(s2p).getOffset() - margin;
+
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140619L;
+
+        /** Max check interval. */
+        private final double maxCheck;
+
+        /** Convergence threshold. */
+        private final double threshold;
+
+        /** Maximum number of iterations in the event time search. */
+        private final int maxIter;
+
+        /** Body on which the geographic zone is defined. */
+        private final BodyShape body;
+
+        /** Margin to apply to the zone. */
+        private final double margin;
+
+        /** Tolerance for the zone. */
+        private final double tolerance;
+
+        /** Zone cut hyperplanes. */
+        private final double[] cuts;
+
+        /** Leaf nodes indices. */
+        private final int[] leafs;
+
+        /** Zone interior/exterior indicators. */
+        private final boolean[] flags;
+
+        /** Internal nodes counter. */
+        private transient int internalNodes;
+
+        /** Leaf nodes counter. */
+        private transient int leafNodes;
+
+        /** Node index. */
+        private transient int nodeIndex;
+
+        /** Index in cut hyperplanes array. */
+        private transient int cutIndex;
+
+        /** Index in interior/exterior flags array. */
+        private transient int flagIndex;
+
+        /** Simple constructor.
+         * @param detector instance to serialize
+         */
+        private DTO(final GeographicZoneDetector detector) {
+
+            this.maxCheck  = detector.getMaxCheckInterval();
+            this.threshold = detector.getThreshold();
+            this.maxIter   = detector.getMaxIterationCount();
+            this.body      = detector.body;
+            this.margin    = detector.margin;
+            this.tolerance = detector.zone.getTolerance();
+
+            // count the nodes
+            internalNodes = 0;
+            leafNodes     = 0;
+            detector.zone.getTree(false).visit(new BSPTreeVisitor<Sphere2D>() {
+
+                /** {@inheritDoc} */
+                public Order visitOrder(final BSPTree<Sphere2D> node) {
+                    return Order.SUB_MINUS_PLUS;
+                }
+
+                /** {@inheritDoc} */
+                public void visitInternalNode(final BSPTree<Sphere2D> node) {
+                    ++internalNodes;
+                }
+
+                /** {@inheritDoc} */
+                public void visitLeafNode(final BSPTree<Sphere2D> node) {
+                    ++leafNodes;
+                }
+
+            });
+
+            // allocate the arrays for flattened tree
+            cuts      = new double[3 * internalNodes];
+            leafs     = new int[leafNodes];
+            flags     = new boolean[leafNodes];
+            nodeIndex = 0;
+            cutIndex  = 0;
+            flagIndex = 0;
+            detector.zone.getTree(false).visit(new BSPTreeVisitor<Sphere2D>() {
+
+                /** {@inheritDoc} */
+                public Order visitOrder(final BSPTree<Sphere2D> node) {
+                    return Order.SUB_MINUS_PLUS;
+                }
+
+                /** {@inheritDoc} */
+                public void visitInternalNode(final BSPTree<Sphere2D> node) {
+                    final Vector3D cutPole = ((Circle) node.getCut().getHyperplane()).getPole();
+                    cuts[cutIndex++] = cutPole.getX();
+                    cuts[cutIndex++] = cutPole.getY();
+                    cuts[cutIndex++] = cutPole.getZ();
+                    nodeIndex++;
+                }
+
+                /** {@inheritDoc} */
+                public void visitLeafNode(final BSPTree<Sphere2D> node) {
+                    leafs[flagIndex]   = nodeIndex++;
+                    flags[flagIndex++] = (Boolean) node.getAttribute();
+                }
+
+            });
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link GeographicZoneDetector}.
+         * @return replacement {@link GeographicZoneDetector}
+         */
+        private Object readResolve() {
+
+            // rebuild the tree from the flattened arrays
+            BSPTree<Sphere2D> node = new BSPTree<Sphere2D>();
+            final int nbNodes = cuts.length / 3 + leafs.length;
+            cutIndex  = 0;
+            flagIndex = 0;
+            for (nodeIndex = 0; nodeIndex < nbNodes; ++nodeIndex) {
+                if (leafs[flagIndex] == nodeIndex) {
+                    // this is a leaf node
+                    node.setAttribute(Boolean.valueOf(flags[flagIndex++]));
+                    while (node.getParent() != null) {
+                        final BSPTree<Sphere2D> parent = node.getParent();
+                        if (node == parent.getMinus()) {
+                            node = parent.getPlus();
+                            break;
+                        } else {
+                            node = parent;
+                        }
+                    }
+                } else {
+                    // this is an internal node
+                    final double x = cuts[cutIndex++];
+                    final double y = cuts[cutIndex++];
+                    final double z = cuts[cutIndex++];
+                    node.insertCut(new Circle(new Vector3D(x, y, z), tolerance));
+                    node = node.getMinus();
+                }
+            }
+
+            return new GeographicZoneDetector(body, new SphericalPolygonsSet(node, tolerance), margin).
+                    withMaxCheck(maxCheck).
+                    withThreshold(threshold).
+                    withMaxIter(maxIter);
+
+        }
 
     }
 
