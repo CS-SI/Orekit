@@ -65,7 +65,7 @@ public class SpacecraftFrame extends Frame implements PVCoordinatesProvider {
         return ((LocalProvider) getTransformProvider()).getPropagator();
     }
 
-    /** Get the {@link PVCoordinates} of the spacecraft frame origin in the selected frame.
+    /** Get the {@link TimeStampedPVCoordinates} of the spacecraft frame origin in the selected frame.
      * @param date current date
      * @param frame the frame where to define the position
      * @return position/velocity of the spacecraft frame origin (m and m/s)

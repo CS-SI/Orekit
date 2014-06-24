@@ -133,7 +133,7 @@ public class JacobiansMapper {
      * @param dY1dP Jacobian of current state at time t<sub>1</sub>
      * with respect to parameters (may be null if there are no parameters)
      * @param p placeholder where to put the one-dimensional additional state
-     * @see #getStateJacobian(double[], double[][])
+     * @see #getStateJacobian(SpacecraftState, double[][])
      */
     void setInitialJacobians(final SpacecraftState state, final double[][] dY1dY0,
                              final double[][] dY1dP, final double[] p) {

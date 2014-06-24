@@ -573,24 +573,24 @@ public class SpacecraftState
         return orbit.getI();
     }
 
-    /** Get the {@link PVCoordinates} in orbit definition frame.
+    /** Get the {@link TimeStampedPVCoordinates} in orbit definition frame.
      * Compute the position and velocity of the satellite. This method caches its
      * results, and recompute them only when the method is called with a new value
      * for mu. The result is provided as a reference to the internally cached
-     * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
-     * {@link PVCoordinates} if it needs to keep the value for a while.
+     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * @return pvCoordinates in orbit definition frame
      */
     public TimeStampedPVCoordinates getPVCoordinates() {
         return orbit.getPVCoordinates();
     }
 
-    /** Get the {@link PVCoordinates} in given output frame.
+    /** Get the {@link TimeStampedPVCoordinates} in given output frame.
      * Compute the position and velocity of the satellite. This method caches its
      * results, and recompute them only when the method is called with a new value
      * for mu. The result is provided as a reference to the internally cached
-     * {@link PVCoordinates}, so the caller is responsible to copy it in a separate
-     * {@link PVCoordinates} if it needs to keep the value for a while.
+     * {@link TimeStampedPVCoordinates}, so the caller is responsible to copy it in a separate
+     * {@link TimeStampedPVCoordinates} if it needs to keep the value for a while.
      * @param outputFrame frame in which coordinates should be defined
      * @return pvCoordinates in orbit definition frame
      * @exception OrekitException if the transformation between frames cannot be computed

@@ -269,7 +269,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setSlaveMode() {
@@ -283,7 +283,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been callled.</p>
      */
     public void setMasterMode(final OrekitStepHandler handler) {
@@ -297,7 +297,7 @@ public abstract class AbstractIntegratedPropagator extends AbstractPropagator {
     /** {@inheritDoc}
      * <p>Note that this method has the side effect of replacing the step handlers
      * of the underlying integrator set up in the {@link
-     * #AbstractIntegratedPropagator(AbstractIntegrator) constructor}. So if a specific
+     * #AbstractIntegratedPropagator(AbstractIntegrator, boolean) constructor}. So if a specific
      * step handler is needed, it should be added after this method has been called.</p>
      */
     public void setEphemerisMode() {

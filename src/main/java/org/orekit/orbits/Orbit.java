@@ -121,7 +121,7 @@ public abstract class Orbit
 
     /** Set the orbit from Cartesian parameters.
      * @param pvCoordinates the position and velocity in the inertial frame
-     * @param frame the frame in which the {@link PVCoordinates} are defined
+     * @param frame the frame in which the {@link TimeStampedPVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param mu central attraction coefficient (m^3/s^2)
      * @exception IllegalArgumentException if frame is not a {@link
@@ -249,7 +249,7 @@ public abstract class Orbit
         return date;
     }
 
-    /** Get the {@link PVCoordinates} in a specified frame.
+    /** Get the {@link TimeStampedPVCoordinates} in a specified frame.
      * @param outputFrame frame in which the position/velocity coordinates shall be computed
      * @return pvCoordinates in the specified output frame
      * @exception OrekitException if transformation between frames cannot be computed
@@ -279,7 +279,7 @@ public abstract class Orbit
     }
 
 
-    /** Get the {@link PVCoordinates} in definition frame.
+    /** Get the {@link TimeStampedPVCoordinates} in definition frame.
      * @return pvCoordinates in the definition frame
      * @see #getPVCoordinates(Frame)
      */
