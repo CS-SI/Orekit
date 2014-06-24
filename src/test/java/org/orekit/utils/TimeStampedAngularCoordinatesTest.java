@@ -181,7 +181,8 @@ public class TimeStampedAngularCoordinatesTest {
 
         // get interpolated angular coordinates at mid time between t0 and t1
         AbsoluteDate t = new AbsoluteDate("2012-01-01T00:00:01.000", TimeScalesFactory.getTAI());
-        TimeStampedAngularCoordinates interpolated = TimeStampedAngularCoordinates.interpolate(t, false, sample);
+        TimeStampedAngularCoordinates interpolated =
+                TimeStampedAngularCoordinates.interpolate(t, AngularDerivativesFilter.USE_R, sample);
 
         Assert.assertEquals(FastMath.toRadians(180), interpolated.getRotation().getAngle(), 1.0e-12);
 
@@ -302,7 +303,7 @@ public class TimeStampedAngularCoordinatesTest {
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
             TimeStampedAngularCoordinates interpolated =
-                    TimeStampedAngularCoordinates.interpolate(date.shiftedBy(dt), true, sample);
+                    TimeStampedAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_RR, sample);
             Rotation r    = interpolated.getRotation();
             Vector3D rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 1.0e-15);
@@ -330,7 +331,7 @@ public class TimeStampedAngularCoordinatesTest {
 
         for (TimeStampedAngularCoordinates s : sample) {
             TimeStampedAngularCoordinates interpolated =
-                    TimeStampedAngularCoordinates.interpolate(s.getDate(), true, sample);
+                    TimeStampedAngularCoordinates.interpolate(s.getDate(), AngularDerivativesFilter.USE_RR, sample);
             Rotation r    = interpolated.getRotation();
             Vector3D rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, Rotation.distance(s.getRotation(), r), 1.0e-14);
@@ -356,7 +357,8 @@ public class TimeStampedAngularCoordinatesTest {
         }
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
-            TimeStampedAngularCoordinates interpolated = TimeStampedAngularCoordinates.interpolate(date.shiftedBy(dt), false, sample);
+            TimeStampedAngularCoordinates interpolated =
+                    TimeStampedAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_R, sample);
             Rotation r    = interpolated.getRotation();
             Vector3D rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, Rotation.distance(reference.shiftedBy(dt).getRotation(), r), 3.0e-4);
@@ -380,7 +382,7 @@ public class TimeStampedAngularCoordinatesTest {
         sample.add(new TimeStampedAngularCoordinates(date.shiftedBy(0.2), r, Vector3D.ZERO));
 
         try {
-            TimeStampedAngularCoordinates.interpolate(date.shiftedBy(0.3), false, sample);
+            TimeStampedAngularCoordinates.interpolate(date.shiftedBy(0.3), AngularDerivativesFilter.USE_R, sample);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oe.getSpecifier());
@@ -406,7 +408,8 @@ public class TimeStampedAngularCoordinatesTest {
         }
         for (double dt = 0; dt < 29000; dt += 120) {
             TimeStampedAngularCoordinates shifted      = sample.get(0).shiftedBy(dt);
-            TimeStampedAngularCoordinates interpolated = TimeStampedAngularCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+            TimeStampedAngularCoordinates interpolated =
+                    TimeStampedAngularCoordinates.interpolate(t0.shiftedBy(dt), AngularDerivativesFilter.USE_RR, sample);
             Assert.assertEquals(0.0,
                                 Rotation.distance(shifted.getRotation(), interpolated.getRotation()),
                                 1.3e-7);

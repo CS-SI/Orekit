@@ -28,6 +28,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -242,7 +243,8 @@ public class CartesianOrbit extends Orbit {
                                                      o.getPVCoordinates().getPosition(),
                                                      o.getPVCoordinates().getVelocity()));
         }
-        final TimeStampedPVCoordinates interpolated = TimeStampedPVCoordinates.interpolate(date, true, datedPV);
+        final TimeStampedPVCoordinates interpolated =
+                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PV, datedPV);
         return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 

@@ -158,13 +158,13 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * then use interpolation to add derivatives consistent with the rotations.
      * </p>
      * @param date interpolation date
-     * @param useRotationRates if true, use sample points rotation rates,
-     * otherwise ignore them and use only rotations
+     * @param filter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public static TimeStampedAngularCoordinates interpolate(final AbsoluteDate date, final boolean useRotationRates,
+    public static TimeStampedAngularCoordinates interpolate(final AbsoluteDate date,
+                                                            final AngularDerivativesFilter filter,
                                                             final Collection<TimeStampedAngularCoordinates> sample)
         throws OrekitException {
 
@@ -174,7 +174,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
 
         // set up a linear offset model canceling mean rotation rate
         final Vector3D meanRate;
-        if (useRotationRates) {
+        if (filter == AngularDerivativesFilter.USE_RR) {
             Vector3D sum = Vector3D.ZERO;
             for (final TimeStampedAngularCoordinates datedAC : sample) {
                 sum = sum.add(datedAC.getRotationRate());
@@ -211,7 +211,7 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
             final double[] previous = new double[] {
                 1.0, 0.0, 0.0, 0.0
             };
-            if (useRotationRates) {
+            if (filter == AngularDerivativesFilter.USE_RR) {
                 // populate sample with rotation and rotation rate data
                 for (final TimeStampedAngularCoordinates datedAC : sample) {
 

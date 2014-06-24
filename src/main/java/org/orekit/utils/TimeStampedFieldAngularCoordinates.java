@@ -159,8 +159,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * then use interpolation to add derivatives consistent with the rotations.
      * </p>
      * @param date interpolation date
-     * @param useRotationRates if true, use sample points rotation rates,
-     * otherwise ignore them and use only rotations
+     * @param filter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
@@ -168,7 +167,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      */
     @SuppressWarnings("unchecked")
     public static <T extends RealFieldElement<T>> TimeStampedFieldAngularCoordinates<T>
-    interpolate(final AbsoluteDate date, final boolean useRotationRates,
+    interpolate(final AbsoluteDate date, final AngularDerivativesFilter filter,
                 final Collection<TimeStampedFieldAngularCoordinates<T>> sample)
         throws OrekitException {
 
@@ -183,7 +182,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
 
         // set up a linear offset model canceling mean FieldRotation<T> rate
         final FieldVector3D<T> meanRate;
-        if (useRotationRates) {
+        if (filter == AngularDerivativesFilter.USE_RR) {
             FieldVector3D<T> sum = new FieldVector3D<T>(zero, zero, zero);
             for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
                 sum = sum.add(datedAC.getRotationRate());
@@ -221,7 +220,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             final double[] previous = new double[] {
                 1.0, 0.0, 0.0, 0.0
             };
-            if (useRotationRates) {
+            if (filter == AngularDerivativesFilter.USE_RR) {
                 // populate sample with FieldRotation<T> and FieldRotation<T> rate data
                 for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
 

@@ -174,19 +174,19 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
      * then use interpolation to add derivatives consistent with the positions.
      * </p>
      * @param date interpolation date
-     * @param useVelocities if true, use sample points velocities,
-     * otherwise ignore them and use only positions
+     * @param filter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      */
-    public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
+    public static TimeStampedPVCoordinates interpolate(final AbsoluteDate date,
+                                                       final CartesianDerivativesFilter filter,
                                                        final Collection<TimeStampedPVCoordinates> sample) {
 
         // set up an interpolator taking derivatives into account
         final HermiteInterpolator interpolator = new HermiteInterpolator();
 
         // add sample points
-        if (useVelocities) {
+        if (filter == CartesianDerivativesFilter.USE_PV) {
             // populate sample with position and velocity data
             for (final TimeStampedPVCoordinates datedPV : sample) {
                 final Vector3D position = datedPV.getPosition();

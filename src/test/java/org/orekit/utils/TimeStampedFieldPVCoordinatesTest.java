@@ -147,7 +147,7 @@ public class TimeStampedFieldPVCoordinatesTest {
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PV, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 Assert.assertEquals(px.value(dt),    p.getX().getReal(), 1.0e-15 * p.getNorm().getReal());
@@ -185,7 +185,7 @@ public class TimeStampedFieldPVCoordinatesTest {
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), false, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_P, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 Assert.assertEquals(px.value(dt),    p.getX().getReal(), 1.0e-14 * p.getNorm().getReal());
@@ -213,7 +213,7 @@ public class TimeStampedFieldPVCoordinatesTest {
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
                 TimeStampedFieldPVCoordinates<DerivativeStructure> interpolated =
-                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                        TimeStampedFieldPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PV, sample);
                 FieldVector3D<DerivativeStructure> p = interpolated.getPosition();
                 FieldVector3D<DerivativeStructure> v = interpolated.getVelocity();
                 Assert.assertEquals(FastMath.cos(dt),    p.getX().getReal(), 3.0e-6 * p.getNorm().getReal());

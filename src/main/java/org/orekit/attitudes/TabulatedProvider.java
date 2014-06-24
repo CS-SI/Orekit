@@ -24,6 +24,7 @@ import java.util.List;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -39,7 +40,7 @@ public class TabulatedProvider implements AttitudeProvider {
 
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140616L;
+    private static final long serialVersionUID = 20140624L;
 
     /** Reference frame for tabulated attitudes. */
     private final Frame referenceFrame;
@@ -47,8 +48,8 @@ public class TabulatedProvider implements AttitudeProvider {
     /** Cached attitude table. */
     private final transient ImmutableTimeStampedCache<TimeStampedAngularCoordinates> table;
 
-    /** Indicator for rate use. */
-    private final boolean useRotationRate;
+    /** filter for derivatives from the sample to use in interpolation. */
+    private final AngularDerivativesFilter filter;
 
     /** Creates new instance.
      * @param referenceFrame reference frame for tabulated attitudes
@@ -62,7 +63,20 @@ public class TabulatedProvider implements AttitudeProvider {
                              final int n, final boolean useRotationRate) {
         this.referenceFrame  = referenceFrame;
         this.table           = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
-        this.useRotationRate = useRotationRate;
+        this.filter          = useRotationRate ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R;
+    }
+
+    /** Creates new instance.
+     * @param referenceFrame reference frame for tabulated attitudes
+     * @param table tabulated attitudes
+     * @param n number of attitude to use for interpolation
+     * @param filter filter for derivatives from the sample to use in interpolation
+     */
+    public TabulatedProvider(final Frame referenceFrame, final List<TimeStampedAngularCoordinates> table,
+                             final int n, final AngularDerivativesFilter filter) {
+        this.referenceFrame  = referenceFrame;
+        this.table           = new ImmutableTimeStampedCache<TimeStampedAngularCoordinates>(n, table);
+        this.filter          = filter;
     }
 
     /** Creates new instance.
@@ -88,7 +102,7 @@ public class TabulatedProvider implements AttitudeProvider {
 
         // interpolate
         final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(date, useRotationRate, sample);
+                TimeStampedAngularCoordinates.interpolate(date, filter, sample);
 
         // build the attitude
         return new Attitude(referenceFrame, interpolated);
@@ -113,7 +127,7 @@ public class TabulatedProvider implements AttitudeProvider {
      * @exception NotSerializableException if the state mapper cannot be serialized (typically for DSST propagator)
      */
     private Object writeReplace() throws NotSerializableException {
-        return new DataTransferObject(referenceFrame, table.getAll(), table.getNeighborsSize(), useRotationRate);
+        return new DataTransferObject(referenceFrame, table.getAll(), table.getNeighborsSize(), filter);
     }
 
     /** Internal class used only for serialization. */
@@ -131,28 +145,28 @@ public class TabulatedProvider implements AttitudeProvider {
         /** Number of attitude to use for interpolation. */
         private final int n;
 
-        /** Indicator for rate use. */
-        private final boolean useRotationRate;
+        /** filter for derivatives from the sample to use in interpolation. */
+        private final AngularDerivativesFilter filter;
 
         /** Simple constructor.
          * @param referenceFrame reference frame for tabulated attitudes
          * @param list tabulated attitudes
          * @param n number of attitude to use for interpolation
-         * @param useRotationRate indicator for rate use
+         * @param filter filter for derivatives from the sample to use in interpolation
          */
         public DataTransferObject(final Frame referenceFrame, final List<TimeStampedAngularCoordinates> list,
-                                  final int n, final boolean useRotationRate) {
+                                  final int n, final AngularDerivativesFilter filter) {
             this.referenceFrame  = referenceFrame;
             this.list            = list;
             this.n               = n;
-            this.useRotationRate = useRotationRate;
+            this.filter          = filter;
         }
 
         /** Replace the deserialized data transfer object with a {@link TabulatedProvider}.
          * @return replacement {@link TabulatedProvider}
          */
         private Object readResolve() {
-            return new TabulatedProvider(referenceFrame, list, n, useRotationRate);
+            return new TabulatedProvider(referenceFrame, list, n, filter);
         }
 
     }

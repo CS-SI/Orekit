@@ -372,3 +372,6 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = impossible de générer des donnée après l
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = impossible de calculer l''anomalie excentrique hyperbolique à partir de l''anomalie moyenne après {0} itérations
+
+# derivation order {0} is out of range
+OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>

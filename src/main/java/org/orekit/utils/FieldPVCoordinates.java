@@ -313,7 +313,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
-     * @deprecated since 7.0 replaced with {@link TimeStampedFieldPVCoordinates#interpolate(AbsoluteDate, boolean, Collection)}
+     * @deprecated since 7.0 replaced with {@link TimeStampedFieldPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
      */
     @Deprecated
     public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
@@ -324,7 +324,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
             list.add(new TimeStampedFieldPVCoordinates<T>(pair.getFirst(),
                     pair.getSecond().getPosition(), pair.getSecond().getVelocity()));
         }
-        return TimeStampedFieldPVCoordinates.interpolate(date, useVelocities, list);
+        return TimeStampedFieldPVCoordinates.interpolate(date,
+                                                         useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+                                                         list);
     }
 
     /** Gets the position.

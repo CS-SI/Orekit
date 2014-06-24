@@ -31,6 +31,7 @@ import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.TimeStampedAngularCoordinates;
 
 
@@ -218,7 +219,7 @@ public class Attitude
             datedPV.add(attitude.orientation);
         }
         final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(interpolationDate, true, datedPV);
+                TimeStampedAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
         return new Attitude(referenceFrame, interpolated);
     }
 

@@ -34,6 +34,8 @@ import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.TimeStampedAngularCoordinates;
@@ -280,16 +282,19 @@ public class Transform
 
     /** {@inheritDoc}
      * <p>
-     * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate, boolean,
-     * boolean, Collection)} with both {@code useVelocities} and {@code useRotationRates}
+     * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
+     * CartesianDerivativesFilter, AngularDerivativesFilter, Collection)} with {@code cFilter}
+     * set to {@link CartesianDerivativesFilter#USE_PV} and {@code aFilter} set to
+     * {@link AngularDerivativesFilter#USE_RR}
      * set to true.
      * </p>
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public Transform interpolate(final AbsoluteDate interpolationDate,
-                                 final Collection<Transform> sample)
+    public Transform interpolate(final AbsoluteDate interpolationDate, final Collection<Transform> sample)
         throws OrekitException {
-        return interpolate(interpolationDate, true, true, sample);
+        return interpolate(interpolationDate,
+                           CartesianDerivativesFilter.USE_PV, AngularDerivativesFilter.USE_RR,
+                           sample);
     }
 
     /** Interpolate a transform from a sample set of existing transforms.
@@ -317,9 +322,47 @@ public class Transform
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
+     * @deprecated as of 7.0, replaced with {@link #interpolate(AbsoluteDate, CartesianDerivativesFilter, AngularDerivativesFilter, Collection)}
      */
+    @Deprecated
     public static Transform interpolate(final AbsoluteDate date,
                                         final boolean useVelocities, final boolean useRotationRates,
+                                        final Collection<Transform> sample)
+        throws OrekitException {
+        return interpolate(date,
+                           useVelocities    ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+                           useRotationRates ? AngularDerivativesFilter.USE_RR   : AngularDerivativesFilter.USE_R,
+                           sample);
+    }
+
+    /** Interpolate a transform from a sample set of existing transforms.
+     * <p>
+     * Note that even if first time derivatives (velocities and rotation rates)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the positions
+     * and rotations.
+     * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     * @param date interpolation date
+     * @param cFilter filter for derivatives from the sample to use in interpolation
+     * @param aFilter filter for derivatives from the sample to use in interpolation
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
+     * @since 7.0
+     */
+    public static Transform interpolate(final AbsoluteDate date,
+                                        final CartesianDerivativesFilter cFilter,
+                                        final AngularDerivativesFilter aFilter,
                                         final Collection<Transform> sample)
         throws OrekitException {
         final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
@@ -328,8 +371,8 @@ public class Transform
             datedPV.add(new TimeStampedPVCoordinates(t.getDate(), t.getTranslation(), t.getVelocity()));
             datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getRotation(), t.getRotationRate()));
         }
-        final TimeStampedPVCoordinates      interpolatedPV = TimeStampedPVCoordinates.interpolate(date, useVelocities, datedPV);
-        final TimeStampedAngularCoordinates interpolatedAC = TimeStampedAngularCoordinates.interpolate(date, useRotationRates, datedAC);
+        final TimeStampedPVCoordinates      interpolatedPV = TimeStampedPVCoordinates.interpolate(date, cFilter, datedPV);
+        final TimeStampedAngularCoordinates interpolatedAC = TimeStampedAngularCoordinates.interpolate(date, aFilter, datedAC);
         return new Transform(date, interpolatedPV, interpolatedAC);
     }
 

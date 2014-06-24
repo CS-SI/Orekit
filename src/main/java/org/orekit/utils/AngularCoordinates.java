@@ -210,7 +210,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
-     * @deprecated since 7.0 replaced with {@link TimeStampedAngularCoordinates#interpolate(AbsoluteDate, boolean, Collection)}
+     * @deprecated since 7.0 replaced with {@link TimeStampedAngularCoordinates#interpolate(AbsoluteDate, AngularDerivativesFilter, Collection)}
      */
     @Deprecated
     public static AngularCoordinates interpolate(final AbsoluteDate date, final boolean useRotationRates,
@@ -221,7 +221,9 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             list.add(new TimeStampedAngularCoordinates(pair.getFirst(),
                                                        pair.getSecond().getRotation(), pair.getSecond().getRotationRate()));
         }
-        return TimeStampedAngularCoordinates.interpolate(date, useRotationRates, list);
+        return TimeStampedAngularCoordinates.interpolate(date,
+                                                         useRotationRates ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R,
+                                                         list);
     }
 
 }

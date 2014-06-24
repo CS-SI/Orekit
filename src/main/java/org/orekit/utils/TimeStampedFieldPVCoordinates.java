@@ -320,16 +320,15 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
      * then use interpolation to add derivatives consistent with the positions.
      * </p>
      * @param date interpolation date
-     * @param useVelocities if true, use sample points velocities,
-     * otherwise ignore them and use only positions
+     * @param filter filter for derivatives from the sample to use in interpolation
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      */
     @SuppressWarnings("unchecked")
     public static <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T>
-    interpolate(final AbsoluteDate date, final boolean useVelocities,
-                    final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
+    interpolate(final AbsoluteDate date, final CartesianDerivativesFilter filter,
+                final Collection<TimeStampedFieldPVCoordinates<T>> sample) {
 
         // get field properties
         final T prototype = sample.iterator().next().getPosition().getX();
@@ -339,7 +338,7 @@ public class TimeStampedFieldPVCoordinates<T extends RealFieldElement<T>>
         final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
 
         // add sample points
-        if (useVelocities) {
+        if (filter == CartesianDerivativesFilter.USE_PV) {
             // populate sample with position and velocity data
             for (final TimeStampedFieldPVCoordinates<T> datedPV : sample) {
                 final FieldVector3D<T> position = datedPV.getPosition();

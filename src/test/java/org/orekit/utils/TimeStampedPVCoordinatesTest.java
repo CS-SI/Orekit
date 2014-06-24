@@ -99,7 +99,8 @@ public class TimeStampedPVCoordinatesTest {
             }
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
-                TimeStampedPVCoordinates interpolated = TimeStampedPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                TimeStampedPVCoordinates interpolated =
+                        TimeStampedPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PV, sample);
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
                 Assert.assertEquals(px.value(dt),    p.getX(), 1.0e-15 * p.getNorm());
@@ -133,7 +134,8 @@ public class TimeStampedPVCoordinatesTest {
             }
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
-                TimeStampedPVCoordinates interpolated = TimeStampedPVCoordinates.interpolate(t0.shiftedBy(dt), false, sample);
+                TimeStampedPVCoordinates interpolated =
+                        TimeStampedPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_P, sample);
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
                 Assert.assertEquals(px.value(dt),    p.getX(), 1.0e-14 * p.getNorm());
@@ -159,7 +161,8 @@ public class TimeStampedPVCoordinatesTest {
             }
 
             for (double dt = 0; dt < 1.0; dt += 0.01) {
-                TimeStampedPVCoordinates interpolated = TimeStampedPVCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                TimeStampedPVCoordinates interpolated =
+                        TimeStampedPVCoordinates.interpolate(t0.shiftedBy(dt), CartesianDerivativesFilter.USE_PV, sample);
                 Vector3D p = interpolated.getPosition();
                 Vector3D v = interpolated.getVelocity();
                 Assert.assertEquals(FastMath.cos(dt),    p.getX(), 3.0e-6 * p.getNorm());

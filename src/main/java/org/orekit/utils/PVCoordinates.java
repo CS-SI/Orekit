@@ -190,7 +190,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * otherwise ignore them and use only positions
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
-     * @deprecated since 7.0 replaced with {@link TimeStampedPVCoordinates#interpolate(AbsoluteDate, boolean, Collection)}
+     * @deprecated since 7.0 replaced with {@link TimeStampedPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
      */
     @Deprecated
     public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
@@ -200,7 +200,9 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
             list.add(new TimeStampedPVCoordinates(pair.getFirst(),
                                                        pair.getSecond().getPosition(), pair.getSecond().getVelocity()));
         }
-        return TimeStampedPVCoordinates.interpolate(date, useVelocities, list);
+        return TimeStampedPVCoordinates.interpolate(date,
+                                                    useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+                                                    list);
     }
 
     /** Gets the position.

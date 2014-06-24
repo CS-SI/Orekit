@@ -308,7 +308,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(dt), true, sample);
+                    TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_RR, sample);
             FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 1.0e-15);
@@ -337,7 +337,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
 
         for (TimeStampedFieldAngularCoordinates<DerivativeStructure> s : sample) {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldAngularCoordinates.interpolate(s.getDate(), true, sample);
+                    TimeStampedFieldAngularCoordinates.interpolate(s.getDate(), AngularDerivativesFilter.USE_RR, sample);
             FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, FieldRotation.distance(s.getRotation(), r).getReal(), 1.0e-14);
@@ -365,7 +365,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
 
         for (double dt = 0; dt < 1.0; dt += 0.001) {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(dt), false, sample);
+                    TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_R, sample);
             FieldRotation<DerivativeStructure> r    = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate = interpolated.getRotationRate();
             Assert.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 3.0e-4);
@@ -401,7 +401,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
         // get interpolated angular coordinates at mid time between t0 and t1
         AbsoluteDate t = new AbsoluteDate("2012-01-01T00:00:01.000", TimeScalesFactory.getTAI());
         TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
-                TimeStampedFieldAngularCoordinates.interpolate(t, false, sample);
+                TimeStampedFieldAngularCoordinates.interpolate(t, AngularDerivativesFilter.USE_R, sample);
 
         Assert.assertEquals(FastMath.toRadians(180), interpolated.getRotation().getAngle().getReal(), 1.0e-12);
 
@@ -424,7 +424,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
         sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date.shiftedBy(0.2), r, createVector(0, 0, 0, 4)));
 
         try {
-            TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(0.3), false, sample);
+            TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(0.3), AngularDerivativesFilter.USE_R, sample);
             Assert.fail("an exception should have been thrown");
         } catch (OrekitException oe) {
             Assert.assertEquals(OrekitMessages.NOT_ENOUGH_DATA_FOR_INTERPOLATION, oe.getSpecifier());
@@ -452,7 +452,7 @@ public class TimeStampedFieldAngularCoordinatesTest {
         for (double dt = 0; dt < 29000; dt += 120) {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted      = sample.get(0).shiftedBy(dt);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldAngularCoordinates.interpolate(t0.shiftedBy(dt), true, sample);
+                    TimeStampedFieldAngularCoordinates.interpolate(t0.shiftedBy(dt), AngularDerivativesFilter.USE_RR, sample);
             Assert.assertEquals(0.0,
                                 FieldRotation.distance(shifted.getRotation(), interpolated.getRotation()).getReal(),
                                 1.3e-7);

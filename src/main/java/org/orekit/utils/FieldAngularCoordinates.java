@@ -212,7 +212,7 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
-     * @deprecated since 7.0 replaced with {@link TimeStampedFieldAngularCoordinates#interpolate(AbsoluteDate, boolean, Collection)}
+     * @deprecated since 7.0 replaced with {@link TimeStampedFieldAngularCoordinates#interpolate(AbsoluteDate, AngularDerivativesFilter, Collection)}
      */
     @Deprecated
     public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T> interpolate(final AbsoluteDate date, final boolean useRotationRates,
@@ -223,7 +223,9 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
             list.add(new TimeStampedFieldAngularCoordinates<T>(pair.getFirst(),
                                                                pair.getSecond().getRotation(), pair.getSecond().getRotationRate()));
         }
-        return TimeStampedFieldAngularCoordinates.interpolate(date, useRotationRates, list);
+        return TimeStampedFieldAngularCoordinates.interpolate(date,
+                                                              useRotationRates ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R,
+                                                              list);
     }
 
 }
