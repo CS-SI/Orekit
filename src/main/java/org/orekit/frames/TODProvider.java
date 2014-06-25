@@ -21,7 +21,6 @@ import java.io.Serializable;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
-import org.orekit.errors.TimeStampedCacheException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeFunction;
 import org.orekit.utils.IERSConventions;
@@ -66,16 +65,6 @@ class TODProvider implements TransformProvider {
      */
     EOPHistory getEOPHistory() {
         return eopHistory;
-    }
-
-    /** Get the LoD (Length of Day) value.
-     * <p>The data provided comes from the IERS files. It is smoothed data.</p>
-     * @param date date at which the value is desired
-     * @return LoD in seconds (0 if date is outside covered range)
-     * @exception TimeStampedCacheException if EOP data cannot be retrieved
-     */
-    double getLOD(final AbsoluteDate date) throws TimeStampedCacheException {
-        return (eopHistory == null) ? 0.0 : eopHistory.getLOD(date);
     }
 
     /** Get the transform from Mean Of Date at specified date.
