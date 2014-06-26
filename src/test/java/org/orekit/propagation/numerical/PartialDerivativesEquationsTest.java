@@ -1,0 +1,145 @@
+package org.orekit.propagation.numerical;
+
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.ode.UnknownParameterException;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import org.junit.Before;
+import org.junit.Test;
+import org.orekit.errors.OrekitException;
+import org.orekit.forces.ForceModel;
+import org.orekit.frames.Frame;
+import org.orekit.frames.FramesFactory;
+import org.orekit.orbits.CartesianOrbit;
+import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.events.EventDetector;
+import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.Constants;
+import org.orekit.utils.PVCoordinates;
+
+import java.util.Collection;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+/** Unit tests for {@link PartialDerivativesEquations}. */
+public class PartialDerivativesEquationsTest {
+
+    /** arbitrary date */
+    private static final AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
+    /** Earth gravitational parameter */
+    private static final double gm = Constants.EIGEN5C_EARTH_MU;
+    /** arbitrary inertial frame */
+    private static final Frame eci = FramesFactory.getGCRF();
+
+    /** unused propagator */
+    private NumericalPropagator propagator;
+    /** mock force model */
+    private MockForceModel forceModel;
+    /** arbitrary PV */
+    private PVCoordinates pv;
+    /** arbitrary state */
+    private SpacecraftState state;
+    /** subject under test */
+    private PartialDerivativesEquations pde;
+
+    /**
+     * set up {@link #pde} and dependencies.
+     *
+     * @throws OrekitException on error
+     */
+    @Before
+    public void setUp() throws OrekitException {
+        propagator = new NumericalPropagator(new DormandPrince54Integrator(1, 500, 0.001, 0.001));
+        forceModel = new MockForceModel();
+        propagator.addForceModel(forceModel);
+        pde = new PartialDerivativesEquations("pde", propagator);
+        Vector3D p = new Vector3D(7378137, 0, 0);
+        Vector3D v = new Vector3D(0, 7500, 0);
+        pv = new PVCoordinates(p, v);
+        state = new SpacecraftState(new CartesianOrbit(pv, eci, date, gm))
+                .addAdditionalState("pde", new double[2 * 3 * 6]);
+        pde.setInitialJacobians(state, 6, 0);
+
+    }
+
+    /**
+     * check {@link PartialDerivativesEquations#computeDerivatives(SpacecraftState,
+     * double[])} correctly sets the satellite velocity.
+     *
+     * @throws OrekitException on error
+     */
+    @Test
+    public void testComputeDerivativesStateVelocity() throws OrekitException {
+        //setup
+        double[] pdot = new double[36];
+
+        //action
+        pde.computeDerivatives(state, pdot);
+
+        //verify
+        assertThat(forceModel.accelerationDerivativesPosition.toVector3D(), is(pv.getPosition()));
+        assertThat(forceModel.accelerationDerivativesVelocity.toVector3D(), is(pv.getVelocity()));
+
+    }
+
+    /** Mock {@link ForceModel}. */
+    private static class MockForceModel implements ForceModel {
+
+        /**
+         * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
+         * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)}.
+         */
+        public FieldVector3D<DerivativeStructure> accelerationDerivativesPosition;
+        /**
+         * argument for {@link #accelerationDerivatives(AbsoluteDate, Frame,
+         * FieldVector3D, FieldVector3D, FieldRotation, DerivativeStructure)}.
+         */
+        public FieldVector3D<DerivativeStructure> accelerationDerivativesVelocity;
+
+        @Override
+        public void addContribution(SpacecraftState s, TimeDerivativesEquations adder) throws OrekitException {
+
+        }
+
+        @Override
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(AbsoluteDate date, Frame frame, FieldVector3D<DerivativeStructure> position, FieldVector3D<DerivativeStructure> velocity, FieldRotation<DerivativeStructure> rotation, DerivativeStructure mass) throws OrekitException {
+            this.accelerationDerivativesPosition = position;
+            this.accelerationDerivativesVelocity = velocity;
+            return position;
+        }
+
+        @Override
+        public FieldVector3D<DerivativeStructure> accelerationDerivatives(SpacecraftState s, String paramName) throws OrekitException {
+            return null;
+        }
+
+        @Override
+        public EventDetector[] getEventsDetectors() {
+            return new EventDetector[0];
+        }
+
+        @Override
+        public double getParameter(String name) throws UnknownParameterException {
+            return 0;
+        }
+
+        @Override
+        public void setParameter(String name, double value) throws UnknownParameterException {
+
+        }
+
+        @Override
+        public Collection<String> getParametersNames() {
+            return null;
+        }
+
+        @Override
+        public boolean isSupported(String name) {
+            return false;
+        }
+    }
+
+}
