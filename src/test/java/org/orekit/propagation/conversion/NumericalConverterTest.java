@@ -208,7 +208,9 @@ public class NumericalConverterTest {
     @Before
     public void setUp() throws OrekitException, IOException, ParseException {
         Utils.setDataRoot("regular-data:potential/shm-format");
-        final Vector3D position     = new Vector3D(7.0e6, 1.0e6, 4.0e6);
+        //use a orbit that comes close to Earth so the drag coefficient has an effect
+        final Vector3D position     = new Vector3D(7.0e6, 1.0e6, 4.0e6).normalize()
+                .scalarMultiply(Constants.WGS84_EARTH_EQUATORIAL_RADIUS + 300e3);
         final Vector3D velocity     = new Vector3D(-500.0, 8000.0, 1000.0);
         final AbsoluteDate initDate = new AbsoluteDate(2010, 10, 10, 10, 10, 10.0, TimeScalesFactory.getUTC());
         orbit = new EquinoctialOrbit(new PVCoordinates(position,  velocity),
