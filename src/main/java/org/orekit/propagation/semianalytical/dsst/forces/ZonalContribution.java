@@ -463,6 +463,9 @@ class ZonalContribution implements DSSTForceModel {
         // initialise the internal fields
         initializeStep(aux);
 
+        // computation of potential
+        computeUDerivatives(aux.getDate());
+
         //Compute all coefficients
         zonalSPCoefs.computeCoefficients(aux);
     }

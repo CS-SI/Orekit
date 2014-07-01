@@ -550,7 +550,6 @@ public class DSSTPropagatorTest {
     public void testOsculatingToMeanState() throws IllegalArgumentException, OrekitException {
         final SpacecraftState leoMeanState = getLEOrbit();
 
-
         final UnnormalizedSphericalHarmonicsProvider provider = GravityFieldFactory.getUnnormalizedProvider(2, 0);
         final Frame earthFrame = CelestialBodyFactory.getEarth().getBodyOrientedFrame();
 
@@ -560,16 +559,13 @@ public class DSSTPropagatorTest {
         final Collection<DSSTForceModel> forces = new ArrayList<DSSTForceModel>();
         forces.add(force);
 
-        final EquinoctialOrbit osculatingLEOOrbit = new EquinoctialOrbit(
-                7078387.237526626, -0.0012152135970437115, 5.684709472669567E-4,
-                -1.0029020216116278, 0.5709255080271707, 150.13716939390082,
-                PositionAngle.TRUE, leoMeanState.getFrame(), leoMeanState.getDate(), leoMeanState.getMu());
-
+        final EquinoctialOrbit osculatingLEOOrbit = (EquinoctialOrbit) DSSTPropagator.
+                computeOsculatingState(leoMeanState, forces).getOrbit();
         final SpacecraftState leoOsculatingState = new SpacecraftState(osculatingLEOOrbit);
 
         final SpacecraftState leoComputedMeanState = DSSTPropagator.computeMeanState(leoOsculatingState, forces);
 
-        Assert.assertEquals(leoMeanState.getA(), leoComputedMeanState.getA(), 1000.);
+        Assert.assertEquals(leoMeanState.getA(), leoComputedMeanState.getA(), 1.);
     }
 
     private SpacecraftState getGEOrbit() throws IllegalArgumentException, OrekitException {
