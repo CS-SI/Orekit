@@ -37,7 +37,7 @@ source code control system. Orekit Git master repository is available online.
     tab in Orekit forge
  * you can clone it anonymously with the command:
 
-        git clone https://luc@www.orekit.org/git/orekit-main.git
+        git clone https://www.orekit.org/git/orekit-main.git
 
  * if you are a committer, you can clone it using your ssh credentials with the command:
 

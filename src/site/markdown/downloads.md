@@ -29,7 +29,7 @@ be easily adapted if you are using one of the numerous Git graphical
 user interface available or if Git is supported by you integrated
 development environment:
 
-    git clone http://www.orekit.org/git/orekit
+    git clone https://www.orekit.org/git/orekit-main.git
 
 Released Library versions
 -------------------------
