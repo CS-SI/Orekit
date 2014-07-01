@@ -40,7 +40,7 @@ Building with Eclipse:
    orekit/src/test/resources, orekit/src/tutorials in
    the source tab of the Configure Build Path dialog
  - set the external libraries to JRE system library (provided by Eclipse),
-   Junit 4.x (provided by Eclipse) and commons-math 3.2 (available at
+   Junit 4.x (provided by Eclipse) and Apache Commons Math (available at
    Apache Software Foundation commons-math
    http://commons.apache.org/proper/commons-math/download_math.cgi
    in the libraries tab of the Configure Build Path dialog

@@ -36,6 +36,8 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.OrekitConfiguration;
@@ -47,7 +49,9 @@ public class TODProviderTest {
     @Test
     public void testRotationRate() throws OrekitException {
         TransformProvider provider =
-                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null), true, false,
+                new InterpolatingTransformProvider(new TODProvider(IERSConventions.IERS_1996, null),
+                                                   CartesianDerivativesFilter.USE_PV,
+                                                   AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    3, 1.0, 5, Constants.JULIAN_DAY, 100.0);
         AbsoluteDate tMin = new AbsoluteDate(2035, 3, 2, 15, 58, 59, TimeScalesFactory.getUTC());
@@ -204,7 +208,9 @@ public class TODProviderTest {
         EOPHistory eopHistory = FramesFactory.getEOPHistory(IERSConventions.IERS_1996, false);
         TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, eopHistory);
         final TransformProvider interpolating =
-                new InterpolatingTransformProvider(nonInterpolating, true, false,
+                new InterpolatingTransformProvider(nonInterpolating,
+                                                   CartesianDerivativesFilter.USE_PV,
+                                                   AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    6, Constants.JULIAN_DAY / 24,
                                                    OrekitConfiguration.getCacheSlotsNumber(),
@@ -257,7 +263,9 @@ public class TODProviderTest {
         // We finally select 6 interpolation points separated by 3 hours each
         TransformProvider nonInterpolating = new TODProvider(IERSConventions.IERS_1996, null);
                 final TransformProvider interpolating =
-                        new InterpolatingTransformProvider(nonInterpolating, true, false,
+                        new InterpolatingTransformProvider(nonInterpolating,
+                                                           CartesianDerivativesFilter.USE_PV,
+                                                           AngularDerivativesFilter.USE_R,
                                                            AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                            6, Constants.JULIAN_DAY / 8,
                                                            OrekitConfiguration.getCacheSlotsNumber(),

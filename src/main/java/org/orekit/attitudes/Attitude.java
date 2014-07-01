@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
@@ -32,6 +31,8 @@ import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 
 /** This class handles attitude definition at a given date.
@@ -55,16 +56,23 @@ public class Attitude
     implements TimeStamped, TimeShiftable<Attitude>, TimeInterpolable<Attitude>, Serializable {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = -947817502698754209L;
-
-    /** Current date. */
-    private final AbsoluteDate date;
+    private static final long serialVersionUID = 20140611L;
 
     /** Reference frame. */
     private final Frame referenceFrame;
 
      /** Attitude and spin.  */
-    private final AngularCoordinates orientation;
+    private final TimeStampedAngularCoordinates orientation;
+
+    /** Creates a new instance.
+     * @param referenceFrame reference frame from which attitude is defined
+     * @param orientation complete orientation between reference frame and satellite frame,
+     * including rotation rate
+     */
+    public Attitude(final Frame referenceFrame, final TimeStampedAngularCoordinates orientation) {
+        this.referenceFrame = referenceFrame;
+        this.orientation    = orientation;
+    }
 
     /** Creates a new instance.
      * @param date date at which attitude is defined
@@ -74,9 +82,8 @@ public class Attitude
      */
     public Attitude(final AbsoluteDate date, final Frame referenceFrame,
                     final AngularCoordinates orientation) {
-        this.date           = date;
-        this.referenceFrame = referenceFrame;
-        this.orientation    = orientation;
+        this(referenceFrame,
+             new TimeStampedAngularCoordinates(date, orientation.getRotation(), orientation.getRotationRate()));
     }
 
     /** Creates a new instance.
@@ -87,7 +94,7 @@ public class Attitude
      */
     public Attitude(final AbsoluteDate date, final Frame referenceFrame,
                     final Rotation attitude, final Vector3D spin) {
-        this(date, referenceFrame, new AngularCoordinates(attitude, spin));
+        this(referenceFrame, new TimeStampedAngularCoordinates(date, attitude, spin));
     }
 
     /** Estimate spin between two orientations.
@@ -117,7 +124,7 @@ public class Attitude
      * @return a new attitude, shifted with respect to the instance (which is immutable)
      */
     public Attitude shiftedBy(final double dt) {
-        return new Attitude(date.shiftedBy(dt), referenceFrame, orientation.shiftedBy(dt));
+        return new Attitude(referenceFrame, orientation.shiftedBy(dt));
     }
 
     /** Get a similar attitude with a specific reference frame.
@@ -142,8 +149,8 @@ public class Attitude
         }
 
         // we have to take an intermediate rotation into account
-        final Transform t = newReferenceFrame.getTransformTo(referenceFrame, date);
-        return new Attitude(date, newReferenceFrame,
+        final Transform t = newReferenceFrame.getTransformTo(referenceFrame, orientation.getDate());
+        return new Attitude(orientation.getDate(), newReferenceFrame,
                             orientation.getRotation().applyTo(t.getRotation()),
                             orientation.getRotationRate().add(orientation.getRotation().applyTo(t.getRotationRate())));
 
@@ -153,7 +160,7 @@ public class Attitude
      * @return date of the attitude parameters
      */
     public AbsoluteDate getDate() {
-        return date;
+        return orientation.getDate();
     }
 
     /** Get the reference frame.
@@ -168,7 +175,7 @@ public class Attitude
      * @see #getRotation()
      * @see #getSpin()
      */
-    public AngularCoordinates getOrientation() {
+    public TimeStampedAngularCoordinates getOrientation() {
         return orientation;
     }
 
@@ -206,13 +213,14 @@ public class Attitude
      */
     public Attitude interpolate(final AbsoluteDate interpolationDate, final Collection<Attitude> sample)
         throws OrekitException {
-        final List<Pair<AbsoluteDate, AngularCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate, AngularCoordinates>>(sample.size());
+        final List<TimeStampedAngularCoordinates> datedPV =
+                new ArrayList<TimeStampedAngularCoordinates>(sample.size());
         for (final Attitude attitude : sample) {
-            datedPV.add(new Pair<AbsoluteDate, AngularCoordinates>(attitude.getDate(), attitude.getOrientation()));
+            datedPV.add(attitude.orientation);
         }
-        final AngularCoordinates interpolated = AngularCoordinates.interpolate(interpolationDate, true, datedPV);
-        return new Attitude(interpolationDate, referenceFrame, interpolated);
+        final TimeStampedAngularCoordinates interpolated =
+                TimeStampedAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
+        return new Attitude(referenceFrame, interpolated);
     }
 
 }

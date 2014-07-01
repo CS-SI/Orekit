@@ -17,6 +17,11 @@
 package org.orekit.attitudes;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,20 +66,64 @@ public class TabulatedProviderTest {
 
     @Test
     public void testWithoutRate() throws OrekitException {
-        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, false), 1.0e-11);
+        double             samplingRate      = 60.0;
+        double             checkingRate      = 10.0;
+        int                n                 = 8;
+        AttitudeProvider   referenceProvider = new YawCompensation(new NadirPointing(earthShape));
+        List<Attitude>     sample            = createSample(samplingRate, referenceProvider);
+        final double       margin            = samplingRate * n / 2;
+        final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
+        final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
+        TabulatedProvider  provider          = new TabulatedProvider(sample, n, false);
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.0e-11);
     }
 
     @Test
     public void testWithRate() throws OrekitException {
-        Assert.assertEquals(0.0, checkError(60.0, 10.0, 8, true), 1.0e-12);
+        double             samplingRate      = 60.0;
+        double             checkingRate      = 10.0;
+        int                n                 = 8;
+        AttitudeProvider   referenceProvider = new YawCompensation(new NadirPointing(earthShape));
+        List<Attitude>     sample            = createSample(samplingRate, referenceProvider);
+        final double       margin            = samplingRate * n / 2;
+        final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
+        final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
+        TabulatedProvider  provider          = new TabulatedProvider(sample, n, true);
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.0e-12);
+   }
+
+    @Test
+    public void testSerialization() throws OrekitException, IOException, ClassNotFoundException {
+        double             samplingRate      = 60.0;
+        double             checkingRate      = 10.0;
+        int                n                 = 8;
+        AttitudeProvider   referenceProvider = new YawCompensation(new NadirPointing(earthShape));
+        List<Attitude>     sample            = createSample(samplingRate, referenceProvider);
+        final double       margin            = samplingRate * n / 2;
+        final AbsoluteDate start             = sample.get(0).getDate().shiftedBy(margin);
+        final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
+        TabulatedProvider  provider          = new TabulatedProvider(sample, n, true);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream    oos = new ObjectOutputStream(bos);
+        oos.writeObject(provider);
+        Assert.assertTrue(bos.size() > 20000);
+        Assert.assertTrue(bos.size() < 21000);
+
+        ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
+        ObjectInputStream     ois = new ObjectInputStream(bis);
+        TabulatedProvider deserialized  = (TabulatedProvider) ois.readObject();
+
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, provider, deserialized), 1.0e-20);
+
     }
 
-    private double checkError(double samplingRate, double checkingRate, int n, boolean userRotationRate)
+    private List<Attitude> createSample(double samplingRate, AttitudeProvider referenceProvider)
         throws PropagationException {
 
         // reference propagator, using a yaw compensation law
         final KeplerianPropagator referencePropagator = new KeplerianPropagator(circOrbit);
-        referencePropagator.setAttitudeProvider(new YawCompensation(new NadirPointing(earthShape)));
+        referencePropagator.setAttitudeProvider(referenceProvider);
 
         // create sample
         final List<Attitude> sample = new ArrayList<Attitude>();
@@ -82,7 +131,7 @@ public class TabulatedProviderTest {
 
             public void init(SpacecraftState s0, AbsoluteDate t) {
             }
-            
+
             public void handleStep(SpacecraftState currentState, boolean isLast) {
                 sample.add(currentState.getAttitude());
             }
@@ -90,13 +139,18 @@ public class TabulatedProviderTest {
         });
         referencePropagator.propagate(circOrbit.getDate().shiftedBy(2 * circOrbit.getKeplerianPeriod()));
 
+        return sample;
+
+    }
+
+    private double checkError(AbsoluteDate start, AbsoluteDate end, double checkingRate,
+                              final AttitudeProvider referenceProvider, TabulatedProvider provider)
+            throws PropagationException {
+
         // prepare an interpolating provider, using only internal steps
         // (i.e. ignoring interpolation near boundaries)
-        final double margin      = samplingRate * n / 2;
-        final AbsoluteDate start = sample.get(0).getDate().shiftedBy(margin);
-        final AbsoluteDate end   = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         Propagator interpolatingPropagator = new KeplerianPropagator(circOrbit.shiftedBy(start.durationFrom(circOrbit.getDate())));
-        interpolatingPropagator.setAttitudeProvider(new TabulatedProvider(sample, n, userRotationRate));
+        interpolatingPropagator.setAttitudeProvider(provider);
  
         // compute interpolation error on the internal steps .
         final double[] error = new double[1];
@@ -109,9 +163,9 @@ public class TabulatedProviderTest {
             public void handleStep(SpacecraftState currentState, boolean isLast) throws PropagationException {
                 try {
                     Attitude interpolated = currentState.getAttitude();
-                    Attitude reference    = referencePropagator.getAttitudeProvider().getAttitude(currentState.getOrbit(),
-                                                                                                  currentState.getDate(),
-                                                                                                  currentState.getFrame());
+                    Attitude reference    = referenceProvider.getAttitude(currentState.getOrbit(),
+                                                                          currentState.getDate(),
+                                                                          currentState.getFrame());
                     double localError = Rotation.distance(interpolated.getRotation(), reference.getRotation());
                     error[0] = FastMath.max(error[0], localError);
                 } catch (OrekitException oe) {

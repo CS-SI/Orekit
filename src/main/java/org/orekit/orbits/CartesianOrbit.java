@@ -25,11 +25,12 @@ import org.apache.commons.math3.exception.ConvergenceException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** This class holds cartesian orbital parameters.
@@ -78,6 +79,21 @@ public class CartesianOrbit extends Orbit {
      * @param pvCoordinates the position and velocity of the satellite.
      * @param frame the frame in which the {@link PVCoordinates} are defined
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if frame is not a {@link
+     * Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public CartesianOrbit(final TimeStampedPVCoordinates pvCoordinates,
+                          final Frame frame, final double mu)
+        throws IllegalArgumentException {
+        super(pvCoordinates, frame, mu);
+        equinoctial = null;
+    }
+
+    /** Constructor from cartesian parameters.
+     * @param pvCoordinates the position and velocity of the satellite.
+     * @param frame the frame in which the {@link PVCoordinates} are defined
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
      * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if frame is not a {@link
@@ -86,15 +102,15 @@ public class CartesianOrbit extends Orbit {
     public CartesianOrbit(final PVCoordinates pvCoordinates, final Frame frame,
                           final AbsoluteDate date, final double mu)
         throws IllegalArgumentException {
-        super(pvCoordinates, frame, date, mu);
-        equinoctial = null;
+        this(new TimeStampedPVCoordinates(date, pvCoordinates.getPosition(), pvCoordinates.getVelocity()),
+              frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
      * @param op orbital parameters to copy
      */
     public CartesianOrbit(final Orbit op) {
-        super(op.getPVCoordinates(), op.getFrame(), op.getDate(), op.getMu());
+        super(op.getPVCoordinates(), op.getFrame(), op.getMu());
         if (op instanceof EquinoctialOrbit) {
             equinoctial = (EquinoctialOrbit) op;
         } else if (op instanceof CartesianOrbit) {
@@ -190,7 +206,7 @@ public class CartesianOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    protected PVCoordinates initPVCoordinates() {
+    protected TimeStampedPVCoordinates initPVCoordinates() {
         // nothing to do here, as the canonical elements are already the cartesian ones
         return getPVCoordinates();
     }
@@ -221,12 +237,14 @@ public class CartesianOrbit extends Orbit {
      * </p>
      */
     public CartesianOrbit interpolate(final AbsoluteDate date, final Collection<Orbit> sample) {
-        final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
-        for (final Orbit orbit : sample) {
-            datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(orbit.getDate(), orbit.getPVCoordinates()));
+        final List<TimeStampedPVCoordinates> datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
+        for (final Orbit o : sample) {
+            datedPV.add(new TimeStampedPVCoordinates(o.getDate(),
+                                                     o.getPVCoordinates().getPosition(),
+                                                     o.getPVCoordinates().getVelocity()));
         }
-        final PVCoordinates interpolated = PVCoordinates.interpolate(date, true, datedPV);
+        final TimeStampedPVCoordinates interpolated =
+                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_PV, datedPV);
         return new CartesianOrbit(interpolated, getFrame(), date, getMu());
     }
 
@@ -485,48 +503,50 @@ public class CartesianOrbit extends Orbit {
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DataTransferObject(getPVCoordinates(), getFrame(), getDate(), getMu());
+        return new DTO(this);
     }
 
     /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
+    private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 4184412866917874790L;
+        private static final long serialVersionUID = 20140617L;
 
-        /** Computed PVCoordinates. */
-        private PVCoordinates pvCoordinates;
+        /** Double values. */
+        private double[] d;
 
         /** Frame in which are defined the orbital parameters. */
         private final Frame frame;
 
-        /** Date of the orbital parameters. */
-        private final AbsoluteDate date;
-
-        /** Value of mu used to compute position and velocity (m<sup>3</sup>/s<sup>2</sup>). */
-        private final double mu;
-
         /** Simple constructor.
-         * @param pvCoordinates the position and velocity of the satellite.
-         * @param frame the frame in which the {@link PVCoordinates} are defined
-         * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-         * @param date date of the orbital parameters
-         * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+         * @param orbit instance to serialize
          */
-        private DataTransferObject(final PVCoordinates pvCoordinates, final Frame frame,
-                                   final AbsoluteDate date, final double mu) {
-            this.pvCoordinates = pvCoordinates;
-            this.frame         = frame;
-            this.date          = date;
-            this.mu            = mu;
+        private DTO(final CartesianOrbit orbit) {
+
+            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+
+            // decompose date
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+
+            this.d = new double[] {
+                epoch, offset, orbit.getMu(),
+                pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+                pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ(),
+            };
+
+            this.frame = orbit.getFrame();
+
         }
 
         /** Replace the deserialized data transfer object with a {@link CartesianOrbit}.
          * @return replacement {@link CartesianOrbit}
          */
         private Object readResolve() {
-            // build a new provider, with an empty cache
-            return new CartesianOrbit(pvCoordinates, frame, date, mu);
+            return new CartesianOrbit(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                                                   new Vector3D(d[3], d[4], d[5]),
+                                                                   new Vector3D(d[6], d[7], d[8])),
+                                      frame, d[2]);
         }
 
     }

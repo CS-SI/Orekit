@@ -500,7 +500,7 @@ public class DSSTPropagatorTest {
             if (refExecTime <= 0) {
                 refExecTime = execTime;
             } else {
-                Assert.assertTrue(execTime <= refExecTime * 1.1);
+                Assert.assertTrue(execTime <= refExecTime * 1.5);
             }
         }
     }

@@ -996,8 +996,8 @@ public class KeplerianParametersTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(orbit);
 
-        Assert.assertTrue(bos.size() > 400);
-        Assert.assertTrue(bos.size() < 500);
+        Assert.assertTrue(bos.size() > 250);
+        Assert.assertTrue(bos.size() < 350);
 
         ByteArrayInputStream  bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream     ois = new ObjectInputStream(bis);

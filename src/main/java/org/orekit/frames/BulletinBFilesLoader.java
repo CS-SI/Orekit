@@ -53,9 +53,9 @@ import org.orekit.utils.IERSConventions;
  * written in a format containing nutation corrections for both the
  * new IAU2000 nutation model as dx, dy entries in its section 1 and nutation
  * corrections for the old IAU1976 nutation model as dPsi, dEpsilon entries in
- * its sections 2. These buletins are available from IERS main site <a
- * href="http://www.iers.org/IERS/EN/DataProducts/EarthOrientationData/eop.html">
- * Earth Orientation Parameters</a> section. They are also available with exactly the same content
+ * its sections 2. These bulletins are available from IERS <a
+ * href="ftp://ftp.iers.org/products/eop/bulletinb/format_2009/">
+ *  FTP site</a>. They are also available with exactly the same content
  * (but a different naming convention) from <a
  * href="http://hpiers.obspm.fr/eoppc/bul/bulb_new/">Paris-Meudon
  * observatory site</a>.

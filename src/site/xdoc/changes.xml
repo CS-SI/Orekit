@@ -22,6 +22,31 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="evan" type="fix">
+          Fixed incorrect partial derivatives for force models that depend on satellite velocity.
+          Fixes #174.
+      </action>
+      <action dev="evan" type="fix">
+          Fixed incorrect parameters set in NumericalPropagatorBuilder.
+          Fixes #175.
+      </action>
+      <action dev="luc" type="update" >
+        Significantly reduced size of various serialized objects.
+      </action>
+      <action dev="luc" type="update" >
+        PVCoordinatesProvider now produces time-stamped position-velocities.
+      </action>
+      <action dev="luc" type="update" >
+        Tabulated attitude provider can be built directly from time-stamped angular coordinates
+        lists, in addition to attitudes lists.
+      </action>
+      <action dev="luc" type="add" >
+        Added time-stamped versions of position-velocity and angular coordinates.
+      </action>
+      <action dev="luc" type="fix" due-to="Daniel Aguilar Taboada">
+        Fixed wrong rotation interpolation for rotations near π.
+        Fixes issue #173.
+      </action>
       <action dev="luc" type="update" >
         Updated dependency to Apache Commons Math 3.3.
       </action>

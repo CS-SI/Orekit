@@ -17,10 +17,11 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.time.AbsoluteDate;
@@ -116,7 +117,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv2 second base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
-                           final double a2, final FieldPVCoordinates<T> pv2) {
+                              final double a2, final FieldPVCoordinates<T> pv2) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity);
     }
@@ -130,7 +131,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv2 second base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
-                           final T a2, final FieldPVCoordinates<T> pv2) {
+                              final T a2, final FieldPVCoordinates<T> pv2) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity);
     }
@@ -144,7 +145,7 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv2 second base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
-                           final T a2, final PVCoordinates pv2) {
+                              final T a2, final PVCoordinates pv2) {
         position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition());
         velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity());
     }
@@ -160,8 +161,8 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv3 third base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
-                           final double a2, final FieldPVCoordinates<T> pv2,
-                           final double a3, final FieldPVCoordinates<T> pv3) {
+                              final double a2, final FieldPVCoordinates<T> pv2,
+                              final double a3, final FieldPVCoordinates<T> pv3) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
@@ -177,8 +178,8 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv3 third base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
-                           final T a2, final FieldPVCoordinates<T> pv2,
-                           final T a3, final FieldPVCoordinates<T> pv3) {
+                              final T a2, final FieldPVCoordinates<T> pv2,
+                              final T a3, final FieldPVCoordinates<T> pv3) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity);
     }
@@ -194,8 +195,8 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv3 third base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
-                           final T a2, final PVCoordinates pv2,
-                           final T a3, final PVCoordinates pv3) {
+                              final T a2, final PVCoordinates pv2,
+                              final T a3, final PVCoordinates pv3) {
         position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(), a3, pv3.getPosition());
         velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(), a3, pv3.getVelocity());
     }
@@ -213,9 +214,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final double a1, final FieldPVCoordinates<T> pv1,
-                           final double a2, final FieldPVCoordinates<T> pv2,
-                           final double a3, final FieldPVCoordinates<T> pv3,
-                           final double a4, final FieldPVCoordinates<T> pv4) {
+                              final double a2, final FieldPVCoordinates<T> pv2,
+                              final double a3, final FieldPVCoordinates<T> pv3,
+                              final double a4, final FieldPVCoordinates<T> pv4) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
@@ -233,9 +234,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final FieldPVCoordinates<T> pv1,
-                           final T a2, final FieldPVCoordinates<T> pv2,
-                           final T a3, final FieldPVCoordinates<T> pv3,
-                           final T a4, final FieldPVCoordinates<T> pv4) {
+                              final T a2, final FieldPVCoordinates<T> pv2,
+                              final T a3, final FieldPVCoordinates<T> pv3,
+                              final T a4, final FieldPVCoordinates<T> pv4) {
         position = new FieldVector3D<T>(a1, pv1.position, a2, pv2.position, a3, pv3.position, a4, pv4.position);
         velocity = new FieldVector3D<T>(a1, pv1.velocity, a2, pv2.velocity, a3, pv3.velocity, a4, pv4.velocity);
     }
@@ -253,9 +254,9 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param pv4 fourth base (unscaled) PVCoordinates
      */
     public FieldPVCoordinates(final T a1, final PVCoordinates pv1,
-                           final T a2, final PVCoordinates pv2,
-                           final T a3, final PVCoordinates pv3,
-                           final T a4, final PVCoordinates pv4) {
+                              final T a2, final PVCoordinates pv2,
+                              final T a3, final PVCoordinates pv3,
+                              final T a4, final PVCoordinates pv4) {
         position = new FieldVector3D<T>(a1, pv1.getPosition(), a2, pv2.getPosition(),
                                   a3, pv3.getPosition(), a4, pv4.getPosition());
         velocity = new FieldVector3D<T>(a1, pv1.getVelocity(), a2, pv2.getVelocity(),
@@ -312,42 +313,20 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
+     * @deprecated since 7.0 replaced with {@link TimeStampedFieldPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
      */
-    @SuppressWarnings("unchecked")
+    @Deprecated
     public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
                                                                                     final boolean useVelocities,
                                                                                     final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
-
-        // get field properties
-        final T prototype = sample.iterator().next().getValue().getPosition().getX();
-        final T zero      = prototype.getField().getZero();
-
-        // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
-
-        // add sample points
-        if (useVelocities) {
-            // populate sample with position and velocity data
-            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
-                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
-                                            datedPV.getValue().getPosition().toArray(),
-                                            datedPV.getValue().getVelocity().toArray());
-            }
-        } else {
-            // populate sample with position data, ignoring velocity
-            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
-                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
-                                            datedPV.getValue().getPosition().toArray());
-            }
+        final List<TimeStampedFieldPVCoordinates<T>> list = new ArrayList<TimeStampedFieldPVCoordinates<T>>(sample.size());
+        for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> pair : sample) {
+            list.add(new TimeStampedFieldPVCoordinates<T>(pair.getFirst(),
+                    pair.getSecond().getPosition(), pair.getSecond().getVelocity()));
         }
-
-        // interpolate
-        final T[][] p = interpolator.derivatives(zero, 1);
-
-        // build a new interpolated instance
-        return new FieldPVCoordinates<T>(new FieldVector3D<T>(p[0]),
-                                         new FieldVector3D<T>(p[1]));
-
+        return TimeStampedFieldPVCoordinates.interpolate(date,
+                                                         useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+                                                         list);
     }
 
     /** Gets the position.

@@ -24,6 +24,7 @@ import org.apache.commons.math3.analysis.MultivariateMatrixFunction;
 import org.apache.commons.math3.analysis.MultivariateVectorFunction;
 import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresBuilder;
+import org.apache.commons.math3.fitting.leastsquares.LeastSquaresFactory;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresOptimizer;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem;
 import org.apache.commons.math3.fitting.leastsquares.LeastSquaresProblem.Evaluation;
@@ -34,7 +35,6 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.optim.ConvergenceChecker;
-import org.apache.commons.math3.optim.PointVectorValuePair;
 import org.apache.commons.math3.optim.SimpleVectorValueChecker;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.Pair;
@@ -123,21 +123,7 @@ public abstract class AbstractPropagatorConverter implements PropagatorConverter
         this.sample              = new ArrayList<SpacecraftState>();
 
         final SimpleVectorValueChecker svvc = new SimpleVectorValueChecker(-1.0, threshold);
-        this.checker = new ConvergenceChecker<Evaluation>() {
-            /** {@inheritDoc} */
-            public boolean converged(final int iteration,
-                                     final Evaluation previous,
-                                     final Evaluation current) {
-                return svvc.converged(iteration,
-                                      new PointVectorValuePair(previous.getPoint().toArray(),
-                                                               previous.getResiduals().toArray(),
-                                                               false),
-                                      new PointVectorValuePair(current.getPoint().toArray(),
-                                                               current.getResiduals().toArray(),
-                                                               false)
-                );
-            }
-        };
+        this.checker = LeastSquaresFactory.evaluationChecker(svvc);
 
     }
 

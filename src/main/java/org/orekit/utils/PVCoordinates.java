@@ -17,10 +17,10 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.time.AbsoluteDate;
@@ -190,49 +190,19 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
      * otherwise ignore them and use only positions
      * @param sample sample points on which interpolation should be done
      * @return a new position-velocity, interpolated at specified date
+     * @deprecated since 7.0 replaced with {@link TimeStampedPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
      */
+    @Deprecated
     public static PVCoordinates interpolate(final AbsoluteDate date, final boolean useVelocities,
                                             final Collection<Pair<AbsoluteDate, PVCoordinates>> sample) {
-
-        // set up an interpolator taking derivatives into account
-        final HermiteInterpolator interpolator = new HermiteInterpolator();
-
-        // add sample points
-        if (useVelocities) {
-            // populate sample with position and velocity data
-            for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
-                final Vector3D position = datedPV.getValue().getPosition();
-                final Vector3D velocity = datedPV.getValue().getVelocity();
-                interpolator.addSamplePoint(datedPV.getKey().getDate().durationFrom(date),
-                                            new double[] {
-                                                position.getX(), position.getY(), position.getZ()
-                                            }, new double[] {
-                                                velocity.getX(), velocity.getY(), velocity.getZ()
-                                            });
-            }
-        } else {
-            // populate sample with position data, ignoring velocity
-            for (final Pair<AbsoluteDate, PVCoordinates> datedPV : sample) {
-                final Vector3D position = datedPV.getValue().getPosition();
-                interpolator.addSamplePoint(datedPV.getKey().getDate().durationFrom(date),
-                                            new double[] {
-                                                position.getX(), position.getY(), position.getZ()
-                                            });
-            }
+        final List<TimeStampedPVCoordinates> list = new ArrayList<TimeStampedPVCoordinates>(sample.size());
+        for (final Pair<AbsoluteDate, PVCoordinates> pair : sample) {
+            list.add(new TimeStampedPVCoordinates(pair.getFirst(),
+                                                       pair.getSecond().getPosition(), pair.getSecond().getVelocity()));
         }
-
-        // interpolate
-        final DerivativeStructure zero = new DerivativeStructure(1, 1, 0, 0.0);
-        final DerivativeStructure[] p  = interpolator.value(zero);
-
-        // build a new interpolated instance
-        return new PVCoordinates(new Vector3D(p[0].getValue(),
-                                              p[1].getValue(),
-                                              p[2].getValue()),
-                                 new Vector3D(p[0].getPartialDerivative(1),
-                                              p[1].getPartialDerivative(1),
-                                              p[2].getPartialDerivative(1)));
-
+        return TimeStampedPVCoordinates.interpolate(date,
+                                                    useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+                                                    list);
     }
 
     /** Gets the position.
@@ -294,6 +264,41 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                   append(velocity.getX()).append(comma).
                                   append(velocity.getY()).append(comma).
                                   append(velocity.getZ()).append(")}").toString();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Double values. */
+        private double[] d;
+
+        /** Simple constructor.
+         * @param pv instance to serialize
+         */
+        private DTO(final PVCoordinates pv) {
+            this.d = new double[] {
+                pv.getPosition().getX(), pv.getPosition().getY(), pv.getPosition().getZ(),
+                pv.getVelocity().getX(), pv.getVelocity().getY(), pv.getVelocity().getZ(),
+            };
+        }
+
+        /** Replace the deserialized data transfer object with a {@link PVCoordinates}.
+         * @return replacement {@link PVCoordinates}
+         */
+        private Object readResolve() {
+            return new PVCoordinates(new Vector3D(d[0], d[1], d[2]), new Vector3D(d[3], d[4], d[5]));
+        }
+
     }
 
 }
