@@ -273,8 +273,8 @@ used up to 2009 and the new format used since 2010 are supported. The supported 
 for `finals2000A` files for IAU-2006/2000A and the finals files for IAU-1980 are both
 the XML format and the columns format.
 
-|------------------------------------------|--------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 |          default naming pattern          |       format       |                          data type                               |                                                                    source                                                                        |
+|------------------------------------------|--------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|
 | UTC-TAI.history[.gz]                     |  IERS history      | leap seconds introduction history                                | [http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history](http://hpiers.obspm.fr/eoppc/bul/bulc/UTC-TAI.history)                                   |
 | bulletinb.\#\#\#[.gz]                    |  IERS Bulletin B   | monthly Earth Orientation Parameters model IAU 2006/2000A        | [ftp://ftp.iers.org/products/eop/bulletinb/format_2009/](ftp://ftp.iers.org/products/eop/bulletinb/format_2009/)                                 |
 | eopc04\_08\_IAU2000.\#\#[.gz]            |  IERS EOP 08 C04   | yearly Earth Orientation Parameters model IAU 2006/2000A         | [ftp://ftp.iers.org/products/eop/long-term/c04\_08/iau2000/](ftp://ftp.iers.org/products/eop/long-term/c04_08/iau2000/)                          |
