@@ -73,87 +73,53 @@ Finally, the propagation features of duration and step size are defined and
 a propagation loop is performed in order to print the results at each step:
 
     double duration = 600.;
-    AbsoluteDate finalDate =  new AbsoluteDate(initialDate, duration, utc);
+    AbsoluteDate finalDate = initialDate.shiftedBy(duration);
     double stepT = 60.;
     int cpt = 1;
-    AbsoluteDate extrapDate = initialDate;
-    while (extrapDate.compareTo(finalDate) <= 0)  {
+    for (AbsoluteDate extrapDate = initialDate;
+         extrapDate.compareTo(finalDate) <= 0;
+         extrapDate = extrapDate.shiftedBy(stepT))  {
         SpacecraftState currentState = kepler.propagate(extrapDate);
         System.out.println("step " + cpt++);
         System.out.println(" time : " + currentState.getDate());
         System.out.println(" " + currentState.getOrbit());
-        extrapDate = new AbsoluteDate(extrapDate, stepT, utc);
     }
 
-The printed results are shown below (lines have been wrapped for better
-presentation)
+The printed results are shown below
 
     step 1
      time : 2004-01-01T23:30:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 441.0;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 0.0;}
     step 2
      time : 2004-01-01T23:31:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 446.2813836335737;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 5.281383633573694;}
     step 3
      time : 2004-01-01T23:32:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 451.5252613094112;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 10.525261309411585;}
     step 4
      time : 2004-01-01T23:33:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 456.6958768398235;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 15.695876839823306;}
     step 5
      time : 2004-01-01T23:34:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 461.7607703551739;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 20.76077035517381;}
     step 6
      time : 2004-01-01T23:35:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 466.6919614270639;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 25.691961427063767;}
     step 7
      time : 2004-01-01T23:36:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 471.4666804605399;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 30.466680460539763;}
     step 8
      time : 2004-01-01T23:37:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 476.0676390794578;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 35.06763907945756;}
     step 9
      time : 2004-01-01T23:38:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 480.4828961502498;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 39.48289615024968;}
     step 10
      time : 2004-01-01T23:39:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 484.70541689946305;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 43.70541689946282;}
     step 11
      time : 2004-01-01T23:40:00.000
-     equinoctial parameters: {a: 2.4396159E7;
-                              ex: 0.11393312156755062; ey: 0.719345418868777;
-                              hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 488.7324362945905;}
+     keplerian parameters: {a: 2.4396159E7; e: 0.72831215; i: 7.0; pa: 180.0; raan: 261.0; v: 47.732436294590705;}
 
 The complete code for this example can be found in the source tree of the library,
 in file `src/tutorials/fr/cs/examples/propagation/SlaveMode.java`.
@@ -373,7 +339,7 @@ start date and to exactly the final date:
      equinoctial parameters: {a: 2.4396159E7;
                               ex: 0.11393312156755062; ey: 0.719345418868777;
                               hx: -0.009567941763699867; hy: -0.06040960680288257;
-                              lv: 559.0092657655284;}
+                              lv: 559.0092657655282;}
      date :  2004-01-02T01:10:00.000
      equinoctial parameters: {a: 2.4396159E7;
                               ex: 0.11393312156755062; ey: 0.719345418868777;
