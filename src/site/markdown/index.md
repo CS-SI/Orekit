@@ -156,6 +156,7 @@ Features
     * French
     * Galician
     * German
+    * Greek
     * Italian
     * Norwegian
     * Spanish
