@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVASampleFilter;
-import org.orekit.utils.RRASampleFilter;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 
 
 public class InterpolatingTransformProviderTest {
@@ -45,7 +45,8 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_R,
+                                                   CartesianDerivativesFilter.USE_PVA,
+                                                   AngularDerivativesFilter.USE_RR,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -72,7 +73,8 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   PVASampleFilter.SAMPLE_P, RRASampleFilter.SAMPLE_R,
+                                                   CartesianDerivativesFilter.USE_P,
+                                                   AngularDerivativesFilter.USE_R,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -99,7 +101,9 @@ public class InterpolatingTransformProviderTest {
                     public Transform getTransform(AbsoluteDate date) throws OrekitException {
                         throw new OrekitException(OrekitMessages.INTERNAL_ERROR);
                     }
-                }, PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_RRA,
+                },
+                CartesianDerivativesFilter.USE_PVA,
+                AngularDerivativesFilter.USE_RRA,
                 AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                 5, 0.8, 10, 60.0, 60.0);
         interpolatingProvider.getTransform(AbsoluteDate.J2000_EPOCH);
@@ -112,7 +116,8 @@ public class InterpolatingTransformProviderTest {
         CirclingProvider rawProvider = new CirclingProvider(t0, 0.2);
         InterpolatingTransformProvider interpolatingProvider =
                 new InterpolatingTransformProvider(rawProvider,
-                                                   PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_RRA,
+                                                   CartesianDerivativesFilter.USE_PVA,
+                                                   AngularDerivativesFilter.USE_RRA,
                                                    AbsoluteDate.PAST_INFINITY, AbsoluteDate.FUTURE_INFINITY,
                                                    5, 0.8, 10, 60.0, 60.0);
 
@@ -125,8 +130,8 @@ public class InterpolatingTransformProviderTest {
         ObjectOutputStream    oos = new ObjectOutputStream(bos);
         oos.writeObject(interpolatingProvider);
 
-        Assert.assertTrue(bos.size () >  700);
-        Assert.assertTrue(bos.size () <  800);
+        Assert.assertTrue(bos.size () >  500);
+        Assert.assertTrue(bos.size () <  600);
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
         ObjectInputStream ois = new ObjectInputStream(bis);

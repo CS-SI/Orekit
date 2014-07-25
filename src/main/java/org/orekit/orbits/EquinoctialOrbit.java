@@ -16,6 +16,7 @@
  */
 package org.orekit.orbits;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
@@ -27,6 +28,7 @@ import org.orekit.errors.OrekitMessages;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /**
@@ -217,22 +219,21 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** Constructor from cartesian parameters.
-     * @param pvaCoordinates the position, velocity and acceleration
+     * @param pvCoordinates the position, velocity and acceleration
      * @param frame the frame in which are defined the {@link PVCoordinates}
      * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
-     * @param date date of the orbital parameters
      * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
      * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
      * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
      */
-    public EquinoctialOrbit(final PVCoordinates pvaCoordinates, final Frame frame,
-                            final AbsoluteDate date, final double mu)
+    public EquinoctialOrbit(final TimeStampedPVCoordinates pvCoordinates,
+                            final Frame frame, final double mu)
         throws IllegalArgumentException {
-        super(pvaCoordinates, frame, date, mu);
+        super(pvCoordinates, frame, mu);
 
         //  compute semi-major axis
-        final Vector3D pvP = pvaCoordinates.getPosition();
-        final Vector3D pvV = pvaCoordinates.getVelocity();
+        final Vector3D pvP = pvCoordinates.getPosition();
+        final Vector3D pvV = pvCoordinates.getVelocity();
         final double r = pvP.getNorm();
         final double V2 = pvV.getNormSq();
         final double rV2OnMu = r * V2 / mu;
@@ -243,7 +244,7 @@ public class EquinoctialOrbit extends Orbit {
         }
 
         // compute inclination vector
-        final Vector3D w = pvaCoordinates.getMomentum().normalize();
+        final Vector3D w = pvCoordinates.getMomentum().normalize();
         final double d = 1.0 / (1 + w.getZ());
         hx = -d * w.getY();
         hy =  d * w.getX();
@@ -266,6 +267,23 @@ public class EquinoctialOrbit extends Orbit {
         ex = a * (f * cLv + g * sLv) / r;
         ey = a * (f * sLv - g * cLv) / r;
 
+    }
+
+    /** Constructor from cartesian parameters.
+     * @param pvCoordinates the position end velocity
+     * @param frame the frame in which are defined the {@link PVCoordinates}
+     * (<em>must</em> be a {@link Frame#isPseudoInertial pseudo-inertial frame})
+     * @param date date of the orbital parameters
+     * @param mu central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>)
+     * @exception IllegalArgumentException if eccentricity is equal to 1 or larger or
+     * if frame is not a {@link Frame#isPseudoInertial pseudo-inertial frame}
+     */
+    public EquinoctialOrbit(final PVCoordinates pvCoordinates, final Frame frame,
+                            final AbsoluteDate date, final double mu)
+        throws IllegalArgumentException {
+        this(new TimeStampedPVCoordinates(date,
+                                          pvCoordinates.getPosition(), pvCoordinates.getVelocity(), pvCoordinates.getAcceleration()),
+             frame, mu);
     }
 
     /** Constructor from any kind of orbital parameters.
@@ -399,7 +417,7 @@ public class EquinoctialOrbit extends Orbit {
     }
 
     /** {@inheritDoc} */
-    protected PVCoordinates initPVCoordinates() {
+    protected TimeStampedPVCoordinates initPVCoordinates() {
 
         // get equinoctial parameters
         final double lE = getLE();
@@ -444,8 +462,10 @@ public class EquinoctialOrbit extends Orbit {
         final double r2 = position.getNormSq();
         final Vector3D velocity =
             new Vector3D(xdot * ux + ydot * vx, xdot * uy + ydot * vy, xdot * uz + ydot * vz);
+
         final Vector3D acceleration = new Vector3D(-getMu() / (r2 * FastMath.sqrt(r2)), position);
-        return new PVCoordinates(position, velocity, acceleration);
+
+        return new TimeStampedPVCoordinates(getDate(), position, velocity, acceleration);
 
     }
 
@@ -714,6 +734,57 @@ public class EquinoctialOrbit extends Orbit {
                                   append("; hx: ").append(hx).append("; hy: ").append(hy).
                                   append("; lv: ").append(FastMath.toDegrees(lv)).
                                   append(";}").toString();
+    }
+
+    /** Replace the instance with a data transfer object for serialization.
+     * @return data transfer object that will be serialized
+     */
+    private Object writeReplace() {
+        return new DTO(this);
+    }
+
+    /** Internal class used only for serialization. */
+    private static class DTO implements Serializable {
+
+        /** Serializable UID. */
+        private static final long serialVersionUID = 20140617L;
+
+        /** Double values. */
+        private double[] d;
+
+        /** Frame in which are defined the orbital parameters. */
+        private final Frame frame;
+
+        /** Simple constructor.
+         * @param orbit instance to serialize
+         */
+        private DTO(final EquinoctialOrbit orbit) {
+
+            final TimeStampedPVCoordinates pv = orbit.getPVCoordinates();
+
+            // decompose date
+            final double epoch  = FastMath.floor(pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH));
+            final double offset = pv.getDate().durationFrom(AbsoluteDate.J2000_EPOCH.shiftedBy(epoch));
+
+            this.d = new double[] {
+                epoch, offset, orbit.getMu(),
+                orbit.a, orbit.ex, orbit.ey,
+                orbit.hx, orbit.hy, orbit.lv
+            };
+
+            this.frame = orbit.getFrame();
+
+        }
+
+        /** Replace the deserialized data transfer object with a {@link EquinoctialOrbit}.
+         * @return replacement {@link EquinoctialOrbit}
+         */
+        private Object readResolve() {
+            return new EquinoctialOrbit(d[3], d[4], d[5], d[6], d[7], d[8], PositionAngle.TRUE,
+                                        frame, AbsoluteDate.J2000_EPOCH.shiftedBy(d[0]).shiftedBy(d[1]),
+                                        d[2]);
+        }
+
     }
 
 }

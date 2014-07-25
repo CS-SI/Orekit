@@ -28,15 +28,14 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.random.RandomGenerator;
 import org.apache.commons.math3.random.Well19937a;
 import org.apache.commons.math3.util.FastMath;
-import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
-import org.orekit.utils.PVASampleFilter;
 import org.orekit.utils.PVCoordinates;
-
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 public class TransformTest {
 
@@ -73,16 +72,16 @@ public class TransformTest {
             PVCoordinates transformedPV = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt).transformPVCoordinates(basePV);
 
             // rebuild transformed acceleration, relying only on transformed position and velocity
-            List<Pair<AbsoluteDate, PVCoordinates>> sample = new ArrayList<Pair<AbsoluteDate,PVCoordinates>>();
+            List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
             double h = 1.0e-2;
             for (int i = -3; i < 4; ++i) {
                 Transform t = evolvingTransform(AbsoluteDate.J2000_EPOCH, dt + i * h);
-                sample.add(new Pair<AbsoluteDate, PVCoordinates>(t.getDate(),
-                                                                 t.transformPVCoordinates(initPV.shiftedBy(dt + i * h))));
+                PVCoordinates pv = t.transformPVCoordinates(initPV.shiftedBy(dt + i * h));
+                sample.add(new TimeStampedPVCoordinates(t.getDate(), pv.getPosition(), pv.getVelocity(), Vector3D.ZERO));
             }
-            PVCoordinates rebuiltPV = PVCoordinates.interpolate(AbsoluteDate.J2000_EPOCH.shiftedBy(dt),
-                                                                PVASampleFilter.SAMPLE_PV,
-                                                                sample);
+            PVCoordinates rebuiltPV = TimeStampedPVCoordinates.interpolate(AbsoluteDate.J2000_EPOCH.shiftedBy(dt),
+                                                                           CartesianDerivativesFilter.USE_PV,
+                                                                           sample);
 
             checkVector(rebuiltPV.getPosition(),     transformedPV.getPosition(),     4.0e-16);
             checkVector(rebuiltPV.getVelocity(),     transformedPV.getVelocity(),     2.0e-16);

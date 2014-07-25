@@ -39,8 +39,8 @@ import org.orekit.propagation.events.EventDetector;
 import org.orekit.propagation.events.EventState;
 import org.orekit.propagation.sampling.OrekitStepInterpolator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Common handling of {@link org.orekit.propagation.Propagator} methods for analytical propagators.
  * <p>
@@ -363,7 +363,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
     private class LocalPVProvider implements PVCoordinatesProvider {
 
         /** {@inheritDoc} */
-        public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
             throws OrekitException {
             return propagateOrbit(date).getPVCoordinates(frame);
         }
@@ -416,7 +416,7 @@ public abstract class AbstractAnalyticalPropagator extends AbstractPropagator {
         }
 
         /** {@inheritDoc} */
-        public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
             throws OrekitException {
             return propagate(date).getPVCoordinates(frame);
         }

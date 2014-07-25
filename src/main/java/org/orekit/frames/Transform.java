@@ -28,17 +28,19 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeInterpolable;
 import org.orekit.time.TimeShiftable;
 import org.orekit.time.TimeStamped;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.FieldPVCoordinates;
-import org.orekit.utils.PVASampleFilter;
 import org.orekit.utils.PVCoordinates;
-import org.orekit.utils.RRASampleFilter;
+import org.orekit.utils.TimeStampedAngularCoordinates;
+import org.orekit.utils.TimeStampedFieldPVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Transformation class in three dimensional space.
@@ -369,16 +371,18 @@ public class Transform
     /** {@inheritDoc}
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
-     * PVCoordinates.PVASampleFilter, boolean, Collection)} with
-     * {@code pvaMode} set to {@link PVASampleFilter#SAMPLE_PVA}
-     * and {@code useRotationRates} set to true.
+     * CartesianDerivativesFilter, AngularDerivativesFilter, Collection)} with {@code cFilter}
+     * set to {@link CartesianDerivativesFilter#USE_PV} and {@code aFilter} set to
+     * {@link AngularDerivativesFilter#USE_RR}
+     * set to true.
      * </p>
      * @exception OrekitException if the number of point is too small for interpolating
      */
-    public Transform interpolate(final AbsoluteDate interpolationDate,
-                                 final Collection<Transform> sample)
+    public Transform interpolate(final AbsoluteDate interpolationDate, final Collection<Transform> sample)
         throws OrekitException {
-        return interpolate(interpolationDate, PVASampleFilter.SAMPLE_PVA, RRASampleFilter.SAMPLE_RRA, sample);
+        return interpolate(interpolationDate,
+                           CartesianDerivativesFilter.USE_PVA, AngularDerivativesFilter.USE_RRA,
+                           sample);
     }
 
     /** Interpolate a transform from a sample set of existing transforms.
@@ -399,28 +403,64 @@ public class Transform
      * and numerical problems (including NaN appearing).
      * </p>
      * @param date interpolation date
-     * @param pvaFilter filter for translation derivatives to extract from sample
-     * @param rraFilter filter for rotation derivatives to extract from sample
+     * @param useVelocities if true, use sample transforms velocities,
+     * otherwise ignore them and use only positions
+     * @param useRotationRates if true, use sample points rotation rates,
+     * otherwise ignore them and use only rotations
      * @param sample sample points on which interpolation should be done
      * @return a new instance, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
+     * @deprecated as of 7.0, replaced with {@link #interpolate(AbsoluteDate, CartesianDerivativesFilter, AngularDerivativesFilter, Collection)}
      */
+    @Deprecated
     public static Transform interpolate(final AbsoluteDate date,
-                                        final PVASampleFilter pvaFilter, final RRASampleFilter rraFilter,
+                                        final boolean useVelocities, final boolean useRotationRates,
                                         final Collection<Transform> sample)
         throws OrekitException {
-        final List<Pair<AbsoluteDate, PVCoordinates>> datedPV =
-                new ArrayList<Pair<AbsoluteDate, PVCoordinates>>(sample.size());
-        final List<Pair<AbsoluteDate, AngularCoordinates>> datedAC =
-                new ArrayList<Pair<AbsoluteDate, AngularCoordinates>>(sample.size());
-        for (final Transform transform : sample) {
-            datedPV.add(new Pair<AbsoluteDate, PVCoordinates>(transform.getDate(),
-                    transform.getCartesian()));
-            datedAC.add(new Pair<AbsoluteDate, AngularCoordinates>(transform.getDate(),
-                    transform.getAngular()));
+        return interpolate(date,
+                           useVelocities    ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+                           useRotationRates ? AngularDerivativesFilter.USE_RR   : AngularDerivativesFilter.USE_R,
+                           sample);
+    }
+
+    /** Interpolate a transform from a sample set of existing transforms.
+     * <p>
+     * Note that even if first time derivatives (velocities and rotation rates)
+     * from sample can be ignored, the interpolated instance always includes
+     * interpolated derivatives. This feature can be used explicitly to
+     * compute these derivatives when it would be too complex to compute them
+     * from an analytical formula: just compute a few sample points from the
+     * explicit formula and set the derivatives to zero in these sample points,
+     * then use interpolation to add derivatives consistent with the positions
+     * and rotations.
+     * </p>
+     * <p>
+     * As this implementation of interpolation is polynomial, it should be used only
+     * with small samples (about 10-20 points) in order to avoid <a
+     * href="http://en.wikipedia.org/wiki/Runge%27s_phenomenon">Runge's phenomenon</a>
+     * and numerical problems (including NaN appearing).
+     * </p>
+     * @param date interpolation date
+     * @param cFilter filter for derivatives from the sample to use in interpolation
+     * @param aFilter filter for derivatives from the sample to use in interpolation
+     * @param sample sample points on which interpolation should be done
+     * @return a new instance, interpolated at specified date
+     * @exception OrekitException if the number of point is too small for interpolating
+     * @since 7.0
+     */
+    public static Transform interpolate(final AbsoluteDate date,
+                                        final CartesianDerivativesFilter cFilter,
+                                        final AngularDerivativesFilter aFilter,
+                                        final Collection<Transform> sample)
+        throws OrekitException {
+        final List<TimeStampedPVCoordinates>      datedPV = new ArrayList<TimeStampedPVCoordinates>(sample.size());
+        final List<TimeStampedAngularCoordinates> datedAC = new ArrayList<TimeStampedAngularCoordinates>(sample.size());
+        for (final Transform t : sample) {
+            datedPV.add(new TimeStampedPVCoordinates(t.getDate(), t.getTranslation(), t.getVelocity(), t.getAcceleration()));
+            datedAC.add(new TimeStampedAngularCoordinates(t.getDate(), t.getRotation(), t.getRotationRate(), t.getRotationAcceleration()));
         }
-        final PVCoordinates      interpolatedPV = PVCoordinates.interpolate(date, pvaFilter, datedPV);
-        final AngularCoordinates interpolatedAC = AngularCoordinates.interpolate(date, rraFilter, datedAC);
+        final TimeStampedPVCoordinates      interpolatedPV = TimeStampedPVCoordinates.interpolate(date, cFilter, datedPV);
+        final TimeStampedAngularCoordinates interpolatedAC = TimeStampedAngularCoordinates.interpolate(date, aFilter, datedAC);
         return new Transform(date, interpolatedPV, interpolatedAC);
     }
 
@@ -534,10 +574,49 @@ public class Transform
 
     }
 
+    /** Transform {@link TimeStampedPVCoordinates} including kinematic effects.
+     * <p>
+     * In order to allow the user more flexibility, this method does <em>not</em> check for
+     * consistency between the transform {@link #getDate() date} and the time-stamped
+     * position-velocity {@link TimeStampedPVCoordinates#getDate() date}. The returned
+     * value will always have the same {@link TimeStampedPVCoordinates#getDate() date} as
+     * the input argument, regardless of the instance {@link #getDate() date}.
+     * </p>
+     * @param pv time-stamped  position-velocity to transform.
+     * @return transformed time-stamped position-velocity
+     * @since 7.0
+     */
+    public TimeStampedPVCoordinates transformPVCoordinates(final TimeStampedPVCoordinates pv) {
+
+        // apply translation
+        final Vector3D intermediateP = pv.getPosition().add(cartesian.getPosition());
+        final Vector3D intermediateV = pv.getVelocity().add(cartesian.getVelocity());
+        final Vector3D intermediateA = pv.getAcceleration().add(cartesian.getAcceleration());
+
+        // apply rotation
+        final Rotation r    = angular.getRotation();
+        final Vector3D o    = angular.getRotationRate();
+        final Vector3D oDot = angular.getRotationAcceleration();
+        final Vector3D transformedP = r.applyTo(intermediateP);
+        final Vector3D crossP       = Vector3D.crossProduct(o, transformedP);
+        final Vector3D transformedV = r.applyTo(intermediateV).subtract(crossP);
+        final Vector3D crossV       = Vector3D.crossProduct(o, transformedV);
+        final Vector3D crossCrossP  = Vector3D.crossProduct(o, crossP);
+        final Vector3D crossDotP    = Vector3D.crossProduct(oDot, transformedP);
+        final Vector3D transformedA = new Vector3D( 1, r.applyTo(intermediateA),
+                                                   -2, crossV,
+                                                   -1, crossCrossP,
+                                                   -1, crossDotP);
+
+        // build transformed object
+        return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV, transformedA);
+
+    }
+
     /** Transform {@link FieldPVCoordinates} including kinematic effects.
-     * @param pv the couple position-velocity to transform.
-     * @param <T> the type of the field elements
-     * @return transformed position/velocity
+     * @param pv position-velocity to transform.
+     * @param <T> type of the field elements
+     * @return transformed position-velocity
      */
     public <T extends RealFieldElement<T>> FieldPVCoordinates<T> transformPVCoordinates(final FieldPVCoordinates<T> pv) {
 
@@ -561,6 +640,44 @@ public class Transform
 
         // build transformed object
         return new FieldPVCoordinates<T>(transformedP, transformedV, transformedA);
+
+    }
+
+    /** Transform {@link TimeStampedFieldPVCoordinates} including kinematic effects.
+     * <p>
+     * In order to allow the user more flexibility, this method does <em>not</em> check for
+     * consistency between the transform {@link #getDate() date} and the time-stamped
+     * position-velocity {@link TimeStampedFieldPVCoordinates#getDate() date}. The returned
+     * value will always have the same {@link TimeStampedFieldPVCoordinates#getDate() date} as
+     * the input argument, regardless of the instance {@link #getDate() date}.
+     * </p>
+     * @param pv time-stamped position-velocity to transform.
+     * @param <T> type of the field elements
+     * @return transformed time-stamped position-velocity
+     * @since 7.0
+     */
+    public <T extends RealFieldElement<T>> TimeStampedFieldPVCoordinates<T> transformPVCoordinates(final TimeStampedFieldPVCoordinates<T> pv) {
+
+        // apply translation
+        final FieldVector3D<T> intermediateP = pv.getPosition().add(cartesian.getPosition());
+        final FieldVector3D<T> intermediateV = pv.getVelocity().add(cartesian.getVelocity());
+        final FieldVector3D<T> intermediateA = pv.getAcceleration().add(cartesian.getAcceleration());
+
+        // apply rotation
+        final FieldVector3D<T> transformedP = FieldRotation.applyTo(angular.getRotation(), intermediateP);
+        final FieldVector3D<T> crossP       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedP);
+        final FieldVector3D<T> transformedV = FieldRotation.applyTo(angular.getRotation(), intermediateV).subtract(crossP);
+        final FieldVector3D<T> crossV       = FieldVector3D.crossProduct(angular.getRotationRate(), transformedV);
+        final FieldVector3D<T> crossCrossP  = FieldVector3D.crossProduct(angular.getRotationRate(), crossP);
+        final FieldVector3D<T> crossDotP    = FieldVector3D.crossProduct(angular.getRotationAcceleration(), transformedP);
+        final FieldVector3D<T> transformedA =
+                new FieldVector3D<T>( 1, FieldRotation.applyTo(angular.getRotation(), intermediateA),
+                                     -2, crossV,
+                                     -1, crossCrossP,
+                                     -1, crossDotP);
+
+        // build transformed object
+        return new TimeStampedFieldPVCoordinates<T>(pv.getDate(), transformedP, transformedV, transformedA);
 
     }
 
@@ -670,6 +787,7 @@ public class Transform
      * @return underlying elementary angular part
      * @see #getRotation()
      * @see #getRotationRate()
+     * @see #getRotationAcceleration()
      */
     public AngularCoordinates getAngular() {
         return angular;
@@ -682,6 +800,7 @@ public class Transform
      * @return underlying elementary rotation
      * @see #getAngular()
      * @see #getRotationRate()
+     * @see #getRotationAcceleration()
      */
     public Rotation getRotation() {
         return angular.getRotation();
@@ -692,9 +811,20 @@ public class Transform
      * @return First time derivative of the rotation
      * @see #getAngular()
      * @see #getRotation()
+     * @see #getRotationAcceleration()
      */
     public Vector3D getRotationRate() {
         return angular.getRotationRate();
+    }
+
+    /** Get the second time derivative of the rotation.
+     * @return Second time derivative of the rotation
+     * @see #getAngular()
+     * @see #getRotation()
+     * @see #getRotationRate()
+     */
+    public Vector3D getRotationAcceleration() {
+        return angular.getRotationAcceleration();
     }
 
     /** Specialized class for identity transform. */

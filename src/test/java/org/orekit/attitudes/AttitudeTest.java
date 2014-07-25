@@ -41,7 +41,7 @@ public class AttitudeTest {
     public void testZeroRate() throws OrekitException {
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                         Vector3D.ZERO);
+                                         Vector3D.ZERO, Vector3D.ZERO);
         Assert.assertEquals(Vector3D.ZERO, attitude.getSpin());
         double dt = 10.0;
         Attitude shifted = attitude.shiftedBy(dt);
@@ -54,7 +54,7 @@ public class AttitudeTest {
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          Rotation.IDENTITY,
-                                         new Vector3D(rate, Vector3D.PLUS_K));
+                                         new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO);
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
         double dt = 10.0;
         double alpha = rate * dt;
@@ -76,7 +76,7 @@ public class AttitudeTest {
         double rate = 2 * FastMath.PI / (12 * 60);
         Attitude attitude = new Attitude(AbsoluteDate.J2000_EPOCH, FramesFactory.getEME2000(),
                                          new Rotation(0.48, 0.64, 0.36, 0.48, false),
-                                         new Vector3D(rate, Vector3D.PLUS_K));
+                                         new Vector3D(rate, Vector3D.PLUS_K), Vector3D.ZERO);
         Assert.assertEquals(rate, attitude.getSpin().getNorm(), 1.0e-10);
         double dt = 10.0;
         Attitude shifted = attitude.shiftedBy(dt);

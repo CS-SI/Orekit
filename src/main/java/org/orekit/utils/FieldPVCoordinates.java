@@ -17,13 +17,13 @@
 package org.orekit.utils;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.math3.RealFieldElement;
-import org.apache.commons.math3.analysis.interpolation.FieldHermiteInterpolator;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.util.Pair;
-import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
@@ -346,88 +346,22 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
      * @param sample sample points on which interpolation should be done
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
-     * @deprecated as of 7.1, replaced with {@link #interpolate(AbsoluteDate, PVASampleFilter, Collection)}
+     * @deprecated as of 7.0, replaced with {@link TimeStampedFieldPVCoordinates#interpolate(AbsoluteDate, CartesianDerivativesFilter, Collection)}
      */
     @Deprecated
     public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
                                                                                     final boolean useVelocities,
                                                                                     final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
-        return interpolate(date,
-                           useVelocities ? PVASampleFilter.SAMPLE_PV : PVASampleFilter.SAMPLE_P,
-                           sample);
-    }
-
-    /** Interpolate position-velocity.
-     * <p>
-     * The interpolated instance is created by polynomial Hermite interpolation
-     * ensuring velocity remains the exact derivative of position.
-     * </p>
-     * <p>
-     * Note that even if first time derivatives (velocities)
-     * from sample can be ignored, the interpolated instance always includes
-     * interpolated derivatives. This feature can be used explicitly to
-     * compute these derivatives when it would be too complex to compute them
-     * from an analytical formula: just compute a few sample points from the
-     * explicit formula and set the derivatives to zero in these sample points,
-     * then use interpolation to add derivatives consistent with the positions.
-     * </p>
-     * @param date interpolation date
-     * @param filter filter for derivatives to extract from sample
-     * @param sample sample points on which interpolation should be done
-     * @param <T> the type of the field elements
-     * @return a new position-velocity, interpolated at specified date
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends RealFieldElement<T>> FieldPVCoordinates<T> interpolate(final AbsoluteDate date,
-                                                                                    final PVASampleFilter filter,
-                                                                                    final Collection<Pair<AbsoluteDate, FieldPVCoordinates<T>>> sample) {
-
-        // get field properties
-        final T prototype = sample.iterator().next().getValue().getPosition().getX();
-        final T zero      = prototype.getField().getZero();
-
-        // set up an interpolator
-        final FieldHermiteInterpolator<T> interpolator = new FieldHermiteInterpolator<T>();
-
-        // add sample points
-        switch (filter) {
-        case SAMPLE_PVA :
-            // populate sample with position, velocity and acceleration data
-            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
-                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
-                                            datedPV.getValue().getPosition().toArray(),
-                                            datedPV.getValue().getVelocity().toArray(),
-                                            datedPV.getValue().getAcceleration().toArray());
-            }
-            break;
-        case SAMPLE_PV :
-            // populate sample with position and velocity data
-            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
-                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
-                                            datedPV.getValue().getPosition().toArray(),
-                                            datedPV.getValue().getVelocity().toArray());
-            }
-            break;
-        case SAMPLE_P :
-            // populate sample with position data, ignoring velocity
-            for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> datedPV : sample) {
-                interpolator.addSamplePoint(zero.add(datedPV.getKey().getDate().durationFrom(date)),
-                                            datedPV.getValue().getPosition().toArray());
-            }
-            break;
-        default :
-            // this should never happen
-            throw OrekitException.createInternalError(null);
+        final List<TimeStampedFieldPVCoordinates<T>> list = new ArrayList<TimeStampedFieldPVCoordinates<T>>(sample.size());
+        for (final Pair<AbsoluteDate, FieldPVCoordinates<T>> pair : sample) {
+            list.add(new TimeStampedFieldPVCoordinates<T>(pair.getFirst(),
+                                                          pair.getSecond().getPosition(),
+                                                          pair.getSecond().getVelocity(),
+                                                          pair.getSecond().getAcceleration()));
         }
-
-        // interpolate
-        final T[][] p = interpolator.derivatives(zero, 2);
-
-        // build a new interpolated instance
-        return new FieldPVCoordinates<T>(new FieldVector3D<T>(p[0]),
-                                         new FieldVector3D<T>(p[1]),
-                                         new FieldVector3D<T>(p[2]));
-
+        return TimeStampedFieldPVCoordinates.interpolate(date,
+                                                         useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+                                                         list);
     }
 
     /** Gets the position.

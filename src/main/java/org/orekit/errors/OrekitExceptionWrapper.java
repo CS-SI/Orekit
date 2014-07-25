@@ -39,6 +39,7 @@ public class OrekitExceptionWrapper extends RuntimeException {
      * @param wrappedException Orekit exception to wrap
      */
     public OrekitExceptionWrapper(final OrekitException wrappedException) {
+        super(wrappedException);
         this.wrappedException = wrappedException;
     }
 

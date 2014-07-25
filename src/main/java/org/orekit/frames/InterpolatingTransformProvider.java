@@ -24,9 +24,9 @@ import java.util.List;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.GenericTimeStampedCache;
-import org.orekit.utils.PVASampleFilter;
-import org.orekit.utils.RRASampleFilter;
 import org.orekit.utils.TimeStampedGenerator;
 
 /** Transform provider using thread-safe interpolation on transforms sample.
@@ -43,16 +43,16 @@ import org.orekit.utils.TimeStampedGenerator;
 public class InterpolatingTransformProvider implements TransformProvider {
 
     /** Serializable UID. */
-    private static final long serialVersionUID = 20140414L;
+    private static final long serialVersionUID = 20140723L;
 
     /** Provider for raw (non-interpolated) transforms. */
     private final TransformProvider rawProvider;
 
-    /** Filter for derivatives to extract from sample. */
-    private final PVASampleFilter pvaFilter;
+    /** Filter for Cartesian derivatives to use in interpolation. */
+    private final CartesianDerivativesFilter cFilter;
 
-    /** Filter for derivatives to extract from sample. */
-    private final RRASampleFilter rraFilter;
+    /** Filter for angular derivatives to use in interpolation. */
+    private final AngularDerivativesFilter aFilter;
 
     /** Earliest supported date. */
     private final AbsoluteDate earliest;
@@ -68,8 +68,40 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
     /** Simple constructor.
      * @param rawProvider provider for raw (non-interpolated) transforms
-     * @param pvaFilter filter for translation derivatives to extract from sample
-     * @param rraFilter filter for rotation derivatives to extract from sample
+     * @param useVelocities if true, use sample transforms velocities,
+     * otherwise ignore them and use only positions
+     * @param useRotationRates if true, use sample points rotation rates,
+     * otherwise ignore them and use only rotations
+     * @param earliest earliest supported date
+     * @param latest latest supported date
+     * @param gridPoints number of interpolation grid points
+     * @param step grid points time step
+     * @param maxSlots maximum number of independent cached time slots
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param maxSpan maximum duration span in seconds of one slot
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @param newSlotInterval time interval above which a new slot is created
+     * in the {@link GenericTimeStampedCache time-stamped cache}
+     * @deprecated as of 7.0, replaced with {@link #InterpolatingTransformProvider(TransformProvider,
+     * CartesianDerivativesFilter, AngularDerivativesFilter, AbsoluteDate, AbsoluteDate,
+     * int, double, int, double, double)}
+     */
+    @Deprecated
+    public InterpolatingTransformProvider(final TransformProvider rawProvider,
+                                          final boolean useVelocities, final boolean useRotationRates,
+                                          final AbsoluteDate earliest, final AbsoluteDate latest,
+                                          final int gridPoints, final double step,
+                                          final int maxSlots, final double maxSpan, final double newSlotInterval) {
+        this(rawProvider,
+             useVelocities ? CartesianDerivativesFilter.USE_PV : CartesianDerivativesFilter.USE_P,
+             useRotationRates ? AngularDerivativesFilter.USE_RR : AngularDerivativesFilter.USE_R,
+             earliest, latest, gridPoints, step, maxSlots, maxSpan, newSlotInterval);
+    }
+
+    /** Simple constructor.
+     * @param rawProvider provider for raw (non-interpolated) transforms
+     * @param cFilter filter for derivatives from the sample to use in interpolation
+     * @param aFilter filter for derivatives from the sample to use in interpolation
      * @param earliest earliest supported date
      * @param latest latest supported date
      * @param gridPoints number of interpolation grid points
@@ -82,13 +114,14 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * in the {@link GenericTimeStampedCache time-stamped cache}
      */
     public InterpolatingTransformProvider(final TransformProvider rawProvider,
-                                          final PVASampleFilter pvaFilter, final RRASampleFilter rraFilter,
+                                          final CartesianDerivativesFilter cFilter,
+                                          final AngularDerivativesFilter aFilter,
                                           final AbsoluteDate earliest, final AbsoluteDate latest,
                                           final int gridPoints, final double step,
                                           final int maxSlots, final double maxSpan, final double newSlotInterval) {
         this.rawProvider = rawProvider;
-        this.pvaFilter   = pvaFilter;
-        this.rraFilter   = rraFilter;
+        this.cFilter     = cFilter;
+        this.aFilter     = aFilter;
         this.earliest    = earliest;
         this.latest      = latest;
         this.step        = step;
@@ -125,7 +158,7 @@ public class InterpolatingTransformProvider implements TransformProvider {
             final List<Transform> sample = cache.getNeighbors(date);
 
             // interpolate to specified date
-            return Transform.interpolate(date, pvaFilter, rraFilter, sample);
+            return Transform.interpolate(date, cFilter, aFilter, sample);
 
         } catch (OrekitExceptionWrapper oew) {
             // something went wrong while generating the sample,
@@ -143,25 +176,25 @@ public class InterpolatingTransformProvider implements TransformProvider {
      * @return data transfer object that will be serialized
      */
     private Object writeReplace() {
-        return new DataTransferObject(rawProvider, pvaFilter, rraFilter,
-                                      earliest, latest, cache.getNeighborsSize(), step,
-                                      cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
+        return new DTO(rawProvider, cFilter.getMaxOrder(), aFilter.getMaxOrder(),
+                       earliest, latest, cache.getNeighborsSize(), step,
+                       cache.getMaxSlots(), cache.getMaxSpan(), cache.getNewSlotQuantumGap());
     }
 
     /** Internal class used only for serialization. */
-    private static class DataTransferObject implements Serializable {
+    private static class DTO implements Serializable {
 
         /** Serializable UID. */
-        private static final long serialVersionUID = 8127819004703645170L;
+        private static final long serialVersionUID = 20140723L;
 
         /** Provider for raw (non-interpolated) transforms. */
         private final TransformProvider rawProvider;
 
-        /** Filter for derivatives to extract from sample. */
-        private final PVASampleFilter pvaFilter;
+        /** Cartesian derivatives to use in interpolation. */
+        private final int cDerivatives;
 
-        /** Filter for derivatives to extract from sample. */
-        private final RRASampleFilter rraFilter;
+        /** Angular derivatives to use in interpolation. */
+        private final int aDerivatives;
 
         /** Earliest supported date. */
         private final AbsoluteDate earliest;
@@ -186,8 +219,8 @@ public class InterpolatingTransformProvider implements TransformProvider {
 
         /** Simple constructor.
          * @param rawProvider provider for raw (non-interpolated) transforms
-     * @param pvaFilter filter for translation derivatives to extract from sample
-     * @param rraFilter filter for rotation derivatives to extract from sample
+         * @param cDerivatives derivation order for Cartesian coordinates
+         * @param aDerivatives derivation order for angular coordinates
          * @param earliest earliest supported date
          * @param latest latest supported date
          * @param gridPoints number of interpolation grid points
@@ -199,21 +232,20 @@ public class InterpolatingTransformProvider implements TransformProvider {
          * @param newSlotInterval time interval above which a new slot is created
          * in the {@link GenericTimeStampedCache time-stamped cache}
          */
-        private DataTransferObject(final TransformProvider rawProvider,
-                                   final PVASampleFilter pvaFilter, final RRASampleFilter rraFilter,
-                                   final AbsoluteDate earliest, final AbsoluteDate latest,
-                                   final int gridPoints, final double step,
-                                   final int maxSlots, final double maxSpan, final double newSlotInterval) {
-            this.rawProvider     = rawProvider;
-            this.pvaFilter       = pvaFilter;
-            this.rraFilter       = rraFilter;
-            this.earliest        = earliest;
-            this.latest          = latest;
-            this.gridPoints      = gridPoints;
-            this.step            = step;
-            this.maxSlots        = maxSlots;
-            this.maxSpan         = maxSpan;
-            this.newSlotInterval = newSlotInterval;
+        private DTO(final TransformProvider rawProvider, final int cDerivatives, final int aDerivatives,
+                    final AbsoluteDate earliest, final AbsoluteDate latest,
+                    final int gridPoints, final double step,
+                    final int maxSlots, final double maxSpan, final double newSlotInterval) {
+            this.rawProvider      = rawProvider;
+            this.cDerivatives     = cDerivatives;
+            this.aDerivatives     = aDerivatives;
+            this.earliest         = earliest;
+            this.latest           = latest;
+            this.gridPoints       = gridPoints;
+            this.step             = step;
+            this.maxSlots         = maxSlots;
+            this.maxSpan          = maxSpan;
+            this.newSlotInterval  = newSlotInterval;
         }
 
         /** Replace the deserialized data transfer object with a {@link InterpolatingTransformProvider}.
@@ -221,7 +253,9 @@ public class InterpolatingTransformProvider implements TransformProvider {
          */
         private Object readResolve() {
             // build a new provider, with an empty cache
-            return new InterpolatingTransformProvider(rawProvider, pvaFilter, rraFilter,
+            return new InterpolatingTransformProvider(rawProvider,
+                                                      CartesianDerivativesFilter.getFilter(cDerivatives),
+                                                      AngularDerivativesFilter.getFilter(aDerivatives),
                                                       earliest, latest, gridPoints, step,
                                                       maxSlots, maxSpan, newSlotInterval);
         }

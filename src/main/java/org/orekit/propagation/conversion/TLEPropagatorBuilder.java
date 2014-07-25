@@ -18,6 +18,7 @@ package org.orekit.propagation.conversion;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 
 import org.apache.commons.math3.exception.util.LocalizedFormats;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -123,12 +124,12 @@ public class TLEPropagatorBuilder extends AbstractParameterizable
                                                                                      parameters[5])),
                                                       frame, date, mu);
 
+        final Iterator<String> freeItr = freeParameters.iterator();
         for (int i = 6; i < parameters.length; i++) {
-            for (String free : freeParameters) {
-                for (String available : getParametersNames()) {
-                    if (free.equals(available)) {
-                        setParameter(free, parameters[i]);
-                    }
+            final String free = freeItr.next();
+            for (String available : getParametersNames()) {
+                if (free.equals(available)) {
+                    setParameter(free, parameters[i]);
                 }
             }
         }

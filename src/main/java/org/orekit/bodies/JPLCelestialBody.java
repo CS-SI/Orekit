@@ -28,6 +28,7 @@ import org.orekit.frames.Transform;
 import org.orekit.frames.TransformProvider;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** Implementation of the {@link CelestialBody} interface using JPL or INPOP ephemerides.
  * @author Luc Maisonobe
@@ -92,12 +93,12 @@ class JPLCelestialBody implements CelestialBody {
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
         // apply the scale factor to raw position-velocity
         final PVCoordinates rawPV    = rawPVProvider.getRawPV(date);
-        final PVCoordinates scaledPV = new PVCoordinates(scale, rawPV);
+        final TimeStampedPVCoordinates scaledPV = new TimeStampedPVCoordinates(date, scale, rawPV);
 
         // the raw PV are relative to the parent of the body centered inertially oriented frame
         final Transform transform = getInertiallyOrientedFrame().getParent().getTransformTo(frame, date);

@@ -1,0 +1,377 @@
+# internal error, contact maintenance at {0}
+INTERNAL_ERROR = Εσωτερικό σφάλμα, επικοινωνήστε με τον διαχειριστή στο {0}
+
+# altitude ({0} m) is below the {1} m allowed threshold
+ALTITUDE_BELOW_ALLOWED_THRESHOLD = το υψόμετρο ({0} m) είναι κάτω του {1} επιτρεπόμενου ορίου m 
+
+# trajectory inside the Brillouin sphere (r = {0})
+TRAJECTORY_INSIDE_BRILLOUIN_SPHERE = τροχιά στο εσωτερικό της σφαίρας Brillouin (r = {0})
+
+# almost equatorial orbit (i = {0} degrees)
+ALMOST_EQUATORIAL_ORBIT = σχεδόν ισημερινή τροχιά (i = {0} μοίρες)
+
+# almost critically inclined orbit (i = {0} degrees)
+ALMOST_CRITICALLY_INCLINED_ORBIT = σχεδόν κρίσιμα κεκλιμένη τροχιά (i = {0} μοίρες)
+
+# unable to compute Eckstein-Hechler mean parameters after {0} iterations
+UNABLE_TO_COMPUTE_ECKSTEIN_HECHLER_MEAN_PARAMETERS =  αδύνατο να υπολογιστούν οι Eckstein-Hechler μέσες παράμετροι μετά από {0} επαναλήψεις
+
+# null parent for frame {0}
+NULL_PARENT_FOR_FRAME = null γονέας πλαισiου {0} 
+
+# frame {0} is already attached to frame {1}
+FRAME_ALREADY_ATTACHED =  το πλαίσιο {0} έχει ήδη συνδεθεί με το πλαίσιο {1}
+
+# frame {0} is not attached to the main frames tree
+FRAME_NOT_ATTACHED = το πλαίσιο {0} δεν είναι συνδεδεμένο με το κύριο δέντρο πλαισίων
+
+# frame {0} is an ancestor of both frames {1} and {2}
+FRAME_ANCESTOR_OF_BOTH_FRAMES =  το πλαίσιο {0} είναι πρόγονος και των δύο πλαισίων {1} και {2}
+
+# frame {0} is an ancestor of neither frame {1} nor {2}
+FRAME_ANCESTOR_OF_NEITHER_FRAME = το πλαίσιο {0} δεν είναι πρόγονος ούτε του πλαισίου {1} ούτε του πλαισίου {2}
+
+# frame {0} has depth {1}, it cannot have an ancestor {2} levels above
+FRAME_NO_NTH_ANCESTOR = το πλαίσιο {0} έχει βάθος {1}, δεν μπορεί να έχει πρόγονο {2} επίπεδα πιο πάνω
+
+# unsupported local orbital frame, supported types: {0} and {1}
+UNSUPPORTED_LOCAL_ORBITAL_FRAME = μη υποστηριζόμενο τοπικό τροχιακό πλαίσιο,υποστηριζόμενοι τύποι {0} και {1}  
+
+# non pseudo-inertial frame "{0}" is not suitable for defining orbits
+NON_PSEUDO_INERTIAL_FRAME_NOT_SUITABLE_FOR_DEFINING_ORBITS = το μη ψευδο-αδρανειακό σύστημα "{0}" δεν είναι κατάλληλο για τον καθορισμό των τροχιών
+
+# data root directory {0} does not exist
+DATA_ROOT_DIRECTORY_DOES_NOT_EXIST = Ο ριζικός κατάλογος δεδομένων {0} δεν υπάρχει
+
+# {0} is not a directory
+NOT_A_DIRECTORY = {0} δεν είναι κατάλογος
+
+# {0} is neither a directory nor a zip/jar archive file
+NEITHER_DIRECTORY_NOR_ZIP_OR_JAR = {0} δεν είναι κατάλογος ούτε ένα συμπιεσμένο αρχείο (zip/jar)
+
+# unable to find resource {0} in classpath
+UNABLE_TO_FIND_RESOURCE = αδύνατο να βρεθεί πόρος {0} στο classpath
+
+# no Earth Orientation Parameters loaded
+NO_EARTH_ORIENTATION_PARAMETERS_LOADED = καμία φορτωμένη Παράμετρος Προσανατολισμού της Γης
+
+# missing Earth Orientation Parameters between {0} and {1}
+MISSING_EARTH_ORIENTATION_PARAMETERS_BETWEEN_DATES = ελλιπείς Παράμετροι Προσανατολισμού της Γης μεταξύ {0} και{1}  
+
+# file {0} is not a supported IERS data file
+NOT_A_SUPPORTED_IERS_DATA_FILE = το αρχείο {0} δεν είναι ένα υποστηριζόμενο IERS αρχείο δεδομένων
+
+# inconsistent dates in IERS file {0}: {1}-{2}-{3} and MJD {4}
+INCONSISTENT_DATES_IN_IERS_FILE = μη έγκυρες ημερομηνίες στο IERS αρχείο {0}: {1}-{2}-{3} και MJD {4}
+
+# unexpected data after line {0} in file {1}: {2}
+UNEXPECTED_DATA_AFTER_LINE_IN_FILE = απροσδόκητα δεδομένα μετά από τη γραμμή {0} στο αρχείο {1}: {2}
+
+# non-chronological dates in file {0}, line {1}
+NON_CHRONOLOGICAL_DATES_IN_FILE = μη χρονολογικές ημερομηνίες στο αρχείο {0}, γραμμή {1}
+
+# no IERS UTC-TAI history data loaded
+NO_IERS_UTC_TAI_HISTORY_DATA_LOADED = κανένα φορτωμένο IERS UTC-TAI ιστορικό δεδομένων
+
+# no entries found in IERS UTC-TAI history file {0}
+NO_ENTRIES_IN_IERS_UTC_TAI_HISTORY_FILE = δεν βρέθηκαν εγγραφές στο IERS UTC-TAI ιστορικό δεδομένων {0}
+
+# missing serie j = {0} in file {1} (line {2})
+MISSING_SERIE_J_IN_FILE = λείπει η σειρά j = {0} στο αρχείο {1} (γραμμή {2})
+
+# cannot parse both τ and γ from the same Poissons series file
+CANNOT_PARSE_BOTH_TAU_AND_GAMMA = δεν μπορεί να αναλύσει τόσο το τ και το γ από το ίδιο αρχείο σειράς Poissons
+
+# unexpected end of file {0} (after line {1})
+UNEXPECTED_END_OF_FILE_AFTER_LINE =  απρόσμενο τέλος αρχείου {0} (μετά από τη γραμμή {1})
+
+# unable to parse line {0} of file {1}:\n{2}
+UNABLE_TO_PARSE_LINE_IN_FILE = αδύνατο να αναλύσει τη γραμμή {0} του αρχείου {1}:\n{2}
+
+# unable to find file {0}
+UNABLE_TO_FIND_FILE = αδύνατο να βρεθεί το αρχείο {0}
+
+# spacecraft mass becomes negative: {0} kg
+SPACECRAFT_MASS_BECOMES_NEGATIVE = η μάζα του διαστημικού οχήματος γίνεται αρνητική: {0} kg 
+
+# positive flow rate (q: {0})
+POSITIVE_FLOW_RATE = θετικός ρυθμός ροής (q: {0})
+
+# no gravity field data loaded
+NO_GRAVITY_FIELD_DATA_LOADED = η πληροφορία για το βαρυτικό πεδίο δε φορτώθηκε
+
+# gravity field normalization underflow for degree {0} and order {1}
+GRAVITY_FIELD_NORMALIZATION_UNDERFLOW  = υποχείληση κανονικοποιημένου βαρυτικού πεδίου για το βαθμό {0} και τη σειρά {1}
+
+# no ocean tide data loaded
+NO_OCEAN_TIDE_DATA_LOADED = η πληροφορία ωκεανικής παλίρροιας δε φορτώθηκε
+
+# ocean tide data file {0} limited to degree {1} and order {2}
+OCEAN_TIDE_DATA_DEGREE_ORDER_LIMITS = το αρχείο δεδομένων της ωκεανικής παλίρροιας {0} περιορίζεται στο βαθμό {1} και τάξη {2}
+
+# load deformation coefficients limited to degree {0}, cannot parse degree {1} term from file {2}
+OCEAN_TIDE_LOAD_DEFORMATION_LIMITS = φορτωμένοι συντελεστές παραμόρφωσης περιορισμένοι στο βαθμό {0} δεν μπορούν να αναλύσουν βαθμό {1} όρο από το αρχείο {2}
+
+# polar trajectory (distance to polar axis: {0})
+POLAR_TRAJECTORY = πολική τροχιά (απόσταση από τον πολικό άξονα : {0})
+
+# unexpected format error for file {0} with loader {1}
+UNEXPECTED_FILE_FORMAT_ERROR_FOR_LOADER = μη αναμενόμενο σφάλμα μορφοποίησης για το αρχείο {0} με φορτωτή {1}
+
+# duplicated gravity field coefficient {0}({1}, {2}) in file {3}
+DUPLICATED_GRAVITY_FIELD_COEFFICIENT_IN_FILE = διπλές αντίγραφο συντελεστή βαρυτικού πεδίου {0}({1}, {2}) στο αρχείο {3}
+
+# missing gravity field coefficient {0}({1}, {2}) in file {3}
+MISSING_GRAVITY_FIELD_COEFFICIENT_IN_FILE = απούσα τιμή συντελεστή βαρυτικού πεδίου {0}({1}, {2}) στο αρχείο {3}
+
+# too large degree (n = {0}, potential maximal degree is {1})
+TOO_LARGE_DEGREE_FOR_GRAVITY_FIELD = πολύ μεγάλος βαθμός (n = {0}, δυνατός μέγιστος βαθμός είναι {1})
+
+# too large order (m = {0}, potential maximal order is {1})
+TOO_LARGE_ORDER_FOR_GRAVITY_FIELD = πολύ μεγάλη τάξη (m = {0}, δυνατή μέγιστη τάξη είναι {1})
+
+# several reference dates ({0} and {1}) found in gravity field file {2}
+SEVERAL_REFERENCE_DATES_IN_GRAVITY_FIELD = διάφορες ημερομηνίες αναφοράς ({0} και {1}) βρέθηκαν στο αρχείο βαρυτικού πεδίου {2}
+
+# no TLE data available for object {0}
+NO_TLE_FOR_OBJECT = κανένα δεδομένο TLE διαθέσιμο για το αντικείμενο {0}
+
+# no TLE data available for launch year {0}, launch number {1}, launch piece {2}
+NO_TLE_FOR_LAUNCH_YEAR_NUMBER_PIECE = κανένα δεδομένο TLE διαθέσιμο για τη χρονιά εκτόξευσης {0}, αριθμό εκτόξευσης {1}, κομμάτι εκτόξευσης {2}
+
+# lines {0} and {1} are not TLE lines:\n{0}: "{2}"\n{1}: "{3}"
+NOT_TLE_LINES = οι γραμμές {0} και {1} δεν είναι γραμμές TLE:\n{0}: "{2}"\n{1}: "{3}" 
+
+# expected a second TLE line after line {0}:\n{0}: "{1}"
+MISSING_SECOND_TLE_LINE = αναμένεται μια δεύτερη TLE γραμμή μετά απο τη γραμμή  {0}:\n{0}: "{1}"
+
+# TLE lines do not refer to the same object:\n{0}\n{1}
+TLE_LINES_DO_NOT_REFER_TO_SAME_OBJECT = οι γραμμές TLE δεν αναφέρονται στο ίδιο αντικείμενο:\n{0}\n{1}  
+
+# wrong checksum of TLE line {0}, expected {1} but got {2} ({3})
+TLE_CHECKSUM_ERROR = λάθος άθροισμα ελέγχου για τη γραμμή TLE {0}, αναμενόμενο {1} αλλά πήρε {2} ({3})
+
+# no TLE data available
+NO_TLE_DATA_AVAILABLE = κανένα TLE δεδομένο διαθέσιμο 
+
+# spacecraft mass is not positive: {0} kg
+NOT_POSITIVE_SPACECRAFT_MASS = H μάζα του διαστημικού οχήματος δεν είναι θετική: {0} kg
+
+# too large eccentricity for propagation model: e = {0}
+TOO_LARGE_ECCENTRICITY_FOR_PROPAGATION_MODEL = πολύ μεγάλη εκκεντρότητα για το μοντέλο διάδοσης: e = {0}
+
+# no solar activity available at {0}, data available only in range [{1}, {2}]
+NO_SOLAR_ACTIVITY_AT_DATE = καμία ηλιακή δραστηριότητα διαθέσιμη στο {0}, δεδομένα διαθέσιμα μόνο για εύρος [{1}, {2}]
+
+# non-existent month {0}
+NON_EXISTENT_MONTH = μη έγκυρος μήνας {0}
+
+# non-existent date {0}-{1}-{2}
+NON_EXISTENT_YEAR_MONTH_DAY = μη έγκυρη ημερομηνία {0}-{1}-{2}
+
+# non-existent week date {0}-W{1}-{2}
+NON_EXISTENT_WEEK_DATE = μη έγκυρη ημερομηνία {0}-W{1}-{2}
+
+# non-existent date {0}
+NON_EXISTENT_DATE = μη έγκυρη ημερομηνία {0}
+
+# no day number {0} in year {1}
+NON_EXISTENT_DAY_NUMBER_IN_YEAR = κανένας αριθμός ημέρας {0} το έτος {1}
+
+# non-existent time {0}:{1}:{2}
+NON_EXISTENT_HMS_TIME = μη έγκυρη ώρα {0}:{1}:{2}
+
+# non-existent time {0}
+NON_EXISTENT_TIME = μη έγκυρη ώρα {0}
+
+# out of range seconds number: {0}
+OUT_OF_RANGE_SECONDS_NUMBER = αριθμός δευτερολέπτων εκτός εύρους: {0}
+
+# angle type not supported, supported angles: {0}, {1} and {2}
+ANGLE_TYPE_NOT_SUPPORTED = μη έγκυρος τύπος γωνίας, γωνίες που υποστηρίζονται {0}, {1} και {2}
+
+# satellite collided with target
+SATELLITE_COLLIDED_WITH_TARGET = Ο δορυφόρος συγκρούστηκε με το στόχο
+
+# attitude pointing law misses ground
+ATTITUDE_POINTING_LAW_DOES_NOT_POINT_TO_GROUND = Ο προσανατολισμός του δορυφόρου δεν δείχνει στο έδαφος 
+
+# orbit date ({0}) does not match attitude date ({1})
+ORBIT_AND_ATTITUDE_DATES_MISMATCH = η ημερομηνία τροχιάς ({0}) δεν συμβαδίζει με την ημερομηνία του προσανατολισμού θέσης ({1})
+
+# frame ({0}) does not match frame ({1})
+FRAMES_MISMATCH =  Το πλαίσιο ({0}) δεν αντιστοιχεί στο πλαίσιο ({1})
+
+# initial state not specified for orbit propagation
+INITIAL_STATE_NOT_SPECIFIED_FOR_ORBIT_PROPAGATION = H αρχική κατάσταση δεν προσδιορίζεται για την τροχιά διάδοσης 
+
+# propagator is not in ephemeris generation mode
+PROPAGATOR_NOT_IN_EPHEMERIS_GENERATION_MODE = Ο αλγόριθμος προσομοίωσης κίνησης του δορυφόρου (propagator) δεν είναι σε εφήμερη φάση παραγωγής
+
+# event date {0}, greater than {1} minus {3} seconds and smaller than {2} plus {3} seconds, cannot be added
+EVENT_DATE_TOO_CLOSE = ημερομηνία γεγονότος {0}, μεγαλύτερη από {1} μείον {3} δευτερόλεπτα και μικρότερη από {2} συν {3} δευτερόλεπτα, δεν μπορεί να προστεθεί
+
+# unable to read header record from JPL ephemerides binary file {0}
+UNABLE_TO_READ_JPL_HEADER = αδύνατο να διαβάσει καταγραφή επικεφαλίδος από το JPL δυαδικό αρχείο {0}
+
+# inconsistent values of astronomical unit in JPL ephemerides files: ({0} and {1})
+INCONSISTENT_ASTRONOMICAL_UNIT_IN_FILES = μη έγκυρες τιμές αστρονομικής μονάδας στα JPL αρχεία:({0} και {1})
+
+# inconsistent values of Earth/Moon mass ratio in JPL ephemerides files: ({0} and {1})
+INCONSISTENT_EARTH_MOON_RATIO_IN_FILES = μη έγκυρες τιμές αναλογίας μάζας Γης / Σελήνης στα JPL αρχεία: ({0} και {1})
+
+# no data loaded for celestial body {0}
+NO_DATA_LOADED_FOR_CELESTIAL_BODY = η πληροφορία για το ουράνιο σώμα {0} δεν φορτώθηκε
+
+# file {0} is not a JPL ephemerides binary file
+NOT_A_JPL_EPHEMERIDES_BINARY_FILE = το αρχείο {0} δεν είναι JPL δυαδικό αρχείο εφημερίδων
+
+# file {0} is not a Marshall Solar Activity Future Estimation (MSAFE) file
+NOT_A_MARSHALL_SOLAR_ACTIVITY_FUTURE_ESTIMATION_FILE = το αρχείο {0} δεν είναι ένα αρχείο Μελλοντικής Εκτίμησης Ηλιακής Δραστηριότητας Marshall (MΕHΔΜ)
+
+# no JPL ephemerides binary files found
+NO_JPL_EPHEMERIDES_BINARY_FILES_FOUND = κανένα αρχείο JPL δυαδικό αρχείο εφημερίδων δεν βρέθηκε
+
+# out of range date for {0} ephemerides: {1}
+OUT_OF_RANGE_BODY_EPHEMERIDES_DATE = ημερομηνία εκτός εύρους για {0} εφημερίδες: {1}
+
+# out of range date for ephemerides: {0}, [{1}, {2}]
+OUT_OF_RANGE_EPHEMERIDES_DATE = ημερομηνία εκτός εύρους για εφημερίδες: {0}, [{1}, {2}]
+
+# unexpected two elevation values: {0} and {1}, for one azimuth: {2}
+UNEXPECTED_TWO_ELEVATION_VALUES_FOR_ONE_AZIMUTH = απροσδόκητες υψομετρικές τιμές: ({0} και {1}), για ένα αζιμούθιο: {2}
+
+# unsupported parameter name {0}, supported names: {1}
+UNSUPPORTED_PARAMETER_NAME = μη έγκυρο όνομα παραμέτρου {0}, έγκυρα ονόματα: {1}
+
+# unknown additional state "{0}"
+UNKNOWN_ADDITIONAL_STATE = άγνωστη πρόσθετη κατάσταση "{0}"
+
+# unknown month "{0}"
+UNKNOWN_MONTH = άγνωστος μήνας "{0}"
+
+# Jacobian matrix for type {0} is singular with current orbit
+SINGULAR_JACOBIAN_FOR_ORBIT_TYPE = Ο πίνακας Jacobian για τον τύπο {0} είναι ιδιάζων με τρέχουσα τροχιά
+
+# state Jacobian has not been initialized yet
+STATE_JACOBIAN_NOT_INITIALIZED = Η Jacobian κατάσταση δεν έχει ακόμη αρχικοποιηθεί
+
+# state  is a {0}x{1} matrix, it should be either a 6x6 or a 7x7 matrix
+STATE_JACOBIAN_NEITHER_6X6_NOR_7X7 = Η κατάσταση είναι ένας {0}x{1} πίνακας, θα πρέπει να είναι είτε ένας 6x6 είτε ένας 7x7 πίνακας
+
+# state Jacobian has {0} rows but parameters Jacobian has {1} rows
+STATE_AND_PARAMETERS_JACOBIANS_ROWS_MISMATCH = Η Jacobian κατάσταση έχει {0} γραμμές, αλλά οι Jacobian παράμετροι έχουν {1} γραμμές
+
+# finite differences steps for force models derivatives not initialized
+STEPS_NOT_INITIALIZED_FOR_FINITE_DIFFERENCES = τα πεπερασμένα βήματα για παράγωγα μοντέλα ισχύος δεν έχουν αρχικοποιηθεί
+
+# initial  matrix has {0} columns, but {1} parameters have been selected
+INITIAL_MATRIX_AND_PARAMETERS_NUMBER_MISMATCH = Ο αρχικός πίνακας έχει {0} στήλες, αλλά {1} παράμετροι έχουν επιλεχθεί
+
+# orbit should be either elliptic with a > 0 and e < 1 or hyperbolic with a < 0 and e > 1, a = {0}, e = {1}
+ORBIT_A_E_MISMATCH_WITH_CONIC_TYPE = η τροχιά πρέπει να είναι είτε ελλειπτική με a > 0 και e < 1 ή υπερβολική με a < 0 και e > 1, a = {0}, e = {1}
+
+# true anomaly {0} out of hyperbolic range (e = {1}, {2} < v < {3})
+ORBIT_ANOMALY_OUT_OF_HYPERBOLIC_RANGE = αληθής ανωμαλία {0} εκτός υπερβολικού φάσματos (e = {1}, {2} <ν <{3})
+
+# hyperbolic orbits cannot be handled as {0} instances
+HYPERBOLIC_ORBIT_NOT_HANDLED_AS = οι υπερβολικές τροχιές δεν μπορούν να αντιμετωπίζονται ως {0} στιγμιότυπα
+
+# invalid preamble field in CCSDS date: {0}
+CCSDS_DATE_INVALID_PREAMBLE_FIELD = μη έγκυρο προοίμιο πεδίο στην ημερομηνία CCSDS: {0}
+
+# invalid time field length in CCSDS date: {0}, expected {1}
+CCSDS_DATE_INVALID_LENGTH_TIME_FIELD = μη έγκυρο πεδίου χρόνου στην ημερομηνία CCSDS: {0}, αναμενόμενο {1}
+
+# missing agency epoch in CCSDS date
+CCSDS_DATE_MISSING_AGENCY_EPOCH = ελλιπής ημερομηνία της υπηρεσίας για την ημερομηνία CCSDS
+
+# unexpected keyword in CCSDS line number {0} of file {1}:\n{2}
+CCSDS_UNEXPECTED_KEYWORD = μη αναμενόμενη λέξη-κλειδί στη γραμμή {0} του CCSDS αρχείου {1}: \ n {2}
+
+# the central body gravitational coefficient cannot be retrieved from the ODM
+CCSDS_UNKNOWN_GM = το κεντρικό σώμα συντελεστή βαρύτητας δεν μπορεί να ανακτηθεί από το ODM
+
+# there is no spacecraft mass associated with this ODM file
+CCSDS_UNKNOWN_SPACECRAFT_MASS = δεν υπάρχει μάζα διαστημικού οχήματος που συνδέεται με αυτό το αρχείο ODM
+
+# no IERS conventions have been set before parsing
+CCSDS_UNKNOWN_CONVENTIONS = δεν υπάρχουν IERs συμβάσεις που έχουν οριστεί πριν από την ανάλυση
+
+# frame {0} is not valid in this ODM file context
+CCSDS_INVALID_FRAME = το πλαίσιο {0} δεν είναι έγκυρο στο πλαίσιο αρχείου ODM
+
+# inconsistent time systems in the ephemeris blocks: {0} ≠ {1}
+CCSDS_OEM_INCONSISTENT_TIME_SYSTEMS = μη έγκυρα συστήματα του χρόνου στα μπλοκ εφημερίδων: {0} ≠ {1}
+
+# name "{0}" is already used for an additional state
+ADDITIONAL_STATE_NAME_ALREADY_IN_USE = το όνομα "{0}" χρησιμοποιείται ήδη για μια επιπλέον κατάσταση
+
+# reset state not allowed
+NON_RESETABLE_STATE = Η κατάσταση επαναφοράς δεν επιτρέπεται
+
+# unsupported sp3 file version {0}
+SP3_UNSUPPORTED_VERSION = μη υποστηριζόμενη έκδοση του αρχείου sp3 {0}
+
+# unsupported time system {0}
+SP3_UNSUPPORTED_TIMESYSTEM = μη υποστηριζόμενη ώρα συστήματος {0}
+
+# unexpected end of file in sp3 file (after line {0})
+SP3_UNEXPECTED_END_OF_FILE = μη αναμενόμενο τέλος αρχείου στο αρχείο sp3 (μετά από τη γραμμή {0})
+
+# non-existent geomagnetic model {0} for year {1}
+NON_EXISTENT_GEOMAGNETIC_MODEL = ανύπαρκτο γεωμαγνητικό μοντέλο {0} για το έτος {1}
+
+# geomagnetic model {0} with epoch {1} does not support time transformation, no secular variation coefficients defined
+UNSUPPORTED_TIME_TRANSFORM = το γεωμαγνητικό μοντέλο {0} με την εποχή {1} δεν υποστηρίζει τη μετατροπή ώρας, καμία κοσμική διακύμανση συντελεστών δεν έχει οριστεί
+
+# time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
+OUT_OF_RANGE_TIME_TRANSFORM = o χρόνος μετατροπής τoυ γεωμαγνητικού μοντέλου {0} με την εποχή {1} είναι εκτός της περιοχής ισχύος: {2}! = [{3}, {4}]
+
+# Cannot compute Newcomb operators for sigma > rho ({0} > {1})
+DSST_NEWCOMB_OPERATORS_COMPUTATION = Δεν μπορεί να υπολογιστούν τελεστές Newcomb για sigma > rho ({0} > {1})
+
+# Cannot compute the Vmns coefficient with m > n ({0} > {1})
+DSST_VMNS_COEFFICIENT_ERROR_MS = Δεν μπορεί να υπολογιστεί συντελεστής Wmns με m > n ({0}> {1})
+
+# inconsistent shadow computation: entry = {0} whereas exit = {1}
+DSST_SPR_SHADOW_INCONSISTENT = μη έγκυρος υπολογισμός σκιάς: είσοδος = {0}, ενώ έξοδος = {1}
+
+# The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Η τρέχουσα τροχιά έχει εκκεντρότητα ({0}> 0.5). Ο DSST χρειάζεται για τον υπολογισμό των κατά μέσο όρο ποσοστών, μία αριθμητική μέθοδο εξαρτώμενη από το χρόνο που δεν έχει ακόμη υλοποιηθεί 
+
+# unsupported sp3 file version {0}
+SP3_UNSUPPORTED_VERSION = μη υποστηριζόμενη sp3 έκδοση αρχείου {0}
+
+# unsupported time system {0}
+SP3_UNSUPPORTED_TIMESYSTEM = μη υποστηριζόμενη ώρα συστήματος {0}
+
+# unexpected end of file in sp3 file (after line {0})
+SP3_UNEXPECTED_END_OF_FILE = μη αναμενόμενο τέλος αρχείου στο αρχείο sp3 (μετά από τη γραμμή {0})
+
+# not enough data for interpolation (sample size = {0})
+NOT_ENOUGH_DATA_FOR_INTERPOLATION = δεν υπάρχουν επαρκή δεδομένα για την παρεμβολή (μέγεθος δείγματος = {0})
+
+# too small number of cached neighbors: {0} (must be at least {1})
+NOT_ENOUGH_CACHED_NEIGHBORS = πολύ μικρός αριθμός των προσωρινά αποθηκευμένων γειτόνων {0} (πρέπει να είναι τουλάχιστον {1})
+
+# no cached entries
+NO_CACHED_ENTRIES = καμία προσωρινά αποθηκευμένη καταχώρηση
+
+# generated entries not sorted: {0} > {1}
+NON_CHRONOLOGICALLY_SORTED_ENTRIES = οι παράγωγες είσοδοι δεν είναι ταξινομημένες: {0} > {1}
+
+# no data generated around date: {0}
+NO_DATA_GENERATED = κανένα δεδομένο δεν έχει παραχθεί γύρω από την ημερομηνία: {0}
+
+# unable to generate new data before {0}
+UNABLE_TO_GENERATE_NEW_DATA_BEFORE = αδύνατο να δημιουργήσει νέα δεδομένα πριν από {0}
+
+# unable to generate new data after {0}
+UNABLE_TO_GENERATE_NEW_DATA_AFTER = αδύνατο να δημιουργήσει νέα δεδομένα μετά από {0}
+
+# unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
+UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = αδύνατο να υπολογίστει υπερβολική εκκεντρική ανωμαλία από τη μέση ανωμαλία μετά από {0} επαναλήψεις
+
+# derivation order {0} is out of range
+OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>

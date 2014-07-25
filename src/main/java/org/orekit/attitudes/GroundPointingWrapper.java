@@ -109,10 +109,16 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
         final Rotation compensationP1H  = getCompensation(pvProv, date.shiftedBy( h), frame, base.shiftedBy( h));
         final Vector3D compensationRate = AngularCoordinates.estimateRate(compensationM1H, compensationP1H, 2 * h);
 
-        // Combination of base attitude, compensation and compensation rate
+        // Compute compensation rotation acceleration
+        final Vector3D sM                       = AngularCoordinates.estimateRate(compensationM1H, compensation, h);
+        final Vector3D sP                       = AngularCoordinates.estimateRate(compensation, compensationP1H, h);
+        final Vector3D compensationAcceleration = new Vector3D(+1.0 / h, sP, -1.0 / h, sM);
+
+        // Combination of base attitude, compensation, compensation rate and compensation acceleration
         return new Attitude(date, frame,
                             compensation.applyTo(base.getRotation()),
-                            compensationRate.add(compensation.applyTo(base.getSpin())));
+                            compensationRate.add(compensation.applyTo(base.getSpin())),
+                            compensationAcceleration.add(compensation.applyTo(base.getRotationAcceleration())));
 
     }
 

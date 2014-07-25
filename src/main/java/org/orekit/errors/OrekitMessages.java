@@ -168,7 +168,8 @@ public enum OrekitMessages implements Localizable {
     NO_DATA_GENERATED("no data generated around date: {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_BEFORE("unable to generate new data before {0}"),
     UNABLE_TO_GENERATE_NEW_DATA_AFTER("unable to generate new data after {0}"),
-    UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations");
+    UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY("unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations"),
+    OUT_OF_RANGE_DERIVATION_ORDER("derivation order {0} is out of range");
 
     // CHECKSTYLE: resume JavadocVariable check
 

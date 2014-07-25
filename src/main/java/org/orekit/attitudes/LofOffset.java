@@ -159,7 +159,8 @@ public class LofOffset implements AttitudeProvider {
         // compose with offset rotation
         return new Attitude(date, frame,
                             offset.applyTo(frameToLof.getRotation()),
-                            offset.applyTo(frameToLof.getRotationRate()));
+                            offset.applyTo(frameToLof.getRotationRate()),
+                            offset.applyTo(frameToLof.getRotationAcceleration()));
 
     }
 

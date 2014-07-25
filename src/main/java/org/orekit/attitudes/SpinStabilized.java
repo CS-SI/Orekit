@@ -101,7 +101,8 @@ public class SpinStabilized implements AttitudeProviderModifier {
         final Transform combined = new Transform(date, baseTransform, spinInfluence);
 
         // build the attitude
-        return new Attitude(date, frame, combined.getRotation(), combined.getRotationRate());
+        return new Attitude(date, frame,
+                            combined.getRotation(), combined.getRotationRate(), combined.getRotationAcceleration());
 
     }
 

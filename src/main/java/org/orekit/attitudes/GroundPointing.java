@@ -138,7 +138,12 @@ public abstract class GroundPointing implements AttitudeProvider {
         final Rotation rotP1h = new Rotation(deltaPP1h, pvP1H.getVelocity(), Vector3D.PLUS_K, Vector3D.PLUS_I);
         final Vector3D spin   = AngularCoordinates.estimateRate(rotM1h, rotP1h, 2 * h);
 
-        return new Attitude(date, frame, rot, spin);
+        // Attitude rotation acceleration
+        final Vector3D sM           = AngularCoordinates.estimateRate(rotM1h, rot, h);
+        final Vector3D sP           = AngularCoordinates.estimateRate(rot, rotP1h, h);
+        final Vector3D acceleration = new Vector3D(+1.0 / h, sP, -1.0 / h, sM);
+
+        return new Attitude(date, frame, rot, spin, acceleration);
 
     }
 

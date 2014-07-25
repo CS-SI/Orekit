@@ -32,6 +32,7 @@ import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Topocentric frame.
@@ -313,9 +314,12 @@ public class TopocentricFrame extends Frame implements PVCoordinatesProvider {
      * @return position/velocity of the topocentric frame origin (m and m/s)
      * @exception OrekitException if position cannot be computed in given frame
      */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        return getTransformTo(frame, date).transformPVCoordinates(PVCoordinates.ZERO);
+        return getTransformTo(frame, date).transformPVCoordinates(new TimeStampedPVCoordinates(date,
+                                                                                               Vector3D.ZERO,
+                                                                                               Vector3D.ZERO,
+                                                                                               Vector3D.ZERO));
     }
 
 }

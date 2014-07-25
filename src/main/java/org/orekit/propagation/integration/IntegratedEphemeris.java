@@ -36,7 +36,7 @@ import org.orekit.propagation.BoundedPropagator;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.analytical.AbstractAnalyticalPropagator;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class stores sequentially generated orbital parameters for
  * later retrieval.
@@ -211,7 +211,7 @@ public class IntegratedEphemeris
     }
 
     /** {@inheritDoc} */
-    public PVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+    public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
         throws OrekitException {
         return propagate(date).getPVCoordinates(frame);
     }
