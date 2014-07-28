@@ -49,8 +49,9 @@ public class TimeStampedFieldAngularCoordinatesTest {
         Assert.assertEquals(createVector(0, 0, 0, 4), angularCoordinates.getRotationRate());
         double dt = 10.0;
         TimeStampedFieldAngularCoordinates<DerivativeStructure> shifted = angularCoordinates.shiftedBy(dt);
-        Assert.assertEquals(createVector(0, 0, 0, 4), shifted.getRotationRate());
-        Assert.assertEquals(angularCoordinates.getRotation(), shifted.getRotation());
+        Assert.assertEquals(0.0, shifted.getRotationAcceleration().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, shifted.getRotationRate().getNorm().getReal(), 1.0e-15);
+        Assert.assertEquals(0.0, FieldRotation.distance(angularCoordinates.getRotation(), shifted.getRotation()).getReal(), 1.0e-15);
     }
 
     @Test
@@ -185,14 +186,14 @@ public class TimeStampedFieldAngularCoordinatesTest {
             TimeStampedFieldAngularCoordinates<DerivativeStructure> ac2 =
 		new TimeStampedFieldAngularCoordinates<DerivativeStructure>(AbsoluteDate.J2000_EPOCH, r2, o2, a2);
             TimeStampedFieldAngularCoordinates<DerivativeStructure> roundTripSA = ac1.subtractOffset(ac2).addOffset(ac2);
-            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripSA.getRotation()).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()).getReal(), 1.0e-17);
+            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripSA.getRotation()).getReal(), 4.0e-16);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripSA.getRotationRate()).getReal(), 2.0e-17);
             Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripSA.getRotationAcceleration()).getReal(), 1.0e-17);
 
             TimeStampedFieldAngularCoordinates<DerivativeStructure> roundTripAS = ac1.addOffset(ac2).subtractOffset(ac2);
-            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripAS.getRotation()).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()).getReal(), 1.0e-17);
-            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()).getReal(), 1.0e-17);
+            Assert.assertEquals(0.0, FieldRotation.distance(ac1.getRotation(), roundTripAS.getRotation()).getReal(), 6.0e-16);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()).getReal(), 2.0e-17);
+            Assert.assertEquals(0.0, FieldVector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()).getReal(), 2.0e-17);
 
         }
     }
@@ -306,39 +307,6 @@ public class TimeStampedFieldAngularCoordinatesTest {
     }
 
     @Test
-    public void testInterpolationSimple() throws OrekitException {
-        AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
-        double alpha0 = 0.5 * FastMath.PI;
-        double omega  = 0.5 * FastMath.PI;
-        TimeStampedFieldAngularCoordinates<DerivativeStructure> reference =
-                new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date,
-                                                                            createRotation(createVector(0, 0, 1, 4), alpha0),
-                                                                            new FieldVector3D<DerivativeStructure>(omega, createVector(0, 0, -1, 4)),
-                                                                            createVector(0, 0, 0, 4));
-
-        List<TimeStampedFieldAngularCoordinates<DerivativeStructure>> sample =
-                new ArrayList<TimeStampedFieldAngularCoordinates<DerivativeStructure>>();
-        for (double dt : new double[] { 0.0, 0.5, 1.0 }) {
-            FieldRotation<DerivativeStructure> r            = reference.shiftedBy(dt).getRotation();
-            FieldVector3D<DerivativeStructure> rate         = reference.shiftedBy(dt).getRotationRate();
-            FieldVector3D<DerivativeStructure> acceleration = reference.shiftedBy(dt).getRotationAcceleration();
-            sample.add(new TimeStampedFieldAngularCoordinates<DerivativeStructure>(date.shiftedBy(dt), r, rate, acceleration));
-        }
-
-        for (double dt = 0; dt < 1.0; dt += 0.001) {
-            TimeStampedFieldAngularCoordinates<DerivativeStructure> interpolated =
-                    TimeStampedFieldAngularCoordinates.interpolate(date.shiftedBy(dt), AngularDerivativesFilter.USE_RRA, sample);
-            FieldRotation<DerivativeStructure> r            = interpolated.getRotation();
-            FieldVector3D<DerivativeStructure> rate         = interpolated.getRotationRate();
-            FieldVector3D<DerivativeStructure> acceleration = interpolated.getRotationAcceleration();
-            Assert.assertEquals(0.0, FieldRotation.distance(reference.shiftedBy(dt).getRotation(), r).getReal(), 1.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationRate(), rate).getReal(), 5.0e-15);
-            Assert.assertEquals(0.0, FieldVector3D.distance(reference.shiftedBy(dt).getRotationAcceleration(), acceleration).getReal(), 5.0e-15);
-        }
-
-    }
-
-    @Test
     public void testInterpolationNeedOffsetWrongRate() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double omega  = 2.0 * FastMath.PI;
@@ -363,10 +331,8 @@ public class TimeStampedFieldAngularCoordinatesTest {
                     TimeStampedFieldAngularCoordinates.interpolate(s.getDate(), AngularDerivativesFilter.USE_RR, sample);
             FieldRotation<DerivativeStructure> r            = interpolated.getRotation();
             FieldVector3D<DerivativeStructure> rate         = interpolated.getRotationRate();
-            FieldVector3D<DerivativeStructure> acceleration = interpolated.getRotationAcceleration();
-            Assert.assertEquals(0.0, FieldRotation.distance(s.getRotation(), r).getReal(), 1.0e-14);
-            Assert.assertEquals(0.0, FieldVector3D.distance(s.getRotationRate(), rate).getReal(), 1.0e-12);
-            Assert.assertEquals(0.0, FieldVector3D.distance(s.getRotationAcceleration(), acceleration).getReal(), 1.0e-12);
+            Assert.assertEquals(0.0, FieldRotation.distance(s.getRotation(), r).getReal(), 2.0e-14);
+            Assert.assertEquals(0.0, FieldVector3D.distance(s.getRotationRate(), rate).getReal(), 2.0e-13);
         }
 
     }

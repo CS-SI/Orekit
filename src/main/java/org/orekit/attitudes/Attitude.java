@@ -234,7 +234,7 @@ public class Attitude
             datedPV.add(attitude.orientation);
         }
         final TimeStampedAngularCoordinates interpolated =
-                TimeStampedAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RRA, datedPV);
+                TimeStampedAngularCoordinates.interpolate(interpolationDate, AngularDerivativesFilter.USE_RR, datedPV);
         return new Attitude(referenceFrame, interpolated);
     }
 

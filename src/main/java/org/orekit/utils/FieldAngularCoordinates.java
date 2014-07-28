@@ -60,6 +60,17 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
     /** FieldRotation<T> acceleration. */
     private final FieldVector3D<T> rotationAcceleration;
 
+    /** Builds a rotation/rotation rate pair.
+     * @param rotation rotation
+     * @param rotationRate rotation rate Ω (rad/s)
+     */
+    public FieldAngularCoordinates(final FieldRotation<T> rotation, final FieldVector3D<T> rotationRate) {
+        this(rotation, rotationRate,
+             new FieldVector3D<T>(rotation.getQ0().getField().getZero(),
+                                  rotation.getQ0().getField().getZero(),
+                                  rotation.getQ0().getField().getZero()));
+    }
+
     /** Builds a FieldRotation<T>/FieldRotation<T> rate/FieldRotation<T> acceleration triplet.
      * @param rotation FieldRotation<T>
      * @param rotationRate FieldRotation<T> rate Ω (rad/s)
@@ -81,7 +92,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return FieldRotation<T> rate allowing to go from start to end orientations
      */
-    public static <T extends RealFieldElement<T>> FieldVector3D<T> estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
+    public static <T extends RealFieldElement<T>> FieldVector3D<T>
+    estimateRate(final FieldRotation<T> start, final FieldRotation<T> end, final double dt) {
         final FieldRotation<T> evolution = start.applyTo(end.revert());
         return new FieldVector3D<T>(evolution.getAngle().divide(dt), evolution.getAxis());
     }
@@ -108,23 +120,53 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @return a new state, shifted with respect to the instance (which is immutable)
      */
     public FieldAngularCoordinates<T> shiftedBy(final double dt) {
-        final T rate = rotationRate.getNorm();
-        final T acc  = rotationAcceleration.getNorm();
-        if (rate.getReal() == 0.0 && acc.getReal() == 0.0) {
-            // special case for fixed rotations
-            return this;
-        }
 
-        // TODO: take acceleration into account!
+        // the shiftedBy method is based on a local approximation.
+        // It considers separately the contribution of the constant
+        // rotation, the linear contribution or the rate and the
+        // quadratic contribution of the acceleration. The rate
+        // and acceleration contributions are small rotations as long
+        // as the time shift is small, which is the crux of the algorithm.
+        // Small rotations are almost commutative, so we append these small
+        // contributions one after the other, as if they really occurred
+        // successively, despite this is not what really happens.
 
+        // compute the linear contribution first, ignoring acceleration
         // BEWARE: there is really a minus sign here, because if
         // the target frame rotates in one direction, the vectors in the origin
         // frame seem to rotate in the opposite direction
-        final FieldRotation<T> evolution = new FieldRotation<T>(rotationRate, rate.negate().multiply(dt));
+        final T rate = rotationRate.getNorm();
+        final T zero = rate.getField().getZero();
+        final T one  = rate.getField().getOne();
+        final FieldRotation<T> rateContribution = (rate.getReal() == 0.0) ?
+                                                  new FieldRotation<T>(one, zero, zero, zero, false) :
+                                                  new FieldRotation<T>(rotationRate, rate.multiply(-dt));
 
-        return new FieldAngularCoordinates<T>(evolution.applyTo(rotation),
-                                              new FieldVector3D<T>(1, rotationRate, dt, rotationAcceleration),
-                                              rotationAcceleration);
+        // append rotation and rate contribution
+        final FieldAngularCoordinates<T> linearPart =
+                new FieldAngularCoordinates<T>(rateContribution.applyTo(rotation), rotationRate);
+
+        final T acc  = rotationAcceleration.getNorm();
+        if (acc.getReal() == 0.0) {
+            // no acceleration, the linear part is sufficient
+            return linearPart;
+        }
+
+        // compute the quadratic contribution, ignoring initial rotation and rotation rate
+        // BEWARE: there is really a minus sign here, because if
+        // the target frame rotates in one direction, the vectors in the origin
+        // frame seem to rotate in the opposite direction
+        final FieldAngularCoordinates<T> quadraticContribution =
+                new FieldAngularCoordinates<T>(new FieldRotation<T>(rotationAcceleration,
+                                                                    acc.multiply(-0.5 * dt * dt)),
+                                               new FieldVector3D<T>(dt, rotationAcceleration),
+                                               rotationAcceleration);
+
+        // the quadratic contribution is a small rotation:
+        // its initial angle and angular rate are both zero.
+        // small rotations are almost commutative, so we append the small
+        // quadratic part after the linear part as a simple offset
+        return quadraticContribution.addOffset(linearPart);
 
     }
 
@@ -234,7 +276,8 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @param <T> the type of the field elements
      * @return a new position-velocity, interpolated at specified date
      * @exception OrekitException if the number of point is too small for interpolating
-     * @deprecated since 7.0 replaced with {@link TimeStampedFieldAngularCoordinates#interpolate(AbsoluteDate, AngularDerivativesFilter, Collection)}
+     * @deprecated since 7.0 replaced with {@link TimeStampedFieldAngularCoordinates#interpolate(AbsoluteDate,
+     * AngularDerivativesFilter, Collection)}
      */
     @Deprecated
     public static <T extends RealFieldElement<T>> FieldAngularCoordinates<T>

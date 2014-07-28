@@ -188,7 +188,7 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
 
         // set up a linear model canceling mean rotation rate
         final FieldVector3D<T> meanRate;
-        if (filter != AngularDerivativesFilter.USE_RR) {
+        if (filter != AngularDerivativesFilter.USE_R) {
             FieldVector3D<T> sum = new FieldVector3D<T>(zero, zero, zero);
             for (final TimeStampedFieldAngularCoordinates<T> datedAC : sample) {
                 sum = sum.add(datedAC.getRotationRate());
@@ -227,70 +227,37 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
             final double[] previous = new double[] {
                 1.0, 0.0, 0.0, 0.0
             };
-            switch (filter) {
-            case USE_RRA: {
-                // populate sample with rotation and rotation rate data
-                for (final TimeStampedFieldAngularCoordinates<T> ac : sample) {
 
-                    // remove linear offset from the current coordinates
-                    final double dt = ac.date.durationFrom(date);
-                    final TimeStampedFieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt));
+            for (final TimeStampedFieldAngularCoordinates<T> ac : sample) {
 
-                    final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
-                    if (rodrigues == null) {
-                        // the sample point is close to a modified Rodrigues vector singularity
-                        // we need to change the linear offset model to avoid this
-                        restart = true;
-                        break;
-                    }
-                    interpolator.addSamplePoint(zero.add(ac.getDate().durationFrom(date)),
-                                                rodrigues[0], rodrigues[1], rodrigues[2]);
+                // remove linear offset from the current coordinates
+                final T dt = zero.add(ac.date.durationFrom(date));
+                final TimeStampedFieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt.getReal()));
+
+                final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
+                if (rodrigues == null) {
+                    // the sample point is close to a modified Rodrigues vector singularity
+                    // we need to change the linear offset model to avoid this
+                    restart = true;
+                    break;
                 }
-                break;
-            }
-            case USE_RR: {
-                // populate sample with rotation and rotation rate data
-                for (final TimeStampedFieldAngularCoordinates<T> ac : sample) {
-
-                    // remove linear offset from the current coordinates
-                    final double dt = ac.date.durationFrom(date);
-                    final TimeStampedFieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt));
-
-                    final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
-                    if (rodrigues == null) {
-                        // the sample point is close to a modified Rodrigues vector singularity
-                        // we need to change the linear offset model to avoid this
-                        restart = true;
-                        break;
-                    }
-                    interpolator.addSamplePoint(zero.add(ac.getDate().durationFrom(date)),
-                                                rodrigues[0], rodrigues[1]);
+                switch (filter) {
+                case USE_RRA:
+                    // populate sample with rotation, rotation rate and acceleration data
+                    interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1], rodrigues[2]);
+                    break;
+                case USE_RR:
+                    // populate sample with rotation and rotation rate data
+                    interpolator.addSamplePoint(dt, rodrigues[0], rodrigues[1]);
+                    break;
+                case USE_R:
+                    // populate sample with rotation data only
+                    interpolator.addSamplePoint(dt, rodrigues[0]);
+                    break;
+                default :
+                    // this should never happen
+                    throw OrekitException.createInternalError(null);
                 }
-                break;
-            }
-            case USE_R: {
-                // populate sample with rotation data only, ignoring rotation rate
-                for (final TimeStampedFieldAngularCoordinates<T> ac : sample) {
-
-                    // remove linear offset from the current coordinates
-                    final double dt = ac.date.durationFrom(date);
-                    final TimeStampedFieldAngularCoordinates<T> fixed = ac.subtractOffset(offset.shiftedBy(dt));
-
-                    final T[][] rodrigues = getModifiedRodrigues(fixed, previous, threshold);
-                    if (rodrigues == null) {
-                        // the sample point is close to a modified Rodrigues vector singularity
-                        // we need to change the linear offset model to avoid this
-                        restart = true;
-                        break;
-                    }
-                    interpolator.addSamplePoint(zero.add(ac.getDate().durationFrom(date)),
-                                                rodrigues[0]);
-                }
-                break;
-            }
-            default :
-                // this should never happen
-                throw OrekitException.createInternalError(null);
             }
 
             if (restart) {

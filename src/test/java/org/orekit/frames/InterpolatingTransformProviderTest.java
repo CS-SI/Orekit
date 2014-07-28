@@ -56,7 +56,7 @@ public class InterpolatingTransformProviderTest {
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
             Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),   7.0e-15);
             Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),   3.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),    1.1e-15);
+            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),    1.2e-15);
             Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(), 2.2e-15);
 
         }

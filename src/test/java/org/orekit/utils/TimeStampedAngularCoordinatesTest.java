@@ -17,8 +17,6 @@
 package org.orekit.utils;
 
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -32,7 +30,6 @@ import org.apache.commons.math3.ode.sampling.FixedStepHandler;
 import org.apache.commons.math3.ode.sampling.StepNormalizer;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
-import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
@@ -51,8 +48,9 @@ public class TimeStampedAngularCoordinatesTest {
         Assert.assertEquals(Vector3D.ZERO, ac.getRotationRate());
         double dt = 10.0;
         TimeStampedAngularCoordinates shifted = ac.shiftedBy(dt);
+        Assert.assertEquals(Vector3D.ZERO, shifted.getRotationAcceleration());
         Assert.assertEquals(Vector3D.ZERO, shifted.getRotationRate());
-        Assert.assertEquals(ac.getRotation(), shifted.getRotation());
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
     }
 
     @Test
@@ -165,7 +163,7 @@ public class TimeStampedAngularCoordinatesTest {
             Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripSA.getRotationAcceleration()), 1.0e-17);
 
             TimeStampedAngularCoordinates roundTripAS = ac1.addOffset(ac2).subtractOffset(ac2);
-            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 5.0e-16);
+            Assert.assertEquals(0.0, Rotation.distance(ac1.getRotation(), roundTripAS.getRotation()), 6.0e-16);
             Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationRate(), roundTripAS.getRotationRate()), 2.0e-17);
             Assert.assertEquals(0.0, Vector3D.distance(ac1.getRotationAcceleration(), roundTripAS.getRotationAcceleration()), 2.0e-17);
 
@@ -203,105 +201,6 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
-    public void testRodriguesSymmetry()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = TimeStampedAngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        TimeStampedAngularCoordinates.class,
-                                                                        double[].class, double.class
-                                                                    });
-        getter.setAccessible(true);
-        Method factory = TimeStampedAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        double[][].class,
-                                                                        TimeStampedAngularCoordinates.class
-                                                                    });
-        factory.setAccessible(true);
-
-        // check the two-way conversion result in identity
-        Random random = new Random(0xb1e615aaa8236b52l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 1000; ++i) {
-            Rotation offsetRotation    = randomRotation(random);
-            Vector3D offsetRate        = randomVector(random, 0.01);
-            TimeStampedAngularCoordinates offset  =
-		new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, offsetRotation, offsetRate, Vector3D.ZERO);
-            Rotation rotation             = randomRotation(random);
-            Vector3D rotationRate         = randomVector(random, 0.01);
-            Vector3D rotationAcceleration = randomVector(random, 0.01);
-            TimeStampedAngularCoordinates ac      =
-		new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, rotation, rotationRate, rotationAcceleration);
-            double dt                  = 10.0 * random.nextDouble();
-            double[][] rodrigues =
-                    (double[][]) getter.invoke(null,
-                                               ac.subtractOffset(offset.shiftedBy(dt)), previous, -0.9999);
-            TimeStampedAngularCoordinates rebuilt = (TimeStampedAngularCoordinates) factory.invoke(null, rodrigues, offset.shiftedBy(dt));
-            Assert.assertEquals(0.0, Rotation.distance(rotation, rebuilt.getRotation()), 1.0e-14);
-            Assert.assertEquals(0.0, Vector3D.distance(rotationRate, rebuilt.getRotationRate()), 1.0e-15);
-            Assert.assertEquals(0.0, Vector3D.distance(rotationAcceleration, rebuilt.getRotationAcceleration()), 1.0e-15);
-        }
-
-    }
-
-    @Test
-    public void testRodriguesSpecialCases()
-        throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        // use reflection to test the private static methods
-        Method getter  = TimeStampedAngularCoordinates.class.getDeclaredMethod("getModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        TimeStampedAngularCoordinates.class,
-                                                                        double[].class, double.class
-                                                                    });
-        getter.setAccessible(true);
-        Method factory = TimeStampedAngularCoordinates.class.getDeclaredMethod("createFromModifiedRodrigues",
-                                                                    new Class<?>[] {
-                                                                        double[][].class,
-                                                                        TimeStampedAngularCoordinates.class
-                                                                    });
-        factory.setAccessible(true);
-
-        // identity
-        double[][] identity =
-                (double[][]) getter.invoke(null,
-                                           identity(), new double[] { 1.0, 0.0, 0.0, 0.0 }, -0.9999);
-        TimeStampedAngularCoordinates acId = (TimeStampedAngularCoordinates) factory.invoke(null, identity, identity());
-        for (double[] row : identity) {
-            for (double element : row) {
-                Assert.assertEquals(0.0, element, Precision.SAFE_MIN);
-            }
-        }
-        Assert.assertEquals(0.0, acId.getRotation().getAngle(), Precision.SAFE_MIN);
-        Assert.assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
-
-        // PI angle rotation (which is singular for non-modified Rodrigues vector)
-        Random random = new Random(0x2158523e6accb859l);
-        double[] previous = new double[] { 1.0, 0.0, 0.0, 0.0 };
-        for (int i = 0; i < 100; ++i) {
-            Vector3D axis = randomVector(random, 1.0);
-            double[][] piRotation =
-                    (double[][]) getter.invoke(null,
-                                             new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                                               new Rotation(axis, FastMath.PI),
-                                                                               Vector3D.ZERO, Vector3D.ZERO),
-                                             previous, -0.9999);
-            TimeStampedAngularCoordinates acPi = (TimeStampedAngularCoordinates) factory.invoke(null, piRotation, identity());
-            Assert.assertEquals(FastMath.PI, acPi.getRotation().getAngle(), 1.0e-15);
-            Assert.assertEquals(0.0, FastMath.sin(Vector3D.angle(axis, acPi.getRotation().getAxis())), 1.0e-15);
-            Assert.assertEquals(0.0, acPi.getRotationRate().getNorm(), 1.0e-16);
-        }
-
-        // 2 PI angle rotation (which is singular for modified Rodrigues vector)
-        Assert.assertNull(getter.invoke(null,
-                                        identity(), new double[] { -1.0, 0.0, 0.0, 0.0 }, -0.9999));
-        Assert.assertNotNull(getter.invoke(null,
-                                           identity(), new double[] { +1.0, 0.0, 0.0, 0.0 }, -0.9999));
-
-    }
-
-    @Test
     public void testInterpolationWithoutAcceleration() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.GALILEO_EPOCH;
         double alpha0 = 0.5   * FastMath.PI;
@@ -312,9 +211,9 @@ public class TimeStampedAngularCoordinatesTest {
                                                   new Vector3D(omega, Vector3D.MINUS_K),
                                                   Vector3D.ZERO);
         double[] errors = interpolationErrors(reference, 1.0);
-        Assert.assertEquals(0.0, errors[0], 4.0e-13);
-        Assert.assertEquals(0.0, errors[1], 6.0e-12);
-        Assert.assertEquals(0.0, errors[2], 2.0e-10);
+        Assert.assertEquals(0.0, errors[0], 1.0e-15);
+        Assert.assertEquals(0.0, errors[1], 3.0e-15);
+        Assert.assertEquals(0.0, errors[2], 3.0e-14);
     }
 
     @Test
@@ -331,7 +230,7 @@ public class TimeStampedAngularCoordinatesTest {
         double[] errors = interpolationErrors(reference, 1.0);
         Assert.assertEquals(0.0, errors[0], 3.0e-5);
         Assert.assertEquals(0.0, errors[1], 2.0e-4);
-        Assert.assertEquals(0.0, errors[2], 5.0e-3);
+        Assert.assertEquals(0.0, errors[2], 4.6e-3);
     }
 
     private double[] interpolationErrors(final TimeStampedAngularCoordinates reference, double dt)
@@ -352,9 +251,10 @@ public class TimeStampedAngularCoordinatesTest {
             }
         };
         final List<TimeStampedAngularCoordinates> complete = new ArrayList<TimeStampedAngularCoordinates>();
-        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-10, 1.0e-10);
-        integrator.addStepHandler(new StepNormalizer(dt / 1000, new FixedStepHandler() {
-            public void init(double t0, double[] y0, double t) {}
+        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-6, 1.0, 1.0e-12, 1.0e-12);
+        integrator.addStepHandler(new StepNormalizer(dt / 2000, new FixedStepHandler() {
+            public void init(double t0, double[] y0, double t) {
+            }
             public void handleStep(double t, double[] y, double[] yDot, boolean isLast) {
                 complete.add(new TimeStampedAngularCoordinates(reference.getDate().shiftedBy(t),
                                                            new Rotation(y[0], y[1], y[2], y[3], true),
@@ -420,8 +320,8 @@ public class TimeStampedAngularCoordinatesTest {
                     TimeStampedAngularCoordinates.interpolate(s.getDate(), AngularDerivativesFilter.USE_RR, sample);
             Rotation r    = interpolated.getRotation();
             Vector3D rate = interpolated.getRotationRate();
-            Assert.assertEquals(0.0, Rotation.distance(s.getRotation(), r), 1.0e-14);
-            Assert.assertEquals(0.0, Vector3D.distance(s.getRotationRate(), rate), 3.0e-14);
+            Assert.assertEquals(0.0, Rotation.distance(s.getRotation(), r), 2.0e-14);
+            Assert.assertEquals(0.0, Vector3D.distance(s.getRotationRate(), rate), 2.0e-13);
         }
 
     }
@@ -506,11 +406,6 @@ public class TimeStampedAngularCoordinatesTest {
                                 1.0e-11);
         }
 
-    }
-
-    private TimeStampedAngularCoordinates identity() {
-        return new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
-                                                 Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
     }
 
     private Vector3D randomVector(Random random, double norm) {

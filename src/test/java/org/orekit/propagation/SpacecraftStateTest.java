@@ -65,23 +65,30 @@ public class SpacecraftStateTest {
         throws ParseException, OrekitException {
 
 
-        // polynomial models for interpolation error in position, velocity and attitude
+        // polynomial models for interpolation error in position, velocity, acceleration and attitude
         // these models grow as follows
-        //   interpolation time (s)    position error (m)   velocity error (m/s)  attitude error (°)
-        //           60                       20                    1                  0.00007
-        //          120                      100                    2                  0.00025
-        //          300                      600                    4                  0.00125
-        //          600                     2000                    6                  0.0028
-        //          900                     4000                    6                  0.0075
-        // the expected maximal residuals with respect to these models are about 4m, 4cm/s and 7.0e-5°
+        //   interpolation time (s)    position error (m)   velocity error (m/s)   acceleration error (m/s²)  attitude error (°)
+        //           60                       20                    1                     0.00004               0.000005
+        //          120                      100                    2                     0.0004                0.00005
+        //          300                      600                    4                     0.001                 0.0007
+        //          600                     2000                    6                     0.004                 0.006
+        //          900                     4000                    6                     0.008                 0.02
+        // the expected maximum residuals with respect to these models are about 0.7m, 0.7mm/s and 3.0e-7°
         PolynomialFunction pModel = new PolynomialFunction(new double[] {
-            1.0861222899572454, -0.09715781161843842, 0.007738813180913936, -3.273915351103342E-6
+            0.7947439359233139, -0.06668291308114155, 0.007386912019566922,
+            -1.974642579925139E-6, -1.875613528179364E-9, 9.23933832479695E-13
         });
         PolynomialFunction vModel = new PolynomialFunction(new double[] {
-            -0.02580749589147073, 0.015669287539738435, -1.0221727893509467E-5, 4.903886053117456E-10
+            -5.121264747918845E-4, 0.015132635807321153, -7.864376206115991E-6,
+            -2.36945648822257E-9, -4.87282847874706E-13, 1.6754469679610568E-15
         });
         PolynomialFunction aModel = new PolynomialFunction(new double[] {
-            2.367656161750781E-5, -9.04040437097894E-7, 2.7648633804186084E-8, -3.862811467792131E-11, -3.465934294894873E-15, 2.7789684889607137E-17
+            1.6354900692108832E-6, -2.4706877854002407E-7, 1.4052801354514918E-8,
+            -3.1260245160785984E-12, -2.7280473805786235E-15, 1.162962531465119E-18
+        });
+        PolynomialFunction rModel = new PolynomialFunction(new double[] {
+            3.0666301633348556E-7, -1.524723924836661E-8, 1.7046531571850435E-10,
+            2.4564790522495316E-11, 5.954526456756948E-15, -1.99658520124876E-18
         });
 
         AbsoluteDate centerDate = orbit.getDate().shiftedBy(100.0);
@@ -89,22 +96,26 @@ public class SpacecraftStateTest {
         double maxResidualP = 0;
         double maxResidualV = 0;
         double maxResidualA = 0;
+        double maxResidualR = 0;
         for (double dt = 0; dt < 900.0; dt += 5) {
             SpacecraftState shifted = centerState.shiftedBy(dt);
             SpacecraftState propagated = propagator.propagate(centerDate.shiftedBy(dt));
             PVCoordinates dpv = new PVCoordinates(propagated.getPVCoordinates(), shifted.getPVCoordinates());
             double residualP = pModel.value(dt) - dpv.getPosition().getNorm();
             double residualV = vModel.value(dt) - dpv.getVelocity().getNorm();
-            double residualA = aModel.value(dt) -
+            double residualA = aModel.value(dt) - dpv.getAcceleration().getNorm();
+            double residualR = rModel.value(dt) -
                                FastMath.toDegrees(Rotation.distance(shifted.getAttitude().getRotation(),
-                                                                propagated.getAttitude().getRotation()));
+                                                                    propagated.getAttitude().getRotation()));
             maxResidualP = FastMath.max(maxResidualP, FastMath.abs(residualP));
             maxResidualV = FastMath.max(maxResidualV, FastMath.abs(residualV));
             maxResidualA = FastMath.max(maxResidualA, FastMath.abs(residualA));
+            maxResidualR = FastMath.max(maxResidualR, FastMath.abs(residualR));
         }
-        Assert.assertEquals(4.0,    maxResidualP, 0.2);
-        Assert.assertEquals(0.04,   maxResidualV, 0.01);
-        Assert.assertEquals(7.0e-5, maxResidualA, 0.3e-5);
+        Assert.assertEquals(0.7,    maxResidualP, 0.1);
+        Assert.assertEquals(0.0007, maxResidualV, 0.0001);
+        Assert.assertEquals(1.6e-6, maxResidualA, 1.0e-7);
+        Assert.assertEquals(3.0e-7, maxResidualR, 1.0e-8);
     }
 
     @Test
