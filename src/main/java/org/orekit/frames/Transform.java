@@ -350,11 +350,14 @@ public class Transform
     private static Vector3D compositeRotationAcceleration(final Transform first, final Transform second) {
 
         final Vector3D o1    = first.angular.getRotationRate();
+        final Vector3D oDot1 = first.angular.getRotationAcceleration();
         final Rotation r2    = second.angular.getRotation();
         final Vector3D o2    = second.angular.getRotationRate();
-        final Vector3D oDto2 = second.angular.getRotationAcceleration();
+        final Vector3D oDot2 = second.angular.getRotationAcceleration();
 
-        return oDto2.subtract(Vector3D.crossProduct(o2, r2.applyTo(o1)));
+        return new Vector3D( 1, oDot2,
+                             1, r2.applyTo(oDot1),
+                            -1, Vector3D.crossProduct(o2, r2.applyTo(o1)));
 
     }
 
@@ -469,18 +472,23 @@ public class Transform
      */
     public Transform getInverse() {
 
-        final Vector3D p = cartesian.getPosition();
-        final Vector3D v = cartesian.getVelocity();
-        final Vector3D a = cartesian.getAcceleration();
-        final Rotation r = angular.getRotation();
-        final Vector3D o = angular.getRotationRate();
+        final Rotation r    = angular.getRotation();
+        final Vector3D o    = angular.getRotationRate();
+        final Vector3D oDot = angular.getRotationAcceleration();
+        final Vector3D rp   = r.applyTo(cartesian.getPosition());
+        final Vector3D rv   = r.applyTo(cartesian.getVelocity());
+        final Vector3D ra   = r.applyTo(cartesian.getAcceleration());
 
-        final Vector3D pInv        = new Vector3D(-1, r.applyTo(p));
-        final Vector3D crossP      = Vector3D.crossProduct(o, pInv);
-        final Vector3D vInv        = new Vector3D(-1, r.applyTo(v), -1, crossP);
-        final Vector3D crossV      = Vector3D.crossProduct(o, vInv);
+        final Vector3D pInv        = rp.negate();
+        final Vector3D crossP      = Vector3D.crossProduct(o, rp);
+        final Vector3D vInv        = crossP.subtract(rv);
+        final Vector3D crossV      = Vector3D.crossProduct(o, rv);
+        final Vector3D crossDotP   = Vector3D.crossProduct(oDot, rp);
         final Vector3D crossCrossP = Vector3D.crossProduct(o, crossP);
-        final Vector3D aInv        = new Vector3D(-1, r.applyTo(a), -2, crossV, -1, crossCrossP);
+        final Vector3D aInv        = new Vector3D(-1, ra,
+                                                   2, crossV,
+                                                   1, crossDotP,
+                                                  -1, crossCrossP);
 
         return new Transform(date, new PVCoordinates(pInv, vInv, aInv), angular.revert());
 

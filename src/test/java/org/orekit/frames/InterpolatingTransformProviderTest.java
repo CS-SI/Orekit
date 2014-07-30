@@ -54,10 +54,11 @@ public class InterpolatingTransformProviderTest {
             Transform reference = referenceProvider.getTransform(t0.shiftedBy(dt));
             Transform interpolated = interpolatingProvider.getTransform(t0.shiftedBy(dt));
             Transform error = new Transform(reference.getDate(), reference, interpolated.getInverse());
-            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),   7.0e-15);
-            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),   3.0e-14);
-            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),    1.2e-15);
-            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(), 2.2e-15);
+            Assert.assertEquals(0.0, error.getCartesian().getPosition().getNorm(),           7.0e-15);
+            Assert.assertEquals(0.0, error.getCartesian().getVelocity().getNorm(),           3.0e-14);
+            Assert.assertEquals(0.0, error.getAngular().getRotation().getAngle(),            1.3e-15);
+            Assert.assertEquals(0.0, error.getAngular().getRotationRate().getNorm(),         2.2e-15);
+            Assert.assertEquals(0.0, error.getAngular().getRotationAcceleration().getNorm(), 1.2e-14);
 
         }
         Assert.assertEquals(10,   rawProvider.getCount());

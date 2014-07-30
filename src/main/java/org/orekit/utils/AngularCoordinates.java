@@ -106,8 +106,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      */
     public AngularCoordinates revert() {
         return new AngularCoordinates(rotation.revert(),
-                                      rotation.applyInverseTo(rotationRate.negate()),
-                                      rotation.applyInverseTo(rotationAcceleration.negate()));
+                                      rotation.applyInverseTo(rotationRate).negate(),
+                                      rotation.applyInverseTo(rotationAcceleration).negate());
     }
 
     /** Get a time-shifted state.
@@ -206,9 +206,13 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @see #subtractOffset(AngularCoordinates)
      */
     public AngularCoordinates addOffset(final AngularCoordinates offset) {
+        final Vector3D rOmega    = rotation.applyTo(offset.rotationRate);
+        final Vector3D rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
         return new AngularCoordinates(rotation.applyTo(offset.rotation),
-                                      rotationRate.add(rotation.applyTo(offset.rotationRate)),
-                                      rotationAcceleration.add(rotation.applyTo(offset.rotationAcceleration)));
+                                      rotationRate.add(rOmega),
+                                      new Vector3D( 1.0, rotationAcceleration,
+                                                    1.0, rOmegaDot,
+                                                   -1.0, Vector3D.crossProduct(rotationRate, rOmega)));
     }
 
     /** Subtract an offset from the instance.
