@@ -22,6 +22,9 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="evan" type="add">
+          Added general relativity force model.
+      </action>
       <action dev="luc" type="add" due-to="Ioanna Stypsanelli">
         added Greek localization for error messages.
       </action>
