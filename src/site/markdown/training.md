@@ -46,8 +46,8 @@ experts. The following concepts are taught:
    * limiting factors with each generation of programming languages
    * why and how new paradigms have been added over time
 
-|----------|-------------------------------------------------------------------------------------------|----------|
 |   type   |                              prerequisites                                                | duration |
+|----------|-------------------------------------------------------------------------------------------|----------|
 |  lecture | basic knowledge of development principles with programming languages like FORTRAN or C    |   1 day  |
 session 1
 
@@ -70,8 +70,8 @@ are taught:
    * Testing tools (Junit, Jacoco)
    * Auditing tools (Checkstyle, Findbugs, PMD ...)
 
-|------------------------------|-------------------------------------------------------------------|-----------|
 |              type            |                           prerequisites                           |  duration |
+|------------------------------|-------------------------------------------------------------------|-----------|
 |  lecture, hands-on practice  | knowledge of object-oriented principles as presented in session 1 |   4 days  |
 session 2
 
@@ -95,8 +95,8 @@ topics are covered:
      library objects
    * Extending existing Orekit library objects to meet mission-specific needs
 
-|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
 |               type           |                                           prerequisites                                                                                                                 |  duration |
+|------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
 |  lecture, hands-on practice  | space flight dynamics or numerical analysis background , knowledge of object-oriented principles as presented in session 1, basic knowledge of the Java language syntax |   3 days  |
 session 3
 
@@ -114,8 +114,8 @@ The training sessions can be organized both at your premises anywhere in the wor
 premises in Toulouse (France). All sessions are limited to 8 students. Prices for the training
 sessions at CS premises are shown in the following table:
 
-|----------------------------------------------------------------------------------------------------------|--------------------------------|----------------------------------|------------|
 |                                    session                                                               | industry, commercial companies | academics, research laboratories |  students  |
+|----------------------------------------------------------------------------------------------------------|--------------------------------|----------------------------------|------------|
 |  Object oriented technology for numerical computing (session 1)                                          |      600 €                     |      300 €                       | 150 €      |
 |  Object oriented concepts and the Java language (session 2)                                              |     2400 €                     |     1200 €                       | 600 €      |
 |  Developing numerical applications in the Java language using Apache commons-math and Orekit (session 3) |     1800 €                     |      900 €                       | 450 €      |
@@ -128,13 +128,12 @@ For information about scheduled sessions or if you want to set up a session at y
 please use the general orekit email address: [orekit@c-s.fr](mailto:orekit@c-s.fr) or ask
 CS space flight dynamics department at the following address:
 
-|:-----------------------------------------------------------------------|
-|  CS Systèmes d'Information                                             |
-|  BU E-space & Geoinformation                                           |
-|  parc de la plaine - 5 rue Brindejonc des Moulinais                    |
-|  BP 15872                                                              |
-|  31506 Toulouse CEDEX 5                                                |
-|  FRANCE                                                                |
-|                                                                        |
-|  phone: +33 5-61-17-66-66 (ask for Luc Maisonobe or Nicolas Frouvelle) |
-|  fax:   +33 5-61-34-84-15                                              |
+    CS Systèmes d'Information
+    BU E-space & Geoinformation
+    parc de la plaine - 5 rue Brindejonc des Moulinais
+    BP 15872
+    31506 Toulouse CEDEX 5
+    FRANCE
+
+    phone: +33 5-61-17-66-66 (ask for Luc Maisonobe or Nicolas Frouvelle)
+    fax:   +33 5-61-34-84-15

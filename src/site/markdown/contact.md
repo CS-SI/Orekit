@@ -20,8 +20,8 @@ Mailing lists
 
 Most discussions should occur on the public mailing lists.
 
-|---------------|------------------------------|--------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
 |     topic     |         post address         |                                            subscribe URL                                                           |                                               archive URL                                            |
+|---------------|------------------------------|--------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
 |  announces    | orekit-announces@orekit.org  |   [https://www.orekit.org/wws/subscribe/orekit-announces](https://www.orekit.org/wws/subscribe/orekit-announces)   | [https://www.orekit.org/wws/arc/orekit-announces](https://www.orekit.org/wws/arc/orekit-announces)   |
 |     users     |   orekit-users@orekit.org    |   [https://www.orekit.org/wws/subscribe/orekit-users](https://www.orekit.org/wws/subscribe/orekit-users)           | [https://www.orekit.org/wws/arc/orekit-users](https://www.orekit.org/wws/arc/orekit-users)           |
 |   developers  | orekit-developers@orekit.org |   [https://www.orekit.org/wws/subscribe/orekit-developers](https://www.orekit.org/wws/subscribe/orekit-developers) | [https://www.orekit.org/wws/arc/orekit-developers](https://www.orekit.org/wws/arc/orekit-developers) |
@@ -44,13 +44,12 @@ Administrative contact
 If you want to discuss with the space division staff at CS Systèmes d'Information,
 please use the following address:
 
-|:-----------------------------------------------------------------------|
-|  CS Systèmes d'Information                                             |
-|  BU E-space & Geoinformation                                           |
-|  parc de la plaine - 5 rue Brindejonc des Moulinais                    |
-|  BP 15872                                                              |
-|  31506 Toulouse CEDEX 5                                                |
-|  FRANCE                                                                |
-|                                                                        |
-|  phone: +33 5-61-17-66-66 (ask for Luc Maisonobe or Nicolas Frouvelle) |
-|  fax:   +33 5-61-34-84-15                                              |
+    CS Systèmes d'Information
+    BU E-space & Geoinformation
+    parc de la plaine - 5 rue Brindejonc des Moulinais
+    BP 15872
+    31506 Toulouse CEDEX 5
+    FRANCE
+
+    phone: +33 5-61-17-66-66 (ask for Luc Maisonobe or Nicolas Frouvelle)
+    fax:   +33 5-61-34-84-15

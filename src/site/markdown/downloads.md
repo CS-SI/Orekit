@@ -29,7 +29,7 @@ be easily adapted if you are using one of the numerous Git graphical
 user interface available or if Git is supported by you integrated
 development environment:
 
-    git clone http://www.orekit.org/git/orekit
+    git clone https://www.orekit.org/git/orekit-main.git
 
 Released Library versions
 -------------------------
@@ -44,43 +44,43 @@ with groupID org.orekit and artifactId rugged-core, rugged-aster, ... so maven
 internal mechanism will download automatically all artifacts and dependencies
 as required.
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-6.1-sources.zip](https://www.orekit.org/forge/attachments/download/401/orekit-6.1-sources.zip)    |
 |  binary  | [orekit-6.1.jar](https://www.orekit.org/forge/attachments/download/402/orekit-6.1.jar)                    |
 |  javadoc | [orekit-6.1-javadoc.jar](https://www.orekit.org/forge/attachments/download/403/orekit-6.1-javadoc.jar)    |
 version 6.1 downloads (release date: 2013-12-13)
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-6.0-sources.zip](https://www.orekit.org/forge/attachments/download/356/orekit-6.0-sources.zip)    |
 |  binary  | [orekit-6.0.jar](https://www.orekit.org/forge/attachments/download/357/orekit-6.0.jar)                    |
 |  javadoc | [orekit-6.0-javadoc.jar](https://www.orekit.org/forge/attachments/download/358/orekit-6.0-javadoc.jar)    |
 version 6.0 downloads (release date: 2013-04-23)
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-5.0.3-sources.zip](https://www.orekit.org/forge/attachments/download/48/orekit-5.0.3-sources.zip) |
 |  binary  | [orekit-5.0.3.jar](https://www.orekit.org/forge/attachments/download/44/orekit-5.0.3.jar)                 |
 |  javadoc | [orekit-5.0.3-javadoc.jar](https://www.orekit.org/forge/attachments/download/46/orekit-5.0.3-javadoc.jar) |
 version 5.0.3 downloads (release date: 2011-07-13)
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-5.0.2-sources.zip](https://www.orekit.org/forge/attachments/download/42/orekit-5.0.2-sources.zip) |
 |  binary  | [orekit-5.0.2.jar](https://www.orekit.org/forge/attachments/download/38/orekit-5.0.2.jar)                 |
 |  javadoc | [orekit-5.0.2-javadoc.jar](https://www.orekit.org/forge/attachments/download/40/orekit-5.0.2-javadoc.jar) |
 version 5.0.2 downloads (release date: 2011-07-11)
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-5.0.1-sources.zip](https://www.orekit.org/forge/attachments/download/36/orekit-5.0.1-sources.zip) |
 |  binary  | [orekit-5.0.1.jar](https://www.orekit.org/forge/attachments/download/34/orekit-5.0.1.jar)                 |
 |  javadoc | [orekit-5.0.1-javadoc.jar](https://www.orekit.org/forge/attachments/download/32/orekit-5.0.1-javadoc.jar) |
 version 5.0.1 downloads (release date: 2011-04-18)
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-5.0-src.zip](https://www.orekit.org/forge/attachments/download/12/orekit-5.0-src.zip)             |
 |  binary  | [orekit-5.0.jar](https://www.orekit.org/forge/attachments/download/13/orekit-5.0.jar)                     |
 |  javadoc | [orekit-5.0-doc.jar](https://www.orekit.org/forge/attachments/download/11/orekit-5.0-doc.jar)             |
@@ -93,16 +93,15 @@ version 5.0 downloads (release date: 2010-05-06)
 |  javadoc | [orekit-4.1-doc.jar](https://www.orekit.org/forge/attachments/download/10/orekit-4.1-doc.jar)             |
 version 4.1 downloads (release date: 2009-08-18)
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-4.0-src.zip](https://www.orekit.org/forge/attachments/download/5/orekit-4.0-src.zip)              |
 |  binary  | [orekit-4.0.jar](https://www.orekit.org/forge/attachments/download/6/orekit-4.0.jar)                      |
 |  javadoc | [orekit-4.0-doc.jar](https://www.orekit.org/forge/attachments/download/7/orekit-4.0-doc.jar)              |
-|----------|--------------------------------------------------------|
 version 4.0 downloads (release date: 2008-10-13)
 
-|----------|-----------------------------------------------------------------------------------------------------------|
 |  package |                                              link                                                         |
+|----------|-----------------------------------------------------------------------------------------------------------|
 |  source  | [orekit-3.1-src.zip](https://www.orekit.org/forge/attachments/download/2/orekit-3.1-src.zip)              |
 |  binary  | [orekit-3.1.jar](https://www.orekit.org/forge/attachments/download/3/orekit-3.1.jar)                      |
 |  javadoc | [orekit-3.1-doc.jar](https://www.orekit.org/forge/attachments/download/4/orekit-3.1-doc.jar)              |

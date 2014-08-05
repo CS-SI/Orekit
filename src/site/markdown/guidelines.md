@@ -96,75 +96,93 @@ configuration. A few of these rules are displayed below. The complete
 definition is given by the checkstyle configuration file in the project
 root directory.
 
-*header rule*
-: all source files start with the Apache license header,
+* *header rule*
+
+  all source files start with the Apache license header,
   
-*indentation rules*
-: no tabs, 4 spaces indentation, no indentation for case statements,
+* *indentation rules*
+
+  no tabs, 4 spaces indentation, no indentation for case statements,
   
-*operators wrapping rules*
-: lines are wrapped after operators (unlike Sun),
+* *operators wrapping rules*
+
+  lines are wrapped after operators (unlike Sun),
   
-*whitespace rules*
-: operators are surrounded by spaces, method parameters open parenthesis
+* *whitespace rules*
+
+  operators are surrounded by spaces, method parameters open parenthesis
   is not preceded by space, lines do not end with white space,
   
-*curly brace rules*
-: open curly brace are at end of line, with the matching closing curly brace
+* *curly brace rules*
+
+  open curly brace are at end of line, with the matching closing curly brace
   aligned with the start of the corresponding keyword (_if_, _for_,
   _while_, _case_ or _do_),
   
-*encoding rules*
-: characters encoding is _UTF8_, the git property _core.autocrlf_ should be
+* *encoding rules*
+
+  characters encoding is _UTF8_, the git property _core.autocrlf_ should be
   set to _input_ on Linux development machines and to _true_ on Windows
   development machines (to ensure proper conversion on all operating systems),
   
-*naming rules*
-: classes names begin with upper case, instance methods and fields
+* *naming rules*
+
+  classes names begin with upper case, instance methods and fields
   names begin with lower case, class fields are all upper case with
   words separated by underscores,
   
-*ordering rules*
-: class variables come first, followed by instance variables, followed
+* *ordering rules*
+
+  class variables come first, followed by instance variables, followed
   by constructors, and followed by methods, public modifiers come first,
   followed by protected modifiers followed by private modifiers,
   
-*javadoc rules*
-: all elements have complete javadoc, even private fields and methods
+* *javadoc rules*
+
+  all elements have complete javadoc, even private fields and methods
   (there are some rare exceptions, in case of code translated from
   the fortran language and models with huge parameters sets),
   
-*robustness rules*
-: switch/case construct have a default argument, even when all possible
+* *robustness rules*
+
+  switch/case construct have a default argument, even when all possible
   cases are already handled, as many classes as possible are immutable,
   
-*miscellaneous rules*
-: _star_ imports are forbidden, parameters and local variables are final
+* *miscellaneous rules*
+
+  _star_ imports are forbidden, parameters and local variables are final
   wherever possible.
 
 Design Rules
 ------------
 
-*coverage* (validation)
-: seek for a line test coverage of at least 80% (more is better)
+* *coverage* (validation)
 
-*findbugs* (robustness)
-: fix _all_ errors and warnings found by findbugs
+  seek for a line test coverage of at least 80% (more is better)
 
-*no runtime assumptions* (robustness)
-:  do not make assumptions on the runtime environment of applications using Orekit
+* *findbugs* (robustness)
+
+  fix _all_ errors and warnings found by findbugs
+
+* *no runtime assumptions* (robustness)
+
+   do not make assumptions on the runtime environment of applications using Orekit
    (they may be embedded with no console, no possible user interaction, no network,
    no writable file system, no stoppable main program, have memory constraints,
    time constraints, be run in different linguistic contexts ...)
 
-*simplicity* (maintainability)
-:  follow Occam's razor principle or its declination in computer science: KISS (Keep It Simple, Stupid)
+* *simplicity* (maintainability)
 
-*balanced design* (efficiency)
-:  seek efficiency, but do not overstep robustness and maintainability
+   follow Occam's razor principle or its declination in computer science: KISS (Keep It Simple, Stupid)
 
-*immutable objects* (robustness, maintainability)
-: use immutable objects as much as possible
+* *balanced design* (efficiency)
 
-*checkstyle* (style)
-: fix _all_ errors and warnings found by checkstyle
+   seek efficiency, but do not overstep robustness and maintainability
+
+* *immutable objects* (robustness, maintainability)
+
+  use immutable objects as much as possible
+
+* *checkstyle* (style)
+
+  fix _all_ errors and warnings found by checkstyle
