@@ -210,9 +210,13 @@ public class FieldAngularCoordinates<T extends RealFieldElement<T>>
      * @see #subtractOffset(FieldAngularCoordinates)
      */
     public FieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
+        final FieldVector3D<T> rOmega    = rotation.applyTo(offset.rotationRate);
+        final FieldVector3D<T> rOmegaDot = rotation.applyTo(offset.rotationAcceleration);
         return new FieldAngularCoordinates<T>(rotation.applyTo(offset.rotation),
-                                              rotationRate.add(rotation.applyTo(offset.rotationRate)),
-                                              rotationAcceleration.add(rotation.applyTo(offset.rotationAcceleration)));
+                                              rotationRate.add(rOmega),
+                                              new FieldVector3D<T>( 1.0, rotationAcceleration,
+                                                                    1.0, rOmegaDot,
+                                                                   -1.0, FieldVector3D.crossProduct(rotationRate, rOmega)));
     }
 
     /** Subtract an offset from the instance.

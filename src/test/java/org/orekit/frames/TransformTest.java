@@ -202,7 +202,8 @@ public class TransformTest {
             Transform rebuilt  = new Transform(combined.getDate(),
                                                new Transform(combined.getDate(), combined.getTranslation(),
                                                              combined.getVelocity(), combined.getAcceleration()),
-                                               new Transform(combined.getDate(), combined.getRotation(), combined.getRotationRate()));
+                                               new Transform(combined.getDate(), combined.getRotation(),
+                                                             combined.getRotationRate(), combined.getRotationAcceleration()));
 
             checkNoTransform(new Transform(AbsoluteDate.J2000_EPOCH, combined, rebuilt.getInverse()), random);
 

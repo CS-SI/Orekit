@@ -110,10 +110,14 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      */
     @Override
     public TimeStampedAngularCoordinates addOffset(final AngularCoordinates offset) {
+        final Vector3D rOmega    = getRotation().applyTo(offset.getRotationRate());
+        final Vector3D rOmegaDot = getRotation().applyTo(offset.getRotationAcceleration());
         return new TimeStampedAngularCoordinates(date,
                                                  getRotation().applyTo(offset.getRotation()),
-                                                 getRotationRate().add(getRotation().applyTo(offset.getRotationRate())),
-                                                 getRotationAcceleration().add(getRotation().applyTo(offset.getRotationAcceleration())));
+                                                 getRotationRate().add(rOmega),
+                                                 new Vector3D( 1.0, getRotationAcceleration(),
+                                                               1.0, rOmegaDot,
+                                                              -1.0, Vector3D.crossProduct(getRotationRate(), rOmega)));
     }
 
     /** Subtract an offset from the instance.

@@ -112,10 +112,14 @@ public class TimeStampedFieldAngularCoordinates<T extends RealFieldElement<T>>
      * @see #subtractOffset(FieldAngularCoordinates)
      */
     public TimeStampedFieldAngularCoordinates<T> addOffset(final FieldAngularCoordinates<T> offset) {
+        final FieldVector3D<T> rOmega    = getRotation().applyTo(offset.getRotationRate());
+        final FieldVector3D<T> rOmegaDot = getRotation().applyTo(offset.getRotationAcceleration());
         return new TimeStampedFieldAngularCoordinates<T>(date,
                                                          getRotation().applyTo(offset.getRotation()),
-                                                         getRotationRate().add(getRotation().applyTo(offset.getRotationRate())),
-                                                         getRotationAcceleration().add(getRotation().applyTo(offset.getRotationAcceleration())));
+                                                         getRotationRate().add(rOmega),
+                                                         new FieldVector3D<T>( 1.0, getRotationAcceleration(),
+                                                                               1.0, rOmegaDot,
+                                                                              -1.0, FieldVector3D.crossProduct(getRotationRate(), rOmega)));
     }
 
     /** Subtract an offset from the instance.
