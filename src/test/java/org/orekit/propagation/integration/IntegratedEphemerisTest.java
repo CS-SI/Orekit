@@ -247,13 +247,12 @@ public class IntegratedEphemerisTest {
             public void registerAttitudeProvider(AttitudeProvider provider) {
             }
 
-            public void computeShortPeriodicsCoefficients(AuxiliaryElements aux) {
+            public void computeShortPeriodicsCoefficients(SpacecraftState state) {
             }
 
             @Override
             public void resetShortPeriodicsCoefficients() {
             }
-
         });
 
         dsstProp.setEphemerisMode();

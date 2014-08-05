@@ -419,27 +419,17 @@ class ZonalContribution implements DSSTForceModel {
         // Initialize short periodic variations
         final double[] shortPeriodicVariation = new double[6];
         for (int i = 0; i < 6; i++) {
-            shortPeriodicVariation[i] = center * zonalSPCoefs.getDi(i, date);
+            shortPeriodicVariation[i] = zonalSPCoefs.getCij(i, 0, date) + center * zonalSPCoefs.getDi(i, date);
         }
 
         for (int j = 1; j <= maxJ; j++) {
-            // Get rho and sigma
-            final double rhoj = zonalSPCoefs.getRho(j, date);
-            final double sigmaj = zonalSPCoefs.getSigma(j, date);
             for (int i = 0; i < 6; i++) {
                 // Get Cij and Sij
                 final double cij = zonalSPCoefs.getCij(i, j, date);
                 final double sij = zonalSPCoefs.getSij(i, j, date);
-
                 // add corresponding term to the short periodic variation
                 shortPeriodicVariation[i] += cij * FastMath.cos(j * L);
                 shortPeriodicVariation[i] += sij * FastMath.sin(j * L);
-
-                // add the corresponding term to the constant coefficients
-                //-&rho;<sub>j</sub> * C<sub>i</sub><sup>j</sup>
-                shortPeriodicVariation[i] -= rhoj * cij;
-                //-&sigma;<sub>j</sub> * S<sub>i</sub><sup>j</sup>
-                shortPeriodicVariation[i] -= sigmaj * sij;
             }
         }
 
@@ -453,21 +443,9 @@ class ZonalContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
-
-        // initialise if the initialisation hasn't been done before
-        if (zonalSPCoefs == null) {
-            initialize(aux, false);
-        }
-        // initialise the internal fields
-        initializeStep(aux);
-
-        // computation of potential
-        computeUDerivatives(aux.getDate());
-
+    public void computeShortPeriodicsCoefficients(final SpacecraftState state) throws OrekitException {
         //Compute all coefficients
-        zonalSPCoefs.computeCoefficients(aux);
+        zonalSPCoefs.computeCoefficients(state.getDate());
     }
 
     /** Compute the mean element rates.
@@ -670,6 +648,7 @@ class ZonalContribution implements DSSTForceModel {
 
         /** The coefficients C<sub>i</sub><sup>j</sup>.
          * <p>
+         * The constant term C<sub>i</sub><sup>0</sup> is also stored in this variable at index j = 0 <br>
          * The index order is cij[j][i] <br/>
          * i corresponds to the equinoctial element, as follows: <br/>
          * - i=0 for a <br/>
@@ -697,10 +676,10 @@ class ZonalContribution implements DSSTForceModel {
         private final ShortPeriodicsInterpolatedCoefficient[][] sij;
 
         /** The coefficients &rho;<sub>j</sub>. */
-        private final ShortPeriodicsInterpolatedCoefficient[] rhoj;
+        private final double[] rhoj;
 
         /** The coefficients &sigma;<sub>j</sub>. */
-        private final ShortPeriodicsInterpolatedCoefficient[] sigmaj;
+        private final double[] sigmaj;
 
         /** N maximum. */
         private final int nMax;
@@ -752,13 +731,11 @@ class ZonalContribution implements DSSTForceModel {
             this.cij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1][6];
             this.sij = new ShortPeriodicsInterpolatedCoefficient[jMax + 1][6];
 
-            this.rhoj = new ShortPeriodicsInterpolatedCoefficient[jMax + 1];
-            this.sigmaj  = new ShortPeriodicsInterpolatedCoefficient[jMax + 1];
+            this.rhoj = new double[jMax + 1];
+            this.sigmaj  = new double[jMax + 1];
 
             //Initialise the arrays
-            for (int j = 1; j <= jMax; j++) {
-                this.rhoj[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
-                this.sigmaj[j] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
+            for (int j = 0; j <= jMax; j++) {
                 for (int i = 0; i < 6; i++) {
                     this.cij[j][i] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
                     this.sij[j][i] = new ShortPeriodicsInterpolatedCoefficient(interpolationPoints);
@@ -777,9 +754,9 @@ class ZonalContribution implements DSSTForceModel {
          */
         public void resetCoefficients() {
 
-            for (int j = 1; j <= jMax; j++) {
-                this.rhoj[j].clearHistory();
-                this.sigmaj[j].clearHistory();
+            for (int j = 0; j <= jMax; j++) {
+                this.rhoj[j] = 0.;
+                this.sigmaj[j] = 0.;
                 for (int i = 0; i < 6; i++) {
                     this.cij[j][i].clearHistory();
                     this.sij[j][i].clearHistory();
@@ -793,10 +770,10 @@ class ZonalContribution implements DSSTForceModel {
 
         /** Compute the short periodic coefficients.
          *
-         * @param aux the auxiliary data.
+         * @param date the current date
          * @throws OrekitException if an error occurs
          */
-        public void computeCoefficients(final AuxiliaryElements aux)
+        public void computeCoefficients(final AbsoluteDate date)
             throws OrekitException {
             // h * k.
             this.hk = h * k;
@@ -819,21 +796,17 @@ class ZonalContribution implements DSSTForceModel {
             // B * B
             this.BB = B * B;
 
-            // Current time
-            final AbsoluteDate date = aux.getDate();
-
             // Create a new instance of Fourrier coefficients
-            this.cjsj = new FourierCjSjCoefficients(aux, nMax, sMax);
-
-            // generate the Cij and Sij coefficients
-            computeCijSijCoefficients(jMax, date);
+            this.cjsj = new FourierCjSjCoefficients(date, nMax, sMax);
 
             // Compute rhoj and sigmaj
-            computeRhoSigmaCoefficients(jMax, date);
+            computeRhoSigmaCoefficients(date);
 
             // Compute Di
             computeDiCoefficients(date);
 
+            // generate the Cij and Sij coefficients
+            computeCijSijCoefficients(date);
         }
 
         /** Generate the values for the D<sub>i</sub> coefficients.
@@ -858,11 +831,12 @@ class ZonalContribution implements DSSTForceModel {
 
         /**
          * Generate the values for the C<sub>i</sub><sup>j</sup> and the S<sub>i</sub><sup>j</sup> coefficients.
-         * @param maxJ maximum value for j
          * @param date date of computation
          */
-        private void computeCijSijCoefficients(final int maxJ, final AbsoluteDate date) {
-            for (int j = 1; j <= maxJ; j++) {
+        private void computeCijSijCoefficients(final AbsoluteDate date) {
+            // The C<sub>i</sub><sup>0</sup> coefficients
+            final double [] currentCi0 = new double[] {0., 0., 0., 0., 0., 0.};
+            for (int j = 1; j <= jMax; j++) {
 
                 // Create local arrays
                 final double[] currentCij = new double[] {0., 0., 0., 0., 0., 0.};
@@ -1075,11 +1049,19 @@ class ZonalContribution implements DSSTForceModel {
                     currentSij[5] += this.oon2a2 * (-2 * a * cjsj.getdSjdA(j) + coef7 / (X + 1) + X * coef3 - 3 * cjsj.getSj(j));
                 }
 
-                // Add the coefficients to the interpolation grid
                 for (int i = 0; i < 6; i++) {
+                    //Add the current coefficients contribution to C<sub>i</sub><sup>0</sup>
+                    currentCi0[i] -= currentCij[i] * rhoj[j] + currentSij[i] * sigmaj[j];
+
+                    // Add the coefficients to the interpolation grid
                     cij[j][i].addGridPoint(date, currentCij[i]);
                     sij[j][i].addGridPoint(date, currentSij[i]);
                 }
+            }
+
+            //Add C<sub>i</sub><sup>0</sup> to the interpolation grid
+            for (int i = 0; i < 6; i++) {
+                cij[0][i].addGridPoint(date, currentCi0[i]);
             }
         }
 
@@ -1090,17 +1072,16 @@ class ZonalContribution implements DSSTForceModel {
          *  &rho;<sub>j</sub> = (1+jB)(-b)<sup>j</sup>C<sub>j</sub>(k, h) <br/>
          *  &sigma;<sub>j</sub> = (1+jB)(-b)<sup>j</sup>S<sub>j</sub>(k, h) <br/>
          * </p>
-         * @param maxJ the maximum value for j
          * @param date target date
          */
-        private void computeRhoSigmaCoefficients(final int maxJ, final AbsoluteDate date) {
+        private void computeRhoSigmaCoefficients(final AbsoluteDate date) {
             final CjSjCoefficient cjsjKH = new CjSjCoefficient(k, h);
             final double b = 1. / (1 + B);
 
             // (-b)<sup>j</sup>
             double mbtj = 1;
 
-            for (int j = 1; j <= maxJ; j++) {
+            for (int j = 1; j <= jMax; j++) {
                 double rho;
                 double sigma;
 
@@ -1111,8 +1092,8 @@ class ZonalContribution implements DSSTForceModel {
                 sigma = coef * cjsjKH.getSj(j);
 
                 // Add the coefficients to the interpolation grid
-                rhoj[j].addGridPoint(date, rho);
-                sigmaj[j].addGridPoint(date, sigma);
+                rhoj[j] = rho;
+                sigmaj[j] = sigma;
             }
         }
 
@@ -1145,26 +1126,6 @@ class ZonalContribution implements DSSTForceModel {
          */
         public double getDi(final int i, final AbsoluteDate date) {
             return di[i].value(date);
-        }
-
-        /** Get &rho;<sub>j</sub>.
-         *
-         * @param j index j
-         * @param date the date
-         * @return &rho;<sub>j</sub>
-         */
-        public double getRho(final int j, final AbsoluteDate date) {
-            return rhoj[j].value(date);
-        }
-
-        /** Get &sigma;<sub>j</sub>.
-         *
-         * @param j index j
-         * @param date the date
-         * @return &sigma;<sub>j</sub>
-         */
-        public double getSigma(final int j, final AbsoluteDate date) {
-            return sigmaj[j].value(date);
         }
     }
 
@@ -1224,14 +1185,14 @@ class ZonalContribution implements DSSTForceModel {
         private final double kXXX;
 
         /** Create a set of C<sup>j</sup> and the S<sup>j</sup> coefficients.
-         *  @param aux The auxiliary elements
+         *  @param date the current date
          *  @param nMax maximum possible value for n
          *  @param sMax maximum possible value for s
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        public FourierCjSjCoefficients(final AuxiliaryElements aux, final int nMax, final int sMax)
+        public FourierCjSjCoefficients(final AbsoluteDate date, final int nMax, final int sMax)
             throws OrekitException {
-            this.ghijCoef = new GHIJjsPolynomials(aux.getK(), aux.getH(), aux.getAlpha(), aux.getBeta());
+            this.ghijCoef = new GHIJjsPolynomials(k, h, alpha, beta);
             // Qns coefficients
             final double[][] Qns  = CoefficientsFactory.computeQns(gamma, nMax, nMax);
 
@@ -1251,15 +1212,15 @@ class ZonalContribution implements DSSTForceModel {
                 //Initialise the Hansen roots
                 hansenObjects[s].computeInitValues(X);
             }
-            generateCoefficients(aux);
+            generateCoefficients(date);
         }
 
         /** Generate all coefficients.
-         * @param aux The auxiliary elements
+         * @param date the current date
          * @throws OrekitException if an error occurs while generating the coefficients
          */
-        private void generateCoefficients(final AuxiliaryElements aux) throws OrekitException {
-            final UnnormalizedSphericalHarmonics harmonics = provider.onDate(aux.getDate());
+        private void generateCoefficients(final AbsoluteDate date) throws OrekitException {
+            final UnnormalizedSphericalHarmonics harmonics = provider.onDate(date);
             for (int j = 1; j <= jMax; j++) {
 
                 //init arrays

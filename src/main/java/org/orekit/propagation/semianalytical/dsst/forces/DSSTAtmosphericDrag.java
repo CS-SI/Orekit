@@ -25,8 +25,6 @@ import org.orekit.forces.drag.DragForce;
 import org.orekit.forces.drag.DragSensitive;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.Constants;
 
 /** Atmospheric drag contribution to the
@@ -99,13 +97,6 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
     }
 
     /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date, final double[] meanElements)
-        throws OrekitException {
-        // TODO: not implemented yet, Short Periodic Variations are set to null
-        return new double[] {0., 0., 0., 0., 0., 0.};
-    }
-
-    /** {@inheritDoc} */
     public EventDetector[] getEventsDetectors() {
         return null;
     }
@@ -129,15 +120,11 @@ public class DSSTAtmosphericDrag extends AbstractGaussianContribution {
         return new double[] {wW - fb, wW + fb};
     }
 
+    /** Get spacecraft shape.
+     *
+     * @return spacecraft shape
+     */
     public DragSensitive getSpacecraft() {
-        // TODO Auto-generated method stub
         return spacecraft;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux)
-        throws OrekitException {
-        // TODO Auto-generated method stub
     }
 }

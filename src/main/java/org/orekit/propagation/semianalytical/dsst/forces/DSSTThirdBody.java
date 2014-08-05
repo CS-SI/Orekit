@@ -58,7 +58,10 @@ public class DSSTThirdBody  implements DSSTForceModel {
     private static final double    SMALL_TRUNCATION_TOLERANCE = 1.9e-6;
 
     /** Number of points for interpolation. */
-    private static final int INTERPOLATION_POINTS = 3;
+    private static final int        INTERPOLATION_POINTS = 3;
+
+    /** Maximum power for eccentricity used in short periodic computation. */
+    private static final int        MAX_ECCPOWER_SP = 4;
 
     /** The 3rd body to consider. */
     private final CelestialBody    body;
@@ -293,18 +296,17 @@ public class DSSTThirdBody  implements DSSTForceModel {
 
         maxEccPow = FastMath.min(maxAR3Pow, maxEccPow);
 
-        // Compute maxFreqF
-        // J = N + 1
-        maxFreqF = maxAR3Pow + 1;
-        // S = N
-        maxEccPowShort = maxAR3Pow;
-
         // allocate the array aoR3Pow
         aoR3Pow = new double[maxAR3Pow + 1];
 
-
         //if the short periodic coefficients are required create the corresponding classes
         if (!meanOnly) {
+            // Compute maxFreqF
+            // J = N + 1
+            maxFreqF = maxAR3Pow + 1;
+            // S = 4
+            maxEccPowShort = MAX_ECCPOWER_SP;
+
             cjsjCoeficients = new ThirdBodyShortPeriodicCoefficients(maxFreqF, maxAR3Pow, maxEccPowShort, INTERPOLATION_POINTS);
         }
     }
@@ -458,18 +460,9 @@ public class DSSTThirdBody  implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
-
-        // initialize if it has not been done before
-        if (cjsjCoeficients == null) {
-            initialize(aux, false);
-        }
-
-        // Initialize internal fields
-        initializeStep(aux);
-
+    public void computeShortPeriodicsCoefficients(final SpacecraftState state) throws OrekitException {
         // Qns coefficients
-        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, maxEccPowShort);
+        Qns = CoefficientsFactory.computeQns(gamma, maxAR3Pow, FastMath.max(maxEccPow, maxEccPowShort));
         // a / R3 up to power maxAR3Pow
         final double aoR3 = a / R3;
         aoR3Pow[0] = 1.;
@@ -478,7 +471,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
         }
 
         //Compute the coefficients
-        cjsjCoeficients.computeCoefficients(aux.getDate());
+        cjsjCoeficients.computeCoefficients(state.getDate());
     }
 
     /** Compute potential derivatives.
@@ -816,7 +809,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
             //They are evaluated at the final point.
 
             //C<sup>0</sup><sub>,&lambda;</sub>
-            cjlambda[0] = (k * cjlambda[1] + h * sjlambda[1]) / 2;
+            cjlambda[0] = k * cjlambda[1] / 2. + h * sjlambda[1] / 2.;
         }
 
         /** Get the Fourier coefficient C<sup>j</sup>.
@@ -931,12 +924,19 @@ public class DSSTThirdBody  implements DSSTForceModel {
             return sj[6][j];
         }
 
+        /** Get the coefficient C<sup>0</sup><sub>,&lambda;</sub>.
+         * @return C<sup>0</sup><sub>,&lambda;</sub>
+         */
+        public double getC0Lambda() {
+            return cjlambda[0];
+        }
+
         /** Get the coefficient C<sup>j</sup><sub>,&lambda;</sub>.
          * @param j j index
          * @return C<sup>j</sup><sub>,&lambda;</sub>
          */
         public double getCjLambda(final int j) {
-            if (j >= jMax) {
+            if (j < 1 || j >= jMax) {
                 return 0.;
             }
             return cjlambda[j];
@@ -947,7 +947,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
          * @return S<sup>j</sup><sub>,&lambda;</sub>
          */
         public double getSjLambda(final int j) {
-            if (j >= jMax) {
+            if (j < 1 || j >= jMax) {
                 return 0.;
             }
             return sjlambda[j];
@@ -1597,13 +1597,13 @@ public class DSSTThirdBody  implements DSSTForceModel {
                 sjCoefs[6][j] = cjsjFourier.getdSjdgamma(j);
                 sjCoefs[7][j] = cjsjFourier.getSjLambda(j);
 
-                //In the special case j == 1 there may be some additional terms to be added
+                //In the special case j == 1 there are some additional terms to be added
                 if (j == 1) {
                     //Additional terms for C<sup>j</sup> coefficients
                     cjCoefs[0][j] += -h * U;
                     cjCoefs[1][j] += -h * dU[0];
                     cjCoefs[2][j] += -h * dU[1];
-                    cjCoefs[3][j] += -(h * dU[2] + U + cjsjFourier.getCjLambda(0));
+                    cjCoefs[3][j] += -(h * dU[2] + U + cjsjFourier.getC0Lambda());
                     cjCoefs[4][j] += -h * dU[3];
                     cjCoefs[5][j] += -h * dU[4];
                     cjCoefs[6][j] += -h * dU[5];
@@ -1611,7 +1611,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
                     //Additional terms for S<sup>j</sup> coefficients
                     sjCoefs[0][j] += k * U;
                     sjCoefs[1][j] += k * dU[0];
-                    sjCoefs[2][j] += k * dU[1] + U + cjsjFourier.getCjLambda(0);
+                    sjCoefs[2][j] += k * dU[1] + U + cjsjFourier.getC0Lambda();
                     sjCoefs[3][j] += k * dU[2];
                     sjCoefs[4][j] += k * dU[3];
                     sjCoefs[5][j] += k * dU[4];
@@ -1938,7 +1938,7 @@ public class DSSTThirdBody  implements DSSTForceModel {
                 if (j == 1) {
                     //Compute the C<sup>0</sup> coefficients using Danielson 2.5.2-15a.
                     for (int i = 0; i < 6; i++) {
-                        cij[0][i].addGridPoint(date, (currentCij[i] * k + currentSij[i] * h) / 2.);
+                        cij[0][i].addGridPoint(date, currentCij[i] * k / 2. + currentSij[i] * h / 2.);
                     }
                 }
             }

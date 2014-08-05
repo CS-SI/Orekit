@@ -26,8 +26,6 @@ import org.orekit.forces.radiation.RadiationSensitive;
 import org.orekit.forces.radiation.SolarRadiationPressure;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.propagation.events.EventDetector;
-import org.orekit.propagation.semianalytical.dsst.utilities.AuxiliaryElements;
-import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.PVCoordinatesProvider;
 
 /** Solar radiation pressure contribution to the
@@ -165,19 +163,11 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
         this.spacecraft = spacecraft;
     }
 
-    /**
-     * @return the spacecraft
+    /** Get spacecraft shape.
+     * @return the spacecraft shape.
      */
     public RadiationSensitive getSpacecraft() {
         return spacecraft;
-    }
-
-    /** {@inheritDoc} */
-    public double[] getShortPeriodicVariations(final AbsoluteDate date,
-            final double[] meanElements)
-        throws OrekitException {
-        // TODO: not implemented yet, Short Periodic Variations are set to null
-        return new double[] {0., 0., 0., 0., 0., 0.};
     }
 
     /** {@inheritDoc} */
@@ -477,12 +467,4 @@ public class DSSTSolarRadiationPressure extends AbstractGaussianContribution {
             return 2;
         }
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux)
-        throws OrekitException {
-        // TODO Auto-generated method stub
-    }
-
 }

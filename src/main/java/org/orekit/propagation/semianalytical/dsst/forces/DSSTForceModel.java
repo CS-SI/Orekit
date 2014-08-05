@@ -112,10 +112,10 @@ public interface DSSTForceModel {
 
     /** Compute the coefficients used for short periodic variations.
      *
-     * @param aux auxiliary elements related to the current orbit
+     * @param state current state information: date, kinematics, attitude
      * @throws OrekitException if some specific error occurs
      */
-    void computeShortPeriodicsCoefficients(AuxiliaryElements aux) throws OrekitException;
+    void computeShortPeriodicsCoefficients(SpacecraftState state) throws OrekitException;
 
     /** Reset the coefficients used for short periodic variations.
      * <p>

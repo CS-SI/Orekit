@@ -84,6 +84,9 @@ class TesseralContribution implements DSSTForceModel {
     /** The maximum order used for m-daily tesseral short periodics. */
     private static final int MAX_ORDER_MDAILY_TESSERAL_SP = 12;
 
+    /** The maximum value for eccentricity power. */
+    private static final int MAX_ECCPOWER_SP = 4;
+
     /** Provider for spherical harmonics. */
     private final UnnormalizedSphericalHarmonicsProvider provider;
 
@@ -122,6 +125,14 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Maximum power of the eccentricity to use in summation over s. */
     private int maxEccPow;
+
+    /** Maximum power of the eccentricity to use in summation over s for
+     * short periodic tesseral harmonics (without m-daily). */
+    private int maxEccPowTesseralSP;
+
+    /** Maximum power of the eccentricity to use in summation over s for
+     * m-daily tesseral harmonics. */
+    private int maxEccPowMdailyTesseralSP;
 
     /** Maximum power of the eccentricity to use in Hansen coefficient Kernel expansion. */
     private int maxHansen;
@@ -216,7 +227,7 @@ class TesseralContribution implements DSSTForceModel {
 
     /** Maximum value for j.
      * <p>
-     * jmax = maxDegree + maxEccPow
+     * jmax = maxDegreeTesseralSP + maxEccPowTesseralSP, no more than 12
      * </p>
      * */
     private int jMax;
@@ -265,6 +276,11 @@ class TesseralContribution implements DSSTForceModel {
         this.maxDegreeMdailyTesseralSP = FastMath.min(maxDegree, MAX_DEGREE_MDAILY_TESSERAL_SP);
         this.maxOrderTesseralSP = FastMath.min(maxOrder, MAX_ORDER_TESSERAL_SP);
         this.maxOrderMdailyTesseralSP = FastMath.min(maxOrder, MAX_ORDER_MDAILY_TESSERAL_SP);
+
+        // set the maximum value for eccentricity power
+        this.maxEccPowTesseralSP = MAX_ECCPOWER_SP;
+        this.maxEccPowMdailyTesseralSP = FastMath.min(maxDegreeMdailyTesseralSP - 2, MAX_ECCPOWER_SP);
+        this.jMax = FastMath.min(MAXJ, maxDegreeTesseralSP + maxEccPowTesseralSP);
 
         // m-daylies only
         this.mDailiesOnly = mDailiesOnly;
@@ -318,6 +334,12 @@ class TesseralContribution implements DSSTForceModel {
         // Set the maximum power of the eccentricity to use in Hansen coefficient Kernel expansion.
         maxHansen = maxEccPow / 2;
         jMax = FastMath.min(MAXJ, maxDegree + maxEccPow);
+
+        // Ratio of satellite to central body periods to define resonant terms
+        ratio = orbitPeriod / bodyPeriod;
+
+        // Compute the resonant tesseral harmonic terms if not set by the user
+        getResonantAndNonResonantTerms(meanOnly);
 
         // Ratio of satellite to central body periods to define resonant terms
         ratio = orbitPeriod / bodyPeriod;
@@ -557,17 +579,7 @@ class TesseralContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    @Override
-    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
-
-        //Initialize if it has not been done before
-        if (tesseralSPCoefs == null) {
-            initialize(aux, false);
-        }
-
-        // Initialize internal fields
-        initializeStep(aux);
-
+    public void computeShortPeriodicsCoefficients(final SpacecraftState state) throws OrekitException {
         // Initialise the Hansen coefficients
         for (int s = -maxDegree; s <= maxDegree; s++) {
             // coefficients with j == 0 are always needed
@@ -581,7 +593,7 @@ class TesseralContribution implements DSSTForceModel {
         }
 
         // Compute coefficients
-        tesseralSPCoefs.computeCoefficients(aux.getDate());
+        tesseralSPCoefs.computeCoefficients(state.getDate());
     }
 
      /**
@@ -1050,8 +1062,8 @@ class TesseralContribution implements DSSTForceModel {
             double dRdGaSin = 0.;
 
             // s-SUM from -sMin to sMax
-            final int sMin = maxN;
-            final int sMax = maxN;
+            final int sMin = j == 0 ? maxEccPowMdailyTesseralSP : maxEccPowTesseralSP;
+            final int sMax = j == 0 ? maxEccPowMdailyTesseralSP : maxEccPowTesseralSP;
             for (int s = 0; s <= sMax; s++) {
 
                 // n-SUM for s positive

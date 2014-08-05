@@ -278,9 +278,12 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
         // Creation of a DSSTPropagator instance
         final AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(43200.);
         final DSSTPropagator dsst = new DSSTPropagator(integrator, false);
+        //Create the auxiliary object
+        final AuxiliaryElements aux = new AuxiliaryElements(mean.getOrbit(), I);
 
         // Set the force models
         for (final DSSTForceModel force : forces) {
+            force.initialize(aux, false);
             dsst.addForceModel(force);
         }
 
@@ -311,12 +314,17 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
 
         // Creation of a DSSTPropagator instance
         final AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(43200.);
-        final DSSTPropagator dsst = new DSSTPropagator(integrator, true);
+        final DSSTPropagator dsst = new DSSTPropagator(integrator, false);
+        //Create the auxiliary object
+        final AuxiliaryElements aux = new AuxiliaryElements(osculating.getOrbit(), I);
 
         // Set the force models
         for (final DSSTForceModel force : forces) {
+            force.initialize(aux, false);
             dsst.addForceModel(force);
         }
+
+        dsst.setInitialState(osculating, true);
 
         final Orbit meanOrbit = dsst.mapper.computeMeanOrbit(osculating);
 
@@ -619,7 +627,8 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             throws OrekitException {
             final AuxiliaryElements aux = new AuxiliaryElements(state.getOrbit(), I);
             for (final DSSTForceModel forceModel : forceModels) {
-                forceModel.computeShortPeriodicsCoefficients(aux);
+                forceModel.initializeStep(aux);
+                forceModel.computeShortPeriodicsCoefficients(state);
             }
         }
 
@@ -699,13 +708,13 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
             computeShortPeriodicsCoefficients(meanState);
 
 
-            final double[] y = new double[6];
-            OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngle.MEAN, y);
-
+            final double[] mean = new double[6];
+            OrbitType.EQUINOCTIAL.mapOrbitToArray(meanState.getOrbit(), PositionAngle.MEAN, mean);
+            final double[] y = mean.clone();
             for (final DSSTForceModel forceModel : this.forceModels) {
 
                 final double[] shortPeriodic = forceModel
-                        .getShortPeriodicVariations(meanState.getDate(), y);
+                        .getShortPeriodicVariations(meanState.getDate(), mean);
 
                 for (int i = 0; i < shortPeriodic.length; i++) {
                     y[i] += shortPeriodic[i];

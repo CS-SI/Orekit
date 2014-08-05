@@ -150,11 +150,11 @@ public class DSSTCentralBody implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
-    public void computeShortPeriodicsCoefficients(final AuxiliaryElements aux) throws OrekitException {
+    public void computeShortPeriodicsCoefficients(final SpacecraftState state) throws OrekitException {
         //relay the call to the Zonal and Tesseral contributions
-        zonal.computeShortPeriodicsCoefficients(aux);
+        zonal.computeShortPeriodicsCoefficients(state);
         if (tesseral != null) {
-            tesseral.computeShortPeriodicsCoefficients(aux);
+            tesseral.computeShortPeriodicsCoefficients(state);
         }
     }
 
