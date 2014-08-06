@@ -375,8 +375,8 @@ public class Transform
      * <p>
      * Calling this method is equivalent to call {@link #interpolate(AbsoluteDate,
      * CartesianDerivativesFilter, AngularDerivativesFilter, Collection)} with {@code cFilter}
-     * set to {@link CartesianDerivativesFilter#USE_PV} and {@code aFilter} set to
-     * {@link AngularDerivativesFilter#USE_RR}
+     * set to {@link CartesianDerivativesFilter#USE_PVA} and {@code aFilter} set to
+     * {@link AngularDerivativesFilter#USE_RRA}
      * set to true.
      * </p>
      * @exception OrekitException if the number of point is too small for interpolating
@@ -504,7 +504,7 @@ public class Transform
     public Transform freeze() {
         return new Transform(date,
                              new PVCoordinates(cartesian.getPosition(), Vector3D.ZERO, Vector3D.ZERO),
-                             new AngularCoordinates(angular.getRotation(), Vector3D.ZERO));
+                             new AngularCoordinates(angular.getRotation(), Vector3D.ZERO, Vector3D.ZERO));
     }
 
     /** Transform a position vector (including translation effects).
@@ -740,6 +740,8 @@ public class Transform
         System.arraycopy(mData[0], 0, jacobian[3], 3, 3);
         System.arraycopy(mData[1], 0, jacobian[4], 3, 3);
         System.arraycopy(mData[2], 0, jacobian[5], 3, 3);
+
+        // TODO: add acceleration
 
     }
 
