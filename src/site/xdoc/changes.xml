@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Allow attitude overriding during impulsive maneuvers.
+        Fixes issue #176.  
+      </action>
       <action dev="evan" type="add">
           Added general relativity force model.
       </action>

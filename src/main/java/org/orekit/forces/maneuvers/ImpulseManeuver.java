@@ -19,6 +19,7 @@ package org.orekit.forces.maneuvers;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.orbits.CartesianOrbit;
 import org.orekit.propagation.SpacecraftState;
@@ -64,6 +65,9 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
     /** Serializable UID. */
     private static final long serialVersionUID = 20131118L;
 
+    /** The attitude to override during the maneuver, if set. **/
+    private final AttitudeProvider attitudeOverride;
+
     /** Triggering event. */
     private final T trigger;
 
@@ -84,7 +88,20 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
     public ImpulseManeuver(final T trigger, final Vector3D deltaVSat, final double isp) {
         this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
              trigger.getMaxIterationCount(), new Handler<T>(),
-             trigger, deltaVSat, isp);
+             trigger, null, deltaVSat, isp);
+    }
+
+
+    /** Build a new instance.
+     * @param trigger triggering event
+     * @param attitudeOverride the attitude provider to use for the maneuver
+     * @param deltaVSat velocity increment in satellite frame
+     * @param isp engine specific impulse (s)
+     */
+    public ImpulseManeuver(final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat, final double isp) {
+        this(trigger.getMaxCheckInterval(), trigger.getThreshold(),
+             trigger.getMaxIterationCount(), new Handler<T>(),
+             trigger, attitudeOverride, deltaVSat, isp);
     }
 
     /** Private constructor with full parameters.
@@ -98,15 +115,17 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
      * @param maxIter maximum number of iterations in the event time search
      * @param handler event handler to call at event occurrences
      * @param trigger triggering event
+     * @param attitudeOverride the attitude provider to use for the maneuver
      * @param deltaVSat velocity increment in satellite frame
      * @param isp engine specific impulse (s)
      * @since 6.1
      */
     private ImpulseManeuver(final double maxCheck, final double threshold,
                             final int maxIter, final EventHandler<ImpulseManeuver<T>> handler,
-                            final T trigger, final Vector3D deltaVSat,
+                            final T trigger, final AttitudeProvider attitudeOverride, final Vector3D deltaVSat,
                             final double isp) {
         super(maxCheck, threshold, maxIter, handler);
+        this.attitudeOverride = attitudeOverride;
         this.trigger   = trigger;
         this.deltaVSat = deltaVSat;
         this.isp       = isp;
@@ -118,7 +137,7 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
     protected ImpulseManeuver<T> create(final double newMaxCheck, final double newThreshold,
                                         final int newMaxIter, final EventHandler<ImpulseManeuver<T>> newHandler) {
         return new ImpulseManeuver<T>(newMaxCheck, newThreshold, newMaxIter, newHandler,
-                                      trigger, deltaVSat, isp);
+                                      trigger, attitudeOverride, deltaVSat, isp);
     }
 
     /** {@inheritDoc} */
@@ -128,6 +147,14 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
     /** {@inheritDoc} */
     public double g(final SpacecraftState s) throws OrekitException {
         return trigger.g(s);
+    }
+
+    /**
+     * Get the Attitude Provider to use during maneuver.
+     * @return the attitude provider
+     */
+    public AttitudeProvider getAttitudeOverride() {
+        return attitudeOverride;
     }
 
     /** Get the triggering event.
@@ -183,7 +210,14 @@ public class ImpulseManeuver<T extends EventDetector> extends AbstractReconfigur
             throws OrekitException {
 
             final AbsoluteDate date = oldState.getDate();
-            final Attitude attitude = oldState.getAttitude();
+            final AttitudeProvider override = im.getAttitudeOverride();
+            final Attitude attitude;
+
+            if (override == null) {
+                attitude = oldState.getAttitude();
+            } else {
+                attitude = override.getAttitude(oldState.getOrbit(), date, oldState.getFrame());
+            }
 
             // convert velocity increment in inertial frame
             final Vector3D deltaV = attitude.getRotation().applyInverseTo(im.deltaVSat);
