@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix" due-to="Patrice Mathieu">
+        Fixed closest TLE search. When filtering first from satellite ID and
+        then extracting closest date, the returned satellite was sometime wrong.
+      </action>
       <action dev="luc" type="add" due-to="Hank Grabowski">
         Allow attitude overriding during impulsive maneuvers.
         Fixes issue #176.  
