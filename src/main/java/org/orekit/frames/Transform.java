@@ -707,10 +707,40 @@ public class Transform
      * dPV<sub>1</sub> = J &times; dPV<sub>0</sub>
      * </pre>
      * </p>
-     * @param jacobian placeholder 6x6 (or larger) matrix to be filled with the Jacobian, if matrix
-     * is larger than 6x6, only the 6x6 upper left corner will be modified
+     * @param jacobian placeholder 6x6 (or larger) matrix to be filled with
+     * the Jacobian, only the upper left 6x6 corner will be modified
+     * @deprecated as of 7.0, replaced with {@link #getJacobian(CartesianDerivativesFilter, double[][])}
      */
+    @Deprecated
     public void getJacobian(final double[][] jacobian) {
+        getJacobian(CartesianDerivativesFilter.USE_PV, jacobian);
+    }
+
+    /** Compute the Jacobian of the {@link #transformPVCoordinates(PVCoordinates)}
+     * method of the transform.
+     * <p>
+     * Element {@code jacobian[i][j]} is the derivative of Cartesian coordinate i
+     * of the transformed {@link PVCoordinates} with respect to Cartesian coordinate j
+     * of the input {@link PVCoordinates} in method {@link #transformPVCoordinates(PVCoordinates)}.
+     * </p>
+     * <p>
+     * This definition implies that if we define position-velocity coordinates
+     * <pre>
+     * PV<sub>1</sub> = transform.transformPVCoordinates(PV<sub>0</sub>), then
+     * </pre>
+     * their differentials dPV<sub>1</sub> and dPV<sub>0</sub> will obey the following relation
+     * where J is the matrix computed by this method:<br/>
+     * <pre>
+     * dPV<sub>1</sub> = J &times; dPV<sub>0</sub>
+     * </pre>
+     * </p>
+     * @param selector selector specifying the size of the upper left corner that must be filled
+     * (either 3x3 for positions only, 6x6 for positions and velocities, 9x9 for positions,
+     * velocities and accelerations)
+     * @param jacobian placeholder matrix whose upper-left corner is to be filled with
+     * the Jacobian, the rest of the matrix remaining untouched
+     */
+    public void getJacobian(final CartesianDerivativesFilter selector, final double[][] jacobian) {
 
         // elementary matrix for rotation
         final double[][] mData = angular.getRotation().getMatrix();
@@ -720,28 +750,67 @@ public class Transform
         System.arraycopy(mData[1], 0, jacobian[1], 0, 3);
         System.arraycopy(mData[2], 0, jacobian[2], 0, 3);
 
-        // dP1/dV0
-        Arrays.fill(jacobian[0], 3, 6, 0.0);
-        Arrays.fill(jacobian[1], 3, 6, 0.0);
-        Arrays.fill(jacobian[2], 3, 6, 0.0);
+        if (selector.getMaxOrder() >= 1) {
 
-        // dV1/dP0
-        final Vector3D o = angular.getRotationRate();
-        final double mOx = -o.getX();
-        final double mOy = -o.getY();
-        final double mOz = -o.getZ();
-        for (int i = 0; i < 3; ++i) {
-            jacobian[3][i] = mOy * mData[2][i] - mOz * mData[1][i];
-            jacobian[4][i] = mOz * mData[0][i] - mOx * mData[2][i];
-            jacobian[5][i] = mOx * mData[1][i] - mOy * mData[0][i];
+            // dP1/dV0
+            Arrays.fill(jacobian[0], 3, 6, 0.0);
+            Arrays.fill(jacobian[1], 3, 6, 0.0);
+            Arrays.fill(jacobian[2], 3, 6, 0.0);
+
+            // dV1/dP0
+            final Vector3D o = angular.getRotationRate();
+            final double ox = o.getX();
+            final double oy = o.getY();
+            final double oz = o.getZ();
+            for (int i = 0; i < 3; ++i) {
+                jacobian[3][i] = -(oy * mData[2][i] - oz * mData[1][i]);
+                jacobian[4][i] = -(oz * mData[0][i] - ox * mData[2][i]);
+                jacobian[5][i] = -(ox * mData[1][i] - oy * mData[0][i]);
+            }
+
+            // dV1/dV0
+            System.arraycopy(mData[0], 0, jacobian[3], 3, 3);
+            System.arraycopy(mData[1], 0, jacobian[4], 3, 3);
+            System.arraycopy(mData[2], 0, jacobian[5], 3, 3);
+
+            if (selector.getMaxOrder() >= 2) {
+
+                // dP1/dA0
+                Arrays.fill(jacobian[0], 6, 9, 0.0);
+                Arrays.fill(jacobian[1], 6, 9, 0.0);
+                Arrays.fill(jacobian[2], 6, 9, 0.0);
+
+                // dV1/dA0
+                Arrays.fill(jacobian[3], 6, 9, 0.0);
+                Arrays.fill(jacobian[4], 6, 9, 0.0);
+                Arrays.fill(jacobian[5], 6, 9, 0.0);
+
+                // dA1/dP0
+                final Vector3D oDot = angular.getRotationAcceleration();
+                final double oDotx  = oDot.getX();
+                final double oDoty  = oDot.getY();
+                final double oDotz  = oDot.getZ();
+                for (int i = 0; i < 3; ++i) {
+                    jacobian[6][i] = -(oDoty * mData[2][i] - oDotz * mData[1][i]) - (oy * jacobian[5][i] - oz * jacobian[4][i]);
+                    jacobian[7][i] = -(oDotz * mData[0][i] - oDotx * mData[2][i]) - (oz * jacobian[3][i] - ox * jacobian[5][i]);
+                    jacobian[8][i] = -(oDotx * mData[1][i] - oDoty * mData[0][i]) - (ox * jacobian[4][i] - oy * jacobian[3][i]);
+                }
+
+                // dA1/dV0
+                for (int i = 0; i < 3; ++i) {
+                    jacobian[6][i + 3] = -2 * (oy * mData[2][i] - oz * mData[1][i]);
+                    jacobian[7][i + 3] = -2 * (oz * mData[0][i] - ox * mData[2][i]);
+                    jacobian[8][i + 3] = -2 * (ox * mData[1][i] - oy * mData[0][i]);
+                }
+
+                // dA1/dA0
+                System.arraycopy(mData[0], 0, jacobian[6], 6, 3);
+                System.arraycopy(mData[1], 0, jacobian[7], 6, 3);
+                System.arraycopy(mData[2], 0, jacobian[8], 6, 3);
+
+            }
+
         }
-
-        // dV1/dV0
-        System.arraycopy(mData[0], 0, jacobian[3], 3, 3);
-        System.arraycopy(mData[1], 0, jacobian[4], 3, 3);
-        System.arraycopy(mData[2], 0, jacobian[5], 3, 3);
-
-        // TODO: add acceleration
 
     }
 
@@ -886,9 +955,10 @@ public class Transform
 
         /** {@inheritDoc} */
         @Override
-        public void getJacobian(final double[][] jacobian) {
-            for (int i = 0; i < 6; ++i) {
-                Arrays.fill(jacobian[i], 0, 6, 0.0);
+        public void getJacobian(final CartesianDerivativesFilter selector, final double[][] jacobian) {
+            final int n = 3 * (selector.getMaxOrder() + 1);
+            for (int i = 0; i < n; ++i) {
+                Arrays.fill(jacobian[i], 0, n, 0.0);
                 jacobian[i][i] = 1.0;
             }
         }
