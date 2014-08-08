@@ -93,7 +93,7 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RR);
-        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.0e-12);
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 2.0e-11);
    }
 
     @Test
@@ -108,7 +108,7 @@ public class TabulatedProviderTest {
         final AbsoluteDate end               = sample.get(sample.size() - 1).getDate().shiftedBy(-margin);
         TabulatedProvider  provider          = new TabulatedProvider(circOrbit.getFrame(), sample, n,
                                                                      AngularDerivativesFilter.USE_RRA);
-        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 1.0e-12);
+        Assert.assertEquals(0.0, checkError(start, end, checkingRate, referenceProvider, provider), 3.0e-10);
     }
 
     @Test

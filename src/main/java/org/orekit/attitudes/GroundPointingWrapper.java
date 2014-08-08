@@ -16,14 +16,18 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.time.AbsoluteDate;
-import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 
 
 /** This class leverages common parts for compensation modes around ground pointing attitudes.
@@ -97,29 +101,36 @@ public abstract class GroundPointingWrapper extends GroundPointing implements At
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // Get attitude from base attitude provider
+        // attitude from base attitude provider
         final Attitude base = getBaseState(pvProv, date, frame);
 
-        // Get compensation
-        final Rotation compensation = getCompensation(pvProv, date, frame, base);
-
-        // Compute compensation rotation rate
+        // build a small sample for estimating derivatives
         final double h = 0.1;
-        final Rotation compensationM1H  = getCompensation(pvProv, date.shiftedBy(-h), frame, base.shiftedBy(-h));
-        final Rotation compensationP1H  = getCompensation(pvProv, date.shiftedBy( h), frame, base.shiftedBy( h));
-        final Vector3D compensationRate = AngularCoordinates.estimateRate(compensationM1H, compensationP1H, 2 * h);
+        final List<TimeStampedAngularCoordinates> sample = new ArrayList<TimeStampedAngularCoordinates>();
+        sample.add(order0Compensated(pvProv, base.shiftedBy(-h)));
+        sample.add(order0Compensated(pvProv, base));
+        sample.add(order0Compensated(pvProv, base.shiftedBy(+h)));
 
-        // Compute compensation rotation acceleration
-        final Vector3D sM                       = AngularCoordinates.estimateRate(compensationM1H, compensation, h);
-        final Vector3D sP                       = AngularCoordinates.estimateRate(compensation, compensationP1H, h);
-        final Vector3D compensationAcceleration = new Vector3D(+1.0 / h, sP, -1.0 / h, sM);
+        // use interpolation to compute derivatives
+        final TimeStampedAngularCoordinates interpolated =
+                TimeStampedAngularCoordinates.interpolate(date, AngularDerivativesFilter.USE_R, sample);
 
-        // Combination of base attitude, compensation, compensation rate and compensation acceleration
-        return new Attitude(date, frame,
-                            compensation.applyTo(base.getRotation()),
-                            compensationRate.add(compensation.applyTo(base.getSpin())),
-                            compensationAcceleration.add(compensation.applyTo(base.getRotationAcceleration())));
+        return new Attitude(frame, interpolated);
 
+    }
+
+    /** Compute the compensated attitude without derivatives.
+     * @param pvProv provider for PV coordinates
+     * @param base base attitude to compensate
+     * @return compensated attitude
+     * @throws OrekitException if some specific error occurs
+     */
+    private TimeStampedAngularCoordinates order0Compensated(final PVCoordinatesProvider pvProv, final Attitude base)
+        throws OrekitException {
+        final Rotation compensation = getCompensation(pvProv, base.getDate(), base.getReferenceFrame(), base);
+        return new TimeStampedAngularCoordinates(base.getDate(),
+                                                 compensation.applyTo(base.getRotation()),
+                                                 Vector3D.ZERO, Vector3D.ZERO);
     }
 
     /** Compute the compensation rotation at given date.
