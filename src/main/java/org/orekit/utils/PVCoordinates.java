@@ -21,8 +21,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.Pair;
+import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
@@ -88,7 +92,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         this.acceleration = acceleration;
     }
 
-    /** Multiplicative constructor
+    /** Multiplicative constructor.
      * <p>Build a PVCoordinates from another one and a scale factor.</p>
      * <p>The PVCoordinates built will be a * pv</p>
      * @param a scale factor
@@ -100,7 +104,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         acceleration = new Vector3D(a, pv.acceleration);
     }
 
-    /** Subtractive constructor
+    /** Subtractive constructor.
      * <p>Build a relative PVCoordinates from a start and an end position.</p>
      * <p>The PVCoordinates built will be end - start.</p>
      * @param start Starting PVCoordinates
@@ -112,7 +116,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         this.acceleration = end.acceleration.subtract(start.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param a1 first scale factor
@@ -127,7 +131,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         acceleration = new Vector3D(a1, pv1.acceleration, a2, pv2.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param a1 first scale factor
@@ -145,7 +149,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         acceleration = new Vector3D(a1, pv1.acceleration, a2, pv2.acceleration, a3, pv3.acceleration);
     }
 
-    /** Linear constructor
+    /** Linear constructor.
      * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
      * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param a1 first scale factor
@@ -167,6 +171,71 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
                                     a3, pv3.velocity,     a4, pv4.velocity);
         acceleration = new Vector3D(a1, pv1.acceleration, a2, pv2.acceleration,
                                     a3, pv3.acceleration, a4, pv4.acceleration);
+    }
+
+    /** Builds a PVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The vector components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param p vector with time-derivatives embedded within the coordinates
+     */
+    public PVCoordinates(final FieldVector3D<DerivativeStructure> p) {
+        position = new Vector3D(p.getX().getReal(), p.getY().getReal(), p.getZ().getReal());
+        if (p.getX().getOrder() >= 1) {
+            velocity = new Vector3D(p.getX().getPartialDerivative(1),
+                                    p.getY().getPartialDerivative(1),
+                                    p.getZ().getPartialDerivative(1));
+            if (p.getX().getOrder() >= 2) {
+                acceleration = new Vector3D(p.getX().getPartialDerivative(2),
+                                            p.getY().getPartialDerivative(2),
+                                            p.getZ().getPartialDerivative(2));
+            } else {
+                acceleration = Vector3D.ZERO;
+            }
+        } else {
+            velocity     = Vector3D.ZERO;
+            acceleration = Vector3D.ZERO;
+        }
+    }
+
+    /** Transform the instance to a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
+     * to the user-specified order.
+     * </p>
+     * @param order derivation order for the vector components
+     * @return vector with time-derivatives embedded within the coordinates
+     * @exception OrekitException if the user specified order is too large
+     */
+    public FieldVector3D<DerivativeStructure> toDerivativeStructureVector(final int order)
+        throws OrekitException {
+
+        final DerivativeStructure x;
+        final DerivativeStructure y;
+        final DerivativeStructure z;
+        switch(order) {
+        case 0 :
+            x = new DerivativeStructure(1, 0, position.getX());
+            y = new DerivativeStructure(1, 0, position.getY());
+            z = new DerivativeStructure(1, 0, position.getZ());
+            break;
+        case 1 :
+            x = new DerivativeStructure(1, 1, position.getX(), velocity.getX());
+            y = new DerivativeStructure(1, 1, position.getY(), velocity.getY());
+            z = new DerivativeStructure(1, 1, position.getZ(), velocity.getZ());
+            break;
+        case 2 :
+            x = new DerivativeStructure(1, 2, position.getX(), velocity.getX(), acceleration.getX());
+            y = new DerivativeStructure(1, 2, position.getY(), velocity.getY(), acceleration.getY());
+            z = new DerivativeStructure(1, 2, position.getZ(), velocity.getZ(), acceleration.getZ());
+            break;
+        default :
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        }
+
+        return new FieldVector3D<DerivativeStructure>(x, y, z);
+
     }
 
     /** Estimate velocity between two positions.

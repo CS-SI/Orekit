@@ -19,7 +19,6 @@ package org.orekit.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -28,6 +27,8 @@ import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.ode.sampling.FixedStepHandler;
 import org.apache.commons.math3.ode.sampling.StepNormalizer;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well1024a;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.junit.Assert;
@@ -51,6 +52,20 @@ public class TimeStampedAngularCoordinatesTest {
         Assert.assertEquals(Vector3D.ZERO, shifted.getRotationAcceleration());
         Assert.assertEquals(Vector3D.ZERO, shifted.getRotationRate());
         Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), shifted.getRotation()), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures2() throws OrekitException {
+        RandomGenerator random = new Well1024a(0x75fbebbdbf127b3dl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
+        AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(2));
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
     }
 
     @Test
@@ -115,7 +130,7 @@ public class TimeStampedAngularCoordinatesTest {
 
     @Test
     public void testReverseOffset() {
-        Random random = new Random(0x4ecca9d57a8f1611l);
+        RandomGenerator random = new Well1024a(0x4ecca9d57a8f1611l);
         for (int i = 0; i < 100; ++i) {
             Rotation r = randomRotation(random);
             Vector3D o = randomVector(random, 1.0e-3);
@@ -145,7 +160,7 @@ public class TimeStampedAngularCoordinatesTest {
 
     @Test
     public void testRoundTripNoOp() {
-        Random random = new Random(0x1e610cfe89306669l);
+        RandomGenerator random = new Well1024a(0x1e610cfe89306669l);
         for (int i = 0; i < 100; ++i) {
 
             Rotation r1 = randomRotation(random);
@@ -408,7 +423,7 @@ public class TimeStampedAngularCoordinatesTest {
 
     }
 
-    private Vector3D randomVector(Random random, double norm) {
+    private Vector3D randomVector(RandomGenerator random, double norm) {
         double n = random.nextDouble() * norm;
         double x = random.nextDouble();
         double y = random.nextDouble();
@@ -416,7 +431,7 @@ public class TimeStampedAngularCoordinatesTest {
         return new Vector3D(n, new Vector3D(x, y, z).normalize());
     }
 
-    private Rotation randomRotation(Random random) {
+    private Rotation randomRotation(RandomGenerator random) {
         double q0 = random.nextDouble() * 2 - 1;
         double q1 = random.nextDouble() * 2 - 1;
         double q2 = random.nextDouble() * 2 - 1;

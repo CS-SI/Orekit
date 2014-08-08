@@ -19,7 +19,6 @@ package org.orekit.utils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -28,6 +27,8 @@ import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import org.apache.commons.math3.ode.sampling.FixedStepHandler;
 import org.apache.commons.math3.ode.sampling.StepNormalizer;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well1024a;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.util.Pair;
@@ -35,6 +36,7 @@ import org.apache.commons.math3.util.Precision;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 
 public class AngularCoordinatesTest {
@@ -45,6 +47,72 @@ public class AngularCoordinatesTest {
         Assert.assertEquals(0.0, ac.getRotationAcceleration().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, ac.getRotationRate().getNorm(), 1.0e-15);
         Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), Rotation.IDENTITY), 1.0e-10);
+    }
+
+    @Test
+    public void testDerivativesStructuresNeg() throws OrekitException {
+        try {
+            AngularCoordinates.IDENTITY.toDerivativeStructureRotation(-1);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(-1, ((Integer) (oe.getParts()[0])).intValue());
+        }
+
+    }
+
+    @Test
+    public void testDerivativesStructures3() throws OrekitException {
+        try {
+            AngularCoordinates.IDENTITY.toDerivativeStructureRotation(3);
+            Assert.fail("an exception should have been thrown");
+        } catch (OrekitException oe) {
+            Assert.assertEquals(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, oe.getSpecifier());
+            Assert.assertEquals(3, ((Integer) (oe.getParts()[0])).intValue());
+        }
+
+    }
+
+    @Test
+    public void testDerivativesStructures0() throws OrekitException {
+        RandomGenerator random = new Well1024a(0x18a0a08fd63f047al);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
+        AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(0));
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures1() throws OrekitException {
+        RandomGenerator random = new Well1024a(0x8f8fc6d27bbdc46dl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
+        AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(1));
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        Assert.assertEquals(0.0, rebuilt.getRotationAcceleration().getNorm(), 1.0e-15);
+    }
+
+    @Test
+    public void testDerivativesStructures2() throws OrekitException {
+        RandomGenerator random = new Well1024a(0x1633878dddac047dl);
+
+        Rotation r    = randomRotation(random);
+        Vector3D o    = randomVector(random, 1.0e-2);
+        Vector3D oDot = randomVector(random, 1.0e-2);
+        AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
+        AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(2));
+        Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
+        Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
     }
 
     @Test
@@ -179,7 +247,7 @@ public class AngularCoordinatesTest {
 
     @Test
     public void testReverseOffset() {
-        Random random = new Random(0x4ecca9d57a8f1611l);
+        RandomGenerator random = new Well1024a(0x4ecca9d57a8f1611l);
         for (int i = 0; i < 100; ++i) {
             Rotation r = randomRotation(random);
             Vector3D o = randomVector(random, 1.0e-3);
@@ -208,7 +276,7 @@ public class AngularCoordinatesTest {
 
     @Test
     public void testRoundTripNoOp() {
-        Random random = new Random(0x1e610cfe89306669l);
+        RandomGenerator random = new Well1024a(0x1e610cfe89306669l);
         for (int i = 0; i < 100; ++i) {
 
             Rotation r1    = randomRotation(random);
@@ -238,7 +306,7 @@ public class AngularCoordinatesTest {
     public void testRodriguesSymmetry() {
 
         // check the two-way conversion result in identity
-        Random random = new Random(0xb1e615aaa8236b52l);
+        RandomGenerator random = new Well1024a(0xb1e615aaa8236b52l);
         for (int i = 0; i < 1000; ++i) {
             Rotation rotation             = randomRotation(random);
             Vector3D rotationRate         = randomVector(random, 0.01);
@@ -267,7 +335,7 @@ public class AngularCoordinatesTest {
         Assert.assertEquals(0.0, acId.getRotationRate().getNorm(), Precision.SAFE_MIN);
 
         // PI angle rotation (which is singular for non-modified Rodrigues vector)
-        Random random = new Random(0x2158523e6accb859l);
+        RandomGenerator random = new Well1024a(0x2158523e6accb859l);
         for (int i = 0; i < 100; ++i) {
             Vector3D axis = randomVector(random, 1.0);
             AngularCoordinates original = new AngularCoordinates(new Rotation(axis, FastMath.PI),
@@ -309,7 +377,7 @@ public class AngularCoordinatesTest {
 
     }
 
-    private Vector3D randomVector(Random random, double norm) {
+    private Vector3D randomVector(RandomGenerator random, double norm) {
         double n = random.nextDouble() * norm;
         double x = random.nextDouble();
         double y = random.nextDouble();
@@ -317,7 +385,7 @@ public class AngularCoordinatesTest {
         return new Vector3D(n, new Vector3D(x, y, z).normalize());
     }
 
-    private Rotation randomRotation(Random random) {
+    private Rotation randomRotation(RandomGenerator random) {
         double q0 = random.nextDouble() * 2 - 1;
         double q1 = random.nextDouble() * 2 - 1;
         double q2 = random.nextDouble() * 2 - 1;

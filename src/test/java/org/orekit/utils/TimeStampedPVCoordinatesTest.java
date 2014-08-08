@@ -21,12 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.junit.Assert;
 import org.junit.Test;
 import org.orekit.Utils;
+import org.orekit.errors.OrekitException;
 import org.orekit.time.AbsoluteDate;
 
 public class TimeStampedPVCoordinatesTest {
@@ -61,6 +64,40 @@ public class TimeStampedPVCoordinatesTest {
         checkPV(new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 5, pv4),
                 new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH, 4, pv1, 3, pv2, 2, pv3, 1, pv4),
                 1.0e-15);
+    }
+
+    @Test
+    public void testToDerivativeStructureVector2() throws OrekitException {
+        FieldVector3D<DerivativeStructure> fv =
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                             new Vector3D( 1,  0.1,  10),
+                                             new Vector3D(-1, -0.1, -10),
+                                             new Vector3D(10, -1.0, -100)).toDerivativeStructureVector(2);
+        Assert.assertEquals(1, fv.getX().getFreeParameters());
+        Assert.assertEquals(2, fv.getX().getOrder());
+        Assert.assertEquals(   1.0, fv.getX().getReal(), 1.0e-10);
+        Assert.assertEquals(   0.1, fv.getY().getReal(), 1.0e-10);
+        Assert.assertEquals(  10.0, fv.getZ().getReal(), 1.0e-10);
+        Assert.assertEquals(  -1.0, fv.getX().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(  -0.1, fv.getY().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals( -10.0, fv.getZ().getPartialDerivative(1), 1.0e-15);
+        Assert.assertEquals(  10.0, fv.getX().getPartialDerivative(2), 1.0e-15);
+        Assert.assertEquals(  -1.0, fv.getY().getPartialDerivative(2), 1.0e-15);
+        Assert.assertEquals(-100.0, fv.getZ().getPartialDerivative(2), 1.0e-15);
+        checkPV(new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH,
+                                             new Vector3D( 1,  0.1,  10),
+                                             new Vector3D(-1, -0.1, -10),
+                                             new Vector3D(10, -1.0, -100)),
+                new TimeStampedPVCoordinates(AbsoluteDate.GALILEO_EPOCH, fv), 1.0e-15);
+
+        for (double dt = 0; dt < 10; dt += 0.125) {
+            Vector3D p = new PVCoordinates(new Vector3D( 1,  0.1,  10),
+                                           new Vector3D(-1, -0.1, -10),
+                                           new Vector3D(10, -1.0, -100)).shiftedBy(dt).getPosition();
+            Assert.assertEquals(p.getX(), fv.getX().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getY(), fv.getY().taylor(dt), 1.0e-14);
+            Assert.assertEquals(p.getZ(), fv.getZ().taylor(dt), 1.0e-14);
+        }
     }
 
     @Test

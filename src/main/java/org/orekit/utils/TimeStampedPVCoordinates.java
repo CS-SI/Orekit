@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
@@ -40,7 +41,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     /** The date. */
     private final AbsoluteDate date;
 
-    /** Builds a PVCoordinates pair.
+    /** Builds a TimeStampedPVCoordinates pair.
      * @param date coordinates date
      * @param position the position vector (m)
      * @param velocity the velocity vector (m/s)
@@ -53,8 +54,8 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     }
 
     /** Multiplicative constructor
-     * <p>Build a PVCoordinates from another one and a scale factor.</p>
-     * <p>The PVCoordinates built will be a * pv</p>
+     * <p>Build a TimeStampedPVCoordinates from another one and a scale factor.</p>
+     * <p>The TimeStampedPVCoordinates built will be a * pv</p>
      * @param date date of the built coordinates
      * @param a scale factor
      * @param pv base (unscaled) PVCoordinates
@@ -68,8 +69,8 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     }
 
     /** Subtractive constructor
-     * <p>Build a relative PVCoordinates from a start and an end position.</p>
-     * <p>The PVCoordinates built will be end - start.</p>
+     * <p>Build a relative TimeStampedPVCoordinates from a start and an end position.</p>
+     * <p>The TimeStampedPVCoordinates built will be end - start.</p>
      * @param date date of the built coordinates
      * @param start Starting PVCoordinates
      * @param end ending PVCoordinates
@@ -83,8 +84,8 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     }
 
     /** Linear constructor
-     * <p>Build a PVCoordinates from two other ones and corresponding scale factors.</p>
-     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2</p>
+     * <p>Build a TimeStampedPVCoordinates from two other ones and corresponding scale factors.</p>
+     * <p>The TimeStampedPVCoordinates built will be a1 * u1 + a2 * u2</p>
      * @param date date of the built coordinates
      * @param a1 first scale factor
      * @param pv1 first base (unscaled) PVCoordinates
@@ -101,8 +102,8 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     }
 
     /** Linear constructor
-     * <p>Build a PVCoordinates from three other ones and corresponding scale factors.</p>
-     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
+     * <p>Build a TimeStampedPVCoordinates from three other ones and corresponding scale factors.</p>
+     * <p>The TimeStampedPVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3</p>
      * @param date date of the built coordinates
      * @param a1 first scale factor
      * @param pv1 first base (unscaled) PVCoordinates
@@ -122,8 +123,8 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     }
 
     /** Linear constructor
-     * <p>Build a PVCoordinates from four other ones and corresponding scale factors.</p>
-     * <p>The PVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
+     * <p>Build a TimeStampedPVCoordinates from four other ones and corresponding scale factors.</p>
+     * <p>The TimeStampedPVCoordinates built will be a1 * u1 + a2 * u2 + a3 * u3 + a4 * u4</p>
      * @param date date of the built coordinates
      * @param a1 first scale factor
      * @param pv1 first base (unscaled) PVCoordinates
@@ -142,6 +143,20 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         super(new Vector3D(a1, pv1.getPosition(),     a2, pv2.getPosition(),     a3, pv3.getPosition(),     a4, pv4.getPosition()),
               new Vector3D(a1, pv1.getVelocity(),     a2, pv2.getVelocity(),     a3, pv3.getVelocity(),     a4, pv4.getVelocity()),
               new Vector3D(a1, pv1.getAcceleration(), a2, pv2.getAcceleration(), a3, pv3.getAcceleration(), a4, pv4.getAcceleration()));
+        this.date = date;
+    }
+
+    /** Builds a TimeStampedPVCoordinates triplet from  a {@link FieldVector3D}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The vector components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param date date of the built coordinates
+     * @param p vector with time-derivatives embedded within the coordinates
+     */
+    public TimeStampedPVCoordinates(final AbsoluteDate date,
+                                    final FieldVector3D<DerivativeStructure> p) {
+        super(p);
         this.date = date;
     }
 

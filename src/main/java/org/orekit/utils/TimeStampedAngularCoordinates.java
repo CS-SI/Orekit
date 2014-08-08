@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.interpolation.HermiteInterpolator;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -53,6 +54,20 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
                                          final Vector3D rotationRate,
                                          final Vector3D rotationAcceleration) {
         super(rotation, rotationRate, rotationAcceleration);
+        this.date = date;
+    }
+
+    /** Builds a TimeStampedAngularCoordinates from  a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The rotation components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param date coordinates date
+     * @param r rotation with time-derivatives embedded within the coordinates
+     */
+    public TimeStampedAngularCoordinates(final AbsoluteDate date,
+                                         final FieldRotation<DerivativeStructure> r) {
+        super(r);
         this.date = date;
     }
 

@@ -21,11 +21,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
+import org.orekit.errors.OrekitMessages;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeShiftable;
 
@@ -44,7 +47,9 @@ import org.orekit.time.TimeShiftable;
  */
 public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Serializable {
 
-    /** Fixed orientation parallel with reference frame (identity rotation, zero rotation rate and acceleration). */
+    /** Fixed orientation parallel with reference frame
+     * (identity rotation, zero rotation rate and acceleration).
+     */
     public static final AngularCoordinates IDENTITY =
             new AngularCoordinates(Rotation.IDENTITY, Vector3D.ZERO, Vector3D.ZERO);
 
@@ -80,10 +85,184 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param rotationRate rotation rate Ω (rad/s)
      * @param rotationAcceleration rotation acceleration dΩ/dt (rad²/s²)
      */
-    public AngularCoordinates(final Rotation rotation, final Vector3D rotationRate, final Vector3D rotationAcceleration) {
+    public AngularCoordinates(final Rotation rotation,
+                              final Vector3D rotationRate, final Vector3D rotationAcceleration) {
         this.rotation             = rotation;
         this.rotationRate         = rotationRate;
         this.rotationAcceleration = rotationAcceleration;
+    }
+
+    /** Build the rotation that transforms a pair of pv coordinates into another pair.
+
+     * <p>Except for possible scale factors, if the instance were applied to
+     * the pair (u<sub>1</sub>, u<sub>2</sub>) it will produce the pair
+     * (v<sub>1</sub>, v<sub>2</sub>).</p>
+
+     * <p>If the angular separation between u<sub>1</sub> and u<sub>2</sub> is
+     * not the same as the angular separation between v<sub>1</sub> and
+     * v<sub>2</sub>, then a corrected v'<sub>2</sub> will be used rather than
+     * v<sub>2</sub>, the corrected vector will be in the (v<sub>1</sub>,
+     * v<sub>2</sub>) plane.</p>
+
+     * @param u1 first vector of the origin pair
+     * @param u2 second vector of the origin pair
+     * @param v1 desired image of u1 by the rotation
+     * @param v2 desired image of u2 by the rotation
+     * @exception OrekitException if the vectors components cannot be converted to
+     * {@link DerivativeStructure} with proper order
+     */
+    public AngularCoordinates(final PVCoordinates u1, final PVCoordinates u2,
+                              final PVCoordinates v1, final PVCoordinates v2)
+        throws OrekitException {
+        this(new FieldRotation<DerivativeStructure>(u1.toDerivativeStructureVector(2),
+                                                    u2.toDerivativeStructureVector(2),
+                                                    v1.toDerivativeStructureVector(2),
+                                                    v2.toDerivativeStructureVector(2)));
+    }
+
+    /** Build one of the rotations that transform one pv coordinates into another one.
+
+     * <p>Except for a possible scale factor, if the instance were
+     * applied to the vector u it will produce the vector v. There is an
+     * infinite number of such rotations, this constructor choose the
+     * one with the smallest associated angle (i.e. the one whose axis
+     * is orthogonal to the (u, v) plane). If u and v are collinear, an
+     * arbitrary rotation axis is chosen.</p>
+
+     * @param u origin vector
+     * @param v desired image of u by the rotation
+     * @exception OrekitException if the vectors components cannot be converted to
+     * {@link DerivativeStructure} with proper order
+     */
+    public AngularCoordinates(final PVCoordinates u, final PVCoordinates v) throws OrekitException {
+        this(new FieldRotation<DerivativeStructure>(u.toDerivativeStructureVector(2),
+                                                    v.toDerivativeStructureVector(2)));
+    }
+
+    /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The rotation components must have time as their only derivation parameter and
+     * have consistent derivation orders.
+     * </p>
+     * @param r rotation with time-derivatives embedded within the coordinates
+     */
+    public AngularCoordinates(final FieldRotation<DerivativeStructure> r) {
+
+        final double q0       = r.getQ0().getReal();
+        final double q1       = r.getQ1().getReal();
+        final double q2       = r.getQ2().getReal();
+        final double q3       = r.getQ3().getReal();
+
+        rotation     = new Rotation(q0, q1, q2, q3, false);
+        if (r.getQ0().getOrder() >= 1) {
+            final double q0Dot    = r.getQ0().getPartialDerivative(1);
+            final double q1Dot    = r.getQ1().getPartialDerivative(1);
+            final double q2Dot    = r.getQ2().getPartialDerivative(1);
+            final double q3Dot    = r.getQ3().getPartialDerivative(1);
+            rotationRate =
+                    new Vector3D(2 * MathArrays.linearCombination(-q1, q0Dot,  q0, q1Dot,  q3, q2Dot, -q2, q3Dot),
+                                 2 * MathArrays.linearCombination(-q2, q0Dot, -q3, q1Dot,  q0, q2Dot,  q1, q3Dot),
+                                 2 * MathArrays.linearCombination(-q3, q0Dot,  q2, q1Dot, -q1, q2Dot,  q0, q3Dot));
+            if (r.getQ0().getOrder() >= 2) {
+                final double q0DotDot = r.getQ0().getPartialDerivative(2);
+                final double q1DotDot = r.getQ1().getPartialDerivative(2);
+                final double q2DotDot = r.getQ2().getPartialDerivative(2);
+                final double q3DotDot = r.getQ3().getPartialDerivative(2);
+                rotationAcceleration =
+                        new Vector3D(2 * MathArrays.linearCombination(-q1, q0DotDot,  q0, q1DotDot,  q3, q2DotDot, -q2, q3DotDot),
+                                     2 * MathArrays.linearCombination(-q2, q0DotDot, -q3, q1DotDot,  q0, q2DotDot,  q1, q3DotDot),
+                                     2 * MathArrays.linearCombination(-q3, q0DotDot,  q2, q1DotDot, -q1, q2DotDot,  q0, q3DotDot));
+            } else {
+                rotationAcceleration = Vector3D.ZERO;
+            }
+        } else {
+            rotationRate         = Vector3D.ZERO;
+            rotationAcceleration = Vector3D.ZERO;
+        }
+
+    }
+
+    /** Transform the instance to a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
+     * <p>
+     * The {@link DerivativeStructure} coordinates correspond to time-derivatives up
+     * to the user-specified order.
+     * </p>
+     * @param order derivation order for the vector components
+     * @return rotation with time-derivatives embedded within the coordinates
+     * @exception OrekitException if the user specified order is too large
+     */
+    public FieldRotation<DerivativeStructure> toDerivativeStructureRotation(final int order)
+        throws OrekitException {
+
+        // quaternion components
+        final double q0 = rotation.getQ0();
+        final double q1 = rotation.getQ1();
+        final double q2 = rotation.getQ2();
+        final double q3 = rotation.getQ3();
+
+        // first time-derivatives of the quaternion
+        final double oX    = rotationRate.getX();
+        final double oY    = rotationRate.getY();
+        final double oZ    = rotationRate.getZ();
+        final double q0Dot = 0.5 * MathArrays.linearCombination(-q1, oX, -q2, oY, -q3, oZ);
+        final double q1Dot = 0.5 * MathArrays.linearCombination( q0, oX, -q3, oY,  q2, oZ);
+        final double q2Dot = 0.5 * MathArrays.linearCombination( q3, oX,  q0, oY, -q1, oZ);
+        final double q3Dot = 0.5 * MathArrays.linearCombination(-q2, oX,  q1, oY,  q0, oZ);
+
+        // second time-derivatives of the quaternion
+        final double oXDot = rotationAcceleration.getX();
+        final double oYDot = rotationAcceleration.getY();
+        final double oZDot = rotationAcceleration.getZ();
+        final double q0DotDot = -0.5 * MathArrays.linearCombination(new double[] {
+            q1, q2,  q3, q1Dot, q2Dot,  q3Dot
+        }, new double[] {
+            oXDot, oYDot, oZDot, oX, oY, oZ
+        });
+        final double q1DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q2, -q3, q0Dot, q2Dot, -q3Dot
+        }, new double[] {
+            oXDot, oZDot, oYDot, oX, oZ, oY
+        });
+        final double q2DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q3, -q1, q0Dot, q3Dot, -q1Dot
+        }, new double[] {
+            oYDot, oXDot, oZDot, oY, oX, oZ
+        });
+        final double q3DotDot =  0.5 * MathArrays.linearCombination(new double[] {
+            q0, q1, -q2, q0Dot, q1Dot, -q2Dot
+        }, new double[] {
+            oZDot, oYDot, oXDot, oZ, oY, oX
+        });
+
+        final DerivativeStructure q0DS;
+        final DerivativeStructure q1DS;
+        final DerivativeStructure q2DS;
+        final DerivativeStructure q3DS;
+        switch(order) {
+        case 0 :
+            q0DS = new DerivativeStructure(1, 0, q0);
+            q1DS = new DerivativeStructure(1, 0, q1);
+            q2DS = new DerivativeStructure(1, 0, q2);
+            q3DS = new DerivativeStructure(1, 0, q3);
+            break;
+        case 1 :
+            q0DS = new DerivativeStructure(1, 1, q0, q0Dot);
+            q1DS = new DerivativeStructure(1, 1, q1, q1Dot);
+            q2DS = new DerivativeStructure(1, 1, q2, q2Dot);
+            q3DS = new DerivativeStructure(1, 1, q3, q3Dot);
+            break;
+        case 2 :
+            q0DS = new DerivativeStructure(1, 2, q0, q0Dot, q0DotDot);
+            q1DS = new DerivativeStructure(1, 2, q1, q1Dot, q1DotDot);
+            q2DS = new DerivativeStructure(1, 2, q2, q2Dot, q2DotDot);
+            q3DS = new DerivativeStructure(1, 2, q3, q3Dot, q3DotDot);
+            break;
+        default :
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_DERIVATION_ORDER, order);
+        }
+
+        return new FieldRotation<DerivativeStructure>(q0DS, q1DS, q2DS, q3DS, false);
+
     }
 
     /** Estimate rotation rate between two orientations.
