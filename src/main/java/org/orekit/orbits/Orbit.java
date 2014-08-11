@@ -132,7 +132,18 @@ public abstract class Orbit
         ensurePseudoInertialFrame(frame);
         this.date = pvCoordinates.getDate();
         this.mu = mu;
-        this.pvCoordinates = pvCoordinates;
+        if (pvCoordinates.getAcceleration().getNormSq() == 0) {
+            // the acceleration was not provided,
+            // compute it from Newtonian attraction
+            final double r2 = pvCoordinates.getPosition().getNormSq();
+            final double r3 = r2 * FastMath.sqrt(r2);
+            this.pvCoordinates = new TimeStampedPVCoordinates(pvCoordinates.getDate(),
+                                                              pvCoordinates.getPosition(),
+                                                              pvCoordinates.getVelocity(),
+                                                              new Vector3D(-mu / r3, pvCoordinates.getPosition()));
+        } else {
+            this.pvCoordinates = pvCoordinates;
+        }
         this.frame = frame;
     }
 
