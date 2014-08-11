@@ -556,30 +556,7 @@ public class Transform
      * @return transformed position-velocity-acceleration
      */
     public PVCoordinates transformPVCoordinates(final PVCoordinates pva) {
-
-        // apply translation
-        final Vector3D intermediateP = pva.getPosition().add(cartesian.getPosition());
-        final Vector3D intermediateV = pva.getVelocity().add(cartesian.getVelocity());
-        final Vector3D intermediateA = pva.getAcceleration().add(cartesian.getAcceleration());
-
-        // apply rotation
-        final Rotation r    = angular.getRotation();
-        final Vector3D o    = angular.getRotationRate();
-        final Vector3D oDot = angular.getRotationAcceleration();
-        final Vector3D transformedP = r.applyTo(intermediateP);
-        final Vector3D crossP       = Vector3D.crossProduct(o, transformedP);
-        final Vector3D transformedV = r.applyTo(intermediateV).subtract(crossP);
-        final Vector3D crossV       = Vector3D.crossProduct(o, transformedV);
-        final Vector3D crossCrossP  = Vector3D.crossProduct(o, crossP);
-        final Vector3D crossDotP    = Vector3D.crossProduct(oDot, transformedP);
-        final Vector3D transformedA = new Vector3D( 1, r.applyTo(intermediateA),
-                                                   -2, crossV,
-                                                   -1, crossCrossP,
-                                                   -1, crossDotP);
-
-        // build transformed object
-        return new PVCoordinates(transformedP, transformedV, transformedA);
-
+        return angular.applyTo(new PVCoordinates(1, pva, 1, cartesian));
     }
 
     /** Transform {@link TimeStampedPVCoordinates} including kinematic effects.
@@ -595,30 +572,7 @@ public class Transform
      * @since 7.0
      */
     public TimeStampedPVCoordinates transformPVCoordinates(final TimeStampedPVCoordinates pv) {
-
-        // apply translation
-        final Vector3D intermediateP = pv.getPosition().add(cartesian.getPosition());
-        final Vector3D intermediateV = pv.getVelocity().add(cartesian.getVelocity());
-        final Vector3D intermediateA = pv.getAcceleration().add(cartesian.getAcceleration());
-
-        // apply rotation
-        final Rotation r    = angular.getRotation();
-        final Vector3D o    = angular.getRotationRate();
-        final Vector3D oDot = angular.getRotationAcceleration();
-        final Vector3D transformedP = r.applyTo(intermediateP);
-        final Vector3D crossP       = Vector3D.crossProduct(o, transformedP);
-        final Vector3D transformedV = r.applyTo(intermediateV).subtract(crossP);
-        final Vector3D crossV       = Vector3D.crossProduct(o, transformedV);
-        final Vector3D crossCrossP  = Vector3D.crossProduct(o, crossP);
-        final Vector3D crossDotP    = Vector3D.crossProduct(oDot, transformedP);
-        final Vector3D transformedA = new Vector3D( 1, r.applyTo(intermediateA),
-                                                   -2, crossV,
-                                                   -1, crossCrossP,
-                                                   -1, crossDotP);
-
-        // build transformed object
-        return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV, transformedA);
-
+        return angular.applyTo(new TimeStampedPVCoordinates(pv.getDate(), 1, pv, 1, cartesian));
     }
 
     /** Transform {@link FieldPVCoordinates} including kinematic effects.

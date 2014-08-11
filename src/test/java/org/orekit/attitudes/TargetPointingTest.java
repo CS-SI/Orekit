@@ -129,7 +129,7 @@ public class TargetPointingTest {
         TargetPointing geoTargetAttitudeLaw = new TargetPointing(geoTargetITRF2005, earthShape);
 
         // Check that observed ground point is the same as defined target
-        Vector3D pObservedEME2000 = geoTargetAttitudeLaw.getTargetPoint(circ, date, FramesFactory.getEME2000());
+        Vector3D pObservedEME2000 = geoTargetAttitudeLaw.getTargetPV(circ, date, FramesFactory.getEME2000()).getPosition();
         GeodeticPoint geoObserved = earthShape.transform(pObservedEME2000, FramesFactory.getEME2000(), date);
 
         Assert.assertEquals(geoObserved.getLongitude(), geoTargetITRF2005.getLongitude(), Utils.epsilonAngle);
@@ -160,7 +160,7 @@ public class TargetPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Check nadir target
-        Vector3D pNadirTarget  = nadirAttitudeLaw.getTargetPoint(circOrbit, date, itrf);
+        Vector3D pNadirTarget  = nadirAttitudeLaw.getTargetPV(circOrbit, date, itrf).getPosition();
         GeodeticPoint geoNadirTarget = earthShape.transform(pNadirTarget, itrf, date);
 
         // Create target attitude provider
@@ -279,7 +279,7 @@ public class TargetPointingTest {
         NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
 
         // Get observed ground point from nadir pointing law
-        Vector3D pNadirObservedEME2000 = nadirAttitudeLaw.getTargetPoint(circ, date, FramesFactory.getEME2000());
+        Vector3D pNadirObservedEME2000 = nadirAttitudeLaw.getTargetPV(circ, date, FramesFactory.getEME2000()).getPosition();
         Vector3D pNadirObservedITRF2005 = eme2000ToItrf.transformPosition(pNadirObservedEME2000);
 
         GeodeticPoint geoNadirObserved = earthShape.transform(pNadirObservedITRF2005, itrf, date);

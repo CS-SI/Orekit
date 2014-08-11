@@ -416,6 +416,48 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         return addOffset(offset.revert());
     }
 
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @return a new pv coordinates which is the image of u by the rotation
+     */
+    public PVCoordinates applyTo(final PVCoordinates pv) {
+
+        final Vector3D transformedP = rotation.applyTo(pv.getPosition());
+        final Vector3D crossP       = Vector3D.crossProduct(rotationRate, transformedP);
+        final Vector3D transformedV = rotation.applyTo(pv.getVelocity()).subtract(crossP);
+        final Vector3D crossV       = Vector3D.crossProduct(rotationRate, transformedV);
+        final Vector3D crossCrossP  = Vector3D.crossProduct(rotationRate, crossP);
+        final Vector3D crossDotP    = Vector3D.crossProduct(rotationAcceleration, transformedP);
+        final Vector3D transformedA = new Vector3D( 1, rotation.applyTo(pv.getAcceleration()),
+                                                   -2, crossV,
+                                                   -1, crossCrossP,
+                                                   -1, crossDotP);
+
+        return new PVCoordinates(transformedP, transformedV, transformedA);
+
+    }
+
+    /** Apply the rotation to a pv coordinates.
+     * @param pv vector to apply the rotation to
+     * @return a new pv coordinates which is the image of u by the rotation
+     */
+    public TimeStampedPVCoordinates applyTo(final TimeStampedPVCoordinates pv) {
+
+        final Vector3D transformedP = getRotation().applyTo(pv.getPosition());
+        final Vector3D crossP       = Vector3D.crossProduct(getRotationRate(), transformedP);
+        final Vector3D transformedV = getRotation().applyTo(pv.getVelocity()).subtract(crossP);
+        final Vector3D crossV       = Vector3D.crossProduct(getRotationRate(), transformedV);
+        final Vector3D crossCrossP  = Vector3D.crossProduct(getRotationRate(), crossP);
+        final Vector3D crossDotP    = Vector3D.crossProduct(getRotationAcceleration(), transformedP);
+        final Vector3D transformedA = new Vector3D( 1, getRotation().applyTo(pv.getAcceleration()),
+                                                   -2, crossV,
+                                                   -1, crossCrossP,
+                                                   -1, crossDotP);
+
+        return new TimeStampedPVCoordinates(pv.getDate(), transformedP, transformedV, transformedA);
+
+    }
+
     /** Interpolate angular coordinates.
      * <p>
      * The interpolated instance is created by polynomial Hermite interpolation

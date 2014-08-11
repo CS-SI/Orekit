@@ -16,13 +16,19 @@
  */
 package org.orekit.attitudes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.bodies.BodyShape;
 import org.orekit.bodies.GeodeticPoint;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /**
  * This class handles nadir pointing attitude provider.
@@ -54,20 +60,54 @@ public class NadirPointing extends GroundPointing {
     }
 
     /** {@inheritDoc} */
-    protected Vector3D getTargetPoint(final PVCoordinatesProvider pvProv,
-                                      final AbsoluteDate date, final Frame frame)
+    protected TimeStampedPVCoordinates getTargetPV(final PVCoordinatesProvider pvProv,
+                                                   final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        final Vector3D satInBodyFrame = pvProv.getPVCoordinates(date, getBodyFrame()).getPosition();
+        // transform from specified reference frame to spacecraft frame (without attitude)
+        final Transform refToSc = new Transform(date, pvProv.getPVCoordinates(date, frame).negate());
+
+        // transform from specified reference frame to body frame
+        final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
+
+        // sample intersection points in current date neighborhood
+        final Transform scToBody  = new Transform(date, refToSc.getInverse(), refToBody);
+        final double h  = 0.1;
+        final List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        sample.add(nadirBody(scToBody.shiftedBy(-h)));
+        sample.add(nadirBody(scToBody));
+        sample.add(nadirBody(scToBody.shiftedBy(+h)));
+
+        // use interpolation to compute properly the time-derivatives
+        final TimeStampedPVCoordinates targetBody =
+                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
+
+        // convert back to caller specified frame
+        return refToBody.getInverse().transformPVCoordinates(targetBody);
+
+    }
+
+    /** Compute body surface point in nadir direction.
+     * @param scToBody transform from spacecraft frame (without attitude) to body frame
+     * @return intersection point in body frame (only the position is set!)
+     * @exception OrekitException if line of sight does not intersect body
+     */
+    private TimeStampedPVCoordinates nadirBody(final Transform scToBody)
+        throws OrekitException {
+
+        final Vector3D satInBodyFrame = scToBody.transformPosition(Vector3D.ZERO);
 
         // satellite position in geodetic coordinates
-        final GeodeticPoint gpSat = shape.transform(satInBodyFrame, getBodyFrame(), date);
+        final GeodeticPoint gpSat = shape.transform(satInBodyFrame, getBodyFrame(), scToBody.getDate());
 
         // nadir position in geodetic coordinates
         final GeodeticPoint gpNadir = new GeodeticPoint(gpSat.getLatitude(), gpSat.getLongitude(), 0.0);
 
-        // nadir point position in specified frame
-        return getBodyFrame().getTransformTo(frame, date).transformPosition(shape.transform(gpNadir));
+        // nadir point position in body frame
+        final Vector3D pNadir  = shape.transform(gpNadir);
+
+        return new TimeStampedPVCoordinates(scToBody.getDate(),
+                                            pNadir, Vector3D.ZERO, Vector3D.ZERO);
 
     }
 

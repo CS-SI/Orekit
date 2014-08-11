@@ -154,7 +154,8 @@ public class LofOffsetTest {
         final LofOffsetPointing lofOffsetPtLaw = new LofOffsetPointing(earthSpheric, lofOffsetLaw, Vector3D.PLUS_K);
 
         // Check target pointed by this law : shall be the same as defined
-        final Vector3D pTargetRes = lofOffsetPtLaw.getTargetPoint(orbit, date, earthSpheric.getBodyFrame());
+        final Vector3D pTargetRes =
+                lofOffsetPtLaw.getTargetPV(orbit, date, earthSpheric.getBodyFrame()).getPosition();
         final GeodeticPoint targetRes = earthSpheric.transform(pTargetRes, earthSpheric.getBodyFrame(), date);
 
         Assert.assertEquals(targetDef.getLongitude(), targetRes.getLongitude(), Utils.epsilonAngle);

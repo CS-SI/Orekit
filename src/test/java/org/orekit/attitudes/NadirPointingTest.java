@@ -42,6 +42,7 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class NadirPointingTest {
@@ -167,7 +168,7 @@ public class NadirPointingTest {
         Assert.assertEquals(angle, FastMath.toRadians(0.16797386586252272), Utils.epsilonAngle);
     }
 
-    /** Vertical test : check that Z satellite axis is colinear to local vertical axis,
+    /** Vertical test : check that Z satellite axis is collinear to local vertical axis,
         which direction is : (cos(lon)*cos(lat), sin(lon)*cos(lat), sin(lat)),
         where lon et lat stand for observed point coordinates
         (i.e satellite ones, since they are the same by construction,
@@ -191,10 +192,10 @@ public class NadirPointingTest {
         //  Vertical test
         // ***************
         // Get observed ground point position/velocity
-        Vector3D pTargetItrf = nadirAttitudeLaw.getTargetPoint(circ, date, itrf);
+        TimeStampedPVCoordinates pvTargetItrf = nadirAttitudeLaw.getTargetPV(circ, date, itrf);
 
         // Convert to geodetic coordinates
-        GeodeticPoint geoTarget = earthShape.transform(pTargetItrf, itrf, date);
+        GeodeticPoint geoTarget = earthShape.transform(pvTargetItrf.getPosition(), itrf, date);
 
         // Compute local vertical axis
         double xVert = FastMath.cos(geoTarget.getLongitude())*FastMath.cos(geoTarget.getLatitude());
@@ -209,7 +210,7 @@ public class NadirPointingTest {
         Vector3D zSatEME2000 = rotSatEME2000.applyInverseTo(Vector3D.PLUS_K);
         Vector3D zSatItrf = FramesFactory.getEME2000().getTransformTo(itrf, date).transformVector(zSatEME2000);
 
-        // Check that satellite Z axis is colinear to local vertical axis
+        // Check that satellite Z axis is collinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);
         Assert.assertEquals(0.0, FastMath.sin(angle), Utils.epsilonTest);
 

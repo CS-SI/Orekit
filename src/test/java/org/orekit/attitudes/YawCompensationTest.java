@@ -48,6 +48,7 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class YawCompensationTest {
@@ -80,15 +81,17 @@ public class YawCompensationTest {
         //  Check target
         // *************
         // without yaw compensation
-        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, date, itrf);
+        TimeStampedPVCoordinates noYawObserved = nadirLaw.getTargetPV(circOrbit, date, itrf);
 
         // with yaw compensation
-        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, date, itrf);
+        TimeStampedPVCoordinates yawObserved = yawCompensLaw.getTargetPV(circOrbit, date, itrf);
 
         // Check difference
-        Vector3D observedDiff = noYawObserved.subtract(yawObserved);
+        PVCoordinates observedDiff = new PVCoordinates(yawObserved, noYawObserved);
 
-        Assert.assertEquals(0.0, observedDiff.getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
 
     }
 
@@ -181,7 +184,7 @@ public class YawCompensationTest {
             // Compute yaw compensation angle -- rotations composition
             double yawAngle = yawCompensLaw.getYawAngle(extrapOrbit, extrapDate, extrapOrbit.getFrame());
 
-            // Update minimum yaw compensation angle
+           // Update minimum yaw compensation angle
             if (FastMath.abs(yawAngle) <= yawMin) {
                 yawMin = FastMath.abs(yawAngle);
                 latMin = extrapLat;
@@ -193,25 +196,23 @@ public class YawCompensationTest {
             // 1/ Check yaw values around ascending node (max yaw)
             if ((FastMath.abs(extrapLat) < FastMath.toRadians(2.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(3.22)) &&
-                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(3.23)));
+                Assert.assertEquals(3.206, FastMath.toDegrees(yawAngle), 0.003);
             }
 
             // 2/ Check yaw values around maximum positive latitude (min yaw)
-            if ( extrapLat > FastMath.toRadians(50.) ) {
-                Assert.assertTrue(FastMath.abs(yawAngle) <= FastMath.toRadians(0.26));
+            if ( extrapLat > FastMath.toRadians(50.15) ) {
+                Assert.assertEquals(0, FastMath.toDegrees(yawAngle), 0.15);
             }
 
             // 3/ Check yaw values around descending node (max yaw)
             if ( (FastMath.abs(extrapLat) < FastMath.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) ) {
-                Assert.assertTrue((FastMath.abs(yawAngle) >= FastMath.toRadians(3.22)) &&
-                                  (FastMath.abs(yawAngle) <= FastMath.toRadians(3.23)));
+                Assert.assertEquals(-3.206, FastMath.toDegrees(yawAngle), 0.003);
             }
 
             // 4/ Check yaw values around maximum negative latitude (min yaw)
-            if ( extrapLat < FastMath.toRadians(-50.) ) {
-                Assert.assertTrue(FastMath.abs(yawAngle) <= FastMath.toRadians(0.26));
+            if ( extrapLat < FastMath.toRadians(-50.15) ) {
+                Assert.assertEquals(0, FastMath.toDegrees(yawAngle), 0.15);
             }
 
         }

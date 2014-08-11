@@ -43,7 +43,9 @@ import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.IERSConventions;
+import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class YawSteeringTest {
@@ -74,17 +76,19 @@ public class YawSteeringTest {
 
         //  Check observed ground point
         // *****************************
-        // without yaw compensation
-        Vector3D noYawObserved = nadirLaw.getTargetPoint(circOrbit, date, itrf);
+        TimeStampedPVCoordinates noYawObserved = nadirLaw.getTargetPV(circOrbit, date, itrf);
 
         // with yaw compensation
-        Vector3D yawObserved = yawCompensLaw.getTargetPoint(circOrbit, date, itrf);
+        TimeStampedPVCoordinates yawObserved = yawCompensLaw.getTargetPV(circOrbit, date, itrf);
 
         // Check difference
-        Vector3D observedDiff = noYawObserved.subtract(yawObserved);
+        PVCoordinates observedDiff = new PVCoordinates(yawObserved, noYawObserved);
 
-        Assert.assertTrue(observedDiff.getNorm() < Utils.epsilonTest);
-   }
+        Assert.assertEquals(0.0, observedDiff.getPosition().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, observedDiff.getVelocity().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, observedDiff.getAcceleration().getNorm(), Utils.epsilonTest);
+
+    }
 
     @Test
     public void testSunAligned() throws OrekitException {

@@ -55,14 +55,33 @@ public class TimeStampedAngularCoordinatesTest {
     }
 
     @Test
+    public void testTwoPairs() throws OrekitException {
+        RandomGenerator random = new Well1024a(0x976ad943966c9f00l);
+
+        PVCoordinates u1 = randomPVCoordinates(random, 1000, 1.0, 0.001);
+        PVCoordinates u2 = randomPVCoordinates(random, 1000, 1.0, 0.001);
+        PVCoordinates v1 = randomPVCoordinates(random, 1000, 1.0, 0.001);
+        PVCoordinates v2 = randomPVCoordinates(random, 1000, 1.0, 0.001);
+        TimeStampedAngularCoordinates ac =
+                new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, u1, u2, v1, v2);
+        Assert.assertEquals(0, Vector3D.distance(v1.getPosition(), ac.applyTo(u1).getPosition()), 1.0e-10);
+        Assert.assertEquals(0, Vector3D.distance(v1.getVelocity(), ac.applyTo(u1).getVelocity()), 1.0e-10);
+        Assert.assertEquals(0, Vector3D.distance(v1.getAcceleration(), ac.applyTo(u1).getAcceleration()), 1.0e-10);
+
+    }
+
+    @Test
     public void testDerivativesStructures2() throws OrekitException {
         RandomGenerator random = new Well1024a(0x75fbebbdbf127b3dl);
 
         Rotation r    = randomRotation(random);
         Vector3D o    = randomVector(random, 1.0e-2);
         Vector3D oDot = randomVector(random, 1.0e-2);
-        AngularCoordinates ac = new AngularCoordinates(r, o, oDot);
-        AngularCoordinates rebuilt = new AngularCoordinates(ac.toDerivativeStructureRotation(2));
+        TimeStampedAngularCoordinates ac = new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                                             r, o, oDot);
+        TimeStampedAngularCoordinates rebuilt =
+                new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH,
+                                                  ac.toDerivativeStructureRotation(2));
         Assert.assertEquals(0.0, Rotation.distance(ac.getRotation(), rebuilt.getRotation()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationRate(), rebuilt.getRotationRate()), 1.0e-15);
         Assert.assertEquals(0.0, Vector3D.distance(ac.getRotationAcceleration(), rebuilt.getRotationAcceleration()), 1.0e-15);
@@ -429,6 +448,14 @@ public class TimeStampedAngularCoordinatesTest {
         double y = random.nextDouble();
         double z = random.nextDouble();
         return new Vector3D(n, new Vector3D(x, y, z).normalize());
+    }
+
+    private PVCoordinates randomPVCoordinates(RandomGenerator random,
+                                              double norm0, double norm1, double norm2) {
+        Vector3D p0 = randomVector(random, norm0);
+        Vector3D p1 = randomVector(random, norm1);
+        Vector3D p2 = randomVector(random, norm2);
+        return new PVCoordinates(p0, p1, p2);
     }
 
     private Rotation randomRotation(RandomGenerator random) {

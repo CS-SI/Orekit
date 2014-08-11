@@ -43,6 +43,7 @@ import org.orekit.utils.AngularCoordinates;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class BodyCenterPointingTest {
@@ -68,10 +69,13 @@ public class BodyCenterPointingTest {
     public void testTarget() throws OrekitException {
 
         // Call get target method
-        Vector3D target = earthCenterAttitudeLaw.getTargetPoint(circ, date, circ.getFrame());
+        TimeStampedPVCoordinates target = earthCenterAttitudeLaw.getTargetPV(circ, date, circ.getFrame());
 
         // Check that target is body center
-        Assert.assertEquals(0.0, target.getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, target.getPosition().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, target.getVelocity().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(0.0, target.getAcceleration().getNorm(), Utils.epsilonTest);
+        Assert.assertEquals(date, target.getDate());
 
     }
 
