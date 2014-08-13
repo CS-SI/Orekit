@@ -147,12 +147,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         final PVCoordinates fixedRef  = bodyToRef.transformPVCoordinates(fixedBody);
 
         // compute relative velocity of FIXED ground point with respect to satellite
-        // beware the point considered is NOT the sliding point on central body surface
-        // as returned by getUnderlyingAttitudeProvider().getTargetPV(), but the fixed
-        // point that at current time is the target, but before and after is only a body
-        // surface point with its own motion and not aligned with satellite Z axis.
-        // So the following computation needs to recompute velocity by itself, using
-        // the velocity provided by getTargetPV would be wrong!
         final PVCoordinates rel = new PVCoordinates(fixedRef, slidingRef);
 
         // Compensation rotation definition :

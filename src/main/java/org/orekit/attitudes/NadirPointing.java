@@ -64,50 +64,45 @@ public class NadirPointing extends GroundPointing {
                                                    final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // transform from specified reference frame to spacecraft frame (without attitude)
-        final Transform refToSc = new Transform(date, pvProv.getPVCoordinates(date, frame).negate());
-
         // transform from specified reference frame to body frame
         final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
 
         // sample intersection points in current date neighborhood
-        final Transform scToBody  = new Transform(date, refToSc.getInverse(), refToBody);
         final double h  = 0.1;
         final List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
-        sample.add(nadirBody(scToBody.shiftedBy(-h)));
-        sample.add(nadirBody(scToBody));
-        sample.add(nadirBody(scToBody.shiftedBy(+h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h), frame), refToBody.shiftedBy(-h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date, frame), refToBody));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h), frame), refToBody.shiftedBy(+h)));
 
         // use interpolation to compute properly the time-derivatives
-        final TimeStampedPVCoordinates targetBody =
-                TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
-
-        // convert back to caller specified frame
-        return refToBody.getInverse().transformPVCoordinates(targetBody);
+        return TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);
 
     }
 
-    /** Compute body surface point in nadir direction.
-     * @param scToBody transform from spacecraft frame (without attitude) to body frame
+    /** Compute ground point in nadir direction, in reference frame.
+     * @param scRef spacecraft coordinates in reference frame
+     * @param refToBody transform from reference frame to body frame
      * @return intersection point in body frame (only the position is set!)
      * @exception OrekitException if line of sight does not intersect body
      */
-    private TimeStampedPVCoordinates nadirBody(final Transform scToBody)
+    private TimeStampedPVCoordinates nadirRef(final TimeStampedPVCoordinates scRef, final Transform refToBody)
         throws OrekitException {
 
-        final Vector3D satInBodyFrame = scToBody.transformPosition(Vector3D.ZERO);
+        final Vector3D satInBodyFrame = refToBody.transformPosition(scRef.getPosition());
 
         // satellite position in geodetic coordinates
-        final GeodeticPoint gpSat = shape.transform(satInBodyFrame, getBodyFrame(), scToBody.getDate());
+        final GeodeticPoint gpSat = shape.transform(satInBodyFrame, getBodyFrame(), scRef.getDate());
 
         // nadir position in geodetic coordinates
         final GeodeticPoint gpNadir = new GeodeticPoint(gpSat.getLatitude(), gpSat.getLongitude(), 0.0);
 
         // nadir point position in body frame
-        final Vector3D pNadir  = shape.transform(gpNadir);
+        final Vector3D pNadirBody = shape.transform(gpNadir);
 
-        return new TimeStampedPVCoordinates(scToBody.getDate(),
-                                            pNadir, Vector3D.ZERO, Vector3D.ZERO);
+        // nadir point position in reference frame
+        final Vector3D pNadirRef = refToBody.getInverse().transformPosition(pNadirBody);
+
+        return new TimeStampedPVCoordinates(scRef.getDate(), pNadirRef, Vector3D.ZERO, Vector3D.ZERO);
 
     }
 
