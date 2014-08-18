@@ -461,6 +461,45 @@ public class EquinoctialParametersTest {
         }
     }
 
+
+    @Test
+    public void testRadiusOfCurvature() {
+
+        // elliptic and non equatorial (i retrograde) orbit
+        EquinoctialOrbit p =
+            new EquinoctialOrbit(42166.712, 0.5, -0.5, 1.200, 2.1,
+                                      0.67, PositionAngle.TRUE,
+                                      FramesFactory.getEME2000(), date, mu);
+
+        // arbitrary orthogonal vectors in the orbital plane
+        Vector3D u = p.getPVCoordinates().getMomentum().orthogonal();
+        Vector3D v = Vector3D.crossProduct(p.getPVCoordinates().getMomentum(), u).normalize();
+
+        // compute radius of curvature in the orbital plane from Cartesian coordinates
+        double xDot    = Vector3D.dotProduct(p.getPVCoordinates().getVelocity(),     u);
+        double yDot    = Vector3D.dotProduct(p.getPVCoordinates().getVelocity(),     v);
+        double xDotDot = Vector3D.dotProduct(p.getPVCoordinates().getAcceleration(), u);
+        double yDotDot = Vector3D.dotProduct(p.getPVCoordinates().getAcceleration(), v);
+        double dot2    = xDot * xDot + yDot * yDot;
+        double rCart   = dot2 * FastMath.sqrt(dot2) /
+                         FastMath.abs(xDot * yDotDot - yDot * xDotDot);
+
+        // compute radius of curvature in the orbital plane from orbital parameters
+        double ex   = p.getEquinoctialEx();
+        double ey   = p.getEquinoctialEy();
+        double f    = ex * FastMath.cos(p.getLE()) + ey * FastMath.sin(p.getLE());
+        double oMf2 = 1 - f * f;
+        double rOrb = p.getA() * oMf2 * FastMath.sqrt(oMf2 / (1 - (ex * ex + ey * ey)));
+
+        // both methods to compute radius of curvature should match
+        Assert.assertEquals(rCart, rOrb, 1.0e-15 * p.getA());
+
+        // at this place for such an eccentric orbit,
+        // the radius of curvature is much smaller than semi major axis
+        Assert.assertEquals(0.8477 * p.getA(), rCart, 1.0e-4 * p.getA());
+
+    }
+
     @Test
     public void testSymmetry() {
 
