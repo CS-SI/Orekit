@@ -157,8 +157,8 @@ public class GeoMagneticFieldFactory {
                                              final double year)
         throws OrekitException {
 
-        final int epoch = (int) FastMath.round(year * 100d);
-        final SortedMap<Integer, GeoMagneticField> head = models.headMap(epoch + 1);
+        final int epochKey = (int) (year * 100d);
+        final SortedMap<Integer, GeoMagneticField> head = models.headMap(epochKey, true);
 
         if (head.isEmpty()) {
             throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
@@ -169,11 +169,14 @@ public class GeoMagneticFieldFactory {
             if (model.supportsTimeTransform()) {
                 model = model.transformModel(year);
             } else {
-                final SortedMap<Integer, GeoMagneticField> tail = models.tailMap(epoch);
+                final SortedMap<Integer, GeoMagneticField> tail = models.tailMap(epochKey, false);
                 if (tail.isEmpty()) {
                     throw new OrekitException(OrekitMessages.NON_EXISTENT_GEOMAGNETIC_MODEL, type.name(), year);
                 }
-                model = model.transformModel(models.get(tail.firstKey()), year);
+                final GeoMagneticField secondModel = models.get(tail.firstKey());
+                if (secondModel != model) {
+                    model = model.transformModel(secondModel, year);
+                }
             }
         }
         return model;
