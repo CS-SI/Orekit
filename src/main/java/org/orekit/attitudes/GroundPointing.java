@@ -73,12 +73,11 @@ public abstract class GroundPointing implements AttitudeProvider {
     }
 
     /** Compute the target point position/velocity in specified frame.
-     * <p>The default implementation use a simple two points finite differences scheme,
-     * it may be replaced by more accurate models in specialized implementations.</p>
      * @param pvProv provider for PV coordinates
      * @param date date at which target point is requested
      * @param frame frame in which observed ground point should be provided
-     * @return observed ground point position/velocity in specified frame
+     * @return observed ground point position (element 0) and velocity (at index 1)
+     * in specified frame
      * @throws OrekitException if some specific error occurs,
      * such as no target reached
      */
@@ -91,12 +90,6 @@ public abstract class GroundPointing implements AttitudeProvider {
                                 final Frame frame)
         throws OrekitException {
 
-        // satellite-target relative vector
-        final TimeStampedPVCoordinates delta =
-                new TimeStampedPVCoordinates(date,
-                                             pvProv.getPVCoordinates(date, frame),
-                                             getTargetPV(pvProv, date, frame));
-
         // compute jerk assuming Keplerian motion in the reference frame
         final PVCoordinates pva  = pvProv.getPVCoordinates(date, frame);
         final Vector3D      p    = pva.getPosition();
@@ -108,6 +101,12 @@ public abstract class GroundPointing implements AttitudeProvider {
 
         // velocity and its derivatives
         final PVCoordinates velocity = new PVCoordinates(v, a, jerk);
+
+        // satellite-target relative vector
+        final TimeStampedPVCoordinates delta =
+                new TimeStampedPVCoordinates(date,
+                                             pvProv.getPVCoordinates(date, frame),
+                                             getTargetPV(pvProv, date, frame));
 
         // spacecraft and target should be away from each other to define a pointing direction
         if (delta.getPosition().getNorm() == 0.0) {
