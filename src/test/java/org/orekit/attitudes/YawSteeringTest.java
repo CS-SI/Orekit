@@ -18,6 +18,9 @@ package org.orekit.attitudes;
 
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -33,6 +36,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -42,6 +46,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
 import org.orekit.utils.PVCoordinatesProvider;
@@ -139,6 +144,39 @@ public class YawSteeringTest {
 
     }
 
+    /** Test the derivatives of the sliding target
+     */
+    @Test
+    public void testSlidingDerivatives() throws OrekitException {
+
+        GroundPointing law = new YawSteering(new NadirPointing(earthShape),
+                                             CelestialBodyFactory.getSun(),
+                                             Vector3D.MINUS_I);
+
+        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.1; dt < 0.1; dt += 0.05) {
+            Orbit o = circOrbit.shiftedBy(dt);
+            sample.add(law.getTargetPV(o, o.getDate(), o.getFrame()));
+        }
+        TimeStampedPVCoordinates reference =
+                TimeStampedPVCoordinates.interpolate(circOrbit.getDate(),
+                                                     CartesianDerivativesFilter.USE_P, sample);
+
+        TimeStampedPVCoordinates target =
+                law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getPosition(),     target.getPosition()),
+                            1.0e-15 * reference.getPosition().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
+                            4.0e-11 * reference.getVelocity().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
+                            8.0e-6 * reference.getAcceleration().getNorm());
+
+    }
+
     @Test
     public void testSpin() throws OrekitException {
 
@@ -161,25 +199,25 @@ public class YawSteeringTest {
         SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
-
+ 
         // check spin is consistent with attitude evolution
         double errorAngleMinus     = Rotation.distance(sMinus.shiftedBy(h).getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
         double evolutionAngleMinus = Rotation.distance(sMinus.getAttitude().getRotation(),
                                                        s0.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-5 * evolutionAngleMinus);
+        Assert.assertEquals(0.0, errorAngleMinus, 1.0e-9 * evolutionAngleMinus);
         double errorAnglePlus      = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.shiftedBy(-h).getAttitude().getRotation());
         double evolutionAnglePlus  = Rotation.distance(s0.getAttitude().getRotation(),
                                                        sPlus.getAttitude().getRotation());
-        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-5 * evolutionAnglePlus);
+        Assert.assertEquals(0.0, errorAnglePlus, 1.0e-9 * evolutionAnglePlus);
 
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
-        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 2.0e-12);
+        Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 7.0e-14);
 
     }
 

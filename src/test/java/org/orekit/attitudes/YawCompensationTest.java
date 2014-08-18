@@ -17,6 +17,10 @@
 package org.orekit.attitudes;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -44,9 +48,12 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.AngularDerivativesFilter;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedAngularCoordinates;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
@@ -94,13 +101,44 @@ public class YawCompensationTest {
 
     }
 
+    /** Test the derivatives of the sliding target
+     */
+    @Test
+    public void testSlidingDerivatives() throws OrekitException {
+
+        GroundPointing law = new YawCompensation(new NadirPointing(earthShape));
+
+        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.1; dt < 0.1; dt += 0.01) {
+            Orbit o = circOrbit.shiftedBy(dt);
+            sample.add(law.getTargetPV(o, o.getDate(), o.getFrame()));
+        }
+        TimeStampedPVCoordinates reference =
+                TimeStampedPVCoordinates.interpolate(circOrbit.getDate(),
+                                                     CartesianDerivativesFilter.USE_P, sample);
+
+        TimeStampedPVCoordinates target =
+                law.getTargetPV(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getPosition(),     target.getPosition()),
+                            1.0e-15 * reference.getPosition().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
+                            3.0e-11 * reference.getVelocity().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
+                            7.0e-6 * reference.getAcceleration().getNorm());
+
+    }
+
     /** Test that pointed target motion is along -X sat axis
      */
     @Test
     public void testAlignment() throws OrekitException {
 
         GroundPointing   notCompensated = new NadirPointing(earthShape);
-        AttitudeProvider compensated    = new YawCompensation(notCompensated);
+        YawCompensation compensated    = new YawCompensation(notCompensated);
         Attitude         att0           = compensated.getAttitude(circOrbit, circOrbit.getDate(), circOrbit.getFrame());
 
         // ground point in satellite Z direction
@@ -220,7 +258,7 @@ public class YawCompensationTest {
             // 1/ Check yaw values around ascending node (max yaw)
             if ((FastMath.abs(extrapLat) < FastMath.toRadians(2.)) &&
                 (extrapPvSatEME2000.getVelocity().getZ() >= 0. )) {
-                Assert.assertEquals(3.206, FastMath.toDegrees(yawAngle), 0.003);
+                Assert.assertEquals(-3.206, FastMath.toDegrees(yawAngle), 0.003);
             }
 
             // 2/ Check yaw values around maximum positive latitude (min yaw)
@@ -231,7 +269,7 @@ public class YawCompensationTest {
             // 3/ Check yaw values around descending node (max yaw)
             if ( (FastMath.abs(extrapLat) < FastMath.toRadians(2.))
                     && (extrapPvSatEME2000.getVelocity().getZ() <= 0. ) ) {
-                Assert.assertEquals(-3.206, FastMath.toDegrees(yawAngle), 0.003);
+                Assert.assertEquals(3.206, FastMath.toDegrees(yawAngle), 0.003);
             }
 
             // 4/ Check yaw values around maximum negative latitude (min yaw)
@@ -242,7 +280,7 @@ public class YawCompensationTest {
         }
 
         // 5/ Check that minimum yaw compensation value is around maximum latitude
-        Assert.assertEquals(0.0, FastMath.toDegrees(yawMin), 0.004);
+        Assert.assertEquals( 0.0, FastMath.toDegrees(yawMin), 0.004);
         Assert.assertEquals(50.0, FastMath.toDegrees(latMin), 0.22);
 
     }
@@ -279,7 +317,7 @@ public class YawCompensationTest {
         NadirPointing nadirLaw = new NadirPointing(earthShape);
 
         // Target pointing attitude provider with yaw compensation
-        AttitudeProvider law = new YawCompensation(nadirLaw);
+        YawCompensation law = new YawCompensation(nadirLaw);
 
         KeplerianOrbit orbit =
             new KeplerianOrbit(7178000.0, 1.e-4, FastMath.toRadians(50.),
@@ -292,7 +330,9 @@ public class YawCompensationTest {
 
         double h = 0.01;
         SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
+        SpacecraftState sMinusHalf = propagator.propagate(date.shiftedBy(-0.5*h));
         SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sPlusHalf  = propagator.propagate(date.shiftedBy(0.5*h));
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         // check spin is consistent with attitude evolution
@@ -307,10 +347,19 @@ public class YawCompensationTest {
                                                        sPlus.getAttitude().getRotation());
         Assert.assertEquals(0.0, errorAnglePlus, 1.0e-6 * evolutionAnglePlus);
 
+        Vector3D r2 = TimeStampedAngularCoordinates.interpolate(date, AngularDerivativesFilter.USE_R,
+                                                                Arrays.asList(
+                                                                              sMinus.getAttitude().getOrientation(),
+                                                                              sMinusHalf.getAttitude().getOrientation(),
+                                                                              s0.getAttitude().getOrientation(),
+                                                                              sPlusHalf.getAttitude().getOrientation(),
+                                                                              sPlus.getAttitude().getOrientation())).getRotationRate();
+
         Vector3D spin0 = s0.getAttitude().getSpin();
         Vector3D reference = AngularCoordinates.estimateRate(sMinus.getAttitude().getRotation(),
                                                              sPlus.getAttitude().getRotation(),
                                                              2 * h);
+        System.out.println(h + " " + spin0.getNorm() + " " + spin0.subtract(reference).getNorm() + " " + spin0.subtract(r2).getNorm());
         Assert.assertTrue(spin0.getNorm() > 1.0e-3);
         Assert.assertEquals(0.0, spin0.subtract(reference).getNorm(), 1.0e-9);
 

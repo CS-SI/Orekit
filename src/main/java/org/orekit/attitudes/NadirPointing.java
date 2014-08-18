@@ -68,11 +68,13 @@ public class NadirPointing extends GroundPointing {
         final Transform refToBody = frame.getTransformTo(shape.getBodyFrame(), date);
 
         // sample intersection points in current date neighborhood
-        final double h  = 0.1;
+        final double h  = 0.01;
         final List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h), frame), refToBody.shiftedBy(-h)));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date, frame), refToBody));
-        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h), frame), refToBody.shiftedBy(+h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-2 * h), frame), refToBody.shiftedBy(-2 * h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(-h),     frame), refToBody.shiftedBy(-h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date,                   frame), refToBody));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+h),     frame), refToBody.shiftedBy(+h)));
+        sample.add(nadirRef(pvProv.getPVCoordinates(date.shiftedBy(+2 * h), frame), refToBody.shiftedBy(+2 * h)));
 
         // use interpolation to compute properly the time-derivatives
         return TimeStampedPVCoordinates.interpolate(date, CartesianDerivativesFilter.USE_P, sample);

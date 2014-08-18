@@ -16,6 +16,7 @@
  */
 package org.orekit.attitudes;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
@@ -108,32 +109,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
                                 final AbsoluteDate date, final Frame frame)
         throws OrekitException {
 
-        // attitude from base attitude provider
-        final Attitude base = getBaseState(pvProv, date, frame);
-
-        // compute yaw compensation
-        final TimeStampedAngularCoordinates compensation =
-                getCompensation(pvProv, date, frame, base);
-
-        // add compensation
-        return new Attitude(frame, compensation.addOffset(base.getOrientation()));
-
-    }
-
-    /** Compute the compensation rotation at given date.
-     * @param pvProv provider for PV coordinates
-     * @param date date at which rotation is requested
-     * @param frame reference frame from which attitude is computed
-     * @param base base satellite attitude in given frame.
-     * @return compensation rotation at date, i.e rotation between non compensated
-     * attitude state and compensated state.
-     * @throws OrekitException if some specific error occurs
-     */
-    private TimeStampedAngularCoordinates getCompensation(final PVCoordinatesProvider pvProv,
-                                                          final AbsoluteDate date, final Frame frame,
-                                                          final Attitude base)
-        throws OrekitException {
-
         final Transform bodyToRef = getBodyFrame().getTransformTo(frame, date);
 
         // compute sliding target ground point
@@ -146,16 +121,23 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         final PVCoordinates fixedBody = new PVCoordinates(slidingBody, Vector3D.ZERO, Vector3D.ZERO);
         final PVCoordinates fixedRef  = bodyToRef.transformPVCoordinates(fixedBody);
 
+        // compute relative position of FIXED ground point with respect to satellite
+        final PVCoordinates relativePosition =
+                new PVCoordinates(pvProv.getPVCoordinates(date, frame), slidingRef);
+
         // compute relative velocity of FIXED ground point with respect to satellite
-        final PVCoordinates rel = new PVCoordinates(fixedRef, slidingRef);
+        final PVCoordinates relativeVelocity =
+                new PVCoordinates(slidingRef.getVelocity().subtract(fixedRef.getVelocity()),
+                                  slidingRef.getAcceleration().subtract(fixedRef.getAcceleration()),
+                                  Vector3D.ZERO);
 
         // Compensation rotation definition :
-        //  . Z satellite axis is unchanged
+        //  . Z satellite axis points to sliding target
         //  . target relative velocity is in (Z,X) plane, in the -X half plane part
-        return new TimeStampedAngularCoordinates(date,
-                                                 PLUS_K, base.getOrientation().applyTo(new PVCoordinates(rel.getVelocity(), rel.getAcceleration(), Vector3D.ZERO)),
-                                                 PLUS_K, PLUS_I);
-
+        return new Attitude(frame,
+                            new TimeStampedAngularCoordinates(date,
+                                                              relativePosition, relativeVelocity,
+                                                              PLUS_K, PLUS_I));
     }
 
     /** Compute the yaw compensation angle at date.
@@ -168,9 +150,10 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     public double getYawAngle(final PVCoordinatesProvider pvProv,
                               final AbsoluteDate date, final Frame frame)
         throws OrekitException {
-        final TimeStampedAngularCoordinates compensation =
-                getCompensation(pvProv, date, frame, getBaseState(pvProv, date, frame));
-        return compensation.getRotation().applyTo(Vector3D.PLUS_I).getAlpha();
+        final Rotation rBase        = getBaseState(pvProv, date, frame).getRotation();
+        final Rotation rCompensated = getAttitude(pvProv, date, frame).getRotation();
+        final Rotation compensation = rCompensated.applyTo(rBase.revert());
+        return -compensation.applyTo(Vector3D.PLUS_I).getAlpha();
     }
 
 }

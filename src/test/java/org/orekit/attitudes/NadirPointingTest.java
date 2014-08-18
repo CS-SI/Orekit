@@ -17,6 +17,9 @@
 package org.orekit.attitudes;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
@@ -32,6 +35,7 @@ import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.KeplerianOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
@@ -41,6 +45,7 @@ import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
 import org.orekit.utils.AngularCoordinates;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
@@ -213,6 +218,47 @@ public class NadirPointingTest {
         // Check that satellite Z axis is collinear to local vertical axis
         double angle= Vector3D.angle(zSatItrf, targetVertical);
         Assert.assertEquals(0.0, FastMath.sin(angle), Utils.epsilonTest);
+
+    }
+
+    /** Test the derivatives of the sliding target
+     */
+    @Test
+    public void testSlidingDerivatives() throws OrekitException {
+
+        // Elliptic earth shape
+        OneAxisEllipsoid earthShape = new OneAxisEllipsoid(6378136.460, 1 / 298.257222101, itrf);
+
+        // Create earth center pointing attitude provider
+        NadirPointing nadirAttitudeLaw = new NadirPointing(earthShape);
+
+        //  Satellite on any position
+        CircularOrbit circ =
+            new CircularOrbit(7178000.0, 1.e-5, 0., FastMath.toRadians(50.), 0.,
+                                   FastMath.toRadians(90.), PositionAngle.TRUE,
+                                   FramesFactory.getEME2000(), date, mu);
+
+        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.1; dt < 0.1; dt += 0.05) {
+            Orbit o = circ.shiftedBy(dt);
+            sample.add(nadirAttitudeLaw.getTargetPV(o, o.getDate(), o.getFrame()));
+        }
+        TimeStampedPVCoordinates reference =
+                TimeStampedPVCoordinates.interpolate(circ.getDate(),
+                                                     CartesianDerivativesFilter.USE_P, sample);
+
+        TimeStampedPVCoordinates target =
+                nadirAttitudeLaw.getTargetPV(circ, circ.getDate(), circ.getFrame());
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getPosition(),     target.getPosition()),
+                            1.0e-15 * reference.getPosition().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getVelocity(),     target.getVelocity()),
+                            3.0e-11 * reference.getVelocity().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(reference.getAcceleration(), target.getAcceleration()),
+                            1.0e-5 * reference.getAcceleration().getNorm());
 
     }
 
