@@ -196,9 +196,9 @@ public class OneAxisEllipsoid implements BodyShape {
 
     }
 
-    /** Transform a surface-relative point to a cartesian point.
+    /** Transform a surface-relative point to a Cartesian point.
      * @param point surface-relative point
-     * @return point at the same location but as a cartesian point
+     * @return point at the same location but as a Cartesian point
      */
     public Vector3D transform(final GeodeticPoint point) {
         final double longitude = point.getLongitude();
@@ -213,9 +213,9 @@ public class OneAxisEllipsoid implements BodyShape {
         return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
     }
 
-    /** Transform a cartesian point to a surface-relative point.
-     * @param point cartesian point
-     * @param frame frame in which cartesian point is expressed
+    /** Transform a Cartesian point to a surface-relative point.
+     * @param point Cartesian point
+     * @param frame frame in which Cartesian point is expressed
      * @param date date of the point in given frame
      * @return point at the same location but as a surface-relative point,
      * expressed in body frame
@@ -306,14 +306,14 @@ public class OneAxisEllipsoid implements BodyShape {
      * <p>
      * We consider a guessed equatorial point E somewhere along
      * the ellipse major axis, and within the ellipse evolute curve.
-     * This point is defined by its coordinates (&rho;, 0).
+     * This point is defined by its coordinates (ρ, 0).
      * </p>
      * <p>
      * A point P belonging to line (E, A) can be computed from a
      * parameter k as follows:
      * </p>
      * <pre>
-     *   u = &rho; + k * (r - &rho;)
+     *   u = ρ + k * (r - ρ)
      *   v = 0 + k * (z - 0)
      * </pre>
      * <p>
@@ -336,7 +336,7 @@ public class OneAxisEllipsoid implements BodyShape {
      * <p>
      * This class provides methods to compute I and to compute the
      * offset between E' and E, which allows to find the value
-     * of &rho; such that I is the closest point of the ellipse to A.
+     * of ρ such that I is the closest point of the ellipse to A.
      * </p>
      */
     private class ClosestPointFinder implements UnivariateFunction {
@@ -397,8 +397,8 @@ public class OneAxisEllipsoid implements BodyShape {
          * <p>
          * We consider a guessed equatorial point E somewhere along
          * the ellipse major axis, and within the ellipse evolute curve.
-         * The line (E, A) intersects the ellipse at some point P. The
-         * line segment starting at point P and going along the interior
+         * The line (E, A) intersects the ellipse at some point I. The
+         * line segment starting at point I and going along the interior
          * normal of the ellipse crosses major axis at another equatorial
          * point E'. If E and E' are the same points, then the guessed
          * point E is the true nadir. This method compute the offset
