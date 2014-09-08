@@ -22,6 +22,10 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add">
+          Added projection of moving point (i.e. position and derivatives too) to
+          ground surface.
+      </action>
       <action dev="evan" type="add">
           Added general relativity force model.
       </action>

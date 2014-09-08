@@ -29,6 +29,7 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 /** Modeling of a one-axis ellipsoid.
@@ -72,6 +73,12 @@ public class OneAxisEllipsoid implements BodyShape {
     /** g * g. */
     private final double g2;
 
+    /** Evolute factor along major axis. */
+    private final double evoluteFactorR;
+
+    /** Evolute factor along minor axis. */
+    private final double evoluteFactorZ;
+
     /** Convergence limit. */
     private double angularThreshold;
 
@@ -88,14 +95,16 @@ public class OneAxisEllipsoid implements BodyShape {
      * @see org.orekit.frames.FramesFactory#getITRF(org.orekit.utils.IERSConventions, boolean)
      */
     public OneAxisEllipsoid(final double ae, final double f, final Frame bodyFrame) {
-        this.f   = f;
-        this.ae  = ae;
-        this.ae2 = ae * ae;
-        this.e2  = f * (2.0 - f);
-        this.g   = 1.0 - f;
-        this.g2  = g * g;
-        this.ap  = ae * g;
-        this.ap2 = ap * ap;
+        this.f              = f;
+        this.ae             = ae;
+        this.ae2            = ae * ae;
+        this.e2             = f * (2.0 - f);
+        this.g              = 1.0 - f;
+        this.g2             = g * g;
+        this.ap             = ae * g;
+        this.ap2            = ap * ap;
+        this.evoluteFactorR = (ae2 - ap2) / (ae2 * ae2);
+        this.evoluteFactorZ = (ap2 - ae2) / (ap2 * ap2);
         setAngularThreshold(1.0e-12);
         this.bodyFrame = bodyFrame;
     }
@@ -136,9 +145,7 @@ public class OneAxisEllipsoid implements BodyShape {
         return f;
     }
 
-    /** Get the body frame related to body shape.
-     * @return body frame related to body shape
-     */
+    /** {@inheritDoc} */
     public Frame getBodyFrame() {
         return bodyFrame;
     }
@@ -196,10 +203,7 @@ public class OneAxisEllipsoid implements BodyShape {
 
     }
 
-    /** Transform a surface-relative point to a Cartesian point.
-     * @param point surface-relative point
-     * @return point at the same location but as a Cartesian point
-     */
+    /** {@inheritDoc} */
     public Vector3D transform(final GeodeticPoint point) {
         final double longitude = point.getLongitude();
         final double cLambda   = FastMath.cos(longitude);
@@ -213,19 +217,87 @@ public class OneAxisEllipsoid implements BodyShape {
         return new Vector3D(r * cLambda, r * sLambda, (g2 * n + h) * sPhi);
     }
 
-    /** Transform a Cartesian point to a surface-relative point.
-     * @param point Cartesian point
-     * @param frame frame in which Cartesian point is expressed
-     * @param date date of the point in given frame
-     * @return point at the same location but as a surface-relative point,
-     * expressed in body frame
-     * @exception OrekitException if point cannot be converted to body frame
-     */
+    /** {@inheritDoc} */
+    public Vector3D projectToGround(final Vector3D point, final AbsoluteDate date, final Frame frame)
+        throws OrekitException {
+
+        // transform point to body frame
+        final Transform  toBody    = frame.getTransformTo(bodyFrame, date);
+        final Vector3D   p         = toBody.transformPosition(point);
+        final double     z         = p.getZ();
+        final double     r         = FastMath.hypot(p.getX(), p.getY());
+        final double     cosLambda = p.getX() / r;
+        final double     sinLambda = p.getY() / r;
+
+        // project point on the 2D meridian ellipse
+        final double[] rz = projectTo2DEllipse(r, z);
+
+        // projected 3D point in body frame
+        final Vector3D groundPoint = new Vector3D(rz[0] * cosLambda, rz[0] * sinLambda, rz[1]);
+
+        // transform point back to initial frame
+        return toBody.getInverse().transformPosition(groundPoint);
+
+    }
+
+    /** {@inheritDoc} */
+    public TimeStampedPVCoordinates projectToGround(final TimeStampedPVCoordinates pv,
+                                                    final Frame frame)
+        throws OrekitException {
+
+        // transform point to body frame
+        final Transform                toBody        = frame.getTransformTo(bodyFrame, pv.getDate());
+        final TimeStampedPVCoordinates pvInBodyFrame = toBody.transformPVCoordinates(pv);
+        final Vector3D                 p             = pvInBodyFrame.getPosition();
+        final Vector3D                 v             = pvInBodyFrame.getVelocity();
+        final double                   z             = p.getZ();
+        final double                   r             = FastMath.hypot(p.getX(), p.getY());
+        final double                   cosLambda     = p.getX() / r;
+        final double                   sinLambda     = p.getY() / r;
+        final double                   d             = p.getNorm();
+
+        // project point on the 2D meridian ellipse
+        final double[] rz = projectTo2DEllipse(r, z);
+
+        // center and radius of osculating circle
+        final double omegaR = evoluteFactorR * rz[0] * rz[0] * rz[0];
+        final double omegaZ = evoluteFactorZ * rz[1] * rz[1] * rz[1];
+        final double rho    = FastMath.hypot(rz[0] - omegaR, rz[1] - omegaZ);
+
+        // topocentric frame
+        final double   phi    = FastMath.atan2(rz[1], g2 * rz[0]);
+        final double   cosPhi = FastMath.cos(phi);
+        final double   sinPhi = FastMath.sin(phi);
+        final Vector3D zenith = new Vector3D(cosPhi * cosLambda, cosPhi * sinLambda, sinPhi);
+        final Vector3D east   = new Vector3D(-sinLambda, cosLambda, 0.0);
+        final Vector3D north  = new Vector3D(-sinPhi * cosLambda, -sinPhi * sinLambda, cosPhi);
+
+        // projected 3D point in body frame
+        final Vector3D gpP =
+                new Vector3D(rz[0] * cosLambda, rz[0] * sinLambda, rz[1]);
+
+        // velocity of the projected point
+        final Vector3D gpV = new Vector3D(Vector3D.dotProduct(v, north) * rho / d, north,
+                                          Vector3D.dotProduct(v,  east) * r   / d, east);
+
+        // TODO: acceleration of the projected point
+        final Vector3D gpA = Vector3D.ZERO;
+
+        // moving projected point
+        final TimeStampedPVCoordinates groundPV =
+                new TimeStampedPVCoordinates(pv.getDate(), gpP, gpV, gpA);
+
+        // transform moving projected point back to initial frame
+        return toBody.getInverse().transformPVCoordinates(groundPV);
+
+    }
+
+    /** {@inheritDoc} */
     public GeodeticPoint transform(final Vector3D point, final Frame frame,
                                    final AbsoluteDate date)
         throws OrekitException {
 
-        // transform line to body frame
+        // transform point to body frame
         final Vector3D pointInBodyFrame =
             frame.getTransformTo(bodyFrame, date).transformPosition(point);
         final double lambda = FastMath.atan2(pointInBodyFrame.getY(), pointInBodyFrame.getX());
@@ -237,35 +309,59 @@ public class OneAxisEllipsoid implements BodyShape {
                           pointInBodyFrame.getY() * pointInBodyFrame.getY();
         final double r  = FastMath.sqrt(r2);
 
+        // project point on the 2D meridian ellipse
+        final double[] ellipsePoint = projectTo2DEllipse(r, z);
+
+        // relative position of test point with respect to its ellipse sub-point
+        final double dr = r - ellipsePoint[0];
+        final double dz = z - ellipsePoint[1];
+        final double insideIfNegative = g2 * (r2 - ae2) + z2;
+
+        return new GeodeticPoint(FastMath.atan2(ellipsePoint[1], g2 * ellipsePoint[0]),
+                                 lambda,
+                                 FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
+
+    }
+
+    /** Find the closest 2D meridian ellipse point.
+     * @param r abscissa along the equator direction
+     * @param z ordinate along the polar axis
+     * @return (r, z) coordinates of the closest point belonging to 2D meridian ellipse
+     */
+    private double[] projectTo2DEllipse(final double r, final double z) {
+
         if (r <= angularThreshold * FastMath.abs(z)) {
             // the point is almost on the minor axis, approximate the ellipse with
             // the osculating circle whose center is at evolute cusp along minor axis
             final double osculatingRadius = ae2 / ap;
-            final double evoluteCusp      = ae * e2 / g;
-            final double delta            = z + FastMath.copySign(evoluteCusp, z);
-            return new GeodeticPoint(FastMath.atan2(delta, r), lambda,
-                                     FastMath.hypot(delta, r) - osculatingRadius);
+            final double evoluteCuspZ     = FastMath.copySign(ae * e2 / g, -z);
+            final double deltaZ           = z - evoluteCuspZ;
+            final double ratio            = osculatingRadius / FastMath.hypot(deltaZ, r);
+            return new double[] {
+                ratio *  r, evoluteCuspZ + ratio * deltaZ
+            };
         }
 
         // find ellipse point closest to test point
-        final double[] ellipsePoint;
         if (FastMath.abs(z) <= angularThreshold * r) {
             // the point is almost on the major axis
 
             final double osculatingRadius = ap2 / ae;
-            final double evoluteCusp      = ae * e2;
-            final double delta            = r - evoluteCusp;
-            if (delta >= 0) {
+            final double evoluteCuspR     = ae * e2;
+            final double deltaR           = r - evoluteCuspR;
+            if (deltaR >= 0) {
                 // the point is outside of the ellipse evolute, approximate the ellipse
                 // with the osculating circle whose center is at evolute cusp along major axis
-                return new GeodeticPoint(FastMath.atan2(z, delta), lambda,
-                                         FastMath.hypot(z, delta) - osculatingRadius);
+                final double ratio        = osculatingRadius / FastMath.hypot(z, deltaR);
+                return new double[] {
+                    evoluteCuspR + ratio *  deltaR, ratio * z
+                };
             }
 
             // the point is on the part of the major axis within ellipse evolute
             // we can compute the closest ellipse point analytically
             final double rEllipse = r / e2;
-            ellipsePoint = new double[] {
+            return new double[] {
                 rEllipse,
                 FastMath.copySign(g * FastMath.sqrt(ae2 - rEllipse * rEllipse), z)
             };
@@ -287,18 +383,9 @@ public class OneAxisEllipsoid implements BodyShape {
                 // the ellipsoid is almost a sphere
                 rho = 0;
             }
-            ellipsePoint = finder.intersectionPoint(rho);
+            return finder.intersectionPoint(rho);
 
         }
-
-        // relative position of test point with respect to its ellipse sub-point
-        final double dr = r - ellipsePoint[0];
-        final double dz = z - ellipsePoint[1];
-        final double insideIfNegative = g2 * (r2 - ae2) + z2;
-
-        return new GeodeticPoint(FastMath.atan2(ellipsePoint[1], g2 * ellipsePoint[0]),
-                                 lambda,
-                                 FastMath.copySign(FastMath.hypot(dr, dz), insideIfNegative));
 
     }
 

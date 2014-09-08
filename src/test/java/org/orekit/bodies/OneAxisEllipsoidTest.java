@@ -22,6 +22,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
@@ -36,17 +38,72 @@ import org.orekit.errors.OrekitException;
 import org.orekit.frames.Frame;
 import org.orekit.frames.FramesFactory;
 import org.orekit.orbits.CircularOrbit;
+import org.orekit.orbits.EquinoctialOrbit;
+import org.orekit.orbits.Orbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
 import org.orekit.time.TimeComponents;
 import org.orekit.time.TimeScalesFactory;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class OneAxisEllipsoidTest {
+
+    @Test
+    public void testTmp() {
+        double  r0 = 1600;
+        double  z0 = 2500;
+        double  a  = 6400;
+        double  b  = 3500;
+        double  a2 = a * a;
+        double  b2 = b * b;
+        double  rB = Double.NaN;
+        double  zB = Double.NaN;
+        double orB       = Double.NaN;
+        double ozB       = Double.NaN;
+        double orBDot    = Double.NaN;
+        double ozBDot    = Double.NaN;
+        double orBDotDot = Double.NaN;
+        double ozBDotDot = Double.NaN;
+        for (double theta :new double[] { -0.6, -0.48, -0.43, -0.1, 0.000001, 0.3, 0.6, 0.73, 0.9, 1.2, 0.5 * FastMath.PI, 1.8 }) {
+            double rA = rB;
+            double zA = zB;
+            rB        = a * FastMath.cos(theta);
+            zB        = b * FastMath.sin(theta);
+            double orA       = orB;
+            double ozA       = ozB;
+            double orADot    = orBDot;
+            double ozADot    = ozBDot;
+            double orADotDot = orBDotDot;
+            double ozADotDot = ozBDotDot;
+            orB       =  rB * rB * rB * (a2 - b2) / (a2 * a2);
+            ozB       = -zB * zB * zB * (a2 - b2) / (b2 * b2);
+            orBDot    = -3 * (a2 - b2) * zB * rB * rB / (b * a * a2);
+            ozBDot    = -3 * (a2 - b2) * rB * zB * zB / (a * b * b2);
+            orBDotDot = (a2 - b2) * (6 * a2 - 9 * rB * rB) * b * rB / (a * a2 * a2);
+            ozBDotDot = (a2 - b2) * (9 * zB * zB - 6 * b2) * a * zB / (b * b2 * b2);
+            if (FastMath.abs(theta - 0.3) < 0.001) {
+                double d = orBDot * orBDot + ozBDot * ozBDot;
+                double rho = d * FastMath.sqrt(d) / (orBDot * ozBDotDot - ozBDot * orBDotDot);
+                double qr = orB - ozBDot * rho / FastMath.hypot(ozBDot, orBDot);
+                double qz = ozB + orBDot * rho / FastMath.hypot(ozBDot, orBDot);
+                System.out.format(java.util.Locale.US, "    \\put(%.0f,%.0f){\\circle{150}}%n",
+                                  r0 +orB, z0 +ozB);
+                System.out.format(java.util.Locale.US, "    \\put(%.0f,%.0f){\\circle{150}}%n",
+                                  r0 +qr, z0+qz);
+                for (double alpha = 0; alpha < 6.28; alpha += 0.1) {
+                    System.out.format(java.util.Locale.US, "    \\put(%.0f,%.0f){\\circle{50}}%n",
+                                      r0+qr + rho * FastMath.cos(alpha),
+                                      z0+qz + rho * FastMath.sin(alpha));
+                }
+            }
+        }
+    }
 
     @Test
     public void testOrigin() throws OrekitException {
@@ -150,6 +207,91 @@ public class OneAxisEllipsoidTest {
         Assert.assertEquals(4201866.69291890, p.getX(), 1.0e-6);
         Assert.assertEquals(177908.184625686, p.getY(), 1.0e-6);
         Assert.assertEquals(4779203.64408617, p.getZ(), 1.0e-6);
+    }
+
+    @Test
+    public void testGroundProjectionPosition() throws OrekitException {
+        OneAxisEllipsoid model =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                 Constants.WGS84_EARTH_FLATTENING,
+                                 FramesFactory.getITRF(IERSConventions.IERS_2010, true));
+
+        TimeStampedPVCoordinates initPV =
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
+                                             new Vector3D(3220103., 69623., 6449822.),
+                                             new Vector3D(6414.7, -2006., -3180.),
+                                             Vector3D.ZERO);
+        Frame eme2000 = FramesFactory.getEME2000();
+        Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        for (double dt = 0; dt < 3600.0; dt += 60.0) {
+
+            TimeStampedPVCoordinates pv = orbit.getPVCoordinates(orbit.getDate().shiftedBy(dt), eme2000);
+            TimeStampedPVCoordinates groundPV = model.projectToGround(pv, eme2000);
+            Vector3D groundP = model.projectToGround(pv.getPosition(), pv.getDate(), eme2000);
+
+            // check methods projectToGround and transform are consistent with each other
+            Assert.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLatitude(),
+                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLatitude(),
+                                1.0e-10);
+            Assert.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLongitude(),
+                                model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLongitude(),
+                                1.0e-10);
+            Assert.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15);
+
+        }
+
+    }
+
+    @Test
+    public void testGroundProjectionDerivatives() throws OrekitException {
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        OneAxisEllipsoid model =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                 Constants.WGS84_EARTH_FLATTENING,
+                                 itrf);
+
+        TimeStampedPVCoordinates initPV =
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
+                                             new Vector3D(3220103., 69623., 6449822.),
+                                             new Vector3D(6414.7, -2006., -3180.),
+                                             Vector3D.ZERO);
+        Frame eme2000 = FramesFactory.getEME2000();
+        Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        List<TimeStampedPVCoordinates> pvList       = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> groundPVList = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
+            TimeStampedPVCoordinates pv = orbit.getPVCoordinates(orbit.getDate().shiftedBy(dt), eme2000);
+            TimeStampedPVCoordinates groundPV = model.projectToGround(pv, eme2000);
+            pvList.add(pv);
+            groundPVList.add(groundPV);
+        }
+
+        TimeStampedPVCoordinates central =
+                model.projectToGround(TimeStampedPVCoordinates.interpolate(orbit.getDate(),
+                                                                           CartesianDerivativesFilter.USE_P,
+                                                                           pvList),
+                                     eme2000);
+        TimeStampedPVCoordinates reference =
+                TimeStampedPVCoordinates.interpolate(orbit.getDate(),
+                                                     CartesianDerivativesFilter.USE_P,
+                                                     groundPVList);
+
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(central.getPosition(), reference.getPosition()),
+                            1.0e-10 * reference.getPosition().getNorm());
+        System.out.println(central.getPosition() + " " + central.getPosition().normalize());
+        System.out.println(central.getVelocity() + " " + reference.getVelocity());
+        System.out.println(central.getVelocity().getNorm() + " " + reference.getVelocity().getNorm());
+        System.out.println(model.transform(central.getPosition(), eme2000, orbit.getDate()));
+//        Assert.assertEquals(0.0,
+//                            Vector3D.distance(central.getVelocity(), reference.getVelocity()),
+//                            1.0e-10 * reference.getVelocity().getNorm());
+//        Assert.assertEquals(0.0,
+//                            Vector3D.distance(central.getAcceleration(), reference.getAcceleration()),
+//                            1.0e-10 * reference.getAcceleration().getNorm());
+
     }
 
     @Test
