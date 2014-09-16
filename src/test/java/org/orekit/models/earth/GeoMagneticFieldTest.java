@@ -36,6 +36,50 @@ import org.orekit.models.earth.GeoMagneticFieldFactory.FieldModel;
 public class GeoMagneticFieldTest {
 
     @Test
+    public void testInterpolationYYY5() throws OrekitException {
+        double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2005);
+        GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
+        GeoMagneticElements e = field.calculateField(1.2, 0.7, -2.5);
+        Assert.assertEquals(-6.0032, e.getDeclination(), 1.0e-4);
+
+        decimalYear = GeoMagneticField.getDecimalYear(2, 1, 2005);
+        field = GeoMagneticFieldFactory.getIGRF(decimalYear);
+        e = field.calculateField(1.2, 0.7, -2.5);
+        Assert.assertEquals(-6.0029, e.getDeclination(), 1.0e-4);
+    }
+
+    @Test
+    public void testInterpolationAtEndOfEpoch() throws OrekitException {
+        double decimalYear = GeoMagneticField.getDecimalYear(31, 12, 2009);
+        GeoMagneticField field1 = GeoMagneticFieldFactory.getIGRF(decimalYear);
+        GeoMagneticField field2 = GeoMagneticFieldFactory.getIGRF(2010.0);
+
+        Assert.assertNotEquals(field1.getEpoch(), field2.getEpoch());
+
+        GeoMagneticElements e1 = field1.calculateField(0, 0, 0);
+        Assert.assertEquals(-6.1068, e1.getDeclination(), 1.0e-4);
+
+        GeoMagneticElements e2 = field2.calculateField(0, 0, 0);
+        Assert.assertEquals(-6.1064, e2.getDeclination(), 1.0e-4);
+    }
+
+    @Test
+    public void testInterpolationAtEndOfValidity() throws OrekitException {
+        double decimalYear = GeoMagneticField.getDecimalYear(1, 1, 2015);
+        GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
+
+        GeoMagneticElements e = field.calculateField(0, 0, 0);
+        Assert.assertEquals(-5.44, e.getDeclination(), 1.0e-4);
+    }
+
+    @Test(expected=OrekitException.class)
+    public void testTransformationOutsideValidityPeriod() throws OrekitException {
+        double decimalYear = GeoMagneticField.getDecimalYear(10, 1, 2015);
+        @SuppressWarnings("unused")
+        GeoMagneticField field = GeoMagneticFieldFactory.getIGRF(decimalYear);
+    }
+
+    @Test
     public void testWMM() throws Exception {
         // test values from sample coordinate file
         runSampleFile(FieldModel.WMM, "sample_coords.txt", "sample_out_WMM2010.txt");
