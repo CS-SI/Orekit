@@ -537,7 +537,7 @@ public class DSSTPropagator extends AbstractIntegratedPropagator {
                 meanOrbit = state.getOrbit();
             } else {
                 // the state is considered to be an osculating state
-                meanOrbit = computeMeanOrbit(state);
+                meanOrbit = computeMeanState(state, forceModels).getOrbit();
             }
 
             OrbitType.EQUINOCTIAL.mapOrbitToArray(meanOrbit, PositionAngle.MEAN, y);
