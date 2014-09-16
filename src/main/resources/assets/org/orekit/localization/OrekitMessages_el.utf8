@@ -310,6 +310,18 @@ ADDITIONAL_STATE_NAME_ALREADY_IN_USE = το όνομα "{0}" χρησιμοπο�
 # reset state not allowed
 NON_RESETABLE_STATE = Η κατάσταση επαναφοράς δεν επιτρέπεται
 
+# Cannot compute Newcomb operators for sigma > rho ({0} > {1})
+DSST_NEWCOMB_OPERATORS_COMPUTATION = Δεν μπορεί να υπολογιστούν τελεστές Newcomb για sigma > rho ({0} > {1})
+
+# Cannot compute the Vmns coefficient with m > n ({0} > {1})
+DSST_VMNS_COEFFICIENT_ERROR_MS = Δεν μπορεί να υπολογιστεί συντελεστής Wmns με m > n ({0}> {1})
+
+# inconsistent shadow computation: entry = {0} whereas exit = {1}
+DSST_SPR_SHADOW_INCONSISTENT = μη έγκυρος υπολογισμός σκιάς: είσοδος = {0}, ενώ έξοδος = {1}
+
+# The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
+DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Η τρέχουσα τροχιά έχει εκκεντρότητα ({0}> 0.5). Ο DSST χρειάζεται για τον υπολογισμό των κατά μέσο όρο ποσοστών, μία αριθμητική μέθοδο εξαρτώμενη από το χρόνο που δεν έχει ακόμη υλοποιηθεί 
+
 # unsupported sp3 file version {0}
 SP3_UNSUPPORTED_VERSION = μη υποστηριζόμενη έκδοση του αρχείου sp3 {0}
 
@@ -327,27 +339,6 @@ UNSUPPORTED_TIME_TRANSFORM = το γεωμαγνητικό μοντέλο {0} μ
 
 # time transformation of geomagnetic model {0} with epoch {1} is outside its validity range: {2} != [{3}, {4}]
 OUT_OF_RANGE_TIME_TRANSFORM = o χρόνος μετατροπής τoυ γεωμαγνητικού μοντέλου {0} με την εποχή {1} είναι εκτός της περιοχής ισχύος: {2}! = [{3}, {4}]
-
-# Cannot compute Newcomb operators for sigma > rho ({0} > {1})
-DSST_NEWCOMB_OPERATORS_COMPUTATION = Δεν μπορεί να υπολογιστούν τελεστές Newcomb για sigma > rho ({0} > {1})
-
-# Cannot compute the Vmns coefficient with m > n ({0} > {1})
-DSST_VMNS_COEFFICIENT_ERROR_MS = Δεν μπορεί να υπολογιστεί συντελεστής Wmns με m > n ({0}> {1})
-
-# inconsistent shadow computation: entry = {0} whereas exit = {1}
-DSST_SPR_SHADOW_INCONSISTENT = μη έγκυρος υπολογισμός σκιάς: είσοδος = {0}, ενώ έξοδος = {1}
-
-# The current orbit has an eccentricity ({0} > 0.5). DSST needs an unimplemented time dependent numerical method to compute the averaged rates
-DSST_ECC_NO_NUMERICAL_AVERAGING_METHOD = Η τρέχουσα τροχιά έχει εκκεντρότητα ({0}> 0.5). Ο DSST χρειάζεται για τον υπολογισμό των κατά μέσο όρο ποσοστών, μία αριθμητική μέθοδο εξαρτώμενη από το χρόνο που δεν έχει ακόμη υλοποιηθεί 
-
-# unsupported sp3 file version {0}
-SP3_UNSUPPORTED_VERSION = μη υποστηριζόμενη sp3 έκδοση αρχείου {0}
-
-# unsupported time system {0}
-SP3_UNSUPPORTED_TIMESYSTEM = μη υποστηριζόμενη ώρα συστήματος {0}
-
-# unexpected end of file in sp3 file (after line {0})
-SP3_UNEXPECTED_END_OF_FILE = μη αναμενόμενο τέλος αρχείου στο αρχείο sp3 (μετά από τη γραμμή {0})
 
 # not enough data for interpolation (sample size = {0})
 NOT_ENOUGH_DATA_FOR_INTERPOLATION = δεν υπάρχουν επαρκή δεδομένα για την παρεμβολή (μέγεθος δείγματος = {0})
@@ -372,6 +363,9 @@ UNABLE_TO_GENERATE_NEW_DATA_AFTER = αδύνατο να δημιουργήσει
 
 # unable to compute hyperbolic eccentric anomaly from the mean anomaly after {0} iterations
 UNABLE_TO_COMPUTE_HYPERBOLIC_ECCENTRIC_ANOMALY = αδύνατο να υπολογίστει υπερβολική εκκεντρική ανωμαλία από τη μέση ανωμαλία μετά από {0} επαναλήψεις
+
+# unable to compute mean orbit from osculating orbit after {0} iterations
+UNABLE_TO_COMPUTE_DSST_MEAN_PARAMETERS = <MISSING TRANSLATION>
 
 # derivation order {0} is out of range
 OUT_OF_RANGE_DERIVATION_ORDER = <MISSING TRANSLATION>
