@@ -249,46 +249,128 @@ public class OneAxisEllipsoid implements BodyShape {
         final Transform                toBody        = frame.getTransformTo(bodyFrame, pv.getDate());
         final TimeStampedPVCoordinates pvInBodyFrame = toBody.transformPVCoordinates(pv);
         final Vector3D                 p             = pvInBodyFrame.getPosition();
-        final Vector3D                 v             = pvInBodyFrame.getVelocity();
         final double                   z             = p.getZ();
         final double                   r             = FastMath.hypot(p.getX(), p.getY());
         final double                   cosLambda     = p.getX() / r;
         final double                   sinLambda     = p.getY() / r;
-        final double                   d             = p.getNorm();
 
         // project point on the 2D meridian ellipse
         final double[] rz = projectTo2DEllipse(r, z);
-
-        // center and radius of osculating circle
-        final double omegaR = evoluteFactorR * rz[0] * rz[0] * rz[0];
-        final double omegaZ = evoluteFactorZ * rz[1] * rz[1] * rz[1];
-        final double rho    = FastMath.hypot(rz[0] - omegaR, rz[1] - omegaZ);
-
-        // topocentric frame
-        final double   phi    = FastMath.atan2(rz[1], g2 * rz[0]);
-        final double   cosPhi = FastMath.cos(phi);
-        final double   sinPhi = FastMath.sin(phi);
-        final Vector3D zenith = new Vector3D(cosPhi * cosLambda, cosPhi * sinLambda, sinPhi);
-        final Vector3D east   = new Vector3D(-sinLambda, cosLambda, 0.0);
-        final Vector3D north  = new Vector3D(-sinPhi * cosLambda, -sinPhi * sinLambda, cosPhi);
 
         // projected 3D point in body frame
         final Vector3D gpP =
                 new Vector3D(rz[0] * cosLambda, rz[0] * sinLambda, rz[1]);
 
-        // velocity of the projected point
-        final Vector3D gpV = new Vector3D(Vector3D.dotProduct(v, north) * rho / d, north,
-                                          Vector3D.dotProduct(v,  east) * r   / d, east);
+        // center and radius of osculating circle
+        final double omegaR = evoluteFactorR * rz[0] * rz[0] * rz[0];
+        final double omegaZ = evoluteFactorZ * rz[1] * rz[1] * rz[1];
 
-        // TODO: acceleration of the projected point
-        final Vector3D gpA = Vector3D.ZERO;
+        // projection ratio from point to ground in the meridian plane
+        final double meridianProjectionRatio = FastMath.hypot(rz[0] - omegaR, rz[1] - omegaZ) /
+                                               FastMath.hypot(r - omegaR, z - omegaZ);
+
+        // projection ratio from point to ground in the equatorial plane
+        final double equatorialProjectionRatio = rz[0] / r;
+
+        // topocentric frame
+        final double   phi     = FastMath.atan2(rz[1], g2 * rz[0]);
+        final double   cosPhi  = FastMath.cos(phi);
+        final double   sinPhi  = FastMath.sin(phi);
+        final Vector3D east    = new Vector3D(-sinLambda, cosLambda, 0.0);
+        final Vector3D north   = new Vector3D(-sinPhi * cosLambda, -sinPhi * sinLambda, cosPhi);
+        final Vector3D zenith  = new Vector3D( cosPhi * cosLambda,  cosPhi * sinLambda, sinPhi);
+
+        // velocity of the projected point
+        final double vNorth    = meridianProjectionRatio   * Vector3D.dotProduct(pvInBodyFrame.getVelocity(), north);
+        final double vEast     = equatorialProjectionRatio * Vector3D.dotProduct(pvInBodyFrame.getVelocity(), east);
+        final Vector3D gpV     = new Vector3D(vNorth, north, vEast, east);
+
+        // acceleration of the projected point
+        final double aNorth    = meridianProjectionRatio   * Vector3D.dotProduct(pvInBodyFrame.getAcceleration(), north);
+        final double aEast     = equatorialProjectionRatio * Vector3D.dotProduct(pvInBodyFrame.getAcceleration(), east);
+        final double rho       = radiusOfCurvature(gpP, gpV.normalize(), zenith);
+        final double aZenith   = -(vNorth * vNorth + vEast * vEast) / rho;
+        final Vector3D gpA     = new Vector3D(aNorth, north, aEast, east, aZenith, zenith);
 
         // moving projected point
-        final TimeStampedPVCoordinates groundPV =
-                new TimeStampedPVCoordinates(pv.getDate(), gpP, gpV, gpA);
+        final TimeStampedPVCoordinates groundPV = new TimeStampedPVCoordinates(pv.getDate(), gpP, gpV, gpA);
 
         // transform moving projected point back to initial frame
         return toBody.getInverse().transformPVCoordinates(groundPV);
+
+    }
+
+    /** Compute the radius of curvature on the ellipsoid point along some tangential direction.
+     * @param point point on the ellipsoid
+     * @param tangentialDirection direction tangential to the ellipsoid at specified point
+     * @param zenith zenith direction normal to the ellipsoid at specified point
+     * @return radius of curvature on the ellipsoid
+     */
+    private double radiusOfCurvature(final Vector3D point,
+                                     final Vector3D tangentialDirection,
+                                     final Vector3D zenith) {
+
+        // we define a plane from a point P on the ellipsoid and two orthogonal
+        // vectors u and v. We want to compute the intersection of this plane
+        // with the ellipsoid, which is known to be exist as it contains at least point P.
+        // the points Q in the planes are computed as: Q = P + τ u + υ v (1)
+        // P belongs to the ellipse so (xP/a)² + (yP/b)² + (zP/c)² = 1   (2)
+        // Q belongs to the ellipse so (xQ/a)² + (yQ/b)² + (zQ/c)² = 1   (3)
+        // computing (3) - (2) and introducing τ and υ using equation (1), we get:
+        //   ((τ ux + υ vx)² + 2 xP (τ ux + υ vx)) / a²
+        // + ((τ uy + υ vy)² + 2 yP (τ uy + υ vy)) / b²
+        // + ((τ uz + υ vz)² + 2 zP (τ uz + υ vz)) / c²
+        // = 0
+        // which can be rewritten:
+        // α τ² + β υ² + 2 γ τυ  + 2 δ τ + 2 ε υ = 0
+        // with
+        // α =  ux²  / a² +  uy²  / b² +  uz²  / c² > 0
+        // β =  vx²  / a² +  vy²  / b² +  vz²  / c² > 0
+        // γ = ux vx / a² + uy vy / b² + uz vz / c²
+        // δ = xP ux / a² + yP uy / b² + zP uz / c²
+        // ε = xP vx / a² + yP vy / b² + zP vz / c²
+        // this is the equation of a conic (here an ellipse)
+        // by definition the point P corresponding to τ = 0 and υ = 0 belongs to it
+        final double ux = tangentialDirection.getX();
+        final double uy = tangentialDirection.getY();
+        final double uz = tangentialDirection.getZ();
+        final double vx = zenith.getX();
+        final double vy = zenith.getY();
+        final double vz = zenith.getZ();
+        final double xP = point.getX();
+        final double yP = point.getY();
+        final double zP = point.getZ();
+        final double alpha   = (ux * ux + uy * uy) / ae2 + uz * uz / ap2;
+        final double beta    = (vx * vx + vy * vy) / ae2 + vz * vz / ap2;
+        final double gamma   = (ux * vx + uy * vy) / ae2 + uz * vz / ap2;
+        final double delta   = (xP * ux + yP * uy) / ae2 + zP * uz / ap2;
+        final double epsilon = (xP * vx + yP * vy) / ae2 + zP * vz / ap2;
+
+        // in the specific case where u is selected tangential to the
+        // ellipsoid and v is the external normal, then the plane is
+        // a normal cut plane in which the curvature along direction u
+        /// can be computed.
+        // In this case, we consider the τ offset along the u axis as a
+        // free parameter, and we solve for the υ offset along the v axis:
+        // β υ² + 2 (γ τ + ε) υ  + (α τ² + 2 δ τ) = 0
+        // the choice of u and v implies that when τ is not too large
+        // (i.e. it does not extend pas the ellipsoid), then there will
+        // be two negative solutions υ₁, υ₂, we want the closest to zero
+        // in order to compute curvature near P (the other solution
+        // correspond to the other side of the ellipsoid, almost opposite
+        // to P)
+        // υ(τ) = [√((γ τ + ε)² - β (α τ² + 2 δ τ)) - (γ τ + ε)] / β
+        // υ(τ) = [√((γ² - β α) τ² + 2 (γ ε - β δ) τ + ε²)) - (γ τ + ε)] / β
+        // as we have selected u to be tangential to the ellipsoid and v to
+        // be the external normal, dυ/dτ (τ=0) is null and the curvature is
+        // negative. This implies that the relation between the radius of
+        // curvature at τ=0 and the second derivative of υ(τ) is simply
+        // d²υ/dτ² (τ=0) = -1/ρ
+        // so we have an explicit expression for the radius of curvature
+        // at P along direction u:
+        // ρ = ε³ / (α ε² + β δ² - 2 δ ε γ)
+        final double epsilon2 = epsilon * epsilon;
+        return epsilon2 * epsilon / (alpha * epsilon2 + beta * delta * delta - 2 * delta * epsilon * gamma);
 
     }
 
