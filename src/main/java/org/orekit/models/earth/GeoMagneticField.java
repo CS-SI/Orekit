@@ -241,6 +241,12 @@ public class GeoMagneticField {
             throw new OrekitException(OrekitMessages.UNSUPPORTED_TIME_TRANSFORM, modelName, String.valueOf(epoch));
         }
 
+        // the model can only be transformed within its validity period
+        if (year < validityStart || year > validityEnd) {
+            throw new OrekitException(OrekitMessages.OUT_OF_RANGE_TIME_TRANSFORM,
+                                      modelName, String.valueOf(epoch), year, validityStart, validityEnd);
+        }
+
         final double dt = year - epoch;
         final int maxSecIndex = maxNSec * (maxNSec + 1) / 2 + maxNSec;
 
@@ -326,7 +332,7 @@ public class GeoMagneticField {
         final int[] days = {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334};
         final int leapYear = (((year % 4) == 0) && (((year % 100) != 0) || ((year % 400) == 0))) ? 1 : 0;
 
-        final double dayInYear = days[month - 1] + day + (month > 2 ? leapYear : 0);
+        final double dayInYear = days[month - 1] + (day - 1) + (month > 2 ? leapYear : 0);
         return (double) year + (dayInYear / (365.0d + leapYear));
     }
 

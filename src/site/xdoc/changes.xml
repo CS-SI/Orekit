@@ -26,6 +26,23 @@
           Added projection of moving point (i.e. position and derivatives too) to
           ground surface.
       </action>
+      <action dev="tn" type="fix">
+      Fixed various issues in geomagnetic fields models:
+      GeoMagneticField.getDecimalYear() returned a slightly wrong result: e.g. for 1/1/2005
+      returned 2005.0020 instead of 2005.0, GeoMagneticFieldFactory.getModel() returned
+      wrong interpolation near models validity endpoints, GeoMagneticField.transformModel(double)
+      method did not check year validity. Added more unit tests and adapted existing tests for
+      IGRF/WMM with sample values / results as they have changed slightly.
+      Fixes issue #178.
+      </action>
+      <action dev="luc" type="fix" due-to="Patrice Mathieu">
+        Fixed closest TLE search. When filtering first from satellite ID and
+        then extracting closest date, the returned satellite was sometime wrong.
+      </action>
+      <action dev="luc" type="add" due-to="Hank Grabowski">
+        Allow attitude overriding during impulsive maneuvers.
+        Fixes issue #176.  
+      </action>
       <action dev="evan" type="add">
           Added general relativity force model.
       </action>
