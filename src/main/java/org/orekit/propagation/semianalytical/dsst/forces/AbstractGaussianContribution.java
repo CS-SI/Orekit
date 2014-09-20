@@ -19,11 +19,13 @@ package org.orekit.propagation.semianalytical.dsst.forces;
 import org.apache.commons.math3.analysis.UnivariateVectorFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
+import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitExceptionWrapper;
 import org.orekit.forces.ForceModel;
 import org.orekit.frames.Frame;
+import org.orekit.orbits.EquinoctialOrbit;
 import org.orekit.orbits.Orbit;
 import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
@@ -129,7 +131,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     // CHECKSTYLE: resume VisibilityModifierCheck
 
     /** Contribution to be numerically averaged. */
-    private ForceModel contribution;
+    private final ForceModel contribution;
 
     /** Gauss integrator. */
     private final double threshold;
@@ -164,6 +166,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initialize(final AuxiliaryElements aux, final boolean meanOnly)
         throws OrekitException {
 
@@ -177,6 +180,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void initializeStep(final AuxiliaryElements aux)
         throws OrekitException {
 
@@ -226,6 +230,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
     }
 
     /** {@inheritDoc} */
+    @Override
     public double[] getMeanElementRate(final SpacecraftState state) throws OrekitException {
 
         double[] meanElementRate = new double[6];
@@ -337,7 +342,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         final double[] shortPeriodicVariation = new double[6];
         for (int i = 0; i < 6; i++) {
             shortPeriodicVariation[i] = gaussianSPCoefs.getCij(i, 0, date) +
-                                        center * gaussianSPCoefs.getDij(i, 1, date);
+                    center * gaussianSPCoefs.getDij(i, 1, date);
             if (i == 5) {
                 shortPeriodicVariation[i] += center2 * gaussianSPCoefs.getDij(i, 2, date);
             }
@@ -384,7 +389,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         private Vector3D acceleration;
 
         /** state. */
-        private SpacecraftState state;
+        private final SpacecraftState state;
 
         /** Simple constructor.
          *  @param state input state
@@ -458,6 +463,7 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
         }
 
         /** {@inheritDoc} */
+        @Override
         public double[] value(final double x) {
 
             //Compute the time difference from the true longitude difference
@@ -480,14 +486,32 @@ public abstract class AbstractGaussianContribution implements DSSTForceModel {
             // Compute acceleration
             Vector3D acc = Vector3D.ZERO;
             try {
+
                 // shift the orbit to dt
                 final Orbit shiftedOrbit = state.getOrbit().shiftedBy(dt);
 
+                // Recompose an orbit with time held fixed to be compliant with DSST theory
+                final Orbit recomposedOrbit =
+                        new EquinoctialOrbit(shiftedOrbit.getA(),
+                                             shiftedOrbit.getEquinoctialEx(),
+                                             shiftedOrbit.getEquinoctialEy(),
+                                             shiftedOrbit.getHx(),
+                                             shiftedOrbit.getHy(),
+                                             shiftedOrbit.getLv(),
+                                             PositionAngle.TRUE,
+                                             shiftedOrbit.getFrame(),
+                                             state.getDate(),
+                                             shiftedOrbit.getMu());
+
+                // Get the corresponding attitude
+                final Attitude recomposedAttitude =
+                        attitudeProvider.getAttitude(recomposedOrbit,
+                                                     recomposedOrbit.getDate(),
+                                                     recomposedOrbit.getFrame());
+
                 // create shifted SpacecraftState with attitude at specified time
-                final SpacecraftState shiftedState = new SpacecraftState(
-                        shiftedOrbit, attitudeProvider.getAttitude(
-                                shiftedOrbit, shiftedOrbit.getDate(),
-                                shiftedOrbit.getFrame()), state.getMass());
+                final SpacecraftState shiftedState =
+                        new SpacecraftState(recomposedOrbit, recomposedAttitude, state.getMass());
 
                 acc = getAcceleration(shiftedState);
 
