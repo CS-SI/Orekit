@@ -94,8 +94,7 @@ public class Ellipsoid implements Serializable {
      */
     public PlaneSection getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal) {
 
-        // we define the points Q in the plane using two free variables τ and υ
-        // as:
+        // we define the points Q in the plane using two free variables τ and υ as:
         // Q = P + τ u + υ v
         // Q belongs to the ellipse so:
         // (xQ / a)² + (yQ / b)² + (zQ / c)² = 1
@@ -154,18 +153,16 @@ public class Ellipsoid implements Serializable {
         // As the solutions of the quadratic equation obey t₁t₂ = -1, they correspond to
         // angles θ in quadrature to each other. Selecting one solution or the other simply
         // exchanges the principal axes. As we don't care about which axis we want as the
-        // first one, we select the solution with |tanθ] <= 1, in order to increase accuracy
-        // when extracting θ
+        // first one, we select an arbitrary solution
         final double theta;
         if (FastMath.abs(gamma) < Precision.SAFE_MIN) {
             theta = 0.0;
         } else {
             final double bMA = beta - alpha;
-            final double tanTheta =
-                    (bMA >= 0) ?
-                    ((bMA + FastMath.sqrt(bMA * bMA + 4 * gamma * gamma)) / (2 * gamma)) :
-                    ((bMA - FastMath.sqrt(bMA * bMA + 4 * gamma * gamma)) / (2 * gamma));
-            theta = FastMath.abs(tanTheta) > 1 ? FastMath.atan(-1.0 / tanTheta) : FastMath.atan(tanTheta);
+            final double t   = (bMA >= 0) ?
+                               (-2 * gamma / (bMA + FastMath.sqrt(bMA * bMA + 4 * gamma * gamma))) :
+                               (-2 * gamma / (bMA - FastMath.sqrt(bMA * bMA + 4 * gamma * gamma)));
+            theta = FastMath.atan(t);
         }
 
         // choose τC and υC in order to cancel the linear terms in λ and μ
