@@ -26,6 +26,10 @@
           Added projection of moving point (i.e. position and derivatives too) to
           ground surface.
       </action>
+      <action dev="luc" type="add">
+          Added a general 3 axes ellipsoid class, including a feature to compute
+          any plane section (which result in a 2D ellipse).
+      </action>
       <action dev="tn" type="fix">
       Fixed various issues in geomagnetic fields models:
       GeoMagneticField.getDecimalYear() returned a slightly wrong result: e.g. for 1/1/2005
