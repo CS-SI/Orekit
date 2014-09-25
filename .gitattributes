@@ -21,6 +21,7 @@
 *.jpg                              -text
 *.odg                              -text
 *.png                              -text
+src/*/resources/inpop/*.dat        -text
 
 # specific data files known to be text: End Of Line transformations will be done
 .gitattributes                      text
