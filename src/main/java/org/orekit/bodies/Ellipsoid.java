@@ -92,7 +92,7 @@ public class Ellipsoid implements Serializable {
      * @param planeNormal normal of the plane
      * @return plane section or null if there are no intersections
      */
-    public PlaneSection getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal) {
+    public Ellipse getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal) {
 
         // we define the points Q in the plane using two free variables τ and υ as:
         // Q = P + τ u + υ v
@@ -204,111 +204,15 @@ public class Ellipsoid implements Serializable {
         }
 
         if (l > m) {
-            return new PlaneSection(new Vector3D(1, planePoint, tauC, u, nuC, v),
-                                    new Vector3D( cos, u, sin, v),
-                                    new Vector3D(-sin, u, cos, v),
-                                    l, m);
+            return new Ellipse(new Vector3D(1, planePoint, tauC, u, nuC, v),
+                               new Vector3D( cos, u, sin, v),
+                               new Vector3D(-sin, u, cos, v),
+                               l, m, frame);
         } else {
-            return new PlaneSection(new Vector3D(1, planePoint, tauC, u, nuC, v),
-                                    new Vector3D(sin, u, -cos, v),
-                                    new Vector3D(cos, u,  sin, v),
-                                    m, l);
-        }
-
-    }
-
-    /**
-     * Class holding the 2D ellipse at the intersection of the 3D ellipsoid and
-     * a plane.
-     * <p>
-     * Instances of this class are guaranteed to be immutable (but the underlying
-     * ellipsoid may not be).
-     * </p>
-     */
-    public class PlaneSection implements Serializable {
-
-        /** Serializable UID. */
-        private static final long serialVersionUID = 20140923L;
-
-        /** Center of the 2D ellipse. */
-        private final Vector3D center;
-
-        /** Unit vector along the major axis. */
-        private final Vector3D u;
-
-        /** Unit vector along the minor axis. */
-        private final Vector3D v;
-
-        /** Semi major axis. */
-        private final double a;
-
-        /** Semi minor axis. */
-        private final double b;
-
-        /** Simple constructor.
-         * @param center center of the 2D ellipse
-         * @param u unit vector along the major axis
-         * @param v unit vector along the minor axis
-         * @param a semi major axis
-         * @param b semi minor axis
-         */
-        private PlaneSection(final Vector3D center, final Vector3D u,
-                             final Vector3D v, final double a, final double b) {
-            this.center = center;
-            this.u = u;
-            this.v = v;
-            this.a = a;
-            this.b = b;
-        }
-
-        /** Get the center of the 2D ellipse.
-         * @return center of the 2D ellipse
-         */
-        public Vector3D getCenter() {
-            return center;
-        }
-
-        /** Get the unit vector along the major axis.
-         * @return unit vector along the major axis
-         */
-        public Vector3D getU() {
-            return u;
-        }
-
-        /** Get the unit vector along the minor axis.
-         * @return unit vector along the minor axis
-         */
-        public Vector3D getV() {
-            return v;
-        }
-
-        /** Get the semi major axis.
-         * @return semi major axis
-         */
-        public double getA() {
-            return a;
-        }
-
-        /** Get the semi minor axis.
-         * @return semi minor axis
-         */
-        public double getB() {
-            return b;
-        }
-
-        /** Get the base ellipsoid.
-         * @return base ellipsoid
-         */
-        public Ellipsoid getEllipsoid() {
-            return Ellipsoid.this;
-        }
-
-        /** Get a point of the 2D ellipse.
-         * @param theta angular parameter on the ellipse (really the eccentric anomaly)
-         * @return ellipse point at theta, in underlying ellipsoid frame
-         */
-        public Vector3D pointAt(final double theta) {
-            return new Vector3D(1, center, a * FastMath.cos(theta), u, b * FastMath.sin(theta), v);
+            return new Ellipse(new Vector3D(1, planePoint, tauC, u, nuC, v),
+                               new Vector3D(sin, u, -cos, v),
+                               new Vector3D(cos, u,  sin, v),
+                               m, l, frame);
         }
 
     }

@@ -53,30 +53,30 @@ public class EllipsoidTest {
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
 
-        final Ellipsoid.PlaneSection xy = ellipsoid.getPlaneSection(Vector3D.ZERO, Vector3D.PLUS_K);
+        final Ellipse xy = ellipsoid.getPlaneSection(Vector3D.ZERO, Vector3D.PLUS_K);
         Assert.assertEquals(0, Vector3D.distance(Vector3D.ZERO, xy.getCenter()), 1.0e-15);
         checkPrincipalAxes(xy, Vector3D.PLUS_J, Vector3D.MINUS_I);
         Assert.assertEquals(2.0, xy.getA(), 1.0e-15);
         Assert.assertEquals(1.0, xy.getB(), 1.0e-15);
-        Assert.assertTrue(xy.getEllipsoid() == ellipsoid);
+        Assert.assertTrue(xy.getFrame() == ellipsoid.getFrame());
         Assert.assertEquals(0.0, errorOnEllipsoid(xy, ellipsoid), 1.0e-15);
         Assert.assertEquals(0.0, errorOnPlane(xy, Vector3D.ZERO, Vector3D.PLUS_K), 1.0e-15);
 
-        final Ellipsoid.PlaneSection yz = ellipsoid.getPlaneSection(Vector3D.ZERO, Vector3D.PLUS_I);
+        final Ellipse yz = ellipsoid.getPlaneSection(Vector3D.ZERO, Vector3D.PLUS_I);
         Assert.assertEquals(0, Vector3D.distance(Vector3D.ZERO, yz.getCenter()), 1.0e-15);
         checkPrincipalAxes(yz, Vector3D.PLUS_K, Vector3D.MINUS_J);
         Assert.assertEquals(3.0, yz.getA(), 1.0e-15);
         Assert.assertEquals(2.0, yz.getB(), 1.0e-15);
-        Assert.assertTrue(yz.getEllipsoid() == ellipsoid);
+        Assert.assertTrue(yz.getFrame() == ellipsoid.getFrame());
         Assert.assertEquals(0.0, errorOnEllipsoid(yz, ellipsoid), 1.0e-15);
         Assert.assertEquals(0.0, errorOnPlane(yz, Vector3D.ZERO, Vector3D.PLUS_I), 1.0e-15);
 
-        final Ellipsoid.PlaneSection zx = ellipsoid.getPlaneSection(Vector3D.ZERO, Vector3D.PLUS_J);
+        final Ellipse zx = ellipsoid.getPlaneSection(Vector3D.ZERO, Vector3D.PLUS_J);
         Assert.assertEquals(0, Vector3D.distance(Vector3D.ZERO, zx.getCenter()), 1.0e-15);
         checkPrincipalAxes(zx, Vector3D.PLUS_K, Vector3D.PLUS_I);
         Assert.assertEquals(3.0, zx.getA(), 1.0e-15);
         Assert.assertEquals(1.0, zx.getB(), 1.0e-15);
-        Assert.assertTrue(zx.getEllipsoid() == ellipsoid);
+        Assert.assertTrue(zx.getFrame() == ellipsoid.getFrame());
         Assert.assertEquals(0.0, errorOnEllipsoid(zx, ellipsoid), 1.0e-15);
         Assert.assertEquals(0.0, errorOnPlane(zx, Vector3D.ZERO, Vector3D.PLUS_J), 1.0e-15);
 
@@ -86,7 +86,7 @@ public class EllipsoidTest {
     public void testNoIntersections() {
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
-        final Ellipsoid.PlaneSection ps = ellipsoid.getPlaneSection(new Vector3D(0, 0, 4), Vector3D.PLUS_K);
+        final Ellipse ps = ellipsoid.getPlaneSection(new Vector3D(0, 0, 4), Vector3D.PLUS_K);
         Assert.assertNull(ps);
     }
 
@@ -94,7 +94,7 @@ public class EllipsoidTest {
     public void testSinglePoint() throws IOException {
         final Ellipsoid ellipsoid =
                 new Ellipsoid(FramesFactory.getEME2000(), 1, 2, 3);
-        final Ellipsoid.PlaneSection ps = ellipsoid.getPlaneSection(new Vector3D(0, 0, 3), Vector3D.PLUS_K);
+        final Ellipse ps = ellipsoid.getPlaneSection(new Vector3D(0, 0, 3), Vector3D.PLUS_K);
         Assert.assertEquals(0, Vector3D.distance(new Vector3D(0, 0, 3), ps.getCenter()), 1.0e-15);
         Assert.assertEquals(0.0, ps.getA(), 1.0e-15);
         Assert.assertEquals(0.0, ps.getB(), 1.0e-15);
@@ -130,7 +130,7 @@ public class EllipsoidTest {
                 double sAzimuth = FastMath.sin(azimuth);
                 Vector3D tAz = new Vector3D(cAzimuth, t1, sAzimuth, t2);
                 
-                final Ellipsoid.PlaneSection ps = ellipsoid.getPlaneSection(surfacePoint, tAz);
+                final Ellipse ps = ellipsoid.getPlaneSection(surfacePoint, tAz);
                 Assert.assertEquals(0.0, errorOnEllipsoid(ps, ellipsoid), 1.0e-12 * size);
                 Assert.assertEquals(0.0, errorOnPlane(ps, surfacePoint, tAz), 1.0e-10 * size);
                 double cos = Vector3D.dotProduct(surfacePoint.subtract(ps.getCenter()), ps.getU()) / ps.getA();
@@ -141,7 +141,7 @@ public class EllipsoidTest {
         }
     }
 
-    private void checkPrincipalAxes(Ellipsoid.PlaneSection ps, Vector3D expectedU, Vector3D expectedV) {
+    private void checkPrincipalAxes(Ellipse ps, Vector3D expectedU, Vector3D expectedV) {
         if (Vector3D.dotProduct(expectedU, ps.getU()) >= 0) {
             Assert.assertEquals(0, Vector3D.distance(expectedU,  ps.getU()), 1.0e-15);
             Assert.assertEquals(0, Vector3D.distance(expectedV,  ps.getV()), 1.0e-15);
@@ -151,7 +151,7 @@ public class EllipsoidTest {
         }
     }
 
-    private double errorOnEllipsoid(Ellipsoid.PlaneSection ps, Ellipsoid ellipsoid) {
+    private double errorOnEllipsoid(Ellipse ps, Ellipsoid ellipsoid) {
         double max = 0;
         for (double theta = 0; theta < 2 * FastMath.PI; theta += 0.1) {
             Vector3D p = ps.pointAt(theta);
@@ -163,7 +163,7 @@ public class EllipsoidTest {
         return max;
     }
 
-    private double errorOnPlane(Ellipsoid.PlaneSection ps, Vector3D planePoint, Vector3D planeNormal) {
+    private double errorOnPlane(Ellipse ps, Vector3D planePoint, Vector3D planeNormal) {
         double max = 0;
         for (double theta = 0; theta < 2 * FastMath.PI; theta += 0.1) {
             Vector3D p = ps.pointAt(theta);

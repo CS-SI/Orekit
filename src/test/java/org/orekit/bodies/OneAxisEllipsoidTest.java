@@ -24,16 +24,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.math3.analysis.UnivariateFunction;
-import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
-import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
-import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
-import org.apache.commons.math3.analysis.solvers.BracketingNthOrderBrentSolver;
-import org.apache.commons.math3.analysis.solvers.UnivariateSolver;
 import org.apache.commons.math3.geometry.euclidean.oned.Vector1D;
 import org.apache.commons.math3.geometry.euclidean.threed.Line;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
@@ -62,130 +55,6 @@ import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class OneAxisEllipsoidTest {
-
-    @Test
-    public void testRadiusOfCurvature()
-        throws OrekitException, NoSuchMethodException, SecurityException,
-        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-
-        final OneAxisEllipsoid ellipsoid =
-                new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
-                                     Constants.WGS84_EARTH_FLATTENING,
-                                     FramesFactory.getITRF(IERSConventions.IERS_2010, true));
-        final double a = ellipsoid.getEquatorialRadius();
-        final double g = 1 - ellipsoid.getFlattening();
-        final double b = a * g;
-
-        final Vector3D s = new Vector3D(3220103.0, 69623.0, 6449822.0);
-        final Vector3D p = ellipsoid.projectToGround(s, AbsoluteDate.J2000_EPOCH, ellipsoid.getBodyFrame());
-        final Method roc = OneAxisEllipsoid.class.getDeclaredMethod("radiusOfCurvature",
-                                                                    Vector3D.class, Vector3D.class, Vector3D.class);
-        roc.setAccessible(true);
-        final double r = FastMath.hypot(p.getX(), p.getY());
-        final double z = p.getZ();
-
-        // topocentric frame
-        final double cosLambda = FastMath.cos(s.getAlpha());
-        final double sinLambda = FastMath.sin(s.getAlpha());
-        final double   phi     = FastMath.atan2(z, g * g * r);
-        final double   cosPhi  = FastMath.cos(phi);
-        final double   sinPhi  = FastMath.sin(phi);
-        final Vector3D zenith  = new Vector3D(cosPhi * cosLambda, cosPhi * sinLambda, sinPhi);
-        final Vector3D east    = new Vector3D(-sinLambda, cosLambda, 0.0);
-        final Vector3D north   = new Vector3D(-sinPhi * cosLambda, -sinPhi * sinLambda, cosPhi);
-
-        // the radius of curvature along meridian is computed by a simple formula
-        // since the meridian is a known 2D ellipse
-        final double rhoNorth = FastMath.pow(FastMath.hypot(-a * z / b, b * r / a), 3) / (a * b);
-
-        // this radius is also the distance to the evolute
-        final double a2                = a * a;
-        final double b2                = b * b;
-        final double omegaR            = r * r * r * (a2 - b2) / (a2 * a2);
-        final double omegaZ            = z * z * z * (b2 - a2) / (b2 * b2);
-        final double distanceToEvolute = FastMath.hypot(r - omegaR, z - omegaZ);
-
-        // tolerance for explicit formulas
-        double eps1 = 1.0e-15 * ellipsoid.getEquatorialRadius();
-
-        // tolerance for finite differences
-        double eps2 = 4.0e-8 * ellipsoid.getEquatorialRadius();
-
-        Assert.assertEquals(rhoNorth, distanceToEvolute, eps1);
-        Assert.assertEquals(rhoNorth, ((Double) roc.invoke(ellipsoid, p, north, zenith)).doubleValue(), eps1);
-        Assert.assertEquals(rhoNorth, approximateRadiusOfCurvature(ellipsoid, p, north, zenith), eps2);
-
-        final double rhoEast = ((Double) roc.invoke(ellipsoid, p, east, zenith)).doubleValue();
-
-        for (double theta = 0; theta < 2 * FastMath.PI; theta += 0.001) {
-
-            double cos = FastMath.cos(theta);
-            double sin = FastMath.sin(theta);
-            Vector3D dir = new Vector3D(cos, north, sin, east);
-
-            // compute the intermediate radius of curvature
-            // by combining the two principal radii of curvature
-            double rhoCombined = rhoNorth * rhoEast / (cos * cos * rhoEast + sin * sin * rhoNorth);
-
-            // compute the radius of curvature by finite differences along the direction
-            double rhoFinite = approximateRadiusOfCurvature(ellipsoid, p, dir, zenith);
-
-            // compute the radius of curvature using the method we want to test
-            double rhoComputed = ((Double) roc.invoke(ellipsoid, p, dir, zenith)).doubleValue();
-
-            Assert.assertEquals(rhoCombined, rhoComputed, eps1);
-            Assert.assertEquals(rhoFinite,   rhoComputed, eps2);
-
-        }
-
-    }
-
-    private double approximateRadiusOfCurvature(final OneAxisEllipsoid ellipsoid,
-                                                final Vector3D point,
-                                                final Vector3D tangentialDirection,
-                                                final Vector3D zenith) {
-
-        final double a = ellipsoid.getEquatorialRadius();
-
-        // this function computes z such that
-        //   point + delta tangentialDirection + z zenith
-        // is on ellipsoid, i.e. this is the offset along zenith that
-        // is induced by ellipsoid curvature along the tangential direction
-        UnivariateFunction zOffsetBase = new UnivariateFunction() {
-            public double value(final double delta) {
-               UnivariateSolver solver = new BracketingNthOrderBrentSolver(1.0e-10, 5);
-                UnivariateFunction f = new UnivariateFunction() {
-                    public double value(final double z) {
-                        try {
-                            Vector3D shiftedPoint =
-                                    new Vector3D(1, point, delta, tangentialDirection, z, zenith);
-                            return ellipsoid.transform(shiftedPoint,
-                                                       ellipsoid.getBodyFrame(),
-                                                       AbsoluteDate.J2000_EPOCH).getAltitude();
-                        } catch (OrekitException oe) {
-                            throw new RuntimeException(oe);
-                        }
-                    }
-                };
-                return solver.solve(20, f, -10.0, 10.0);
-            }
-        };
-
-        // we need to differentiate the previous function
-        // as curvature depends on second derivative
-        UnivariateDifferentiableFunction zOffset =
-                new FiniteDifferencesDifferentiator(4, 1.0e-4 * a).differentiate(zOffsetBase);
-
-        final DerivativeStructure z = zOffset.value(new DerivativeStructure(1, 2, 0, 0.0));
-        final double zPrime      = z.getPartialDerivative(1);
-        final double zPrimePrime = z.getPartialDerivative(2);
-
-        // as we compute the derivatives using finite differences
-        // on a function which itself uses an underlying solver,
-        // the result is noisy, at the level of 0.25m
-        return FastMath.pow(1 + zPrime * zPrime, 1.5) / FastMath.abs(zPrimePrime);
-
-    }
 
     double getField(OneAxisEllipsoid ellipsoid, String name)
         throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
@@ -326,7 +195,7 @@ public class OneAxisEllipsoidTest {
             Assert.assertEquals(model.transform(pv.getPosition(), eme2000, pv.getDate()).getLongitude(),
                                 model.transform(groundPV.getPosition(), eme2000, pv.getDate()).getLongitude(),
                                 1.0e-10);
-            Assert.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15);
+            Assert.assertEquals(0.0, Vector3D.distance(groundP, groundPV.getPosition()), 1.0e-15 * groundP.getNorm());
 
         }
 
@@ -347,6 +216,14 @@ public class OneAxisEllipsoidTest {
                                              new Vector3D(6414.7, -2006., -3180.),
                                              Vector3D.ZERO);
         Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        TimeStampedPVCoordinates pv0 = orbit.getPVCoordinates(orbit.getDate(), eme2000);
+        TimeStampedPVCoordinates groundPV0 = model.projectToGround(pv0, eme2000);
+        Vector3D zenith = pv0.getPosition().subtract(groundPV0.getPosition()).normalize();
+        Vector3D east   = Vector3D.crossProduct(Vector3D.PLUS_K, pv0.getPosition()).normalize();
+        Vector3D north  = Vector3D.crossProduct(zenith, east);
+        Vector3D alongTrack  = groundPV0.getVelocity().normalize();
+        Vector3D acrossTrack = Vector3D.crossProduct(north, alongTrack);
 
         List<TimeStampedPVCoordinates> pvList       = new ArrayList<TimeStampedPVCoordinates>();
         List<TimeStampedPVCoordinates> groundPVList = new ArrayList<TimeStampedPVCoordinates>();
@@ -372,7 +249,17 @@ public class OneAxisEllipsoidTest {
                             1.0e-15 * reference.getPosition().getNorm());
         Assert.assertEquals(0.0,
                             Vector3D.distance(computed.getVelocity(), reference.getVelocity()),
-                            1.0e-12 * reference.getVelocity().getNorm());
+                            2.0e-12 * reference.getVelocity().getNorm());
+        print("Along track acceleration 0",
+              new Vector3D(Vector3D.dotProduct(computed.getAcceleration(), alongTrack), alongTrack),
+              new Vector3D(Vector3D.dotProduct(reference.getAcceleration(), alongTrack), alongTrack));
+        print("Across track acceleration 0",
+              new Vector3D(Vector3D.dotProduct(computed.getAcceleration(), acrossTrack), acrossTrack),
+              new Vector3D(Vector3D.dotProduct(reference.getAcceleration(), acrossTrack), acrossTrack));
+        print("Zenith acceleration 0",
+              new Vector3D(Vector3D.dotProduct(computed.getAcceleration(), zenith), zenith),
+              new Vector3D(Vector3D.dotProduct(reference.getAcceleration(), zenith), zenith));
+        print("Total acceleration 0", computed.getAcceleration(), reference.getAcceleration());
 //        System.out.println(computed.getAcceleration());
 //        System.out.println(reference.getAcceleration());
 //        System.out.println(computed.getAcceleration().subtract(reference.getAcceleration()));
@@ -380,14 +267,9 @@ public class OneAxisEllipsoidTest {
 //                           reference.getAcceleration().getNorm());
 //        Assert.assertEquals(0.0,
 //                            Vector3D.distance(computed.getAcceleration(), reference.getAcceleration()),
-//                            1.0e-10 * reference.getAcceleration().getNorm());
+//                            1.0e-8 * reference.getAcceleration().getNorm());
 
-        TimeStampedPVCoordinates pv0 = orbit.getPVCoordinates(orbit.getDate(), eme2000);
-        TimeStampedPVCoordinates groundPV0 = model.projectToGround(pv0, eme2000);
-        Vector3D zenith = pv0.getPosition().subtract(groundPV0.getPosition()).normalize();
-        Vector3D east   = Vector3D.crossProduct(Vector3D.PLUS_K, pv0.getPosition()).normalize();
-        Vector3D north  = Vector3D.crossProduct(zenith, east);
-        TimeStampedPVCoordinates pv0Modified =
+        TimeStampedPVCoordinates pvModified1 =
                 new TimeStampedPVCoordinates(pv0.getDate(),
                                              pv0.getPosition(),
                                              new Vector3D(Vector3D.dotProduct(pv0.getVelocity(), north), north),
@@ -395,7 +277,7 @@ public class OneAxisEllipsoidTest {
         List<TimeStampedPVCoordinates> pvListModified       = new ArrayList<TimeStampedPVCoordinates>();
         List<TimeStampedPVCoordinates> groundPVListModified = new ArrayList<TimeStampedPVCoordinates>();
         for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
-            TimeStampedPVCoordinates pvModified = pv0Modified.shiftedBy(dt);
+            TimeStampedPVCoordinates pvModified = pvModified1.shiftedBy(dt);
             TimeStampedPVCoordinates groundPVModified = model.projectToGround(pvModified, eme2000);
             pvListModified.add(pvModified);
             groundPVListModified.add(groundPVModified);
@@ -410,24 +292,71 @@ public class OneAxisEllipsoidTest {
                                                      CartesianDerivativesFilter.USE_P,
                                                      groundPVListModified);
 
-        print("North acceleration",
-              new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), north), north),
-              new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), north), north));
-        print("East acceleration",
-              new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), east), east),
-              new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), east), east));
-        print("Zenith acceleration",
-              new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), zenith), zenith),
-              new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), zenith), zenith));
+       System.out.println();
+       print("Along track acceleration 1",
+             new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), alongTrack), alongTrack),
+             new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), alongTrack), alongTrack));
+       print("Across track acceleration 1",
+             new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), acrossTrack), acrossTrack),
+             new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), acrossTrack), acrossTrack));
+       print("Zenith acceleration 1",
+             new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), zenith), zenith),
+             new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), zenith), zenith));
+       print("Total acceleration 1", computedModified.getAcceleration(), referenceModified.getAcceleration());
         Assert.assertEquals(0.0,
                             Vector3D.distance(computedModified.getPosition(), referenceModified.getPosition()),
                             1.0e-15 * referenceModified.getPosition().getNorm());
         Assert.assertEquals(0.0,
                             Vector3D.distance(computedModified.getVelocity(), referenceModified.getVelocity()),
                             2.0e-12 * referenceModified.getVelocity().getNorm());
+//        Assert.assertEquals(0.0,
+//                            Vector3D.distance(computedModified.getAcceleration(), referenceModified.getAcceleration()),
+//                            1.0e-8 * referenceModified.getAcceleration().getNorm());
+
+        TimeStampedPVCoordinates pvModified2 =
+                new TimeStampedPVCoordinates(pv0.getDate(),
+                                             pv0.getPosition(),
+                                             new Vector3D(Vector3D.dotProduct(pv0.getVelocity(), east), east),
+                                             Vector3D.ZERO);
+        List<TimeStampedPVCoordinates> pvListModified2       = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> groundPVListModified2 = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
+            TimeStampedPVCoordinates pvModified = pvModified2.shiftedBy(dt);
+            TimeStampedPVCoordinates groundPVModified = model.projectToGround(pvModified, eme2000);
+            pvListModified2.add(pvModified);
+            groundPVListModified2.add(groundPVModified);
+        }
+        TimeStampedPVCoordinates computedModified2 =
+                model.projectToGround(TimeStampedPVCoordinates.interpolate(orbit.getDate(),
+                                                                           CartesianDerivativesFilter.USE_P,
+                                                                           pvListModified2),
+                                      eme2000);
+       TimeStampedPVCoordinates referenceModified2 =
+                TimeStampedPVCoordinates.interpolate(orbit.getDate(),
+                                                     CartesianDerivativesFilter.USE_P,
+                                                     groundPVListModified2);
+
+       System.out.println();
+       print("Along track acceleration 2",
+             new Vector3D(Vector3D.dotProduct(computedModified2.getAcceleration(), alongTrack), alongTrack),
+             new Vector3D(Vector3D.dotProduct(referenceModified2.getAcceleration(), alongTrack), alongTrack));
+       print("Across track acceleration 2",
+             new Vector3D(Vector3D.dotProduct(computedModified2.getAcceleration(), acrossTrack), acrossTrack),
+             new Vector3D(Vector3D.dotProduct(referenceModified2.getAcceleration(), acrossTrack), acrossTrack));
+       print("Zenith acceleration 2",
+             new Vector3D(Vector3D.dotProduct(computedModified2.getAcceleration(), zenith), zenith),
+             new Vector3D(Vector3D.dotProduct(referenceModified2.getAcceleration(), zenith), zenith));
+       print("Total acceleration 2", computedModified2.getAcceleration(), referenceModified2.getAcceleration());
         Assert.assertEquals(0.0,
-                            Vector3D.distance(computedModified.getAcceleration(), referenceModified.getAcceleration()),
-                            1.0e-10 * referenceModified.getAcceleration().getNorm());
+                            Vector3D.distance(computedModified2.getPosition(), referenceModified2.getPosition()),
+                            1.0e-15 * referenceModified2.getPosition().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(computedModified2.getVelocity(), referenceModified2.getVelocity()),
+                            4.0e-12 * referenceModified2.getVelocity().getNorm());
+        Assert.assertEquals(0.0,
+                            Vector3D.distance(computedModified2.getAcceleration(), referenceModified2.getAcceleration()),
+                            1.0e-8 * referenceModified2.getAcceleration().getNorm());
+
     }
 
     private void print(String name, Vector3D computed, Vector3D reference) {
@@ -437,7 +366,9 @@ public class OneAxisEllipsoidTest {
         System.out.println("   angle      " + Vector3D.angle(computed, reference));
         System.out.println("   ratio      " + computed.getNorm() / reference.getNorm());
         System.out.println("   difference " + computed.subtract(reference) + " (" + computed.subtract(reference).getNorm() + ")");
+        System.out.println("   tolerance  " + (computed.subtract(reference).getNorm() / reference.getNorm()) + ")");
     }
+
     @Test
     public void testLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
