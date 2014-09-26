@@ -87,9 +87,9 @@ public class Ellipsoid implements Serializable {
         return frame;
     }
 
-    /** Compute the the 2D ellipse at the intersection of the 3D ellipsoid and a plane.
-     * @param planePoint point belonging to the plane
-     * @param planeNormal normal of the plane
+    /** Compute the 2D ellipse at the intersection of the 3D ellipsoid and a plane.
+     * @param planePoint point belonging to the plane, in the ellipsoid frame
+     * @param planeNormal normal of the plane, in the ellipsoid frame
      * @return plane section or null if there are no intersections
      */
     public Ellipse getPlaneSection(final Vector3D planePoint, final Vector3D planeNormal) {
@@ -146,30 +146,33 @@ public class Ellipsoid implements Serializable {
         // θ is the angle of the 2D ellipse axis corresponding to axis with length 2l
 
         // choose θ in order to cancel the coupling term in λμ
-        // expanding the general equation, we get:
-        // A λ² + B μ² + C λμ + D λ + E μ + F = 0
+        // expanding the general equation, we get: A λ² + B μ² + C λμ + D λ + E μ + F = 0
         // with C = 2[(β - α) cosθ sinθ + γ (cos²θ - sin²θ)]
         // hence the term is cancelled when θ = arctan(t), with γ t² + (α - β) t - γ = 0
         // As the solutions of the quadratic equation obey t₁t₂ = -1, they correspond to
         // angles θ in quadrature to each other. Selecting one solution or the other simply
         // exchanges the principal axes. As we don't care about which axis we want as the
         // first one, we select an arbitrary solution
-        final double theta;
+        final double tanTheta;
         if (FastMath.abs(gamma) < Precision.SAFE_MIN) {
-            theta = 0.0;
+            tanTheta = 0.0;
         } else {
             final double bMA = beta - alpha;
-            final double t   = (bMA >= 0) ?
-                               (-2 * gamma / (bMA + FastMath.sqrt(bMA * bMA + 4 * gamma * gamma))) :
-                               (-2 * gamma / (bMA - FastMath.sqrt(bMA * bMA + 4 * gamma * gamma)));
-            theta = FastMath.atan(t);
+            tanTheta = (bMA >= 0) ?
+                       (-2 * gamma / (bMA + FastMath.sqrt(bMA * bMA + 4 * gamma * gamma))) :
+                       (-2 * gamma / (bMA - FastMath.sqrt(bMA * bMA + 4 * gamma * gamma)));
         }
+        final double tan2   = tanTheta * tanTheta;
+        final double cos2   = 1 / (1 + tan2);
+        final double sin2   = tan2 * cos2;
+        final double cosSin = tanTheta * cos2;
+        final double cos    = FastMath.sqrt(cos2);
+        final double sin    = tanTheta * cos;
 
         // choose τC and υC in order to cancel the linear terms in λ and μ
-        // expanding the general equation, we get:
-        // A λ² + B μ² + C λμ + D λ + E μ + F = 0
-        // with D = 2[(α τC + γ υC + δ) cosθ + (γ τC + β υC + ε) sinθ]
-        //      E = 2[(γ τC + β υC + ε) cosθ - (α τC + γ υC + δ) sinθ]
+        // expanding the general equation, we get: A λ² + B μ² + C λμ + D λ + E μ + F = 0
+        // with D = 2[ (α τC + γ υC + δ) cosθ + (γ τC + β υC + ε) sinθ]
+        //      E = 2[-(α τC + γ υC + δ) sinθ + (γ τC + β υC + ε) cosθ]
         // θ can be eliminated by combining the equations
         // D cosθ - E sinθ = 2[α τC + γ υC + δ]
         // E cosθ + D sinθ = 2[γ τC + β υC + ε]
@@ -181,17 +184,12 @@ public class Ellipsoid implements Serializable {
         final double nuC   = (alpha * epsilon - gamma * delta)   / denom;
 
         // compute l and m
-        // expanding the general equation, we get:
-        // A λ² + B μ² + C λμ + D λ + E μ + F = 0
+        // expanding the general equation, we get: A λ² + B μ² + C λμ + D λ + E μ + F = 0
         // with A = α cos²θ + β sin²θ + 2 γ cosθ sinθ
         //      B = α sin²θ + β cos²θ - 2 γ cosθ sinθ
         //      F = α τC² + β υC² + 2 γ τC υC + 2 δ τC + 2 ε υC + ζ
         // hence we compute directly l = √(-F/A) and m = √(-F/B)
-        final double cos    = FastMath.cos(theta);
-        final double sin    = FastMath.sin(theta);
-        final double cos2   = cos * cos;
-        final double sin2   = sin * sin;
-        final double twogcs = 2 * gamma * cos * sin;
+        final double twogcs = 2 * gamma * cosSin;
         final double bigA   = alpha * cos2 + beta * sin2 + twogcs;
         final double bigB   = alpha * sin2 + beta * cos2 - twogcs;
         final double bigF   = (alpha * tauC + 2 * (gamma * nuC + delta)) * tauC +
