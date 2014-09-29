@@ -254,7 +254,7 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple quadratic model. It is <em>not</em> intended as a replacement for
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement for
      * proper orbit propagation (it is not even Keplerian!) but should be sufficient
      * for either small time shifts or coarse accuracy.
      * </p>

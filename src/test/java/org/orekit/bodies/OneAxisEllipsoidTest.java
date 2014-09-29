@@ -22,8 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,25 +49,11 @@ import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class OneAxisEllipsoidTest {
-
-    double getField(OneAxisEllipsoid ellipsoid, String name)
-        throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field f = OneAxisEllipsoid.class.getDeclaredField(name);
-        f.setAccessible(true);
-        return ((Double) f.get(ellipsoid)).doubleValue();
-    }
-
-    @Test
-    public void testOrigin() throws OrekitException {
-        double ae = 6378137.0;
-        checkCartesianToEllipsoidic(ae, 1.0 / 298.257222101,
-                                    ae, 0, 0,
-                                    0, 0, 0);
-    }
 
     @Test
     public void testStandard() throws OrekitException {
@@ -202,13 +186,14 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
-    public void testGroundProjectionDerivatives() throws OrekitException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void testGroundProjectionDerivatives()
+            throws OrekitException {
         Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
         Frame eme2000 = FramesFactory.getEME2000();
         OneAxisEllipsoid model =
             new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
                                  Constants.WGS84_EARTH_FLATTENING,
-                                 eme2000); // TODO: put ITRF back
+                                 itrf);
 
         TimeStampedPVCoordinates initPV =
                 new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
@@ -217,156 +202,46 @@ public class OneAxisEllipsoidTest {
                                              Vector3D.ZERO);
         Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
 
-        TimeStampedPVCoordinates pv0 = orbit.getPVCoordinates(orbit.getDate(), eme2000);
-        TimeStampedPVCoordinates groundPV0 = model.projectToGround(pv0, eme2000);
-        Vector3D zenith = pv0.getPosition().subtract(groundPV0.getPosition()).normalize();
-        Vector3D east   = Vector3D.crossProduct(Vector3D.PLUS_K, pv0.getPosition()).normalize();
-        Vector3D north  = Vector3D.crossProduct(zenith, east);
-        Vector3D alongTrack  = groundPV0.getVelocity().normalize();
-        Vector3D acrossTrack = Vector3D.crossProduct(north, alongTrack);
-
-        List<TimeStampedPVCoordinates> pvList       = new ArrayList<TimeStampedPVCoordinates>();
-        List<TimeStampedPVCoordinates> groundPVList = new ArrayList<TimeStampedPVCoordinates>();
-        for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
-            TimeStampedPVCoordinates pv = orbit.getPVCoordinates(orbit.getDate().shiftedBy(dt), eme2000);
-            TimeStampedPVCoordinates groundPV = model.projectToGround(pv, eme2000);
-            pvList.add(pv);
-            groundPVList.add(groundPV);
-        }
-
-        TimeStampedPVCoordinates computed =
-                model.projectToGround(TimeStampedPVCoordinates.interpolate(orbit.getDate(),
-                                                                           CartesianDerivativesFilter.USE_P,
-                                                                           pvList),
-                                     eme2000);
-        TimeStampedPVCoordinates reference =
-                TimeStampedPVCoordinates.interpolate(orbit.getDate(),
-                                                     CartesianDerivativesFilter.USE_P,
-                                                     groundPVList);
-
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(computed.getPosition(), reference.getPosition()),
-                            1.0e-15 * reference.getPosition().getNorm());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(computed.getVelocity(), reference.getVelocity()),
-                            2.0e-12 * reference.getVelocity().getNorm());
-        print("Along track acceleration 0",
-              new Vector3D(Vector3D.dotProduct(computed.getAcceleration(), alongTrack), alongTrack),
-              new Vector3D(Vector3D.dotProduct(reference.getAcceleration(), alongTrack), alongTrack));
-        print("Across track acceleration 0",
-              new Vector3D(Vector3D.dotProduct(computed.getAcceleration(), acrossTrack), acrossTrack),
-              new Vector3D(Vector3D.dotProduct(reference.getAcceleration(), acrossTrack), acrossTrack));
-        print("Zenith acceleration 0",
-              new Vector3D(Vector3D.dotProduct(computed.getAcceleration(), zenith), zenith),
-              new Vector3D(Vector3D.dotProduct(reference.getAcceleration(), zenith), zenith));
-        print("Total acceleration 0", computed.getAcceleration(), reference.getAcceleration());
-//        System.out.println(computed.getAcceleration());
-//        System.out.println(reference.getAcceleration());
-//        System.out.println(computed.getAcceleration().subtract(reference.getAcceleration()));
-//        System.out.println(Vector3D.distance(computed.getAcceleration(), reference.getAcceleration()) /
-//                           reference.getAcceleration().getNorm());
-//        Assert.assertEquals(0.0,
-//                            Vector3D.distance(computed.getAcceleration(), reference.getAcceleration()),
-//                            1.0e-8 * reference.getAcceleration().getNorm());
-
-        TimeStampedPVCoordinates pvModified1 =
-                new TimeStampedPVCoordinates(pv0.getDate(),
-                                             pv0.getPosition(),
-                                             new Vector3D(Vector3D.dotProduct(pv0.getVelocity(), north), north),
-                                             Vector3D.ZERO);
-        List<TimeStampedPVCoordinates> pvListModified       = new ArrayList<TimeStampedPVCoordinates>();
-        List<TimeStampedPVCoordinates> groundPVListModified = new ArrayList<TimeStampedPVCoordinates>();
-        for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
-            TimeStampedPVCoordinates pvModified = pvModified1.shiftedBy(dt);
-            TimeStampedPVCoordinates groundPVModified = model.projectToGround(pvModified, eme2000);
-            pvListModified.add(pvModified);
-            groundPVListModified.add(groundPVModified);
-        }
-        TimeStampedPVCoordinates computedModified =
-                model.projectToGround(TimeStampedPVCoordinates.interpolate(orbit.getDate(),
-                                                                           CartesianDerivativesFilter.USE_P,
-                                                                           pvListModified),
-                                      eme2000);
-       TimeStampedPVCoordinates referenceModified =
-                TimeStampedPVCoordinates.interpolate(orbit.getDate(),
-                                                     CartesianDerivativesFilter.USE_P,
-                                                     groundPVListModified);
-
-       System.out.println();
-       print("Along track acceleration 1",
-             new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), alongTrack), alongTrack),
-             new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), alongTrack), alongTrack));
-       print("Across track acceleration 1",
-             new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), acrossTrack), acrossTrack),
-             new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), acrossTrack), acrossTrack));
-       print("Zenith acceleration 1",
-             new Vector3D(Vector3D.dotProduct(computedModified.getAcceleration(), zenith), zenith),
-             new Vector3D(Vector3D.dotProduct(referenceModified.getAcceleration(), zenith), zenith));
-       print("Total acceleration 1", computedModified.getAcceleration(), referenceModified.getAcceleration());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(computedModified.getPosition(), referenceModified.getPosition()),
-                            1.0e-15 * referenceModified.getPosition().getNorm());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(computedModified.getVelocity(), referenceModified.getVelocity()),
-                            2.0e-12 * referenceModified.getVelocity().getNorm());
-//        Assert.assertEquals(0.0,
-//                            Vector3D.distance(computedModified.getAcceleration(), referenceModified.getAcceleration()),
-//                            1.0e-8 * referenceModified.getAcceleration().getNorm());
-
-        TimeStampedPVCoordinates pvModified2 =
-                new TimeStampedPVCoordinates(pv0.getDate(),
-                                             pv0.getPosition(),
-                                             new Vector3D(Vector3D.dotProduct(pv0.getVelocity(), east), east),
-                                             Vector3D.ZERO);
-        List<TimeStampedPVCoordinates> pvListModified2       = new ArrayList<TimeStampedPVCoordinates>();
-        List<TimeStampedPVCoordinates> groundPVListModified2 = new ArrayList<TimeStampedPVCoordinates>();
-        for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
-            TimeStampedPVCoordinates pvModified = pvModified2.shiftedBy(dt);
-            TimeStampedPVCoordinates groundPVModified = model.projectToGround(pvModified, eme2000);
-            pvListModified2.add(pvModified);
-            groundPVListModified2.add(groundPVModified);
-        }
-        TimeStampedPVCoordinates computedModified2 =
-                model.projectToGround(TimeStampedPVCoordinates.interpolate(orbit.getDate(),
-                                                                           CartesianDerivativesFilter.USE_P,
-                                                                           pvListModified2),
-                                      eme2000);
-       TimeStampedPVCoordinates referenceModified2 =
-                TimeStampedPVCoordinates.interpolate(orbit.getDate(),
-                                                     CartesianDerivativesFilter.USE_P,
-                                                     groundPVListModified2);
-
-       System.out.println();
-       print("Along track acceleration 2",
-             new Vector3D(Vector3D.dotProduct(computedModified2.getAcceleration(), alongTrack), alongTrack),
-             new Vector3D(Vector3D.dotProduct(referenceModified2.getAcceleration(), alongTrack), alongTrack));
-       print("Across track acceleration 2",
-             new Vector3D(Vector3D.dotProduct(computedModified2.getAcceleration(), acrossTrack), acrossTrack),
-             new Vector3D(Vector3D.dotProduct(referenceModified2.getAcceleration(), acrossTrack), acrossTrack));
-       print("Zenith acceleration 2",
-             new Vector3D(Vector3D.dotProduct(computedModified2.getAcceleration(), zenith), zenith),
-             new Vector3D(Vector3D.dotProduct(referenceModified2.getAcceleration(), zenith), zenith));
-       print("Total acceleration 2", computedModified2.getAcceleration(), referenceModified2.getAcceleration());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(computedModified2.getPosition(), referenceModified2.getPosition()),
-                            1.0e-15 * referenceModified2.getPosition().getNorm());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(computedModified2.getVelocity(), referenceModified2.getVelocity()),
-                            4.0e-12 * referenceModified2.getVelocity().getNorm());
-        Assert.assertEquals(0.0,
-                            Vector3D.distance(computedModified2.getAcceleration(), referenceModified2.getAcceleration()),
-                            1.0e-8 * referenceModified2.getAcceleration().getNorm());
+        double[] errors = derivativesErrors(orbit, orbit.getDate(), eme2000, model);
+        Assert.assertEquals(0, errors[0], 1.0e-16);
+        Assert.assertEquals(0, errors[1], 1.0e-12);
+        Assert.assertEquals(0, errors[2], 2.0e-4);
 
     }
 
-    private void print(String name, Vector3D computed, Vector3D reference) {
-        System.out.println(name + ":");
-        System.out.println("   computed   " + computed);
-        System.out.println("   reference  " + reference);
-        System.out.println("   angle      " + Vector3D.angle(computed, reference));
-        System.out.println("   ratio      " + computed.getNorm() / reference.getNorm());
-        System.out.println("   difference " + computed.subtract(reference) + " (" + computed.subtract(reference).getNorm() + ")");
-        System.out.println("   tolerance  " + (computed.subtract(reference).getNorm() / reference.getNorm()) + ")");
+    private double[] derivativesErrors(PVCoordinatesProvider provider, AbsoluteDate date, Frame frame,
+                                       OneAxisEllipsoid model)
+        throws OrekitException {
+        List<TimeStampedPVCoordinates> pvList       = new ArrayList<TimeStampedPVCoordinates>();
+        List<TimeStampedPVCoordinates> groundPVList = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt = -0.25; dt <= 0.25; dt += 0.125) {
+            TimeStampedPVCoordinates shiftedPV = provider.getPVCoordinates(date.shiftedBy(dt), frame);
+            Vector3D p = model.projectToGround(shiftedPV.getPosition(), shiftedPV.getDate(), frame);
+            pvList.add(shiftedPV);
+            groundPVList.add(new TimeStampedPVCoordinates(shiftedPV.getDate(),
+                                                          p, Vector3D.ZERO, Vector3D.ZERO));
+        }
+        TimeStampedPVCoordinates computed =
+                model.projectToGround(TimeStampedPVCoordinates.interpolate(date,
+                                                                           CartesianDerivativesFilter.USE_P,
+                                                                           pvList),
+                                                                           frame);
+        TimeStampedPVCoordinates reference =
+                TimeStampedPVCoordinates.interpolate(date,
+                                                     CartesianDerivativesFilter.USE_P,
+                                                     groundPVList);
+
+        TimeStampedPVCoordinates pv0 = provider.getPVCoordinates(date, frame);
+        Vector3D p0 = pv0.getPosition();
+        Vector3D v0 = pv0.getVelocity();
+        Vector3D a0 = pv0.getAcceleration();
+
+        return new double[] {
+            Vector3D.distance(computed.getPosition(),     reference.getPosition())     / p0.getNorm(),
+            Vector3D.distance(computed.getVelocity(),     reference.getVelocity())     / v0.getNorm(),
+            Vector3D.distance(computed.getAcceleration(), reference.getAcceleration()) / a0.getNorm(),
+        };
+
     }
 
     @Test

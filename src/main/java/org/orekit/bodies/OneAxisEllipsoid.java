@@ -245,7 +245,7 @@ public class OneAxisEllipsoid extends Ellipsoid implements BodyShape {
         final Vector3D zenith = p.subtract(gpP).normalize();
         final Vector3D north  = Vector3D.crossProduct(zenith, east);
 
-        // set up the ellipse corresponding to second principal curvature across meridian
+        // set up the ellipse corresponding to second principal curvature in the zenith/east plane
         final Ellipse secondPrincipalCurvature  = getPlaneSection(gpP, north);
         final TimeStampedPVCoordinates gpSecond = secondPrincipalCurvature.projectToEllipse(pvInBodyFrame);
 

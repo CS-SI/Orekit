@@ -182,22 +182,6 @@ public class Ellipse implements Serializable {
         return new Vector2D(Vector3D.dotProduct(delta, u), Vector3D.dotProduct(delta, v));
     }
 
-    /** Get the radius of curvature at an ellipse point.
-     * @param p ellipse point (caller must ensure it does belong to
-     * the ellipse, otherwise result is meaningless)
-     * @return radius of curvature at point
-     */
-    public double getRadiusOfCurvature(final Vector2D p) {
-
-        // scaled canonical coordinates of the point in the 2D ellipse
-        final double cos = p.getX() / a;
-        final double sin = p.getY() / b;
-
-        final double pDot2 = a * a * sin * sin + b * b * cos * cos;
-        return pDot2 * FastMath.sqrt(pDot2) / (a * b);
-
-    }
-
     /** Find the closest ellipse point.
      * @param p point in the ellipse plane to project on the ellipse itself
      * @return closest point belonging to 2D meridian ellipse
@@ -267,18 +251,24 @@ public class Ellipse implements Serializable {
         final Vector2D e2D = projectToEllipse(p2D);
 
         // tangent to the ellipse
-        final Vector2D tangent = new Vector2D(-a2 * e2D.getY(), b2 * e2D.getX()).normalize();
+        final double fx = -a2 * e2D.getY();
+        final double fy =  b2 * e2D.getX();
+        final double f2 = fx * fx + fy * fy;
+        final double f  = FastMath.sqrt(f2);
+        final Vector2D tangent = new Vector2D(fx / f, fy / f);
 
         // normal to the ellipse (towards interior)
         final Vector2D normal = new Vector2D(-tangent.getY(), tangent.getX());
 
         // center of curvature
-        final double eX     = evoluteFactorX * e2D.getX() * e2D.getX();
-        final double eY     = evoluteFactorY * e2D.getY() * e2D.getY();
+        final double x2     = e2D.getX() * e2D.getX();
+        final double y2     = e2D.getY() * e2D.getY();
+        final double eX     = evoluteFactorX * x2;
+        final double eY     = evoluteFactorY * y2;
         final double omegaX = eX * e2D.getX();
         final double omegaY = eY * e2D.getY();
 
-        // projection ratio to apply to velocity and acceleration
+        // velocity projection ratio
         final double rho                = FastMath.hypot(e2D.getX() - omegaX, e2D.getY() - omegaY);
         final double d                  = FastMath.hypot(p2D.getX() - omegaX, p2D.getY() - omegaY);
         final double projectionRatio    = rho / d;
@@ -287,8 +277,11 @@ public class Ellipse implements Serializable {
         final Vector2D pDot2D           = new Vector2D(Vector3D.dotProduct(pv.getVelocity(), u),
                                                        Vector3D.dotProduct(pv.getVelocity(), v));
         final double   pDotTangent      = pDot2D.dotProduct(tangent);
+        final double   pDotNormal       = pDot2D.dotProduct(normal);
         final double   eDotTangent      = projectionRatio * pDotTangent;
         final Vector2D eDot2D           = new Vector2D(eDotTangent, tangent);
+        final Vector2D tangentDot       = new Vector2D(a2 * b2 * (e2D.getX() * eDot2D.getY() - e2D.getY() * eDot2D.getX()) / f2,
+                                                       normal);
 
         // velocity of the center of curvature in the meridian plane
         final double omegaXDot          = 3 * eX * eDotTangent * tangent.getX();
@@ -296,30 +289,22 @@ public class Ellipse implements Serializable {
 
         // derivative of the projection ratio
         final double voz                = omegaXDot * tangent.getY() - omegaYDot * tangent.getX();
-        final double vsz                = -pDot2D.dotProduct(normal);
+        final double vsz                = -pDotNormal;
         final double projectionRatioDot = ((rho - d) * voz - rho * vsz) / (d * d);
 
-        // tangential acceleration
+        // acceleration
         final Vector2D pDotDot2D        = new Vector2D(Vector3D.dotProduct(pv.getAcceleration(), u),
                                                        Vector3D.dotProduct(pv.getAcceleration(), v));
         final double   pDotDotTangent   = pDotDot2D.dotProduct(tangent);
-        final Vector2D eDotDot2DT       = new Vector2D(projectionRatio    * pDotDotTangent +
-                                                       projectionRatioDot * pDotTangent,
-                                                       tangent);
-
-        // centripetal acceleration
-        final double cos               = e2D.getX() / a;
-        final double sin               = e2D.getY() / b;
-        final double d2                = a * a * sin * sin + b * b * cos * cos;
-        final double radiusOfCurvature = d2 * FastMath.sqrt(d2) / (a * b);
-        final Vector2D eDotDot2DC      = new Vector2D(eDot2D.getNormSq() / radiusOfCurvature, normal);
+        final double   pDotTangentDot   = pDot2D.dotProduct(tangentDot);
+        final double   eDotDotTangent   = projectionRatio    * (pDotDotTangent + pDotTangentDot) +
+                                          projectionRatioDot * pDotTangent;
+        final Vector2D eDotDot2D        = new Vector2D(eDotDotTangent, tangent, eDotTangent, tangentDot);
 
         // back to 3D
         final Vector3D e3D       = toSpace(e2D);
-        final Vector3D eDot3D    = new Vector3D(eDot2D.getX(), u,
-                                                eDot2D.getY(), v);
-        final Vector3D eDotDot3D = new Vector3D(eDotDot2DT.getX() + eDotDot2DC.getX(), u,
-                                                eDotDot2DT.getY() + eDotDot2DC.getY(), v);
+        final Vector3D eDot3D    = new Vector3D(eDot2D.getX(),    u, eDot2D.getY(),    v);
+        final Vector3D eDotDot3D = new Vector3D(eDotDot2D.getX(), u, eDotDot2D.getY(), v);
 
         return new TimeStampedPVCoordinates(pv.getDate(), e3D, eDot3D, eDotDot3D);
 

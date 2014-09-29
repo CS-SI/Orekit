@@ -25,6 +25,8 @@ import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.orekit.errors.OrekitException;
+import org.orekit.frames.Frame;
+import org.orekit.frames.Transform;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.TimeStamped;
 
@@ -168,7 +170,7 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
     /** Get a time-shifted state.
      * <p>
      * The state can be slightly shifted to close dates. This shift is based on
-     * a simple linear model. It is <em>not</em> intended as a replacement for
+     * a simple Taylor expansion. It is <em>not</em> intended as a replacement for
      * proper orbit propagation (it is not even Keplerian!) but should be sufficient
      * for either small time shifts or coarse accuracy.
      * </p>
@@ -179,6 +181,27 @@ public class TimeStampedPVCoordinates extends PVCoordinates implements TimeStamp
         final PVCoordinates spv = super.shiftedBy(dt);
         return new TimeStampedPVCoordinates(date.shiftedBy(dt),
                                             spv.getPosition(), spv.getVelocity(), spv.getAcceleration());
+    }
+
+    /** Create a local provider using simply Taylor expansion through {@link #shiftedBy(double)}.
+     * <p>
+     * The time evolution is based on a simple Taylor expansion. It is <em>not</em> intended as a
+     * replacement for proper orbit propagation (it is not even Keplerian!) but should be sufficient
+     * for either small time shifts or coarse accuracy.
+     * </p>
+     * @param instanceFrame frame in which the instance is defined
+     * @return provider based on Taylor expansion, for small time shifts around instance date
+     */
+    public PVCoordinatesProvider toTaylorProvider(final Frame instanceFrame) {
+        return new PVCoordinatesProvider() {
+            /** {@inheritDoc} */
+            public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate d,  final Frame f)
+                throws OrekitException {
+                final TimeStampedPVCoordinates shifted   = shiftedBy(d.durationFrom(date));
+                final Transform                transform = instanceFrame.getTransformTo(f, d);
+                return transform.transformPVCoordinates(shifted);
+            }
+        };
     }
 
     /** Interpolate position-velocity.
