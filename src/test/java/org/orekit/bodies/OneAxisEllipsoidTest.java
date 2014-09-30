@@ -245,6 +245,44 @@ public class OneAxisEllipsoidTest {
     }
 
     @Test
+    public void testGroundProjectionTaylor()
+            throws OrekitException {
+        Frame itrf = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
+        Frame eme2000 = FramesFactory.getEME2000();
+        OneAxisEllipsoid model =
+            new OneAxisEllipsoid(Constants.WGS84_EARTH_EQUATORIAL_RADIUS,
+                                 Constants.WGS84_EARTH_FLATTENING,
+                                 itrf);
+
+        TimeStampedPVCoordinates initPV =
+                new TimeStampedPVCoordinates(AbsoluteDate.J2000_EPOCH.shiftedBy(584.),
+                                             new Vector3D(3220103., 69623., 6449822.),
+                                             new Vector3D(6414.7, -2006., -3180.),
+                                             Vector3D.ZERO);
+        Orbit orbit = new EquinoctialOrbit(initPV, eme2000, Constants.EIGEN5C_EARTH_MU);
+
+        TimeStampedPVCoordinates pv0 = orbit.getPVCoordinates(orbit.getDate(), model.getBodyFrame());
+        PVCoordinatesProvider groundTaylor =
+                model.projectToGround(pv0, model.getBodyFrame()).toTaylorProvider(model.getBodyFrame());
+
+        TimeStampedPVCoordinates g0 = groundTaylor.getPVCoordinates(orbit.getDate(), model.getBodyFrame());
+        Vector3D zenith       = pv0.getPosition().subtract(g0.getPosition()).normalize();
+        Vector3D acrossTrack  = Vector3D.crossProduct(zenith, g0.getVelocity()).normalize();
+        Vector3D alongTrack   = Vector3D.crossProduct(acrossTrack, zenith).normalize();
+        for (double dt = -1; dt < 1; dt += 0.01) {
+            AbsoluteDate date = orbit.getDate().shiftedBy(dt);
+            Vector3D taylorP = groundTaylor.getPVCoordinates(date, model.getBodyFrame()).getPosition();
+            Vector3D refP    = model.projectToGround(orbit.getPVCoordinates(date, model.getBodyFrame()).getPosition(),
+                                                     date, model.getBodyFrame());
+            Vector3D delta = taylorP.subtract(refP);
+            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, alongTrack),  0.0015);
+            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, acrossTrack), 0.0007);
+            Assert.assertEquals(0.0, Vector3D.dotProduct(delta, zenith),      0.00002);
+        }
+
+    }
+
+    @Test
     public void testLineIntersection() throws OrekitException {
         AbsoluteDate date = AbsoluteDate.J2000_EPOCH;
         Frame frame = FramesFactory.getITRF(IERSConventions.IERS_2010, true);
