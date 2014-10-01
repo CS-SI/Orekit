@@ -34,6 +34,7 @@ import org.orekit.orbits.CircularOrbit;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.Propagator;
 import org.orekit.propagation.SpacecraftState;
+import org.orekit.propagation.analytical.EcksteinHechlerPropagator;
 import org.orekit.propagation.analytical.KeplerianPropagator;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.time.DateComponents;
@@ -116,11 +117,27 @@ public class BodyCenterPointingTest {
     @Test
     public void testSpin() throws OrekitException {
 
-        Propagator propagator = new KeplerianPropagator(circ, earthCenterAttitudeLaw);
+        Utils.setDataRoot("regular-data");
+        final double ehMu  = 3.9860047e14;
+        final double ae  = 6.378137e6;
+        final double c20 = -1.08263e-3;
+        final double c30 = 2.54e-6;
+        final double c40 = 1.62e-6;
+        final double c50 = 2.3e-7;
+        final double c60 = -5.5e-7;
+        final AbsoluteDate date = AbsoluteDate.J2000_EPOCH.shiftedBy(584.);
+        final Vector3D position = new Vector3D(3220103., 69623., 6449822.);
+        final Vector3D velocity = new Vector3D(6414.7, -2006., -3180.);
+        final CircularOrbit initialOrbit = new CircularOrbit(new PVCoordinates(position, velocity),
+                                                             FramesFactory.getEME2000(), date, ehMu);
+
+        EcksteinHechlerPropagator propagator =
+                new EcksteinHechlerPropagator(initialOrbit, ae, ehMu, c20, c30, c40, c50, c60);
+        propagator.setAttitudeProvider(new BodyCenterPointing(FramesFactory.getITRF(IERSConventions.IERS_2010, true)));
 
         double h = 0.01;
-        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState s0     = propagator.propagate(date);
+        SpacecraftState sMinus = propagator.propagate(date.shiftedBy(-h));
         SpacecraftState sPlus  = propagator.propagate(date.shiftedBy(h));
 
         // check spin is consistent with attitude evolution

@@ -46,14 +46,6 @@ public abstract class GroundPointing implements AttitudeProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 20140811L;
 
-    /** I axis. */
-    private static final PVCoordinates PLUS_I =
-            new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO, Vector3D.ZERO);
-
-    /** K axis. */
-    private static final PVCoordinates PLUS_K =
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
-
     /** Body frame. */
     private final Frame bodyFrame;
 
@@ -109,7 +101,7 @@ public abstract class GroundPointing implements AttitudeProvider {
                                              getTargetPV(pvProv, date, frame));
 
         // spacecraft and target should be away from each other to define a pointing direction
-        if (delta.getPosition().getNorm() == 0.0) {
+        if (delta.getPosition().getNormSq() == 0.0) {
             throw new OrekitException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET);
         }
 
@@ -117,7 +109,7 @@ public abstract class GroundPointing implements AttitudeProvider {
         // line of sight -> z satellite axis,
         // satellite velocity -> x satellite axis.
         final TimeStampedAngularCoordinates ac =
-                new TimeStampedAngularCoordinates(date, delta, velocity, PLUS_K, PLUS_I);
+                new TimeStampedAngularCoordinates(date, delta, velocity, Vector3D.PLUS_K, Vector3D.PLUS_I);
 
         return new Attitude(date, frame, ac);
 

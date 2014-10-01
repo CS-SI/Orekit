@@ -57,14 +57,6 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     /** Serializable UID. */
     private static final long serialVersionUID = 20140811L;
 
-    /** I axis. */
-    private static final PVCoordinates PLUS_I =
-            new PVCoordinates(Vector3D.PLUS_I, Vector3D.ZERO, Vector3D.ZERO);
-
-    /** K axis. */
-    private static final PVCoordinates PLUS_K =
-            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
-
     /** Underlying ground pointing attitude provider.  */
     private final GroundPointing groundPointingLaw;
 
@@ -137,7 +129,7 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
         return new Attitude(frame,
                             new TimeStampedAngularCoordinates(date,
                                                               relativePosition, relativeVelocity,
-                                                              PLUS_K, PLUS_I));
+                                                              Vector3D.PLUS_K, Vector3D.PLUS_I));
     }
 
     /** Compute the yaw compensation angle at date.

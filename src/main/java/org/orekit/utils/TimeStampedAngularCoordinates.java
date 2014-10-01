@@ -72,38 +72,16 @@ public class TimeStampedAngularCoordinates extends AngularCoordinates implements
      * @param date coordinates date
      * @param u1 first vector of the origin pair
      * @param u2 second vector of the origin pair
-     * @param v1 desired image of u1 by the rotation
-     * @param v2 desired image of u2 by the rotation
+     * @param v1 desired <em>fixed</em> image of u1 by the rotation
+     * @param v2 desired <em>fixed</em> image of u2 by the rotation
      * @exception OrekitException if the vectors components cannot be converted to
      * {@link DerivativeStructure} with proper order
      */
     public TimeStampedAngularCoordinates(final AbsoluteDate date,
                                          final PVCoordinates u1, final PVCoordinates u2,
-                                         final PVCoordinates v1, final PVCoordinates v2)
+                                         final Vector3D v1, final Vector3D v2)
         throws OrekitException {
         super(u1, u2, v1, v2);
-        this.date = date;
-    }
-
-    /** Build one of the rotations that transform one pv coordinates into another one.
-
-     * <p>Except for a possible scale factor, if the instance were
-     * applied to the vector u it will produce the vector v. There is an
-     * infinite number of such rotations, this constructor choose the
-     * one with the smallest associated angle (i.e. the one whose axis
-     * is orthogonal to the (u, v) plane). If u and v are collinear, an
-     * arbitrary rotation axis is chosen.</p>
-
-     * @param date coordinates date
-     * @param u origin vector
-     * @param v desired image of u by the rotation
-     * @exception OrekitException if the vectors components cannot be converted to
-     * {@link DerivativeStructure} with proper order
-     */
-    public TimeStampedAngularCoordinates(final AbsoluteDate date,
-                                         final PVCoordinates u, final PVCoordinates v)
-        throws OrekitException {
-        super(u, v);
         this.date = date;
     }
 

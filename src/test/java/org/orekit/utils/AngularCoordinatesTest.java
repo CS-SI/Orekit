@@ -17,9 +17,12 @@
 package org.orekit.utils;
 
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
@@ -346,6 +349,107 @@ public class AngularCoordinatesTest {
             Assert.assertEquals(0.0, rebuilt.getRotationRate().getNorm(), 1.0e-16);
         }
 
+    }
+
+    @Test
+    public void testInverseCrossProducts()
+        throws OrekitException {
+        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_J);
+        checkInverse(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO);
+        checkInverse(Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.PLUS_J);
+        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_K, Vector3D.PLUS_J);
+        checkInverse(Vector3D.ZERO,   Vector3D.PLUS_K, Vector3D.ZERO);
+        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
+        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_I);
+        checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, new Vector3D(1, 0, -1).normalize());
+    }
+
+    @Test
+    public void testInverseCrossProductsFailures() {
+        checkInverseFailure(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.PLUS_J, Vector3D.PLUS_I,  Vector3D.PLUS_K);
+        checkInverseFailure(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO,    Vector3D.PLUS_K);
+        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.MINUS_I, Vector3D.PLUS_K);
+        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.PLUS_J,  Vector3D.PLUS_J);
+        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.PLUS_J,  Vector3D.ZERO);
+        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_J,  Vector3D.ZERO);
+        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.ZERO,    Vector3D.PLUS_J);
+    }
+
+    @Test
+    public void testRandomInverseCrossProducts() throws OrekitException {
+        RandomGenerator generator = new Well1024a(0x52b29d8f6ac2d64bl);
+        for (int i = 0; i < 10000; ++i) {
+            Vector3D omega = randomVector(generator, 10 * generator.nextDouble() + 1.0);
+            Vector3D v1    = randomVector(generator, 10 * generator.nextDouble() + 1.0);
+            Vector3D v2    = randomVector(generator, 10 * generator.nextDouble() + 1.0);
+            checkInverse(omega, v1, v2);
+        }
+    }
+
+    private void checkInverse(Vector3D omega, Vector3D v1, Vector3D v2) throws OrekitException {
+        checkInverse(omega,
+                     v1, Vector3D.crossProduct(omega, v1),
+                     v2, Vector3D.crossProduct(omega, v2));
+    }
+
+    private void checkInverseFailure(Vector3D omega, Vector3D v1, Vector3D c1, Vector3D v2, Vector3D c2) {
+        try {
+            checkInverse(omega, v1, c1, v2, c2);
+            Assert.fail("an exception should have been thrown");
+        } catch (MathIllegalArgumentException miae) {
+            // expected
+        }
+    }
+
+    private void checkInverse(Vector3D omega, Vector3D v1, Vector3D c1, Vector3D v2, Vector3D c2)
+        throws MathIllegalArgumentException {
+        try {
+            Method inverse;
+            inverse = AngularCoordinates.class.getDeclaredMethod("inverseCrossProducts",
+                                                                 Vector3D.class, Vector3D.class,
+                                                                 Vector3D.class, Vector3D.class);
+            inverse.setAccessible(true);
+            Vector3D rebuilt = (Vector3D) inverse.invoke(null, v1, c1, v2, c2);
+            Assert.assertEquals(0.0, Vector3D.distance(omega, rebuilt), 1.0e-12 * omega.getNorm());
+        } catch (NoSuchMethodException e) {
+            Assert.fail(e.getLocalizedMessage());
+        } catch (SecurityException e) {
+            Assert.fail(e.getLocalizedMessage());
+        } catch (IllegalAccessException e) {
+            Assert.fail(e.getLocalizedMessage());
+        } catch (IllegalArgumentException e) {
+            Assert.fail(e.getLocalizedMessage());
+        } catch (InvocationTargetException e) {
+            throw (MathIllegalArgumentException) e.getCause();
+        }
+    }
+
+    @Test
+    public void testRandomPVCoordinates() throws OrekitException {
+        RandomGenerator generator = new Well1024a(0x49eb5b92d1f94b89l);
+        for (int i = 0; i < 100; ++i) {
+            Rotation r           = randomRotation(generator);
+            Vector3D omega       = randomVector(generator, 10    * generator.nextDouble() + 1.0);
+            Vector3D omegaDot    = randomVector(generator, 0.1   * generator.nextDouble() + 0.01);
+            AngularCoordinates ref = new AngularCoordinates(r, omega, omegaDot);
+            AngularCoordinates inv = ref.revert();
+            for (int j = 0; j < 100; ++j) {
+                Vector3D v1 = randomVector(generator, 10    * generator.nextDouble() + 1.0);
+                Vector3D v2 = randomVector(generator, 10    * generator.nextDouble() + 1.0);
+                PVCoordinates u1 = inv.applyTo(new PVCoordinates(v1, Vector3D.ZERO, Vector3D.ZERO));
+                PVCoordinates u2 = inv.applyTo(new PVCoordinates(v2, Vector3D.ZERO, Vector3D.ZERO));
+                AngularCoordinates rebuilt = new AngularCoordinates(u1, u2, v1, v2);
+                Assert.assertEquals(0.0,
+                                    Rotation.distance(r, rebuilt.getRotation()),
+                                    4.0e-14);
+                Assert.assertEquals(0.0,
+                                    Vector3D.distance(omega, rebuilt.getRotationRate()),
+                                    3.0e-12 * omega.getNorm());
+                Assert.assertEquals(0.0,
+                                    Vector3D.distance(omegaDot, rebuilt.getRotationAcceleration()),
+                                    2.0e-6 * omegaDot.getNorm());
+            }
+        }
     }
 
     @Test

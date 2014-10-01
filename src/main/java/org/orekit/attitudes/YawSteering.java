@@ -67,7 +67,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     private static final long serialVersionUID = 20140808L;
 
     /** Pointing axis. */
-    private static final PVCoordinates PLUS_Z =
+    private static final PVCoordinates PLUS_K =
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Underlying ground pointing attitude provider.  */
@@ -77,7 +77,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     private final PVCoordinatesProvider sun;
 
     /** Satellite axis that must be roughly in Sun direction. */
-    private final PVCoordinates phasingAxis;
+    private final Vector3D phasingAxis;
 
     /** Creates a new instance.
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
@@ -91,7 +91,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
         super(groundPointingLaw.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
         this.sun = sun;
-        this.phasingAxis = new PVCoordinates(phasingAxis, Vector3D.ZERO, Vector3D.ZERO);
+        this.phasingAxis = phasingAxis;
     }
 
     /** Get the underlying (ground pointing) attitude provider.
@@ -137,8 +137,8 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
                                                              sun.getPVCoordinates(date, frame));
         final TimeStampedAngularCoordinates compensation =
                 new TimeStampedAngularCoordinates(date,
-                                                  PLUS_Z, base.getOrientation().applyTo(sunDirection),
-                                                  PLUS_Z, phasingAxis);
+                                                  PLUS_K, base.getOrientation().applyTo(sunDirection),
+                                                  Vector3D.PLUS_K, phasingAxis);
 
         // add compensation
         return new Attitude(frame, compensation.addOffset(base.getOrientation()));
