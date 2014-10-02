@@ -23,6 +23,7 @@ import java.util.Set;
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.apache.commons.math3.util.FastMath;
 import org.orekit.attitudes.Attitude;
 import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
@@ -58,8 +59,8 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     /** Names of the additional states. */
     private final String[] additional;
-    
-    /** Local PV Provider used for computing attitude **/
+
+    /** Local PV Provider used for computing attitude. **/
     private LocalPVProvider pvProvider;
 
     /** Thread-safe cache. */
@@ -96,10 +97,10 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         }
 
         pvProvider = new LocalPVProvider();
-        
+
         //User needs to explicitly set attitude provider if they want to use one
         this.setAttitudeProvider(null);
-        
+
         // set up cache
         cache = new ImmutableTimeStampedCache<SpacecraftState>(interpolationPoints, states);
     }
@@ -128,19 +129,19 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     public SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
         try {
             final List<SpacecraftState> neighbors = cache.getNeighbors(date);
-            SpacecraftState interpolatedState = neighbors.get(0).interpolate(date, neighbors);
-            
-            AttitudeProvider attitudeProvider = this.getAttitudeProvider();
-            
-            if(attitudeProvider == null) {
-            	return interpolatedState;
+            final SpacecraftState interpolatedState = neighbors.get(0).interpolate(date, neighbors);
+
+            final AttitudeProvider attitudeProvider = this.getAttitudeProvider();
+
+            if (attitudeProvider == null) {
+                return interpolatedState;
             }
             else {
-            	pvProvider.setCurrentState(interpolatedState);
-            	Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date, interpolatedState.getFrame());
-            	return new SpacecraftState(interpolatedState.getOrbit(), calculatedAttitude, interpolatedState.getMass());
+                pvProvider.setCurrentState(interpolatedState);
+                final Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date, interpolatedState.getFrame());
+                return new SpacecraftState(interpolatedState.getOrbit(), calculatedAttitude, interpolatedState.getMass());
             }
-            
+
         } catch (OrekitException tce) {
             throw new PropagationException(tce);
         }
@@ -256,34 +257,39 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         }
 
     }
-    
+
     /** Internal PVCoordinatesProvider for attitude computation. */
     private class LocalPVProvider implements PVCoordinatesProvider {
-    	private SpacecraftState currentState;
-    	
-    	public LocalPVProvider() {
-    		
-    	}
-    	
-    	public SpacecraftState getCurrentState() {
-    		return currentState;
-    	}
-    	
-    	public void setCurrentState(SpacecraftState state) {
-    		this.currentState = state;
-    	}
+
+        /** Current state. */
+        private SpacecraftState currentState;
+
+        /** Get the current state.
+         * @return current state
+         */
+        public SpacecraftState getCurrentState() {
+            return currentState;
+        }
+
+        /** Set the current state.
+         * @param state state to set
+         */
+        public void setCurrentState(final SpacecraftState state) {
+            this.currentState = state;
+        }
 
         /** {@inheritDoc} */
-        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame f)
             throws OrekitException {
-        	double dt = this.getCurrentState().getDate().durationFrom(date);
-        	final double closeEnoughTimeInSec = 1e-9;
-        	
-        	if(Math.abs(dt) > closeEnoughTimeInSec) {
-        		throw new OrekitException(new OutOfRangeException(new Double(Math.abs(dt)), 0.0, closeEnoughTimeInSec));
-        	}
+            final double dt = this.getCurrentState().getDate().durationFrom(date);
+            final double closeEnoughTimeInSec = 1e-9;
 
-        	return this.getCurrentState().getPVCoordinates(frame);
+            if (FastMath.abs(dt) > closeEnoughTimeInSec) {
+                throw new OrekitException(new OutOfRangeException(new Double(FastMath.abs(dt)), 0.0, closeEnoughTimeInSec));
+            }
+
+            return this.getCurrentState().getPVCoordinates(f);
+
         }
 
     }
