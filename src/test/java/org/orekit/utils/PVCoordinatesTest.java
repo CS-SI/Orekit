@@ -21,10 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldVector3D;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.random.RandomGenerator;
+import org.apache.commons.math3.random.Well19937a;
 import org.apache.commons.math3.util.Pair;
 import org.junit.Assert;
 import org.junit.Test;
@@ -243,6 +247,59 @@ public class PVCoordinatesTest {
         Assert.assertEquals(
                 new PVCoordinates(new Vector3D(2, 0, 0), Vector3D.PLUS_J).getAngularVelocity(),
                 Vector3D.PLUS_K.scalarMultiply(0.5));
+    }
+
+    @Test
+    public void testNormalize() {
+        RandomGenerator generator = new Well19937a(0xb2011ffd25412067l);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
+        for (int i = 0; i < 200; ++i) {
+            final PVCoordinates pv = randomPVCoordinates(generator, 1e6, 1e3, 1.0);
+            DerivativeStructure x =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return pv.shiftedBy(t).getPosition().normalize().getX();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            DerivativeStructure y =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return pv.shiftedBy(t).getPosition().normalize().getY();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            DerivativeStructure z =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return pv.shiftedBy(t).getPosition().normalize().getZ();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            PVCoordinates normalized = pv.normalize();
+            Assert.assertEquals(x.getValue(),              normalized.getPosition().getX(),     1.0e-16);
+            Assert.assertEquals(y.getValue(),              normalized.getPosition().getY(),     1.0e-16);
+            Assert.assertEquals(z.getValue(),              normalized.getPosition().getZ(),     1.0e-16);
+            Assert.assertEquals(x.getPartialDerivative(1), normalized.getVelocity().getX(),     3.0e-13);
+            Assert.assertEquals(y.getPartialDerivative(1), normalized.getVelocity().getY(),     3.0e-13);
+            Assert.assertEquals(z.getPartialDerivative(1), normalized.getVelocity().getZ(),     3.0e-13);
+            Assert.assertEquals(x.getPartialDerivative(2), normalized.getAcceleration().getX(), 6.0e-10);
+            Assert.assertEquals(y.getPartialDerivative(2), normalized.getAcceleration().getY(), 6.0e-10);
+            Assert.assertEquals(z.getPartialDerivative(2), normalized.getAcceleration().getZ(), 6.0e-10);
+        }
+    }
+
+    private Vector3D randomVector(RandomGenerator random, double norm) {
+        double n = random.nextDouble() * norm;
+        double x = random.nextDouble();
+        double y = random.nextDouble();
+        double z = random.nextDouble();
+        return new Vector3D(n, new Vector3D(x, y, z).normalize());
+    }
+
+    private PVCoordinates randomPVCoordinates(RandomGenerator random,
+                                              double norm0, double norm1, double norm2) {
+        Vector3D p0 = randomVector(random, norm0);
+        Vector3D p1 = randomVector(random, norm1);
+        Vector3D p2 = randomVector(random, norm2);
+        return new PVCoordinates(p0, p1, p2);
     }
 
     private PolynomialFunction randomPolynomial(int degree, Random random) {

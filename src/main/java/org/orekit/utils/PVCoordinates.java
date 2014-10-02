@@ -357,6 +357,31 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         return new PVCoordinates(position.negate(), velocity.negate(), acceleration.negate());
     }
 
+    /** Normalize the position part of the instance.
+     * <p>
+     * The computed coordinates first component (position) will be a
+     * normalized vector, the second component (velocity) will be the
+     * derivative of the first component (hence it will generally not
+     * be normalized), and the third component (acceleration) will be the
+     * derivative of the second component (hence it will generally not
+     * be normalized).
+     * </p>
+     * @return a new instance, with first component normalized and
+     * remaining component computed to have consistent derivatives
+     */
+    public PVCoordinates normalize() {
+        final double   inv     = 1.0 / position.getNorm();
+        final Vector3D u       = new Vector3D(inv, position);
+        final Vector3D v       = new Vector3D(inv, velocity);
+        final Vector3D w       = new Vector3D(inv, acceleration);
+        final double   uv      = Vector3D.dotProduct(u, v);
+        final double   v2      = Vector3D.dotProduct(v, v);
+        final double   uw      = Vector3D.dotProduct(u, w);
+        final Vector3D uDot    = new Vector3D(1, v, -uv, u);
+        final Vector3D uDotDot = new Vector3D(1, w, -2 * uv, v, 3 * uv * uv - v2 - uw, u);
+        return new PVCoordinates(u, uDot, uDotDot);
+    }
+
     /** Return a string representation of this position/velocity pair.
      * @return string representation of this position/velocity pair
      */

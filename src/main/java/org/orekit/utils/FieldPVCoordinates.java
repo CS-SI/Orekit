@@ -419,6 +419,34 @@ public class FieldPVCoordinates<T extends RealFieldElement<T>>
         return new FieldPVCoordinates<T>(position.negate(), velocity.negate(), acceleration.negate());
     }
 
+    /** Normalize the position part of the instance.
+     * <p>
+     * The computed coordinates first component (position) will be a
+     * normalized vector, the second component (velocity) will be the
+     * derivative of the first component (hence it will generally not
+     * be normalized), and the third component (acceleration) will be the
+     * derivative of the second component (hence it will generally not
+     * be normalized).
+     * </p>
+     * @return a new instance, with first component normalized and
+     * remaining component computed to have consistent derivatives
+     */
+    public FieldPVCoordinates<T> normalize() {
+        final T   inv     = position.getNorm().reciprocal();
+        final FieldVector3D<T> u       = new FieldVector3D<T>(inv, position);
+        final FieldVector3D<T> v       = new FieldVector3D<T>(inv, velocity);
+        final FieldVector3D<T> w       = new FieldVector3D<T>(inv, acceleration);
+        final T   uv      = FieldVector3D.dotProduct(u, v);
+        final T   v2      = FieldVector3D.dotProduct(v, v);
+        final T   uw      = FieldVector3D.dotProduct(u, w);
+        final FieldVector3D<T> uDot    = new FieldVector3D<T>(inv.getField().getOne(), v,
+                                                              uv.multiply(-1), u);
+        final FieldVector3D<T> uDotDot = new FieldVector3D<T>(inv.getField().getOne(), w,
+                                                              uv.multiply(-2), v,
+                                                              uv.multiply(uv).multiply(3).subtract(v2).subtract(uw), u);
+        return new FieldPVCoordinates<T>(u, uDot, uDotDot);
+    }
+
     /** Convert to a constant position-velocity without derivatives.
      * @return a constant position-velocity
      */
