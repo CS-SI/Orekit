@@ -21,7 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
+import org.apache.commons.math3.exception.OutOfRangeException;
 import org.apache.commons.math3.exception.util.LocalizedFormats;
+import org.orekit.attitudes.Attitude;
+import org.orekit.attitudes.AttitudeProvider;
 import org.orekit.errors.OrekitException;
 import org.orekit.errors.OrekitMessages;
 import org.orekit.errors.PropagationException;
@@ -32,6 +35,7 @@ import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
 import org.orekit.utils.ImmutableTimeStampedCache;
 import org.orekit.utils.TimeStampedPVCoordinates;
+import org.orekit.utils.PVCoordinatesProvider;
 
 /** This class is designed to accept and handle tabulated orbital entries.
  * Tabulated entries are classified and then extrapolated in way to obtain
@@ -54,6 +58,9 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
 
     /** Names of the additional states. */
     private final String[] additional;
+    
+    /** Local PV Provider used for computing attitude **/
+    private LocalPVProvider pvProvider;
 
     /** Thread-safe cache. */
     private final transient ImmutableTimeStampedCache<SpacecraftState> cache;
@@ -88,6 +95,11 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
             s0.ensureCompatibleAdditionalStates(state);
         }
 
+        pvProvider = new LocalPVProvider();
+        
+        //User needs to explicitly set attitude provider if they want to use one
+        this.setAttitudeProvider(null);
+        
         // set up cache
         cache = new ImmutableTimeStampedCache<SpacecraftState>(interpolationPoints, states);
     }
@@ -116,7 +128,19 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
     public SpacecraftState basicPropagate(final AbsoluteDate date) throws PropagationException {
         try {
             final List<SpacecraftState> neighbors = cache.getNeighbors(date);
-            return neighbors.get(0).interpolate(date, neighbors);
+            SpacecraftState interpolatedState = neighbors.get(0).interpolate(date, neighbors);
+            
+            AttitudeProvider attitudeProvider = this.getAttitudeProvider();
+            
+            if(attitudeProvider == null) {
+            	return interpolatedState;
+            }
+            else {
+            	pvProvider.setCurrentState(interpolatedState);
+            	Attitude calculatedAttitude = attitudeProvider.getAttitude(pvProvider, date, interpolatedState.getFrame());
+            	return new SpacecraftState(interpolatedState.getOrbit(), calculatedAttitude, interpolatedState.getMass());
+            }
+            
         } catch (OrekitException tce) {
             throw new PropagationException(tce);
         }
@@ -232,5 +256,37 @@ public class Ephemeris extends AbstractAnalyticalPropagator implements BoundedPr
         }
 
     }
+    
+    /** Internal PVCoordinatesProvider for attitude computation. */
+    private class LocalPVProvider implements PVCoordinatesProvider {
+    	private SpacecraftState currentState;
+    	
+    	public LocalPVProvider() {
+    		
+    	}
+    	
+    	public SpacecraftState getCurrentState() {
+    		return currentState;
+    	}
+    	
+    	public void setCurrentState(SpacecraftState state) {
+    		this.currentState = state;
+    	}
+
+        /** {@inheritDoc} */
+        public TimeStampedPVCoordinates getPVCoordinates(final AbsoluteDate date, final Frame frame)
+            throws OrekitException {
+        	double dt = this.getCurrentState().getDate().durationFrom(date);
+        	final double closeEnoughTimeInSec = 1e-9;
+        	
+        	if(Math.abs(dt) > closeEnoughTimeInSec) {
+        		throw new OrekitException(new OutOfRangeException(new Double(Math.abs(dt)), 0.0, closeEnoughTimeInSec));
+        	}
+
+        	return this.getCurrentState().getPVCoordinates(frame);
+        }
+
+    }
+
 
 }
