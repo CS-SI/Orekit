@@ -35,7 +35,7 @@ public class EphemerisTest {
     	final double positionTolerance = 1e-6;
     	final double velocityTolerance = 1e-5;
     	final double attitudeTolerance = 1e-6;
-        double mass = 2500;
+
         double a = 7187990.1979844316;
         double e = 0.5e-4;
         double i = 1.7105407051081795;
