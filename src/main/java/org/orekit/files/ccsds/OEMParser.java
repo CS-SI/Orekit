@@ -240,7 +240,7 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
             if (line.trim().length() > 0) {
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
-                	Scanner sc = null;
+                    Scanner sc = null;
                     try {
                         sc = new Scanner(line);
                         final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
@@ -267,9 +267,9 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
                     } finally {
-                    	if(sc != null) {
-                    		sc.close();
-                    	}                   	
+                        if (sc != null) {
+                            sc.close();
+                        }
                     }
                 } else {
                     switch (pi.keyValue.getKeyword()) {
@@ -323,10 +323,10 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                     try {
                         pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc.next()));
                     } catch (NumberFormatException nfe) {
-                    	sc.close();
+                        sc.close();
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
-                    } 
+                    }
                     if (j != i) {
                         pi.lastMatrix.addToEntry(j, i, pi.lastMatrix.getEntry(i, j));
                     }
@@ -337,8 +337,8 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                     pi.lastEphemeridesBlock.getCovarianceMatrices().add(cm);
                 }
                 i++;
-                if(sc != null) {
-                	sc.close();
+                if (sc != null) {
+                    sc.close();
                 }
             } else {
                 switch (pi.keyValue.getKeyword()) {
