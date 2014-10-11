@@ -22,6 +22,9 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="add">
+      Added support for IERS bulletin A (rapid service and prediction)
+      </action>
       <action dev="tn" type="fix">
       Fixed various issues in geomagnetic fields models:
       GeoMagneticField.getDecimalYear() returned a slightly wrong result: e.g. for 1/1/2005
