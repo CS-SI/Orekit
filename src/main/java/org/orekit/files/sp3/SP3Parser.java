@@ -143,6 +143,8 @@ public class SP3Parser implements OrbitFileParser {
         throws OrekitException {
 
         final SP3File file = pi.file;
+
+        @SuppressWarnings("resource")
         final Scanner scanner = new Scanner(line).useDelimiter("\\s+").useLocale(Locale.US);
 
         // CHECKSTYLE: stop FallThrough check
@@ -321,6 +323,9 @@ public class SP3Parser implements OrbitFileParser {
         }
 
         // CHECKSTYLE: resume FallThrough check
+        if (scanner != null) {
+            scanner.close();
+        }
 
     }
 

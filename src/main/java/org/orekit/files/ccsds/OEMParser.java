@@ -240,8 +240,9 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
             if (line.trim().length() > 0) {
                 pi.keyValue = new KeyValue(line, pi.lineNumber, pi.fileName);
                 if (pi.keyValue.getKeyword() == null) {
+                    Scanner sc = null;
                     try {
-                        final Scanner sc = new Scanner(line);
+                        sc = new Scanner(line);
                         final AbsoluteDate date = parseDate(sc.next(), pi.lastEphemeridesBlock.getMetaData().getTimeSystem());
                         final Vector3D position = new Vector3D(Double.parseDouble(sc.next()) * 1000,
                                                                Double.parseDouble(sc.next()) * 1000,
@@ -265,6 +266,10 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                     } catch (NumberFormatException nfe) {
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
+                    } finally {
+                        if (sc != null) {
+                            sc.close();
+                        }
                     }
                 } else {
                     switch (pi.keyValue.getKeyword()) {
@@ -318,6 +323,7 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                     try {
                         pi.lastMatrix.addToEntry(i, j, Double.parseDouble(sc.next()));
                     } catch (NumberFormatException nfe) {
+                        sc.close();
                         throw new OrekitException(OrekitMessages.UNABLE_TO_PARSE_LINE_IN_FILE,
                                                   pi.lineNumber, pi.fileName, line);
                     }
@@ -331,6 +337,9 @@ public class OEMParser extends ODMParser implements OrbitFileParser {
                     pi.lastEphemeridesBlock.getCovarianceMatrices().add(cm);
                 }
                 i++;
+                if (sc != null) {
+                    sc.close();
+                }
             } else {
                 switch (pi.keyValue.getKeyword()) {
                 case EPOCH :

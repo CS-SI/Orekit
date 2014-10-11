@@ -182,6 +182,9 @@ public class FramesFactory {
     /** Default regular expression for the BulletinB files (IAU2000 compatibles). */
     public static final String BULLETINB_2000_FILENAME = "^bulletinb_IAU2000((-\\d\\d\\d\\.txt)|(\\.\\d\\d\\d))$";
 
+    /** Default regular expression for the BulletinA files (IAU1980 and IAU2000 compatibles). */
+    public static final String BULLETINA_FILENAME = "^bulletina-[ivxlcdm]+-\\d\\d\\d\\.txt$";
+
     /** Predefined frames. */
     private static transient Map<Predefined, FactoryManagedFrame> FRAMES =
         new HashMap<Predefined, FactoryManagedFrame>();
@@ -213,15 +216,18 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
+     * @param bulletinASupportedNames regular expression for supported bulletin A files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String)
+     * @see #addDefaultEOP2000HistoryLoaders(String, String, String, String, String)
      */
     public static void addDefaultEOP1980HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
                                                        final String eopC04SupportedNames,
-                                                       final String bulletinBSupportedNames) {
+                                                       final String bulletinBSupportedNames,
+                                                       final String bulletinASupportedNames) {
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
                 RAPID_DATA_PREDICTION_COLUMNS_1980_FILENAME : rapidDataColumnsSupportedNames;
@@ -237,9 +243,13 @@ public class FramesFactory {
         addEOPHistoryLoader(IERSConventions.IERS_1996,
                             new EOP08C04FilesLoader(eopcNames));
         final String bulBNames =
-            (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
+                (bulletinBSupportedNames == null) ? BULLETINB_1980_FILENAME : bulletinBSupportedNames;
         addEOPHistoryLoader(IERSConventions.IERS_1996,
                             new BulletinBFilesLoader(bulBNames));
+        final String bulANames =
+                    (bulletinASupportedNames == null) ? BULLETINA_FILENAME : bulletinASupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_1996,
+                            new BulletinAFilesLoader(bulANames));
     }
 
     /** Add the default loaders for EOP history (IAU 2000/2006 precession/nutation).
@@ -258,15 +268,18 @@ public class FramesFactory {
      * (may be null if the default IERS file names are used)
      * @param bulletinBSupportedNames regular expression for supported bulletin B files names
      * (may be null if the default IERS file names are used)
+     * @param bulletinASupportedNames regular expression for supported bulletin A files names
+     * (may be null if the default IERS file names are used)
      * @see <a href="http://hpiers.obspm.fr/eoppc/eop/eopc04/">IERS EOP 08 C04 files</a>
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
      * @see #clearEOPHistoryLoaders()
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
      */
     public static void addDefaultEOP2000HistoryLoaders(final String rapidDataColumnsSupportedNames,
                                                        final String rapidDataXMLSupportedNames,
                                                        final String eopC04SupportedNames,
-                                                       final String bulletinBSupportedNames) {
+                                                       final String bulletinBSupportedNames,
+                                                       final String bulletinASupportedNames) {
         final String rapidColNames =
                 (rapidDataColumnsSupportedNames == null) ?
                 RAPID_DATA_PREDICITON_COLUMNS_2000_FILENAME : rapidDataColumnsSupportedNames;
@@ -293,12 +306,18 @@ public class FramesFactory {
                             new BulletinBFilesLoader(bulBNames));
         addEOPHistoryLoader(IERSConventions.IERS_2010,
                             new BulletinBFilesLoader(bulBNames));
+        final String bulANames =
+                (bulletinASupportedNames == null) ? BULLETINA_FILENAME : bulletinASupportedNames;
+        addEOPHistoryLoader(IERSConventions.IERS_2003,
+                            new BulletinAFilesLoader(bulANames));
+        addEOPHistoryLoader(IERSConventions.IERS_2010,
+                            new BulletinAFilesLoader(bulANames));
     }
 
     /** Add a loader for Earth Orientation Parameters history.
      * @param conventions IERS conventions to which EOP history applies
      * @param loader custom loader to add for the EOP history
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
      * @see #clearEOPHistoryLoaders()
      */
     public static void addEOPHistoryLoader(final IERSConventions conventions, final EOPHistoryLoader loader) {
@@ -312,7 +331,7 @@ public class FramesFactory {
 
     /** Clear loaders for Earth Orientation Parameters history.
      * @see #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader)
-     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String)
+     * @see #addDefaultEOP1980HistoryLoaders(String, String, String, String, String)
      */
     public static void clearEOPHistoryLoaders() {
         synchronized (EOP_HISTORY_LOADERS) {
@@ -326,9 +345,10 @@ public class FramesFactory {
      * #addEOPHistoryLoader(IERSConventions, EOPHistoryLoader) addEOPHistoryLoader}
      * or if {@link #clearEOPHistoryLoaders() clearEOPHistoryLoaders} has been
      * called afterwards, the {@link #addDefaultEOP1980HistoryLoaders(String, String,
-     * String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String, String,
-     * String, String)} methods will be called automatically with supported file names
-     * parameters all set to null, in order to get the default loaders configuration.
+     * String, String, String)} and {@link #addDefaultEOP2000HistoryLoaders(String,
+     * String, String, String, String)} methods will be called automatically with
+     * supported file names parameters all set to null, in order to get the default
+     * loaders configuration.
      * </p>
      * @param conventions conventions for which EOP history is requested
      * @param simpleEOP if true, tidal effects are ignored when interpolating EOP
@@ -342,8 +362,8 @@ public class FramesFactory {
 
             //TimeStamped based set needed to remove duplicates
             if (EOP_HISTORY_LOADERS.isEmpty()) {
-                addDefaultEOP2000HistoryLoaders(null, null, null, null);
-                addDefaultEOP1980HistoryLoaders(null, null, null, null);
+                addDefaultEOP2000HistoryLoaders(null, null, null, null, null);
+                addDefaultEOP1980HistoryLoaders(null, null, null, null, null);
             }
 
             OrekitException pendingException = null;

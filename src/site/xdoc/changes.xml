@@ -30,6 +30,9 @@
           Added a general 3 axes ellipsoid class, including a feature to compute
           any plane section (which result in a 2D ellipse).
       </action>
+      <action dev="luc" type="add">
+      Added support for IERS bulletin A (rapid service and prediction)
+      </action>
       <action dev="tn" type="fix">
       Fixed various issues in geomagnetic fields models:
       GeoMagneticField.getDecimalYear() returned a slightly wrong result: e.g. for 1/1/2005
