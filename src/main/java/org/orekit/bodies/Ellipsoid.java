@@ -114,7 +114,7 @@ public class Ellipsoid implements Serializable {
         // ε = xP xV / a² + yP yV / b² + zP zV / c²
         // ζ =  xP²  / a² +  yP²  / b² +  zP²  / c² - 1
         // this is the equation of a conic (here an ellipse)
-        // Of course, we note that if the point P belongs to the ellipse
+        // Of course, we note that if the point P belongs to the ellipsoid
         // then ζ = 0 and the equation holds at point P since τ = 0 and υ = 0
         final Vector3D u     = planeNormal.orthogonal();
         final Vector3D v     = Vector3D.crossProduct(planeNormal, u).normalize();
