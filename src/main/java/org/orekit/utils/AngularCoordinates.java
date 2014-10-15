@@ -25,10 +25,16 @@ import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.exception.MathIllegalArgumentException;
 import org.apache.commons.math3.exception.NumberIsTooLargeException;
-import org.apache.commons.math3.exception.ZeroException;
 import org.apache.commons.math3.geometry.euclidean.threed.FieldRotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.QRDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
+import org.apache.commons.math3.linear.SingularMatrixException;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 import org.apache.commons.math3.util.Pair;
 import org.orekit.errors.OrekitException;
@@ -96,7 +102,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         this.rotationAcceleration = rotationAcceleration;
     }
 
-    /** Build the rotation that transforms a pair of pv coordinates into a pair of fixed vectors.
+    /** Build the rotation that transforms a pair of pv coordinates into another one.
 
      * <p>Except for possible scale factors, if the instance were applied to
      * the pair (u<sub>1</sub>, u<sub>2</sub>) it will produce the pair
@@ -110,40 +116,66 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
      * @param u1 first vector of the origin pair
      * @param u2 second vector of the origin pair
-     * @param v1 desired <em>fixed</em> image of u1 by the rotation
-     * @param v2 desired <em>fixed</em> image of u2 by the rotation
+     * @param v1 desired image of u1 by the rotation
+     * @param v2 desired image of u2 by the rotation
      * @exception OrekitException if the vectors are inconsistent for the
      * rotation to be found (null, aligned, ...)
      */
     public AngularCoordinates(final PVCoordinates u1, final PVCoordinates u2,
-                              final Vector3D v1,      final Vector3D v2)
+                              final PVCoordinates v1, final PVCoordinates v2)
         throws OrekitException {
 
         try {
             // find the initial fixed rotation
-            rotation = new Rotation(u1.getPosition(), u2.getPosition(), v1, v2);
+            rotation = new Rotation(u1.getPosition(), u2.getPosition(),
+                                    v1.getPosition(), v2.getPosition());
 
             // find rotation rate Ω such that
-            //  Ω ⨉ v₁ = r(dot(u₁))
-            //  Ω ⨉ v₂ = α r(dot(u₂))
+            //  Ω ⨉ v₁ = r(dot(u₁)) - dot(v₁)
+            //  Ω ⨉ v₂ ≈ r(dot(u₂)) - dot(v₂)
             final Vector3D ru1Dot = rotation.applyTo(u1.getVelocity());
             final Vector3D ru2Dot = rotation.applyTo(u2.getVelocity());
-            rotationRate          = inverseCrossProducts(v1, ru1Dot, v2, ru2Dot);
+            rotationRate = inverseCrossProducts(v1.getPosition(), ru1Dot.subtract(v1.getVelocity()),
+                                                v2.getPosition(), ru2Dot.subtract(v2.getVelocity()));
 
             // find rotation acceleration dot(Ω) such that
-            // dot(Ω) ⨉ v₁ = r(dotdot(u₁)) - Ω ⨉  (Ω ⨉ v₁)
-            // dot(Ω) ⨉ v₂ = β [r(dotdot(u₂)) - Ω ⨉  (Ω ⨉ v₂)]
+            // dot(Ω) ⨉ v₁ = r(dotdot(u₁)) - 2 Ω ⨉ dot(v₁) - Ω ⨉  (Ω ⨉ v₁) - dotdot(v₁)
+            // dot(Ω) ⨉ v₂ ≈ r(dotdot(u₂)) - 2 Ω ⨉ dot(v₂) - Ω ⨉  (Ω ⨉ v₂) - dotdot(v₂)
             final Vector3D ru1DotDot = rotation.applyTo(u1.getAcceleration());
-            final Vector3D oov1      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v1));
+            final Vector3D oDotv1    = Vector3D.crossProduct(rotationRate, v1.getVelocity());
+            final Vector3D oov1      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v1.getPosition()));
+            final Vector3D c1        = new Vector3D(1, ru1DotDot, -2, oDotv1, -1, oov1, -1, v1.getAcceleration());
             final Vector3D ru2DotDot = rotation.applyTo(u2.getAcceleration());
-            final Vector3D oov2      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v2));
-            rotationAcceleration     = inverseCrossProducts(v1, ru1DotDot.subtract(oov1), v2, ru2DotDot.subtract(oov2));
+            final Vector3D oDotv2    = Vector3D.crossProduct(rotationRate, v2.getVelocity());
+            final Vector3D oov2      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v2.getPosition()));
+            final Vector3D c2        = new Vector3D(1, ru2DotDot, -2, oDotv2, -1, oov2, -1, v2.getAcceleration());
+            rotationAcceleration     = inverseCrossProducts(v1.getPosition(), c1, v2.getPosition(), c2);
+
         } catch (MathIllegalArgumentException miae) {
             throw new OrekitException(miae);
         } catch (MathArithmeticException mae) {
             throw new OrekitException(mae);
         }
 
+    }
+
+    /** Build one of the rotations that transform one pv coordinates into another one.
+
+     * <p>Except for a possible scale factor, if the instance were
+     * applied to the vector u it will produce the vector v. There is an
+     * infinite number of such rotations, this constructor choose the
+     * one with the smallest associated angle (i.e. the one whose axis
+     * is orthogonal to the (u, v) plane). If u and v are collinear, an
+     * arbitrary rotation axis is chosen.</p>
+
+     * @param u origin vector
+     * @param v desired image of u by the rotation
+     * @exception OrekitException if the vectors components cannot be converted to
+     * {@link DerivativeStructure} with proper order
+     */
+    public AngularCoordinates(final PVCoordinates u, final PVCoordinates v) throws OrekitException {
+        this(new FieldRotation<DerivativeStructure>(u.toDerivativeStructureVector(2),
+                                                    v.toDerivativeStructureVector(2)));
     }
 
     /** Builds a AngularCoordinates from  a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.
@@ -209,105 +241,79 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
         throws MathIllegalArgumentException {
 
         final double v12 = v1.getNormSq();
-        final double c12 = c1.getNormSq();
-        final double c22 = c2.getNormSq();
+        final double v1n = FastMath.sqrt(v12);
+        final double v22 = v2.getNormSq();
+        final double v2n = FastMath.sqrt(v22);
+        final double threshold = 1000 * FastMath.ulp(FastMath.max(v1n, v2n));
 
-        if (v12 == 0) {
+        Vector3D omega;
 
-            if (c12 != 0) {
+        try {
+            // create the over-determined linear system representing the two cross products
+            final RealMatrix m = MatrixUtils.createRealMatrix(6, 3);
+            m.setEntry(0, 1,  v1.getZ());
+            m.setEntry(0, 2, -v1.getY());
+            m.setEntry(1, 0, -v1.getZ());
+            m.setEntry(1, 2,  v1.getX());
+            m.setEntry(2, 0,  v1.getY());
+            m.setEntry(2, 1, -v1.getX());
+            m.setEntry(3, 1,  v2.getZ());
+            m.setEntry(3, 2, -v2.getY());
+            m.setEntry(4, 0, -v2.getZ());
+            m.setEntry(4, 2,  v2.getX());
+            m.setEntry(5, 0,  v2.getY());
+            m.setEntry(5, 1, -v2.getX());
+
+            final RealVector rhs = MatrixUtils.createRealVector(new double[] {
+                c1.getX(), c1.getY(), c1.getZ(),
+                c2.getX(), c2.getY(), c2.getZ()
+            });
+
+            // find the best solution we can
+            final DecompositionSolver solver = new QRDecomposition(m, threshold).getSolver();
+            final RealVector v = solver.solve(rhs);
+            omega = new Vector3D(v.getEntry(0), v.getEntry(1), v.getEntry(2));
+
+        } catch (SingularMatrixException sme) {
+
+            // handle some special cases for which we can compute a solution
+            final double c12 = c1.getNormSq();
+            final double c1n = FastMath.sqrt(c12);
+            final double c22 = c2.getNormSq();
+            final double c2n = FastMath.sqrt(c22);
+
+            if (c1n <= threshold && c2n <= threshold) {
+                // simple special case, velocities are cancelled
+                return Vector3D.ZERO;
+            } else if (v1n <= threshold && c1n >= threshold) {
                 // this is inconsistent, if v₁ is zero, c₁ must be 0 too
-                throw new NumberIsTooLargeException(c12, 0, true);
-            }
-
-            // the first pair doesn't give any clue: 0 is transformed into O
-            // so we rely only on the second pair to find Ω
-            final double v22 = v2.getNormSq();
-            if (v22 == 0) {
-                if (c22 != 0) {
-                    // this is inconsistent, if v₂ is zero, c₂ must be 0 too
-                    throw new NumberIsTooLargeException(c22, 0, true);
-                }
-
-                // the second pair doesn't give any clue: 0 is transformed into O
-                // we could select anything, so just return Ω = 0 for simplicity
-                return Vector3D.ZERO;
-
+                throw new NumberIsTooLargeException(c1n, 0, true);
+            } else if (v2n <= threshold && c2n >= threshold) {
+                // this is inconsistent, if v₂ is zero, c₂ must be 0 too
+                throw new NumberIsTooLargeException(c2n, 0, true);
+            } else if (Vector3D.crossProduct(v1, v2).getNorm() <= threshold && v12 > threshold) {
+                // simple special case, v₂ is redundant with v₁, we just ignore it
+                // use the simplest Ω: orthogonal to both v₁ and c₁
+                omega = new Vector3D(1.0 / v12, Vector3D.crossProduct(v1, c1));
             } else {
-
-                // use the simplest Ω: orthogonal to both v₂ and c₂
-                // in this case, Ω ⨉ v₂ = c₂ - c₂.v₂/v₂.v₂ v₂
-                return new Vector3D(1.0 / v22, Vector3D.crossProduct(v2, c2));
-
-            }
-
-        } else if (c12 == 0) {
-
-            // a non-zero v₁ is transformed into a zero c₁, Ω must be along v₁
-            final Vector3D v1Cv2 = Vector3D.crossProduct(v1, v2);
-            if (v1Cv2.getNormSq() == 0) {
-                if (c22 != 0) {
-                    // this is inconsistent, v₂ is either zero or aligned with v₁, so c₂ should be zero
-                    throw new NumberIsTooLargeException(c22, 0, true);
-                }
-                return Vector3D.ZERO;
-            } else {
-                if (c22 == 0) {
-                    // this is inconsistent, c₂ should be a non-zero vector orthogonal to v₁ and v₂
-                    throw new NumberIsTooLargeException(c22, 0, true);
-                }
-                final double d = Vector3D.dotProduct(c2, v1Cv2);
-                if (d == 0) {
-                    // this is inconsistent
-                    throw new NumberIsTooLargeException(c22, 0, true);
-                }
-                return new Vector3D(c2.getNormSq() / d, v1);
-            }
-
-        } else {
-
-            // a non-zero v₁ is transformed into a non-zero c₁, Ω is non-zero
-            if (c22 == 0) {
-                // a non-zero v₂ is transformed into a zero c₂, Ω must be along v₂
-                final double s = Vector3D.dotProduct(c1, Vector3D.crossProduct(v2, v1));
-                if (s == 0) {
-                    // this is inconsistent
-                    throw new ZeroException();
-                }
-                return new Vector3D(c12 / s, v2);
-            }
-
-            final double v22 = v2.getNormSq();
-            if (v22 == 0) {
-                // this is inconsistent, if c₂ is not zero, v₂ cannot be zero
-                throw new NumberIsTooLargeException(v22, 0, true);
-            }
-
-            // both v₁ and v₂ are non-zero and transformed into non-zero c₁ and c₂
-            final double v1c2 = Vector3D.dotProduct(c2, v1);
-            if (v1c2 == 0) {
-
-                // c₂ is orthogonal to both the (v₁, Ω) and (v₂, Ω) planes,
-                // so both planes are really one single plane,
-                // hence we look for Ω in the (v₁, v₂) plane
-                final Vector3D v1Cv2 = Vector3D.crossProduct(v1, v2);
-                final double d2 = v1Cv2.getNormSq();
-                if (d2 == 0) {
-                    // v₁ and v₂ are aligned ...
-
-                    // use the simplest Ω: orthogonal to both v₁ and c₁
-                    return new Vector3D(1.0 / v12, Vector3D.crossProduct(v1, c1));
-
-                }
-
-                return new Vector3D(+c22 / Vector3D.dotProduct(c2, v1Cv2), v1,
-                                    -c12 / Vector3D.dotProduct(c1, v1Cv2), v2);
-
-            } else {
-                // in this case, we will have Ω ⨉ v₂ = -c₁.v₂/c₂.v₁ c₂
-                return new Vector3D(1.0 / v1c2, Vector3D.crossProduct(c2, c1));
+                throw sme;
             }
 
         }
+
+        // check results
+        final double d1 = Vector3D.distance(Vector3D.crossProduct(omega, v1), c1);
+        if (d1 > threshold) {
+            throw new NumberIsTooLargeException(d1, 0, true);
+        }
+
+        final double d2 = Vector3D.distance(Vector3D.crossProduct(omega, v2), c2);
+        if (d2 > threshold) {
+            throw new NumberIsTooLargeException(d2, 0, true);
+        }
+
+        return omega;
+
     }
 
     /** Transform the instance to a {@link FieldRotation}&lt;{@link DerivativeStructure}&gt;.

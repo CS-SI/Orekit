@@ -362,6 +362,7 @@ public class AngularCoordinatesTest {
         checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_K);
         checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, Vector3D.PLUS_I);
         checkInverse(Vector3D.PLUS_K, Vector3D.PLUS_I, new Vector3D(1, 0, -1).normalize());
+        checkInverse(Vector3D.ZERO, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.PLUS_J,  Vector3D.ZERO);
     }
 
     @Test
@@ -370,7 +371,6 @@ public class AngularCoordinatesTest {
         checkInverseFailure(Vector3D.PLUS_K, Vector3D.ZERO,   Vector3D.ZERO,   Vector3D.ZERO,    Vector3D.PLUS_K);
         checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.MINUS_I, Vector3D.PLUS_K);
         checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.PLUS_J,  Vector3D.PLUS_J);
-        checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.ZERO,   Vector3D.PLUS_J,  Vector3D.ZERO);
         checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.PLUS_J,  Vector3D.ZERO);
         checkInverseFailure(Vector3D.PLUS_I, Vector3D.PLUS_I, Vector3D.PLUS_J, Vector3D.ZERO,    Vector3D.PLUS_J);
     }
@@ -410,7 +410,7 @@ public class AngularCoordinatesTest {
                                                                  Vector3D.class, Vector3D.class);
             inverse.setAccessible(true);
             Vector3D rebuilt = (Vector3D) inverse.invoke(null, v1, c1, v2, c2);
-            Assert.assertEquals(0.0, Vector3D.distance(omega, rebuilt), 1.0e-12 * omega.getNorm());
+            Assert.assertEquals(0.0, Vector3D.distance(omega, rebuilt), 5.0e-12 * omega.getNorm());
         } catch (NoSuchMethodException e) {
             Assert.fail(e.getLocalizedMessage());
         } catch (SecurityException e) {
@@ -434,10 +434,10 @@ public class AngularCoordinatesTest {
             AngularCoordinates ref = new AngularCoordinates(r, omega, omegaDot);
             AngularCoordinates inv = ref.revert();
             for (int j = 0; j < 100; ++j) {
-                Vector3D v1 = randomVector(generator, 10    * generator.nextDouble() + 1.0);
-                Vector3D v2 = randomVector(generator, 10    * generator.nextDouble() + 1.0);
-                PVCoordinates u1 = inv.applyTo(new PVCoordinates(v1, Vector3D.ZERO, Vector3D.ZERO));
-                PVCoordinates u2 = inv.applyTo(new PVCoordinates(v2, Vector3D.ZERO, Vector3D.ZERO));
+                PVCoordinates v1 = randomPVCoordinates(generator, 1000, 1.0, 0.001);
+                PVCoordinates v2 = randomPVCoordinates(generator, 1000, 1.0, 0.0010);
+                PVCoordinates u1 = inv.applyTo(v1);
+                PVCoordinates u2 = inv.applyTo(v2);
                 AngularCoordinates rebuilt = new AngularCoordinates(u1, u2, v1, v2);
                 Assert.assertEquals(0.0,
                                     Rotation.distance(r, rebuilt.getRotation()),
@@ -450,6 +450,27 @@ public class AngularCoordinatesTest {
                                     2.0e-6 * omegaDot.getNorm());
             }
         }
+    }
+
+    @Test
+    public void testCancellingDerivatives() throws OrekitException {
+        PVCoordinates u1 = new PVCoordinates(new Vector3D(-0.4466591282528639,   -0.009657376949231283,  -0.894652087807798),
+                                             new Vector3D(-8.897296517803556E-4,  2.7825250920407674E-4,  4.411979658413134E-4),
+                                             new Vector3D( 4.753127475302486E-7,  1.0209400376727623E-8,  9.515403756524403E-7));
+        PVCoordinates u2 = new PVCoordinates(new Vector3D( 0.23723907259910096,   0.9628700806685033,    -0.1288364474275361),
+                                             new Vector3D(-7.98741002062555E-24,  2.4979687659429984E-24, 3.9607863426704016E-24),
+                                             new Vector3D(-3.150541868418562E-23, 9.856329862034835E-24,  1.5648124883326986E-23));
+        PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
+        PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO, Vector3D.ZERO);
+        AngularCoordinates ac = new AngularCoordinates(u1, u2, v1, v2);
+        PVCoordinates v1Computed = ac.applyTo(u1);
+        PVCoordinates v2Computed = ac.applyTo(u2);
+        Assert.assertEquals(0, Vector3D.distance(v1.getPosition(),     v1Computed.getPosition()),     1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(v2.getPosition(),     v2Computed.getPosition()),     1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(v1.getVelocity(),     v1Computed.getVelocity()),     1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(v2.getVelocity(),     v2Computed.getVelocity()),     1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(v1.getAcceleration(), v1Computed.getAcceleration()), 1.0e-15);
+        Assert.assertEquals(0, Vector3D.distance(v2.getAcceleration(), v2Computed.getAcceleration()), 1.0e-15);
     }
 
     @Test
@@ -487,6 +508,14 @@ public class AngularCoordinatesTest {
         double y = random.nextDouble();
         double z = random.nextDouble();
         return new Vector3D(n, new Vector3D(x, y, z).normalize());
+    }
+
+    private PVCoordinates randomPVCoordinates(RandomGenerator random,
+                                              double norm0, double norm1, double norm2) {
+        Vector3D p0 = randomVector(random, norm0);
+        Vector3D p1 = randomVector(random, norm1);
+        Vector3D p2 = randomVector(random, norm2);
+        return new PVCoordinates(p0, p1, p2);
     }
 
     private Rotation randomRotation(RandomGenerator random) {
