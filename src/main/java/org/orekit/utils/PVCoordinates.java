@@ -382,6 +382,26 @@ public class PVCoordinates implements TimeShiftable<PVCoordinates>, Serializable
         return new PVCoordinates(u, uDot, uDotDot);
     }
 
+    /** Compute the cross-product of two instances.
+     * @param pv1 first instances
+     * @param pv2 second instances
+     * @return the cross product v1 ^ v2 as a new instance
+     */
+    public static PVCoordinates crossProduct(final PVCoordinates pv1, final PVCoordinates pv2) {
+        final Vector3D p1 = pv1.position;
+        final Vector3D v1 = pv1.velocity;
+        final Vector3D a1 = pv1.acceleration;
+        final Vector3D p2 = pv2.position;
+        final Vector3D v2 = pv2.velocity;
+        final Vector3D a2 = pv2.acceleration;
+        return new PVCoordinates(Vector3D.crossProduct(p1, p2),
+                                 new Vector3D(1, Vector3D.crossProduct(p1, v2),
+                                              1, Vector3D.crossProduct(v1, p2)),
+                                 new Vector3D(1, Vector3D.crossProduct(p1, a2),
+                                              2, Vector3D.crossProduct(v1, v2),
+                                              1, Vector3D.crossProduct(a1, p2)));
+    }
+
     /** Return a string representation of this position/velocity pair.
      * @return string representation of this position/velocity pair
      */

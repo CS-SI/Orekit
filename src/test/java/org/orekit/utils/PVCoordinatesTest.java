@@ -286,6 +286,47 @@ public class PVCoordinatesTest {
         }
     }
 
+    @Test
+    public void testCrossProduct() {
+        RandomGenerator generator = new Well19937a(0x85c592b3be733d23l);
+        FiniteDifferencesDifferentiator differentiator = new FiniteDifferencesDifferentiator(5, 1.0e-3);
+        for (int i = 0; i < 200; ++i) {
+            final PVCoordinates pv1 = randomPVCoordinates(generator, 1.0, 1.0, 1.0);
+            final PVCoordinates pv2 = randomPVCoordinates(generator, 1.0, 1.0, 1.0);
+            DerivativeStructure x =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
+                                                         pv2.shiftedBy(t).getPosition()).getX();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            DerivativeStructure y =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
+                                                         pv2.shiftedBy(t).getPosition()).getY();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            DerivativeStructure z =
+                    differentiator.differentiate(new UnivariateFunction() {
+                        public double value(double t) {
+                            return Vector3D.crossProduct(pv1.shiftedBy(t).getPosition(),
+                                                         pv2.shiftedBy(t).getPosition()).getZ();
+                        }
+                    }).value(new DerivativeStructure(1, 2, 0, 0.0));
+            PVCoordinates product = PVCoordinates.crossProduct(pv1, pv2);
+            Assert.assertEquals(x.getValue(),              product.getPosition().getX(),     1.0e-16);
+            Assert.assertEquals(y.getValue(),              product.getPosition().getY(),     1.0e-16);
+            Assert.assertEquals(z.getValue(),              product.getPosition().getZ(),     1.0e-16);
+            Assert.assertEquals(x.getPartialDerivative(1), product.getVelocity().getX(),     9.0e-10);
+            Assert.assertEquals(y.getPartialDerivative(1), product.getVelocity().getY(),     9.0e-10);
+            Assert.assertEquals(z.getPartialDerivative(1), product.getVelocity().getZ(),     9.0e-10);
+            Assert.assertEquals(x.getPartialDerivative(2), product.getAcceleration().getX(), 3.0e-9);
+            Assert.assertEquals(y.getPartialDerivative(2), product.getAcceleration().getY(), 3.0e-9);
+            Assert.assertEquals(z.getPartialDerivative(2), product.getAcceleration().getZ(), 3.0e-9);
+        }
+    }
+
     private Vector3D randomVector(RandomGenerator random, double norm) {
         double n = random.nextDouble() * norm;
         double x = random.nextDouble();
