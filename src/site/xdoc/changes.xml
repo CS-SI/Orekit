@@ -22,6 +22,9 @@
   <body>
     <release version="7.0" date="TBD"
              description="TBD">
+      <action dev="luc" type="fix">
+          Improved acceleration output in Eckstein-Hechler model.
+      </action>
       <action dev="luc" type="add">
           Added projection of moving point (i.e. position and derivatives too) to
           ground surface.

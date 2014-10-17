@@ -17,7 +17,10 @@
 package org.orekit.propagation.analytical;
 
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.math3.exception.util.DummyLocalizable;
 import org.apache.commons.math3.geometry.euclidean.threed.RotationOrder;
@@ -58,10 +61,12 @@ import org.orekit.propagation.events.NodeDetector;
 import org.orekit.propagation.events.handlers.ContinueOnEvent;
 import org.orekit.propagation.sampling.OrekitFixedStepHandler;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.CartesianDerivativesFilter;
 import org.orekit.utils.Constants;
 import org.orekit.utils.IERSConventions;
 import org.orekit.utils.PVCoordinatesProvider;
 import org.orekit.utils.PVCoordinates;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 
 public class EcksteinHechlerPropagatorTest {
@@ -453,8 +458,8 @@ public class EcksteinHechlerPropagatorTest {
                      Utils.epsilonAngle * FastMath.abs(finalOrbit.getHx()));
         Assert.assertEquals(finalOrbit.getHy(), FastMath.tan(i / 2.) * FastMath.sin(gom),
                      Utils.epsilonAngle * FastMath.abs(finalOrbit.getHy()));
-        Assert.assertEquals(finalOrbit.getLM(), pso_M + gom, Utils.epsilonAngle
-                     * FastMath.abs(finalOrbit.getLM()));
+        Assert.assertEquals(finalOrbit.getLM(), MathUtils.normalizeAngle(pso_M + gom, finalOrbit.getLM()),
+                            Utils.epsilonAngle * FastMath.abs(finalOrbit.getLM()));
 
     }
 
@@ -566,6 +571,37 @@ public class EcksteinHechlerPropagatorTest {
         EcksteinHechlerPropagator propagator =
             new EcksteinHechlerPropagator(orbit, wrongLaw, provider);
         propagator.propagate(AbsoluteDate.J2000_EPOCH.shiftedBy(10.0));
+    }
+
+    @Test
+    public void testAcceleration() throws OrekitException {
+        final KeplerianOrbit orbit =
+            new KeplerianOrbit(7.8e6, 0.032, 0.4, 0.1, 0.2, 0.3, PositionAngle.TRUE,
+                               FramesFactory.getEME2000(), AbsoluteDate.J2000_EPOCH, provider.getMu());
+        EcksteinHechlerPropagator propagator =
+            new EcksteinHechlerPropagator(orbit, provider);
+        AbsoluteDate target = AbsoluteDate.J2000_EPOCH.shiftedBy(10000.0);
+        List<TimeStampedPVCoordinates> sample = new ArrayList<TimeStampedPVCoordinates>();
+        for (double dt : Arrays.asList(-0.5, 0.0, 0.5)) {
+            sample.add(propagator.propagate(target.shiftedBy(dt)).getPVCoordinates());
+        }
+        TimeStampedPVCoordinates interpolated =
+                TimeStampedPVCoordinates.interpolate(target, CartesianDerivativesFilter.USE_P, sample);
+        AbsoluteDate computedT = sample.get(1).getDate();
+        Vector3D computedP     = sample.get(1).getPosition();
+        Vector3D computedV     = sample.get(1).getVelocity();
+        Vector3D computedA     = sample.get(1).getAcceleration();
+        Vector3D referenceA    = interpolated.getAcceleration();
+        Orbit keplerianOrbit   = new CircularOrbit(new TimeStampedPVCoordinates(computedT,
+                                                                                computedP,
+                                                                                computedV,
+                                                                                Vector3D.ZERO),
+                                                                                orbit.getFrame(), orbit.getMu());
+        Vector3D keplerianA    = keplerianOrbit.getPVCoordinates().getAcceleration();
+
+        double computationError   = Vector3D.distance(referenceA, computedA);
+        double nonKeplerianEffect = Vector3D.distance(referenceA, keplerianA);
+        Assert.assertTrue(computationError < nonKeplerianEffect / 97);
     }
 
     @Test

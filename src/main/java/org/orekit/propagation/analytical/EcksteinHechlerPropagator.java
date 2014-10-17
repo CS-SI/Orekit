@@ -16,6 +16,7 @@
  */
 package org.orekit.propagation.analytical;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathUtils;
 import org.orekit.attitudes.AttitudeProvider;
@@ -30,6 +31,7 @@ import org.orekit.orbits.OrbitType;
 import org.orekit.orbits.PositionAngle;
 import org.orekit.propagation.SpacecraftState;
 import org.orekit.time.AbsoluteDate;
+import org.orekit.utils.TimeStampedPVCoordinates;
 
 /** This class propagates a {@link org.orekit.propagation.SpacecraftState}
  *  using the analytical Eckstein-Hechler model.
@@ -72,20 +74,8 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** Central attraction coefficient (m<sup>3</sup>/s<sup>2</sup>). */
     private double mu;
 
-    /** Un-normalized zonal coefficient (about -1.08e-3 for Earth). */
-    private double c20;
-
-    /** Un-normalized zonal coefficient (about +2.53e-6 for Earth). */
-    private double c30;
-
-    /** Un-normalized zonal coefficient (about +1.62e-6 for Earth). */
-    private double c40;
-
-    /** Un-normalized zonal coefficient (about +2.28e-7 for Earth). */
-    private double c50;
-
-    /** Un-normalized zonal coefficient (about -5.41e-7 for Earth). */
-    private double c60;
+    /** Un-normalized zonal coefficients. */
+    private double[] ck0;
 
     /** Build a propagator from orbit and potential provider.
      * <p>Mass and attitude provider are set to unspecified non-null arbitrary values.</p>
@@ -115,8 +105,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                      final double mass,
                                      final UnnormalizedSphericalHarmonicsProvider provider,
                                      final UnnormalizedSphericalHarmonics harmonics)
-        throws OrekitException
-    {
+        throws OrekitException {
         this(initialOrbit, attitude, mass, provider.getAe(), provider.getMu(),
                 harmonics.getUnnormalizedCnm(2, 0),
                 harmonics.getUnnormalizedCnm(3, 0),
@@ -297,11 +286,9 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             // store model coefficients
             this.referenceRadius = referenceRadius;
             this.mu  = mu;
-            this.c20 = c20;
-            this.c30 = c30;
-            this.c40 = c40;
-            this.c50 = c50;
-            this.c60 = c60;
+            this.ck0 = new double[] {
+                0.0, 0.0, c20, c30, c40, c50, c60
+            };
 
             // compute mean parameters
             // transform into circular adapted parameters used by the Eckstein-Hechler model
@@ -354,15 +341,15 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             // preliminary processing
             q = referenceRadius / mean.getA();
             ql = q * q;
-            g2 = c20 * ql;
+            g2 = ck0[2] * ql;
             ql *= q;
-            g3 = c30 * ql;
+            g3 = ck0[3] * ql;
             ql *= q;
-            g4 = c40 * ql;
+            g4 = ck0[4] * ql;
             ql *= q;
-            g5 = c50 * ql;
+            g5 = ck0[5] * ql;
             ql *= q;
-            g6 = c60 * ql;
+            g6 = ck0[6] * ql;
 
             cosI1 = FastMath.cos(mean.getI());
             sinI1 = FastMath.sin(mean.getI());
@@ -387,7 +374,7 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
             }
 
             // recompute the osculating parameters from the current mean parameters
-            final CircularOrbit rebuilt = (CircularOrbit) propagateOrbit(mean.getDate());
+            final CircularOrbit rebuilt = propagateCircularOrbit(mean.getDate());
 
             // adapted parameters residuals
             final double deltaA      = osculating.getA()  - rebuilt.getA();
@@ -429,6 +416,25 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
     /** {@inheritDoc} */
     public Orbit propagateOrbit(final AbsoluteDate date)
         throws PropagationException {
+
+        // propagate orbit, without computing zonal acceleration
+        final CircularOrbit o = propagateCircularOrbit(date);
+
+        // recompute acceleration, to take zonal terms into account
+        final TimeStampedPVCoordinates pva = addZonalAcceleration(o.getPVCoordinates());
+
+        return new CircularOrbit(pva, mean.getFrame(), mean.getMu());
+
+    }
+
+    /** Propagate only the circular orbit part.
+     * <p>
+     * This method does not compute the non-Keplerian acceleration
+     * </p>
+     * @param date target date
+     * @return propagated circular orbit
+     */
+    private CircularOrbit propagateCircularOrbit(final AbsoluteDate date) {
 
         // keplerian evolution
         final double xnot = date.durationFrom(mean.getDate()) * FastMath.sqrt(mu / mean.getA()) / mean.getA();
@@ -577,6 +583,65 @@ public class EcksteinHechlerPropagator extends AbstractAnalyticalPropagator {
                                  MathUtils.normalizeAngle(xlm + rdxl, FastMath.PI),
                                  PositionAngle.MEAN,
                                  mean.getFrame(), date, mean.getMu());
+
+    }
+
+    /** Compute acceleration due to central and zonal terms.
+     * @param pva position/velocity/acceleration, where acceleration is only Keplerian
+     * @return position/velocity/acceleration, where acceleration takes zonal terms into account
+     * @exception PropagationException if point is along pole or below Brillouin sphere radius
+     */
+    private TimeStampedPVCoordinates addZonalAcceleration(final TimeStampedPVCoordinates pva)
+        throws PropagationException {
+
+        final double xBody = pva.getPosition().getX();
+        final double yBody = pva.getPosition().getY();
+        final double zBody = pva.getPosition().getZ();
+
+        // Computation of intermediate variables
+        final double r12 = xBody * xBody + yBody * yBody;
+        final double r1 = FastMath.sqrt(r12);
+        if (r1 <= 10e-2) {
+            throw new PropagationException(OrekitMessages.POLAR_TRAJECTORY, r1);
+        }
+        final double r2 = r12 + zBody * zBody;
+        final double r  = FastMath.sqrt(r2);
+        if (r <= referenceRadius) {
+            throw new PropagationException(OrekitMessages.TRAJECTORY_INSIDE_BRILLOUIN_SPHERE, r);
+        }
+        final double r3    = r2  * r;
+        final double aeOnr = referenceRadius / r;
+        final double zOnr  = zBody / r;
+        final double r1Onr = r1 / r;
+
+        // Definition of the first acceleration terms
+        final double mMuOnr3  = -mu / r3;
+        final double xDotDotk = xBody * mMuOnr3;
+        final double yDotDotk = yBody * mMuOnr3;
+
+        // Zonal part of acceleration
+        double sumA = 0.0;
+        double sumB = 0.0;
+        double bk1 = zOnr;
+        double bk0 = aeOnr * (3 * bk1 * bk1 - 1.0);
+        for (int k = 2; k <= 6; k++) {
+            final double bk2 = bk1;
+            bk1 = bk0;
+            final double p = (1.0 + k) / k;
+            bk0 = aeOnr * ((1 + p) * zOnr * bk1 - (k * aeOnr * bk2) / (k - 1));
+            final double ak0 = p * aeOnr * bk1 - zOnr * bk0;
+            sumA -= ck0[k] * ak0;
+            sumB -= ck0[k] * bk0;
+        }
+
+        // add the acceleration to the initial coordinates
+        final double p = -sumA / (r1Onr * r1Onr);
+        return new TimeStampedPVCoordinates(pva.getDate(),
+                                            pva.getPosition(),
+                                            pva.getVelocity(),
+                                            new Vector3D(pva.getAcceleration().getX() + xDotDotk * p,
+                                                         pva.getAcceleration().getY() + yDotDotk * p,
+                                                         pva.getAcceleration().getZ() + mu * sumB / r2));
 
     }
 
