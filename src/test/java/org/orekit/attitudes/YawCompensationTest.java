@@ -180,7 +180,7 @@ public class YawCompensationTest {
         }
 
         // when the ground point is close to cross the push-broom line (i.e. when Δx decreases from +1000m to -1000m)
-        // it will drift along the Y axis is we don't apply compensation
+        // it will drift along the Y axis if we don't apply compensation
         // but will remain nearly at Δy=0 if we do apply compensation
         // in fact, as we remove the linear drift, we get a parabola Δy = a uΔx²
         Assert.assertEquals(-55.7056, minYWithoutCompensation,    0.0001);
