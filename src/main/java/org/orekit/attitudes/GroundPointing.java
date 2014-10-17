@@ -46,9 +46,9 @@ public abstract class GroundPointing implements AttitudeProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 20140811L;
 
-    /** -J axis. */
-    private static final PVCoordinates MINUS_J =
-            new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO, Vector3D.ZERO);
+    /** J axis. */
+    private static final PVCoordinates PLUS_J =
+            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
 
     /** K axis. */
     private static final PVCoordinates PLUS_K =
@@ -115,7 +115,7 @@ public abstract class GroundPointing implements AttitudeProvider {
         final PVCoordinates normal = PVCoordinates.crossProduct(delta, velocity).normalize();
 
         final TimeStampedAngularCoordinates ac =
-                new TimeStampedAngularCoordinates(date, los, normal, PLUS_K, MINUS_J, 1.0e-9);
+                new TimeStampedAngularCoordinates(date, los, normal, PLUS_K, PLUS_J, 1.0e-9);
 
         return new Attitude(date, frame, ac);
 
