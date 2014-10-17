@@ -407,9 +407,10 @@ public class AngularCoordinatesTest {
             Method inverse;
             inverse = AngularCoordinates.class.getDeclaredMethod("inverseCrossProducts",
                                                                  Vector3D.class, Vector3D.class,
-                                                                 Vector3D.class, Vector3D.class);
+                                                                 Vector3D.class, Vector3D.class,
+                                                                 double.class);
             inverse.setAccessible(true);
-            Vector3D rebuilt = (Vector3D) inverse.invoke(null, v1, c1, v2, c2);
+            Vector3D rebuilt = (Vector3D) inverse.invoke(null, v1, c1, v2, c2, 1.0e-9);
             Assert.assertEquals(0.0, Vector3D.distance(omega, rebuilt), 5.0e-12 * omega.getNorm());
         } catch (NoSuchMethodException e) {
             Assert.fail(e.getLocalizedMessage());
