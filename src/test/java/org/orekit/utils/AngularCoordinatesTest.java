@@ -438,7 +438,7 @@ public class AngularCoordinatesTest {
                 PVCoordinates v2 = randomPVCoordinates(generator, 1000, 1.0, 0.0010);
                 PVCoordinates u1 = inv.applyTo(v1);
                 PVCoordinates u2 = inv.applyTo(v2);
-                AngularCoordinates rebuilt = new AngularCoordinates(u1, u2, v1, v2);
+                AngularCoordinates rebuilt = new AngularCoordinates(u1, u2, v1, v2, 1.0e-9);
                 Assert.assertEquals(0.0,
                                     Rotation.distance(r, rebuilt.getRotation()),
                                     4.0e-14);
@@ -462,7 +462,7 @@ public class AngularCoordinatesTest {
                                              new Vector3D(-3.150541868418562E-23, 9.856329862034835E-24,  1.5648124883326986E-23));
         PVCoordinates v1 = new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
         PVCoordinates v2 = new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO, Vector3D.ZERO);
-        AngularCoordinates ac = new AngularCoordinates(u1, u2, v1, v2);
+        AngularCoordinates ac = new AngularCoordinates(u1, u2, v1, v2, 1.0e-9);
         PVCoordinates v1Computed = ac.applyTo(u1);
         PVCoordinates v2Computed = ac.applyTo(u2);
         Assert.assertEquals(0, Vector3D.distance(v1.getPosition(),     v1Computed.getPosition()),     1.0e-15);

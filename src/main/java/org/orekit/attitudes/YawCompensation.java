@@ -57,6 +57,14 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
     /** Serializable UID. */
     private static final long serialVersionUID = 20140811L;
 
+    /** J axis. */
+    private static final PVCoordinates PLUS_J =
+            new PVCoordinates(Vector3D.PLUS_J, Vector3D.ZERO, Vector3D.ZERO);
+
+    /** K axis. */
+    private static final PVCoordinates PLUS_K =
+            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
+
     /** Underlying ground pointing attitude provider.  */
     private final GroundPointing groundPointingLaw;
 
@@ -123,13 +131,18 @@ public class YawCompensation extends GroundPointing implements AttitudeProviderM
                                   slidingRef.getAcceleration().subtract(fixedRef.getAcceleration()),
                                   Vector3D.ZERO);
 
+        final PVCoordinates relativeNormal =
+                PVCoordinates.crossProduct(relativePosition, relativeVelocity).normalize();
+
         // Compensation rotation definition :
         //  . Z satellite axis points to sliding target
         //  . target relative velocity is in (Z,X) plane, in the -X half plane part
         return new Attitude(frame,
                             new TimeStampedAngularCoordinates(date,
-                                                              relativePosition, relativeVelocity,
-                                                              Vector3D.PLUS_K, Vector3D.PLUS_I));
+                                                              relativePosition.normalize(),
+                                                              relativeNormal.normalize(),
+                                                              PLUS_K, PLUS_J,
+                                                              1.0e-9));
     }
 
     /** Compute the yaw compensation angle at date.

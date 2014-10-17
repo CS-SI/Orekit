@@ -46,6 +46,14 @@ public abstract class GroundPointing implements AttitudeProvider {
     /** Serializable UID. */
     private static final long serialVersionUID = 20140811L;
 
+    /** -J axis. */
+    private static final PVCoordinates MINUS_J =
+            new PVCoordinates(Vector3D.MINUS_J, Vector3D.ZERO, Vector3D.ZERO);
+
+    /** K axis. */
+    private static final PVCoordinates PLUS_K =
+            new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
+
     /** Body frame. */
     private final Frame bodyFrame;
 
@@ -82,34 +90,32 @@ public abstract class GroundPointing implements AttitudeProvider {
                                 final Frame frame)
         throws OrekitException {
 
-        // compute jerk assuming Keplerian motion in the reference frame
-        final PVCoordinates pva  = pvProv.getPVCoordinates(date, frame);
-        final Vector3D      p    = pva.getPosition();
-        final Vector3D      v    = pva.getVelocity();
-        final Vector3D      a    = pva.getAcceleration();
-        final double        r2   = p.getNormSq();
-        final double        r    = FastMath.sqrt(r2);
-        final Vector3D      jerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
-
-        // velocity and its derivatives
-        final PVCoordinates velocity = new PVCoordinates(v, a, jerk);
-
         // satellite-target relative vector
+        final PVCoordinates pva  = pvProv.getPVCoordinates(date, frame);
         final TimeStampedPVCoordinates delta =
-                new TimeStampedPVCoordinates(date,
-                                             pvProv.getPVCoordinates(date, frame),
-                                             getTargetPV(pvProv, date, frame));
+                new TimeStampedPVCoordinates(date, pva, getTargetPV(pvProv, date, frame));
 
         // spacecraft and target should be away from each other to define a pointing direction
-        if (delta.getPosition().getNormSq() == 0.0) {
+        if (delta.getPosition().getNorm() == 0.0) {
             throw new OrekitException(OrekitMessages.SATELLITE_COLLIDED_WITH_TARGET);
         }
 
         // attitude definition:
-        // line of sight -> z satellite axis,
-        // satellite velocity -> x satellite axis.
+        // line of sight    -> +z satellite axis,
+        // orbital velocity -> (z, +x) half plane
+        final Vector3D p  = pva.getPosition();
+        final Vector3D v  = pva.getVelocity();
+        final Vector3D a  = pva.getAcceleration();
+        final double   r2 = p.getNormSq();
+        final double   r  = FastMath.sqrt(r2);
+        final Vector3D keplerianJerk = new Vector3D(-3 * Vector3D.dotProduct(p, v) / r2, a, -a.getNorm() / r, v);
+        final PVCoordinates velocity = new PVCoordinates(v, a, keplerianJerk);
+
+        final PVCoordinates los    = delta.normalize();
+        final PVCoordinates normal = PVCoordinates.crossProduct(delta, velocity).normalize();
+
         final TimeStampedAngularCoordinates ac =
-                new TimeStampedAngularCoordinates(date, delta, velocity, Vector3D.PLUS_K, Vector3D.PLUS_I);
+                new TimeStampedAngularCoordinates(date, los, normal, PLUS_K, MINUS_J, 1.0e-9);
 
         return new Attitude(date, frame, ac);
 

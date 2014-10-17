@@ -118,11 +118,13 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param u2 second vector of the origin pair
      * @param v1 desired image of u1 by the rotation
      * @param v2 desired image of u2 by the rotation
+     * @param tolerance relative tolerance factor used to check singularities
      * @exception OrekitException if the vectors are inconsistent for the
      * rotation to be found (null, aligned, ...)
      */
     public AngularCoordinates(final PVCoordinates u1, final PVCoordinates u2,
-                              final PVCoordinates v1, final PVCoordinates v2)
+                              final PVCoordinates v1, final PVCoordinates v2,
+                              final double tolerance)
         throws OrekitException {
 
         try {
@@ -136,7 +138,8 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final Vector3D ru1Dot = rotation.applyTo(u1.getVelocity());
             final Vector3D ru2Dot = rotation.applyTo(u2.getVelocity());
             rotationRate = inverseCrossProducts(v1.getPosition(), ru1Dot.subtract(v1.getVelocity()),
-                                                v2.getPosition(), ru2Dot.subtract(v2.getVelocity()));
+                                                v2.getPosition(), ru2Dot.subtract(v2.getVelocity()),
+                                                tolerance);
 
             // find rotation acceleration dot(Ω) such that
             // dot(Ω) ⨉ v₁ = r(dotdot(u₁)) - 2 Ω ⨉ dot(v₁) - Ω ⨉  (Ω ⨉ v₁) - dotdot(v₁)
@@ -149,7 +152,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
             final Vector3D oDotv2    = Vector3D.crossProduct(rotationRate, v2.getVelocity());
             final Vector3D oov2      = Vector3D.crossProduct(rotationRate, Vector3D.crossProduct(rotationRate, v2.getPosition()));
             final Vector3D c2        = new Vector3D(1, ru2DotDot, -2, oDotv2, -1, oov2, -1, v2.getAcceleration());
-            rotationAcceleration     = inverseCrossProducts(v1.getPosition(), c1, v2.getPosition(), c2);
+            rotationAcceleration     = inverseCrossProducts(v1.getPosition(), c1, v2.getPosition(), c2, tolerance);
 
         } catch (MathIllegalArgumentException miae) {
             throw new OrekitException(miae);
@@ -223,7 +226,7 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
 
     /** Find a vector from two known cross products.
      * <p>
-     * We want to find Ω such that: Ω ⨉ v₁ = c₁ and Ω ⨉ v₂ ≈ c₂
+     * We want to find Ω such that: Ω ⨉ v₁ = c₁ and Ω ⨉ v₂ = c₂
      * </p>
      * <p>
      * The first equation (Ω ⨉ v₁ = c₁) will always be fulfilled exactly,
@@ -232,19 +235,22 @@ public class AngularCoordinates implements TimeShiftable<AngularCoordinates>, Se
      * @param v1 vector forming the first known cross product
      * @param c1 know vector for cross product Ω ⨉ v₁
      * @param v2 vector forming the second known cross product
-     * @param c2 know vector almost equal to Ω ⨉ v₂
-     * @return vector Ω such that: Ω ⨉ v₁ = c₁ and Ω ⨉ v₂ ≈ c₂
-     * @exception MathIllegalArgumentException if vectors are inconsistent
+     * @param c2 know vector for cross product Ω ⨉ v₂
+     * @param tolerance relative tolerance factor used to check singularities
+     * @return vector Ω such that: Ω ⨉ v₁ = c₁ and Ω ⨉ v₂ = c₂
+     * @exception MathIllegalArgumentException if vectors are inconsistent and
+     * no solution can be found
      */
     private static Vector3D inverseCrossProducts(final Vector3D v1, final Vector3D c1,
-                                                 final Vector3D v2, final Vector3D c2)
+                                                 final Vector3D v2, final Vector3D c2,
+                                                 final double tolerance)
         throws MathIllegalArgumentException {
 
         final double v12 = v1.getNormSq();
         final double v1n = FastMath.sqrt(v12);
         final double v22 = v2.getNormSq();
         final double v2n = FastMath.sqrt(v22);
-        final double threshold = 1000 * FastMath.ulp(FastMath.max(v1n, v2n));
+        final double threshold = tolerance * FastMath.max(v1n, v2n);
 
         Vector3D omega;
 

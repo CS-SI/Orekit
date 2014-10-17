@@ -67,17 +67,17 @@ public class TimeStampedAngularCoordinatesTest {
 
             PVCoordinates u1 = randomPVCoordinates(random, 1000, 1.0, 0.001);
             PVCoordinates u2 = randomPVCoordinates(random, 1000, 1.0, 0.001);
-            Vector3D v1 = reference.applyTo(u1).getPosition();
-            Vector3D v2 = reference.applyTo(u2).getPosition();
+            PVCoordinates v1 = reference.applyTo(u1);
+            PVCoordinates v2 = reference.applyTo(u2);
             TimeStampedAngularCoordinates ac =
-                    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, u1, u2, v1, v2);
+                    new TimeStampedAngularCoordinates(AbsoluteDate.J2000_EPOCH, u1, u2, v1, v2, 1.0e-9);
 
-            Assert.assertEquals(0, Vector3D.distance(v1.normalize(), ac.applyTo(u1).getPosition().normalize()), 1.0e-14);
-            Assert.assertEquals(0, ac.applyTo(u1).getVelocity().getNorm(), 1.0e-14);
-            Assert.assertEquals(0, ac.applyTo(u1).getAcceleration().getNorm(), 1.0e-14);
-            Assert.assertEquals(0, Vector3D.distance(v2.normalize(), ac.applyTo(u2).getPosition().normalize()), 1.0e-14);
-            Assert.assertEquals(0, ac.applyTo(u2).getVelocity().getNorm(), 1.0e-14);
-            Assert.assertEquals(0, ac.applyTo(u2).getAcceleration().getNorm(), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v1.getPosition().normalize(), ac.applyTo(u1).getPosition().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v1.getVelocity().normalize(), ac.applyTo(u1).getVelocity().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v1.getAcceleration().normalize(), ac.applyTo(u1).getAcceleration().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v2.getPosition().normalize(), ac.applyTo(u2).getPosition().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v2.getVelocity().normalize(), ac.applyTo(u2).getVelocity().normalize()), 1.0e-14);
+            Assert.assertEquals(0, Vector3D.distance(v2.getAcceleration().normalize(), ac.applyTo(u2).getAcceleration().normalize()), 1.0e-14);
 
         }
 

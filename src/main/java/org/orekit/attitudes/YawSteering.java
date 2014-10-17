@@ -67,7 +67,7 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     private static final long serialVersionUID = 20140808L;
 
     /** Pointing axis. */
-    private static final PVCoordinates PLUS_K =
+    private static final PVCoordinates PLUS_Z =
             new PVCoordinates(Vector3D.PLUS_K, Vector3D.ZERO, Vector3D.ZERO);
 
     /** Underlying ground pointing attitude provider.  */
@@ -76,8 +76,8 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
     /** Sun motion model. */
     private final PVCoordinatesProvider sun;
 
-    /** Satellite axis that must be roughly in Sun direction. */
-    private final Vector3D phasingAxis;
+    /** Normal to the plane where the Sun must remain. */
+    private final PVCoordinates phasingNormal;
 
     /** Creates a new instance.
      * @param groundPointingLaw ground pointing attitude provider without yaw compensation
@@ -91,7 +91,9 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
         super(groundPointingLaw.getBodyFrame());
         this.groundPointingLaw = groundPointingLaw;
         this.sun = sun;
-        this.phasingAxis = phasingAxis;
+        this.phasingNormal = new PVCoordinates(Vector3D.crossProduct(Vector3D.PLUS_K, phasingAxis).normalize(),
+                                               Vector3D.ZERO,
+                                               Vector3D.ZERO);
     }
 
     /** Get the underlying (ground pointing) attitude provider.
@@ -135,10 +137,13 @@ public class YawSteering extends GroundPointing implements AttitudeProviderModif
         //  . phasing axis shall be aligned to sun direction
         final PVCoordinates sunDirection = new PVCoordinates(pvProv.getPVCoordinates(date, frame),
                                                              sun.getPVCoordinates(date, frame));
+        final PVCoordinates sunNormal =
+                PVCoordinates.crossProduct(PLUS_Z, base.getOrientation().applyTo(sunDirection));
         final TimeStampedAngularCoordinates compensation =
                 new TimeStampedAngularCoordinates(date,
-                                                  PLUS_K, base.getOrientation().applyTo(sunDirection),
-                                                  Vector3D.PLUS_K, phasingAxis);
+                                                  PLUS_Z, sunNormal.normalize(),
+                                                  PLUS_Z, phasingNormal,
+                                                  1.0e-9);
 
         // add compensation
         return new Attitude(frame, compensation.addOffset(base.getOrientation()));
